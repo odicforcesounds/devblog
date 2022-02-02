@@ -32,7 +32,6 @@ Check global configuration
 ```sh
 username = USERNAME
 email = EMAIL@MAIL.ORG
-token = asjdaksjdmalksjdlasjdalksjdlaksjdlaksd
 ```
 1. Note: Github.com doesn't accept login with password from git-command-line. Instead,  they recommend using a token. 
 2. Note: You can use the token instead of your username when asked for in "git push". Paste your generated token instead
