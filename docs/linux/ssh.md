@@ -16,6 +16,8 @@ You can create more to different hosts. Be sure you put your new ssh-keys into ~
 
 You can use **scp** to transfer files from server to client or client or server. 
 
+Configure .ssh/config file for each host you may need to connect 
+
 ---
 
 ## Server-side
