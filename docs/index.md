@@ -17,6 +17,8 @@
 
 [configure vim](./linux/vim.md)
 
+[configure tmux](./linux/tmux.md)
+
 <h3> Install Linux </h3>
 
 [install Gentoo](./distros/gentoo.md)
