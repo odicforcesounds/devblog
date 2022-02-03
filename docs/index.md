@@ -1,8 +1,6 @@
 
 <h2> Linux stuff</h2>
 
----
-
 <h3> Partitions </h3>
 
 [using cryptsetup](./linux/cryptsetup.md)
