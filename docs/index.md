@@ -29,6 +29,7 @@
 <h3> Administration </h3>
 
 [configure iptables](./linux/iptables.md)
+
 ---
 
 [Naughty Thoughts](./github/thoughts.md)
