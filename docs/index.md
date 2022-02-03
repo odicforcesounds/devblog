@@ -5,7 +5,7 @@
 
 [using cryptsetup](./linux/cryptsetup.md)
 
-[configure lvm](./linux/lvm.md)
+[using lvm](./linux/lvm.md)
 
 <h3> User Tools </h3>
 
@@ -25,7 +25,11 @@
 
 [install Gentoo](./distros/gentoo.md)
 
+
+<h3> Administration </h3>
+
+[configure iptables](./linux/iptables.md)
 ---
 
-[Tricky Thoughts](./github/thoughts.md)
+[Naughty Thoughts](./github/thoughts.md)
 
