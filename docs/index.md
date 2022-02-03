@@ -21,7 +21,7 @@
 
 <h3> Web Develop </h3>
 
-| [nodejs](./web/nodejs.md) | 
+| [nodejs](./web/nodejs.md) | [JavaScript](.//web/javascript.md) | 
 
 ---
 

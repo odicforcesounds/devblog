@@ -16,6 +16,3 @@ Install nodejs from nodejs.org
 npm i -g eslint live-server
 ```
 
-
-
-
