@@ -1,5 +1,9 @@
 <h1> email-client/mutt </h1>
 
+<h3> Celebrating 25 Years </h3>
+
+- http://www.mutt.org/
+
 Used to manage email boxes. 
 
 <h2> install mutt </h2>
@@ -10,8 +14,6 @@ $ sudo apt install mutt msmtp isync abook
 # gentoo based
 $ sudo emerge -av mutt msmtp isync abook
 ```
-
-<h3> Celebrating 25 Years </h3>: http://www.mutt.org/
 
 Configure $HOME/.mutt
 
@@ -25,6 +27,7 @@ Configure $HOME/.mutt/muttrc file
 
 ```sh
 set imap_user = user@mail.org
+set imap_pass =`pass show user@mail.org`
 set realname = username
 set from = "user@mail.org"
 set folder = imaps://imap.mail.org
@@ -35,6 +38,7 @@ set record = "+Sent"
 set postponed = "+Drafts"
 set trash = "+Trash"
 set editor = "vim"
+set sendmail="/usr/bin/msmtp"
 ```
 
 Configure $HOME/.msmtprc 
@@ -51,7 +55,7 @@ from user@mail.org
 auth on
 user user@mail.org
 account default : my-email
-passwd $(gpg -d ~/.secrets/my-email-passwd.txt.gpg) 
+passwd `pass show user@mail.org`
 ```
 
 
