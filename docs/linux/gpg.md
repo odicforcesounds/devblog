@@ -31,7 +31,6 @@ See your gpg keys:
 gpg --list-keys
 ```
 
-
 Share Public key: 
 
 ```sh
@@ -55,3 +54,13 @@ Deincript files
 ```sh
 gpg --decrypt file.asc > plain.txt
 ```
+
+- For email proposes: 
+    - You can only open a file encrypted by someone else if you are that contact in the trust list
+    - Both need to have both public keys
+
+```sh
+gpg --import new-contact.key
+```
+
+
