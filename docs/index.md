@@ -13,11 +13,11 @@
 
 <h3> Install Linux </h3>
 
-| [Gentoo](./distros/gentoo.md) | 
+| [Gentoo](./distros/gentoo.md) | [prepare usb installer](./linux/usbStick.md) |
 
 <h3> Administration </h3>
 
-| [iptables](./linux/iptables.md) | [prepare usb installer](./linux/usbStick.md)
+| [iptables](./linux/iptables.md) | [wpa_supplicant](./linux/wpa_supplicant.md) | 
 
 <h3> Web Develop </h3>
 
