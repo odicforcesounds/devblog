@@ -27,6 +27,6 @@ tags: [ git, github, security, features, privacy ]
 
 - Monkey can be other user.. ( hidden / visual-proxy ) to the eyes of other users / visitants.
 
-This is what I call a <span style="font-size: 32px";>AWESOME</span> Security Feature!!
+This is what I call a **AWESOME** Security Feature!!
 
 
