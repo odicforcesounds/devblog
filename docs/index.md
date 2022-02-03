@@ -6,7 +6,7 @@ Articles of this blog
 
 [configure ssh](./linux/ssh.md)
 
-[configure git](./linux/git.md)
+[configure vim](./linux/vim.md)
 
 ---
 
