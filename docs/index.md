@@ -17,7 +17,7 @@
 
 <h3> Administration </h3>
 
-| [iptables](./linux/iptables.md) | 
+| [iptables](./linux/iptables.md) | [prepare usb installer](./linux/usbStick.md)
 
 <h3> Web Develop </h3>
 
