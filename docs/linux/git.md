@@ -51,7 +51,7 @@ $ git push # update / upload files to repository
 
 Don't forget to configure / create access token in github pages / gitlab, etc...
 
-Install github-cli
+Install github-cli: useful to create repositories, etc.. without login in into website. 
 
 ```sh 
 # install golang before continue
@@ -65,18 +65,20 @@ Login with github-cli ( gh )
 ```sh
 $ gh auth login 
 ```
-
 It is recommended you save your github token into some environment variable
 
 ```sh
 export GH_TOKEN="alisdjasdjçasidjaçsjdaçsokdaçsd"
 ```
 
-Then, in .gitconfig add the line: 
+Monkey prefer to save githuToken in file and encrypt it.
+
 
 ```sh
-token = $GH_TOKEN
+gpg --encrypt --sign --armor -r monkey@banana.world githubToken_file.txt
 ```
+
+Then, in .gitconfig add the line: 
 
 If user have private servers to use they can setup ssh-server and become a git-server. 
 
