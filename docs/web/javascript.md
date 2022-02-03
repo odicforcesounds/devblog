@@ -6,21 +6,21 @@ JavaScript
 
 - Documentation: 
 
-| [MDN](https://developer.mozilla.org/en-US/docs/Web/javascript) | Official Documentation fromm Mozilla Developers
+| [MDN](https://developer.mozilla.org/en-US/docs/Web/javascript) | Official Documentation from Mozilla Developers
 Network | 
 
 | [Free Book](https://javascript.info/) | One of the most recommended book to learn JavaScript | 
 
 | ES5 | ES6 | 
 
-- Versions of EcmaScript Specification ... actualy we can use ES6 
-- is supported by the majority of more used browsers.
+- Versions of EcmaScript Specification
+- Actualy we can use ES6 
+      - is supported by the majority of more used browsers.
+      - Firefox, chromium, safari
 
-| Web-APIs | Framework-APIs | 
+**HTML5** use several APIs. We can interact with them using JavaScript. 
 
-HTML5 use several APIs. We can interact with them using JavaScript. 
-
-Lets see some examples: 
+Some notes: 
 
 - You cannot test JavaScript code with nodejs ( most of the cases it doesn't work ) 
 
@@ -33,6 +33,15 @@ $ sudo npm i -g live-server eslint
 
 
 Create index.html
+
+```sh
+$ mkdir jsTest
+$ cd jsTest
+$ touch index.html fetch.js
+```
+
+Now add the next content to those files
+
 ```html
 <DOCTYPE html>
 <html lang=en>
@@ -54,24 +63,5 @@ fetch('https://api.github.com/repos/user/repo/commits')
   .then(commits => alert(commits[0].author.logon)); 
 ```
 
-Using POST request
-
-```javascript
-let user = {
-  name: 'Monkey',
-  surname: 'Banana'
-}; 
-
-let response = await fetch('/article/fetch/post/user', {
-method: 'POST',
-headers: {
-  'Content-Type': 'application/json;charset=utl-8'
-  },
-  body: JSON.stringify(user)
-});
-
-let result = await response.json(); 
-alert(result.message); 
-```
-
+Run 'live-server' inside that folder and see the results
 
