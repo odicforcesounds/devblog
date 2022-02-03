@@ -19,7 +19,7 @@
 
 [configure tmux](./linux/tmux.md)
 
-[configure mutt](./limux/mutt.md)
+[configure mutt](./linux/mutt.md)
 
 <h3> Install Linux </h3>
 
