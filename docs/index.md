@@ -19,6 +19,8 @@
 
 [configure tmux](./linux/tmux.md)
 
+[configure mutt](./limux/mutt.md)
+
 <h3> Install Linux </h3>
 
 [install Gentoo](./distros/gentoo.md)
