@@ -13,15 +13,15 @@
 
 <h3> Install Linux </h3>
 
-[install Gentoo](./distros/gentoo.md)
+| [Gentoo](./distros/gentoo.md) | 
 
 <h3> Administration </h3>
 
-[configure iptables](./linux/iptables.md)
+| [iptables](./linux/iptables.md) | 
 
 <h3> Web Develop </h3>
 
-[about nodejs](./web/nodejs.md)
+| [nodejs](./web/nodejs.md) | 
 
 ---
 
