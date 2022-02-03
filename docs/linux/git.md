@@ -96,5 +96,10 @@ Lets imagine your git-server machine IP is 192.168.100.100 with a user **git**.
 git clone git@192.168.100.100:/home/git/repository.git
 ```
 
+Install tig to see git history 
+
+```sh
+emerge -av tig 
+```
 
 
