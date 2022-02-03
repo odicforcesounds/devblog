@@ -1,8 +1,6 @@
 # Git
 
-- Git can be used in local-servers or in public / private servers. 
-
-- Git is a control version and it helps the developer to have more control of the applications they are developing. 
+Use git to control the versions of your code. Git grabs each modification you make in your code. 
 
 In all Linux distros, git is already installed, or if not you can install it.
 
@@ -11,14 +9,6 @@ In all Linux distros, git is already installed, or if not you can install it.
 sudo apt install git
 # Gentoo based
 sudo emerge -av dev-vcs/git 
-```
-
-Open new folder and initialize git with the command
-
-```sh 
-$ mkdir newFolder
-$ cd newFolder
-$ git init 
 ```
 
 Edit Configuration file
@@ -33,6 +23,18 @@ Check global configuration
 username = USERNAME
 email = EMAIL@MAIL.ORG
 ```
+
+Open new folder and initialize git with the command
+
+```sh 
+$ mkdir newFolder
+$ cd newFolder
+$ git init 
+$ touch emptyfile
+$ git add emptyfile
+$ git commit -m "adding my first empty file" 
+```
+
 1. Note: Github.com doesn't accept login with password from git-command-line. Instead,  they recommend using a token. 
 2. Note: You can use the token instead of your username when asked for in "git push". Paste your generated token instead
    of your username. Press enter again to continue. 
@@ -76,8 +78,6 @@ Then, in .gitconfig add the line:
 token = $GH_TOKEN
 ```
 
----
-
 If user have private servers to use they can setup ssh-server and become a git-server. 
 
 ```sh
@@ -94,6 +94,5 @@ Lets imagine your git-server machine IP is 192.168.100.100 with a user **git**.
 git clone git@192.168.100.100:/home/git/repository.git
 ```
 
-Here You can configure git to use login/passwd or ssh-public-keys
 
 
