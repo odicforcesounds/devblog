@@ -6,8 +6,7 @@ JavaScript
 
 - Documentation: 
 
-| [MDN](https://developer.mozilla.org/en-US/docs/Web/javascript) | Official Documentation from Mozilla Developers
-Network | 
+| [MDN](https://developer.mozilla.org/en-US/docs/Web/javascript) | Official Documentation from Mozilla Developers Network | 
 
 | [Free Book](https://javascript.info/) | One of the most recommended book to learn JavaScript | 
 
