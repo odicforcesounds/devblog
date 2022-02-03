@@ -8,9 +8,8 @@ tags: [ git, github, security, features, privacy ]
 
 <h2> Github.com</h2>
 
-1. User can grab token and use .gitconfig with fake information. 
-2. If user use ssh, don't need to use a token.
-3. If User is using a token, he/she can modify .gitconfig with any email and that email is used to sign push request. 
+1. If user use ssh, don't need to use a token.
+2. If User is using a token, he/she can modify .gitconfig with any email and that email is used to sign push request. 
   
 ```sh
  This lead 'us' to think:
