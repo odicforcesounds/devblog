@@ -2,10 +2,12 @@
 
 Basic Concepts: 
 
----
 | GET | Request a representation of the specified resource. Use only to retrieve data |
+
 | POST | Request a result of content as new object | 
+
 | PUT | Request to modify object in URI | 
+
 | DELETE | Request server to delete specified resource | 
 
 ---
