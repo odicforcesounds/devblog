@@ -1,6 +1,6 @@
 # Git
 
-Use git to control the versions of your code. Git grabs each modification you make in your code. 
+Use git to control the versions of your code. Git grabs each modification you make in your code.
 
 In all Linux distros, git is already installed, or if not you can install it.
 
@@ -8,12 +8,12 @@ In all Linux distros, git is already installed, or if not you can install it.
 # Debian based
 sudo apt install git
 # Gentoo based
-sudo emerge -av dev-vcs/git 
+sudo emerge -av dev-vcs/git
 ```
 
 Edit Configuration file
 
-```sh 
+```sh
 vim ~/.gitconfig
 ```
 
@@ -26,18 +26,18 @@ email = EMAIL@MAIL.ORG
 
 Open new folder and initialize git with the command
 
-```sh 
+```sh
 $ mkdir newFolder
 $ cd newFolder
-$ git init 
+$ git init
 $ touch emptyfile
 $ git add emptyfile
-$ git commit -m "adding my first empty file" 
+$ git commit -m "adding my first empty file"
 ```
 
-1. Note: Github.com doesn't accept login with password from git-command-line. Instead,  they recommend using a token. 
+1. Note: Github.com doesn't accept login with password from git-command-line. Instead, they recommend using a token.
 2. Note: You can use the token instead of your username when asked for in "git push". Paste your generated token instead
-   of your username. Press enter again to continue. 
+   of your username. Press enter again to continue.
 
 Using git
 
@@ -51,55 +51,84 @@ $ git push # update / upload files to repository
 
 Don't forget to configure / create access token in github pages / gitlab, etc...
 
-Install github-cli: useful to create repositories, etc.. without login in into website. 
+Install github-cli: useful to create repositories, etc.. without login in into website.
 
-```sh 
+```sh
 # install golang before continue
-# debian based distro 
+# debian based distro
 $ sudo apt install github-cli
 # Gentoo based distro
 $ sudo emerge -av github-cli
 ```
 
-Login with github-cli ( gh ) 
+Login with github-cli ( gh )
+
 ```sh
-$ gh auth login 
+$ gh auth login
 ```
+
 It is recommended you save your github token into some environment variable
 
 ```sh
-export GH_TOKEN="alisdjasdjçasidjaçsjdaçsokdaçsd"
+$ export GH_TOKEN="alisdjasdjçasidjaçsjdaçsokdaçsd"
 ```
 
 Monkey prefer to save githuToken in file and encrypt it.
 
-
 ```sh
-gpg --encrypt --sign --armor -r monkey@banana.world githubToken_file.txt
+$ gpg --encrypt --sign --armor -r monkey@banana.world githubToken_file.txt
 ```
 
-Then, in .gitconfig add the line: 
+Then, in .gitconfig add the line:
 
-If user have private servers to use they can setup ssh-server and become a git-server. 
-
-```sh
-mkdir repository.git # Termination with .git is necessary 
-cd repository.git 
-git init --bare
-```
-
-Then from developer machine you want to clone that repository. 
-
-Lets imagine your git-server machine IP is 192.168.100.100 with a user **git**. 
+If user have private servers to use they can setup ssh-server and become a git-server.
 
 ```sh
-git clone git@192.168.100.100:/home/git/repository.git
+$ mkdir repository.git # Termination with .git is necessary
+$ cd repository.git
+$ git init --bare
 ```
 
-Install tig to see git history 
+Then from developer machine you want to clone that repository.
+
+Lets imagine your git-server machine IP is 192.168.100.100 with a user **git**.
 
 ```sh
-emerge -av tig 
+$ git clone git@192.168.100.100:/home/git/repository.git
 ```
 
+Install tig to see git history
 
+```sh
+$ sudo emerge -av tig
+```
+
+Config git alias to work faster with git.
+
+```sh
+$ git config --global alias <alias> <command>
+```
+
+Useful alias:
+
+```sh
+[alias]
+  co = checkout
+  cm = commit -m
+  rl = reflog
+  pu  = push
+```
+
+Like in Linux, we can set the name we want to the [aliasname]
+
+Find lost files :
+
+```sh
+$ git fsck --lost-found
+```
+
+Clone missing submodules
+
+```sh
+$ git submodule update --init --recursive
+```
