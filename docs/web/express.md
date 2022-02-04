@@ -1,5 +1,8 @@
 <h3> Expressjs </h3>
 
+- Check [ExpressJS](https://expressjs.com/en/resources/middleware.html) Middleware
+- Check [Pug API](https://pugjs.org/api/reference.html) to generate HTML 
+
 Basic Concepts: 
 
 | GET | Request a representation of the specified resource. Use only to retrieve data |
@@ -43,6 +46,10 @@ const app = express();
 app.set('view engine', 'pug');
 app.set('views', './views'); // create folder views 
 
+app.get('/first_template', function(req, res) {
+  res.render('firstView'); 
+}); 
+
 app.get('/', function(req, res){
   res.send('This is the main page');
 });
@@ -52,6 +59,17 @@ app.post('/test', function(req, res){
 }); 
 
 app.listen(3000); 
+```
+
+Create file to render in views/firstView.pug
+
+```pug
+doctype html
+html
+  head
+    title = "yellow Monkey"
+  body
+    p.greating#Monkeys Banana
 ```
 
 Run Your server:  
