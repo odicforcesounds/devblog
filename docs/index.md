@@ -27,3 +27,7 @@
 <h3> Learning </h3>
 
 | [expressjs](./web/express.md) |
+
+<h3> Projects </h3>
+
+| [World Cleaner Development Notes](./dev/project.md) |
