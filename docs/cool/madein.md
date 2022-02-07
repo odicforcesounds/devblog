@@ -1,0 +1,16 @@
+Latvia: https://github.com/IonicaBizau/made-in-latvia
+Lithuania: https://github.com/IonicaBizau/made-in-lithuania
+Malta: https://github.com/IonicaBizau/made-in-malta
+Moldova: https://github.com/IonicaBizau/made-in-moldova
+Paraguay: https://github.com/IonicaBizau/made-in-paraguay
+Peru: https://github.com/IonicaBizau/made-in-peru
+Portugal: https://github.com/IonicaBizau/made-in-portugal
+Servia: https://github.com/IonicaBizau/made-in-serbia
+Slovakia: https://github.com/IonicaBizau/made-in-slovakia
+Slovenia: https://github.com/IonicaBizau/made-in-slovenia
+Spain: https://github.com/IonicaBizau/made-in-spain
+Russia: https://github.com/IonicaBizau/made-in-russia
+Venezuela: https://github.com/IonicaBizau/made-in-venezuela
+Uruguay: https://github.com/IonicaBizau/made-in-uruguay
+Biolorussia: https://github.com/IonicaBizau/made-in-belarus
+Albania: https://github.com/IonicaBizau/made-in-albania
