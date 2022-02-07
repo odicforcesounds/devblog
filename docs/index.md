@@ -1,33 +1,48 @@
-<h2> Linux stuff</h2>
+Auto-Rate-Mode
 
-<h3> Partitions </h3>
+<h2>Notes of some tools Monkey use</h2>
 
-| [using cryptsetup](./linux/cryptsetup.md) | [using lvm](./linux/lvm.md) |
+Note: Documentation rating refers to Monkey notes, not the original application documentation. 
 
-<h3> User Tools </h3>
+<h3> Linux Distro </h3>
 
-| [configure git](./linux/git.md) | [configure gpg](./linux/gpg.md) | [configure ssh](./linux/ssh.md) |
+| Tools | Linux | Web | Learning | Category |  Documentation | Complete  | Notes | 
+|-------|-------|-------|-------|-------|-------|-------|-------|
+| [Gentoo](./distros/gentoo.md) | Yes | No | Ok | OS | Poor-Quality | Minimal | .... |
 
-| [configure vim](./linux/vim.md) | [configure tmux](./linux/tmux.md) | [configure mutt](./linux/mutt.md) |
+<h3> User-Tools </h3>
 
-<h3> Install Linux </h3>
+| Tools | Linux | Web | Learning | Category |  Documentation | Complete  | Notes | 
+|-------|-------|-------|-------|-------|-------|-------|-------| 
+| [Vim](./linux/vim.md) | Yes | No | Yes | Editor | Bad | No | Comment Configs | 
+| [Tmux](./linux/tmux.md) | Yes | No | Ok | Emulation | Bad | No | Comment Configs |  
+| [Mutt](./linux/mutt.md) | Yes | No | Ok | Email | Bad | No | Comment Configs | 
 
-| [Gentoo](./distros/gentoo.md) | [prepare usb installer](./linux/usbStick.md) |
+<h3> Security Tools </h3>
 
-<h3> Administration </h3>
+| Tools | Learning | Category | Documentation | Status | Notes | 
+|--------|--------|--------|--------|--------|--------|
+| [CryptSetup](./linux/cryptsetup.md) | Yes | Encryption | Poor-Quality | Minimal | ........... | 
+| [LVM](./linux/lvm.md) | Yes | Disk | Poor-Quality | Minimal | 
+| [GNUPG](./linux/gpg.md) | Yes | Privacy | Not Bad | Almost | Give more Examples | 
+| [SSH](./linux/ssh.md) | Yes | Security | Bad | No | Give more Examples | 
+| [IPTables](./linux/iptables.md) | Yes | Security | Bad  | No | Comment Configs | 
+| [WPA_Supplicant](./linux/wpa_supplicant.md) | Yes | Wifi | Bad | No | ............ | 
 
-| [iptables](./linux/iptables.md) | [wpa_supplicant](./linux/wpa_supplicant.md) |
+<h3> Dev Tools </h3>
 
-<h3> Web Develop </h3>
+| Tools | Learning | Category |  Documentation | Complete  | Notes | 
+|-------|-------|-------|-------|-------|-------|
+| [Git](./linux/git.md) | Yes | WebDev | Not Bad | Minimal | Code-Version-Control |  
+| [ModeJS](./web/nodejs.md)  | Yes | WebDev | Bad | No | ...... |  
+| [JavaScript](.//web/javascript.md) | Yes | WebDev | Bad | No | .... | 
+| [CSS](./web/css.md) | Yes | WebDev | Bad | No | .... | 
+| [ExpressJS](./web/express.md) | Yes | WebDev | Bad | No | ... |  
+| [APIs](./web/apis.md) | Yes | WebAPIs | Bad | No | ... | 
 
-## | [nodejs](./web/nodejs.md) | [JavaScript](.//web/javascript.md) | [css](./web/css.md) | [apis](./web/apis.md) |
+<h3> Monkey Notes </h3>
 
-| [Naughty Thoughts](./github/thoughts.md) | [paranoia](./linux/paranoid.md) |
-
-<h3> Learning </h3>
-
-| [expressjs](./web/express.md) |
-
-<h3> Projects </h3>
-
-| [World Cleaner Development Notes](./dev/project.md) |
+| Thoughts | Bad | Good | 
+|------|------|------|
+| [Naughty Thoughts](./github/thoughts.md) | False | True |   
+| [Paranoia](./linux/paranoid.md) | True | False | 
