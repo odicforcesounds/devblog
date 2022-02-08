@@ -1,28 +1,26 @@
 ---
-tags: [ git, github, security, features, privacy ]
-
+tags: [git, github, security, features, privacy]
 ---
-
 
 <h1> Thinking About... </h1>
 
 <h2> Github.com</h2>
 
 1. If user use ssh, don't need to use a token.
-2. If User is using a token, he/she can modify .gitconfig with any email and that email is used to sign push request. 
-  
+2. If User is using a token, he/she can modify .gitconfig with any email and that email is used to push request.
+
 ```sh
  This lead 'us' to think:
 ```
-- Monkey can create one repository and emulate several contributions 
-       
+
+- Monkey can create one repository and emulate several contributions
       - Users may exist or not : email@email.com
 
 <h3> Monkey Naughty Thoughts </h3>
 
-- Monkey can have one repo with several contributions from different users.. 
+- Monkey can have one repo with several contributions from different users..
 
-        - Oh.. this repository have a lot of contributions...  
+        - Oh.. this repository have a lot of contributions...
 
 - Monkey can be other user.. ( hidden / visual-proxy ) to the eyes of other users / visitants.
 
