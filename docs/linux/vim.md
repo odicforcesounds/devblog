@@ -1,14 +1,14 @@
 # vim
 
-Keep it Stupid Simple 
+Keep it Stupid Simple
 
-Install vim 
+Install vim
 
 ```sh
-# Debian based 
-$ sudo apt install vim 
-# Gentoo based 
-$ sudo emerge -av vim 
+# Debian based
+$ sudo apt install vim
+# Gentoo based
+$ sudo emerge -av vim
 ```
 
 Create folder and configurations file
@@ -21,14 +21,14 @@ $ touch vimrc
 $ vim vimrc
 ```
 
-Setup some default configurations and setup vim to use plugins. 
+Setup some default configurations and setup vim to use plugins.
 
 ```sh
 set nocompatible
 set encoding=UTF-8
 set fileencodings=utf-8,latin1
 set termencoding=utf-8
-set number 
+set number
 set history=999
 set undolevels=999
 set autoread
@@ -91,3 +91,13 @@ set tm=500
 set showcmd
 set matchtime=2
 ```
+
+List or Recommended Plugins for Vim:
+
+| Editor | Plugin        | Objective        | Github |
+| ------ | ------------- | ---------------- | ------ |
+| vim    | Fugitive      | Manage Git       | .....  |
+| vim    | NerdTree      | Manage Files     | ....   |
+| vim    | NerdCommenter | Comment lines    | ....   |
+| vim    | tmuxline      | Tmux Integration | ....   |
+| vim    | CoC           | Auto-complete    | ....   |
