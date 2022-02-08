@@ -12,11 +12,12 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 
 <h3> User-Tools </h3>
 
-| Tools                   | Linux | Web | Learning | Category  | Documentation | Complete | Notes           |
-| ----------------------- | ----- | --- | -------- | --------- | ------------- | -------- | --------------- |
-| [Vim](./linux/vim.md)   | Yes   | No  | Yes      | Editor    | Bad           | No       | Comment Configs |
-| [Tmux](./linux/tmux.md) | Yes   | No  | Ok       | Emulation | Bad           | No       | Comment Configs |
-| [Mutt](./linux/mutt.md) | Yes   | No  | Ok       | Email     | Bad           | No       | Comment Configs |
+| Tools                           | Linux | Web | Learning | Category  | Documentation | Complete | Notes           |
+| ------------------------------- | ----- | --- | -------- | --------- | ------------- | -------- | --------------- |
+| [Vim](./linux/vim.md)           | Yes   | No  | Yes      | Editor    | Bad           | No       | Comment Configs |
+| [Tmux](./linux/tmux.md)         | Yes   | No  | Ok       | Emulation | Bad           | No       | Comment Configs |
+| [Mutt](./linux/mutt.md)         | Yes   | No  | Ok       | Email     | Bad           | No       | Comment Configs |
+| [Calcurse](./linux/calcurse.md) | Yes   | No  | Ok       | Calendar  | None          | No       | Add something   |
 
 <h3> Security Tools </h3>
 
