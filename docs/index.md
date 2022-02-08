@@ -35,7 +35,7 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | [HTTP](./protocol/http.md) | Yes      | Protocol | Not Bad       | Mimimal  | add more details   |
 | [SSH](./protocol/ssh.md)   | Yes      | Security | Bad           | No       | Give more Examples |
 
-<h3> Dev Tools </h3>
+<h3> Web Development </h3>
 
 | Tools                              | Learning | Category | Documentation | Complete | Notes                |
 | ---------------------------------- | -------- | -------- | ------------- | -------- | -------------------- |
