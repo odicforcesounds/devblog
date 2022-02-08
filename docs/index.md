@@ -25,16 +25,21 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | [CryptSetup](./linux/cryptsetup.md)         | Yes      | Encryption | Poor-Quality  | Minimal | ...........        |
 | [LVM](./linux/lvm.md)                       | Yes      | Disk       | Poor-Quality  | Minimal |
 | [GNUPG](./linux/gpg.md)                     | Yes      | Privacy    | Not Bad       | Almost  | Give more Examples |
-| [SSH](./linux/ssh.md)                       | Yes      | Security   | Bad           | No      | Give more Examples |
 | [IPTables](./linux/iptables.md)             | Yes      | Security   | Bad           | No      | Comment Configs    |
 | [WPA_Supplicant](./linux/wpa_supplicant.md) | Yes      | Wifi       | Bad           | No      | ............       |
+
+<h3> Protocols </h3>
+
+| Tools                      | Learning | Category | Documentation | Complete | Notes              |
+| -------------------------- | -------- | -------- | ------------- | -------- | ------------------ |
+| [HTTP](./protocol/http.md) | Yes      | Protocol | Not Bad       | Mimimal  | add more details   |
+| [SSH](./protocol/ssh.md)   | Yes      | Security | Bad           | No       | Give more Examples |
 
 <h3> Dev Tools </h3>
 
 | Tools                              | Learning | Category | Documentation | Complete | Notes                |
 | ---------------------------------- | -------- | -------- | ------------- | -------- | -------------------- |
 | [Git](./linux/git.md)              | Yes      | WebDev   | Not Bad       | Minimal  | Code-Version-Control |
-| [HTTP](./protocol/http.md)         | Yes      | Protocol | Not Bad       | Mimimal  | add more details     |
 | [ModeJS](./web/nodejs.md)          | Yes      | WebDev   | Bad           | No       | ......               |
 | [JavaScript](.//web/javascript.md) | Yes      | WebDev   | Bad           | No       | ....                 |
 | [CSS](./web/css.md)                | Yes      | WebDev   | Bad           | No       | ....                 |
