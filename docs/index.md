@@ -6,46 +6,46 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 
 <h3> Linux Distro </h3>
 
-| Tools                         | Linux | Web | Learning | Category | Documentation | Complete | Notes |
-| ----------------------------- | ----- | --- | -------- | -------- | ------------- | -------- | ----- |
-| [Gentoo](./distros/gentoo.md) | Yes   | No  | Ok       | OS       | Poor-Quality  | Minimal  | ....  |
+| Tools                         | Linux | Documentation | Complete     | Notes   |
+| ----------------------------- | ----- | ------------- | ------------ | ------- | ---- |
+| [Gentoo](./distros/gentoo.md) | x     | OS            | Poor-Quality | Minimal | .... |
 
 <h3> User-Tools </h3>
 
-| Tools                           | Linux | Web | Learning | Category  | Documentation | Complete | Notes           |
-| ------------------------------- | ----- | --- | -------- | --------- | ------------- | -------- | --------------- |
-| [Vim](./linux/vim.md)           | Yes   | No  | Yes      | Editor    | Bad           | No       | Comment Configs |
-| [Tmux](./linux/tmux.md)         | Yes   | No  | Ok       | Emulation | Bad           | No       | Comment Configs |
-| [Mutt](./linux/mutt.md)         | Yes   | No  | Ok       | Email     | Bad           | No       | Comment Configs |
-| [Calcurse](./linux/calcurse.md) | Yes   | No  | Ok       | Calendar  | None          | No       | Add something   |
+| Tools                           | Linux | Category  | Documentation | Notes           |
+| ------------------------------- | ----- | --------- | ------------- | --------------- |
+| [Vim](./linux/vim.md)           | Yes   | Editor    | Bad           | Comment Configs |
+| [Tmux](./linux/tmux.md)         | Yes   | Emulation | Bad           | Comment Configs |
+| [Mutt](./linux/mutt.md)         | Yes   | Email     | Bad           | Comment Configs |
+| [Calcurse](./linux/calcurse.md) | Yes   | Calendar  | None          | Add something   |
 
 <h3> Security Tools </h3>
 
-| Tools                                       | Learning | Category   | Documentation | Status  | Notes              |
-| ------------------------------------------- | -------- | ---------- | ------------- | ------- | ------------------ |
-| [CryptSetup](./linux/cryptsetup.md)         | Yes      | Encryption | Poor-Quality  | Minimal | ...........        |
-| [LVM](./linux/lvm.md)                       | Yes      | Disk       | Poor-Quality  | Minimal |
-| [GNUPG](./linux/gpg.md)                     | Yes      | Privacy    | Not Bad       | Almost  | Give more Examples |
-| [IPTables](./linux/iptables.md)             | Yes      | Security   | Bad           | No      | Comment Configs    |
-| [WPA_Supplicant](./linux/wpa_supplicant.md) | Yes      | Wifi       | Bad           | No      | ............       |
+| Tools                                       | Category   | Documentation | Notes              |
+| ------------------------------------------- | ---------- | ------------- | ------------------ |
+| [CryptSetup](./linux/cryptsetup.md)         | Encryption | Poor-Quality  | ...........        |
+| [LVM](./linux/lvm.md)                       | Disk       | Poor-Quality  |
+| [GNUPG](./linux/gpg.md)                     | Privacy    | Not Bad       | Give more Examples |
+| [IPTables](./linux/iptables.md)             | Security   | Bad           | Comment Configs    |
+| [WPA_Supplicant](./linux/wpa_supplicant.md) | Wifi       | Bad           | ............       |
 
 <h3> Protocols </h3>
 
-| Tools                      | Learning | Category | Documentation | Complete | Notes              |
-| -------------------------- | -------- | -------- | ------------- | -------- | ------------------ |
-| [HTTP](./protocol/http.md) | Yes      | Protocol | Not Bad       | Mimimal  | add more details   |
-| [SSH](./protocol/ssh.md)   | Yes      | Security | Bad           | No       | Give more Examples |
+| Tools                      | Category | Documentation | Notes              |
+| -------------------------- | -------- | ------------- | ------------------ |
+| [HTTP](./protocol/http.md) | Protocol | Not Bad       | add more details   |
+| [SSH](./protocol/ssh.md)   | Security | Bad           | Give more Examples |
 
 <h3> Web Development </h3>
 
-| Tools                              | Learning | Category | Documentation | Complete | Notes                |
-| ---------------------------------- | -------- | -------- | ------------- | -------- | -------------------- |
-| [Git](./linux/git.md)              | Yes      | WebDev   | Not Bad       | Minimal  | Code-Version-Control |
-| [ModeJS](./web/nodejs.md)          | Yes      | WebDev   | Bad           | No       | ......               |
-| [JavaScript](.//web/javascript.md) | Yes      | WebDev   | Bad           | No       | ....                 |
-| [CSS](./web/css.md)                | Yes      | WebDev   | Bad           | No       | ....                 |
-| [ExpressJS](./web/express.md)      | Yes      | WebDev   | Bad           | No       | ...                  |
-| [APIs](./web/apis.md)              | Yes      | WebAPIs  | Bad           | No       | ...                  |
+| Tools                              | Category | Documentation | Complete | Notes                |
+| ---------------------------------- | -------- | ------------- | -------- | -------------------- |
+| [Git](./linux/git.md)              | WebDev   | Not Bad       | Minimal  | Code-Version-Control |
+| [ModeJS](./web/nodejs.md)          | WebDev   | Bad           | No       | ......               |
+| [JavaScript](.//web/javascript.md) | WebDev   | Bad           | No       | ....                 |
+| [CSS](./web/css.md)                | WebDev   | Bad           | No       | ....                 |
+| [ExpressJS](./web/express.md)      | WebDev   | Bad           | No       | ...                  |
+| [APIs](./web/apis.md)              | WebAPIs  | Bad           | No       | ...                  |
 
 <h3> Monkey Notes </h3>
 
