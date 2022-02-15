@@ -1,8 +1,8 @@
 <h2> Prepare Lab to Develop </h2>
 
-1. Machine to code: any distro / OS
-2. Machine to test: linux
-3. Machine to host: linux
+1. Machine? to code: any distro / OS
+2. Machine? to test: linux
+3. Machine? to host: linux
 
 ---
 
@@ -31,9 +31,11 @@ This machine needs to run the web-server and database.
 
 <h3>Machine to Host </h3>
 
-``` 
+```
 This host is used to give us extra space to backup lab files ( git-commits )
 ```
+
 - IP: 192.168.200.200
 - Sharing ssh-server ( local-git-server )
-- Not necessarily a public server, but a private one. 
+- Not necessarily a public server, but a private one.
+
