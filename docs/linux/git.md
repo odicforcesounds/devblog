@@ -132,3 +132,5 @@ Clone missing submodules
 ```sh
 $ git submodule update --init --recursive
 ```
+
+Check [Naughty Monkey Thoughts](../github/thoughts.md)
