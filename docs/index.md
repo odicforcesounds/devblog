@@ -53,3 +53,7 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | ---------------------------------------- | ----- | ----- |
 | [Naughty Thoughts](./github/thoughts.md) | False | True  |
 | [Paranoia](./linux/paranoid.md)          | True  | False |
+
+<h3> Lab to test everything Monkey needs </h3>
+
+[Monkey Labs](./labs/develop/lab_planV1.md)
