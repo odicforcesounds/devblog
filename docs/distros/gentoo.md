@@ -114,16 +114,16 @@ LC_MESSAGES=C
 Recommended Packges:
 
 ```
-app-editors/vim
-app-misc/abook
-app-misc/tmux
-app-misc/vifm
-app-office/calcurse
-app-portage/eix
-app-portage/gentoolkit
-app-portage/portage-utils
-app-text/grip
-dev-vcs/git
+app-editors/vim # euse -p app-editors/vim -E acl crypt cscope nls python terminal vim-pager
+app-misc/abook # default
+app-misc/tmux # euse -p app-misc/tmux -E vim-syntax
+app-misc/vifm # euse -p app-misc/vifm -E extended-keys magic vim vim-syntax
+app-office/calcurse #
+app-portage/eix #  nls
+app-portage/gentoolkit # python
+app-portage/portage-utils # -E openmp qmanifest qtengrity
+app-text/grip # python
+dev-vcs/git #
 mail-client/mutt
 mail-mta/msmtp
 media-video/ffmpeg
