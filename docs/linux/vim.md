@@ -23,6 +23,14 @@ $ vim vimrc
 
 Setup some default configurations and setup vim to use plugins.
 
+Monkey use specific USE flags for vim ( you may wish to add or remove them )
+
+```sh
+euse -p app-editors/vim -E X acl crypt gpm cscope python terminal vim-pager
+```
+
+Gentoo give you the option to install vim-plugins using portage, which it will automaticly update them and set them up.
+
 ```sh
 set nocompatible
 set encoding=UTF-8
