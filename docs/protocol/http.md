@@ -21,6 +21,7 @@
 
 <b>GET</b>: Ask Data to Server <br>
 <b>POST</b>: Send Data to Server<br>
+<b>PUT</b>: Ask Server to modify data <br>
 <b>DELETE</b>: Ask Server to delete Data<br>
 
 <h2> HTTP Header </h2>
