@@ -59,6 +59,5 @@ dosfstools git newsboat flawfinder pscan
 - https://tldp.org/HOWTO/Firewall-HOWTO.html
 - https://tldp.org/HOWTO/Secure-Programs-HOWTO/
 18. Don't let root ssh into the machine
-- https://tldp.org/HOWTO/Security-HOWTO/
 - 'vim /etc/ssh/sshd config': Permit root Login: NO
 
