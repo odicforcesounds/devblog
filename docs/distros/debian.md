@@ -11,14 +11,14 @@ Minimal instalation guide for old laptops
 6. Setup Partitions using cfdisk
 - For paranoid security we start defining several partitions. 
 - Lets imagine we have a 512GB Hard drive
-  1. /boot/ - 200MB - IF BIOS EXT2/3/4 - IF UEFI FAT32
-  2. / - 20GB EXT4
-  3. /var - 20GB EXT4
-  4. /var/log - 20GB EXT4
-  5. /usr - 20GB EXT4
-  6. /tmp - 10GB EXT4
-  7. none - 2GB SWAP 
-  8. /home - 100%FREE 
+  - /boot/ - 200MB - IF BIOS EXT2/3/4 - IF UEFI FAT32
+  - / - 20GB EXT4
+  - /var - 20GB EXT4
+  - /var/log - 20GB EXT4
+  - /usr - 20GB EXT4
+  - /tmp - 10GB EXT4
+  - none - 2GB SWAP 
+  - /home - 100%FREE 
 7. Continue 
 - We don't select a default desktop 
 - Select SSH Server to boot with by default
