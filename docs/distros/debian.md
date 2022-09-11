@@ -39,7 +39,7 @@ Install more useful software for our laptop
 ```sh
 apt install \ 
 cpufreq iptables tuned htop iotop strace lm-sensors fancontrol i2c-tools \
-dosfstools git newsboat flawfinder pscan 
+dosfstools git newsboat flawfinder pscan mutt msmtp isync irssi lynx elinks gnupg 
 ```
 12. Manager boot services with: 'update-rc.d' / 'service --status-all'
 13. Setup cpufreq with: 'cpufreq-set -g powersave'

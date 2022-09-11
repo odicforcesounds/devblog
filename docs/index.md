@@ -6,9 +6,10 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 
 <h3> Linux Distro </h3>
 
-| Tools                         | Linux | Documentation | Complete     | Notes   |
-| ----------------------------- | ----- | ------------- | ------------ | ------- | ---- |
-| [Gentoo](./distros/gentoo.md) | x     | OS            | Poor-Quality | Minimal | .... |
+| Tools                         | Linux | Documentation | Complete | 
+| ----------------------------- | ----- | ------------ | ------- |
+| [Gentoo](./distros/gentoo.md) | x     | Poor-Quality | Minimal-installation |
+| [Debian](./distros/debian.md) | x | Not-bad | Minimal-installation | 
 
 <h3> User-Tools </h3>
 
