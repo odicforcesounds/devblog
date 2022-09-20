@@ -39,6 +39,6 @@ vim /etc/ssh/sshd_config
 - Recommended:
 
   1. Forbid root logins
-  2. copy your public key to ssh-server
+  2. copy your public key to ssh-server with 'ssh-copy-id'
   3. Forbid logins with password
   4. accept only known public keys connections
