@@ -1,4 +1,9 @@
-Install nodejs from nodejs.org
+# Install nodejs from nodejs.org
+
+## WAIT
+
+use **NVM** to install only into your user $HOME 
+
 
 - Node is based in JavaScript
 
