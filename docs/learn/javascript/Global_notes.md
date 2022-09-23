@@ -7,7 +7,7 @@ O JavaScript pode ser usado para qualquer plataforma e para qualquer fim. Desde 
 - Front-end: Manipula a interface gráfica dos componentes do site usando o **V8** ou o **SpiderMonkey** 
 - Back-end: Apresenta os dados de uma base-de-dados e apresenta-os no site usando o **NodeJS**
 
-## JavaScript para outros dispositovos
+## JavaScript para outros dispositivos
 
 - Android e Apple: Uso do **NodeJ** com a framework **React-Native**
 - PC: ( desktop ou servidor ) Usando somente o **NodeJS**
