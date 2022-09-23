@@ -43,7 +43,7 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | ---------------------------------- | -------- | ------------- | -------- | -------------------- |
 | [Git](./linux/git.md)              | WebDev   | Not Bad       | Minimal  | Code-Version-Control |
 | [ModeJS](./web/nodejs.md)          | WebDev   | Bad           | No       | ......               |
-| [JavaScript](../learn/javascript/Global_notes.md) | WebDev   | not bad           | No       | em Português                 |
+| [JavaScript](./learn/javascript/Global_notes.md) | WebDev   | not bad           | No       | em Português                 |
 | [CSS](./web/css.md)                | WebDev   | Bad           | No       | ....                 |
 | [ExpressJS](./web/express.md)      | WebDev   | Bad           | No       | ...                  |
 | [APIs](./web/apis.md)              | WebAPIs  | Bad           | No       | ...                  |
