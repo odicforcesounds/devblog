@@ -44,59 +44,14 @@ O JavaScript pode ser usado para qualquer plataforma e para qualquer fim. Desde 
 
 - Valores Primitivos: 
 
-1. Undefined: o valor não foi definido: ( resultado constante do fim de cada ciclo no JavaScript )<br>
-2. Null: valor é nulo. <br>
-3. Boolean: valor é verdadeiro ou falso <br> 
-4. Number: valor numérico  <br>
-5. String: conteudo entre " " ou \' \',  isto é, "texto" (conjunto de caractéres com ou sem espaço entre eles)<br>  
-6. NaN: função do JavaScript que declara que um valor não é um número <br>
-7. BigInt: valor primitivo que corresponde a um valor numérico de precisão<br>
-8. infinite: função do Javascript que declara que um valor é infinito <br>
-
-### Definição da estrutura de Objectos em JavaScript 
-
-- Uma coleção de propriedades que tem um único prototype-object associado. Cada propriedade (chave) **key**, tem um valor associado. 
-
-```js
-let todoList = {
-    a: "Arrumar e limpar",
-    b: "Organizar e Estruturar",
-    c: "Definir e Planificar",
-    d: "Trabalhar e Comprar"
-}
-console.log(todoList)
-```
-
-- Note-se que 
-
-
-```js
-const ob = new Object(); 
-ob.name = "Oscar";
-ob.name = ""
-ob.do = function() {
-    console.log(`do something ${ob.name} with your ${ob.email}` )
-    console.log(ob)
-  };
-ob.do(); 
-```
-
-1. ordinary object: é um objecto que usa os métodos internos essenciais que têm suporte em todos os objectos. <br>
-2. exotic object: é um objecto que não tem um comportamento estandarizado para um ou mais métodos internos essenciais. <br>
-3. standart object: é um objecto que usa a semantica definida pela especificação do ECMAScript. <br>
-4. built-in object: é um objecto que também é um **constructor** <br>
-5. propriety: parte do objecto que associa uma chave a um valor. <br>
-6. attribute: valor interno que define uma característica de uma propriedade.<br>
-7. construtor: Cria e inicia objectos. A propriedade de um prototype-constructor é um prototype-object que é usado para receber propriedades de outros objectos e partilha-los. 
-8. prototype: Objecto que partilha propriedades de outros objectos.
-
-### Funções 
-
-- function(): propriedade de um objecto que poderá ser envocado como uma sub-rotina.
-
-1. built-in function: é um built-in-Object que é uma função. <br>
-2. method: função que é o valor da propriedade. Quando uma função é chamada como método de um objecto, o objecto é partilhado para a função como o (seu) (**this**) valor. <br>
-3. built-in method: é uma built-in-function.
+1. Undefined: o valor não foi definido: ( resultado constante do fim de cada ciclo no JavaScript )
+2. Null: valor é nulo. 
+3. Boolean: valor é verdadeiro ou falso  
+4. Number: valor numérico  
+5. String: conteudo entre " " ou \' \',  isto é, "texto" (conjunto de caractéres com ou sem espaço entre eles)  
+6. NaN: função do JavaScript que declara que um valor não é um número 
+7. BigInt: valor primitivo que corresponde a um valor numérico de precisão
+8. infinite: função do Javascript que declara que um valor é infinito 
 
 ## Operadores 
 
@@ -174,4 +129,87 @@ var var = var2; // ERRO ( o nome 'var' não pode ser usado para declarar uma var
 | with | | 
 | yield | | 
 
+### Funções 
 
+- function(): propriedade de um objecto que poderá ser envocado como uma sub-rotina.
+
+1. built-in function: é um built-in-Object que é uma função. 
+2. method: função que é o valor da propriedade. Quando uma função é chamada como método de um objecto, o objecto é partilhado para a função como o (seu) (**this**) valor. 
+3. built-in method: é uma built-in-function.
+
+### Definição da estrutura de Objectos em JavaScript 
+
+- Uma coleção de propriedades que tem um único prototype-object associado. Cada propriedade (chave) **key**, tem um valor associado. 
+
+```js
+let todoList = {
+    a: "Arrumar e limpar",
+    b: "Organizar e Estruturar",
+    c: "Definir e Planificar",
+    d: "Trabalhar e Comprar"
+}
+console.log(todoList)
+```
+
+1. ordinary object: é um objecto que usa os métodos internos essenciais que têm suporte em todos os objectos. 
+2. exotic object: é um objecto que não tem um comportamento estandarizado para um ou mais métodos internos essenciais. 
+3. standart object: é um objecto que usa a semantica definida pela especificação do ECMAScript. 
+4. built-in object: é um objecto que também é um **constructor** 
+
+- Para construir um objecto, pode-se usar a built-in-function **new Object()**. 
+
+```js
+const ob = new Object(); 
+ob.name = "Oscar";
+ob.email = "funky@monkey.mail"
+ob.do = function() {
+    console.log(`${ob.name}: do something with your ${ob.email}` )
+    console.log(ob)
+  };
+ob.do(); 
+```
+
+- Note-se que caso o objecto seja a cópia de outro objecto anterior criado, a comparação entre os dois objectos é sempre verdadeira ( ambos são iguais ) e quando o primeiro muda, o segundo também. 
+
+```js 
+const ab = new Object();
+ab.planet = "MonkeyPlanet"
+ab.galaxy = "MonkeyUniverse"
+abFire = function() {
+    console.log("I am the Fire!")
+    console.log(`We are in ${ab.planet} of ${ab.galaxy}`)
+}
+ab.abFire();
+
+eb = ab; 
+console.log(`Is eb === ab? ${ab === eb}`) // True 
+
+```
+
+5. propriety: parte do objecto que associa uma chave a um valor. 
+6. attribute: valor interno que define uma característica de uma propriedade.
+7. construtor: Cria e inicia objectos. A propriedade de um prototype-constructor é um prototype-object que é usado para receber propriedades de outros objectos e partilha-los. 
+8. prototype: Objecto que partilha propriedades de outros objectos.
+
+### Definição da estrutura de Arrays em JavaScript 
+
+- Um Array é uma lista de elementos sem chave associada representada por []
+
+```js
+let list = ['sapatos', 'piugas', 'cuecas', 'champô', 'sabonete', 'perfume']
+``` 
+
+- O mesmo acontece entre arrays que são a cópia ou o clone de outro anteriormente criado. 
+
+```js 
+let l = ['a', 'b', 'c'];
+L = l; 
+
+console.log(`L is equal to l? ${L === l}`); // true 
+```
+
+--- 
+
+## Princípios de desenvolvimento
+
+- Referencia a alguns princípios do desenvolvimento de código, através do design de padrões. Design Patterns. 
