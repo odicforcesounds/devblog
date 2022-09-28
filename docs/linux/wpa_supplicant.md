@@ -18,10 +18,20 @@ network={
 }
 ``` 
 
-Then connect to your network
+Then "say hi so you can be recognized" to our-Wifi-Router
 
 ```sh
 wpa_supplicant -B -c /etc/wpa_supplicant/wpa_supplicant.conf -i wlan0
-sleep 3 
+```
+
+Connect using DHCP
+```bash 
 dhclient -v wlan0
 ```
+
+Test Connection
+
+```bash 
+ping -c google.com 
+```
+
