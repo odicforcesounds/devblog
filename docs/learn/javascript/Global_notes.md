@@ -5,7 +5,7 @@ O JavaScript pode ser usado para qualquer plataforma e para qualquer fim. Desde 
 ## Javascript para a web
 
 - Front-end: Manipula a interface gráfica dos componentes do site usando o **V8** ou o **SpiderMonkey** 
-- Back-end: Apresenta os dados de uma base-de-dados e apresenta-os no site usando o **NodeJS**
+- Back-end: Manipula os dados de uma base-de-dados e apresenta-os no site usando o **NodeJS**
 
 ## JavaScript para outros dispositivos
 
@@ -51,7 +51,7 @@ O JavaScript pode ser usado para qualquer plataforma e para qualquer fim. Desde 
 5. String: conteudo entre " " ou \' \',  isto é, "texto" (conjunto de caractéres com ou sem espaço entre eles)  
 6. NaN: função do JavaScript que declara que um valor não é um número 
 7. BigInt: valor primitivo que corresponde a um valor numérico de precisão
-8. infinite: função do Javascript que declara que um valor é infinito 
+8. Infinity: função do Javascript que declara que um valor é infinito 
 
 ## Operadores 
 
@@ -133,9 +133,27 @@ var var = var2; // ERRO ( o nome 'var' não pode ser usado para declarar uma var
 
 - function(): propriedade de um objecto que poderá ser envocado como uma sub-rotina.
 
-1. built-in function: é um built-in-Object que é uma função. 
+```js
+let foo = function() {
+    if(!true){
+        console.log("False")
+      } else {
+          console.log("True")
+      }
+}
+foo(); 
+```
+
+1. built-in-function: é um built-in-Object que é uma função. 
+
+```js 
+let li = ['a', 'b', 'c', 'd']
+li.push('e')
+console.log(li);
+```
+
 2. method: função que é o valor da propriedade. Quando uma função é chamada como método de um objecto, o objecto é partilhado para a função como o (seu) (**this**) valor. 
-3. built-in method: é uma built-in-function.
+3. built-in-method: é uma built-in-function.
 
 ### Definição da estrutura de Objectos em JavaScript 
 
@@ -151,10 +169,10 @@ let todoList = {
 console.log(todoList)
 ```
 
-1. ordinary object: é um objecto que usa os métodos internos essenciais que têm suporte em todos os objectos. 
-2. exotic object: é um objecto que não tem um comportamento estandarizado para um ou mais métodos internos essenciais. 
-3. standart object: é um objecto que usa a semantica definida pela especificação do ECMAScript. 
-4. built-in object: é um objecto que também é um **constructor** 
+1. ordinary-object: é um objecto que usa os métodos internos essenciais que têm suporte em todos os objectos. 
+2. exotic-object: é um objecto que não tem um comportamento estandarizado para um ou mais métodos internos essenciais. 
+3. standart-object: é um objecto que usa a semantica definida pela especificação do ECMAScript. 
+4. built-in-object: é um objecto que também é um **constructor** 
 
 - Para construir um objecto, pode-se usar a built-in-function **new Object()**. 
 
@@ -182,14 +200,13 @@ abFire = function() {
 ab.abFire();
 
 eb = ab; 
-console.log(`Is eb === ab? ${ab === eb}`) // True 
-
+console.log(`Is eb === ab? ${ab === eb}`) // true 
 ```
 
-5. propriety: parte do objecto que associa uma chave a um valor. 
-6. attribute: valor interno que define uma característica de uma propriedade.
-7. construtor: Cria e inicia objectos. A propriedade de um prototype-constructor é um prototype-object que é usado para receber propriedades de outros objectos e partilha-los. 
-8. prototype: Objecto que partilha propriedades de outros objectos.
+5. **Propriety**: parte do objecto que associa uma chave a um valor: **ab.planet**
+6. **Attribute**: valor interno que define uma característica de uma propriedade: **MonkeyPlanet**
+7. **Construtor**: Cria e inicia objectos. A propriedade de um prototype-constructor é um prototype-object que é usado para receber propriedades de outros objectos e partilha-los. 
+8. **Prototype**: Objecto que partilha propriedades de outros objectos. O DOM é um grande objecto repleto de objectos prototype. Todos os objectos têm um objecto prototype associado. 
 
 ### Definição da estrutura de Arrays em JavaScript 
 
@@ -208,8 +225,27 @@ L = l;
 console.log(`L is equal to l? ${L === l}`); // true 
 ```
 
---- 
+## Classes 
 
-## Princípios de desenvolvimento
+- Uma classe descreve o que um objecto poderá conter, mas não é o objecto.  Uma classe descreve o nome da classe, os atributos da mesma e os seus comportamentos ( funções ).
 
-- Referencia a alguns princípios do desenvolvimento de código, através do design de padrões. Design Patterns. 
+```js 
+class Pessoa {
+  nome = this.nome; 
+  email = this.email;
+}
+
+let p = new Pessoa(); 
+p.nome = "Mofoo"
+p.email = "Jufoo"
+console.log(p)
+```
+
+### Existem 4 princípios usados em programação de objectos: 
+
+1. **Abstraction**: Abstração de todos os detalhes que são desnecessários -> Cadeira -> Todos os detalhes não essenciais são ignorados. 
+2. **Encapsulation**: A ideia de, fechar, cobrir, guardar, privar, privatizar, não partilhar, restringir. 
+3. **Polymorphism**: Muitas formas -> Em JS pode-se somar números ou concatenar caractéres. Um único símbolo, várias funções que dependem do tipo de dados. Podem ser atributos, funções ou o prototype da função. 
+4. **Inheritance**: É a ideia de copia total dos atributos de uma classe, para criar uma nova classe. 
+
+

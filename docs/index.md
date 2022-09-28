@@ -42,7 +42,7 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | Tools                              | Category | Documentation | Complete | Notes                |
 | ---------------------------------- | -------- | ------------- | -------- | -------------------- |
 | [Git](./linux/git.md)              | WebDev   | Not Bad       | Minimal  | Code-Version-Control |
-| [ModeJS](./web/nodejs.md)          | WebDev   | Bad           | No       | ......               |
+| [NodeJS](./web/nodejs.md)          | WebDev   | Bad           | No       | ......               |
 | [JavaScript](./learn/javascript/Global_notes.md) | WebDev   | not bad           | No       | em Português                 |
 | [CSS](./web/css.md)                | WebDev   | Bad           | No       | ....                 |
 | [ExpressJS](./web/express.md)      | WebDev   | Bad           | No       | ...                  |
@@ -54,6 +54,7 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | ---------------------------------------- | ----- | ----- |
 | [Naughty Thoughts](./github/thoughts.md) | False | True  |
 | [Paranoia](./linux/paranoid.md)          | True  | False |
+| [Cool Projects](./web/stuff.md) | False | True | 
 
 <h3> Lab to test everything Monkey needs </h3>
 
