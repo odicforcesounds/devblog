@@ -1,6 +1,8 @@
 # Bash and shell scripts
 
-Use scripts to automate your terminal use-cases 
+Use scripts to automate your terminal use-cases
+
+- Check Your Personal Public and Local IP Address  
 
 ```Bash
 #!/bin/bash 
@@ -12,11 +14,11 @@ echo "Your Private IP address is:" $ipc
 echo "Your Public IP address is:" $ipb
 ```
 
-Other example 
+- Other example to automate wifi manual connection using [WPA Supplicant](./wpa_supplicant.md)
 
 ```bash 
 #!/bin/bash
-WIFI_CARD="wlp2s0"
+WIFI_CARD="wlan0"
 WIFI_CONFIG="/etc/wpa_supplicant/wpa_supplicant.conf"
 # kill -9 $(pidof wpa_supplicant)
 # kill -9 $(pidof dhclient)
@@ -29,5 +31,10 @@ sleep 2
 dhclient -v $WIFI_CARD
 ```
 
+- Ohter example to Record your desktop using **FFMPEG** with ALSA 
 
+```bash 
+#!/bin/sh
+ffmpeg -video_size 1920x1080 -framerate 25 -f x11grab -i :0.0 -f alsa -ac 2 -i hw:0 output.mkv
+``` 
 
