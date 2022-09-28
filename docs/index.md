@@ -16,8 +16,8 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | Tools                           | Linux | Category  | Documentation | Notes           |
 | ------------------------------- | ----- | --------- | ------------- | --------------- |
 | [Vim](./linux/vim.md)           | Yes   | Editor    | Bad           | Comment Configs |
-| [Tmux](./linux/tmux.md)         | Yes   | Emulation | Bad           | Comment Configs |
-| [Mutt](./linux/mutt.md)         | Yes   | Email     | Bad           | Comment Configs |
+| [Tmux](./linux/tmux.md)         | Yes   | Emulation | Not-bad           | Comment Configs |
+| [Mutt](./linux/mutt.md)         | Yes   | Email     | Not-bad      | Comment Configs |
 | [Calcurse](./linux/calcurse.md) | Yes   | Calendar  | None          | Add something   |
 
 <h3> Security Tools </h3>
@@ -41,8 +41,8 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 
 | Tools                              | Category | Documentation | Complete | Notes                |
 | ---------------------------------- | -------- | ------------- | -------- | -------------------- |
-| [Git](./linux/git.md)              | WebDev   | Not Bad       | Minimal  | Code-Version-Control |
-| [NodeJS](./web/nodejs.md)          | WebDev   | Bad           | No       | ......               |
+| [Git](./linux/git.md)              | WebDev   | Not-bad       | Minimal  | Code-Version-Control |
+| [NodeJS](./web/nodejs.md)          | WebDev   | Not-bad           | Minimal       | keep it               |
 | [JavaScript](./learn/javascript/Global_notes.md) | WebDev   | not bad           | No       | em Português                 |
 | [CSS](./web/css.md)                | WebDev   | Bad           | No       | ....                 |
 | [ExpressJS](./web/express.md)      | WebDev   | Bad           | No       | ...                  |
