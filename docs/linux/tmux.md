@@ -30,3 +30,20 @@ setw -g status on
 
 bind r source-file ~/.tmux.conf
 ```
+
+Now use normal key-bindings
+
+- Ctrl+a c ( new tab )
+- Ctrl+a " ( horizontal split )
+- Ctrl+a % ( vertical split )
+- Ctrl+a x ( kill/close window )
+- Ctrl+a d ( detach/hide tmux )
+
+Remember to open tmux sessions
+
+```bash 
+tmux a 
+```
+
+Enjoy simplicity 
+
