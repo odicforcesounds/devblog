@@ -15,6 +15,13 @@ apt install ffmpeg mplayer -y
 mplayer -playlist Funky-funk-music
 ```
 
+# check Weather for your Time-Zone
+
+```bash 
+curl wttr.in 
+```
+
+
 1. https://stream.esiliati.org:8003/ [Podcast's]
 2. http://94.23.252.14:8067/listen.pls [Electronic Ambient Music]
 3. http://37.251.146.169:8300/listen.pls [Classic Music]
