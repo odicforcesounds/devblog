@@ -15,6 +15,7 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 
 | Tools                           | Linux | Category  | Documentation | Notes           |
 | ------------------------------- | ----- | --------- | ------------- | --------------- |
+| [BASH](./linux/bash.md) | Yes | Terminal | Not-Bad | .... |  
 | [Vim](./linux/vim.md)           | Yes   | Editor    | Bad           | Comment Configs |
 | [Tmux](./linux/tmux.md)         | Yes   | Emulation | Not-bad           | Comment Configs |
 | [Mutt](./linux/mutt.md)         | Yes   | Email     | Not-bad      | Comment Configs |
@@ -28,7 +29,7 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | [LVM](./linux/lvm.md)                       | Disk       | Poor-Quality  |
 | [GNUPG](./linux/gpg.md)                     | Privacy    | Not Bad       | Give more Examples |
 | [IPTables](./linux/iptables.md)             | Security   | Bad           | Comment Configs    |
-| [WPA_Supplicant](./linux/wpa_supplicant.md) | Wifi       | Bad           | ............       |
+| [WPA Supplicant](./linux/wpa_supplicant.md) | Wifi       | Bad           | ............       |
 
 <h3> Protocols </h3>
 
@@ -42,6 +43,7 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | Tools                              | Category | Documentation | Complete | Notes                |
 | ---------------------------------- | -------- | ------------- | -------- | -------------------- |
 | [Git](./linux/git.md)              | WebDev   | Not-bad       | Minimal  | Code-Version-Control |
+| [Pandoc](./linux/pandoc.md) | WebDev | Not-bad  | Mininal | good example | 
 | [NodeJS](./web/nodejs.md)          | WebDev   | Not-bad           | Minimal       | keep it               |
 | [JavaScript](./learn/javascript/Global_notes.md) | WebDev   | not bad           | No       | em Português                 |
 | [CSS](./web/css.md)                | WebDev   | Bad           | No       | ....                 |
