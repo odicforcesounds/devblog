@@ -22,9 +22,6 @@ WIFI_CARD="wlan0"
 WIFI_CONFIG="/etc/wpa_supplicant/wpa_supplicant.conf"
 # kill -9 $(pidof wpa_supplicant)
 # kill -9 $(pidof dhclient)
-sleep 2
-echo "wpa and dhclient process were killed"
-sleep 1 
 echo "starting connection using dhclient and wpa_supplicant"
 wpa_supplicant -B -c $WIFI_CONFIG -i $WIFI_CARD
 sleep 2
