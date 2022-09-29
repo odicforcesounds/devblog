@@ -1,3 +1,11 @@
+# Install Gentoo 
+
+- Format dist and define partitions
+- format partitions 
+- mount partitions 
+- start installation process 
+
+
 ```bash
 tar xpJf stage3-*.tar.xz --xattrs-include='*.*' --numeric-owner
 ```
