@@ -47,4 +47,6 @@ curl wttr.in
 1. https://matrix.org
 2. https://joinmatrix.org/servers/
 
+## More links to free Open Source Iniciatives 
+- https://codeberg.org/LinuxCafeFederation/awesome-alternatives
 
