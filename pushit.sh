@@ -12,6 +12,6 @@ sleep 1
 echo "ssh-key-id added"
 git add . 
 git commit -m "Make it Right for a better Ride"
-git push git@github.com:daoexpression/devblog
+git push --set-upstream git@github.com:daoexpression/devblog main
 echo "Push completed"
 sleep 3
