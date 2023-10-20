@@ -61,3 +61,9 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 <h3> Lab to test everything Monkey needs </h3>
 
 [Monkey Labs](./labs/develop/lab_planV1.md)
+
+<h3> Extra Stuff </h3>
+
+[ADD SSH](./linux/ADD_SSH.md) 
+[ADD GPG](./linux/ADD_GPG.md)
+
