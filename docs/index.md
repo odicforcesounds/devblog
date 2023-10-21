@@ -64,6 +64,5 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 
 <h3> Extra Stuff </h3>
 
-[ADD SSH](./linux/ADD_SSH.md) 
-[ADD GPG](./linux/ADD_GPG.md)
+- [Terrible Readings](./awesome/README.md) 
 
