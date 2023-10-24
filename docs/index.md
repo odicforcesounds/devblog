@@ -43,6 +43,8 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | Tools                              | Category | Documentation | Complete | Notes                |
 | ---------------------------------- | -------- | ------------- | -------- | -------------------- |
 | [Git](./linux/git.md)              | WebDev   | Not-bad       | Minimal  | Code-Version-Control |
+| [Python Version Control](./linux/python.md) | Python     | Not Bad       | Many Python Versions and Libraries | 
+| [Install Rust Lang](./linux/rust.md)        | Rust       | Not Bad       | Rust Language  | 
 | [Pandoc](./linux/pandoc.md) | WebDev | Not-bad  | Mininal | good example | 
 | [NodeJS](./web/nodejs.md)          | WebDev   | Not-bad           | Minimal       | keep it               |
 | [JavaScript](./learn/javascript/Global_notes.md) | WebDev   | not bad           | No       | em Português                 |
