@@ -119,41 +119,53 @@ PKGDIR="/var/cache/binpkgs"
 LC_MESSAGES=C
 ```
 
-Recommended Packges:
+``` 
+emerge -av gentoo-sources grub dhcpcd syslog-ng cronie
+```
+
+``` 
+cd /usr/src/
+ln -s linux-version* linux
+cd linux 
+make clean 
+make clean # again?  
+make clean # yes again. 
+make menuconfig 
+```
+
+Note that network cards kernel config may have selected all cards. ( you just wish to install one or two ) 
 
 ```
-app-editors/vim # euse -p app-editors/vim -E acl crypt cscope nls python terminal vim-pager
-app-misc/abook # default
-app-misc/tmux # euse -p app-misc/tmux -E vim-syntax
-app-misc/vifm # euse -p app-misc/vifm -E extended-keys magic vim vim-syntax
-app-office/calcurse #
-app-portage/eix #  nls
-app-portage/gentoolkit # python
-app-portage/portage-utils # -E openmp qmanifest qtengrity
-app-text/grip # python
-dev-vcs/git #
-mail-client/mutt
-mail-mta/msmtp
-media-video/ffmpeg
-media-video/mplayer
-net-firewall/ipset
-net-firewall/iptables
-net-libs/nodejs
-net-mail/isync
-net-mail/mailbase
-net-mail/rss2email
-net-misc/curl
-net-misc/dhcp
-net-misc/yt-dlp
-net-firewall/iptables
-net-irc/irssi
-net-wireless/wpa_supplicant
-sys-fs/dosfstools
-sys-fs/e2fsprogs
-sys-fs/fuse
-sys-fs/mtpfs
-sys-process/htop
-sys-process/lsof
-www-client/lynx
-www-client/w3m
+make && make modules && make modules_install && make install 
 ```
+
+```
+blkid 
+vim /etc/fstab
+```
+
+```
+grub-install 
+grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+``` 
+rc-update add syslog default
+rc-update add lvm boot 
+rc-update add cronie default
+rc-update add # what ever is needed 
+reboot
+```
+
+... Now you can start thinking in what you wish to use your gentoo box.
+
+Maybe start with basic configurations *Good Idea* 
+
+Maybe install basic applications *Good Idea*
+
+Maybe thinking about security *Good Idea* 
+
+Maybe installing Virtualization *Good Idea* 
+
+Maybe install X server *Good Idea*
+
