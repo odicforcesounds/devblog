@@ -2,7 +2,7 @@
 
 > All Rights Reserved to You! 
 
-> Is impossible to Learn without Copying! With or without permissions, what is expressed in reality can be copied. You are the one who have **Free Will of Choice**, so even if what is publicly shared had a issue from copying it, I couldn't block that because I already Share it!!! 
+- Is impossible to Learn without Copying! With or without permissions, what is expressed in reality can be copied. You are the one who have **Free Will of Choice**, so even if what is publicly shared had a issue from copying it, I couldn't block that because I already Share it!!! 
 
 - The majority try to practice Morals and Ethics, but that doesn't block everything that exploit Moral and Ethics. 
 
@@ -41,7 +41,7 @@ Hopefuly you understand the problem and use your knowledge wisely.
 
 #### Defensive Security (the good)
 
-> Turn off your computer and you will be save from this **Chaotic Mess full of Mad Logs**, a Festival of stricted permissions and applications isolations processed by computers. 
+- Turn off your computer and you will be save from this **Chaotic Mess full of Mad Logs**, a Festival of stricted permissions and applications isolations processed by computers. 
 
 | File Link                                                                  | Author     | Repo                                                                  | Comments                                            |
 | ----- | ----- | ----- | ----- | 
@@ -60,7 +60,7 @@ Hopefuly you understand the problem and use your knowledge wisely.
 
 #### Offensive Security (the bad)
 
-> hack your team! hack your own machines! This could be a poem that means.  
+- hack your team! hack your own machines! This could be a poem that means.  
 
 | File Link                                                          | Author   | Repo                                                              | Comments               |
 | ----- | ----- | ----- | ----- | 
