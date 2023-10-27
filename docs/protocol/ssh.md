@@ -13,7 +13,9 @@ ssh-keygen
 Be sure you add your keys to ssh-db.
 
 ```sh
+eval $(ssh-agent)
 key-add .ssh/newkey_rsa
+ssh-copy-id user@server
 ```
 
 Your new Private SSH-KEY was stored in $HOME/.ssh folder.
@@ -42,3 +44,17 @@ vim /etc/ssh/sshd_config
   2. copy your public key to ssh-server with 'ssh-copy-id'
   3. Forbid logins with password
   4. accept only known public keys connections
+
+Restart SSH Server 
+
+``` 
+/etc/init.d/ssh restart 
+```
+
+Connect without using a passwd 
+
+``` 
+ssh user@server
+``` 
+
+
