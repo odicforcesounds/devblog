@@ -34,6 +34,9 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | [GNUPG](./linux/gpg.md)                     | Privacy    | Not Bad       | Give more Examples |
 | [IPTables](./linux/iptables.md)             | Security   | Bad           | Comment Configs    |
 | [WPA Supplicant](./linux/wpa_supplicant.md) | Wifi       | Bad           | ............       |
+| [DNS tools](./linux/dns.md) | DNS | Bad | useful for servers | 
+
+
 
 <h3> Protocols </h3>
 
