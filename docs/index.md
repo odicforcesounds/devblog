@@ -64,7 +64,6 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | Thoughts                                 | Bad   | Good  |
 | ---------------------------------------- | ----- | ----- |
 | [Naughty Thoughts](./github/thoughts.md) | False | True  |
-| [Paranoia](./linux/paranoid.md)          | True  | False |
 | [Cool Projects](./web/stuff.md) | False | True | 
 | [Holy Gists](./github/gist.md) | False | True | 
 | [Media Files](./linux/ffmpeg.md) | False | True | 
