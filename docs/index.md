@@ -68,6 +68,7 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | [Cool Projects](./web/stuff.md) | False | True | 
 | [Holy Gists](./github/gist.md) | False | True | 
 | [Self Hosted](./linux/selfhosted.md) | False | True | 
+| [Media Files](./linux/ffmpeg.md) | False | True | 
 
 <h3> Lab to test everything Monkey needs </h3>
 
