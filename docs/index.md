@@ -11,6 +11,10 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | [Gentoo](./distros/gentoo.md) | x     | Poor-Quality | Minimal-installation |
 | [Debian](./distros/debian.md) | x | Not-bad | Minimal-installation | 
 
+<h3> Security </h3>
+
+| [Restrict System Persmission](./linux/permissions.md)
+
 <h3> User-Tools </h3>
 
 | Tools                           | Linux | Category  | Documentation | Notes           |
