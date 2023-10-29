@@ -11,32 +11,34 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | [Gentoo](./distros/gentoo.md) | x     | Poor-Quality | Minimal-installation |
 | [Debian](./distros/debian.md) | x | Not-bad | Minimal-installation | 
 
-<h3> Security </h3>
+- Maybe both manuals can become better, but they are enough for me, while the official documentaion already exist and is, years of light better than mine. 
 
-| [Restrict System Persmission](./linux/permissions.md)
-
-<h3> User-Tools </h3>
+<h3> User-Tools for terminal use </h3>
 
 | Tools                           | Linux | Category  | Documentation | Notes           |
 | ------------------------------- | ----- | --------- | ------------- | --------------- |
-| [BASH](./linux/bash.md) | Yes | Terminal | Not-Bad | .... |  
 | [Vim](./linux/vim.md)           | Yes   | Editor    | Bad           | Comment Configs |
 | [Tmux](./linux/tmux.md)         | Yes   | Emulation | Not-bad           | Comment Configs |
-| [Mutt](./linux/mutt.md)         | Yes   | Email     | Not-bad      | Comment Configs |
-| [Calcurse](./linux/calcurse.md) | Yes   | Calendar  | None          | Add something   |
+| [E-Mail Stuff](./linux/mutt.md)         | Yes   | Email     | Not-bad      | Comment Configs |
+
+- There are a few more, but I don't use it so often.
 
 <h3> Security Tools </h3>
 
 | Tools                                       | Category   | Documentation | Notes              |
 | ------------------------------------------- | ---------- | ------------- | ------------------ |
-| [CryptSetup](./linux/cryptsetup.md)         | Encryption | Poor-Quality  | ...........        |
-| [LVM](./linux/lvm.md)                       | Disk       | Poor-Quality  |
+| [CryptSetup](./linux/cryptsetup.md)         | Disk Encryption | Poor-Quality  | ...........        |
+| [LVM](./linux/lvm.md)                       | Disk Partions       | Poor-Quality  |
 | [GNUPG](./linux/gpg.md)                     | Privacy    | Not Bad       | Give more Examples |
-| [IPTables](./linux/iptables.md)             | Security   | Bad           | Comment Configs    |
-| [WPA Supplicant](./linux/wpa_supplicant.md) | Wifi       | Bad           | ............       |
-| [DNS tools](./linux/dns.md) | DNS | Bad | useful for servers | 
+| [IPTables](./linux/iptables.md)             | Machine Security   | Bad           | Comment Configs    |
+| [WPA Supplicant](./linux/wpa_supplicant.md) | Connect to Wifi       | Bad           | ............       |
+| [DNS tools](./linux/dns.md) | DNS Queries | Bad | useful for servers | 
 
+- For Network we have a lot more.
 
+<h3> Security approach's </h3>
+
+| [Restrict System Persmission](./linux/permissions.md) | 
 
 <h3> Protocols </h3>
 
@@ -44,6 +46,8 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | -------------------------- | -------- | ------------- | ------------------ |
 | [HTTP](./protocol/http.md) | Protocol | Not Bad       | add more details   |
 | [SSH](./protocol/ssh.md)   | Security | Bad           | Give more Examples |
+
+- HTTP is not-secure, and SSH is. I need to add SSL topic
 
 <h3> Web Development </h3>
 
@@ -59,6 +63,8 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | [ExpressJS](./web/express.md)      | WebDev   | Bad           | No       | ...                  |
 | [APIs](./web/apis.md)              | WebAPIs  | Bad           | No       | ...                  |
 
+- I should talk about Tig and another cools projects like Gitui. 
+
 <h3> Monkey Notes </h3>
 
 | Thoughts                                 | Bad   | Good  |
@@ -68,11 +74,16 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | [Holy Gists](./github/gist.md) | False | True | 
 | [Media Files](./linux/ffmpeg.md) | False | True | 
 
+- I sould add more topics for Media. There is some cools tools I care about. 
+
 <h3> Lab to test everything Monkey needs </h3>
 
 [Monkey Labs](./labs/develop/lab_planV1.md)
+
+- This is crazy. For years I ignore this possibility. A Self hosted service. In fact is what is growing in the web. 
 
 <h3> Extra Stuff </h3>
 
 - [Terrible Readings](./awesome/README.md) 
 
+What is terrible, can be the result of our choices, nothing more! 
