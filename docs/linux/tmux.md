@@ -26,6 +26,7 @@ set -g status-position top
 setw -g window-status-format "#[fg=white]#[bg=black] *#I #[bg=black]#[fg=lightgreen] #W "
 setw -g window-status-current-format "#[bg=black]#[fg=yellow] *#I #[bg=black]#[fg=cyan] [#W] "
 bind C-r source-file ~/.tmux.conf
+
 ```
 
 Now use normal key-bindings
@@ -36,7 +37,7 @@ Now use normal key-bindings
 - Ctrl+a x ( kill/close window )
 - Ctrl+a d ( detach/hide tmux )
 - Ctrl+a 2 ( each number represents each tab )
-- Ctrl+a >^< ( use arrow-keys to change from splited windows )
+- Ctrl+a >^< ( use arrow-keys to change from splited windows ) or lkjh
 
 Remember to re-open tmux sessions
 
