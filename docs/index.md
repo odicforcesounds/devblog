@@ -46,8 +46,9 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 | -------------------------- | -------- | ------------- | ------------------ |
 | [HTTP](./protocol/http.md) | Protocol | Not Bad       | add more details   |
 | [SSH](./protocol/ssh.md)   | Security | Bad           | Give more Examples |
+| [SSL](linux/ssl.md)  | Security | not bad | ok | 
 
-- HTTP is not-secure, and SSH is. I need to add SSL topic
+
 
 <h3> Web Development </h3>
 
