@@ -264,3 +264,4 @@ ${GC} https://github.com/DependencyTrack/dependency-track
 ${GC} https://github.com/outflanknl/RedELK
 ${GC} https://github.com/esc0rtd3w/wifi-hacker
 ${GC} https://github.com/gmh5225/awesome-game-security 
+${GC} https://github.com/dstotijn/hetty
