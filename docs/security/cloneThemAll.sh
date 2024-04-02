@@ -2,7 +2,7 @@
 # Clone several repos from Github about Security 
 # OscarFM 2024
 
-GC="git clone "
+GC="git clone --recurse-submodules "
 
 ${GC} https://github.com/trimstray/the-book-of-secret-knowledge
 ${GC} https://github.com/Hack-with-Github/Awesome-Hacking
@@ -263,4 +263,4 @@ ${GC} https://github.com/r0oth3x49/ghauri
 ${GC} https://github.com/DependencyTrack/dependency-track
 ${GC} https://github.com/outflanknl/RedELK
 ${GC} https://github.com/esc0rtd3w/wifi-hacker
-${GC}https://github.com/gmh5225/awesome-game-security 
+${GC} https://github.com/gmh5225/awesome-game-security 
