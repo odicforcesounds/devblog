@@ -1,0 +1,61 @@
+#include <tunables/global>
+
+/usr/bin/apt {
+  # Include standard tunables
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/user-tmp>
+
+  # Allow read access to necessary system files
+  /etc/ld.so.cache r,
+  /etc/ld.so.conf r,
+  /etc/ld.so.conf.d/ r,
+  /etc/nsswitch.conf r,
+  /etc/apt/** r,
+  /etc/ssl/certs/ r,
+
+  # Allow read access to locale files
+  /usr/lib/locale/** r,
+
+  # Allow read access to shared libraries
+  /lib/** r,
+  /lib64/** r,
+  /usr/lib/** r,
+  /usr/lib64/** r,
+
+  # Allow network access for downloading packages
+  network inet stream,
+  network inet6 stream,
+
+  # Allow access to temporary files
+  /tmp/** rwk,
+  /var/tmp/** rwk,
+
+  # Allow read/write access to apt cache and lists
+  /var/cache/apt/** rwk,
+  /var/lib/apt/** rwk,
+
+  # Allow access to device files
+  /dev/null rw,
+  /dev/urandom r,
+  /dev/tty rw,
+
+  # Allow executing external programs
+  /bin/** pix,
+  /usr/bin/** pix,
+  /usr/local/bin/** pix,
+
+  # Miscellaneous access
+  capability dac_override,
+  capability sys_resource,
+
+  # Deny access to sensitive files
+  deny /etc/shadow r,
+  deny /etc/gshadow r,
+
+  # Deny everything else
+  deny /etc/** r,
+  deny /proc/** r,
+  deny /sys/** r,
+}
+

@@ -1,0 +1,74 @@
+#include <tunables/global>
+
+/usr/bin/mutt {
+  # Include standard tunables
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/user-tmp>
+  #include <abstractions/gnome>
+
+  # Allow read access to necessary system files
+  /etc/ld.so.cache r,
+  /etc/ld.so.conf r,
+  /etc/ld.so.conf.d/ r,
+  /etc/nsswitch.conf r,
+  /etc/alternatives/mutt r,
+
+  # Allow read access to locale files
+  /usr/lib/locale/** r,
+
+  # Allow read access to shared libraries
+  /lib/** r,
+  /lib64/** r,
+  /usr/lib/** r,
+  /usr/lib64/** r,
+
+  # Allow network access
+  network inet stream,
+  network inet6 stream,
+
+  # Allow read/write access to user home directory
+  owner @{HOME}/** rwk,
+
+  # Allow access to temporary files
+  /tmp/** rwk,
+  /var/tmp/** rwk,
+
+  # Allow access to device files
+  /dev/tty rw,
+  /dev/urandom r,
+
+  # Allow sending emails
+  /usr/sbin/sendmail px,
+
+  # Allow read access to mail directories
+  @{HOME}/Mail/ r,
+  @{HOME}/Mail/** rw,
+
+  # Allow read access to config files
+  @{HOME}/.muttrc r,
+  @{HOME}/.mutt/** r,
+
+  # Deny access to sensitive files
+  deny /etc/shadow r,
+  deny /etc/gshadow r,
+  deny /etc/passwd r,
+
+  # Allow executing external programs
+  /bin/** ix,
+  /usr/bin/** ix,
+  /usr/local/bin/** ix,
+
+  # Allow read/write access to cache
+  /var/cache/mutt/** rwk,
+
+  # Miscellaneous access
+  capability dac_override,
+  capability sys_resource,
+
+  # Deny everything else
+  deny /etc/** r,
+  deny /proc/** r,
+  deny /sys/** r,
+}
+
