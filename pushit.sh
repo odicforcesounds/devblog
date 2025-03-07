@@ -7,7 +7,7 @@ echo "ssh-agents killed"
 eval $(ssh-agent)
 sleep 1 
 echo "ssh-agent inicialized"
-ssh-add ~/.ssh/github
+ssh-add ~/.ssh/thinkpad_github
 sleep 1
 echo "ssh-key-id added"
 git add . 
