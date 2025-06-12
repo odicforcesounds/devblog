@@ -319,3 +319,9 @@ Conference | Location | Date
 
 For any missing conference, create a pull request and we will add it there.
 Ping us on Twitter: [@TunnelsUp](https://twitter.com/TunnelsUp) and [@PaulWebSec](https://twitter.com/PaulWebSec)
+
+
+thank you. what is shared will be copied. the majority of everything you think you know, is because you did copy, else your wouldn't identify a subject or a object. 
+the right to copy is the right to transform what was already done, by those who were creative, using logic, to create new tools, based on what they already copy.
+i mean, in this case, the copy is the copy of text. i didn't change much. awesome work you have here.
+is like memory.. we are [memory](https://art.odicforcesounds.com/pages/yinyang/dao/index.html) 

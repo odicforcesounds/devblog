@@ -2312,18 +2312,5 @@
 - [**66**Star][7y] [Java] [ibrahimbalic/androidrat](https://github.com/ibrahimbalic/androidrat) Android RAT
 - [**64**Star][16d] [Java] [globalpolicy/phonemonitor](https://github.com/globalpolicy/phonemonitor) A Remote Administration Tool for Android devices
 - [**50**Star][3y] [Py] [alessandroz/pupy](https://github.com/alessandroz/pupy) Pupy is an opensource, multi-platform (Windows, Linux, OSX, Android), multi function RAT (Remote Administration Tool) mainly written in python.
+
 - [**6**Star][2y] [rev-code/androidclient](https://github.com/rev-code/androidclient) Android remote administration client
-
-
-
-
-***
-
-
-## <a id="39ccec75049c60fa1d5dd46fea812331"></a>Post
-
-
-
-
-# Contribute
-Contents auto exported by Our System, please raise Issue if you have any question.

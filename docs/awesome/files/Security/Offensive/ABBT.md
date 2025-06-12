@@ -488,15 +488,13 @@ Lorem ipsum dolor sit amet
 
 ---
 
-## Contribute
-
-Contributions welcome! Read the [contribution guidelines](contributing.md) first.
-
----
-
 ## License
 
 [![CC0](https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/cc-zero.svg)](https://creativecommons.org/publicdomain/zero/1.0)
 
-To the extent possible under law, vavkamil has waived all copyright and
-related or neighboring rights to this work.
+To the extent possible under law, vavkamil has waived all copyright and related or neighboring rights to this work.
+
+thank you. what is shared will be copied. the majority of everything you think you know, is because you did copy, else your wouldn't identify a subject or a object. 
+the right to copy is the right to transform what was already done, by those who were creative, using logic, to create new tools, based on what they already copy.
+i mean, in this case, the copy is the copy of text. i didn't change much. awesome work you have here.
+is like memory.. we are [memory](https://art.odicforcesounds.com/pages/yinyang/dao/index.html) 
