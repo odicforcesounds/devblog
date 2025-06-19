@@ -6,6 +6,10 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 
 <h3> Linux Distro </h3>
 
+I use others, but this ones were fun to learn. Debian is the most stable, Gentoo is always a way to learn much more. 
+
+*Note*: I notice that some Irland guy is trying to hack my sites. I redirect them to this page so they can learn more. You know, they use some ScriptKid Tools to hack Wordpress / PHP frameworks. I don't know why, but I don't like PHP. I Like HTML and CSS. JavaScript can be useful and NodeJS can be useful too. Well, in fact this specific sub-domain is made with Markdown only :D 
+
 | Tools                         | Linux | Documentation | Complete | 
 | ----------------------------- | ----- | ------------ | ------- |
 | [Gentoo](./distros/gentoo.md) | x     | Poor-Quality | Minimal-installation |
@@ -88,3 +92,13 @@ Note: Documentation rating refers to Monkey notes, not the original application 
 - [Terrible Readings](./awesome/README.md) 
 
 What is terrible, can be the result of our choices, nothing more! 
+
+- Useful recipes to save time
+
+[Tshark](recipes/tshark.md)
+[WireShark](recipes/wireshark.md)
+[TCPDump](recipes/tcpdump.md)
+[Bash](recipes/bash.md)
+[Crypt](recipes/crypto.md)
+
+

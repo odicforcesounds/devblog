@@ -62,3 +62,15 @@ Sharing my own configurations
 ```
 
 You may see this repository history.. I am playing around :D
+
+--- 
+
+Just forget the last approach. Use SSH-KEYS !!!  
+
+```sh 
+eval $(ssh-agent)
+ssh-add ~/.ssh/github 
+push git@github.com:ABC/REPO
+```
+
+
