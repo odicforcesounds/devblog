@@ -1,104 +1,30 @@
-Auto-Rate-Mode
+# My Blog, my thoughts 
 
-<h2>Notes of some tools Monkey use</h2>
+## Monkey notes about domain statistics
 
-Note: Documentation rating refers to Monkey notes, not the original application documentation.
+Last year, the number of visits of odicforcesounds.com grow, and for the first time I could rich Hong Kong, which in the aspect of, how many visits I get per day/month, are bigger then USA. 
 
-<h3> Linux Distro </h3>
+Ireland is as well a country that "visit a lot" this website. 
 
-I use others, but this ones were fun to learn. Debian is the most stable, Gentoo is always a way to learn much more. 
+*Note*: I notice that some Ireland activity is trying to hack my sites. Maybe you already notice that I use Cloudflare to manage DNS and other HTTP inputs, so I redirect them to this page so they can learn more. You know, they use some ScriptKid Tools to hack Wordpress / PHP frameworks. I don't know why, but I don't like PHP. I Like HTML and CSS. JavaScript can be useful and NodeJS can be useful too. Well, in fact this specific sub-domain is made with Markdown only and hosted in GitHub. 
 
-*Note*: I notice that some Irland guy is trying to hack my sites. I redirect them to this page so they can learn more. You know, they use some ScriptKid Tools to hack Wordpress / PHP frameworks. I don't know why, but I don't like PHP. I Like HTML and CSS. JavaScript can be useful and NodeJS can be useful too. Well, in fact this specific sub-domain is made with Markdown only :D 
+---
 
-| Tools                         | Linux | Documentation | Complete | 
-| ----------------------------- | ----- | ------------ | ------- |
-| [Gentoo](./distros/gentoo.md) | x     | Poor-Quality | Minimal-installation |
-| [Debian](./distros/debian.md) | x | Not-bad | Minimal-installation | 
+I am starting to invest my time, trying to build the application, described in the audio-track **Social Tool Kit - World Wide Conscience Cleaner**, from the album [Emotional Signals](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/index.html) as a Android application.
 
-- Maybe both manuals can become better, but they are enough for me, while the official documentaion already exist and is, years of light better than mine. 
+In my dreams, which could be possible to archived fast with [someone](https://book.odicforcesounds.com) help, maybe will be just impossible, but I will keep trying to build it. 
 
-<h3> User-Tools for terminal use </h3>
+In the **Spiritual Algorithmic** album, there is another audio-track, with a description of this application, with the name [The Challenge](https://art.odicforcesounds.com/pages/Data/Audio/Spiritual_Algorithmic/tracks/01_The_Challenge/index.html), where another tracks like **Mr. JSON**, **Data - Objects and Functions**, **Into the World of JavaScript**, **Firebase - Solar Plexus**, already point to the direction of what this application need to use. 
 
-| Tools                           | Linux | Category  | Documentation | Notes           |
-| ------------------------------- | ----- | --------- | ------------- | --------------- |
-| [Vim](./linux/vim.md)           | Yes   | Editor    | Bad           | Comment Configs |
-| [Tmux](./linux/tmux.md)         | Yes   | Emulation | Not-bad           | Comment Configs |
-| [E-Mail Stuff](./linux/mutt.md)         | Yes   | Email     | Not-bad      | Comment Configs |
+Naturally, this application can be useful for all communities in the world. 
 
-- There are a few more, but I don't use it so often.
+--- 
 
-<h3> Security Tools </h3>
+Having a dedicated server is another topic, while Cloudflare offer the [cloudflared](https://github.com/cloudflare/cloudflared) application, to create a tunnel between their servers and my private webserver. This can be a [awesome](./blog/awesome/README.md) way to at least, own the data and own the server for only, Electricity cost + Internet cost. Then I start to investigate, what I need to have a [secure](./distros/security.md) host, beside the Firewall features that Cloudflare already offer for free, to registered users who own a domain, and naturally, to all developers. 
 
-| Tools                                       | Category   | Documentation | Notes              |
-| ------------------------------------------- | ---------- | ------------- | ------------------ |
-| [CryptSetup](./linux/cryptsetup.md)         | Disk Encryption | Poor-Quality  | ...........        |
-| [LVM](./linux/lvm.md)                       | Disk Partions       | Poor-Quality  |
-| [GNUPG](./linux/gpg.md)                     | Privacy    | Not Bad       | Give more Examples |
-| [IPTables](./linux/iptables.md)             | Machine Security   | Bad           | Comment Configs    |
-| [WPA Supplicant](./linux/wpa_supplicant.md) | Connect to Wifi       | Bad           | ............       |
-| [DNS tools](./linux/dns.md) | DNS Queries | Bad | useful for servers | 
+[Docker](./blog/linux/Docker) can be a good approach, while I always like the old fashion of a [Nginx](https://github.com/mitchellkrogza/nginx-ultimate-bad-bot-blocker) server or [Apache](https://github.com/mitchellkrogza/apache-ultimate-bad-bot-blocker). A [Self Hosted](./blog/linux/selfhosted.md) application is awesome, while having the server outside home and have the Admin-Panel running at home, by my will, is another good approach. Then the server have no Login-Form on Internet, and therefor, the attack survace is lower.  
 
-- For Network we have a lot more.
+Me as a [Linux user](./blog/index.md) I always like to understand how servers work and what I need to do to configure a server. I find amazing projects at GitHub with all kind. [Fail2Ban](https://github.com/mitchellkrogza/Fail2Ban-Blacklist-JAIL-for-Repeat-Offenders-with-Perma-Extended-Banning) is a known software for servers, to block what they call "offender", which is malicious activity from random users using automatic scripts, or people who know more about how to think, can find [bugs](./awesome/files/Security/Offensive/ABBT.md) in the code, to be able to hack the code. 
 
-<h3> Security approach's </h3>
-
-| [Restrict System Persmission](./linux/permissions.md) | 
-
-<h3> Protocols </h3>
-
-| Tools                      | Category | Documentation | Notes              |
-| -------------------------- | -------- | ------------- | ------------------ |
-| [HTTP](./protocol/http.md) | Protocol | Not Bad       | add more details   |
-| [SSH](./protocol/ssh.md)   | Security | Bad           | Give more Examples |
-| [SSL](linux/ssl.md)  | Security | not bad | ok | 
-
-
-
-<h3> Web Development </h3>
-
-| Tools                              | Category | Documentation | Complete | Notes                |
-| ---------------------------------- | -------- | ------------- | -------- | -------------------- |
-| [Git](./linux/git.md)              | WebDev   | Not-bad       | Minimal  | Code-Version-Control |
-| [Python Version Control](./linux/python.md) | Python     | Not Bad       | Many Python Versions and Libraries | 
-| [Install Rust Lang](./linux/rust.md)        | Rust       | Not Bad       | Rust Language  | 
-| [Pandoc](./linux/pandoc.md) | WebDev | Not-bad  | Mininal | good example | 
-| [NodeJS](./web/nodejs.md)          | WebDev   | Not-bad           | Minimal       | keep it               |
-| [JavaScript](./learn/javascript/Global_notes.md) | WebDev   | not bad           | No       | em Português                 |
-| [CSS](./web/css.md)                | WebDev   | Bad           | No       | ....                 |
-| [ExpressJS](./web/express.md)      | WebDev   | Bad           | No       | ...                  |
-| [APIs](./web/apis.md)              | WebAPIs  | Bad           | No       | ...                  |
-
-- I should talk about Tig and another cools projects like Gitui. 
-
-<h3> Monkey Notes </h3>
-
-| Thoughts                                 | Bad   | Good  |
-| ---------------------------------------- | ----- | ----- |
-| [Naughty Thoughts](./github/thoughts.md) | False | True  |
-| [Cool Projects](./web/stuff.md) | False | True | 
-| [Holy Gists](./github/gist.md) | False | True | 
-| [Media Files](./linux/ffmpeg.md) | False | True | 
-
-- I sould add more topics for Media. There is some cools tools I care about. 
-
-<h3> Lab to test everything Monkey needs </h3>
-
-[Monkey Labs](./labs/develop/lab_planV1.md)
-
-- This is crazy. For years I ignore this possibility. A Self hosted service. In fact is what is growing in the web. 
-
-<h3> Extra Stuff </h3>
-
-- [Terrible Readings](./awesome/README.md) 
-
-What is terrible, can be the result of our choices, nothing more! 
-
-- Useful recipes to save time
-
-[Tshark](recipes/tshark.md)
-[WireShark](recipes/wireshark.md)
-[TCPDump](recipes/tcpdump.md)
-[Bash](recipes/bash.md)
-[Crypt](recipes/crypto.md)
-
+In this investigation I found that even Google do some [SPAM](https://github.com/mitchellkrogza/Stop.Google.Analytics.Ghost.Spam.HOWTO) and there is a [Phishing Database](https://github.com/Phishing-Database/Phishing.Database). O_o I personally use my Linux computers, the [StevenBlack](https://github.com/StevenBlack/hosts) hosts or for a **paranoid** situation the [Ultimate-Host-Blacklist](https://github.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist), which are projects that are regulary updated. My web surf is cleaner and I feel better. 
 
