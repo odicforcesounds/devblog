@@ -4,9 +4,13 @@
 
 Last year, the number of visits of odicforcesounds.com grow, and for the first time I could rich Hong Kong, which in the aspect of, how many visits I get per day/month, are bigger then USA. 
 
+I feel good to see this results, just because I believe that Chinese will agree about my interpretation of the 道, which I describe as [The Style of God](https://art.odicforcesounds.com/pages/YinYang/Dao/index.html), which is, what we do, what we create, what we become. I become a Monkey. 
+
 Ireland is as well a country that "visit a lot" this website. 
 
 *Note*: I notice that some Ireland activity is trying to hack my sites. Maybe you already notice that I use Cloudflare to manage DNS and other HTTP inputs, so I redirect them to this page so they can learn more. You know, they use some ScriptKid Tools to hack Wordpress / PHP frameworks. I don't know why, but I don't like PHP. I Like HTML and CSS. JavaScript can be useful and NodeJS can be useful too. Well, in fact this specific sub-domain is made with Markdown only and hosted in GitHub. 
+
+![Statistics](./images/website_stats_2025_july.png)
 
 ---
 
