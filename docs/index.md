@@ -1,5 +1,18 @@
 # Monkey Blog, Monkey Thoughts
 
+Imagination(Knowledge) + Logic(Rationality) = Application(Philosophy)
+
+Which means: 1 + 1 = 1 OR 3 Dao / Tao
+
+The **Dao** is the Path, and the Path is simple. 
+
+Then we have the [Tao](https://art.odicforcesounds.com/pages/YinYang/Tao/index.html), which is the condition. 
+The condition is not always easy, but by the illusion to archive it, is possible.
+
+Our ability to imagine is based on what we know. 
+That is how we create new ideas, positive or false, but possible to create them in reality, as a image, text or static object, while this days, objects can move and even talk, with A.I. 
+What ever is the Logic Path we select, we will create an expression with that, which is the [Application](https://wiki.odicforcesounds.com). 
+
 ## Monkey notes about domain statistics: July 2025
 
 Last year, the number of visits of the main sub-domain [Art](https://art.odicforcesounds.com) grow, and for the first time I could rich **Hong Kong**, which in the aspect of how many visits I get per month, the number is bigger then **USA**. 
