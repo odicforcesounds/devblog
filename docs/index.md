@@ -8,7 +8,7 @@ I feel good to see this results, just because I believe that **Chinese** will ag
 
 Ireland is as well a country that "visit a lot" this website. 
 
-*Note*: I notice that some Ireland activity is trying to hack my sites. Maybe you already notice that I use **Cloudflare** to manage **DNS** and other **HTTP** inputs, so I redirect them to this page so they can learn more. You know, they use some ScriptKid Tools to hack Wordpress / PHP frameworks. I don't know why, but I don't like PHP. I Like [HTML](./blog/web/html.md) and [CSS](./blog/web/css.md). [JavaScript](./blog/web/javascript.md) can be useful and [NodeJS](./blog/web/nodejs.md) can be useful too. Well, in fact this specific sub-domain is made with Markdown only and hosted in GitHub. 
+*Note*: I notice that some **Ireland** activity is trying to hack my sites. Maybe you already notice that I use **Cloudflare** to manage **DNS** and other **HTTP** inputs, so I redirect them to [this](https://blog.odicforcesounds.com/blog/awesome/files/Security/Offensive/ABBT.html) page so they can learn more. You know, they use some **Script-Kid** Tool to hack **Wordpress** / **PHP** frameworks. I don't know why, but I don't like **PHP**. I Like [HTML](./blog/web/html.md) and [CSS](./blog/web/css.md). [JavaScript](./blog/web/javascript.md) can be useful and [NodeJS](./blog/web/nodejs.md) can be useful too. Well, in fact this specific sub-domain is made with **Markdown** only and hosted in **GitHub**. 
 
 ![Statistics](./images/website_stats_2025_july.png)
 
