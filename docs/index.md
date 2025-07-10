@@ -17,7 +17,10 @@ Old knowledge that make sense to me, while the principles of creation, being par
 
 **About Freedom**: The flower in the garden can be seen by anyone. This means that the flower in the garden is from everyone. In the moment that someone wish to possess this flower and remove it from the garden, conflicts start, because everyone can feel the same, in the basic aspect of what possession aims to have. 
 
-- **Logic Thought**: Palestine cannot be owned by "someone", and by that condition, is from everyone.
+1. **Logic Thought**: Palestine cannot be owned by "someone", and by that condition, is from everyone. Like everything in this life should be, so we could leave in peace for eternity.
+2. **Logic Thought**: Christ was victimized for saying the "Truth", while many others in reality are. Did you learn the lesson or you are just repeating the mistake? 
+3. **Logic Thought**: Only Islam is perfect, the Quran say. To those who want perfection, please go into that perfect land, and leave those cultures that contradic with yours, or embrace the new, is what anyone can do, to live in peace, within any community, is by believing and sharing, those commum practices toghether. 
+4. **Logic Thought**: To win the Storm, we need to leave the storm way. Else, the storm will take you, and make you feel that you are the storm, while you are just a fragment of it. 
 
 As I like to say: 
 
