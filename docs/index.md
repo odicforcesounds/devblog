@@ -6,7 +6,7 @@ Last year, the number of visits of odicforcesounds.com grow, and for the first t
 
 I feel good to see this results, just because I believe that **Chinese** will agree about my interpretation of the 道, which I describe as [The Style of God](https://art.odicforcesounds.com/pages/YinYang/Dao/index.html), which is all about, what we do, what we create, what we become. I become a Monkey and I do a lot of reading and writing, even is sometimes I talk alone. ;) 
 
-Ireland is as well a country that "visit a lot" this website. 
+**Ireland** is as well a country that "visit a lot" this website. I think there is a Myth about **Dragons** in old Ireland Cultures. I don't know why, but there are a lot of cultures that like Dragons, even **Japan** and many others. 
 
 *Note*: I notice that some **Ireland** activity is trying to hack my sites. Maybe you already notice that I use **Cloudflare** to manage **DNS** and other **HTTP** inputs, so I redirect them to [this](https://blog.odicforcesounds.com/blog/awesome/files/Security/Offensive/ABBT.html) page so they can learn more. You know, they use some **Script-Kid** Tool to hack **Wordpress** / **PHP** frameworks. I don't know why, but I don't like **PHP**. I Like [HTML](./blog/web/html.md) and [CSS](./blog/web/css.md). [JavaScript](./blog/web/javascript.md) can be useful and [NodeJS](./blog/web/nodejs.md) can be useful too. Well, in fact this specific sub-domain is made with **Markdown** only and hosted in **GitHub**. 
 
