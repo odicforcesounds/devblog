@@ -13,7 +13,7 @@ Our ability to imagine is based on what we know.
 That is how we create new ideas, positive or false, but possible to create them in reality, as a image, text or static object, while this days, objects can move and even talk, with A.I. 
 What ever is the Logic Path we select, we will create an expression with that, which is the [Application](https://wiki.odicforcesounds.com). 
 
-Old knowledge that make sense to me, while the principles of creation, being part of what we can imagine, is based on the concept of **Maya** from Hinduism. 
+Old knowledge that make sense to me, while the principles of creation, being part of what we can imagine, is based on the concept of **Maya** from Hinduism, and is in fact as well, part of how Zen Schools select their students. The selection is based on what they can imagine, sharing all their capacities to interpret the world. This is one of the main reasons I love Asian cultures. The definition of what each can imagine, is not given by the author as something concrete and objective, but something that doesn't depend on the author, but in the ability of the reader, to imagine. This describe what we can see in any community around the globe. 
 
 ## Monkey notes about domain statistics: July 2025
 
