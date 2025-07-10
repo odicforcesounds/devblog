@@ -28,7 +28,8 @@ As I like to say:
 - Let the Heart chose the Path, but use the Brain to walk the Path.
 - The Heart want to control everything, to own everything, while by logic, we cannot."
 
-## Monkey notes about domain statistics: July 2025
+
+## Monkey notes about domain statistics: 7 of July 2025
 
 Last year, the number of visits of the main sub-domain [Art](https://art.odicforcesounds.com) grow, and for the first time I could rich **Hong Kong**, which in the aspect of how many visits I get per month, the number is bigger then **USA**.
 
