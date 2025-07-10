@@ -13,7 +13,7 @@ Our ability to imagine is based on what we know.
 That is how we create new ideas, positive or false, but possible to create them in reality, as a image, text or static object, while this days, objects can move and even talk, with A.I. 
 What ever is the Logic Path we select, we will create an expression with that, which is the [Application](https://wiki.odicforcesounds.com). 
 
-Old knowledge that make sense to me, while the principles of creating being part of what we can imagine, is based on the concept of **Maya** from Hinduism. 
+Old knowledge that make sense to me, while the principles of creation, being part of what we can imagine, is based on the concept of **Maya** from Hinduism. 
 
 ## Monkey notes about domain statistics: July 2025
 
