@@ -2,7 +2,7 @@
 
 ## Monkey notes about domain statistics: 7 of July 2025
 
-Last year, the number of visits of the main sub-domain [Art](https://art.odicforcesounds.com) grow, and for the first time I could rich **Hong Kong**, which in the aspect of how many visits I get per month, the number is bigger then **USA**.
+Last year, the number of visits of the main sub-domain [Art](https://art.odicforcesounds.com) grow, and for the first time I could rich **Hong Kong**, which in the aspect of how many visits I get per month, the number is bigger then **USA**, that was for long time, the first on "how many visits I have in odicforcesounds.com". 
 
 ![Statistics](./images/website_stats_2025_july.png)
 
@@ -66,10 +66,8 @@ I personally use in my Linux computers, the [StevenBlack](https://github.com/Ste
 
 My web surf is cleaner and I feel better.
 
-## About Security
+Line [69](https://art.odicforcesounds.com/pages/Data/Audio/Path_Of_Shields/tracks/15_69/index.html): My blog is Sexy
+
+### Malicious Activities Report 
 
 **Note**: I notice about melicious **Ireland** activity, that is trying to hack my sites. Maybe you already know that I use **Cloudflare** to manage **DNS** and other **HTTP** inputs, so I redirect them to [this](https://blog.odicforcesounds.com/blog/awesome/files/Security/Offensive/ABBT.html) page, to motivate them to learn more. You know, they use some automatic **Script-Kid** Tool to hack **Wordpress** / **PHP** frameworks. I don't know why, but I don't like **PHP**. I Like [HTML](./blog/web/html.md) and [CSS](./blog/web/css.md). [JavaScript](./blog/web/javascript.md) can be useful and [NodeJS](./blog/web/nodejs.md) can be useful too. Well, in fact this specific sub-domain is made with **Markdown** only and hosted in **GitHub**.
-
---- 
-
-Line [69](https://art.odicforcesounds.com/pages/Data/Audio/Path_Of_Shields/tracks/15_69/index.html): My blog is Sexy
