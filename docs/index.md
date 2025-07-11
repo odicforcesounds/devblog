@@ -10,8 +10,6 @@ I feel good to see this results, just because I believe that **Chinese** will ag
 
 **Ireland** is as well a country that "visit a lot" this website. I think there is a **Myth** about **Dragons** in old Ireland cultures. I don't know why, but there are a lot of cultures that like **Dragons**, even **Japan** and many others.
 
-**Note**: I notice about melicious **Ireland** activity, that is trying to hack my sites. Maybe you already know that I use **Cloudflare** to manage **DNS** and other **HTTP** inputs, so I redirect them to [this](https://blog.odicforcesounds.com/blog/awesome/files/Security/Offensive/ABBT.html) page, to motivate them to learn more. You know, they use some automatic **Script-Kid** Tool to hack **Wordpress** / **PHP** frameworks. I don't know why, but I don't like **PHP**. I Like [HTML](./blog/web/html.md) and [CSS](./blog/web/css.md). [JavaScript](./blog/web/javascript.md) can be useful and [NodeJS](./blog/web/nodejs.md) can be useful too. Well, in fact this specific sub-domain is made with **Markdown** only and hosted in **GitHub**.
-
 ## The Style of God
 
 Imagination(**Knowledge**) **+** Logic(**Rationality**) **=** Application(**Philosophy**)
@@ -67,5 +65,11 @@ In this investigation I found that even **Google** do some [SPAM](https://github
 I personally use in my Linux computers, the [StevenBlack](https://github.com/StevenBlack/hosts) hosts or for a **paranoid** situation the [Ultimate-Host-Blacklist](https://github.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist), which are projects that are regulary updated.
 
 My web surf is cleaner and I feel better.
+
+## About Security
+
+**Note**: I notice about melicious **Ireland** activity, that is trying to hack my sites. Maybe you already know that I use **Cloudflare** to manage **DNS** and other **HTTP** inputs, so I redirect them to [this](https://blog.odicforcesounds.com/blog/awesome/files/Security/Offensive/ABBT.html) page, to motivate them to learn more. You know, they use some automatic **Script-Kid** Tool to hack **Wordpress** / **PHP** frameworks. I don't know why, but I don't like **PHP**. I Like [HTML](./blog/web/html.md) and [CSS](./blog/web/css.md). [JavaScript](./blog/web/javascript.md) can be useful and [NodeJS](./blog/web/nodejs.md) can be useful too. Well, in fact this specific sub-domain is made with **Markdown** only and hosted in **GitHub**.
+
+--- 
 
 Line [69](https://art.odicforcesounds.com/pages/Data/Audio/Path_Of_Shields/tracks/15_69/index.html): My blog is Sexy
