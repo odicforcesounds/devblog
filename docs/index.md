@@ -1,5 +1,19 @@
 # Monkey Blog, Monkey Thoughts
 
+## Monkey notes about domain statistics: 7 of July 2025
+
+Last year, the number of visits of the main sub-domain [Art](https://art.odicforcesounds.com) grow, and for the first time I could rich **Hong Kong**, which in the aspect of how many visits I get per month, the number is bigger then **USA**.
+
+![Statistics](./images/website_stats_2025_july.png)
+
+I feel good to see this results, just because I believe that **Chinese** will agree about my interpretation of the 道, which I describe as [The Style of God](https://art.odicforcesounds.com/pages/YinYang/Dao/index.html), which is all about, what we do, what we create, what we become. I become a Monkey and I do a lot of reading and writing, even if sometimes I talk alone. ;)
+
+**Ireland** is as well a country that "visit a lot" this website. I think there is a **Myth** about **Dragons** in old Ireland cultures. I don't know why, but there are a lot of cultures that like **Dragons**, even **Japan** and many others.
+
+**Note**: I notice about melicious **Ireland** activity, that is trying to hack my sites. Maybe you already know that I use **Cloudflare** to manage **DNS** and other **HTTP** inputs, so I redirect them to [this](https://blog.odicforcesounds.com/blog/awesome/files/Security/Offensive/ABBT.html) page, to motivate them to learn more. You know, they use some automatic **Script-Kid** Tool to hack **Wordpress** / **PHP** frameworks. I don't know why, but I don't like **PHP**. I Like [HTML](./blog/web/html.md) and [CSS](./blog/web/css.md). [JavaScript](./blog/web/javascript.md) can be useful and [NodeJS](./blog/web/nodejs.md) can be useful too. Well, in fact this specific sub-domain is made with **Markdown** only and hosted in **GitHub**.
+
+## The Style of God
+
 Imagination(**Knowledge**) **+** Logic(**Rationality**) **=** Application(**Philosophy**)
 
 Which means: 1 + 1 = 1 OR 3 道 (Dao/Tao)
@@ -27,19 +41,6 @@ As I like to say:
 
 - Let the Heart chose the Path, but use the Brain to walk the Path.
 - The Heart want to control everything, to own everything, while by logic, we cannot."
-
-
-## Monkey notes about domain statistics: 7 of July 2025
-
-Last year, the number of visits of the main sub-domain [Art](https://art.odicforcesounds.com) grow, and for the first time I could rich **Hong Kong**, which in the aspect of how many visits I get per month, the number is bigger then **USA**.
-
-![Statistics](./images/website_stats_2025_july.png)
-
-I feel good to see this results, just because I believe that **Chinese** will agree about my interpretation of the 道, which I describe as [The Style of God](https://art.odicforcesounds.com/pages/YinYang/Dao/index.html), which is all about, what we do, what we create, what we become. I become a Monkey and I do a lot of reading and writing, even if sometimes I talk alone. ;)
-
-**Ireland** is as well a country that "visit a lot" this website. I think there is a **Myth** about **Dragons** in old Ireland cultures. I don't know why, but there are a lot of cultures that like **Dragons**, even **Japan** and many others.
-
-**Note**: I notice about melicious **Ireland** activity, that is trying to hack my sites. Maybe you already know that I use **Cloudflare** to manage **DNS** and other **HTTP** inputs, so I redirect them to [this](https://blog.odicforcesounds.com/blog/awesome/files/Security/Offensive/ABBT.html) page, to motivate them to learn more. You know, they use some automatic **Script-Kid** Tool to hack **Wordpress** / **PHP** frameworks. I don't know why, but I don't like **PHP**. I Like [HTML](./blog/web/html.md) and [CSS](./blog/web/css.md). [JavaScript](./blog/web/javascript.md) can be useful and [NodeJS](./blog/web/nodejs.md) can be useful too. Well, in fact this specific sub-domain is made with **Markdown** only and hosted in **GitHub**.
 
 ## Application Development
 
