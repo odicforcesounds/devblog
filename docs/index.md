@@ -36,7 +36,7 @@ Is curious that all religious and spiritual books, point to one single human [ch
 1. **Logic Thought**: Palestine cannot be owned by "someone", and by that condition, is from everyone. Like everything in this life should be, so we could leave in peace for eternity.
 2. **Logic Thought**: Christ was victimized for saying the "Truth", while many others in reality are. God is **Absolute**, and absolute means, everything and everyone. Everyone interpretation of God can be true and false at the same time. Did you learn the lesson or you are just repeating the mistake?
 3. **Logic Thought**: Only Islam is perfect, the Quran say. To those who want [perfection](https://art.odicforcesounds.com/pages/Data/Audio/Deep_Random_Meanings/tracks/06_Perfection/index.html), please go into that perfect land, and leave those cultures that contradict with yours, or embrace the new, is what anyone can do, to live in peace, within any community, is by believing and sharing, those commum and cultural practices together.
-4. **Logic Thought**: To win the Storm, we need to leave the storm way. Else, the storm will take you, and make you feel that you are the storm, while you are just a fragment of it.
+4. **Logic Thought**: To win the Storm, we need to leave the storm way. Else, the storm will take us, and make us feel that we are the storm, while we are just a [fragment](https://art.odicforcesounds.com/pages/Data/Audio/Dao_Touch/tracks/07_Fragments_You_Need/index.html) of it.
 5. **Logic Thought**: Solipsism is a false Philosopical theory, but we all live in that condition.
 6. **Logic Thought**: The Unique **Divine** characteristic we all have is the **Will**. Without it, nothing is done, nothing is created, nothing can change.
 
