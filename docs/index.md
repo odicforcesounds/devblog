@@ -2,11 +2,11 @@
 
 ## Blog Posts
 
-- [Domain Statistics](./domain_statistics.md)
-- [The Style of God](./style_of_god.md)
-- [Application Development](./app_dev.md)
-- [Thinking Linux](./think_linux.md)
-- [Malicious Activities Report](./mar.md)
+- [Domain Statistics](./domain_statistics.md): Comments about the last Statistics of this site
+- [The Style of God](./style_of_god.md): Rational text that describe the 道 
+- [Application Development](./app_dev.md): Describing what I need to develop Website application
+- [Thinking Linux](./think_linux.md): Some notes about the OS I use (Linux)
+- [Malicious Activities Report](./mar.md): Some notes about malicious activities in this domain
 
 ### Other sub-domains: 
 
@@ -18,7 +18,7 @@
 
 - [Critica Sem Piedade](https://criticasempiedade.blogspot.com): Portuguese content Only about several topics
 - [Macaco Preguiçoso](https://macacopreguicoso.blogspot.com): Portuguese content only about learning Technologies
-- [Odicforcesounds](https://odicforcesounds.blogspot.com): English content - The first odicforcesounds webpage, before having a dedicated domain. 
+- [Odicforcesounds](https://odicforcesounds.blogspot.com): The first odicforcesounds webpage, before having a dedicated domain. 
 
 ### Social Networks
 
