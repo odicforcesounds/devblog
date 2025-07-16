@@ -27,7 +27,7 @@ Is curious that all religious and spiritual books, point to one single human [ch
 4. **Logic Thought**: To win the Storm, we need to leave the storm way. Else, the storm will take us, and make us feel that we are the storm, while we are just a [fragment](https://art.odicforcesounds.com/pages/Data/Audio/Dao_Touch/tracks/07_Fragments_You_Need/index.html) of it.
 5. **Logic Thought**: Solipsism is a false Philosopical theory, but we all live in that condition.
 6. **Logic Thought**: The Unique **Divine** characteristic we all have is the **Will**. Without it, nothing is done, nothing is created, nothing can change.
-7. **Logic Thought**: If you tell me a lie about me, I will not get offended. If you tell a some truth that I wish to hide from everyone, I will get offended. So many people putting others in Court, by being offended, while the Justice system, defend them. Question: Is my impression of the Justice system is getting corrupted, because they don't think about how the brain works? 
+7. **Logic Thought**: If you tell a lie about me, I will not get offended. If you tell a some truth that I wish to hide from everyone, I will get offended. So many people putting others in Court, by being offended, while the Justice system defend them. Question: Is my impression or the Justice system is getting corrupted, because they don't think about how the brain works? Those who get offended are hiding something! 
 
 As I like to say:
 
