@@ -27,3 +27,4 @@
 - [Instagram](https://instagram.com/Rakzhodekams): I rarely use this platform, but you can send me a message here.
 - [Facebook](https://facebook.com/odicforcesounds): I rarely use this platform, but you can send me a message here. 
 - [Github](https://github.com/odicforcesounds): I use this platform almost every day. You can send me a message here, by opening an issue or by adding a new publication in the discussion tab. 
+- [Email](info @ odicforcesounds . com): If you wish, you can send me a message using this email. 
