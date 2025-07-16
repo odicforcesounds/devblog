@@ -38,3 +38,32 @@ As I like to say:
 - Let the Heart chose the Path, but use the Brain to walk the Path.
 - The Heart want to control everything, to own everything, while by logic, we cannot."
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Line [69](https://art.odicforcesounds.com/pages/Data/Audio/Path_Of_Shields/tracks/15_69/index.html) My Blog is Sexy
