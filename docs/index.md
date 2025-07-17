@@ -22,9 +22,9 @@
 
 ### Social Networks
 
-- [Mastodon](@SunWukong@mstdn.business): Send me a message private or public here. 
+- [Mastodon](https://mstdn.business/@SunWukong): Send me a message private or public here. 
 - [Keybase](https://keybase.io/Path_of_Shields): Send me a encrypted message here.
 - [Instagram](https://instagram.com/Rakzhodekams): I rarely use this platform, but you can send me a message here.
 - [Facebook](https://facebook.com/odicforcesounds): I rarely use this platform, but you can send me a message here. 
 - [Github](https://github.com/odicforcesounds): I use this platform almost every day. You can send me a message here, by opening an issue or by adding a new publication in the discussion tab. 
-- [Email](info @ odicforcesounds . com): If you wish, you can send me a message using this email. 
+- [Email](mailto:info @ odicforcesounds . com): If you wish, you can send me a message using this email. 
