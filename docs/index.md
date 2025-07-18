@@ -12,11 +12,12 @@
 
 - [Art](https://art.odicforcesounds.com): This is the main sub-domain 
 - [Book](https://book.odicforcesounds.com): Simplification of the main sub-domain with extra texts
-- [Application Wiki](https://wiki.odicforcesounds.com): Formal style to explain **The Challenge** 
+- [Application Wiki](https://wiki.odicforcesounds.com): Formal style to explain **The Challenge**
+- [Play](https://play.odicforcesounds.com): Animated example about "Educating the Monster"
 
 ### Other Blogs: Blogspot
 
-- [Critica Sem Piedade](https://criticasempiedade.blogspot.com): Portuguese content Only about several topics
+- [Critica Sem Piedade](https://criticasempiedade.blogspot.com): Portuguese content only about several topics
 - [Macaco Preguiçoso](https://macacopreguicoso.blogspot.com): Portuguese content only about learning Technologies
 - [Odicforcesounds](https://odicforcesounds.blogspot.com): The first odicforcesounds webpage, before having a dedicated domain. 
 
@@ -26,5 +27,5 @@
 - [Keybase](https://keybase.io/Path_of_Shields): Send me a encrypted message here.
 - [Instagram](https://instagram.com/Rakzhodekams): I rarely use this platform, but you can send me a message here.
 - [Facebook](https://facebook.com/odicforcesounds): I rarely use this platform, but you can send me a message here. 
-- [Github](https://github.com/odicforcesounds): I use this platform almost every day. You can send me a message here, by opening an issue or by adding a new publication in the discussion tab. 
+- [Github](https://github.com/odicforcesounds): I use this platform almost every day. You can send me a message here, by adding a new publication in the [discussion](https://github.com/orgs/odicforcesounds/discussions/1) menu, or by commenting in this one linked. 
 - [Email](mailto:info @ odicforcesounds . com): If you wish, you can send me a message using this email. 
