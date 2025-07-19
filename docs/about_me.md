@@ -10,12 +10,6 @@ I like the human ability to Imagine and to Create<br>
 Sometimes I don't like, what humans do with their Unique Divine characteristics that all have.<br>
 Without it, nothing would ever change, nothing could ever be created.<br>
 
-## Cultural Interpretations 
-
-In Chinese interpretation, Monkeys can be offensive, while they are peaceful.<br>
-Outside China, many are silent, while demonstrating being destructive.<br>
-Maybe is a coincidence, because Chinese can be silent, while demonstrating being in Peace.
-
 ## I am Human Too
 
 Humans can only learn by doing mistakes?<br>
@@ -33,18 +27,7 @@ I am not a teacher and my composition is not made of letters.<br>
 
 - Everything I describe is my sites, are about **The Style of God**, while the Style is not God.
 
-## The Majority of Justice Systems 
-
-**Everything you will say, can be used against you in Court.**<br>
-
-- The Criminals believe in the same, but they don't make of use of Courts.
-    - This is the common aspect between Legal-Justice and Illegal-Justice.
-- The only way to do Justice, is to be Evil.<br>
-    - Else, we can only teach, to change the choice of those who make wrong choices, 
-    - while doing the wrong choices, lead us to learn fast.
-
-
-## Yin Yang 
+## Yin Yang teaching 
 
 The beauty of contradictions of Yin and Yang, associated to God and the Devil.<br>
 One day a "Good Men" create something.<br>
@@ -52,8 +35,24 @@ In the next day a "Bad Men", deny the "Good Men" creation.<br>
 The "Good", become bad, because did react in a violent way, against who deny his will.<br>
 The "Bad" become good, because it was victimized in a vilent way, by who should know how to deal with those who deny.
 
-- This days, we can see so many stories like this.<br>
+- This days, we can see so many stories like this.
     - People reacting in a violent way, to those who deny their will.
+
+## Cultural Interpretations 
+
+In Chinese interpretation, Monkeys can be offensive, while they are peaceful.<br>
+Outside China, many are silent, while demonstrating being destructive.<br>
+Maybe is a coincidence, because Chinese can be silent, while demonstrating being in Peace.
+
+## The Majority of Justice Systems 
+
+**Everything you will say, can be used against you in Court.**<br>
+
+- The Criminals believe in the same, but they don't make of use of Courts.
+    - This is the common aspect between Legal-Justice and Illegal-Justice.
+- The only way to do Justice, is to be Evil.
+    - Else, we can only teach, to change the choice of those who make wrong choices, 
+    - while doing the wrong choices, lead us to learn fast.
 
 ## Military and God
 
@@ -137,4 +136,4 @@ which means: 1 + 1 = 1 OR 3 - Metal Monkey - World Wide
 
 ## What I like to do
 
-I love to Dance 
+- I love to Dance 
