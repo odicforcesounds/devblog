@@ -16,16 +16,8 @@ In Chinese interpretation, Monkeys can be offensive, while they are peaceful.<br
 Outside China, many are silent, while demonstrating being destructive.<br>
 Maybe is a coincidence, because Chinese can be silent, while demonstrating being in Peace.
 
-## The Majority of Justice Systems 
-**Everything you will say, can be used against you in Court.**<br>
-
-- The Criminals believe in the same, but they don't make of use of Courts.
-    - This is the common aspect between Legal-Justice and Illegal-Justice.
-- The only way to do Justice, is to be Evil.<br>
-    - Else, we can only teach, to change the choice of those who make wrong choices, 
-    - while doing the wrong choices, lead us to learn fast.
-
 ## I am Human Too
+
 Humans can only learn by doing mistakes?<br>
 Humans can learn by reading, while the thinker will not do anything with what the thinker knows.<br>
 In this world, we can teach to give the opportunity to others, to become better.<br>
@@ -34,7 +26,26 @@ Many children were target of violent penalties, for doing something wrong.<br>
 What Should I do when non-children do mistakes?<br>
 I dont' know, but I keep trying to Teach.<br>
 
+## My Style 
+
+My style is to create creative content, while trying to teach.<br>
+I am not a teacher and my composition is not made of letters.<br>
+
+- Everything I describe is my sites, are about **The Style of God**, while the Style is not God.
+
+## The Majority of Justice Systems 
+
+**Everything you will say, can be used against you in Court.**<br>
+
+- The Criminals believe in the same, but they don't make of use of Courts.
+    - This is the common aspect between Legal-Justice and Illegal-Justice.
+- The only way to do Justice, is to be Evil.<br>
+    - Else, we can only teach, to change the choice of those who make wrong choices, 
+    - while doing the wrong choices, lead us to learn fast.
+
+
 ## Yin Yang 
+
 The beauty of contradictions of Yin and Yang, associated to God and the Devil.<br>
 One day a "Good Men" create something.<br>
 In the next day a "Bad Men", deny the "Good Men" creation.<br>
@@ -45,6 +56,7 @@ The "Bad" become good, because it was victimized in a vilent way, by who should 
     - People reacting in a violent way, to those who deny their will.
 
 ## Military and God
+
 I don't like the military, when the objective is destructive.<br>
 They learn to accept orders, without questioning them.<br>
 They cannot deny them, or else, they will be punished.<br>
@@ -56,6 +68,7 @@ Maybe God is there, trying to be happy with those who don't deny his will.<br>
     - The one who knows, who is Good or Bad, because God can be Mad.
 
 ## Books 
+
 All Religious books are like books-for-children.<br>
 
 - They try to teach some basic values.
@@ -66,13 +79,8 @@ All Religious books are like books-for-children.<br>
     - but for everything that Human create, is Human will, not God. 
     - God cannot write books, humans can.
 
-## My Style 
-My style is to create creative content, while trying to teach.<br>
-I am not a teacher and my composition is not made of letters.<br>
-    
-- Everything I describe is my sites, are about **The Style of God**, while the Style is not God.
-
 ## Humans and God in History
+
 - There is a Room with one single Paint in the wall.
 - We ask 5 persons to describe this Paint using text.
 - At the end, we have 5 different descriptions of the same paint.
@@ -83,7 +91,7 @@ I am not a teacher and my composition is not made of letters.<br>
         - Maybe they don't wish to learn, while they love to compite.
     - "My book speak about the Truth, not yours, Both say".
     - I think people have some children inside, while that is not bad to the mind.
-    
+
 ## Humans and Love in History  
 
 What contradicts with Pleasure?<br>	
