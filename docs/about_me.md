@@ -54,7 +54,7 @@ Maybe is a coincidence, because Chinese can be silent, while demonstrating being
     - Else, we can only teach, to change the choice of those who make wrong choices, 
     - while doing the wrong choices, lead us to learn fast.
 
-## Military and God
+## Military and God in History
 
 I don't like the military, when the objective is destructive.<br>
 They learn to accept orders, without questioning them.<br>
@@ -66,7 +66,7 @@ Maybe God is there, trying to be happy with those who don't deny his will.<br>
     - I am sure that the "Devil" is the Guardian of Paradise.
     - The one who knows, who is Good or Bad, because God can be Mad.
 
-## Books 
+## Books and God in History
 
 All Religious books are like books-for-children.<br>
 
@@ -105,7 +105,7 @@ What contradicts with Pleasure?<br>
     - Only in that moment, you feel pleasure. 
         - Because the ones you love are good, not because you had an orgasm.
 
-## The Divine Characteristic 
+## The Divine Characteristic of Humanity
 
 **God gave us the Free Will of Choice. So each one make choices.**<br>
 
@@ -115,7 +115,7 @@ What contradicts with Pleasure?<br>
     - while doing sex, is more productive, 
     - even if the objective is not to make children.
 
-## Spiritual Message 
+## Spiritual Message from a single Human
 
 You are the Wood(America(Tiger(1))) + <br>
 I am the Fire(Asia(Dragon(1)))<br>
@@ -136,4 +136,22 @@ which means: 1 + 1 = 1 OR 3 - Metal Monkey - World Wide
 
 ## What I like to do
 
-- I love to Dance 
+- I love to Dance, 
+- I love to Sing and 
+- I love to mix everything
+- I love to have all kind of talks about theories
+- I love to learn about new things 
+- I love to learn about old things 
+- I love woman
+- I love people who use of "Good Sense"
+- I love almost humor styles
+- I love when humanity is able to laught without reacting (That is Intelligence)
+
+## About me and God 
+
+- God is a function without form. 
+- God did like me.
+- I think God like peaceful persons.
+- I think God like peaceful monkeys.
+- I talk alone so many times, while popularity say: 
+    - Those who talk alone, talk with God. 
