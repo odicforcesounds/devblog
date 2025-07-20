@@ -1,7 +1,7 @@
 # Monkey Blog, Monkey Thoughts
 
 ## Blog Posts
-- [About me](./about_me.md)
+- [About me](./about_me.md): A "small" description about who I am and why I am what I am
 - [Domain Statistics](./domain_statistics.md): Comments about the last Statistics of this site
 - [The Style of God](./style_of_god.md): Rational text that describe the 道 
 - [Application Development](./app_dev.md): Describing what I need to develop Website application
