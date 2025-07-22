@@ -2,7 +2,7 @@
 
 A child was born within a family that talk about religions and filosophy. <br>
 This child had no obligation to have a religion, since the majority of the conversations at home, where about the concepts behind each. <br>
-Somewhere in Time, when this child was already men, had a experience that make him embrace the idea of Taoism. <br>
+Somewhere in Time, when this child was already men, had a experience, as some "electrical package" fall from the sky into his head, and from that moment on, he dedicate his life to this sites <br>
 
 I like Taoism. <br>	
 I like to see the Creativity, that is in You and in me. <br>
