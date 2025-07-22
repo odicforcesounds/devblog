@@ -23,9 +23,9 @@
 
 ### Social Networks
 
-- [Mastodon](https://mstdn.business/@SunWukong): Send me a message private or public here. 
-- [Keybase](https://keybase.io/Path_of_Shields): Send me a encrypted message here.
+- [Mastodon](https://mstdn.business/@SunWukong): I rarely use this platform, but you can send me a message here. 
+- [Keybase](https://keybase.io/Path_of_Shields): I rarely use this platform, but you can send me a encrypted message here.
 - [Instagram](https://instagram.com/Rakzhodekams): I rarely use this platform, but you can send me a message here.
 - [Facebook](https://facebook.com/odicforcesounds): I rarely use this platform, but you can send me a message here. 
 - [Github](https://github.com/odicforcesounds): I use this platform almost every day. You can send me a message here, by adding a new publication in the [discussion](https://github.com/orgs/odicforcesounds/discussions/1) menu, or by commenting in this one linked.
-- [Youtube](https://www.youtube.com/@odicforcesounds/): Monologos, speaking alone about several subsjects
+- [Youtube](https://www.youtube.com/@odicforcesounds/): Monologos, speaking alone about several subjects
