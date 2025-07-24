@@ -1,6 +1,7 @@
 ### Malicious Activities Report 
 
-- **Note**: I notice about **Ireland**, **Japan** and **France** malicious activity, that is trying to hack my sites. From **UK** to others, the [Hacking](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/tracks/12_Hacking_Festival/index.html) techniques, are different, while all my sites, are **static** and have no input-box to inject code. 
+- **Note**: I notice about **Ireland**, **Japan** and **France** malicious activity, that is trying to hack my sites. 
+- From **UK** to others, the [Hacking](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/tracks/12_Hacking_Festival/index.html) techniques, are different, while all my sites, are **static** and have no input-box to inject code. 
 - I am sure that is possible to hack it, but hopefully no one will. 
 - Maybe you already know that I use **Cloudflare** to manage **DNS** and other **HTTP** inputs, so I redirect them to [this](https://blog.odicforcesounds.com/blog/awesome/files/Security/Offensive/ABBT.html) page, to motivate them to learn more. 
 - You know, they use some automatic **Script-Kid** Tool to hack **Wordpress** / **PHP** frameworks. 
