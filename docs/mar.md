@@ -23,4 +23,4 @@
     - I see a lot of work for you, to hack me. 
     - I am not so big that diserve your time for nothing. 
     - But you are the one who knows what to do with your own time. Good Luck!
-- I could try to hack you too, since I have your **IP**, using Windows, but I don't spend my time, fighting against someone, but by building something new for everyone.
+- I could try to hack you too, since I have your **IP**, and you are using [Windows](https://www.exploit-db.com/?type=remote&platform=windows_x86-64), but I don't spend my time, fighting against someone, but by building something new for everyone.
