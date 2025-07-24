@@ -1,4 +1,4 @@
-# Awesome Bug Bounty Tools [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
+# Awesome Bug Bounty Tools
 
 > A curated list of various bug bounty tools
 
@@ -494,7 +494,12 @@ Lorem ipsum dolor sit amet
 
 To the extent possible under law, vavkamil has waived all copyright and related or neighboring rights to this work.
 
-thank you. what is shared will be copied. the majority of everything you think you know, is because you did copy, else your wouldn't identify a subject or a object. 
-the right to copy is the right to transform what was already done, by those who were creative, using logic, to create new tools, based on what they already copy.
-i mean, in this case, the copy is the copy of text. i didn't change much. awesome work you have here.
-is like memory.. we are [memory](https://art.odicforcesounds.com/pages/yinyang/dao/index.html) 
+--- 
+
+1. Thank you **Vavkamil**. What is shared will be copied. Everything you think you know, is because you did copy, else your wouldn't identify a subject or a object. 
+2. The right to copy is the right to transform what was already done, by those who were creative, using logic, to create new tools, based on what they already copy.
+3. I mean, in this case, the copy is the copy of text. 
+4. I didn't change much. awesome work you have here.
+    - 用于: Hackers will be even more thankful, so they can attack random sites or persons. 
+    - Your contribution to have a world more secure, is as well with you! 
+5. Is like memory.. we are [memory](https://art.odicforcesounds.com/pages/yinyang/dao/index.html) 
