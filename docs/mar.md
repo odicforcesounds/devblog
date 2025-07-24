@@ -1,7 +1,7 @@
 ### Malicious Activities Report 
 
 ```sh 
-# MIM: I am the Man in the Middle 
+echo "I am the Man in the Middle"
 ```
 
 - I can read all your requests before they reach the hosting site, which is this one. :) 
