@@ -10,7 +10,6 @@
 - I am sure that is possible to hack it, but hopefully no one will. 
 - Maybe you already know that I use [CloudFlare](https://cloudflare.com/) to manage [DNS](https://www.rfc-editor.org/rfc/rfc1035)  and other [HTTP](https://www.rfc-editor.org/rfc/rfc2616) requests, so I redirect them to [this](https://blog.odicforcesounds.com/blog/awesome/files/Security/Offensive/ABBT.html) page, to motivate them to learn more. 
 - What ever [IP](https://www.rfc-editor.org/rfc/rfc791) you use, what every country or continent you are, the rules are applied for all. (Fair)
-- I could try to hack you too, since I have your **IP**, but I don't spend my time, fighting against someone, but by building something new for everyone.
     - You know, they use some automatic **Script-Kid** Tool to hack [WordPress](https://wordpress.com/) frameworks. 
     - I don't know why, but I don't like [PHP](https://www.php.net/). 
     - I Like [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML) and [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS). 
@@ -24,3 +23,4 @@
     - I see a lot of work for you, to hack me. 
     - I am not so big that diserve your time for nothing. 
     - But you are the one who knows what to do with your own time. Good Luck!
+- I could try to hack you too, since I have your **IP**, using Windows, but I don't spend my time, fighting against someone, but by building something new for everyone.
