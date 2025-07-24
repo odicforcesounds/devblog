@@ -1,7 +1,8 @@
 ### Malicious Activities Report 
 
     MIM: I am the Man in the Middle 
-    - I can read all your requests before they reach the hosting site, which is this one. :) 
+
+- I can read all your requests before they reach the hosting site, which is this one. :) 
 
 - I notice about **Ireland**, **Japan** **Australia** and **France** malicious activity, that is trying to hack my sites. 
 - From **UK**, **North America** to others, the [Hacking](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/tracks/12_Hacking_Festival/index.html) techniques are different, while all my sites, are **static** and have no input-box to inject code. 
