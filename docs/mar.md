@@ -6,7 +6,7 @@
 
 - I can read all your requests before they reach the hosting site, which is this one. :) 
 - I notice about **Ireland**, **Japan** **Australia** and **France** malicious activity, that is trying to hack my sites. 
-- From **UK**, **North America** to others, the [Hacking](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/tracks/12_Hacking_Festival/index.html) techniques are different, while all my sites, are **static** and have no input-box to inject code. 
+- From **UK**, **North America** to others, the [Hacking](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/tracks/12_Hacking_Festival/index.html) techniques are different, while all my sites, are **static** and have no input-box to inject code or database or users. :)  
 - I am sure that is possible to hack it, but hopefully no one will. 
 - Maybe you already know that I use [CloudFlare](https://cloudflare.com/) to manage [DNS](https://www.rfc-editor.org/rfc/rfc1035)  and other [HTTP](https://www.rfc-editor.org/rfc/rfc2616) requests, so I redirect them to [this](https://blog.odicforcesounds.com/blog/awesome/files/Security/Offensive/ABBT.html) page, to motivate them to learn more. 
 - What ever [IP](https://www.rfc-editor.org/rfc/rfc791) you use, what every country or continent you are, the rules are applied for all. (Fair)
