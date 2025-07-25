@@ -189,6 +189,7 @@ A curated list of awesome search engines useful during Penetration testing, Vuln
 - [SiteDossier](http://www.sitedossier.com/) - Profiles for millions of sites on the web
 - [SpyOnWeb](https://spyonweb.com/) - Quick and convenient search for the websites that probably belong to the same owner
 - [HaveIBeenSquatted](https://www.haveibeensquatted.com/) - Check if a domain has been typosquatted
+- - [9 Subdomain finder tools hosted online]https://www.nmmapper.com/sys/tools/subdomainfinder/)( - Amass, Anubis, Knocky, Findomain, Nmap, Censys...)
 
 ### URLs
 
