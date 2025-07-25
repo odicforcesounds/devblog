@@ -10,7 +10,7 @@ echo "I am the Man in the Middle"
 - I am sure that is possible to [hack](./blog/awesome/files/Security/Offensive/AHSE.md) it, but hopefully no one will. 
 - Maybe you already know that I use [CloudFlare](https://cloudflare.com/) to manage [DNS](https://www.rfc-editor.org/rfc/rfc1035)  and other [HTTP](https://www.rfc-editor.org/rfc/rfc2616) requests, so I redirect them to [this](https://blog.odicforcesounds.com/blog/awesome/files/Security/Offensive/ABBT.html) page, to motivate them to learn more. 
 - What ever [IP](https://www.rfc-editor.org/rfc/rfc791) you use, what every country or continent you are, the rules are applied for all. (Fair)
-    - You know, they use some automatic **Script-Kid** Tool to hack [WordPress](https://wordpress.com/) frameworks. 
+    - You know, this attackers use some automatic Tool to hack [WordPress](https://wordpress.com/) frameworks, without reading the code, that is accessible from the web browser. :D  
     - I don't know why, but I don't like [PHP](https://www.php.net/). 
     - I Like [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML) and [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS). 
     - [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) can be useful and [NodeJS](https://nodejs.org/en) can be useful too. 
