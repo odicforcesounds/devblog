@@ -1,6 +1,7 @@
 #!/bin/bash
 # IF you are using another domain to push your code... 
-
+git diff
+git pull git@github.com:odicforcesounds/devblog
 pkill -x ssh-agent 
 sleep 1
 echo "ssh-agents killed"
