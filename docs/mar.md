@@ -17,7 +17,7 @@ echo "I am the Man in the Middle"
 - Well, in fact this specific sub-domain is made with [Markdown](https://www.markdownguide.org/) only and hosted in **GitHub**, like all other sub-domains.
 - I have no secrets for you:
     - **Cool Tip**: See for Yourself the **Source Code** of all sites [here](https://github.com/odicforcesounds)
-- To change the sites, you need to commit the changes in each site repository, while if you read the **README** of **Art** sub-domain, you see that your contributions are welcome.
+- To change the sites, you need to commit the changes in each site repository, while if you read the **README** of **Art** sub-domain repository, you see that your contributions are welcome.
     - While if you have machine power, you can DDoS [Microsoft](https://Microsoft.com), then [GitHub](https://GitHub.com) and CloudFlare that store this website in cache. 
     - After this 3 domains offline, my websites will be offline too, but the site will be at [Archive](https://archive.org) too. :) 
     - I see a lot of work for you, to [hack](./blog/awesome/files/Security/Offensive/APCS.md) me. 
