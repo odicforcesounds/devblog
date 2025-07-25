@@ -1,10 +1,6 @@
 # [All Resource Collection Projects](https://github.com/alphaSeclab/all-my-collection-repos)
 
-
-
-
 # RAT
-
 
 - 2500+ open source RAT/C&C tools, 1200+ blogs and video about RAT/C&C analysis.
 - [中文版本](https://github.com/alphaSeclab/awesome-rat)

@@ -5,9 +5,9 @@ echo "I am the Man in the Middle"
 ```
 
 - I can read all your requests before they reach the hosting site, which is this one. :) 
-- I notice about **Ireland**, **Japan**, **Ukraine**, **Russia**, **Australia** and **France** malicious activity, that is trying to hack my sites. 
-- From **UK**, **North America** to others, the [Hacking](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/tracks/12_Hacking_Festival/index.html) techniques are different, while all my sites, are **static** and have no input-box to inject code or database or users. :)  
-- I am sure that is possible to hack it, but hopefully no one will. 
+- I notice about **Ireland**, **Japan**, **Ukraine**, **Russia**, **Australia** and **France** malicious activity, that is trying to [hack](./blog/awesome/files/Security/Offensive/AR.md) my sites. 
+- From **UK**, **North America** to others, the [Hacking](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/tracks/12_Hacking_Festival/index.html) techniques are different, while all my sites, are **static** and have no input-box to inject code, databases or users. Pure HTML & CSS Only!! 
+- I am sure that is possible to [hack](./blog/awesome/files/Security/Offensive/AHSE.md) it, but hopefully no one will. 
 - Maybe you already know that I use [CloudFlare](https://cloudflare.com/) to manage [DNS](https://www.rfc-editor.org/rfc/rfc1035)  and other [HTTP](https://www.rfc-editor.org/rfc/rfc2616) requests, so I redirect them to [this](https://blog.odicforcesounds.com/blog/awesome/files/Security/Offensive/ABBT.html) page, to motivate them to learn more. 
 - What ever [IP](https://www.rfc-editor.org/rfc/rfc791) you use, what every country or continent you are, the rules are applied for all. (Fair)
     - You know, they use some automatic **Script-Kid** Tool to hack [WordPress](https://wordpress.com/) frameworks. 
@@ -23,4 +23,4 @@ echo "I am the Man in the Middle"
     - I see a lot of work for you, to hack me. 
     - I am not so big that diserve your time for nothing. 
     - But you are the one who knows what to do with your own time. Good Luck!
-- I could try to hack you too, since I have your **IP**, and you are using [Windows](https://www.exploit-db.com/?type=remote&platform=windows_x86-64), but I don't spend my time, fighting against someone, but by building [something new](https://art.odicforcesounds.com/pages/YinYang/Dao/login/index.html) for everyone.
+- I could try to [hack](./blog/awesome/files/Security/Offensive/RSC.md) you too, since I have your **IP**, and you are using [Windows](https://www.exploit-db.com/?type=remote&platform=windows_x86-64), but I don't spend my time, [fighting against someone](https://blog.odicforcesounds.com/style_of_god.html), but by building [something new](https://art.odicforcesounds.com/pages/YinYang/Dao/login/index.html) for everyone.

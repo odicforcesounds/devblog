@@ -2,10 +2,6 @@
 
 Collection of cheat sheets useful for pentesting
 
-### Contribution
-Your contributions and suggestions are heartily welcome. Please check the [Contributing Guidelines](.github/CONTRIBUTING.md) for more details.
-
-
 ## Security Talks and Videos
 
 * [InfoCon - Hacking Conference Archive](https://infocon.org/cons/)
