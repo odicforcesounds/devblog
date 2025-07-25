@@ -139,22 +139,25 @@ which means: 1 + 1 = 1 OR 3 - Metal Monkey - World Wide
 - I love to Dance, 
 - I love to Sing and 
 - I love to mix everything
+- I lobe Music of all kind
 - I love to have all kind of talks about theories
 - I love to learn about new things 
 - I love to learn about old things 
 - I love woman
-- I love people make the use of "Good Sense"
+- I love some man 
+- I love when people make use of "Good Sense"
 - I love almost all humor styles
 - I love when humanity is able to laught without reacting (That is Intelligence)
 
 ## About me and God 
 
 - God is a function without form. 
-- God did like me.
+- I think God did like me.
 - I think God like peaceful persons.
 - I think God like peaceful monkeys.
 - I talk alone so many times, while popularity say: 
     - Those who talk alone, talk with God. 
     - I don't believe that we need temples for that, 
     - but I understand the creative input for almost everything that humanity did. 
-- God like creative persons
+- God like creative persons and creative products, while I do like them too. 
+
