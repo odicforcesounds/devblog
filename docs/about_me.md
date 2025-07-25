@@ -7,7 +7,7 @@ Somewhere in Time, when this child was already men, had a experience, as some "e
 I like Taoism. <br>	
 I like to see the Creativity, that is in You and in me. <br>
 I like the human ability to Imagine and to Create<br>
-Sometimes I don't like, what humans do with their Unique Divine characteristics that all have.<br>
+Sometimes I don't like, what humans do with their **Unique** and **Divine** characteristic that all have.<br>
 Without it, nothing would ever change, nothing could ever be created.<br>
 
 ## I am Human Too
