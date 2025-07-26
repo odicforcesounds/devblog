@@ -5,7 +5,7 @@ echo "I am the Man in the Middle"
 ```
 
 - I can read all your requests after they reach the hosting site, which is this one. :)
-- The service I use, log your activity, just to know how many visits I get, while this is useful for know who is trying to attack my sites. 
+- The service I use, log your activity, just to know how many visits I get, while this is useful to know who is trying to attack my sites. 
 - I notice about **Ireland**, **Japan**, **Ukraine**, **Russia**, **Australia** and **France** malicious activity, that is trying to [hack](./blog/awesome/files/Security/Offensive/AR.md) my sites. 
 - From **UK**, **North America** to others, the [Hacking](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/tracks/12_Hacking_Festival/index.html) techniques are different, while all my sites, are **static** and have no input-box to inject code, databases or users. 
 - Pure HTML & CSS Only, which there are some iframes from [Bandcamp](https://bandcamp.com) to listen the music I made. 
