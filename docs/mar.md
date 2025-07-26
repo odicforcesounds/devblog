@@ -20,10 +20,12 @@ echo "I am the Man in the Middle"
 - Well, in fact this specific sub-domain is made with [Markdown](https://www.markdownguide.org/) only and hosted in **GitHub**, like all other sub-domains.
 - I have no secrets for you:
     - **Tip**: See for Yourself the **Source Code** of all sites [here](https://github.com/odicforcesounds)
-- To change sites content, you need to commit the changes in each site repository, while if you read the **README** of **Art** sub-domain repository, you see that your contributions are welcome.
-    - While if you have [machine](./blog/awesome/files/Linux/Tools/AT.md) power, you can DDoS [Microsoft](https://Microsoft.com), then [GitHub](https://GitHub.com) and CloudFlare that store this website in cache. 
+- To change sites content, you need to commit the changes in each site repository, while if you read the **README** of **Art** sub-domain repository, you see that your contributions are welcome. In case you wish to share a comment, please give it [here](https://github.com/orgs/odicforcesounds/discussions/5). 
+    - While if you have [machine](./blog/awesome/files/Virtualization/DCS.md) power, you can DDoS [Microsoft](https://Microsoft.com) that owns [GitHub](https://GitHub.com) and CloudFlare that store this website in cache, while I manage your requests.  
     - After this 3 domains offline, my websites will be offline too, but the site will be at [Archive](https://archive.org) too. :) 
+    - I can replicate the code in different code-hostings that offer the same service I use here. 
     - I see a lot of work for you, to [hack](./blog/awesome/files/Security/Offensive/APCS.md) me. 
     - I am not so big that diserve your time for nothing. 
     - But you are the one who knows what to do with your own time. Good Luck!
 - I could try to [hack](./blog/awesome/files/Security/Offensive/RSC.md) you too, since I have your **IP**, and you are using [Windows](https://www.exploit-db.com/?type=remote&platform=windows_x86-64), but I don't spend my time, [fighting against someone](https://blog.odicforcesounds.com/style_of_god.html), but by building [something new](https://art.odicforcesounds.com/pages/YinYang/Dao/login/index.html) for everyone.
+    - In the end, you can even clone all my repositories, and open a pull request with some new code. Be Creative. 
