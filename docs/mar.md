@@ -5,11 +5,11 @@ echo "I am the Man in the Middle"
 ```
 
 - I can read all your requests after they reach the hosting site, which is this one. :)
-- The service I use, [log](./blog/awesome/files/Security/Defensive/ASH.md) your activity, just to know how many visits I get, while this is useful to know who is trying to [attack](./blog/awesome/files/Security/Defensive/ATDH.md) my sites. 
+- The service I use, [log](./blog/awesome/files/Security/Defensive/ATDH.md) your activity, just to know how many visits I get, while this is useful to know who is trying to [attack](./blog/awesome/files/Security/Defensive/ASH.md) my sites. 
 - I notice about **Ireland**, **Japan**, **Ukraine**, **Russia**, **Australia** and **France** malicious activity, that is trying to [hack](./blog/awesome/files/Security/Offensive/AR.md) my sites. 
 - From **UK**, **North America** to others, the [Hacking](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/tracks/12_Hacking_Festival/index.html) techniques are different, while all my sites, are **static** and have no input-box to inject code, databases or users. 
 - Pure HTML & CSS Only. There are some iframes from [Bandcamp](https://bandcamp.com) to listen the music I made. I know the music is not awesome, but what can I say?
-    - I can add the Security headers to accept JavaScript from this specific domain only too. 
+    - I can add the [security](./blog/awesome/files/Virtualization/DCS.md) headers to accept iframes from this specific domain only too. 
 - I am sure that is possible to [hack](./blog/awesome/files/Security/Offensive/AHSE.md) it, but hopefully no one will. 
 - Maybe you already know that I use [CloudFlare](https://cloudflare.com/) to manage [DNS](https://www.rfc-editor.org/rfc/rfc1035)  and other [HTTP](https://www.rfc-editor.org/rfc/rfc2616) requests, so I redirect them to [this](https://blog.odicforcesounds.com/blog/awesome/files/Security/Offensive/ABBT.html) page, to motivate them to learn more. 
 - What ever [IP](https://www.rfc-editor.org/rfc/rfc791) you use, what every country or continent you are, the rules are applied for all. (Fair)
