@@ -7,6 +7,7 @@ echo "I am the Man in the Middle"
 - I can read all your requests after they reach the hosting site, which is this one. :)
 - The service I use, [log](./blog/awesome/files/Security/Defensive/ATDH.md) your activity, just to know how many visits I get, while this is useful to know who is trying to [attack](./blog/awesome/files/Security/Defensive/ASH.md) my sites. 
 - I notice about **Ireland**, **Japan**, **Ukraine**, **Russia**, **Australia**, **France**, **Singapore** and **China** malicious activity, that is trying to [hack](./blog/awesome/files/Security/Offensive/AR.md) my sites. 
+- In fact, Ireland must have my best fan. The guy use the same script several times per day, and maybe he doesn't read the logs. 
 - From **UK**, **North America** to others, the [Hacking](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/tracks/12_Hacking_Festival/index.html) techniques are different, while all my sites, are **static** and have no input-box to inject code, databases or users. 
 - Pure HTML & CSS Only. There are some iframes from [Bandcamp](https://bandcamp.com) to listen the music I made. I know the music is not awesome, but what can I say?
     - I can add the [security](./blog/notes.md) headers to accept iframes from this specific domain only too. 
@@ -27,4 +28,4 @@ echo "I am the Man in the Middle"
     - I am not so big that diserve your time for nothing. 
     - But you are the one who knows what to do with your own time. Good Luck!
 - I could try to [hack](./blog/awesome/files/Security/Offensive/RSC.md) you too, since I have your **IP**, and you are using [Windows](https://www.exploit-db.com/?type=remote&platform=windows_x86-64), but I don't spend my time, [fighting against someone](https://blog.odicforcesounds.com/style_of_god.html), but by building [something new](https://art.odicforcesounds.com/pages/YinYang/Dao/login/index.html) for everyone.
-    - In the end, you can even clone all my repositories, and open a pull request with some new code. Be Creative. 
+- In the end, you can even clone all my repositories, and open a pull request with some new code. Be Creative.
