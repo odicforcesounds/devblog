@@ -2,6 +2,7 @@
 
 ## Blog Posts
 
+- [The Awesome Story](./awesome_story.md): Not a awesome story, but full of awesome stories. 
 - [The Falsehood](./false_hood.md): When we believe that "something is true" but is not. 
 - [Domain Statistics](./domain_statistics.md): Comments about the last Statistics of this site.
 - [Malicious Activities Report](./mar.md): Some notes about malicious activities in this domain.
