@@ -12,8 +12,10 @@ Maybe they see it offensive, while Chinese cultures say the same about Monkeys.
 
 What issue they see in me that exist on them?
 
-While both use some cultural values that are the same, from somewhere in History.
+Me imagining of having thousen of visits and all those inputs where just [attacks](./mar.md)
 
-I think Portugal and China or Japan had good relationships in the past.
+:-)
 
-That is what I read. Maybe is a misinformation. 
+
+
+
