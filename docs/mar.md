@@ -10,7 +10,9 @@ echo "I am the Man in the Middle"
 - In fact, Ireland must have my best fan. The guy use the same script several times per day. The most curious behavior from this guy is how much he doesn't understand what he is doing. 
     - You are in this page because you click or because you have been redirected. 
     - Now this guy is attacking this page (using the Wordpress Scanner) 
-    - LOLOOLOOLOLOL :D 
+    - GET http://blog.odicforcesounds.com/mar.html/wp-admin/* 
+    - LoL 
+    - But I cannot deny that he was cretive. 
 - From **UK**, **North America** to others, the [Hacking](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/tracks/12_Hacking_Festival/index.html) techniques are different, while all my sites, are **static** and have no input-box to inject code, databases or users. 
 - Pure HTML & CSS Only. There are some iframes from [Bandcamp](https://bandcamp.com) to listen the music I made. I know the music is not awesome, but what can I say?
     - I can add the [security](./blog/notes.md) headers to accept iframes from this specific domain only too. 
