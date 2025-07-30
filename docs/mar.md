@@ -7,7 +7,10 @@ echo "I am the Man in the Middle"
 - I can read all your requests after they reach the hosting site, which is this one. :)
 - The service I use, [log](./blog/awesome/files/Security/Defensive/ATDH.md) your activity, just to know how many visits I get, while this is useful to know who is trying to [attack](./blog/awesome/files/Security/Defensive/ASH.md) my sites. 
 - I notice about **Ireland**, **Japan**, **Ukraine**, **Russia**, **Australia**, **France**, **Singapore** and **China** malicious activity, that is trying to [hack](./blog/awesome/files/Security/Offensive/AR.md) my sites. 
-- In fact, Ireland must have my best fan. The guy use the same script several times per day, and maybe he doesn't read the logs. 
+- In fact, Ireland must have my best fan. The guy use the same script several times per day. The most curious behavior from this guy is how much he doesn't understand what he is doing. 
+    - You are in this page because you click or because you have been redirected. 
+    - Now this guy is attacking this page (using the Wordpress Scanner) 
+    - LOLOOLOOLOLOL :D 
 - From **UK**, **North America** to others, the [Hacking](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/tracks/12_Hacking_Festival/index.html) techniques are different, while all my sites, are **static** and have no input-box to inject code, databases or users. 
 - Pure HTML & CSS Only. There are some iframes from [Bandcamp](https://bandcamp.com) to listen the music I made. I know the music is not awesome, but what can I say?
     - I can add the [security](./blog/notes.md) headers to accept iframes from this specific domain only too. 
