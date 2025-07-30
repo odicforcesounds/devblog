@@ -6,9 +6,11 @@ echo "I am the Man in the Middle"
 
 - I can read all your requests after they reach the hosting site, which is this one. :)
 - The service I use, [log](./blog/awesome/files/Security/Defensive/ATDH.md) your activity, just to know how many visits I get, while this is useful to know who is trying to [attack](./blog/awesome/files/Security/Defensive/ASH.md) my sites. 
-- I notice about **Ireland**, **Japan**, **Ukraine**, **Russia**, **Australia**, **France**, **Singapore** and **China** malicious activity, that is trying to [hack](./blog/awesome/files/Security/Offensive/AR.md) my sites. 
-- In fact, Ireland must have my best fan. The guy use the same script several times per day. The most curious behavior from this guy is how much he doesn't understand what he is doing. 
-    - You are in this page because you click or because you have been redirected. 
+-  I notice about **World Wide** malicious activity, that is trying to [hack](./blog/awesome/files/Security/Offensive/AR.md) my sites.
+- Sadly this gave me the sensation that I was getting popular, but I was [wrong](./false_hood.md).
+- In fact, some Ireland land must have my best fan. The guy use the same script several times per day. 
+- The most curious behavior from this guy is how much he doesn't understand what he is doing. 
+    - If You are in this page because you click or because you have been redirected. 
     - Now this guy is attacking this page (using the Wordpress Scanner) 
     - GET http://blog.odicforcesounds.com/mar.html/wp-admin/* 
     - LoL 
@@ -32,5 +34,6 @@ echo "I am the Man in the Middle"
     - I see a lot of work for you, to [hack](./blog/awesome/files/Security/Offensive/APCS.md) me. 
     - I am not so big that diserve your time for nothing. 
     - But you are the one who knows what to do with your own time. Good Luck!
-- I could try to [hack](./blog/awesome/files/Security/Offensive/RSC.md) you too, since I have your **IP**, and you are using [Windows](https://www.exploit-db.com/?type=remote&platform=windows_x86-64), but I don't spend my time, [fighting against someone](https://blog.odicforcesounds.com/style_of_god.html), but by building [something new](https://art.odicforcesounds.com/pages/YinYang/Dao/login/index.html) for everyone.
-- In the end, you can even clone all my repositories, and open a pull request with some new code. Be Creative.
+- I could try to [hack](./blog/awesome/files/Security/Offensive/RSC.md) you too, since I have your **IP** and you are using [Windows](https://www.exploit-db.com/?type=remote&platform=windows_x86-64), but I don't spend my time [fighting against someone](https://blog.odicforcesounds.com/style_of_god.html), but by building [something new](https://art.odicforcesounds.com/pages/YinYang/Dao/login/index.html) for everyone.
+- In the end, you can even clone all my repositories, and open a pull request with some new code.
+- Be Creative.
