@@ -2,6 +2,7 @@
 
 ## Blog Posts
 
+- [Wordpress Attacks](./wordpress_attacks.md): Suggestions to those who use Cloudflare services. 
 - [Hard Decisions](./hard_decisions.md): Tired of seeing more than 20k request per day of (nothing)
 - [Conversas Filosóficas](./mistica.md): Portuguese content only - Philosophical Talk
 - [The Awesome Story](./awesome_story.md): Not a awesome story, but full of awesome stories. 
