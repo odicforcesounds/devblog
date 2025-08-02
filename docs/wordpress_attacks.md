@@ -20,6 +20,4 @@ Can be [inside](./mar.md) of your domain or [outside](./hard_decisions.md).
 
 My suggestion is that you redirect all malicious requests to somewhere outside your domains.. 
 
-Is better to have low number of visits and being real persons, that automated visits that are not Bots or Crawlers. 
-
-
+Is better to have low number of visits and being real persons, than automated visits that are not Bots or Crawlers. 
