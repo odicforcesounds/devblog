@@ -12,7 +12,7 @@ If You are using CloudFlare services, you can add a **Rule** that use HTTP v1.0 
 
 etc..
 
-After adding this, you need can select all continent's or specific contries. 
+After adding this, you can select all continent's or specific contries. 
 
 What Ever is your choice, you can now redirect all those attacks, to some place. 
 
