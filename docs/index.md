@@ -2,6 +2,7 @@
 
 ## Blog Posts
 
+- [The Good, the Bad and the Ugly](./linux_comparation.md): Small Linux Distros Review
 - [Wordpress Attacks](./wordpress_attacks.md): Suggestions to those who use Cloudflare services. 
 - [Hard Decisions](./hard_decisions.md): Tired of seeing more than 20k request per day of (nothing)
 - [Conversas Filosóficas](./mistica.md): Portuguese content only - Philosophical Talk
