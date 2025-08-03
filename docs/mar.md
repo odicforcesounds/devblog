@@ -10,7 +10,7 @@ echo "I am the Man in the Middle"
 - Sadly this gave me the sensation that I was getting popular, but I was [wrong](./false_hood.md).
 - In fact, some Ireland guy, is all single days demonstrating to me, that he is ~~my best fan~~. The guy use the same script several times per day. The most curious behavior from this guy is how much he doesn't understand what he is doing. 
     - If You are in this page because you click or because you have been redirected. 
-    - Now this guy is attacking this page (using the Wordpress Scanner) 
+    - Now this guy is attacking this page (using the [Wordpress Scanner](./wordpress_attacks.md)) 
     - GET http://blog.odicforcesounds.com/mar.html/wp-admin/* 
     - LoL 
     - But I cannot deny that he was creative. 
