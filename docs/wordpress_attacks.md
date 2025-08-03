@@ -46,3 +46,9 @@ Can be [inside](./mar.md) of your domain or [outside](./hard_decisions.md).
 My suggestion is that you redirect all malicious requests to somewhere outside your domains.. 
 
 Is better to have low number of visits and being real persons, than automated visits that are not Bots or Crawlers. 
+
+Trully, I dislike that choice, where I redirect all malicious atttacks to some police force.
+
+I decided to redirect them to my own [GitHub Repository](https://github.com/odicforcesounds/)
+
+
