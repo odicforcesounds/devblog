@@ -5,7 +5,7 @@ echo "I am the Man in the Middle"
 ```
 
 - I can read all your requests after they reach the hosting site, which is this one. :)
-- The service I use, [log](./blog/awesome/files/Security/Defensive/ATDH.md) your activity, just to know how many visits I get, while this is useful to know who is trying to [attack](./blog/awesome/files/Security/Defensive/ASH.md) my sites. 
+- The service I use, [log](./blog/awesome/files/Security/Defensive/ATDH) your activity, just to know how many visits I get, while this is useful to know who is trying to [attack](./blog/awesome/files/Security/Defensive/ASH.md) my sites. 
 -  I notice about **World Wide** malicious activity, that is trying to [hack](./blog/awesome/files/Security/Offensive/AR.md) my sites.
 - Sadly this gave me the sensation that I was getting popular, but I was [wrong](./false_hood.md).
 - In fact, some Ireland guy, is all single days demonstrating to me, that he is ~~my best fan~~. The guy use the same script several times per day. The most curious behavior from this guy is how much he doesn't understand what he is doing. 
