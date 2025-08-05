@@ -1,4 +1,3 @@
-# Monkey Blog, Monkey Thoughts
 
 ## Blog Posts
 
