@@ -17,10 +17,14 @@
 
 ### Other sub-domains: 
 
-- [Art](https://art.odicforcesounds.com): This is the main sub-domain 
-- [Book](https://book.odicforcesounds.com): Simplification of the main sub-domain with extra texts
-- [Application Wiki](https://wiki.odicforcesounds.com): Formal style to explain **The Challenge**
+- [Art](https://art.odicforcesounds.com): This is the main sub-domain. 
+    - "The Monkey who doesn't listen, is speaking"
+- [Book](https://book.odicforcesounds.com): Simplification of the main sub-domain with extra texts.
+    - "The Monkey who doesn't listen, is writing"
+- [Application Wiki](https://wiki.odicforcesounds.com): Formal style to explain **The Challenge**.
+    - "The Monkey who doesn't listen, is asking"
 - [Play](https://play.odicforcesounds.com): Animated example about "Educating the Monster"
+    - "The Monkey who doesn't listen, is playing"
 
 ### Other Blogs: Blogspot
 
