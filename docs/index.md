@@ -1,6 +1,7 @@
 
 ## Blog Posts
 
+- [The Beauty of the Ugly](./the_beauty_of_the_ugly.md): Just the best documentation about Linux applications. 
 - [All Botnets are welcome](./bots.md): Someone sharing my sites is always good! 
 - [Thank You Red Team](./blueteam_learning.md): "The art of fighting without fighting"
 - [Clubs and Hacks](./hackclub.md): Because hacking is not only pentesting. 
