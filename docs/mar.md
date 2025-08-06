@@ -9,7 +9,7 @@ echo "I am the Man in the Middle"
 -  I notice about **World Wide** malicious activity, that is trying to [hack](./blog/awesome/files/Security/Offensive/AR.md) my sites.
 - Sadly this gave me the sensation that I was getting popular, but I was [wrong](./false_hood.md).
 - In fact, some Ireland guy, is all single days demonstrating to me, that he is ~~my best fan~~. The guy use the same script several times per day. The most curious behavior from this guy is how much he doesn't understand what he is doing. 
-    - If You are in this page because you click or because you have been redirected. 
+    - If You are in this page, is because you click or is because you have been redirected. Yes, those who try to hack this site, are redirected to this page. 
     - Now this guy is attacking this page (using the [Wordpress Scanner](./wordpress_attacks.md)) 
     - GET http://blog.odicforcesounds.com/mar.html/wp-admin/* 
     - LoL 
