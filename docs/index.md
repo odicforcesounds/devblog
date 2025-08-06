@@ -1,9 +1,9 @@
 
 ## Blog Posts
 
-- [Thank You Red Team](./blueteam_learning.md): Because we can learn how to attack without attacking. 
-- [Clubs and Hacks](./hackclub.md): Because hacking is not pentesting. 
-- [Because We Care](./because_we_care.md): I care about your privacy. [Because We Love](https://art.odicforcesounds.com/pages/Data/Audio/Path_Of_Shields/tracks/01_Because_we_Love/index.html)
+- [Thank You Red Team](./blueteam_learning.md): "The art of fighting without fighting"
+- [Clubs and Hacks](./hackclub.md): Because hacking is not only pentesting. 
+- [How evasive this site is?](./because_we_care.md): If privacy is a concern, you should read. 
 - [The Good, the Bad and the Ugly](./linux_comparation.md): Small Linux Distros Review
 - [Wordpress Attacks](./wordpress_attacks.md): Suggestions to those who use Cloudflare services. 
 - [Hard Decisions](./hard_decisions.md): Tired of seeing more than 20k request per day of (nothing)
