@@ -1,6 +1,7 @@
 
 ## Blog Posts
 
+- [All Botnets are welcome](./bots.md): Someone sharing my sites is always good! 
 - [Thank You Red Team](./blueteam_learning.md): "The art of fighting without fighting"
 - [Clubs and Hacks](./hackclub.md): Because hacking is not only pentesting. 
 - [How evasive this site is?](./because_we_care.md): If privacy is a concern, you should read. 
