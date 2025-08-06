@@ -14,7 +14,7 @@ They try to [teach](https://github.com/hackclub/sprig) in a fanny way, which is 
 
 They [Dream](https://github.com/hackclub/daydream) like me and like you do. 
 
-They like [Dinosaurs](https://github.com/hackclub/dinosaurs) since they are not alive. :) 
+They like [Dinosaurs](https://github.com/hackclub/dinosaurs) since they are not alive, or they feel like. :) 
 
 They like Led Zeppelin or AC/DC, since the names are [High](https://github.com/hackclub/highway)
 
