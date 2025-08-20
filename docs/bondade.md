@@ -1,0 +1,35 @@
+# A bondade
+
+A preocupação, sempre existiu em mim, mas nem sempre sou compreensivo.
+Assim sendo, estive a falar com uma amiga que me explicou a tua reação.
+Seja lá por ser gajo ou insensibilidade da minha parte, eu cá não dou importância à problemática do "alguém usar o espaço" de onde eu vivo, para mais alguém dormir, salvo quando não sei quem é a pessoa, podendo abrir excepções. A pessoa no caso deste nosso desentendimento, é alguém que conheço. A pessoa simplesmente seguiu e teve de pagar uma pensão para poder dormir duas noites, numa qualquer quarto, de quem teve a "bondade" de abrir um espaço sem cobrar pelo mesmo. ( no fundo, a mesma situação que estás a viver aqui em casa )
+
+E
+
+Não é por causa do dinheiro que existe esta minha atitude, sendo que, caso tivesses a pagar pelo quarto, nunca teria essa atitude de "partilha" do que tenho e posso decidir. Mas lá está, não quero dizer que o dinheiro é importante, mas sem dúvida que, ora via o dinheiro, ora via a contribuição livre de quem se demonstra disponível para ajudar (que é uma forma de pagar sem incluír dinheiro) não existiu da tua parte, como algo "natural" .. como escolha que não depende da minha decisão, mas da tua consciência.. neste caso, pois é entre mim e ti... poderia ser outra pessoa qualquer, que nega contribuir de várias formas, de forma a pagar o "favor", sendo que poderia também dar dinheiro e não contribuir... mas pronto.. naturalmente e por escolha própria, "sem um documento que descreva literalmente um "contrato" ", tu não foste capaz de retribuir o favor. O que aconteceu, foi que, em prol da tua negação, também neguei quem precisava de uma cama para dormir dois dias. 
+
+Era só mudar os lençois.. caso outra mulher ( neste caso ) dormisse na tua cama .. durante dois dias, mas pronto, entendo a questão da "tal privacidade que é "violada"" por um desconhecido. Eu cá tento ser justo.. mas a justiça também terá sido injusta. 
+
+É tudo que precisava de entender, para entender a tua reação.. e é tudo o que queria dizer. Se estás a borrifar-te para a tal "contribuição livre" (da tua consciência e não da minha decisão), então sem dúvida que não és bem vinda nesta casa. A escolha é tua, pois, seja lá qual for os problemas que tens, eles são teus e, "no bairro do amor, cada um tem de sarar as suas feridas sentimentais".. e por isso, "quero lá saber...", dos sentimentos que tens... pois todas as pessoas do mundo as tem. Não é sobre o que sentes.. e é.. pois tal como todos os outros seres vivos, moveste em prol do que "sentes". Se não sentes que não existe uma  "dívida" que pode ser colmatada sem dinheiro mas com disponibilidade, ou com dinheiro e sem disponibilidade, ... bom.. isso é contigo... mas pronto.. é de "boa formação" do individuo, que se demonstra prestável e disponível, seja no trabalho, na vida cotideana.. familiar.. amizade, etc... Tu é que sabes o que poderá ser justo.. mas o meu problema contigo é só este.. eu não preciso de definir um valor, para dormires cá.. caso tenhas consciência.. de que tudo precisa de uma retribuição.. seja monetária ou não.
+
+E neste caso, era uma demonstração de disponibilidade de uma decisão que não iria interferir a tua liberdade..
+
+Durantes estes dias não estiveste a dormir aqui e criaste um problema contra alguém que, precisava de um sítio para dormir.. de preferencia, de alguém que confia.. mas que teve de negar porque a "menina" não sabe lidar com o facto de alguém dormir no mesmo espaço que dorme, quando está no local que dorme... sendo que neste caso, não dorme, pois estavas longe do local onde outra pessoa que, confio.. tal como fiz contigo.. confiei.. e pronto.. parece que dei-me mal.
+
+Tal como a pessoa confiou em mim e tive de deixa-la mal.. é.. tudo tem sequencia e consequencia.. de escolhas... nada mais.. da consciência.. nada mais.
+
+Uma vez mais, respeitei a tua decisão em prol do teu conforto.. mas todas estas escolhas, em prol do teu conforto, mesmo que algumas delas tenham resultado no meu conforto.. mas têm tido.. nem compreesão da tua parte.. nem retribuição.. a tua atitude durantes estes meses aqui em casa é.. " eu só quero saber de mim e estou a borrifar-me para ti " ... essa é a atitude que demonstraste enquanto aqui estiveste.. pois em todos os momentos que "querias algo", arranjaste tempo, dispobilidade, vontade, etc.. mas esses momentos não incluiram a minha existencia.. mas só a tua individualidade egoista.
+
+E esse egoismo que não existe da minha parte, dispenso que exista na "pequena parte" do pouco que consigo ser para mais alguém.
+
+E como se diz: "mesmo tendo tido a bondade de te notificar do evento", em vez de demonstrares aceitação e compreensão ( pois saberás que não ando a alugar quartos ).. demonstras-te o inverso.. negação e incompreensão.. é só "tu", "tu", "tu" e "tu". o resto que se lixe.. e por isso.. não quero alguém que funcione assim na minha vida. A solidão é mais gratificante.
+
+
+E sim... é uma questão de interesse pessoal.. eu prefiro alguém que tem espirito comunitário, do que alguém que precisa de um documento que descreve, todos os detalhes possíveis ou não, de fazer ou não deixar fazer.. para ser capaz de viver em comunhão.. no fundo o que tu queres é casar com alguém, para que esse "contrato" seja literal
+
+As religiões monoteístas são o teu caminho.
+
+Tens um contrato.. e tudo o que foge do contrato é negado e até punido.. para satisfazer a alma que quer castigar e usufruir da matéria, como a única pessoa que merece alguma coisa.. 
+
+Not my type.
+
