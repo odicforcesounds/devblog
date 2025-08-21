@@ -1,5 +1,6 @@
 ## Blog Posts
 
+- [Posting without posting](./posting.md): A Python Framework to test any API. 
 - [Debian Upgrade](./debian_upgrade.md): The simplicity of Debian Upgrade. 
 - [Offended Chinese](./offended_chinese.md): Sometimes we need to change what we know to improve what we do.
 - [A Bondade](./bondade.md): Portuguese only. How good each can be, or not.
