@@ -1,6 +1,6 @@
 ## Blog Posts
 
-- [La Perna Negra y la SAR](./sar_pn.md): Spanish content only. Be a Good Pirate. 
+- [La Perla Negra y la SAR](./sar_pn.md): Spanish content only. Be a Good Pirate. 
 - [Just another Post](./posting.md): A Python Framework to test any API. 
 - [Debian Upgrade](./debian_upgrade.md): The simplicity of Debian Upgrade. 
 - [Offended Chinese](./offended_chinese.md): Sometimes we need to change what we know to improve what we do.
