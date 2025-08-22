@@ -2,7 +2,7 @@
 
 Alguién se recuerda de la pelicula "La Perla Negra" ? És sobre un barco de Piratas. 
 
-En Miño, hay un [bar](https://mesonlajuderia.com/o48082-perla-negra/) que tiene un perro que se parece al único perro que existe en esta pelicula. 
+En Miño, hay un [bar](https://mesonlajuderia.com/o48082-perla-negra/) que tiene un perro que se parece al único perro que existe en esta pelicula. Su nombre és "Luna" y me pareció un perro muy listo. 
 
 Se come bien, sus dueños son muy guays y listos para servir un buen vino con algo más para picar. 
 
