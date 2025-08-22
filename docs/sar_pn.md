@@ -14,4 +14,6 @@ La mayoria de la comunidad casi parecian gitanos, gente que tienta divertirse si
 
 Se bailó, se bebia la classica "Estrella de Galícia", unos chupitos de água ardiente, muchas chicas e chicos se divertiendo y algunos juegos para brindar la vida. 
 
+De espirito revolucionário, la persona que representava la comunidad, se quedó hasta el final. Como un buen Pirata que soy, tube de decirle algo muy raro: 
 
+"Las Piedras son Sueños que Vuelan" 
