@@ -1,8 +1,12 @@
 # Posting 
 
-## A Python Framework for Testing APIs
+## A Python Application for Testing APIs
 
 Be sure you install `python3-pip` and `python3-venv`. 
+
+```bash 
+sudo apt install python3-pip python3-venv
+```
 
 Create a folder to install Python applications
 
@@ -28,7 +32,11 @@ Install package: In this case "Posting"
 pip3 install posting
 ```
 
-Open this framework that is super intuitive and test any HTTP request against any API. 
+Open this application that is super intuitive and test any HTTP request against any API. 
+
+```bash 
+posting 
+```
 
 Enjoy! 
 
