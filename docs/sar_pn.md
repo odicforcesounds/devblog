@@ -16,4 +16,4 @@ Se bailó, se bebia la classica "Estrella de Galícia", unos chupitos de água a
 
 De espirito revolucionário, la persona que representava la comunidad, se quedó hasta el final. Como un buen Pirata que soy, tube de decirle algo muy raro: 
 
-"Las Piedras son Sueños que Vuelan" 
+"Las Piedras son Sueños que Vuelan": Retirado de una banda musical brasileña llamada "El Efecto". 
