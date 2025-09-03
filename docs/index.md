@@ -1,5 +1,6 @@
 ## Blog Posts
 
+- [A selfhosted site](./banthemall.md): More security problems, solved. 
 - [Google Problems](./google_and_banks.md): Some problems can be solved with easy. 
 - [La Perla Negra y la SAR](./sar_pn.md): Spanish content only. Be a Good Pirate. 
 - [Just another Post](./posting.md): A Python Framework to test any API. 
