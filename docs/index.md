@@ -1,5 +1,6 @@
 ## Blog Posts
 
+- [NChat](./nchat.md): A TUI application that is helpful for my daily use. 
 - [Crazy Life](./crazyLife.md): More rules to block ssh attempts. 
 - [A selfhosted site](./banthemall.md): More security problems, solved. 
 - [Google Problems](./google_and_banks.md): Some problems can be solved with easy. 
