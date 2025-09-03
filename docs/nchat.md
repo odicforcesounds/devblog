@@ -28,5 +28,14 @@ Wait, you need to install it. If your user is part of 'sudo' group is easy. Else
 sudo make install 
 ```
 
-Sadly most friends use Whatsapp, not IRC, which I really prefere. 
+Now you can use it and setup the communication software you prefer. 
 
+```bash 
+nchat --setup 
+```
+
+After this first configuration you always use the command 
+
+```bash 
+nchat 
+```
