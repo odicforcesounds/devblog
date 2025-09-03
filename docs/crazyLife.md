@@ -22,15 +22,40 @@ MaxAuthTries 1
 PermitEmptyPasswords no 
 ```
 
-Next is to configure SSH-key in local-client-machine and upload it to the user@server. 
+If you are a client, create your ssh-key in your local machine. 
 
-Test and change sshd_config file: 
+```bash
+ssh-genkey 
+# Give a name to identify that key: my-ssh-server
+```
+
+Copy that key to your server 
+
+```bash 
+ssh-copy-id -i ~/.ssh/server username@serverAddress
+# insert password
+```
+
+Now connect to your server without using a password 
+
+```bash
+ssh -i ~/.ssh/server 'username@serverAddress'
+```
+
+On your server side, change your ssh files permissions. 
+
+```bash 
+chmod 700 ~/.ssh 
+chmod 600 ~/.ssh/known_hosts
+```
+
+Change sshd_config file: 
 
 ```bash
 # /etc/ssh/sshd_config
 PubKeyAuthentication yes
 ```
 
-No connections are possible without using this keys. 
+No connections are possible without using ssh-keys. 
 
 Happy SSH sessions. 
