@@ -19,8 +19,14 @@ cd nchat
 mkdir build 
 cd build 
 cmake ../ 
-make install 
+make 
 ``` 
+
+Wait, you need to install it. If your user is part of 'sudo' group is easy. Else you need to 'su -l' in. 
+
+```bash 
+sudo make install 
+```
 
 Sadly most friends use Whatsapp, not IRC, which I really prefere. 
 
