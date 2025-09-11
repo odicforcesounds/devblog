@@ -1,5 +1,6 @@
 ## Blog Posts
 
+- [Monkey Love](./monkey_love.md): Because Monkeys like other Monkeys. 
 - [Secure Shell Security](./ssh_config.md): Don't worry. Their best will fail. :) 
 - [The Great Sky](./greatsky.md): My Personal Self-Hosted Site. Contribute to the Cause. 
 - [IPSet](./ipset.md): A Linux tool to block big groups of IPs. 
