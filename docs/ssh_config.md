@@ -19,7 +19,7 @@ DenyUsers root toor suck fuck luck
 PermitEmptyPasswords no 
 ClientAliveInterval 300 
 ClientAliveCountMax 0
-Bannel no 
+Banner no 
 IgnoreRhosts yes 
 HostbasedAuthentication no
 ```
