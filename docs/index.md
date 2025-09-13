@@ -1,5 +1,6 @@
 ## Blog Posts
 
+- [Domain Statistics](./visits.md): I don't know what you think about this domains. But keep attacking! LoL 
 - [Dream Big](./big_repo.md): Read a lot smoking Pot. Weed Party! 
 - [Monkey Love](./monkey_love.md): Because Monkeys like other Monkeys. 
 - [Secure Shell Security](./ssh_config.md): Don't worry. Their best will fail. :) 
