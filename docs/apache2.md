@@ -65,10 +65,23 @@ SSLCertificateKeyFile /etc/LetsEncrypt/live/myAwesomeWebSite/privkey.pem
 Include /etc/LetsEncrypt/options-ssl-apache.conf 
 ```
 
+Naturally you can make this server even more secure by adding the .htaccess into the main folder. 
+
+```bash 
+# /var/www/html/.htaccess 
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-CSS-Protection "1; mode=block"
+Header always set X-Frame-Options "DENY"
+Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+Header always set Referrer-Policy "no-referrer"
+Header always set Permissions-Policy "geolocation=(self), microphone=()"
+Header always set Content-Security-Policy "script-src 'self'; object-src 'none'"
+```
+
 ... Oops, I didn't use the Proxy Options :) 
 
 Well, that is the moment you should investigate in Apache-website. 
 
-Or, join Libera IRC servers and join Apache #channel to get some help. 
+Or, join [Libera IRC servers](https://libera.chat/) and join the channel #httpd to get some help. 
 
 Enjoy the Show! 
