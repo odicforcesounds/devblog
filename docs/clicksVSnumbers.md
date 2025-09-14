@@ -26,5 +26,29 @@ Here is the **Clicks** in **Numbers** from the last month
 | ID | 372 | 
 | AU | 304 | 
 | ES | 256 |
+| AR | 265 | 
+| AT | 183 | 
+| BD | 140 | 
+| BE | 130 | 
+| EC | 128 | 
+| IQ | 118 | 
+| TW | 100 | 
+| ZA | 97 | 
+| KH | 81 | 
+| MX | 76 | 
+| MY | 73 | 
+| PL | 64 |
+| TR | 63 | 
+| DK | 55 | 
+| VE | 52 | 
+| IT | 46 | 
+| CO | 40 | 
+| UZ | 38 | 
+| PY | 37 | 
+| RO | 36 | 
+| PK | 35 | 
+| SA | 33 | 
+
+...
 
 And the list continue until just 1 single click. :D 
