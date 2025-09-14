@@ -43,9 +43,9 @@ One of the best features Apache have is the way it manage **Reverse Proxy**.
 
 What ever the port your application is using, you can limit to your host only and link it to one single path of your site, with the name of your choice: 
 
-`localhost:80/secret/app/for/those/who/know/what/secret/folders/are/for/SecretApplication` 
+`localhost:80/secret/app/for/those/who/know/what/secret/folders/are/for/` 
 
-and you application can be run at `localhost:8080` 
+and your application can be running at `localhost:8080` 
 
 this is what I love most. 
 
