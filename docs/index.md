@@ -1,5 +1,6 @@
 ## Blog Posts
 
+- [Old Times Good Times](./apache2.md): From IRC servers to Apache. Good Memories. 
 - [Hail to the Stupid](./stupid.md): Because everyone can be stupid. Ones more than others. 
 - [Domain Statistics II](./visits.md): I don't know what you think about this domains. But keep attacking!
 - [Dream Big](./big_repo.md): Read a lot smoking Pot. Weed Party! 
