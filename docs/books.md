@@ -7,13 +7,14 @@ Older and New. Is what I like to read without excluding the Technical ones about
 In Reference to the [Dao Poem](./style_of_god.md): 
 
 ```
-Monkeys Jump from tree to tree, 
-Some Books were readed by Me. 
-As many of you could do, 
-Since one plus one is equal to foo. 
+Monkeys jump from tree to tree,
+some books were read by me,
+like many of you could do,
+since one plus one is equal to foo.
 
-Foo is Nothing, while can be everything,
-Like the Dao is... 
+Foo is nothing,
+while can be everything,
+like the Dao (道) is.
 ```
 
 From 10€ each. Islam? Christianity? Buddhism? Hinduism? Judeism? 
