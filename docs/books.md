@@ -1,6 +1,6 @@
 # Books: I am selling Books 
 
-I wish to sell some books. There are a lot of sites for this, but I think I will create my own. From Philosophy to Religions, Metaphysics, Politics, History and Psychology. 
+I wish to sell some books. There are a lot of sites for this, but I think I will create my own. From Philosophy to Religions, Metaphysics, Politics, History and Psychology, Art, Poetry, Literature, etc... Most in Portuguese, some in Franch, English, Germany, Greek, Latin, Arabic, and I guess is all the languages of all books I have. They are almost 10.000 books. ;) 
 
 Older and New. Is what I like to read without excluding the Technical ones about technology. 
 
