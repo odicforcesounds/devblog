@@ -1,6 +1,6 @@
 ## Blog Posts
 
-- [Selling Books](./books.md): Wish to sell some books. Are in interested? 
+- [Selling Books](./books.md): I Wish to sell some books. Are You interested? 
 - [Clicks vs Numbers](./clicksVSnumbers.md): Numbers that represent Clicks of this domains. 
 - [Old Times Good Times](./apache2.md): From IRC servers to Apache. Good Memories. 
 - [Hail to the Stupid](./stupid.md): Because everyone can be stupid. Ones more than others. 

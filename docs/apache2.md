@@ -6,7 +6,7 @@ They offer this way to be annonymous and you can even add Tor proxy or VPNs to b
 
 Anyway, this article is about Apache, not about the amazing [lists](https://github.com/davisonio/awesome-irc) of IRC servers. 
 
-I wish to share some configurations of how to setup Apache. First you install it. I will assume you know to do that, or using a package-manager or compiling it fromt the source. 
+I wish to share some configurations of how to setup Apache. First you install it. I will assume you know to do that, or using a package-manager or compiling it from the source. 
 
 ```bash
 # /etc/apache2/apache2.conf 
