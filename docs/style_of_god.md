@@ -4,7 +4,7 @@ Imagination(**Abstraction**) **+** Logic(**Rationality**) **=** Application(**Ph
 
 Which means: 1 + 1 = 1 OR 3 道 (Dao/Tao)
 
-The [Dao](https://art.odicforcesounds.com/pages/YinYang/Tao/index.html) is the Path, and the [Path](https://art.odicforcesounds.com/pages/Data/Audio/Dao_Expression/tracks/03_Path_of_the_Sun_Keepers/index.html) is simple.
+The [Dao](https://art.odicforcesounds.com/pages/YinYang/Dao/index.html) is the Path, and the [Path](https://art.odicforcesounds.com/pages/Data/Audio/Dao_Expression/tracks/03_Path_of_the_Sun_Keepers/index.html) is simple.
 
 Then we have the [Tao](https://art.odicforcesounds.com/pages/YinYang/Tao/index.html), which is the condition. 
 
