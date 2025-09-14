@@ -1,5 +1,6 @@
 ## Blog Posts
 
+- [Clicks vs Numbers](./clicksVSnumbers.md): Numbers that represent Clicks of this domains. 
 - [Old Times Good Times](./apache2.md): From IRC servers to Apache. Good Memories. 
 - [Hail to the Stupid](./stupid.md): Because everyone can be stupid. Ones more than others. 
 - [Domain Statistics II](./visits.md): I don't know what you think about this domains. But keep attacking!
