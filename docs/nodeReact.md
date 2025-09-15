@@ -1,5 +1,7 @@
 # NodeJS & ReactJS
 
+## In Reference of [Dive into the World of JavaScript](https://art.odicforcesounds.com/pages/Data/Audio/Spiritual_Algorithmic/tracks/04_Into_the_World_of_JavaScript/index.html)
+
 After reading almost 100.000 books ( articles ) about ReactJS and NodeJS, I finally found that I need to use both. 
 
 NodeJS is made to Backend communications, like files or databases. 
