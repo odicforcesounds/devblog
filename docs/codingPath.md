@@ -1,0 +1,112 @@
+# Coding Path
+
+## The self crash course of practice
+
+1. Frontend
+    - Working of Internet
+        - HTTP Protocol
+        - DNS Protocol 
+        - Hosting
+        - Browsers
+    - HTML
+        - Basic HTML 
+        - Form and Validations 
+        - Semantic Tags 
+        - Accessibility
+    - CSS 
+        - Basic CSS
+        - Layouts 
+        - Flex and Grid
+        - Responsive Design
+        - CSS Display
+    - CSS Frameworks
+        - Bootstrap
+        - Tailwind 
+        - Pure 
+        - Foundation 
+        - Materialize 
+    - JavaScript 
+        - Basic JavaScript
+        - Operators
+        - Loops
+        - Functions
+        - Arrays
+        - DOM
+    - JavaScript Frameworks 
+        - ReactJS
+        - NextJS 
+        - Angular 
+        - Vue
+        - jQuery 
+    - Mobile Frontend Frameworks
+        - React Native
+        - Flutter
+        - Ionic 
+        - Native Script 
+    - Version Control System 
+        - Git 
+    - VCS Hosting 
+        - Github
+        - Gitlab
+        - Bitbucket
+2. Backend 
+    - Internet Protocols
+        - HTTP Protocol
+        - SSL Protocol
+        - REST APIs
+        - Web Socket 
+        - SMTP 
+    - Project Manager 
+        - NPM 
+        - YARN
+        - PNPM
+        - Git
+    - Backend Frameworks
+        - Spring Boot 
+        - Express 
+    - Databases 
+        - MySQL 
+        - PostgreSQL
+        - SQL
+        - NoSQL
+    - API Development
+        - REST API
+        - SOAP
+        - GraphQL 
+        - JSON-RPC
+        - Websockets
+    - Security
+        - HTTP 
+        - CORS 
+        - SSL/TLS 
+        - CPS 
+    - Authentication 
+        - JWT 
+        - OAUTH
+        - Token Auth 
+        - SAML 
+        - Open ID 
+    - Performance 
+        - Caching 
+        - Indexes
+    - Code Efficiency 
+        -  Lazy Loading 
+        - Load Balancer 
+        - Asynchronous i/o 
+        - Microservices
+    - Testing 
+        - Integration
+        - Unit
+        Functions 
+    - Deployment 
+        - Docker 
+        - KVM
+        CI/CD 
+    - Services 
+        - AWS 
+        - GCP 
+        - Azure
+        - Firebase
+        - Cloud 
+
+

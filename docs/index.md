@@ -1,5 +1,6 @@
 ## Blog Posts
 
+- [The High Way to Hell](./codingPath.md): Is not AC/DC Music, but could be Heavy as Metal. 
 - [Node Reactions](./nodeReact.md): Sometimes the best lesson is to not react. 
 - [Selling Books](./books.md): I Wish to sell some books. Are You interested? 
 - [Clicks vs Numbers](./clicksVSnumbers.md): Numbers that represent Clicks of this domains. 
