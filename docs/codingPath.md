@@ -97,11 +97,11 @@
     - Testing 
         - Integration
         - Unit
-        Functions 
+        - Functions 
     - Deployment 
         - Docker 
         - KVM
-        CI/CD 
+        - CI/CD 
     - Services 
         - AWS 
         - GCP 
