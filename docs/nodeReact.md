@@ -18,7 +18,7 @@ Is some perspectives I hate ReactJS, since I **LOVE** static websites with stati
 
 But I need to force me to improve my skills and embrace the Future. 
 
-So, I think I will start to write a bit more in my [Developing Blog](macacopreguicoso.blogspot.com) to guide me to understand small / big details of both. 
+So, I think I will start to write a bit more in my [Developing Blog](https://macacopreguicoso.blogspot.com) to guide me to understand small / big details of both. 
 
 Is not a contradictory afirmation. Small details can result in Big results. Is like making a SpaceTrip to the Moon. If a Small details fails, can result in a Big failure, like a big big Explosion. 
 
@@ -32,4 +32,6 @@ As I like to say: "I am just a Monkey and all Monkeys are noisy, as they warn ab
 
 Don't try to hurt me. The Bigs are watching to prevent that event. And if it happen, the Big will become so Crazhy that you will wish to stop them, but the only condition to stop them is on me. 
 
-So, Lets me do what I need to, and enjoy Your life as you should. Keep Rocking and Enjoy the Show!  
+So, Lets me do what I need to, and enjoy Your life as you should. 
+
+Keep Rocking and Enjoy the Show!  
