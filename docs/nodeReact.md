@@ -30,6 +30,8 @@ Is like me and you. Your body is the Big result of many small pieces that togeth
 
 If a small fragment of you fail, all other pieces from you will fail too. 
 
+---
+
 As I like to say: "I am just a Monkey and all Monkeys are noisy, as they warn about the danger, while being peaceful animals". 
 
 Don't try to hurt me. The Bigs are watching to prevent that event. And if it happen, the Big will become so Crazhy that you will wish to stop them, but the only condition to stop them is on me. 
