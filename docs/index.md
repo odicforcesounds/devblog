@@ -64,4 +64,4 @@
 - [Instagram](https://instagram.com/Rakzhodekams): I rarely use this platform, but you can send me a message here.
 - [Facebook](https://facebook.com/odicforcesounds): I rarely use this platform, but you can send me a message here. 
 - [Github](https://github.com/odicforcesounds): I use this platform almost every day. You can send me a message here, by adding a new publication in the [discussion](https://github.com/orgs/odicforcesounds/discussions/1) menu, or by commenting in this one linked.
-- [Youtube](https://www.youtube.com/@odicforcesounds/): Monologos, speaking alone about several subjects. 99.7% of Portuguese content. 00.03% of English content. More than 1000 videos. 
+- [Youtube](https://www.youtube.com/@odicforcesounds/): Speaking alone about several subjects. 99.70% of Portuguese content. 00.30% of English content. More than 1200 videos. 
