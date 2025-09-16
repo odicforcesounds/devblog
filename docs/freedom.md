@@ -10,6 +10,6 @@ With FreeBSD, installation is super easy and no problems will come for installin
 
 **Offend FreeBSD developers** :)  
 
- So remove the `gtk2, gtk3, motif and x11` from Makefile and change `--enable-gui` to `--disable-gui`.  This is about the `/usr/ports/editors/vim` package, but others can have different packages that you don't need. For example `samba` or `smb`, which is to manage Window$ filesystems, `telnet` which is a non-secure communication, while can be useful, you can try the secure approach like `ssh`. To simplify the problem of editing the `Makefile`, use the command `make conf`. 
+ So remove the `gtk2, gtk3, motif and x11` from Makefile and change `--enable-gui` to `--disable-gui`.  This is about the `/usr/ports/editors/vim` package, but others can have different packages that you don't need. For example `samba` or `smb`, which is to manage Window$ filesystems, `telnet` which is a non-secure communication, while can be useful, you can try the secure approach like `ssh`. To simplify the problem of editing the `Makefile`, use the command `make config`. 
 
 Some other awesome feature is that, some packages can be *Flagged* as Vulnerable, mainly when you are trying to compile them from the source. If this happen, compilation will break / stop and some message will be described to "jump off" the problem, which is by adding the option: `make DISABLE_VULNERABILITIES=yes`. I am not sure about the sensation I have when compiling from source, but I think the compilation time is less than Gentoo. 
