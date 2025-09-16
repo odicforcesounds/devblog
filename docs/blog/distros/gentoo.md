@@ -10,20 +10,14 @@
 tar xpJf stage3-*.tar.xz --xattrs-include='*.*' --numeric-owner
 ```
 
-Associar ficheiro de configuração da sincronização dos repositórios públicos
-
 ```bash
 mkdir -p -v /mnt/gentoo/etc/portage/repos.conf
 cp -v /mnt/gentoo/usr/share/portage/config/repos.conf /mnt/gentoo/etc/portage/repos.conf/gentoo.conf
 ```
 
-Copiar ficheiro de DNS para a partição da instalação
-
 ```bash
 cp -v -L /etc/resolv.conf /mnt/gentoo/etc/
 ```
-
-Associar sistemas de ficheiro de acesso a pontos de hardware
 
 ```bash
 mount -v -t proc none /mnt/gentoo/proc
@@ -135,6 +129,8 @@ make menuconfig
 
 Note that network cards kernel config may have selected all cards. ( you just wish to install one or two ) 
 
+Maybe you don't use LVM or Raid. The GPU Graphics are like network cards. You only need to select the one You use and remove all others. 
+
 ```
 make && make modules && make modules_install && make install 
 ```
@@ -168,4 +164,10 @@ Maybe thinking about security *Good Idea*
 Maybe installing Virtualization *Good Idea* 
 
 Maybe install X server *Good Idea*
+
+Maybe install some GUI *Good Idea* 
+
+--- 
+
+Remember, the Simple your Gentoo is, the less troubles you will get from it. 
 
