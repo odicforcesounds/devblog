@@ -1,5 +1,6 @@
 ## Blog Posts
 
+- [Freedom](./freedom.md): You are always free to make a choice. Is up to you! 
 - [The High Way to Hell](./codingPath.md): Is not AC/DC Music, but is Heavy as Metal. 
 - [Node Reactions](./nodeReact.md): Sometimes the best lesson is to not react. 
 - [Selling Books](./books.md): I Wish to sell some books. Are You interested? 
