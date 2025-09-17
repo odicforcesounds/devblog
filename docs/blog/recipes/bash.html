@@ -1,0 +1,1701 @@
+<p>—-——————————————————————————————————————————————— $ bash –version
+#bash acronym for “Bourne Again Shell” $ man bash | grep -C2 ’<span
+class="math inline">$@' #"$</span>@” as explained below under Special
+Parameters —————————————————————————————————– #Current Shell</p>
+<p>$ echo <span
+class="math inline"><em>S</em><em>H</em><em>E</em><em>L</em><em>L</em></span>
+echo <span class="math inline">0</span> readlink /proc/<span
+class="math display">$$/exe
+$ cat /proc/$$</span>/cmdline</p>
+<p>$ ps PID TTY TIME CMD 4467 pts/0 00:00:00 bash $ lsof -p $$ COMMAND
+PID USER FD TYPE DEVICE SIZE/OFF NODE NAME bash 2796 vroot cwd DIR 253,2
+4096 2097153 /home/vroo</p>
+<h2
+id="etcpasswd-ontains-users-account-information-such-as-shell.">/etc/passwd
+#ontains users’ account information such as shell.</h2>
+<p>#!/bin/bash</p>
+<p>set -o errexit #generic way to set various options set -e #shortcut
+for the errexit option</p>
+<p>set -o errexit set -o pipefail set -o nounset set -o xtrace # set
+-eox pipefail #safety for script</p>
+<p>set -x #prints each command that is going to be executed with a plus
+set -e #exits as soon as any line in the bash script fails set -ex</p>
+<p>set +o history #stop logging bash history set -o history #start
+logging # put a space before command</p>
+<h1 id="start-the-command-with-a-space">start the command with a
+space</h1>
+<h1 id="not-be-recorded-in-history">not be recorded in history</h1>
+<h1 id="updown-arrow-keys-will-not-show-history">up/down arrow keys will
+not show history</h1>
+<p>set -eux #safety for script set -o pipefail: returns error from pipe
+<code>|</code> if any of the commands in the pipe fail (normally just
+returns an error if the last fails) set -o errexit (set -e): exit script
+when command fails set -o nounset (set -u): exit script when it tries to
+use undeclared variables</p>
+<p>set -u #The shell shall write a message to standard error when it
+tries to expand a variable that is not set and immediately exit. set +x
+#Use the plus sign(+) before any of the flags to disable set -x #enables
+a mode of the shell where all executed commands are printed to the
+terminal,used for debugging printing every command set -e #stop a script
+immediately when something goes wrong.When you’re debugging a script,
+you probably don’t want a partially functional script to keep on
+running, causing havoc or producing incorrect results set -f #disable
+automatic file name generation,Globbing can be useful in finding files
+set -C #disable Bash’s default behavior of overwriting files,configures
+Bash to not overwrite an existing file when output redirection using
+&gt;, &gt;&amp;, and &lt;&gt; is redirected to a file
+—-——————————————————————————————————————————————— #-x. This option will
+cause Bash to print each command it executes to the terminal, preceded
+by a + sign</p>
+<p>bash -x v1_ZA-23041911001.sh</p>
+<p>#If the output is too verbose, you can redirect it to a file for
+easier inspection: bash -x v1_ZA-23041911001.sh &gt; debug.log
+2&gt;&amp;1 cat debug.log
+—-——————————————————————————————————————————————— #one liner if
+condition</p>
+<p>$ if netstat -lnp | awk ‘<span class="math inline">4 / : 8080</span>/
+&amp;&amp; <span
+class="math inline">7 /<em>j</em><em>a</em><em>v</em><em>a</em>/<em>e</em><em>x</em><em>i</em><em>t</em>(0)<em>E</em><em>N</em><em>D</em><em>e</em><em>x</em><em>i</em><em>t</em>(1)′; <em>t</em><em>h</em><em>e</em><em>n</em></span>
+if [ <span class="math inline">$(ls [a-z]* 2&gt;/dev/null | wc -l) -gt 0
+]; then echo "Found one or more occurrences of [a-z]* files!";
+fi$</span> MEMORYTHRESHOLD=’20’ &amp;&amp; MEMORYUSAGE=$(free | awk
+’/Mem/{printf(“RAM Usage: %.2f%”), $3/$2*100}’ | awk ‘{print $3}’
+|<br />
+cut -d”.” -f1) &amp;&amp; if [[ $MEMORYUSAGE -gt $MEMORYTHRESHOLD ]];
+then echo “HIGH MEMORY ALERT”; else echo “MEMORY OK”; fi</p>
+<p>ps aux | grep some_proces[s] &gt; /tmp/test.txt &amp;&amp; if [ $?
+-eq 0 ]; then echo 1; else echo 0; fi ps aux | grep some_proces[s] &gt;
+/tmp/test.txt ; if [ $? -eq 0 ]; then echo 1; else echo 0; fi if [[ $(ps
+aux | grep process | grep -vc grep) &gt; 0 ]] ; then echo 1; else echo 0
+; fi ps aux | grep some_proces[s] &gt; /tmp/test.txt &amp;&amp; echo 1
+|| echo 0 ps aux | grep some_proces | grep -vw grep &gt; /tmp/test.txt
+&amp;&amp; echo 1 || echo 0</p>
+<p>stat /var/bigbluebutton/recording/raw/$i &amp;&amp; if [ $? -eq 0 ];
+then echo “; else echo 0; fi stat file.txt &amp;&amp; if [ $? -eq 0 ];
+then echo 1; else echo 0; fi stat file.txt &amp;&amp; if [ $? -eq 0 ];
+then echo”file exists”; else echo “file does not exist”; fi if [ $(stat
+file.txt) -eq 0 ]; then echo “file exists”; else echo “file does not
+exist”; fi</p>
+<p>! [ -e “<span class="math inline">$file" ] &amp;&amp; echo "file does
+not exist" #Negate the exit status with bash
+[ ! -e "$</span>file” ] &amp;&amp; echo “file does not exist” #Negate
+the test inside the test command [</p>
+<p>#Check if File Exists,FILE operators are -e and -f export
+FILE=“a.txt” &amp;&amp; test -f <span class="math inline">$FILE
+&amp;&amp; echo "$</span>FILE exists” export FILE=“a.txt” &amp;&amp; [
+-f <span class="math inline">$FILE  ] &amp;&amp; echo "$</span>FILE
+exists.” export FILE=“a.txt” &amp;&amp; [[ -f <span
+class="math inline">$FILE ]] &amp;&amp; echo "$</span>FILE exists.”
+export FILE=“a.txt” &amp;&amp; [ -f <span class="math inline">$FILE ]
+&amp;&amp; echo "$</span>FILE exist.” || echo “$FILE does not exist.
+test -e FILENAME &amp;&amp; echo”File exists” || echo “File doesn’t
+exist”</p>
+<p>export FILE=“a.txt” &amp;&amp; [ ! -f <span
+class="math inline">$FILE  ] &amp;&amp; echo "$</span>FILE does not
+exist.”</p>
+<p>export DIR=“/etc” &amp;&amp; [ -d <span class="math inline">$DIR ]
+&amp;&amp; echo "$</span>DIR is a directory.”c</p>
+<p>if ssh <servername> “stat <filename> &gt; /dev/null 2&gt;&amp;1”;
+then echo “file exists”; else echo “file doesnt exits”; fi ssh
+remote_host test -f “/path/to/file” &amp;&amp; echo found || echo not
+found echo ‘echo “Bash version: ${BASH_VERSION}”’ | ssh -q localhost
+bash #specify the shell to be used by the remote host locally ssh -q
+$HOST [[ -f $FILE_PATH ]] &amp;&amp; echo “File exists” || echo “File
+does not exist”; #-q is quiet mode, suppress warnings and messages</p>
+<p>if [[ $test -ge $LOWER ]] &amp;&amp; [[ $test -le $UPPER ]]; then
+echo “in range”; else echo “not in range”; fi
+—-——————————————————————————————————————————————— #one liner for loop
+for i in {0..10}; do echo $i; done for i in <code>seq 0 2 10</code>; do
+echo <span
+class="math inline"><em>i</em>; <em>d</em><em>o</em><em>n</em><em>e</em></span>
+for i in {1..4}; do echo “Welcome <span class="math inline">$i times";
+done$</span> for NUM in <code>seq 1 5 20</code>; do touch <span
+class="math inline"><em>N</em><em>U</em><em>M</em> − <em>f</em><em>i</em><em>l</em><em>e</em>.<em>t</em><em>x</em><em>t</em>; <em>d</em><em>o</em><em>n</em><em>e</em>;</span>
+cities=”Tokyo London Paris Dubai Mumbai” $ for city in $cities; do echo
+“CITY: $city”; done; CITY: Tokyo CITY: London CITY: Paris CITY: Dubai
+CITY: Mumbai</p>
+<p>$ for i in {1..4} &gt; do &gt; echo “Welcome $i times” &gt; done
+Welcome 1 times Welcome 2 times Welcome 3 times Welcome 4 times</p>
+<p>hosts=“arch01 arch02 arch03” # for HOST in $hosts &gt; do &gt; scp
+somefile $HOST:/var/tmp/ &gt; done</p>
+<h1 id="chown-home-directory-of-users-with-zsh">chown home directory of
+users with zsh</h1>
+<p>$ for USERINFO in
+<code>grep "/bin/zsh" /etc/passwd | grep ":/home"</code> &gt; do &gt;
+USERNAME=$(echo <span
+class="math inline"><em>U</em><em>S</em><em>E</em><em>R</em><em>I</em><em>N</em><em>F</em><em>O</em>|<em>c</em><em>u</em><em>t</em> − <em>d</em> : −<em>f</em>1) &gt; <em>H</em><em>O</em><em>M</em><em>E</em><em>D</em><em>I</em><em>R</em>=</span>(echo
+$USERINFO | cut -d: -f6) &gt; chown -R $USERNAME $HOMEDIR &gt; done</p>
+<p>#check if the user directory is listed in /etc/passwd. $ cd /home/ $
+for DIR in * &gt; do &gt; COUNTER=<span class="math inline">$(grep -c
+"/home/$</span>DIR” /etc/passwd) &gt; if [ <span
+class="math inline">$COUNTER -ge 1 ]
+&gt; then
+&gt; echo "$</span>DIR OK” &gt; else &gt; echo “$DIR not OK” &gt; fi
+&gt; done</p>
+<p>$ ls -lai *.txt | cut -d’ ’ -f10 &gt;filestoremove.txt $ for FILE in
+<code>cat filestoremove.txt</code>; &gt; do &gt; FILEBASENAME=$(echo
+<span
+class="math inline"><em>F</em><em>I</em><em>L</em><em>E</em>|<em>c</em><em>u</em><em>t</em> − <em>d</em>. − <em>f</em>1) &gt; <em>F</em><em>I</em><em>L</em><em>E</em><em>E</em><em>X</em><em>T</em>=</span>(echo
+$FILE | cut -d. -f2) &gt; mv $FILE <span
+class="math inline"><em>F</em><em>I</em><em>L</em><em>E</em><em>B</em><em>A</em><em>S</em><em>E</em><em>N</em><em>A</em><em>M</em><em>E</em> − <em>m</em><em>o</em><em>v</em><em>e</em><em>d</em>.</span>FILEEXT
+&gt; done</p>
+<h1 id="one-liner-version-below">one-liner version below</h1>
+<p>$ for FILE in <code>cat filestoremove.txt</code>;do
+FILEBASENAME=$(echo <span
+class="math inline"><em>F</em><em>I</em><em>L</em><em>E</em>|<em>c</em><em>u</em><em>t</em> − <em>d</em>. − <em>f</em>1); <em>F</em><em>I</em><em>L</em><em>E</em><em>E</em><em>X</em><em>T</em>=</span>(echo
+$FILE | cut -d. -f2);mv $FILE <span
+class="math inline"><em>F</em><em>I</em><em>L</em><em>E</em><em>B</em><em>A</em><em>S</em><em>E</em><em>N</em><em>A</em><em>M</em><em>E</em> − <em>m</em><em>o</em><em>v</em><em>e</em><em>d</em>.</span>FILEEXT;done;
+—-——————————————————————————————————————————————— #Functions can do the
+same work as an alias</p>
+<p>$ function wi { test -n “$1” &amp;&amp; stat –printf “%F” “<span
+class="math inline">$1"; }$</span> wi hashes.txt regular file</p>
+<p>$ function wil { test “<span class="math inline">$#" -gt 0 &amp;&amp;
+stat --printf "%n: %F\n" "$</span>@”; } $ wil original.txt test1
+original.txt: regular file test1: directory</p>
+<p>#the total size of a group of files $ t=0; for n in $(find
+~/Documents -type f -name ’*.py’ -print | xargs<br />
+stat –printf “%s”); do ((t+=n)); done; echo $t</p>
+<p>#the total size of a group of files as function $ function size {
+t=0; test -d “$1” &amp;&amp; for n in $(find $1<br />
+-type f -name ’*.py’ -print|<br />
+xargs stat –printf “%s”); do ((t+=n)); done; echo $t; }</p>
+<p>$ size <span class="math inline">$mydir
+-------------------------------------------------------------------------------------------------------------------------------------------------
+#one liner while loop
+while true; do yum update --nogpgcheck; sleep 1; done
+-----------------------------------------------------------------------------------------------------
+#new line$</span> printf “test statement to separate sentences” $ echo
+-e “test statement to separate sentences” $ echo <span
+class="math inline">$'test statement \n to separate sentences'
+-----------------------------------------------------------------------------------------------------
+#remote ssh output into a variable
+VAR=$</span>(ssh -q <span class="math inline">$ssh_host 'ps -eo
+comm,lastcpu')
+-----------------------------------------------------------------------------------------------------
+#create multiple directory in a loop$</span>for i in rules rules.d
+files_sd; do sudo mkdir -p /etc/prometheus/${i}; done</p>
+<p>#change directory permission for multiple directory in a loop <span
+class="math inline"><em>f</em><em>o</em><em>r</em><em>i</em><em>i</em><em>n</em><em>r</em><em>u</em><em>l</em><em>e</em><em>s</em><em>r</em><em>u</em><em>l</em><em>e</em><em>s</em>.<em>d</em><em>f</em><em>i</em><em>l</em><em>e</em><em>s</em><sub><em>s</em></sub><em>d</em>; <em>d</em><em>o</em><em>s</em><em>u</em><em>d</em><em>o</em><em>c</em><em>h</em><em>o</em><em>w</em><em>n</em> − <em>R</em><em>p</em><em>r</em><em>o</em><em>m</em><em>e</em><em>t</em><em>h</em><em>e</em><em>u</em><em>s</em> : <em>p</em><em>r</em><em>o</em><em>m</em><em>e</em><em>t</em><em>h</em><em>e</em><em>u</em><em>s</em>/<em>e</em><em>t</em><em>c</em>/<em>p</em><em>r</em><em>o</em><em>m</em><em>e</em><em>t</em><em>h</em><em>e</em><em>u</em><em>s</em>/</span>{i};
+done <span
+class="math inline"><em>f</em><em>o</em><em>r</em><em>i</em><em>i</em><em>n</em><em>r</em><em>u</em><em>l</em><em>e</em><em>s</em><em>r</em><em>u</em><em>l</em><em>e</em><em>s</em>.<em>d</em><em>f</em><em>i</em><em>l</em><em>e</em><em>s</em><sub><em>s</em></sub><em>d</em>; <em>d</em><em>o</em><em>s</em><em>u</em><em>d</em><em>o</em><em>c</em><em>h</em><em>m</em><em>o</em><em>d</em> − <em>R</em>775/<em>e</em><em>t</em><em>c</em>/<em>p</em><em>r</em><em>o</em><em>m</em><em>e</em><em>t</em><em>h</em><em>e</em><em>u</em><em>s</em>/</span>{i};
+done —————————————————————————————————– #run shell command on the
+background within script</p>
+<p>#&amp;&gt;/dev/null sets the command’s stdout and stderr to /dev/null
+instead of inheriting them from the parent process. #&amp; makes the
+shell run the command in the background. #disown removes the “current”
+job, last one stopped or put in the background, from under the shell’s
+job control. cmd=“google-chrome”; “${cmd}” &amp;&gt;/dev/null &amp;
+disown; —————————————————————————————————– ##run shell command on the
+background within script #!/bin/bash</p>
+<h1 id="run-a-command-in-the-background.-function">Run a command in the
+background. function</h1>
+<p>_evalBg() { eval “$@” &amp;&gt;/dev/null &amp; disown; }</p>
+<p>cmd=“google-chrome”; _evalBg “<span class="math inline">${cmd}";
+-----------------------------------------------------------------------------------------------------
+#IFS (Internal Field Separator),positional parameters/arguments$</span>
+man bash | grep -C2 ‘<span class="math inline">$@' #"$</span>@” as
+explained below under Special Parameters $ man bash | grep -C2’<span
+class="math inline">$\*' #"$</span>*” is equivalent to “$1c$2c…”, where
+c is the first character of the value of the IFS variable.</p>
+<h1
+id="character-has-been-used-to-output-the-total-number-of-input-or-argument-strings-of-values">$#
+character has been used to output the total number of input or argument
+strings of values</h1>
+<h1
+id="character-has-a-special-task-to-return-0-if-the-last-command-becomes-successful">$?
+character has a special task to return 0 if the last command becomes
+successful</h1>
+<h1
+id="is-equivalent-to-1c2c-where-c-is-the-first-character-of-the-value-of-the-ifs-variable"><span
+class="math inline">$* "$</span>*” is equivalent to “$1c$2c…”, where c
+is the first character of the value of the IFS variable</h1>
+<h1
+id="in-a-shell-script-is-an-array-of-all-arguments-given-to-the-script-starts-with-index-10-which-reflects-the-shell-script-file"><span
+class="math inline">@<em>i</em><em>n</em><em>a</em><em>s</em><em>h</em><em>e</em><em>l</em><em>l</em><em>s</em><em>c</em><em>r</em><em>i</em><em>p</em><em>t</em><em>i</em><em>s</em><em>a</em><em>n</em><em>a</em><em>r</em><em>r</em><em>a</em><em>y</em><em>o</em><em>f</em><em>a</em><em>l</em><em>l</em><em>a</em><em>r</em><em>g</em><em>u</em><em>m</em><em>e</em><em>n</em><em>t</em><em>s</em><em>g</em><em>i</em><em>v</em><em>e</em><em>n</em><em>t</em><em>o</em><em>t</em><em>h</em><em>e</em><em>s</em><em>c</em><em>r</em><em>i</em><em>p</em><em>t</em>,</span>@
+starts with index 1,$0, which reflects the shell / script file</h1>
+<h1 id="the-process-id-of-the-shell">$$ the process ID of the shell</h1>
+<h1
+id="the-process-id-of-the-most-recently-executed-background-process">$!
+the process id of the most recently executed background process</h1>
+<h1
+id="the-last-argument-to-the-previous-commandlast-command---last-argument-from-previous-commandlast-command"><span
+class="math inline"><sub><em>t</em></sub><em>h</em><em>e</em><em>l</em><em>a</em><em>s</em><em>t</em><em>a</em><em>r</em><em>g</em><em>u</em><em>m</em><em>e</em><em>n</em><em>t</em><em>t</em><em>o</em><em>t</em><em>h</em><em>e</em><em>p</em><em>r</em><em>e</em><em>v</em><em>i</em><em>o</em><em>u</em><em>s</em><em>c</em><em>o</em><em>m</em><em>m</em><em>a</em><em>n</em><em>d</em>(<em>l</em><em>a</em><em>s</em><em>t</em><em>c</em><em>o</em><em>m</em><em>m</em><em>a</em><em>n</em><em>d</em>)!</span>
+- last argument from previous command(last command)</h1>
+<h1
+id="the-last-argument-to-the-previous-command-echo-hello-tmpa.txt-echo-_"><span
+class="math inline"><sub><em>t</em></sub><em>h</em><em>e</em><em>l</em><em>a</em><em>s</em><em>t</em><em>a</em><em>r</em><em>g</em><em>u</em><em>m</em><em>e</em><em>n</em><em>t</em><em>t</em><em>o</em><em>t</em><em>h</em><em>e</em><em>p</em><em>r</em><em>e</em><em>v</em><em>i</em><em>o</em><em>u</em><em>s</em><em>c</em><em>o</em><em>m</em><em>m</em><em>a</em><em>n</em><em>d</em></span>
+echo “hello” &gt; /tmp/a.txt &amp;&amp; echo $_</h1>
+<p>hello</p>
+<p>$ echo “hello” &gt; /tmp/a.txt &amp;&amp; echo “!<span
+class="math inline">$"
+echo "hello" &gt; /tmp/a.txt &amp;&amp; echo "$</span>_” hello</p>
+<h1 id="one.sh-the-last-argument-to-the-previous-command-ls">one.sh the
+last argument to the previous command ls</h1>
+<p>$ ls -lai two.sh one.sh &amp;&amp; ls $_ 257267 -rw-rw-r– 1 vagrant
+vagrant 79 Mar 31 06:15 one.sh 257261 -rw-rw-r– 1 vagrant vagrant 761
+Mar 31 06:49 two.sh one.sh</p>
+<p>$ cat five.sh #!/bin/bash a=5 b=10</p>
+<p>#echo takes two arguments, “<span class="math inline">$a" "$</span>b”
+echo “<span class="math inline">$a" "$</span>b” #Last argument of the
+previous command, “<span class="math inline">$b"
+echo "$</span><em>” echo $</em></p>
+<p>ls -lai #Last argument of the previous command, “<span
+class="math inline">$b"
+echo "$</span>_” #Last argument of the previous command, “$b” echo <span
+class="math inline">$_$</span> bash five.sh 5 10 10 10 -lai -lai</p>
+<p>$ cat others.sh #!/bin/bash</p>
+<p>echo -e “$_“; ## Absolute name of the file which is being
+executed</p>
+<p>/usr/bin/htop # execute the command.</p>
+<p>#check the exit status of htop if [ “$?” -ne “0” ]; then echo “Sorry,
+Command execution failed !” fi</p>
+<p>echo -e “$-”; #Set options</p>
+<p>echo -e <span class="math inline">$_  # Last argument of the previous
+command$</span> bash others.sh /usr/bin/bash hBhB hB</p>
+<p>$ cat proc.sh #!/bin/bash</p>
+<p>echo -e “Process ID=$$”</p>
+<p>sleep 1000 &amp;</p>
+<p>echo -e “Background Process ID=<span class="math inline">$!"$</span>
+bash proc.sh Process ID=183033 Background Process ID=183034</p>
+<p>$ cat one.sh #!/bin/bash</p>
+<p>#skip first argument firstitem=<span class="math inline">$1
+shift;
+for item in "$</span>@” ; do echo “Item..: <span
+class="math inline">$item"
+done$</span> bash one.sh arg1 arg2 Item..: arg2</p>
+<p>$ cat two.sh #!/bin/bash</p>
+<p>#skip first argument for item in “${@:2}” ; do echo “Item..: $item”
+done</p>
+<p>$ cat one.sh #!/bin/bash</p>
+<p>#print arguments for item in “$@” ; do echo “Item..: <span
+class="math inline">$item"
+done$</span> bash one.sh arg1 arg2 Item..: arg1 Item..: arg2</p>
+<p>$ cat three.sh #!/bin/bash</p>
+<p>#shows the first line as the whole of parameters for item in “$*” ;
+do echo “Item..: <span class="math inline">$item"
+done$</span> bash three.sh arg1 arg2 Item..: arg1 arg2</p>
+<p>$ cat three.sh #!/bin/bash</p>
+<p>#shows the first line as the whole of parameters for item in “$*” ;
+do echo “Item..: $item” done</p>
+<p>#in a shell script is an array of all arguments given to the script
+for item in “$@” ; do echo “Item..: <span class="math inline">$item"
+done$</span> bash three.sh arg1 arg2 Item..: arg1 arg2 Item..: arg1
+Item..: arg2</p>
+<p>$ cat four.sh #!/bin/bash</p>
+<p>func_argument() { while [ “$1” != “” ]; do echo $1 shift done }</p>
+<p>func_dollar_at() { func_argument “$@” }</p>
+<p>func_dollar_star() { func_argument “$*” }</p>
+<p>echo “running $@” func_dollar_at arg1 arg2</p>
+<p>echo “running $<em>” func_dollar_star arg1 arg2 $ bash four.sh
+running $@ arg1 arg2 running $</em> arg1 arg2</p>
+<p>$ cat two.sh #!/bin/bash</p>
+<p>#skip first argument #firstitem=<span class="math inline">$1
+#shift;
+#for item in "$</span>@” ; do # echo “Item..: $item” #done</p>
+<p>echo “index 0 element of array {$@:0:1}..:<span
+class="math inline">${@:0:1}" # no arguments prints script name
+echo "index 1 element of array {\$@:1:1}..:$</span>{@:1:1}” # first
+index of the array echo “index 1 element of array {$@:1:2}..:<span
+class="math inline">${@:1:2}" # first index of the array
+echo "index 1 element of array {\$@:0:2}..:$</span>{@:0:2}” # first
+index of the array</p>
+<p>echo “starting from index 0 element of array {$@:0}..:<span
+class="math inline">${@:0}" # first index of the array
+echo "starting from index 1 element of array {\$@:1}..:$</span>{@:1}” #
+first index of the array echo “starting from index 2 element of array
+{$@:2}..:${@:2}” # first index of the array</p>
+<p>for item in “${@:2}” ; do echo “Item..: <span
+class="math inline">$item"
+done$</span> bash two.sh arg1 arg2 index 0 element of array {<span
+class="math inline">$@:0:1}..:two.sh
+index 1 element of array {$</span>@:1:1}..:arg1 index 1 element of array
+{<span class="math inline">$@:1:2}..:arg1 arg2
+index 1 element of array {$</span>@:0:2}..:two.sh arg1 starting from
+index 0 element of array {<span class="math inline">$@:0}..:two.sh arg1
+arg2
+starting from index 1 element of array {$</span>@:1}..:arg1 arg2
+starting from index 2 element of array {$@:2}..:arg2 Item..: arg2</p>
+<p>$ cat parampos.sh #!/bin/bash echo -e “<span class="math inline">$#"
+#“$</span>#” character has been used to output the total number of input
+or parameter strings of values echo -e “<span class="math inline">$@"
+#The “$</span>@” character is used to show those three values or
+parameters on the terminal echo -e “<span class="math inline">$?"
+#“$</span>?” character has a special task to return 0 if the last
+command becomes successful $ bash parampos.sh arg1 arg2 arg3 3 arg1 arg2
+arg3 0</p>
+<p>$ cat parampos.sh #!/bin/bash echo -e ‘$#’ <span
+class="math inline">$#
+echo -e  '$</span>@’ <span
+class="math inline">@<em>e</em><em>c</em><em>h</em><em>o</em> − <em>e</em>′</span>?’
+<span class="math inline">?</span> bash parampos.sh arg1 arg2 arg3 <span
+class="math inline">$# 3$</span>@ arg1 arg2 arg3 $? 0</p>
+<p>#/bin/bash</p>
+<p>if [ $# -eq 0 ] then echo “Building docker compose” else echo
+“Building docker compose with additional parameter $1 …” fi</p>
+<h1
+id="echo-outputs-the-number-of-positional-parameters-of-script-is-a-special-variable-in-bash-that-expands-to-the-number-of-arguments-positional-parameters">echo
+<span class="math inline">$# outputs the number of positional parameters
+of script
+# "$</span>#” is a special variable in bash, that expands to the number
+of arguments (positional parameters)</h1>
+<p>#bash -c takes argument after the command following it starting from
+0 ($0 # “<em>” is used here just as a placeholder; actual arguments are
+x ($1), y ($2), and z (<span class="math inline">3)</span> bash -c ‘echo
+<span class="math inline">$#'
+0$</span> bash -c ’echo <span class="math inline">$#' _ x
+1$</span> bash -c ’echo <span class="math inline">$#' _ x y
+2$</span> bash -c ’echo $#’ </em> x y 2 3</p>
+<p>$ cat script.sh #/bin/bash echo “<span
+class="math inline">$#"$</span> bash script.sh foo bar 2</p>
+<h1
+id="is-typically-used-in-bash-scripts-to-ensure-a-parameter-is-passed-reports-the-number-of-parameters-passed-to-a-script-cat-script.sh">“<span
+class="math inline">$#" is typically used in bash scripts to ensure a
+parameter is passed
+#reports the number of parameters passed to a script$</span> cat
+script.sh</h1>
+<p>#/bin/bash echo “$#”</p>
+<p>if [[ $# -ne 1 ]]; then echo ‘One argument required for the file
+name, e.g. “Backup-2017-07-25”’ exit 1 fi
+—————————————————————————————————– #total size of files in a
+directory</p>
+<p>$ cat size.sh #!/bin/bash total=0 loc_to_dir=“/var/log/apt”</p>
+<p>for size in $(ls -l <span
+class="math inline"><em>l</em><em>o</em><em>c</em><sub><em>t</em></sub><em>o</em><sub><em>d</em></sub><em>i</em><em>r</em>|<em>t</em><em>r</em> − <em>s</em>′′|<em>c</em><em>u</em><em>t</em> − <em>d</em>′′ − <em>f</em>5); <em>d</em><em>o</em><em>t</em><em>o</em><em>t</em><em>a</em><em>l</em>=</span>((
+${total} + ${size} )) done</p>
+<h2 id="echo-total">echo $total</h2>
+<p>#list normal user names</p>
+<p>$ cat normaluser.sh #!/bin/bash</p>
+<p>get_users () { local IFS=<span class="math inline">$' \t#'
+    while read var val ; do
+        case "$</span>var” in UID_MIN) min=“<span
+class="math inline">$val" ;;
+            UID_MAX) max="$</span>val” ;; esac done &lt; /etc/login.defs
+declare -A users local IFS=: while read user pass uid gid gecos home
+shell; do if (( min &lt;= uid &amp;&amp; uid &lt;= max )) &amp;&amp; [[
+! <span
+class="math inline"><em>s</em><em>h</em><em>e</em><em>l</em><em>l</em>= ′/(<em>n</em><em>o</em><em>l</em><em>o</em><em>g</em><em>i</em><em>n</em>|<em>f</em><em>a</em><em>l</em><em>s</em><em>e</em>)</span>’
+]]; then users[$user]=1 fi done &lt; &lt;(getent passwd 2&gt;/dev/null)
+echo ${!users[@]} }</p>
+<p>get_users</p>
+<h2 id="bash-normaluser.sh">$ bash normaluser.sh</h2>
+<p>function BytesToHuman() {</p>
+<pre><code>read StdIn
+if ! [[ $StdIn =~ ^-?[0-9]+$ ]] ; then
+    echo &quot;$StdIn&quot;       # Simply pass back what was passed to us
+    exit 1              # Floats or strings not allowed. Only integers.
+fi
+
+b=${StdIn:-0}; d=&#39;&#39;; s=0; S=(Bytes {K,M,G,T,E,P,Y,Z}iB)
+while ((b &gt; 1024)); do
+    d=&quot;$(printf &quot;.%02d&quot; $((b % 1024 * 100 / 1024)))&quot;
+    b=$((b / 1024))
+    let s++
+done
+
+echo &quot;$b$d ${S[$s]}&quot;
+exit 0                  # Success!</code></pre>
+<h2 id="section">}</h2>
+<p>#copy files in chunks dd dd if=/dev/zero of=file.txt count=1024
+bs=10240 #create 10MB file</p>
+<p>#!/bin/bash</p>
+<p>block_size=1048576 # must be a plain number, without any suffix
+count=0 while true do
+retbytes=<code>dd if=./file.txt bs=$block_size skip=$count count=1 status=none |              tee &gt;(dd of=other.txt bs=$block_size seek=$count status=none) |              wc -c</code>
+[ “<span class="math inline">$retbytes" -eq "$</span>block_size” ] ||
+break count=$((count + 1)) done —————————————————————————————————–
+#check command output</p>
+<p>#!/bin/bash case “$(netstat -lnp | grep ‘:8080’)” in <em>java</em>)
+echo “Found a Tomcat!”;; esac —————————————————————————————————– #check
+command output #!/bin/bash ./somecommand | grep ‘string’ &amp;&gt;
+/dev/null if [ $? == 0 ]; then echo “matched” fi</p>
+<p>if ./somecommand | grep -q ‘string’; then echo “matched” fi</p>
+<p>./somecommand | grep -q ‘string’ &amp;&amp; echo ‘matched’</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">#monitor memory usage</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">#System information script #!/usr/bin/env
+bash #A System Information Gathering Script</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#Command 1 UNAME=“uname -a” printf
+“Gathering system information with the <span class="math inline">$UNAME
+command: \n\n"$</span>UNAME</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">#Command 2 DISKSPACE=“df -h” printf
+“Gathering diskspace information with the <span
+class="math inline">$DISKSPACE command: \n\n"$</span>DISKSPACE</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MEMORYSPACE=“free -m” printf “Gathering
+memory information with the <span class="math inline">$MEMORYSPACE
+command: \n\n"$</span>MEMORYSPACE echo -e””</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">LOADAVERAGE=“cat /proc/loadavg” printf
+“Gathering load average with the <span class="math inline">$LOADAVERAGE
+command: \n\n"$</span>LOADAVERAGE echo -e””</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">IPQ=“hostname –all-ip-addresses” printf
+“Gathering all ip addresses: ” $IPQ echo -e “”</td>
+</tr>
+</tbody>
+</table>
+<p>#check with ssh if file exists on remote host</p>
+<p>function existRemoteFile () { REMOTE=$1 FILE=<span
+class="math inline">2<em>R</em><em>E</em><em>S</em><em>U</em><em>L</em><em>T</em>=</span>(rsh
+-l user $REMOTE “test -e $FILE &amp;&amp; echo "0" || echo "1"”) if [
+$RESULT -eq 0 ] then return 0 else return 1 fi }</p>
+<h1 id="example-for-local-remote-variable-expansion">example for local /
+remote variable expansion</h1>
+<p>{ echo “[[ $- == <em>i</em> ]] &amp;&amp; echo ‘Interactive’ || echo
+‘Not interactive’” | ssh -q localhost bash echo ‘[[ $- == <em>i</em> ]]
+&amp;&amp; echo “Interactive” || echo “Not interactive”’ | ssh -q
+localhost bash }</p>
+<p>#run the echo command locally on the machine you’re running the ssh
+command from ssh -q $HOST [[ -f $FILE_PATH ]] &amp;&amp; echo “File
+exists” #run the echo command on the remote server ssh -q $HOST “[[ ! -f
+$FILE_PATH ]] &amp;&amp; touch $FILE_PATH” ssh -q $HOST “[[ ! -f
+$FILE_PATH ]] &amp;&amp; touch $FILE_PATH”</p>
+<p>#!/bin/bash host=‘localhost’ # localhost as test case
+file=‘~/.bash_history’ if
+<code>echo 'test -f '"${file}"' &amp;&amp; exit 0 || exit 1' | ssh -q "${host}" sh</code>;
+then #if
+<code>echo '[[ -f '"${file}"' ]] &amp;&amp; exit 0 || exit 1' | ssh -q "${host}" bash</code>;
+then echo exists else echo does not exist fi</p>
+<p>#!/bin/bash ssh host “test -e /path/to/file” if [ $? -eq 0 ]; then #
+your file exists fi</p>
+<p>#!/bin/bash if ssh host “test -e /path/to/file”; then # your file
+exists fi</p>
+<p>#!/bin/bash if ! ssh <span
+class="math inline"><em>U</em><em>S</em><em>E</em><em>R</em>@</span>HOST
+“test -e file.txt” 2&gt; /dev/null; then echo “File not exist” fi</p>
+<p>#!/bin/bash HOST=“example.com” FILE=“/path/to/file”</p>
+<p>if ssh $HOST “test -e $FILE”; then echo “File exists.” else echo
+“File does not exist.” fi</p>
+<p>#!/bin/bash USE_IP=‘-o StrictHostKeyChecking=no
+username@192.168.1.2’</p>
+<p>FILE_NAME=/home/user/file.txt</p>
+<p>SSH_PASS=‘sshpass -p password-for-remote-machine’</p>
+<p>if $SSH_PASS ssh $USE_IP stat $FILE_NAME &gt; /dev/null 2&gt;&amp;1
+then echo “File exists” else echo “File does not exist”</p>
+<h2 id="fi">fi</h2>
+<p>#Shell Script to Check if Every Passed Argument is a File or
+Directory</p>
+<p>#!/bin/sh #Using -d option we are checking whether the first argument
+is a directory or not. #$1 refers to the first argument if [ -d $1 ]
+then echo “The provided argument is the directory.” #Using -f option we
+are checking whether the first argument is a file or not. elif [ -f $1 ]
+then echo “The provided argument is the file.” #if the provided argument
+is not file and directory then it does not exist on the system.<br />
+else echo “The given argument does not exist on the file system.” fi</p>
+<h1 id="script-empty-parameterargument-check">script empty
+parameter/argument check</h1>
+<p>if [ $# -eq 0 ] then echo “Argument is required, e.g:sudo bash
+fileparam.sh &lt;list.txt&gt;” exit else echo “Running script with
+additional argument $1 …” #Using -d option we are checking whether the
+first argument is a directory or not. #$1 refers to the first argument
+if [ -d $1 ] then echo “The provided argument ‘$1’ is a directory.”
+#Using -f option we are checking whether the first argument is a file or
+not. elif [ -f $1 ] then echo “The provided argument ‘$1’ is a file.”
+#if the provided argument is not file and directory then it does not
+exist on the system. else echo “The given argument ‘$1’ does not exist
+on the file system.” fi</p>
+<p>fi</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">#date check</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">#System information script, remote server
+ssh #!/bin/bash #A System Information Gathering Script</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#logs file format logs/ dir
+current_time=<span class="math inline">$(date "+%Y.%m.%d-%H.%M.%S")
+log_file="sysinfo_$</span>current_time.log” #printf “Log File -
+Gathering information from remote from servers” &gt; logs/<span
+class="math inline">$log_file
+echo -e "Log File - Gathering information from remote from servers\n"
+&gt; logs/$</span>log_file</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">UNAME=“uname -a” echo -e
+“=====================================================”&gt;&gt;
+logs/$log_file echo -e “Gathering system information with the <span
+class="math inline">$UNAME command:\n"&gt;&gt; logs/$</span>log_file
+#vg-ubuntu-02 entry in /etc/hosts ssh vagrant@vg-ubuntu-02”<span
+class="math inline">$UNAME" &gt;&gt; logs/$</span>log_file</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">echo -e
+“===================================================== ”&gt;&gt;
+logs/<span class="math inline">$log_file
+echo -e "Gathering system information with the hostnamectl command:
+\n"&gt;&gt; logs/$</span>log_file #vg-ubuntu-02 entry in /etc/hosts ssh
+vagrant@vg-ubuntu-02 “hostnamectl status” &gt;&gt; logs/$log_file</td>
+</tr>
+</tbody>
+</table>
+<p>#arithmetic expression</p>
+<p>$ declare A=2+2 #the string-based type system has treated this as the
+declaration of some text $ echo $A 2+2</p>
+<p>$ declare -i A=2+2 $ echo <span
+class="math inline"><em>A</em>4</span> let A=2+2 $ echo $A 4</p>
+<p>$ echo ${A}string #separate the variable’s name from the rest of the
+expression 2string</p>
+<p>$ A=2;B=2 #get the value of an arithmetic operation, without
+declaring it as a variable, by putting it in double parentheses $ echo
+$((A+B+1)) 5</p>
+<p>$ expr 2 + 3 5</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">$ echo “scale=2;4/3” | bc #Bash can only
+do integer math 1.33 $ echo “for(i=1; i&lt;=10; i++) {if (i % 2 == 0)
+i;}” | bc $ echo “scale=4;sqrt(10)” | bc</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">#if condition string comparison</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">String Comparison Returns true (0) if: [
+str1 = str2 ] str1 equals str2 [ str1 != str2 ] str1 does not equal str2
+[ str1 &lt; str2 ] str1 precedes str2 in lexical order [ str1 &gt; str2
+] str1 follows str2 in lexical order [ -z str1 ] str1 has length zero
+(holds null value) [ -nstr1 ] str1has nonzero length (contains one or
+more characters</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">[[ a &gt; b ]] || echo “a does not come
+after b” [[ az &lt; za ]] &amp;&amp; echo “az comes before za” [[ a = a
+]] &amp;&amp; echo “a equals a” [[ a != b ]] &amp;&amp; echo “a is not
+equal to b”</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#conditional evaluation [[ -n $var
+&amp;&amp; -f <span class="math inline">$var ]] &amp;&amp; echo
+"$</span>var is a file” [[ -b $var || -c <span class="math inline">$var
+]] &amp;&amp; echo "$</span>var is a device”</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">#expression grouping [[ <span
+class="math inline">$var = img* &amp;&amp; ($</span>var = *.png || <span
+class="math inline">$var = *.jpg) ]] &amp;&amp;
+echo "$</span>var starts with img and ends with .jpg or .png”</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#Pattern matching [[ $name = a* ]] || echo
+“name does not start with an ‘a’: $name”</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">#RegularExpression matching [[ $(date) =~
+^Fri … 13 ]] &amp;&amp; echo “It’s Friday the 13th!”</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#!/bin/bash name=John if [ $name = “John”
+] then echo “John is here !!!” fi</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"># else if condition #!/bin/bash</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">name=snoopy</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">if [ “<span class="math inline">$name" =
+"snoopy" ] then
+echo "It was a dark and stormy night."
+elif [ "$</span>name” == “charlie” ] then echo “You’re a good man
+Charlie Brown.” elif [ “<span class="math inline">$name" == "lucy" ]
+then
+echo "The doctor is in."
+elif [ "$</span>name” == “schroeder” ] then echo “In concert.” else echo
+“Not a Snoopy character.” fi</td>
+</tr>
+</tbody>
+</table>
+<p>#if condition range numeric comparison</p>
+<p>Numeric Comparison Returns true (0) if: [ $num1 -eq $num2 ] num1
+equals num2 [ $num1 -ne $num2 ] num1 does not equal num2 [ $num1 -lt
+$num2 ] num1 is less than num2 [ $num1 -gt $num2 ] num1 is greater than
+num2 [ $num1 -le $num2 ] num1 is less than or equal to num2 [ $num1 -ge
+$num2 ] num1 is greater than or equal to num2</p>
+<p>[[ 5 -gt 10 ]] || echo “5 is not bigger than 10” [[ 8 -lt 9 ]]
+&amp;&amp; echo “8 is less than 9” [[ 3 -ge 3 ]] &amp;&amp; echo “3 is
+greater than or equal to 3” [[ 3 -le 8 ]] &amp;&amp; echo “3 is less
+than or equal to 8” [[ 5 -eq 05 ]] &amp;&amp; echo “5 equals 05” [[ 6
+-ne 20 ]] &amp;&amp; echo “6 is not equal to 20”</p>
+<p>if [ “<span class="math inline">$number" -ge 2 ] &amp;&amp; [
+"$</span>number” -le 5 ]; then if [[ $number -ge 2 &amp;&amp; $number
+-le 5 ]]; then</p>
+<p>#using the arithmetic expression, ((…)) if ((number &gt;= 2
+&amp;&amp; number &lt;= 5)); then # your code fi</p>
+<p>if [ $(echo “$1 % 4” | bc) -eq 0 ]; then if [[ $(( $1 % 4 )) == 0 ]];
+then</p>
+<p>#!/bin/bash test=11 if [[ “$test” != [0-9] ]];then echo “not in
+range” else echo “number within range” fi</p>
+<p>#!/bin/bash #<span class="citation" data-cites="file">@file</span>:
+trymod4.bash</p>
+<p>if [ $(echo “$1 % 4” | bc) -eq 0 ]; then echo “$1 is evenly divisible
+by 4” else echo “$1 is NOT evenly divisible by 4” fi</p>
+<p>#!/bin/bash while :; do read -p “Enter a number between 2 and 5:”
+number [[ <span
+class="math inline"><em>n</em><em>u</em><em>m</em><em>b</em><em>e</em><em>r</em> =  <sup>[0 − 9]</sup>+</span>
+]] || { echo “Enter a valid number”; continue; } if ((number &gt;= 2
+&amp;&amp; number &lt;= 5)); then echo “valid number” break else echo
+“number out of range, try again” fi done</p>
+<p>echo “Enter number”</p>
+<p>#!/bin/bash read input</p>
+<p>if [[ $input ]] &amp;&amp; [ $input -eq $input 2&gt;/dev/null ]</p>
+<p>then</p>
+<pre><code>    if ((input &gt;= 1 &amp;&amp; input &lt;= 4)); then
+
+echo &quot;Access Granted...&quot;
+
+break</code></pre>
+<p>else</p>
+<pre><code>echo &quot;Wrong code&quot;</code></pre>
+<p>fi</p>
+<p>else</p>
+<pre><code> echo &quot;$input is not an integer or not defined&quot;</code></pre>
+<p>fi</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">#elif condition</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">#check whether a certain file path is a
+directory</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#!/bin/bash if [ -d “/tmp” ] ; then echo
+“/tmp is a directory” else echo “/tmp is not a directory” fi</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">#!/bin/bash FILE=“/etc/docker” if [ -d
+“<span class="math inline">$FILE" ]; then
+echo "$</span>FILE is a directory.” fi</td>
+</tr>
+</tbody>
+</table>
+<p>#The test command includes the following FILE operators</p>
+<p>-b FileName Returns a True exit value if the specified FileName
+exists and is a block special file. -c FileName Returns a True exit
+value if the specified FileName exists and is a character special file.
+-d FileName Returns a True exit value if the specified FileName exists
+and is a directory. -e FileName Returns a True exit value if the
+specified FileName exists. -f FileName Returns a True exit value if the
+specified FileName exists and is a regular file. -g FileName Returns a
+True exit value if the specified FileName exists and its Set Group ID
+bit is set. -h FileName Returns a True exit value if the specified
+FileName exists and is a symbolic link. -k FileName Returns a True exit
+value if the specified FileName exists and its sticky bit is set. -L
+FileName Returns a True exit value if the specified FileName exists and
+is a symbolic link. -n String1 Returns a True exit value if the length
+of the String1 variable is nonzero. -p FileName Returns a True exit
+value if the specified FileName exists and is a named pipe (FIFO). -r
+FileName Returns a True exit value if the specified FileName exists and
+is readable by the current process. -S filename - Check if file is
+socket -s FileName Returns a True exit value if the specified FileName
+exists and has a size greater than 0. -t FileDescriptor Returns a True
+exit value if the file with a file descriptor number of FileDescriptor
+is open and associated with a terminal. -u FileName Returns a True exit
+value if the specified FileName exists and its Set User ID bit is set.
+-w FileName Returns a True exit value if the specified FileName exists
+and the write flag is on. However, the FileNamewill not be writable on a
+read-only file system even if test indicates true. -x FileName Returns a
+True exit value if the specified FileName exists and the execute flag is
+on. If the specified file exists and is a directory, the True exit value
+indicates that the current process has permission to search in the
+directory. -z String1 Returns a True exit value if the length of the
+String1 variable is 0 (zero).</p>
+<p>#Check if File Exists,FILE operators are -e and -f</p>
+<p>FILE=/etc/resolv.conf if test -f “<span class="math inline">$FILE";
+then
+    echo "$</span>FILE exists.” fi</p>
+<p>FILE=/etc/resolv.conf if [ -f “<span class="math inline">$FILE" ];
+then
+    echo "$</span>FILE exists.” fi</p>
+<p>FILE=/etc/resolv.conf if [[ -f “<span class="math inline">$FILE" ]];
+then
+    echo "$</span>FILE exists.” fi</p>
+<p>FILE=/etc/resolv.conf if [ -f “<span class="math inline">$FILE" ];
+then
+    echo "$</span>FILE exists.” else echo “$FILE does not exist.” fi</p>
+<p>#Negate the exit status with bash if ! [ -e “$file” ]; then echo
+“file does not exist” fi</p>
+<p>#Negate the test inside the test command [ if [ ! -e “$file” ]; then
+echo “file does not exist” fi</p>
+<p>#The test command has a “not” logical operator which is the
+exclamation point if [[ ! -f $FILE ]]; then if [[ -L <span
+class="math inline"><em>F</em><em>I</em><em>L</em><em>E</em>]]; <em>t</em><em>h</em><em>e</em><em>n</em><em>p</em><em>r</em><em>i</em><em>n</em><em>t</em><em>f</em>′</span>FILE”
+else printf ‘%s does not exist!’ “$FILE” fi fi</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"># “$#” in the function f expands to the
+number of arguments passed to the function</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"># Other “#” uses in Bash myvar=“some
+string”; echo ${#myvar} #find the length of a string myArr=(A B C); echo
+${#myArr[@]} #find the number of array elements myArr=(A B C); echo
+${#myArr[0]} #find the length of the first array element</td>
+</tr>
+</tbody>
+</table>
+<p>#run script within script</p>
+<p>#!/bin/bash SCRIPT_PATH=“/path/to/script.sh”</p>
+<h1 id="here-you-execute-your-script">Here you execute your script</h1>
+<p>“$SCRIPT_PATH”</p>
+<h1 id="or">or</h1>
+<p>. “$SCRIPT_PATH”</p>
+<h1 id="or-1">or</h1>
+<p>source “$SCRIPT_PATH”</p>
+<h1 id="or-2">or</h1>
+<p>bash “$SCRIPT_PATH”</p>
+<h1 id="or-3">or</h1>
+<p>eval ‘“$SCRIPT_PATH”’</p>
+<h1 id="or-4">or</h1>
+<p>OUTPUT=<span class="math inline">$("$</span>SCRIPT_PATH”) echo
+$OUTPUT</p>
+<h1 id="or-5">or</h1>
+<p>OUTPUT=<code>"$SCRIPT_PATH"</code> echo $OUTPUT</p>
+<h1 id="or-6">or</h1>
+<p>(“$SCRIPT_PATH”)</p>
+<h1 id="or-7">or</h1>
+<p>(exec “$SCRIPT_PATH”)</p>
+<h1
+id="fetch-the-output-of-the-producer-script-as-an-argument-on-the-consumer-script.">fetch
+the output of the producer script as an argument on the consumer
+script.</h1>
+<h2
+id="script-that-consumes-argument.sh-sh-script-that-produces-argument.sh">$
+./script-that-consumes-argument.sh
+<code>sh script-that-produces-argument.sh</code></h2>
+<p>readarray -t lines &lt; file.txt count=${#lines[@]}</p>
+<p>for i in “<span class="math inline">${!lines[@]}"; do
+    index=$</span>(( (i * 12 - 1) / count + 1 )) echo”<span
+class="math inline">${lines[i]}" &gt;&gt; "file$</span>{index}.txt”
+done</p>
+<p>awk ‘{ a[NR] = <span class="math inline">$0
+}
+END {
+    for (i = 1; i in a; ++i) {
+        x = (i * 12 - 1) / NR + 1
+        sub(/\..*$</span>/, ““, x) print a[i] &gt;”file” x “.txt” }
+}’</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">#Reading file by omitting backslash escape
+#!/bin/bash while read -r line; do # Reading each line echo $line done
+&lt; company2.txt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">#Passing filename from the command line
+and reading the file #!/bin/bash filename=$1 while read line; do #
+reading each line echo $line done &lt; $filename</td>
+</tr>
+</tbody>
+</table>
+<p>#Reading file content line by line</p>
+<p>#!/bin/bash filename=‘company.txt’ n=1 while read line; do # reading
+each line echo “Line No. $n : <span class="math inline">$line"
+n=$</span>((n+1)) done &lt; <span class="math inline">$filename
+-----------------------------------------------------------------------------------------------------
+IFS stands for "internal field separator" used by the shell to determine
+how to do word splitting
+IFS=$</span>‘’ —————————————————————————————————– #remove whitespaces
+from variables k=<code>echo $k | sed 's/ *$//g'</code> #remove
+whitespaces $ echo” Bash Scripting Language ” | xargs # Remove the
+spaces from the string data using <code>xargv</code> $
+Var=<code>echo $Var | sed -e 's/^[[:space:]]*//'</code> #Remove the
+spaces from the variable $
+myVar=<code>echo $myVar | sed 's/ *$//g'</code> # The following
+<code>sed</code> command will remove the trailing spaces from the
+variable $ echo “Hello ${myVar##<em>( )}” # The following command will
+print the output after removing the spaces from the beginning of the
+variable, <span
+class="math inline"><em>m</em><em>y</em><em>V</em><em>a</em><em>r</em></span>
+echo ”${myVar%%</em>( )} is welcome to our site” #The following command
+will print the output after removing the spaces from the ending of the
+variable, $myVar</p>
+<p>#store lines as variables,use bash #remove leading whitespace from a
+string shopt -s extglob printf ‘%s’ “<span
+class="math inline">${text##+([[:space:]])}"
+#remove trailing whitespace from a string
+shopt -s extglob
+printf '%s\n' "$</span>{text%%+([[:space:]])}” #remove all whitespace
+from a string printf ‘%s’ “${text//[[:space:]]}”</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">#Reading file content line by line</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">#Reading file content line by line</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">$ cat 1_fileread.sh #!/bin/sh echo
+“reading line by line”</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">#http://mywiki.wooledge.org/BashFAQ/001
+file=<span
+class="math inline">1<em>w</em><em>h</em><em>i</em><em>l</em><em>e</em><em>I</em><em>F</em><em>S</em> = <em>r</em><em>e</em><em>a</em><em>d</em> − <em>r</em><em>l</em><em>i</em><em>n</em><em>e</em>; <em>d</em><em>o</em><em>p</em><em>r</em><em>i</em><em>n</em><em>t</em><em>f</em>′</span>line”
+#line is a variable name, use any valid shell variable name(s) done &lt;
+“<span class="math inline">$file" #&lt; "$</span>file” redirects the
+loop’s input from a file whose name is stored in a variable $ bash
+1_fileread.sh ids.txt</td>
+</tr>
+</tbody>
+</table>
+<p>#Reading file content line by line into an array</p>
+<p>$ cat arrayfileread.sh #!/bin/sh echo “reading file into array”</p>
+<p>filename=<span class="math inline">$1
+arr=()
+while IFS= read -r line; do
+          arr+=("$</span>line”) done &lt; $filename echo <span
+class="math inline">${arr[@]} # all array members$</span> bash
+arrayfileread.sh ids.txt —————————————————————————————————– #Reading
+file content line by line into an array</p>
+<p>$ cat mapfilearrayfileread.sh #!/bin/sh echo “reading file into
+array”</p>
+<p>filename=$1 echo “reading file..: $filename” mapfile lines &lt;
+$filename #echo ${lines[@]} #print all array members</p>
+<p>for i in “${lines[@]}”; do echo “element: <span
+class="math inline">$i"
+done$</span> bash mapfilearrayfileread.sh ids.txt
+—————————————————————————————————– #Reading file content line by line
+into an array</p>
+<p>mapfile -t lines &lt; &lt;(some command) $ mapfile arr &lt;
+&lt;(printf “Item 1”) $ echo <span
+class="math inline"><em>a</em><em>r</em><em>r</em>[@]</span> mapfile
+arr2 &lt; &lt;(cat ids.txt) $ echo <span
+class="math inline"><em>a</em><em>r</em><em>r</em>2[@]<em>m</em><em>a</em><em>p</em><em>f</em><em>i</em><em>l</em><em>e</em> − <em>t</em><em>l</em><em>i</em><em>n</em><em>e</em><em>s</em> &lt; <em>m</em><em>y</em><em>f</em><em>i</em><em>l</em><em>e</em></span>
+mapfile lines &lt; ids.txt $ mapfile -n 2 arr &lt; example.txt # Read
+the specified number of lines using -n</p>
+<p>$ mapfile -t lines &lt; ids.txt #Strip newlines and store item using
+-t $ echo <span class="math inline">${lines[@]} # all array
+members$</span> echo <span class="math inline">${lines[0]} # 1st
+member$</span> echo ${lines[1]} # 2nd member</p>
+<p>#one liner $ filename=“ids.txt” &amp;&amp; echo $filename &amp;&amp;
+mapfile arr &lt; $filename &amp;&amp; echo ${arr[@]}}
+—————————————————————————————————– # Create a dummy file echo -e “1”
+&gt; testfile.txt</p>
+<h1 id="loop-through-and-read-two-lines-at-a-time">Loop through and read
+two lines at a time</h1>
+<p>while read -r ONE; do read -r TWO echo “ONE: $ONE TWO: $TWO” done
+&lt; testfile.txt</p>
+<h1 id="create-a-dummy-variable">Create a dummy variable</h1>
+<p>STR=$(echo -e “1”)</p>
+<h1 id="loop-through-and-read-two-lines-at-a-time-1">Loop through and
+read two lines at a time</h1>
+<p>while read -r ONE; do read -r TWO echo “ONE: $ONE TWO: <span
+class="math inline">$TWO"
+done &lt;&lt;&lt; "$</span>STR” —————————————————————————————————–
+#!/bin/bash</p>
+<p>del=<span class="math inline">$(date --date="90 days ago" +%Y%m%d)
+for i in `find . -type d -name "2*"`; do
+  (($</span>del &gt; $(basename $i))) &amp;&amp; echo “delete $i” ||
+echo “dont delete <span class="math inline">$i"
+  #(($</span>del &gt; $(basename $i))) &amp;&amp; rm -rf $i #uncommen to
+delete done</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"># Delete streams in kurento older than N
+days</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">#!/bin/bash</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#move files from current dir
+dir=$(pwd)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">for i in $(find $dir -newermt “2022-03-22”
+! -newermt “2022-03-23”); do mv $i /tmp done</td>
+</tr>
+</tbody>
+</table>
+<p>#find creation/birth dates of files</p>
+<p>#!/bin/bash disk=$(df -Th . | grep ext4 |awk ’{print <span
+class="math inline">$1}')
+dir=$</span>(pwd)</p>
+<p>for file in <span
+class="math inline"><em>d</em><em>i</em><em>r</em>/ * <em>d</em><em>o</em><em>c</em><em>r</em><em>t</em><em>i</em><em>m</em><em>e</em>=</span>(debugfs
+-R “stat $file” $disk 2&gt;/dev/null | grep crtime | awk -F’– ’ ‘{print
+$2}’ | awk ’{print $2,$3,$5,<span class="math inline">$4}')
+     printf "$</span>crtime$file” done | sort -k4 | sort -n -k 3 -k 1M
+-k2 -k4</p>
+<p>#! /bin/bash from=‘2022-03-01 00:00:00.0000000000’ # 01-Mar-22
+to=‘2022-03-31 23:59:59.9999999999’ # 31-Mar-22</p>
+<p>for file in * ; do crtime=<span
+class="math inline">(<em>s</em><em>t</em><em>a</em><em>t</em> − <em>c</em></span>file”
+) if [[ $from &lt; $crtime &amp;&amp; $crtime &lt; <span
+class="math inline">$to ]] ; then
+        echo "$</span>crtime $file” fi done</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;">#!/bin/bash set -euox pipefail #safety
+for script</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">#!/bin/bash set -euox pipefail #safety
+for script if [[ $(lsb_release -rs) == “18.04” ]]; then #check if
+virtualization is supported on Linux, xenial fails w 0, bionic works w 2
+echo “virtualization is supported” #Copy your files here else echo
+“virtualization is not supported” fi</td>
+</tr>
+</tbody>
+</table>
+<p>#!/bin/bash set -euox pipefail #safety for script</p>
+<p>if [[ <span class="math inline">$(egrep -c '(vmx|svm)' /proc/cpuinfo)
+== 0 ]]; then
+         echo "virtualization is not supported"
+else
+      echo "===================================="
+      echo eval "$</span>(egrep -c ‘(vmx|svm)’ /proc/cpuinfo)”
+2&gt;/dev/null echo “====================================” echo
+“virtualization is not supported” fi<br />
+—————————————————————————————————– #compare if two files have the same
+contents</p>
+<p>STATUS=“$(cmp –silent $FILE1 $FILE2; echo <span
+class="math inline">$?)"  # "$</span>?” gives exit status for each
+comparison</p>
+<p>if [[ $STATUS -ne 0 ]]; then # if status isn’t equal to 0, then
+execute code DO A COMMAND ON $FILE1 else DO SOMETHING ELSE fi</p>
+<p>#compare if two files have the same contents if cmp –silent – “<span
+class="math inline">$FILE1" "$</span>FILE2”; then echo “files contents
+are identical” else echo “files differ” fi</p>
+<p>#compare if two files have the same contents,compare by checksum
+algorithm like sha256 sha256sum oldFile &gt; oldFile.sha256 echo “$(cat
+oldFile.sha256) newFile” | sha256sum –check newFile: OK</p>
+<p>#returns 1 on difference and 0 on no difference if diff file1 file2
+&gt; /dev/null then echo “No difference” else echo “Difference” fi</p>
+<h1 id="return-status-0-if-they-are-the-same-and-1-if-different">return
+status 0 if they are the same, and 1 if different</h1>
+<p>diff -s file1 file2 ; if [[ $? ==0 ]] ; then echo ‘files are the
+same’ else echo ‘files are different’ fi</p>
+<p>#not using the [] brackets if netstat -lntp | grep ’:8080.*java’ &gt;
+/dev/null; then echo “Found a Tomcat!” fi</p>
+<p>#$(<command>) command substitution,use the bash [[ conditional
+construct if [[ $(netstat -lnp | grep ‘:8080’) = <em>java</em> ]]; then
+echo “Found a Tomcat!” fi</p>
+<p>if [[ $(HEAD mycompany-intranet.com | grep ‘200 OK’ | wc -l) = “1”
+]]; then echo doing some intranet settings (proxy, etc) else echo doing
+some work-at-home settings (proxy, etc) fi</p>
+<p>#use the cksum command
+chk1=<code>cksum &lt;file1&gt; | awk -F" " '{print $1}'</code>
+chk2=<code>cksum &lt;file2&gt; | awk -F" " '{print $1}'</code></p>
+<p>if [ $chk1 -eq <span class="math inline">$chk2 ]
+then
+  echo "File is identical"
+else
+  echo "File is not identical"
+fi
+-----------------------------------------------------------------------------------------------------
+#Read commands but do not execute them. This may be used to check a
+script for syntax errors,noexec mode$</span> bash -n
+./unity_check.sh</p>
+<p>bash -x # runs the script <file> with tracing of each command
+executed, xtrace bash -x -c ls -lai #run a command in BASH, use -c
+option test -x <file> #tests whether <file> has execute permissions for
+the current user</p>
+<p>#bash -e, if any command in the script fails (i.e. returns a non-zero
+exist status), then the whole script immediately fails. #errexit bash -e
+myScript —————————————————————————————— <span
+class="math inline">$(command)          #Command Substitution
+(list)          #Group commands in a subshell: ( )
+{ list; }       #Group commands in the current shell: { }
+[[ expression ]]    #Test - return the binary result of an expression:
+[[ ]]$</span>(( expression ) #Arithmetic expansion The format for
+Arithmetic expansion is (( expr1 &amp;&amp; expr2 )) #Combine multiple
+expressions ( expression )</p>
+<h1
+id="the-difference-between-test-and-used-to-evaluate-expressions">the
+difference between test, [ and [[ used to evaluate expressions</h1>
+<h1 id="aka-test-command">[ (aka test) command</h1>
+<h1 id="is-a-synonym-for-test-but-requires-a-final-argument-of">[ is a
+synonym for test (but requires a final argument of ]</h1>
+<h1 id="and-test-are-posix-utilities-generally-builtin">[ and test are
+POSIX utilities (generally builtin)</h1>
+<h1 id="test-implements-the-old-portable-syntax-of-the-command">test
+implements the old, portable syntax of the command</h1>
+<h1
+id="if-portabilityconformance-to-posix-or-the-bourneshell-is-a-concern-the-old-syntax-should-be-used">If
+portability/conformance to POSIX or the BourneShell is a concern, the
+old syntax should be used</h1>
+<h1 id="test-construct">[[ … ]] test construct</h1>
+<h1
+id="works-only-in-the-korn-shell-where-it-originates-bash-zsh-and-recent-versions-of-yash-and-busybox">[[
+… ]] works only in the Korn shell (where it originates), Bash, Zsh, and
+recent versions of Yash and busybox</h1>
+<h1 id="is-a-new-improved-versiona-keyword-rather-than-a-program">[[ is
+a new, improved version,a keyword rather than a program</h1>
+<h1
+id="if-the-script-requires-bash-zsh-or-kornshell-the-new-syntax-is-usually-more-flexible-but-not-necessarily-backwards-compatible">If
+the script requires BASH, Zsh, or KornShell, the new syntax is usually
+more flexible, but not necessarily backwards compatible</h1>
+<p>#comparing [] vs [[ ]] $ file=“test.doc” #somefile that does not
+exists</p>
+<p>$ [ -f “<span class="math inline">$filename" ] || printf 'File does
+not exist or is not a regular file: %s\n' "$</span>filename” &gt;&amp;2
+File does not exist or is not a regular file:</p>
+<p>$ if [[ ! -e $file ]]; then<br />
+&gt; echo “File doesn’t exist or is in an inaccessible directory or is a
+symlink to a file that doesn’t exist.” &gt;&amp;2 ; &gt; fi File doesn’t
+exist or is in an inaccessible directory or is a symlink to a file that
+doesn’t exist.</p>
+<p>$ time for ((i=0; i&lt;100000; i++)); do [ “$i” = 1000 ]; done
+#Operating System: Ubuntu 21.10</p>
+<p>real 0m0.896s user 0m0.896s sys 0m0.000s $ time for ((i=0;
+i&lt;100000; i++)); do [ “$i” = 1000 ]; done #Operating System: CentOS
+Stream 8</p>
+<p>real 0m1.065s user 0m0.970s sys 0m0.000s</p>
+<p>$ time for ((i=0; i&lt;100000; i++)); do [[ “$i” = 1000 ]]; done
+#Operating System: Ubuntu 21.10</p>
+<p>real 0m0.663s user 0m0.663s sys 0m0.000s $ time for ((i=0;
+i&lt;100000; i++)); do [[ “$i” = 1000 ]]; done #Operating System: CentOS
+Stream 8</p>
+<p>real 0m0.763s user 0m0.695s sys 0m0.000s
+—————————————————————————————— #Busybox shell,check busybox version
+#BusyBox is an open source (GPL) project providing simple
+implementations of nearly 400 common commands, #including ls, mv, ln,
+mkdir, more, ps, gzip, bzip2, tar, and grep. It also contains a version
+of the programming #language awk, the stream editor sed, the filesystem
+checker fsck, the rpm and dpkg package managers</p>
+<p>apt/yum/pacman/dnf/zypper install busybox # method1 #method2 wget
+https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-x86_64
+&amp;&amp;<br />
+mv busybox-x86_64 busybox &amp;&amp; chmod +x busybox #method2 docker
+pull busybox &amp;&amp; docker run -it –rm busybox #Run a container from
+the image and enter the BusyBox shell</p>
+which busybox $ busybox sh # switch to busybox shell $ busybox command $
+busybox –list $ busybox –list | wc -l $ busybox ping -c google.com #
+busybox vi index.html &lt;!DOCTYPE html&gt;
+<html>
+<body>
+Welcome to BusyBox !
+</body>
+</html>
+<p>chsh -s $(which busybox) #set zsh as the default shell chsh -s
+$(which bash) # revert to Bash</p>
+<p>~ $ busybox echo $0 sh busybox | head -1 ~ $ busybox ls –help</p>
+<p>if ps ax -o pid,comm | grep <code>echo $$</code> | grep busybox ;
+then echo “it is BusyBox” fi</p>
+<p>#!/bin/ash
+exe=<code>exec 2&gt;/dev/null; readlink "/proc/$$/exe"</code> case
+“$exe” in */busybox) echo “It’s a busybox shell.” ;; esac ~ $ sudo ln -s
+/bin/busybox /bin/ash #The program busybox will act as a shell if linked
+with the name ash ~ $ ./test.sh It’s a busybox shell.</p>
+<p>#!/bin/ash</p>
+<p>domain=“mydomain.com” record=“11019653” api_key=“key1234”</p>
+<p>ip=“$(curl http://ipecho.net/plain)”</p>
+<p>content=“$(curl<br />
+-k<br />
+-H”Authorization: Bearer <span class="math inline">$api_key" \
+-H "Content-Type: application/json" \
+-d '{"data": "'"$</span>ip”’“}’<br />
+-X PUT”https://api.digitalocean.com/v2/domains/<span
+class="math inline"><em>d</em><em>o</em><em>m</em><em>a</em><em>i</em><em>n</em>/<em>r</em><em>e</em><em>c</em><em>o</em><em>r</em><em>d</em>/</span>record”)”</p>
+<p>echo “$content”</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">#zsh shell (Z-Shell)
+apt/yum/pacman/dnf/zypper install zsh</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">#KSH ( Korn Shell ) get the version of ksh
+apt/yum/pacman/dnf/zypper ksh zsh</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">[1]$ ksh –version version sh (AT&amp;T
+Research) 93u+ 2012-08-01 [4]$ echo <span
+class="math inline">.<em>s</em><em>h</em>.<em>v</em><em>e</em><em>r</em><em>s</em><em>i</em><em>o</em><em>n</em><em>V</em><em>e</em><em>r</em><em>s</em><em>i</em><em>o</em><em>n</em><em>A</em><em>J</em><em>M</em>93<em>u</em> + 2012 − 08 − 01[3]</span>
+echo <span
+class="math inline"><em>K</em><em>S</em><em>H</em><sub><em>V</em></sub><em>E</em><em>R</em><em>S</em><em>I</em><em>O</em><em>N</em><em>V</em><em>e</em><em>r</em><em>s</em><em>i</em><em>o</em><em>n</em><em>A</em><em>J</em><em>M</em>93<em>u</em> + 2012 − 08 − 01[2]</span>
+strings /bin/ksh | grep Version | tail -2 @(#)$Id: Version AJM 93u+
+2012-08-01</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">chsh -s $(which zsh) #set zsh as the
+default shell chsh -s $(which ksh93) # revert to Bash</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">echo $SHELL #Logout,login,verify</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">#!/bin/ksh if whence -a whence &gt;
+/dev/null; then echo “using modern version of KSH.” else echo “using an
+older version of KSH.” fi ~ [10]$ chmod +x test.ksh ~ [11]$ ./test.ksh
+using modern version of KSH.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#!/bin/ksh # Name: userinfo.ksh</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"># set variables FILE=“/etc/passwd”
+NOW=“<span class="math inline">$(date)"
+HOSTNAME="`hostname`"
+USERS_ACCOUNT="$</span>(wc -l $FILE)”</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"># Greet user print “Hi, $USER. I’m $0. I’m
+$SHELL script running on $HOSTNAME at $NOW.” print print “*** User
+accounts: $USERS_ACCOUNT” print “*** Current working directory:
+$PWD”</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">print “*** Running for loop test just for
+fun:” for x in {1..3} do print “Welcome <span class="math inline">$x
+times."
+done
+~ [10]$</span> chmod +x test.ksh ~ [11]$ ./test.ksh</td>
+</tr>
+</tbody>
+</table>
+<p>#A subshell can access the global variables set by the ‘parent shell’
+but not the local variables #Any changes made by a subshell to a global
+variable is not passed to the parent shell.</p>
+<p>$ cat script.sh echo <span
+class="math inline"><em>v</em><em>a</em><em>r</em></span> var=LBH $ echo
+<span
+class="math inline"><em>v</em><em>a</em><em>r</em><em>L</em><em>B</em><em>H</em></span>
+bash script.sh # The script doesn’t see the value of variable var</p>
+<p>$ export var=LBG $ echo <span
+class="math inline"><em>v</em><em>a</em><em>r</em><em>L</em><em>B</em><em>G</em></span>
+bash script.sh #Shell scripts run in subshell (by default) LBG</p>
+<p>$ bash #start new shell $ exit #exit new shell</p>
+<p>#commands from the script are executed by the current shell #as if
+they were typed into terminal instead of being run via a script in a
+subshell. #Scripts can access the local variables $ . script #not the
+same as running a shell script like this ./script</p>
+<p>#different subshell syntaxes, namely $() and back-tick surrounded
+statements # ’ indicates literal, # ” indicates that the string will be
+parsed for subshells and variables</p>
+<h1 id="single-quotes.-this-resulted-in-our-subshell-command">’ single
+quotes. This resulted in our subshell command,</h1>
+<p>#inside the single quotes, to be interpreted as literal text instead
+of a command $ echo ’<span
+class="math inline">(<em>e</em><em>c</em><em>h</em><em>o</em>′<em>a</em>′)′</span>(echo
+a)</p>
+<h1
+id="and-thus-the-string-is-parsed-for-actual-commands-and-variables">”
+and thus the string is parsed for actual commands and variables</h1>
+<p>#subshell is being started,with subshell syntax (<span
+class="math inline">$()),
+#the command inside the subshell (echo 'a') is being executed
+literally,an a is produced
+#then inserted in the overarching / top level echo
+#The command at that stage can be read as echo "a" and thus the output
+is a$</span> echo “$(echo ‘a’)” a</p>
+<p>#echo the letter b inside the subshell, #this is joined on the left
+and the right by the letters a and c yielding the overall output to be
+abc $ echo “a<code>echo 'b'</code>c” abc</p>
+<p>#subshell syntax of using back-ticks instead of <span
+class="math inline">()</span> echo “a$(echo ‘b’)c” abc</p>
+<p>#Double quotes inside subshells and sub-subshells,a subshell can be
+nested inside another subshell echo “<span class="math inline">$(echo
+"$</span>(echo”it works”)” | sed ‘s|it|it surely|’)”</p>
+<p>#prints 1 because the subshell is a replication of the shell that
+spawned it $ x=1 $ (echo $x) 1</p>
+<h1 id="run-a-shell-as-a-child-process-of-a-shell">run a shell as a
+child process of a shell</h1>
+<p>$ x=1 $ sh -c ‘echo $x’</p>
+<h1 id="run-a-shell-as-a-child-process-of-a-shell-1">run a shell as a
+child process of a shell</h1>
+<p>$ x=1 $ perl -le ‘print $x’ 1 ⨯</p>
+<h1 id="run-a-shell-as-a-child-process-of-a-shell-2">run a shell as a
+child process of a shell</h1>
+<p>$ x=1 $ python -c ‘print x’ Traceback (most recent call last): File
+“<string>”, line 1, in <module> NameError: name ‘x’ is not defined
+—————————————————————————————— # exit.sh to test exit codes #!/bin/bash
+exit 1 —————————————————————————————— bash exit.sh echo $? 1
+—————————————————————————————————– cat ‘doesnotexist.txt’ 2&gt;/dev/null
+|| exit 0 #suppress exit status (exit code) cat file.txt || exit 0</p>
+<p>cat filecheck.sh #!/bin/bash</p>
+<p>cat file.txt</p>
+<p>if [ $? -eq 0 ] then echo “The script ran ok” exit 0 else echo “The
+script failed” &gt;&amp;2 exit 1 fi</p>
+<p>$ bash -n filecheck.sh $ bash -xe filecheck.sh</p>
+<p>#set an exit code in a script $ cat exit.sh #!/bin/bash</p>
+<p>exit 1 $ bash -ex exit.sh + exit 1 —————————————————————————————————-
+#export variable export VAR=“HELLO, VARIABLE” echo $VAR
+—————————————————————————————————– #export variable</p>
+<h1 id="cat-env.vars">cat env.vars</h1>
+<p>foo=test</p>
+<p>eval <code>cat env.vars</code> echo $foo export eval
+<code>cat env.vars</code> echo $foo export – <code>cat env.vars</code>
+echo $foo —————————————————————————————————– #echo a line of bash to a
+file without executing touch /home/file.sh echo “#!/bin/bash” &gt;&gt;
+/home/file.sh echo “for line in $(grep -o ‘guest-……’ /etc/passwd | sort
+-u); do sudo deluser $line; done” &gt;&gt; /home/file.sh</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">shell script $0 represent the shell script
+file name itself $1 Starting with $1, are actual command line arguments
+sent to the shell script.</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">clear your bash history
+&gt;~/.bash_history Another option is link ~/.bash_history to /dev/null
+ln -sf /dev/null ~/.bash_history</td>
+</tr>
+</tbody>
+</table>
+<h1 id="remote-public-github-content-run">remote public github content
+run</h1>
+<h2
+id="binbash--c-curl--fssl-httpsraw.githubusercontent.comhomebrewinstallmasterinstall.sh">/bin/bash
+-c “$(curl -fsSL
+https://raw.githubusercontent.com/Homebrew/install/master/install.sh)”</h2>
+<p>#-c string If the -c option is present, then commands are read from
+string. #If there are arguments after the string, they are assigned to
+the positional parameters, starting with $0.</p>
+<p>/bin/sh -c ‘curl -L https://istio.io/downloadIstio | sh -’ #single
+quotes /bin/sh -eu -xv -c ‘cmd1 | cmd2’ #debug.
+————————————————————————————————————————————————- #!/bin/sh</p>
+<h1 id="bash-lvm-create-vol.sh-3-1">bash lvm-create-vol.sh 3 1</h1>
+<h1 id="pvdisplay-physical-volume">pvdisplay — Physical volume —</h1>
+<h1 id="vgdisplay-volume-group">vgdisplay — Volume group —</h1>
+<h1 id="lvdisplay-logical-volume">lvdisplay — Logical volume —</h1>
+<p>VOL_GROUP=“vgvagrant” #Defines the volume group to create volumes on
+if [ $1 ]; then VOLUMES=$1; else echo “Number of volumes”; exit; fi</p>
+<p>if [ $2 ]; then SIZE=$2; else echo “Size of volumes in (GB)”; exit;
+fi</p>
+<p>VOL=0 while [ $VOL -lt $VOLUMES ]; do #create volumes lvcreate -L
+<span
+class="math inline"><em>S</em><em>I</em><em>Z</em><em>E</em> − <em>n</em><em>v</em><em>o</em><em>l</em></span>VOL
+<span
+class="math inline"><em>V</em><em>O</em><em>L</em><sub><em>G</em></sub><em>R</em><em>O</em><em>U</em><em>P</em>; <em>V</em><em>O</em><em>L</em>=</span>((
+$VOL 1 )); done</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">#Syntax for Command Substitution #The
+old-style uses backticks (also called backquotes) to wrap the command
+being substituted #The new style begins with a dollar sign and wraps the
+rest of the command in parenthesis</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"># not a separate external command, but
+rather a shell built-in #takes a string as its argument, and evaluates
+it as if it s typed on a command line $ COMMAND=“ls -lrt”
+vagrant@vagrant:~$ eval $COMMAND</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#This command can be used in any script
+also where the variable name is unknown until executing the script. #In
+bash, however, this can be accomplished with variable indirection using
+the syntax ${!varname}</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">$ cat tryeval.sh #!/bin/bash #Initialize
+the variable x and y x=5 y=15</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#The first command variable is used to
+assign <code>expr</code> command to add the values of $x and $y
+c1=“<code>expr $x + $y</code>”</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">#The second command variable is used to
+assign <code>echo</code> command c2=“echo”</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#<code>eval</code> will calculate and
+print the sum of $x and $y by executing the commands of $c1 and $c2
+variables eval $c2 <span class="math inline"><em>c</em>1</span> bash
+tryeval.sh 20</td>
+</tr>
+</tbody>
+</table>
+<p>#from windows to linux copy problem fix $ make Makefile:21: ***
+missing separator. Stop. $ perl -pi -e ’s/^ */’ Makefile</p>
+<h1 id="unixwindows-file-editing">unix/windows file editing</h1>
+<p>“/bin/bash^M: bad interpreter: No such file or directory” fix: sed -i
+-e ‘s/$//’ build_all.sh
+————————————————————————————————————————————————- #Makefile gnu fortran
+F90 = gfortran TARGET=ff OBJECTS = $(TARGET).o FCFLAGS = -Ofast -g -pg
+-fbounds-check</p>
+<p>#all: clean run</p>
+<p>#compile $(TARGET): $(OBJECTS) $(F90) $(FCFLAGS) -o $(TARGET)
+$(OBJECTS) %.o: %.f90 $(F90) $(FCFLAGS) -c <span
+class="math inline"><sup><em>r</em></sup><em>u</em><em>n</em> : ./</span>(TARGET)
+gprof $(TARGET) gmon.out &gt; ff_analysis.txt</p>
+<p>.PHONY:clean</p>
+<p>clean: rm -rf $(TARGET) $(OBJECTS) <em>.out </em>.o
+————————————————————————————————————————————————- # The double-bracket
+syntax serves as an enhanced version of the single-bracket syntax # the
+double-bracket syntax features shell globbing.if <span
+class="math inline">$stringvar contains the phrase “string” anywhere,
+the condition will return true.
+if [[ "$</span>stringvar” == <em>string</em> ]]; then #match both
+“String” and “string”, use the following syntax #only general shell
+globbing is allowed. Bash-specific things like {1..4} or {foo,bar} does
+not work. if [[ “$stringvar” == <em>[sS]tring</em> ]]; then #The second
+difference is that word splitting is prevented. omit placing quotes
+around string variables if [[ $stringvarwithspaces != foo ]]; then</p>
+<p>#without the double-bracket syntax if [ -a *.sh ]; then #return true
+if there is one single file in the working directory that has a .sh
+extension. return false,If there are none hrow an error and stop
+executing the script,If there are several .sh files,because <em>.sh is
+expanded to the files in the working directory #with the double-bracket
+syntax if [[ -a *.sh ]]; then #return true if there is a file in the
+working directory called “</em>.sh</p>
+<p>#the double-bracket syntax allows regex pattern matching using the
+“=~” operator. #the and operator has precedence over the or operator,
+meaning that “&amp;&amp;” or “-a” will be evaluated before “||” or “-o”.
+#returns true if $num is equal to 3 and $stringvar is equal to “foo”. if
+[[ <span class="math inline">$num -eq 3 &amp;&amp; "$</span>stringvar”
+== foo ]]; then</p>
+<p>#Double-parenthesis syntax #true if $num is less than or equal to 5.
+if (( $num &lt;= 5 )); then</p>
+<p>—-——————————————————————————————————————————————— if ! [ -e
+“/var/run/postgresql/*.pid” ] then /etc/init.d/postgresql start fi
+—-——————————————————————————————————————————————— $ cat prog.sh Number=5
+while [[ <span class="math inline">$Number -gt 1 ]]
+do
+    printf "$</span>Number” ((Number -= 1 )) done
+—-——————————————————————————————————————————————— $ cat updateVulnDBs.sh
+#!/bin/bash</p>
+<p>declare -a databases=(“cve” “exploitdb” “openvas” “osvdb” “scipvuldb”
+“securityfocus” “securitytracker” “xforce”)</p>
+<p>for DB in “<span class="math inline">${databases[@]}"; do
+    wget
+https://www.computec.ch/projekte/vulscan/download/$</span>{DB}.csv done
+—-——————————————————————————————————————————————— # terminate the SSH
+agent</p>
+<p>#!/bin/bash</p>
+<h2 id="in-.bash_profile">in .bash_profile</h2>
+<p>SSHAGENT=<code>which ssh-agent</code> SSHAGENTARGS=“-s” if [ -z
+“<span class="math inline">$SSH_AUTH_SOCK" -a -x "$</span>SSHAGENT” ];
+then eval <code>$SSHAGENT $SSHAGENTARGS</code> trap “kill
+$SSH_AGENT_PID” 0 fi</p>
+<h2 id="in-.logout">in .logout</h2>
+<p>if [ ${SSH_AGENT_PID+1} == 1 ]; then ssh-add -D ssh-agent -k &gt;
+/dev/null 2&gt;&amp;1 unset SSH_AGENT_PID unset SSH_AUTH_SOCK fi
+—-——————————————————————————————————————————————— #run’s the
+ssh-agent(each run new ssh-agent,not the same ssh-agent) for the current
+shell, adds a key to it and runs two git commands,</p>
+<p>#!/bin/bash eval “<span class="math inline">$(ssh-agent -s)"
+SSH_AGENT_PID=$</span>(pgrep -u $USER -n ssh-agent) echo $SSH_AGENT_PID
+ssh-add /home/sshuser/.ssh/id_rsa</p>
+<p>git –version #git -C /var/www/barak/ reset –hard origin/master #git
+-C /var/www/barak/ pull origin master</p>
+<p>—-——————————————————————————————————————————————— #empty variable
+check</p>
+<pre><code>    #empty var check
+    if [ -z &quot;$i&quot; ];then #meeting id empty
+            echo -e &quot;meeting id empty \n&quot;
+            exit
+    elif [ -z &quot;$k&quot; ];then #directory list empty
+            echo -e &quot; directory list empty \n&quot;
+            exit
+    fi</code></pre>
+<p>—-——————————————————————————————————————————————— #boolean variable
+check</p>
+<p>#!/bin/bash</p>
+<h1 id="using-true-or-false-for-declaring-boolean-values">Using “true”
+or “false” for declaring boolean values</h1>
+<p>#Take the username</p>
+<p>echo “Enter username:”</p>
+<p>read username</p>
+<p>#Take the password</p>
+<p>echo “Enter password:”</p>
+<p>read password</p>
+<p>administrator=“false”</p>
+<p>#Check username and password</p>
+<p>if [[ $username == “admin” &amp;&amp; $password == “secret” ]];
+then</p>
+<pre><code>    #Set &quot;true&quot; for valid user
+
+    valid=&quot;true&quot;
+
+    #Set &quot;true&quot; for administrator
+
+    administrator=&quot;true&quot;</code></pre>
+<p>elif [[ $username == “fahmida” &amp;&amp; $password == “67890” ]];
+then</p>
+<pre><code>    #Set &quot;true&quot; for valid user
+
+    valid=&quot;true&quot;</code></pre>
+<p>else</p>
+<pre><code>    #Set &quot;false&quot; for invalid user
+
+    valid=&quot;false&quot;</code></pre>
+<p>fi</p>
+<p>#Print message based on the values of $valid and $administrator
+variables</p>
+<p>if [[ $valid == “true” &amp;&amp; $administrator == “true” ]];
+then</p>
+<pre><code>    echo &quot;Welcome Administrator.&quot;</code></pre>
+<p>elif [[ $valid == “true” &amp;&amp; $administrator == “false” ]];
+then</p>
+<pre><code>    echo &quot;Welcome $username.&quot;</code></pre>
+<p>else</p>
+<pre><code>    echo &quot;Username or Password is invalid.&quot;</code></pre>
+<p>fi</p>
+<p>$ cat bool.sh #!/bin/bash</p>
+<pre><code>    #FLAG_FOUND_FILE=&quot;false&quot;
+    FLAG_FOUND_FILE=&quot;true&quot;
+    echo &quot;flag FLAG_FOUND_FILE set to..: $FLAG_FOUND_FILE&quot;
+    if [ &quot;$FLAG_FOUND_FILE&quot; = true ]; then
+            echo -e &quot;flag FLAG_FOUND_FILE :$FLAG_FOUND_FILE&quot;
+    else
+            echo -e &quot;flag FLAG_FOUND_FILE :$FLAG_FOUND_FILE&quot;
+    fi</code></pre>
+<p>—-——————————————————————————————————————————————— #monitor cpu ram
+etc</p>
+<h1 id="crontab--e">crontab -e</h1>
+<p><em>/5 </em> * * * /bin/bash /opt/scripts/memory-alert.sh</p>
+<h1 id="sudo-chmod-x-optscriptsmemory-alert.sh">sudo chmod +x
+/opt/scripts/memory-alert.sh</h1>
+<h1
+id="optscriptsmemory-alert.shtest">./opt/scripts/memory-alert.sh#test</h1>
+<h1 id="vi-optscriptsmemory-alert.sh">vi
+/opt/scripts/memory-alert.sh</h1>
+<p>#!/bin/sh ramusage=$(free | awk ’/Mem/{printf(“RAM Usage: %.2f”),
+$3/$2*100}‘| awk’{print $3}’)</p>
+<p>if [ “$ramusage” &gt; 20 ]; then</p>
+<p>SUBJECT=“ATTENTION: Memory Utilization is High on $(hostname) at
+$(date)” MESSAGE=“/tmp/Mail.out” TO=“2day@gmail.com” echo “Memory
+Current Usage is: $ramusage%” &gt;&gt; $MESSAGE echo “” &gt;&gt;
+$MESSAGE echo “——————————————————————” &gt;&gt; $MESSAGE echo “Top
+Memory Consuming Process Using top command” &gt;&gt; $MESSAGE echo
+“——————————————————————” &gt;&gt; <span class="math inline">$MESSAGE
+echo "$</span>(top -b -o +%MEM | head -n 20)” &gt;&gt; $MESSAGE echo “”
+&gt;&gt; $MESSAGE echo “——————————————————————” &gt;&gt; $MESSAGE echo
+“Top Memory Consuming Process Using ps command” &gt;&gt; $MESSAGE echo
+“——————————————————————” &gt;&gt; <span class="math inline">$MESSAGE
+echo "$</span>(ps -eo pid,ppid,%mem,%Memory,cmd –sort=-%mem | head)”
+&gt;&gt; <span class="math inline">$MESSAGE
+mail -s "$</span>SUBJECT” “$TO” &lt; $MESSAGE rm /tmp/Mail.out fi
+—-——————————————————————————————————————————————— #monitor cpu ram etc,
+one liner</p>
+<h1 id="crontab--e-1">crontab -e</h1>
+<p><em>/5 </em> * * * /usr/bin/free | awk ’/Mem/{printf(“RAM Usage:
+%.2f%”), $3/$2*100}’ | awk ‘{print $3}’ | awk ‘{ if($1 &gt; 80) print
+$0;}’ | mail -s “High Memory Alert” 2day@gmail.com
+—-———————————————————————————————————————————————</p>
+<h2
+id="section-1">—-———————————————————————————————————————————————</h2>
+<p>#The script can be added directly to the local ~/.bashrc in a user’s
+home directory, so that all logins are printed to syslog cat
+/var/log/syslog</p>
+<p>DEBUG=“logger” if [[ -n $SSH_CONNECTION ]] ; then <span
+class="math inline">$DEBUG "$</span>{USER} logged in to ${HOSTNAME}” fi
+—-——————————————————————————————————————————————— #set the password
+#!/bin/bash echo “Setting password to” $password<br />
+echo <span class="math inline">$password |passwd --stdin sampleuser
+-------------------------------------------------------------------------------------------------------------------------------------------------
+vagrant@vg-ubuntu-01:~$</span> echo “nfs-kernel server status : <span
+class="math inline">$(systemctl is-active nfs-kernel-server)"
+nfs-kernel server status : active
+vagrant@vg-ubuntu-01:~$</span>
+—-——————————————————————————————————————————————— #!/bin/bash</p>
+<p class="heading" id="section-2"></p>
+<h1 id="setup-nfs-server">Setup NFS server</h1>
+<p class="heading" id="section-3"></p>
+<h1 id="format-the-volume-for-the-nfs-server">Format the volume for the
+nfs server</h1>
+<p>if ! mountpoint -q /nfsdata; then mkfs.ext4 /dev/sdb fi</p>
+<h1 id="mount-locally">Mount locally</h1>
+<p>mkdir -p /nfsdata if ! grep ‘nfsdata’ /etc/fstab; then echo “/dev/sdb
+/nfsdata ext4 defaults 0 2” &gt;&gt; /etc/fstab fi</p>
+<p>if ! mountpoint -q /nfsdata; then mount /nfsdata fi</p>
+<h1 id="allow-unrestricted-perms">Allow unrestricted perms</h1>
+<p>chmod 777 /nfsdata</p>
+<h1 id="install-start-nfs-services">Install &amp; start NFS
+services</h1>
+<p>yum install -y nfs-utils systemctl start nfs-server rpcbind systemctl
+enable nfs-server rpcbind</p>
+<h1 id="export-over-nfs">Export over NFS</h1>
+<p>echo “/nfsdata 10.0.4.0/24(rw,sync,no_root_squash)” &gt; /etc/exports
+exportfs -r</p>
+<h1 id="mount-the-filesystem-to-our-own-host">Mount the filesystem to
+our own host</h1>
+<p>mkdir -p /nfs if ! grep -q “master:nfsdata” /etc/fstab; then echo
+“master:/nfsdata /nfs nfs4 defaults,_netdev 0 0” &gt;&gt; /etc/fstab
+fi</p>
+<p>if ! mountpoint -q /nfs; then mount /nfs fi
+—-——————————————————————————————————————————————— #Execute SQL Queries
+From The Linux Shell $ mysql -u USER -pPASSWORD -e “SQL_QUERY” $ mysql
+-u USER -pPASSWORD -D DATABASE -e “SQL_QUERY” $ mysql -u USER -pPASSWORD
+-h HOSTNAME -e “SQL_QUERY” $ mysql -u USER -pPASSWORD -N -e “SQL_QUERY”
+#Suppressing column headings $ mysql -u USER -pPASSWORD -B -e
+“SQL_QUERY” #Suppress table borders $ mysql -u USER -pPASSWORD -e
+“SQL_QUERY” &gt; FILE #Save the output to a file</p>
+<p>#!/bin/bash mysql -u root -psecret &lt;&lt;MY_QUERY USE mysql SHOW
+tables MY_QUERY —-——————————————————————————————————————————————— #check
+if the process is running</p>
+<p>#!/bin/bash SERVICE=“nginx” if pgrep -x “<span
+class="math inline">$SERVICE" &gt;/dev/null
+then
+    echo "$</span>SERVICE is running” else echo “$SERVICE stopped” #
+uncomment to start nginx if stopped # systemctl start nginx # mail<br />
+fi</p>
+<p>—-——————————————————————————————————————————————— # transfer from
+local to remote, delete files if transfer is OK</p>
+<p>#!/bin/bash rsync -r -z -c /home/pi/queue
+root@server.mine.com:/home/foobar if [ “$?” -eq “0” ] then rm -rf rm
+/home/pi/queue/* echo “Done” else echo “Error while running rsync” fi
+—-——————————————————————————————————————————————— # check if rsync is
+running</p>
+<p>RSYNC_COMMAND=$(rsync -r -z -c /home/pi/queue
+root@server.mine.com:/home/foobar)</p>
+<pre><code>if [ $? -eq 0 ]; then
+    # Success do some more work!
+
+    if [ -n &quot;${RSYNC_COMMAND}&quot; ]; then
+        # Stuff to run, because rsync has changes
+    else
+        # No changes were made by rsync
+    fi
+else
+    # Something went wrong!
+    exit 1
+fi</code></pre>
+<p>—-——————————————————————————————————————————————— #rsync process
+check</p>
+<p>#!/bin/bash</p>
+<p>while [ 1 ] do rsync -avz –partial /tmp /mnt: if [ “<span
+class="math inline">$?" = "0" ] ; then
+        echo "rsync completed normally"
+        exit
+    else
+        echo "Rsync failure. Backing off and retrying in 180 s..."
+        sleep 180
+    fi
+done
+---------------------------------------------------------------------------------------------------------------------------------------------
+# Get a list of folders in the current directory and save it to
+folder_list.txt
+ls -d */ | sed 's|/$</span>||’ &gt; folder_list.txt</p>
+<p>#lists the full folder paths from the root and saves them to
+folder_list.txt, the list includes the current folder find “$(pwd)”
+-type d &gt; folder_list.txt</p>
+<p>#lists the full folder paths from the root and saves them to
+folder_list.txt, exclude the current directory find “$(pwd)” -mindepth 1
+-type d &gt; folder_list.txt</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">#ChatGPT #a bash script that creates the
+specified number of folders and files within those folders</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">#!/bin/bash</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">if [ $# -ne 1 ]; then echo “Usage: $0
+<parameter_file>” exit 1 fi</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">parameter_file=“$1”
+log_file=“deleted_files.log”</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"># Get the absolute path of the current
+directory current_directory=“$(pwd)”</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"># Loop through each line in the parameter
+file while IFS= read -r directory; do # Check if the line is not empty
+and not the current directory or the parent directory if [ -n “<span
+class="math inline">$directory" ] &amp;&amp; [ "$</span>directory” !=
+“<span class="math inline">$current_directory" ] &amp;&amp; [
+"$</span>directory” != “..” ]; then if [ -d “<span
+class="math inline">$directory" ]; then
+# Use find command to delete the directory and save deleted files to the
+log
+find "$</span>directory” -type d -exec rm -r {} ; &gt;&gt; “$log_file”
+2&gt;&amp;1 else echo “Directory does not exist: <span
+class="math inline">$directory" &gt;&gt; "$</span>log_file” fi fi done
+&lt; “$parameter_file”</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">echo “Deleted files saved to
+$log_file”</td>
+</tr>
+</tbody>
+</table>

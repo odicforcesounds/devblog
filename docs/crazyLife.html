@@ -1,0 +1,48 @@
+<h1 id="crazy-life">Crazy Life</h1>
+<p>If you chech Fail2ban logs, the ips change for similar ips, when they
+are banned.</p>
+<dl>
+<dt>Since I change the login attemps to one, at second try they are
+banned.</dt>
+<dd>
+<ul>
+<li>111.22.333.44 scan and blocked</li>
+</ul>
+</dd>
+<dd>
+<ul>
+<li>111.22.333.55 scan and blocked</li>
+</ul>
+</dd>
+</dl>
+<p>Looks like this persons change their IP by releasing their public IP
+to change to another public IP.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vim /etc/ssh/sshd_config </span></span></code></pre></div>
+<p>Some changes to do to secure our server.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># /etc/ssh/sshd_config </span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">PermitRootLogin</span> no</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">MaxAuthTries</span> 1</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">PermitEmptyPasswords</span> no </span></code></pre></div>
+<p>If you are a client, create your ssh-key in your local machine.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ssh-genkey</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Give a name to identify that key: my-ssh-server</span></span></code></pre></div>
+<p>Copy that key to your server</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ssh-copy-id</span> <span class="at">-i</span> ~/.ssh/server username@serverAddress</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># insert password</span></span></code></pre></div>
+<p>Now connect to your server without using a password</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/server <span class="st">&#39;username@serverAddress&#39;</span></span></code></pre></div>
+<p>On your server side, change your ssh files permissions.</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> 700 ~/.ssh </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> 600 ~/.ssh/known_hosts</span></code></pre></div>
+<p>Change sshd_config file:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># /etc/ssh/sshd_config</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">PubKeyAuthentication</span> yes</span></code></pre></div>
+<p>No connections are possible without using ssh-keys.</p>
+<p>Happy SSH sessions.</p>

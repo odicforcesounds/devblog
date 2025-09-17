@@ -1,0 +1,1074 @@
+<h1 id="docker-cheat-sheet">Docker Cheat Sheet</h1>
+<p><strong>Want to improve this cheat sheet? See the <a
+href="#contributing">Contributing</a> section!</strong></p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#why-docker">Why Docker</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#containers">Containers</a></li>
+<li><a href="#images">Images</a></li>
+<li><a href="#networks">Networks</a></li>
+<li><a href="#registry--repository">Registry and Repository</a></li>
+<li><a href="#dockerfile">Dockerfile</a></li>
+<li><a href="#layers">Layers</a></li>
+<li><a href="#links">Links</a></li>
+<li><a href="#volumes">Volumes</a></li>
+<li><a href="#exposing-ports">Exposing Ports</a></li>
+<li><a href="#best-practices">Best Practices</a></li>
+<li><a href="#docker-compose">Docker-Compose</a></li>
+<li><a href="#security">Security</a></li>
+<li><a href="#tips">Tips</a></li>
+<li><a href="#contributing">Contributing</a></li>
+</ul>
+<h2 id="why-docker">Why Docker</h2>
+<p>“With Docker, developers can build any app in any language using any
+toolchain. “Dockerized” apps are completely portable and can run
+anywhere - colleagues’ OS X and Windows laptops, QA servers running
+Ubuntu in the cloud, and production data center VMs running Red Hat.</p>
+<p>Developers can get going quickly by starting with one of the 13,000+
+apps available on Docker Hub. Docker manages and tracks changes and
+dependencies, making it easier for sysadmins to understand how the apps
+that developers build work. And with Docker Hub, developers can automate
+their build pipeline and share artifacts with collaborators through
+public or private repositories.</p>
+<p>Docker helps developers build and ship higher-quality applications,
+faster.” – <a href="https://www.docker.com/what-docker#copy1">What is
+Docker</a></p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>I use <a href="https://github.com/ohmyzsh/oh-my-zsh">Oh My Zsh</a>
+with the <a
+href="https://github.com/robbyrussell/oh-my-zsh/wiki/Plugins#docker">Docker
+plugin</a> for autocompletion of docker commands. YMMV.</p>
+<h3 id="linux">Linux</h3>
+<p>The 3.10.x kernel is <a
+href="https://docs.docker.com/engine/installation/binaries/#check-kernel-dependencies">the
+minimum requirement</a> for Docker.</p>
+<h3 id="macos">MacOS</h3>
+<p>10.8 “Mountain Lion” or newer is required.</p>
+<h3 id="windows-10">Windows 10</h3>
+<p>Hyper-V must be enabled in BIOS</p>
+<p>VT-D must also be enabled if available (Intel Processors).</p>
+<h3 id="windows-server">Windows Server</h3>
+<p>Windows Server 2016 is the minimum version required to install docker
+and docker-compose. Limitations exist on this version, such as multiple
+virtual networks and Linux containers. Windows Server 2019 and later are
+recommended.</p>
+<h2 id="installation">Installation</h2>
+<h3 id="linux-1">Linux</h3>
+<p>Run this quick and easy install script provided by Docker:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-sSL</span> https://get.docker.com/ <span class="kw">|</span> <span class="fu">sh</span></span></code></pre></div>
+<p>If you’re not willing to run a random shell script, please see the <a
+href="https://docs.docker.com/engine/installation/linux/">installation</a>
+instructions for your distribution.</p>
+<p>If you are a complete Docker newbie, you should follow the <a
+href="https://docs.docker.com/engine/getstarted/">series of
+tutorials</a> now.</p>
+<h3 id="macos-1">macOS</h3>
+<p>Download and install <a
+href="https://www.docker.com/community-edition">Docker Community
+Edition</a>. if you have Homebrew-Cask, just type
+<code>brew install --cask docker</code>. Or Download and install <a
+href="https://docs.docker.com/toolbox/overview/">Docker Toolbox</a>. <a
+href="https://docs.docker.com/docker-for-mac/">Docker For Mac</a> is
+nice, but it’s not quite as finished as the VirtualBox install. <a
+href="https://docs.docker.com/docker-for-mac/docker-toolbox/">See the
+comparison</a>.</p>
+<blockquote>
+<p><strong>NOTE</strong> Docker Toolbox is legacy. You should to use
+Docker Community Edition, See <a
+href="https://docs.docker.com/toolbox/overview/">Docker Toolbox</a>.</p>
+</blockquote>
+<p>Once you’ve installed Docker Community Edition, click the docker icon
+in Launchpad. Then start up a container:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run hello-world</span></code></pre></div>
+<p>That’s it, you have a running Docker container.</p>
+<p>If you are a complete Docker newbie, you should probably follow the
+<a href="https://docs.docker.com/engine/getstarted/">series of
+tutorials</a> now.</p>
+<h3 id="windows-10-1">Windows 10</h3>
+<p>Instructions to install Docker Desktop for Windows can be found <a
+href="https://docs.docker.com/desktop/windows/install/">here</a></p>
+<p>Once installed, open powershell as administrator and run:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the version of docker installed:</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>docker version</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Pull, create, and run &#39;hello-world&#39;:</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>docker run hello-world</span></code></pre></div>
+<p>To continue with this cheat sheet, right click the Docker icon in the
+system tray, and go to settings. In order to mount volumes, the C:/
+drive will need to be enabled in the settings to that information can be
+passed into the containers (later described in this article).</p>
+<p>To switch between Windows containers and Linux containers, right
+click the icon in the system tray and click the button to switch
+container operating system Doing this will stop the current containers
+that are running, and make them unaccessible until the container OS is
+switched back.</p>
+<p>Additionally, if you have WSL or WSL2 installed on your desktop, you
+might want to install the Linux Kernel for Windows. Instructions can be
+found <a
+href="https://techcommunity.microsoft.com/t5/windows-dev-appconsult/using-wsl2-in-a-docker-linux-container-on-windows-to-run-a/ba-p/1482133">here</a>.
+This requires the Windows Subsystem for Linux feature. This will allow
+for containers to be accessed by WSL operating systems, as well as the
+efficiency gain from running WSL operating systems in docker. It is also
+preferred to use <a
+href="https://docs.microsoft.com/en-us/windows/terminal/get-started">Windows
+terminal</a> for this.</p>
+<h3 id="windows-server-2016-2019">Windows Server 2016 / 2019</h3>
+<p>Follow Microsoft’s instructions that can be found <a
+href="https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/deploy-containers-on-server#install-docker">here</a></p>
+<p>If using the latest edge version of 2019, be prepared to only work in
+powershell, as it is only a servercore image (no desktop interface).
+When starting this machine, it will login and go straight to a
+powershell window. It is reccomended to install text editors and other
+tools using <a href="https://chocolatey.org/install">Chocolatey</a>.</p>
+<p>After installing, these commands will work:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the version of docker installed:</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>docker version</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Pull, create, and run &#39;hello-world&#39;:</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>docker run hello-world</span></code></pre></div>
+<p>Windows Server 2016 is not able to run Linux images.</p>
+<p>Windows Server Build 2004 is capable of running both linux and
+windows containers simultaneously through Hyper-V isolation. When
+running containers, use the <code>--isolation=hyperv</code> command,
+which will isolate the container using a seperate kernel instance.</p>
+<h3 id="check-version">Check Version</h3>
+<p>It is very important that you always know the current version of
+Docker you are currently running on at any point in time. This is very
+helpful because you get to know what features are compatible with what
+you have running. This is also important because you know what
+containers to run from the docker store when you are trying to get
+template containers. That said let see how to know which version of
+docker we have running currently.</p>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/version/"><code>docker version</code></a>
+shows which version of docker you have running.</li>
+</ul>
+<p>Get the server version:</p>
+<pre class="console"><code>$ docker version --format &#39;{{.Server.Version}}&#39;
+1.8.0</code></pre>
+<p>You can also dump raw JSON data:</p>
+<pre class="console"><code>$ docker version --format &#39;{{json .}}&#39;
+{&quot;Client&quot;:{&quot;Version&quot;:&quot;1.8.0&quot;,&quot;ApiVersion&quot;:&quot;1.20&quot;,&quot;GitCommit&quot;:&quot;f5bae0a&quot;,&quot;GoVersion&quot;:&quot;go1.4.2&quot;,&quot;Os&quot;:&quot;linux&quot;,&quot;Arch&quot;:&quot;am&quot;}</code></pre>
+<h2 id="containers">Containers</h2>
+<p><a
+href="http://etherealmind.com/basics-docker-containers-hypervisors-coreos/">Your
+basic isolated Docker process</a>. Containers are to Virtual Machines as
+threads are to processes. Or you can think of them as chroots on
+steroids.</p>
+<h3 id="lifecycle">Lifecycle</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/create"><code>docker create</code></a>
+creates a container but does not start it.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/rename/"><code>docker rename</code></a>
+allows the container to be renamed.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/run"><code>docker run</code></a>
+creates and starts a container in one operation.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/rm"><code>docker rm</code></a>
+deletes a container.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/update/"><code>docker update</code></a>
+updates a container’s resource limits.</li>
+</ul>
+<p>Normally if you run a container without options it will start and
+stop immediately, if you want keep it running you can use the command,
+<code>docker run -td container_id</code> this will use the option
+<code>-t</code> that will allocate a pseudo-TTY session and
+<code>-d</code> that will detach automatically the container (run
+container in background and print container ID).</p>
+<p>If you want a transient container, <code>docker run --rm</code> will
+remove the container after it stops.</p>
+<p>If you want to map a directory on the host to a docker container,
+<code>docker run -v $HOSTDIR:$DOCKERDIR</code>. Also see <a
+href="https://github.com/wsargent/docker-cheat-sheet/#volumes">Volumes</a>.</p>
+<p>If you want to remove also the volumes associated with the container,
+the deletion of the container must include the <code>-v</code> switch
+like in <code>docker rm -v</code>.</p>
+<p>There’s also a <a
+href="https://docs.docker.com/engine/admin/logging/overview/">logging
+driver</a> available for individual containers in docker 1.10. To run
+docker with a custom log driver (i.e., to syslog), use
+<code>docker run --log-driver=syslog</code>.</p>
+<p>Another useful option is
+<code>docker run --name yourname docker_image</code> because when you
+specify the <code>--name</code> inside the run command this will allow
+you to start and stop a container by calling it with the name the you
+specified when you created it.</p>
+<h3 id="starting-and-stopping">Starting and Stopping</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/start"><code>docker start</code></a>
+starts a container so it is running.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/stop"><code>docker stop</code></a>
+stops a running container.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/restart"><code>docker restart</code></a>
+stops and starts a container.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/pause/"><code>docker pause</code></a>
+pauses a running container, “freezing” it in place.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/unpause/"><code>docker unpause</code></a>
+will unpause a running container.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/wait"><code>docker wait</code></a>
+blocks until running container stops.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/kill"><code>docker kill</code></a>
+sends a SIGKILL to a running container.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/attach"><code>docker attach</code></a>
+will connect to a running container.</li>
+</ul>
+<p>If you want to detach from a running container, use
+<code>Ctrl + p, Ctrl + q</code>. If you want to integrate a container
+with a <a
+href="https://docs.docker.com/engine/admin/host_integration/">host
+process manager</a>, start the daemon with <code>-r=false</code> then
+use <code>docker start -a</code>.</p>
+<p>If you want to expose container ports through the host, see the <a
+href="#exposing-ports">exposing ports</a> section.</p>
+<p>Restart policies on crashed docker instances are <a
+href="http://container42.com/2014/09/30/docker-restart-policies/">covered
+here</a>.</p>
+<h4 id="cpu-constraints">CPU Constraints</h4>
+<p>You can limit CPU, either using a percentage of all CPUs, or by using
+specific cores.</p>
+<p>For example, you can tell the <a
+href="https://docs.docker.com/engine/reference/run/#/cpu-share-constraint"><code>cpu-shares</code></a>
+setting. The setting is a bit strange – 1024 means 100% of the CPU, so
+if you want the container to take 50% of all CPU cores, you should
+specify 512. See <a
+href="https://goldmann.pl/blog/2014/09/11/resource-management-in-docker/#_cpu"
+class="uri">https://goldmann.pl/blog/2014/09/11/resource-management-in-docker/#_cpu</a>
+for more:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-it</span> <span class="at">-c</span> 512 agileek/cpuset-test</span></code></pre></div>
+<p>You can also only use some CPU cores using <a
+href="https://docs.docker.com/engine/reference/run/#/cpuset-constraint"><code>cpuset-cpus</code></a>.
+See <a href="https://agileek.github.io/docker/2014/08/06/docker-cpuset/"
+class="uri">https://agileek.github.io/docker/2014/08/06/docker-cpuset/</a>
+for details and some nice videos:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-it</span> <span class="at">--cpuset-cpus</span><span class="op">=</span>0,4,6 agileek/cpuset-test</span></code></pre></div>
+<p>Note that Docker can still <strong>see</strong> all of the CPUs
+inside the container – it just isn’t using all of them. See <a
+href="https://github.com/docker/docker/issues/20770"
+class="uri">https://github.com/docker/docker/issues/20770</a> for more
+details.</p>
+<h4 id="memory-constraints">Memory Constraints</h4>
+<p>You can also set <a
+href="https://docs.docker.com/engine/reference/run/#/user-memory-constraints">memory
+constraints</a> on Docker:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-it</span> <span class="at">-m</span> 300M ubuntu:14.04 /bin/bash</span></code></pre></div>
+<h4 id="capabilities">Capabilities</h4>
+<p>Linux capabilities can be set by using <code>cap-add</code> and
+<code>cap-drop</code>. See <a
+href="https://docs.docker.com/engine/reference/run/#/runtime-privilege-and-linux-capabilities"
+class="uri">https://docs.docker.com/engine/reference/run/#/runtime-privilege-and-linux-capabilities</a>
+for details. This should be used for greater security.</p>
+<p>To mount a FUSE based filesystem, you need to combine both –cap-add
+and –device:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">-it</span> <span class="at">--cap-add</span> SYS_ADMIN <span class="at">--device</span> /dev/fuse sshfs</span></code></pre></div>
+<p>Give access to a single device:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-it</span> <span class="at">--device</span><span class="op">=</span>/dev/ttyUSB0 debian bash</span></code></pre></div>
+<p>Give access to all devices:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-it</span> <span class="at">--privileged</span> <span class="at">-v</span> /dev/bus/usb:/dev/bus/usb debian bash</span></code></pre></div>
+<p>More info about privileged containers <a
+href="https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities">here</a>.</p>
+<h3 id="info">Info</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/ps"><code>docker ps</code></a>
+shows running containers.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/logs"><code>docker logs</code></a>
+gets logs from container. (You can use a custom log driver, but logs is
+only available for <code>json-file</code> and <code>journald</code> in
+1.10).</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/inspect"><code>docker inspect</code></a>
+looks at all the info on a container (including IP address).</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/events"><code>docker events</code></a>
+gets events from container.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/port"><code>docker port</code></a>
+shows public facing port of container.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/top"><code>docker top</code></a>
+shows running processes in container.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/stats"><code>docker stats</code></a>
+shows containers’ resource usage statistics.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/diff"><code>docker diff</code></a>
+shows changed files in the container’s FS.</li>
+</ul>
+<p><code>docker ps -a</code> shows running and stopped containers.</p>
+<p><code>docker stats --all</code> shows a list of all containers,
+default shows just running.</p>
+<h3 id="import-export">Import / Export</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/cp"><code>docker cp</code></a>
+copies files or folders between a container and the local
+filesystem.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/export"><code>docker export</code></a>
+turns container filesystem into tarball archive stream to STDOUT.</li>
+</ul>
+<h3 id="executing-commands">Executing Commands</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/exec"><code>docker exec</code></a>
+to execute a command in container.</li>
+</ul>
+<p>To enter a running container, attach a new shell process to a running
+container called foo, use:
+<code>docker exec -it foo /bin/bash</code>.</p>
+<h2 id="images">Images</h2>
+<p>Images are just <a
+href="https://docs.docker.com/engine/understanding-docker/#how-does-a-docker-image-work">templates
+for docker containers</a>.</p>
+<h3 id="lifecycle-1">Lifecycle</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/images"><code>docker images</code></a>
+shows all images.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/import"><code>docker import</code></a>
+creates an image from a tarball.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/build"><code>docker build</code></a>
+creates image from Dockerfile.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/commit"><code>docker commit</code></a>
+creates image from a container, pausing it temporarily if it is
+running.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/rmi"><code>docker rmi</code></a>
+removes an image.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/load"><code>docker load</code></a>
+loads an image from a tar archive as STDIN, including images and tags
+(as of 0.7).</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/save"><code>docker save</code></a>
+saves an image to a tar archive stream to STDOUT with all parent layers,
+tags &amp; versions (as of 0.7).</li>
+</ul>
+<h3 id="info-1">Info</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/history"><code>docker history</code></a>
+shows history of image.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/tag"><code>docker tag</code></a>
+tags an image to a name (local or registry).</li>
+</ul>
+<h3 id="cleaning-up">Cleaning up</h3>
+<p>While you can use the <code>docker rmi</code> command to remove
+specific images, there’s a tool called <a
+href="https://github.com/spotify/docker-gc">docker-gc</a> that will
+safely clean up images that are no longer used by any containers. As of
+docker 1.13, <code>docker image prune</code> is also available for
+removing unused images. See <a href="#prune">Prune</a>.</p>
+<h3 id="loadsave-image">Load/Save image</h3>
+<p>Load an image from file:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> load <span class="op">&lt;</span> my_image.tar.gz</span></code></pre></div>
+<p>Save an existing image:</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> save my_image:my_tag <span class="kw">|</span> <span class="fu">gzip</span> <span class="op">&gt;</span> my_image.tar.gz</span></code></pre></div>
+<h3 id="importexport-container">Import/Export container</h3>
+<p>Import a container as an image from file:</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> my_container.tar.gz <span class="kw">|</span> <span class="ex">docker</span> import <span class="at">-</span> my_image:my_tag</span></code></pre></div>
+<p>Export an existing container:</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> export my_container <span class="kw">|</span> <span class="fu">gzip</span> <span class="op">&gt;</span> my_container.tar.gz</span></code></pre></div>
+<h3
+id="difference-between-loading-a-saved-image-and-importing-an-exported-container-as-an-image">Difference
+between loading a saved image and importing an exported container as an
+image</h3>
+<p>Loading an image using the <code>load</code> command creates a new
+image including its history.<br />
+Importing a container as an image using the <code>import</code> command
+creates a new image excluding the history which results in a smaller
+image size compared to loading an image.</p>
+<h2 id="networks">Networks</h2>
+<p>Docker has a <a
+href="https://docs.docker.com/engine/userguide/networking/">networks</a>
+feature. Docker automatically creates 3 network interfaces when you
+install it (bridge, host none). A new container is launched into the
+bridge network by default. To enable communication between multiple
+containers, you can create a new network and launch containers in it.
+This enables containers to communicate to each other while being
+isolated from containers that are not connected to the network.
+Furthermore, it allows to map container names to their IP addresses. See
+<a
+href="https://docs.docker.com/engine/userguide/networking/work-with-networks/">working
+with networks</a> for more details.</p>
+<h3 id="lifecycle-2">Lifecycle</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/network_create/"><code>docker network create</code></a>
+NAME Create a new network (default type: bridge).</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/network_rm/"><code>docker network rm</code></a>
+NAME Remove one or more networks by name or identifier. No containers
+can be connected to the network when deleting it.</li>
+</ul>
+<h3 id="info-2">Info</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/network_ls/"><code>docker network ls</code></a>
+List networks</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/network_inspect/"><code>docker network inspect</code></a>
+NAME Display detailed information on one or more networks.</li>
+</ul>
+<h3 id="connection">Connection</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/network_connect/"><code>docker network connect</code></a>
+NETWORK CONTAINER Connect a container to a network</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/network_disconnect/"><code>docker network disconnect</code></a>
+NETWORK CONTAINER Disconnect a container from a network</li>
+</ul>
+<p>You can specify a <a
+href="https://blog.jessfraz.com/post/ips-for-all-the-things/">specific
+IP address for a container</a>:</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create a new bridge network with your subnet and gateway for your ip block</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> network create <span class="at">--subnet</span> 203.0.113.0/24 <span class="at">--gateway</span> 203.0.113.254 iptastic</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># run a nginx container with a specific ip in that block</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> docker run <span class="at">--rm</span> <span class="at">-it</span> <span class="at">--net</span> iptastic <span class="at">--ip</span> 203.0.113.2 nginx</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># curl the ip from any other place (assuming this is a public ip block duh)</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> curl 203.0.113.2</span></code></pre></div>
+<h2 id="registry-repository">Registry &amp; Repository</h2>
+<p>A repository is a <em>hosted</em> collection of tagged images that
+together create the file system for a container.</p>
+<p>A registry is a <em>host</em> – a server that stores repositories and
+provides an HTTP API for <a
+href="https://docs.docker.com/engine/tutorials/dockerrepos/">managing
+the uploading and downloading of repositories</a>.</p>
+<p>Docker.com hosts its own <a href="https://hub.docker.com/">index</a>
+to a central registry which contains a large number of repositories.
+Having said that, the central docker registry <a
+href="https://titanous.com/posts/docker-insecurity">does not do a good
+job of verifying images</a> and should be avoided if you’re worried
+about security.</p>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/login"><code>docker login</code></a>
+to login to a registry.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/logout"><code>docker logout</code></a>
+to logout from a registry.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/search"><code>docker search</code></a>
+searches registry for image.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/pull"><code>docker pull</code></a>
+pulls an image from registry to local machine.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/push"><code>docker push</code></a>
+pushes an image to the registry from local machine.</li>
+</ul>
+<h3 id="run-local-registry">Run local registry</h3>
+<p>You can run a local registry by using the <a
+href="https://github.com/docker/distribution">docker distribution</a>
+project and looking at the <a
+href="https://github.com/docker/docker.github.io/blob/master/registry/deploying.md">local
+deploy</a> instructions.</p>
+<p>Also see the <a
+href="https://groups.google.com/a/dockerproject.org/forum/#!forum/distribution">mailing
+list</a>.</p>
+<h2 id="dockerfile">Dockerfile</h2>
+<p><a href="https://docs.docker.com/engine/reference/builder/">The
+configuration file</a>. Sets up a Docker container when you run
+<code>docker build</code> on it. Vastly preferable to
+<code>docker commit</code>.</p>
+<p>Here are some common text editors and their syntax highlighting
+modules you could use to create Dockerfiles:</p>
+<ul>
+<li>If you use <a href="http://jedit.org">jEdit</a>, I’ve put up a
+syntax highlighting module for <a
+href="https://github.com/wsargent/jedit-docker-mode">Dockerfile</a> you
+can use.</li>
+<li><a
+href="https://packagecontrol.io/packages/Dockerfile%20Syntax%20Highlighting">Sublime
+Text 2</a></li>
+<li><a href="https://atom.io/packages/language-docker">Atom</a></li>
+<li><a href="https://github.com/ekalinin/Dockerfile.vim">Vim</a></li>
+<li><a href="https://github.com/spotify/dockerfile-mode">Emacs</a></li>
+<li><a
+href="https://github.com/docker/docker/tree/master/contrib/syntax/textmate">TextMate</a></li>
+<li><a href="https://github.com/Microsoft/vscode-docker">VS
+Code</a></li>
+<li>Also see <a href="https://domeide.github.io/">Docker meets the
+IDE</a></li>
+</ul>
+<h3 id="instructions">Instructions</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#dockerignore-file">.dockerignore</a></li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#from">FROM</a>
+Sets the Base Image for subsequent instructions.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#maintainer-deprecated">MAINTAINER
+(deprecated - use LABEL instead)</a> Set the Author field of the
+generated images.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#run">RUN</a>
+execute any commands in a new layer on top of the current image and
+commit the results.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#cmd">CMD</a>
+provide defaults for an executing container.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#expose">EXPOSE</a>
+informs Docker that the container listens on the specified network ports
+at runtime. NOTE: does not actually make ports accessible.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#env">ENV</a>
+sets environment variable.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#add">ADD</a>
+copies new files, directories or remote file to container. Invalidates
+caches. Avoid <code>ADD</code> and use <code>COPY</code> instead.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#copy">COPY</a>
+copies new files or directories to container. By default this copies as
+root regardless of the USER/WORKDIR settings. Use
+<code>--chown=&lt;user&gt;:&lt;group&gt;</code> to give ownership to
+another user/group. (Same for <code>ADD</code>.)</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#entrypoint">ENTRYPOINT</a>
+configures a container that will run as an executable.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#volume">VOLUME</a>
+creates a mount point for externally mounted volumes or other
+containers.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#user">USER</a>
+sets the user name for following RUN / CMD / ENTRYPOINT commands.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#workdir">WORKDIR</a>
+sets the working directory.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#arg">ARG</a>
+defines a build-time variable.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#onbuild">ONBUILD</a>
+adds a trigger instruction when the image is used as the base for
+another build.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#stopsignal">STOPSIGNAL</a>
+sets the system call signal that will be sent to the container to
+exit.</li>
+<li><a
+href="https://docs.docker.com/config/labels-custom-metadata/">LABEL</a>
+apply key/value metadata to your images, containers, or daemons.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#shell">SHELL</a>
+override default shell is used by docker to run commands.</li>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#healthcheck">HEALTHCHECK</a>
+tells docker how to test a container to check that it is still
+working.</li>
+</ul>
+<h3 id="tutorial">Tutorial</h3>
+<ul>
+<li><a
+href="https://www.flux7.com/tutorial/docker-tutorial-series-part-3-automation-is-the-word-using-dockerfile/">Flux7’s
+Dockerfile Tutorial</a></li>
+</ul>
+<h3 id="examples">Examples</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/builder/#dockerfile-examples">Examples</a></li>
+<li><a
+href="https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/">Best
+practices for writing Dockerfiles</a></li>
+<li><a href="http://crosbymichael.com/">Michael Crosby</a> has some more
+<a
+href="http://crosbymichael.com/dockerfile-best-practices.html">Dockerfiles
+best practices</a> / <a
+href="http://crosbymichael.com/dockerfile-best-practices-take-2.html">take
+2</a>.</li>
+<li><a
+href="http://jonathan.bergknoff.com/journal/building-good-docker-images">Building
+Good Docker Images</a> / <a
+href="http://jonathan.bergknoff.com/journal/building-better-docker-images">Building
+Better Docker Images</a></li>
+<li><a
+href="https://speakerdeck.com/garethr/managing-container-configuration-with-metadata">Managing
+Container Configuration with Metadata</a></li>
+<li><a href="https://rock-it.pl/how-to-write-excellent-dockerfiles/">How
+to write excellent Dockerfiles</a></li>
+</ul>
+<h2 id="layers">Layers</h2>
+<p>The versioned filesystem in Docker is based on layers. They’re like
+<a
+href="https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/">git
+commits or changesets for filesystems</a>.</p>
+<h2 id="links">Links</h2>
+<p>Links are how Docker containers talk to each other <a
+href="https://docs.docker.com/engine/userguide/networking/default_network/dockerlinks/">through
+TCP/IP ports</a>. <a
+href="https://blogs.atlassian.com/2013/11/docker-all-the-things-at-atlassian-automation-and-wiring/">Atlassian</a>
+show worked examples. You can also resolve <a
+href="https://docs.docker.com/engine/userguide/networking/default_network/dockerlinks/#/updating-the-etchosts-file">links
+by hostname</a>.</p>
+<p>This has been deprecated to some extent by <a
+href="https://docs.docker.com/network/">user-defined networks</a>.</p>
+<p>NOTE: If you want containers to ONLY communicate with each other
+through links, start the docker daemon with <code>-icc=false</code> to
+disable inter process communication.</p>
+<p>If you have a container with the name CONTAINER (specified by
+<code>docker run --name CONTAINER</code>) and in the Dockerfile, it has
+an exposed port:</p>
+<pre><code>EXPOSE 1337</code></pre>
+<p>Then if we create another container called LINKED like so:</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">--link</span> CONTAINER:ALIAS <span class="at">--name</span> LINKED user/wordpress</span></code></pre></div>
+<p>Then the exposed ports and aliases of CONTAINER will show up in
+LINKED with the following environment variables:</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="va">$ALIAS_PORT_1337_TCP_PORT</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="va">$ALIAS_PORT_1337_TCP_ADDR</span></span></code></pre></div>
+<p>And you can connect to it that way.</p>
+<p>To delete links, use <code>docker rm --link</code>.</p>
+<p>Generally, linking between docker services is a subset of “service
+discovery”, a big problem if you’re planning to use Docker at scale in
+production. Please read <a
+href="https://www.digitalocean.com/community/tutorials/the-docker-ecosystem-service-discovery-and-distributed-configuration-stores">The
+Docker Ecosystem: Service Discovery and Distributed Configuration
+Stores</a> for more info.</p>
+<h2 id="volumes">Volumes</h2>
+<p>Docker volumes are <a
+href="https://docs.docker.com/engine/tutorials/dockervolumes/">free-floating
+filesystems</a>. They don’t have to be connected to a particular
+container. You can use volumes mounted from <a
+href="https://medium.com/@ramangupta/why-docker-data-containers-are-good-589b3c6c749e">data-only
+containers</a> for portability. As of Docker 1.9.0, Docker has named
+volumes which replace data-only containers. Consider using named volumes
+to implement it rather than data containers.</p>
+<h3 id="lifecycle-3">Lifecycle</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/volume_create/"><code>docker volume create</code></a></li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/volume_rm/"><code>docker volume rm</code></a></li>
+</ul>
+<h3 id="info-3">Info</h3>
+<ul>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/volume_ls/"><code>docker volume ls</code></a></li>
+<li><a
+href="https://docs.docker.com/engine/reference/commandline/volume_inspect/"><code>docker volume inspect</code></a></li>
+</ul>
+<p>Volumes are useful in situations where you can’t use links (which are
+TCP/IP only). For instance, if you need to have two docker instances
+communicate by leaving stuff on the filesystem.</p>
+<p>You can mount them in several docker containers at once, using
+<code>docker run --volumes-from</code>.</p>
+<p>Because volumes are isolated filesystems, they are often used to
+store state from computations between transient containers. That is, you
+can have a stateless and transient container run from a recipe, blow it
+away, and then have a second instance of the transient container pick up
+from where the last one left off.</p>
+<p>See <a
+href="http://crosbymichael.com/advanced-docker-volumes.html">advanced
+volumes</a> for more details. <a
+href="http://container42.com/2014/11/03/docker-indepth-volumes/">Container42</a>
+is also helpful.</p>
+<p>You can <a
+href="https://docs.docker.com/engine/tutorials/dockervolumes/#mount-a-host-directory-as-a-data-volume">map
+MacOS host directories as docker volumes</a>:</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-v</span> /Users/wsargent/myapp/src:/src</span></code></pre></div>
+<p>You can use remote NFS volumes if you’re <a
+href="https://docs.docker.com/engine/tutorials/dockervolumes/#/mount-a-shared-storage-volume-as-a-data-volume">feeling
+brave</a>.</p>
+<p>You may also consider running data-only containers as described <a
+href="http://container42.com/2013/12/16/persistent-volumes-with-docker-container-as-volume-pattern/">here</a>
+to provide some data portability.</p>
+<p>Be aware that you can <a href="#volumes-can-be-files">mount files as
+volumes</a>.</p>
+<h2 id="exposing-ports">Exposing ports</h2>
+<p>Exposing incoming ports through the host container is <a
+href="https://docs.docker.com/engine/reference/run/#expose-incoming-ports">fiddly
+but doable</a>.</p>
+<p>This is done by mapping the container port to the host port (only
+using localhost interface) using <code>-p</code>:</p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-p</span> 127.0.0.1:<span class="va">$HOSTPORT</span>:<span class="va">$CONTAINERPORT</span> <span class="dt">\</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--name</span> CONTAINER <span class="dt">\</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-t</span> someimage</span></code></pre></div>
+<p>You can tell Docker that the container listens on the specified
+network ports at runtime by using <a
+href="https://docs.docker.com/engine/reference/builder/#expose">EXPOSE</a>:</p>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode dockerfile"><code class="sourceCode dockerfile"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">EXPOSE</span> &lt;CONTAINERPORT&gt;</span></code></pre></div>
+<p>Note that <code>EXPOSE</code> does not expose the port itself - only
+<code>-p</code> will do that.</p>
+<p>To expose the container’s port on your localhost’s port, run:</p>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">iptables</span> <span class="at">-t</span> nat <span class="at">-A</span> DOCKER <span class="at">-p</span> tcp <span class="at">--dport</span> <span class="op">&lt;</span>LOCALHOSTPORT<span class="op">&gt;</span> -j DNAT <span class="at">--to-destination</span> <span class="op">&lt;</span>CONTAINERIP<span class="op">&gt;</span>:<span class="op">&lt;</span>PORT<span class="op">&gt;</span></span></code></pre></div>
+<p>If you’re running Docker in Virtualbox, you then need to forward the
+port there as well, using <a
+href="https://docs.vagrantup.com/v2/networking/forwarded_ports.html">forwarded_port</a>.
+Define a range of ports in your Vagrantfile like this so you can
+dynamically map them:</p>
+<pre><code>Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  ...
+
+  (49000..49900).each do |port|
+    config.vm.network :forwarded_port, :host =&gt; port, :guest =&gt; port
+  end
+
+  ...
+end</code></pre>
+<p>If you forget what you mapped the port to on the host container, use
+<code>docker port</code> to show it:</p>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> port CONTAINER <span class="va">$CONTAINERPORT</span></span></code></pre></div>
+<h2 id="best-practices">Best Practices</h2>
+<p>This is where general Docker best practices and war stories go:</p>
+<ul>
+<li><a
+href="http://gregoryszorc.com/blog/2014/10/16/the-rabbit-hole-of-using-docker-in-automated-tests/">The
+Rabbit Hole of Using Docker in Automated Tests</a></li>
+<li><a href="https://twitter.com/bridgetkromhout">Bridget Kromhout</a>
+has a useful blog post on <a
+href="http://sysadvent.blogspot.co.uk/2014/12/day-1-docker-in-production-reality-not.html">running
+Docker in production</a> at Dramafever.</li>
+<li>There’s also a best practices <a
+href="http://developers.lyst.com/devops/2014/12/08/docker/">blog
+post</a> from Lyst.</li>
+<li><a
+href="https://tersesystems.com/2013/11/20/building-a-development-environment-with-docker/">Building
+a Development Environment With Docker</a></li>
+<li><a
+href="https://samsaffron.com/archive/2013/11/07/discourse-in-a-docker-container">Discourse
+in a Docker Container</a></li>
+</ul>
+<h2 id="docker-compose">Docker-Compose</h2>
+<p>Compose is a tool for defining and running multi-container Docker
+applications. With Compose, you use a YAML file to configure your
+application’s services. Then, with a single command, you create and
+start all the services from your configuration. To learn more about all
+the features of Compose, see the <a
+href="https://docs.docker.com/compose/overview/#features">list of
+features</a>.</p>
+<p>By using the following command you can start up your application:</p>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker-compose</span> <span class="at">-f</span> <span class="op">&lt;</span>docker-compose-file<span class="op">&gt;</span> up</span></code></pre></div>
+<p>You can also run docker-compose in detached mode using -d flag, then
+you can stop it whenever needed by the following command:</p>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker-compose</span> stop</span></code></pre></div>
+<p>You can bring everything down, removing the containers entirely, with
+the down command. Pass <code>--volumes</code> to also remove the data
+volume.</p>
+<h2 id="security">Security</h2>
+<p>This is where security tips about Docker go. The Docker <a
+href="https://docs.docker.com/engine/security/security/">security</a>
+page goes into more detail.</p>
+<p>First things first: Docker runs as root. If you are in the
+<code>docker</code> group, you effectively <a
+href="https://web.archive.org/web/20161226211755/http://reventlov.com/advisories/using-the-docker-command-to-root-the-host">have
+root access</a>. If you expose the docker unix socket to a container,
+you are giving the container <a
+href="https://www.lvh.io/posts/dont-expose-the-docker-socket-not-even-to-a-container/">root
+access to the host</a>.</p>
+<p>Docker should not be your only defense. You should secure and harden
+it.</p>
+<p>For an understanding of what containers leave exposed, you should
+read <a
+href="https://www.nccgroup.trust/globalassets/our-research/us/whitepapers/2016/april/ncc_group_understanding_hardening_linux_containers-1-1.pdf">Understanding
+and Hardening Linux Containers</a> by <a
+href="https://twitter.com/dyn___">Aaron Grattafiori</a>. This is a
+complete and comprehensive guide to the issues involved with containers,
+with a plethora of links and footnotes leading on to yet more useful
+content. The security tips following are useful if you’ve already
+hardened containers in the past, but are not a substitute for
+understanding.</p>
+<h3 id="security-tips">Security Tips</h3>
+<p>For greatest security, you want to run Docker inside a virtual
+machine. This is straight from the Docker Security Team Lead – <a
+href="http://www.slideshare.net/jpetazzo/linux-containers-lxc-docker-and-security">slides</a>
+/ <a
+href="http://www.projectatomic.io/blog/2014/08/is-it-safe-a-look-at-docker-and-security-from-linuxcon/">notes</a>.
+Then, run with AppArmor / seccomp / SELinux / grsec etc to <a
+href="http://linux-audit.com/docker-security-best-practices-for-your-vessel-and-containers/">limit
+the container permissions</a>. See the <a
+href="https://blog.docker.com/2016/02/docker-engine-1-10-security/">Docker
+1.10 security features</a> for more details.</p>
+<p>Docker image ids are <a
+href="https://medium.com/@quayio/your-docker-image-ids-are-secrets-and-its-time-you-treated-them-that-way-f55e9f14c1a4">sensitive
+information</a> and should not be exposed to the outside world. Treat
+them like passwords.</p>
+<p>See the <a
+href="https://github.com/konstruktoid/Docker/blob/master/Security/CheatSheet.adoc">Docker
+Security Cheat Sheet</a> by <a
+href="https://github.com/konstruktoid">Thomas Sjögren</a>: some good
+stuff about container hardening in there.</p>
+<p>Check out the <a
+href="https://github.com/docker/docker-bench-security">docker bench
+security script</a>, download the <a
+href="https://blog.docker.com/2015/05/understanding-docker-security-and-best-practices/">white
+papers</a>.</p>
+<p>Snyk’s <a
+href="https://snyk.io/blog/10-docker-image-security-best-practices/">10
+Docker Image Security Best Practices cheat sheet</a></p>
+<p>You should start off by using a kernel with unstable patches for
+grsecurity / pax compiled in, such as <a
+href="https://en.wikipedia.org/wiki/Alpine_Linux">Alpine Linux</a>. If
+you are using grsecurity in production, you should spring for <a
+href="https://grsecurity.net/business_support.php">commercial
+support</a> for the <a href="https://grsecurity.net/announce.php">stable
+patches</a>, same as you would do for RedHat. It’s $200 a month, which
+is nothing to your devops budget.</p>
+<p>Since docker 1.11 you can easily limit the number of active processes
+running inside a container to prevent fork bombs. This requires a linux
+kernel &gt;= 4.3 with CGROUP_PIDS=y to be in the kernel
+configuration.</p>
+<pre class="sb"><code>docker run --pids-limit=64</code></pre>
+<p>Also available since docker 1.11 is the ability to prevent processes
+from gaining new privileges. This feature have been in the linux kernel
+since version 3.5. You can read more about it in <a
+href="http://www.projectatomic.io/blog/2016/03/no-new-privs-docker/">this</a>
+blog post.</p>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--security-opt</span><span class="op">=</span>no-new-privileges</span></code></pre></div>
+<p>From the <a
+href="http://container-solutions.com/content/uploads/2015/06/15.06.15_DockerCheatSheet_A2.pdf">Docker
+Security Cheat Sheet</a> (it’s in PDF which makes it hard to use, so
+copying below) by <a
+href="http://container-solutions.com/is-docker-safe-for-production/">Container
+Solutions</a>:</p>
+<p>Turn off interprocess communication with:</p>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> <span class="at">-d</span> <span class="at">--icc</span><span class="op">=</span>false <span class="at">--iptables</span></span></code></pre></div>
+<p>Set the container to be read-only:</p>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--read-only</span></span></code></pre></div>
+<p>Verify images with a hashsum:</p>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> pull debian@sha256:a25306f3850e1bd44541976aa7b5fd0a29be</span></code></pre></div>
+<p>Set volumes to be read only:</p>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-v</span> <span class="va">$(</span><span class="bu">pwd</span><span class="va">)</span>/secrets:/secrets:ro debian</span></code></pre></div>
+<p>Define and run a user in your Dockerfile so you don’t run as root
+inside the container:</p>
+<div class="sourceCode" id="cb35"><pre
+class="sourceCode dockerfile"><code class="sourceCode dockerfile"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">RUN</span> <span class="ex">groupadd</span> <span class="at">-r</span> user <span class="kw">&amp;&amp;</span> <span class="ex">useradd</span> <span class="at">-r</span> <span class="at">-g</span> user user</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="kw">USER</span> user</span></code></pre></div>
+<h3 id="user-namespaces">User Namespaces</h3>
+<p>There’s also work on <a
+href="https://s3hh.wordpress.com/2013/07/19/creating-and-using-containers-without-privilege/">user
+namespaces</a> – it is in 1.10 but is not enabled by default.</p>
+<p>To enable user namespaces (“remap the userns”) in Ubuntu 15.10, <a
+href="https://raesene.github.io/blog/2016/02/04/Docker-User-Namespaces/">follow
+the blog example</a>.</p>
+<h3 id="security-videos">Security Videos</h3>
+<ul>
+<li><a href="https://youtu.be/04LOuMgNj9U">Using Docker Safely</a></li>
+<li><a href="https://youtu.be/KmxOXmPhZbk">Securing your applications
+using Docker</a></li>
+<li><a href="https://youtu.be/a9lE9Urr6AQ">Container security: Do
+containers actually contain?</a></li>
+<li><a href="https://www.youtube.com/watch?v=iN6QbszB1R8">Linux
+Containers: Future or Fantasy?</a></li>
+</ul>
+<h3 id="security-roadmap">Security Roadmap</h3>
+<p>The Docker roadmap talks about <a
+href="https://github.com/docker/docker/blob/master/ROADMAP.md#11-security">seccomp
+support</a>. There is an AppArmor policy generator called <a
+href="https://github.com/jfrazelle/bane">bane</a>, and they’re working
+on <a href="https://github.com/docker/docker/issues/17142">security
+profiles</a>.</p>
+<h2 id="tips">Tips</h2>
+<p>Sources:</p>
+<ul>
+<li><a
+href="http://sssslide.com/speakerdeck.com/bmorearty/15-docker-tips-in-5-minutes">15
+Docker Tips in 5 minutes</a></li>
+<li><a href="https://codefresh.io/blog/everyday-hacks-docker/">CodeFresh
+Everyday Hacks Docker</a></li>
+</ul>
+<h3 id="prune">Prune</h3>
+<p>The new <a href="https://github.com/docker/docker/pull/26108">Data
+Management Commands</a> have landed as of Docker 1.13:</p>
+<ul>
+<li><code>docker system prune</code></li>
+<li><code>docker volume prune</code></li>
+<li><code>docker network prune</code></li>
+<li><code>docker container prune</code></li>
+<li><code>docker image prune</code></li>
+</ul>
+<h3 id="df">df</h3>
+<p><code>docker system df</code> presents a summary of the space
+currently used by different docker objects.</p>
+<h3 id="heredoc-docker-container">Heredoc Docker Container</h3>
+<div class="sourceCode" id="cb36"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> build <span class="at">-t</span> htop <span class="at">-</span> <span class="op">&lt;&lt; EOF</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="st">FROM alpine</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="st">RUN apk --no-cache add htop</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span></code></pre></div>
+<h3 id="last-ids">Last IDs</h3>
+<div class="sourceCode" id="cb37"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="bu">alias</span> dl=<span class="st">&#39;docker ps -l -q&#39;</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run ubuntu echo hello world</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> commit <span class="va">$(</span><span class="ex">dl</span><span class="va">)</span> helloworld</span></code></pre></div>
+<h3 id="commit-with-command-needs-dockerfile">Commit with command (needs
+Dockerfile)</h3>
+<div class="sourceCode" id="cb38"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> commit <span class="at">-run</span><span class="op">=</span><span class="st">&#39;{&quot;Cmd&quot;:[&quot;postgres&quot;, &quot;-too -many -opts&quot;]}&#39;</span> <span class="va">$(</span><span class="ex">dl</span><span class="va">)</span> postgres</span></code></pre></div>
+<h3 id="get-ip-address">Get IP address</h3>
+<div class="sourceCode" id="cb39"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> inspect <span class="va">$(</span><span class="ex">dl</span><span class="va">)</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-wm1</span> IPAddress <span class="kw">|</span> <span class="fu">cut</span> <span class="at">-d</span> <span class="st">&#39;&quot;&#39;</span> <span class="at">-f</span> 4</span></code></pre></div>
+<p>Or with <a href="https://stedolan.github.io/jq/">jq</a>
+installed:</p>
+<div class="sourceCode" id="cb40"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> inspect <span class="va">$(</span><span class="ex">dl</span><span class="va">)</span> <span class="kw">|</span> <span class="ex">jq</span> <span class="at">-r</span> <span class="st">&#39;.[0].NetworkSettings.IPAddress&#39;</span></span></code></pre></div>
+<p>Or using a <a
+href="https://docs.docker.com/engine/reference/commandline/inspect">go
+template</a>:</p>
+<div class="sourceCode" id="cb41"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> inspect <span class="at">-f</span> <span class="st">&#39;{{ .NetworkSettings.IPAddress }}&#39;</span> <span class="op">&lt;</span>container_name<span class="op">&gt;</span></span></code></pre></div>
+<p>Or when building an image from Dockerfile, when you want to pass in a
+build argument:</p>
+<div class="sourceCode" id="cb42"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="va">DOCKER_HOST_IP</span><span class="op">=</span><span class="kw">`</span><span class="ex">ifconfig</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-E</span> <span class="st">&quot;([0-9]{1,3}\.){3}[0-9]{1,3}&quot;</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-v</span> 127.0.0.1 <span class="kw">|</span> <span class="fu">awk</span> <span class="st">&#39;{ print $2 }&#39;</span> <span class="kw">|</span> <span class="fu">cut</span> <span class="at">-f2</span> <span class="at">-d:</span> <span class="kw">|</span> <span class="fu">head</span> <span class="at">-n1</span><span class="kw">`</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> DOCKER_HOST_IP = <span class="va">$DOCKER_HOST_IP</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> build <span class="dt">\</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--build-arg</span> ARTIFACTORY_ADDRESS=<span class="va">$DOCKER_HOST_IP</span> </span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">-t</span> sometag <span class="dt">\</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  some-directory/</span></code></pre></div>
+<h3 id="get-port-mapping">Get port mapping</h3>
+<div class="sourceCode" id="cb43"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> inspect <span class="at">-f</span> <span class="st">&#39;{{range $p, $conf := .NetworkSettings.Ports}} {{$p}} -&gt; {{(index $conf 0).HostPort}} {{end}}&#39;</span> <span class="op">&lt;</span>containername<span class="op">&gt;</span></span></code></pre></div>
+<h3 id="find-containers-by-regular-expression">Find containers by
+regular expression</h3>
+<div class="sourceCode" id="cb44"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="va">$(</span><span class="ex">docker</span> ps <span class="at">-a</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="st">&quot;REGEXP_PATTERN&quot;</span> <span class="kw">|</span> <span class="fu">cut</span> <span class="at">-f1</span> <span class="at">-d</span><span class="st">&quot; &quot;</span><span class="va">)</span><span class="kw">;</span> <span class="cf">do</span> <span class="bu">echo</span> <span class="va">$i</span><span class="kw">;</span> <span class="cf">done</span></span></code></pre></div>
+<h3 id="get-environment-settings">Get Environment Settings</h3>
+<div class="sourceCode" id="cb45"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--rm</span> ubuntu env</span></code></pre></div>
+<h3 id="kill-running-containers">Kill running containers</h3>
+<div class="sourceCode" id="cb46"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> kill <span class="va">$(</span><span class="ex">docker</span> ps <span class="at">-q</span><span class="va">)</span></span></code></pre></div>
+<h3
+id="delete-all-containers-force-running-or-stopped-containers">Delete
+all containers (force!! running or stopped containers)</h3>
+<div class="sourceCode" id="cb47"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> rm <span class="at">-f</span> <span class="va">$(</span><span class="ex">docker</span> ps <span class="at">-qa</span><span class="va">)</span></span></code></pre></div>
+<h3 id="delete-old-containers">Delete old containers</h3>
+<div class="sourceCode" id="cb48"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> ps <span class="at">-a</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="st">&#39;weeks ago&#39;</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="st">&#39;{print $1}&#39;</span> <span class="kw">|</span> <span class="fu">xargs</span> docker rm</span></code></pre></div>
+<h3 id="delete-stopped-containers">Delete stopped containers</h3>
+<div class="sourceCode" id="cb49"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> rm <span class="at">-v</span> <span class="va">$(</span><span class="ex">docker</span> ps <span class="at">-a</span> <span class="at">-q</span> <span class="at">-f</span> status=exited<span class="va">)</span></span></code></pre></div>
+<h3 id="delete-containers-after-stopping">Delete containers after
+stopping</h3>
+<div class="sourceCode" id="cb50"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> stop <span class="va">$(</span><span class="ex">docker</span> ps <span class="at">-aq</span><span class="va">)</span> <span class="kw">&amp;&amp;</span> <span class="ex">docker</span> rm <span class="at">-v</span> <span class="va">$(</span><span class="ex">docker</span> ps <span class="at">-aq</span><span class="va">)</span></span></code></pre></div>
+<h3 id="delete-dangling-images">Delete dangling images</h3>
+<div class="sourceCode" id="cb51"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> rmi <span class="va">$(</span><span class="ex">docker</span> images <span class="at">-q</span> <span class="at">-f</span> dangling=true<span class="va">)</span></span></code></pre></div>
+<h3 id="delete-all-images">Delete all images</h3>
+<div class="sourceCode" id="cb52"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> rmi <span class="va">$(</span><span class="ex">docker</span> images <span class="at">-q</span><span class="va">)</span></span></code></pre></div>
+<h3 id="delete-dangling-volumes">Delete dangling volumes</h3>
+<p>As of Docker 1.9:</p>
+<div class="sourceCode" id="cb53"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> volume rm <span class="va">$(</span><span class="ex">docker</span> volume ls <span class="at">-q</span> <span class="at">-f</span> dangling=true<span class="va">)</span></span></code></pre></div>
+<p>In 1.9.0, the filter <code>dangling=false</code> does <em>not</em>
+work - it is ignored and will list all volumes.</p>
+<h3 id="show-image-dependencies">Show image dependencies</h3>
+<div class="sourceCode" id="cb54"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> images <span class="at">-viz</span> <span class="kw">|</span> <span class="ex">dot</span> <span class="at">-Tpng</span> <span class="at">-o</span> docker.png</span></code></pre></div>
+<h3 id="slimming-down-docker-containers">Slimming down Docker
+containers</h3>
+<ul>
+<li>Cleaning APT in a <code>RUN</code> layer - This should be done in
+the same layer as other <code>apt</code> commands. Otherwise, the
+previous layers still persist the original information and your images
+will still be fat.
+<code>Dockerfile     RUN {apt commands} \       &amp;&amp; apt-get clean \       &amp;&amp; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*</code></li>
+<li>Flatten an image
+<code>sh     ID=$(docker run -d image-name /bin/bash)     docker export $ID | docker import – flat-image-name</code></li>
+<li>For backup
+<code>sh     ID=$(docker run -d image-name /bin/bash)     (docker export $ID | gzip -c &gt; image.tgz)     gzip -dc image.tgz | docker import - flat-image-name</code></li>
+</ul>
+<h3
+id="monitor-system-resource-utilization-for-running-containers">Monitor
+system resource utilization for running containers</h3>
+<p>To check the CPU, memory, and network I/O usage of a single
+container, you can use:</p>
+<div class="sourceCode" id="cb55"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> stats <span class="op">&lt;</span>container<span class="op">&gt;</span></span></code></pre></div>
+<p>For all containers listed by ID:</p>
+<div class="sourceCode" id="cb56"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> stats <span class="va">$(</span><span class="ex">docker</span> ps <span class="at">-q</span><span class="va">)</span></span></code></pre></div>
+<p>For all containers listed by name:</p>
+<div class="sourceCode" id="cb57"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> stats <span class="va">$(</span><span class="ex">docker</span> ps <span class="at">--format</span> <span class="st">&#39;{{.Names}}&#39;</span><span class="va">)</span></span></code></pre></div>
+<p>For all containers listed by image:</p>
+<div class="sourceCode" id="cb58"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> ps <span class="at">-a</span> <span class="at">-f</span> ancestor=ubuntu</span></code></pre></div>
+<p>Remove all untagged images:</p>
+<div class="sourceCode" id="cb59"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> rmi <span class="va">$(</span><span class="ex">docker</span> images <span class="kw">|</span> <span class="fu">grep</span> “^” <span class="kw">|</span> <span class="fu">awk</span> <span class="st">&#39;{split($0,a,&quot; &quot;); print a[3]}&#39;</span><span class="va">)</span></span></code></pre></div>
+<p>Remove container by a regular expression:</p>
+<div class="sourceCode" id="cb60"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> ps <span class="at">-a</span> <span class="kw">|</span> <span class="fu">grep</span> wildfly <span class="kw">|</span> <span class="fu">awk</span> <span class="st">&#39;{print $1}&#39;</span> <span class="kw">|</span> <span class="fu">xargs</span> docker rm <span class="at">-f</span></span></code></pre></div>
+<p>Remove all exited containers:</p>
+<div class="sourceCode" id="cb61"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> rm <span class="at">-f</span> <span class="va">$(</span><span class="ex">docker</span> ps <span class="at">-a</span> <span class="kw">|</span> <span class="fu">grep</span> Exit <span class="kw">|</span> <span class="fu">awk</span> <span class="st">&#39;{ print $1 }&#39;</span><span class="va">)</span></span></code></pre></div>
+<h3 id="volumes-can-be-files">Volumes can be files</h3>
+<p>Be aware that you can mount files as volumes. For example you can
+inject a configuration file like this:</p>
+<div class="sourceCode" id="cb62"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># copy file from container</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--rm</span> httpd cat /usr/local/apache2/conf/httpd.conf <span class="op">&gt;</span> httpd.conf</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a><span class="co"># edit file</span></span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a><span class="ex">vim</span> httpd.conf</span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a><span class="co"># start container with modified configuration</span></span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">-it</span> <span class="at">-v</span> <span class="st">&quot;</span><span class="va">$PWD</span><span class="st">/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro&quot;</span> <span class="at">-p</span> <span class="st">&quot;80:80&quot;</span> httpd</span></code></pre></div>
+<h2 id="contributing">Contributing</h2>
+<p>Here’s how to contribute to this cheat sheet.</p>
+<h3 id="open-readme.md">Open README.md</h3>
+<p>Click <a
+href="https://github.com/wsargent/docker-cheat-sheet/blob/master/README.md">README.md</a>
+&lt;– this link</p>
+<p>thank you. what is shared will be copied. the majority of everything
+you think you know, is because you did copy, else your wouldn’t identify
+a subject or a object. the right to copy is the right to transform what
+was already done, by those who were creative, using logic, to create new
+tools, based on what they already copy. i mean, in this case, the copy
+is the copy of text. i didn’t change much. awesome work you have here.
+is like memory.. we are <a
+href="https://art.odicforcesounds.com/pages/yinyang/dao/index.html">memory</a></p>

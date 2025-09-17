@@ -1,0 +1,38 @@
+<h1 id="secure-shell-daemon">Secure Shell Daemon</h1>
+<p>While SSH is what you need to manage any remote Linux server, SSH is
+one of the first target points of random attacks made by Bots. Sometimes
+you can configure ssh-service to add some delay from each login-failure,
+but since this kind of attacks happen every single minute, when you read
+the logs you see how annoying this is. So, the best approach is to limit
+users to use a public key and limit ssh-logins to this method, excluding
+all password based logins. The attacks continue, but now you don’t need
+to worry about them.</p>
+<p>I configure fail2ban to ban users for <strong>-1</strong> days (
+Eternal-ban ) and even if root logins are forbidden, sometimes I see
+that this “bots” are trying to use some names, like admin, test, user,
+ubuntu, etc., which lead me to believe that they will have some luck and
+find the name of the users in <a href="./greatsky.md">this server</a> I
+am self-hosting.</p>
+<p>There are a lot of articles that explain how to secure your
+ssh-service, but I wish to add this tips right here for you, dear
+reader.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># /etc/ssh/sshd_config </span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">PermitRootLogin</span> no</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">ChallengeResponseAuthentication</span> no </span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">PasswordAuthentication</span> no </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">UsePam</span> no </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">AuthenticationMethods</span> publickey </span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">PubkeyAuthentication</span> yes </span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">AllowUsers</span> userA userB userC </span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">DenyUsers</span> root toor suck fuck luck </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">PermitEmptyPasswords</span> no </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">ClientAliveInterval</span> 300 </span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">ClientAliveCountMax</span> 0</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">Banner</span> no </span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ex">IgnoreRhosts</span> yes </span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="ex">HostbasedAuthentication</span> no</span></code></pre></div>
+<p>With this configuration, I am in peace with all those random botnets
+attacks, which sometimes make me believe that are real persons trying
+their luck. (oh fuck)</p>
+<p>Now I wish them a best luck in the world. :)</p>

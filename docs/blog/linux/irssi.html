@@ -1,0 +1,42 @@
+<h1 id="cliente-de-irc---irssi">Cliente de IRC - irssi</h1>
+<ul>
+<li><p>Fonte: irssi.org</p></li>
+<li><p>Cores e Temas: https://irssi-import.github.io/themes/</p></li>
+<li><p>Modulos: https://irssi.org/modules/</p></li>
+<li><p>Scripts: https://scripts.irssi.org/</p></li>
+</ul>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> wget https://irssi-import.github.io/themes/c0ders.theme <span class="at">-o</span> ~/.irssi/c0ders.theme</span></code></pre></div>
+<h2 id="criar-certificado-com-o-openssl">Criar Certificado com o
+OpenSSL</h2>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> openssl req <span class="at">-x509</span> <span class="at">-new</span> <span class="at">-newkey</span> rsa:4096 <span class="at">-sha256</span> <span class="at">-days</span> 1096 <span class="at">-nodes</span> <span class="at">-out</span> libera.pem <span class="at">-keyout</span> libera.pem</span></code></pre></div>
+<h2 id="ver-o-fingerprint-do-certificado">Ver o FingerPrint do
+Certificado</h2>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> openssl x509 <span class="at">-in</span> libera.pem <span class="at">-noout</span> <span class="at">-fingerprint</span> <span class="at">-sha512</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="at">-F</span><span class="op">=</span> <span class="st">&#39;{gsub(&quot;:&quot;,&quot;&quot;); print tolower ($2)}&#39;</span></span></code></pre></div>
+<h2
+id="adicionar-o-certificado-ao-servidor-que-nos-iremos-ligar">Adicionar
+o certificado ao servidor que nos iremos ligar</h2>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> mkdir ~/.irssi/certs </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> mv libera.pem ~/.irssi/certs/libera.pem</span></code></pre></div>
+<h2 id="connect-to-liberachat">Connect to LiberaChat</h2>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/network</span> add LiberaChat </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/server</span> add <span class="at">-auto</span> <span class="at">-network</span> LiberaChat <span class="at">-tls</span> <span class="at">-tls_verify</span> irc.libera.chat 6697 </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">/network</span> mofify <span class="at">-sasl_password</span> <span class="st">&#39;mypassword&#39;</span> <span class="at">-sasl_mechanism</span> EXTERNAL LiberaChat </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">/server</span> modify <span class="at">-tls_verify</span> <span class="at">-tls_cert</span> ~/.irssi/certs/libera.pem irc.libera.chat 6697</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">/connect</span> LiberaChat</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="ex">/msg</span> nickserv identify password</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ex">/msg</span> nickserv cert add FINGER_PRINT</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ex">/disconnect</span> </span></code></pre></div>
+<h2 id="add-tor-address-to-etctortorrc">Add tor address to
+/etc/tor/torrc</h2>
+<p>MapAddress palladium.libera.chat
+libera75jm6of4wxpxt4aynol3xjmbtxgfyjpu34ss4d7r7q2v5zrpyd.onion</p>
+<h2 id="editar-.irssiconfig">Editar .irssi/config</h2>
+<p>Mudar para o endereço de servidor para palladium.libera.chat e a
+porta para 6697</p>
+<h2 id="test-connect-using-tor-and-proxychains">Test connect using tor
+and proxychains</h2>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> proxychains irssi </span></code></pre></div>

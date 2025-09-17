@@ -1,0 +1,103 @@
+<h1 id="debian">Debian</h1>
+<p>Minimal instalation guide for old laptops</p>
+<ol type="1">
+<li>Download ISO image</li>
+<li>Flash ISO image into USB stick</li>
+</ol>
+<ul>
+<li>dd if=debian-minimal.iso of=/dev/sdx; sync</li>
+</ul>
+<ol start="3" type="1">
+<li>Setup BIOS to boot from USB</li>
+<li>Boot USB with ISO image</li>
+<li>Setup root password and add default user</li>
+<li>Setup Partitions using cfdisk</li>
+</ol>
+<ul>
+<li>For paranoid security we start defining several partitions.</li>
+<li>Lets imagine we have a 512GB Hard drive
+<ul>
+<li>/boot/ - 200MB - IF BIOS EXT2/3/4 - IF UEFI FAT32</li>
+<li>/ - 20GB EXT4</li>
+<li>/var - 20GB EXT4</li>
+<li>/var/log - 20GB EXT4</li>
+<li>/usr - 20GB EXT4</li>
+<li>/tmp - 10GB EXT4</li>
+<li>none - 2GB SWAP</li>
+<li>/home - 100%FREE<br />
+</li>
+</ul></li>
+<li>We don’t select a default desktop</li>
+<li>Select SSH Server to boot with by default</li>
+</ul>
+<ol start="7" type="1">
+<li>Install grub into your main hard drive</li>
+<li>Reboot and remove USB disk</li>
+<li>Connect to the machine with: ‘ssh user@host/ip’</li>
+</ol>
+<ul>
+<li>By default the default user is in the wheel group. We can su in: ‘su
+-l’</li>
+</ul>
+<ol start="10" type="1">
+<li>Software Installation: apt update &amp;&amp; apt upgrade -y</li>
+</ol>
+<ul>
+<li>Use ‘apt search’ to search packages, and ‘apt install’ to install
+them</li>
+<li>By default debian use the nano editor ( no vim ): ‘apt install
+vim’</li>
+</ul>
+<p>I really like this example</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://raw.githubusercontent.com/sd65/MiniVim/master/vimrc </span></code></pre></div>
+<p>Install more useful software for our laptop</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">apt</span> install <span class="dt">\ </span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">cpufreq</span> iptables tuned htop iotop strace lm-sensors fancontrol i2c-tools <span class="dt">\</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>dosfstools git newsboat flawfinder pscan mutt msmtp isync irssi lynx elinks gnupg </span></code></pre></div>
+<ol start="12" type="1">
+<li>Manager boot services with: ‘update-rc.d’ / ‘service
+–status-all’</li>
+<li>Setup cpufreq with: ‘cpufreq-set -g powersave’ + echo
+“GOVERNATOR=‘powersave’” &gt;&gt; /etc/default/loadcpufreq</li>
+<li>Block kernel-image upgrades with: ‘apt-mark hold
+linux-image-{version}-{architecture}’</li>
+<li>Block kernel-headers upgrades with: ‘apt-mark hold
+linux-headers-{version}-{architecture}’</li>
+<li>Edit /etc/fstab and setup permissions to secure partitions</li>
+</ol>
+<ul>
+<li>/boot ro</li>
+<li>/home defaults,nosuid,nodev,async,auto</li>
+<li>/tmp defaults,nosuid,noexec,nodev</li>
+<li>/usr defaults,ro,nodev</li>
+<li>/var defaults,ro,nodev,nosuid</li>
+<li>/var/log defaults,nodev,nosuid,noexec</li>
+</ul>
+<ol start="17" type="1">
+<li>Setup IPTables:</li>
+</ol>
+<ul>
+<li>https://tldp.org/HOWTO/Security-Quickstart-HOWTO/</li>
+<li>https://tldp.org/HOWTO/Security-HOWTO/</li>
+<li>https://tldp.org/HOWTO/IPCHAINS-HOWTO.html</li>
+<li>https://tldp.org/HOWTO/Firewall-HOWTO.html</li>
+<li>https://tldp.org/HOWTO/Secure-Programs-HOWTO/</li>
+</ul>
+<ol start="18" type="1">
+<li>Don’t let root ssh into the machine</li>
+</ol>
+<ul>
+<li>‘vim /etc/ssh/sshd config’: Permit root Login: NO</li>
+</ul>
+<ol start="19" type="1">
+<li>From client-remove-machine do: ssh-copy-id
+.ssh/your_public_key.pub</li>
+<li>install postfix OR exim4 for Host-logging-reports</li>
+<li>Optional for security ( install SELinux modules or AppArmor )</li>
+</ol>
+<ul>
+<li>SELinux needs to be installed in Kernel ( default don’t have enable
+)</li>
+<li>AppArmor is the default security system, combined with PAN.</li>
+<li>If SELinux is wanted, you need to compile your own kernel.</li>
+</ul>

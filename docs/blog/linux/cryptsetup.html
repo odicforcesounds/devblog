@@ -1,0 +1,13 @@
+<h1>
+Cryptsetup
+</h1>
+<p>Use to encript hard-disk</p>
+<p>If You are paranoid, be sure you format full disk as:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo dd if=/dev/urandom of=/dev/sda status=progress<span class="kw">;</span> <span class="fu">sync</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo dd if=/dev/zero of=/dev/sda status=progress<span class="kw">;</span> <span class="fu">sync</span></span></code></pre></div>
+<p>Create partition with cfdisk or fdisk and encrypt selected
+partition</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo cryptsetup <span class="at">-v</span> <span class="at">-y</span> <span class="at">-c</span> aes-xts-plain64 <span class="at">-s</span> 512 <span class="at">-h</span> sha512 <span class="at">-i</span> 5000 <span class="at">--use-random</span> luksFormat /dev/sdX<span class="er">(</span><span class="ex">3</span><span class="kw">)</span></span></code></pre></div>
+<p>Then Open encripted partition using defined passwd</p>
+<pre><code>$ sudo cryptsetup lukDump /dev/sdaX &gt; saveDump.txt
+$ sudo cryptsetup luksOpen /dev/sdaX lvm</code></pre>

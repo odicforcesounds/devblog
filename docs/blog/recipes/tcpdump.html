@@ -1,0 +1,119 @@
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">tcpdump -s 0 #capture entire etherner
+header and IP packet</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">#tcpdump output,IPV4 header explained
+#https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/IPv4_Packet-en.svg/1200px-IPv4_Packet-en.svg.png</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">#If the -v flag is specified, information
+from the IPv4 header is shown in parentheses after the IP or the
+link-layer header tos tos, ttl ttl, id id, offset offset, flags [flags],
+proto proto, length length, options (options)
+#https://www.tcpdump.org/manpages/tcpdump.1.html</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">tos is the type of service field; if the
+ECN bits are non-zero, those are reported as ECT(1), ECT(0), or CE ttl
+is the time-to-live; it is not reported if it is zero id is the IP
+identification field offset is the fragment offset field; it is printed
+whether this is part of a fragmented datagram or not flags are the MF
+and DF flags; + is reported if MF is set, and DF is reported if F is
+set. If neither are set, . is reported proto is the protocol ID field.
+length is the total length field. options are the IP options, if
+any</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">$ sudo tcpdump -i any -vvvv dst
+10.33.22.21 tcpdump: listening on any, link-type LINUX_SLL (Linux cooked
+v1), capture size 262144 bytes 12:38:21.039533 IP (tos 0x0, ttl 57, id
+12400, offset 0, flags [none], proto TCP (6), length 44)
+vg-ubuntu-02.61748 &gt; printer.org.local.http: Flags [S], cksum 0x7b48
+(correct), seq 3600759408, win 1024, options [mss 1460], length 0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">#map IPV4 header format to tcpdump output
+tos tos, ttl ttl, id id, offset offset, flags [flags], proto proto,
+length length, options (options) 12:38:21.039533 IP (tos 0x0, ttl 57, id
+12400, offset 0, flags [none], proto TCP (6), length 44)</td>
+</tr>
+</tbody>
+</table>
+<p>#tcpdump output, TCP header explained
+#https://www.gatevidyalay.com/wp-content/uploads/2018/09/TCP-Header-Format.png</p>
+<p>src &gt; dst: Flags [tcpflags], seq data-seqno, ack ackno, win
+window, urg urgent, options [opts], length len Src and dst are the
+source and destination IP addresses and ports. Tcpflags are some
+combination of S (SYN), F (FIN), P (PUSH), R (RST), U (URG), W (ECN
+CWR), E (ECN-Echo) <code>.' (ACK),</code>none’ if no flags are set
+data-seqno describes the portion of sequence space covered by the data
+in this packet Ackno is sequence number of the next data expected the
+other direction on this connection Window is the number of bytes of
+receive buffer space available the other direction on this connection.
+Urg indicates there is `urgent’ data in the packet. Opts are TCP options
+(e.g., mss 1024). Len is the length of payload data.</p>
+<p>$ sudo tcpdump -i any -vvvv dst 10.33.22.21 tcpdump: listening on
+any, link-type LINUX_SLL (Linux cooked v1), capture size 262144 bytes
+12:38:21.039533 IP (tos 0x0, ttl 57, id 12400, offset 0, flags [none],
+proto TCP (6), length 44) vg-ubuntu-02.61748 &gt;
+printer.org.local.http: Flags [S], cksum 0x7b48 (correct), seq
+3600759408, win 1024, options [mss 1460], length 0</p>
+<p>#map TCP header format to tcpdump output #Ip, Src, dst, and flags are
+always present. #The other fields depend on the contents of the packet’s
+TCP protocol header</p>
+<p>src &gt; dst: Flags [tcpflags], seq data-seqno, ack ackno, win
+window, urg urgent, options [opts], length len vg-ubuntu-02.61748 &gt;
+printer.org.local.http: Flags [S], cksum 0x7b48 (correct), seq
+3600759408, win 1024, options [mss 1460], length 0</p>
+<p>tcpdump: listening on any, link-type LINUX_SLL (Linux cooked v1),
+capture size 262144 bytes 13:01:16.515391 IP (tos 0x0, ttl 57, id 25028,
+offset 0, flags [none], proto TCP (6), length 44) vg-ubuntu-02.54156
+&gt; printer.org.local.http: Flags [S], cksum 0x169c (correct), seq
+3170031217, win 1024, options [mss 1460], length 0 13:01:16.517613 IP
+(tos 0x0, ttl 64, id 6938, offset 0, flags [none], proto TCP (6), length
+44) printer.org.local.http &gt; vg-ubuntu-02.54156: Flags [S.], cksum
+0xed34 (correct), seq 659883521, ack 3170031218, win 65535, options [mss
+1460], length 0 13:01:16.517671 IP (tos 0x0, ttl 64, id 0, offset 0,
+flags [DF], proto TCP (6), length 40) vg-ubuntu-02.54156 &gt;
+printer.org.local.http: Flags [R], cksum 0x3255 (correct), seq
+3170031218, win 0, length 0</p>
+<p>The first line(timestamp 13:01:16.515391) says that TCP port 54156 on
+vg-ubuntu-02 sent a packet to port http on printer.org.local The S
+indicates that the SYN flag was set The packet sequence number was
+3170031217 and it contained no data There was no piggy-backed ACK
+#Piggybacking is a method of attaching acknowledgment to the outgoing
+data packet the available receive window was 1024 bytes there was a
+max-segment-size(mss) option requesting an MSS of 1460 bytes The packet
+contained no data so there is no data sequence number or length #length
+0</p>
+<p>The second line(timestamp 13:01:16.517613) says that #Piggybacking is
+a method of attaching acknowledgment to the outgoing data packet Http
+port on printer.org.local replies port 54156 on vg-ubuntu-02 with a
+similar packet except it includes a piggy-backed ACK for vg-ubuntu-02’s
+SYN The packet contained no data so there is no data sequence number or
+length #length 0</p>
+<p>tcpdump: listening on any, link-type LINUX_SLL (Linux cooked v1),
+capture size 262144 bytes IP rtsg.1023 &gt; csam.login: Flags [.], ack
+1, win 4096</p>
+<p>Rtsg ACKs csam’s SYN. The `.’ means the ACK flag was set. The packet
+contained no data so there is no data sequence number or length #length
+0</p>
+<p>tcpdump: listening on any, link-type LINUX_SLL (Linux cooked v1),
+capture size 262144 bytes IP rtsg.1023 &gt; csam.login: Flags [P.], seq
+2:21, ack 1, win 4096, length 19 IP csam.login &gt; rtsg.1023: Flags
+[P.], seq 1:2, ack 21, win 4077, length 1</p>
+<p>rtsg sends on port 1023 csam 19 bytes of data (bytes 2 through 20 in
+the rtsg → csam side of the conversation) The PUSH flag is set in the
+packet. #Flags [P.] csam says it’s received data sent by rtsg up to but
+not including byte 21 #ack 21 #ack 1, win 4096 - ack 21, win 4077(+19
+4096) Most of this data is apparently sitting in the socket buffer since
+csam’s receive window has gotten 19 bytes smaller
+—————————————————————————————————-</p>

@@ -1,0 +1,98 @@
+<p>gpg –version gpg (GnuPG) 2.0.22</p>
+<p>eval $(gpg-agent –daemon) -&gt; make sure gpg-agent is running
+gpg-agent -&gt; Check if gpg-agent is running</p>
+<p>gpg –gen-key -&gt; generate a GPG key pair gpg –list-secret-keys
+–keyid-format LONG -&gt; List public and private key GPG keys. A private
+key is required for signing commits or tags. gpg –delete-secret-keys
+3AA5C34371567BD2 -&gt; delete secret keys</p>
+<p>sec 4096R/3AA5C34371567BD2 2016-03-10 [expires: 2017-03-10] -&gt;
+Copy the GPG key ID</p>
+<p>gpg –armor –export 3AA5C34371567BD2 -&gt; Copy GPG key —–BEGIN PGP
+PUBLIC KEY BLOCK—– and ending with —–END PGP PUBLIC KEY BLOCK—–</p>
+<p>git config –global user.signingkey 3AA5C34371567BD2 -&gt; Set GPG
+signing key in Git,substituting in the GPG key ID git config –global
+commit.gpgsign true</p>
+<p>echo ‘export GPG_TTY=$(tty)’ &gt;&gt; ~/.bashrc -&gt; Add your GPG
+key to your bash profile</p>
+<p>gpg –edit-key 3AA5C34371567BD2 -&gt; Associatean email with GPG key
+gpg&gt; adduid -&gt; GPG console, enter &amp;&amp; save &amp;&amp;
+exit</p>
+<p>gpg –armor –export 3AA5C34371567BD2 -&gt; copy and paste public key
+on github</p>
+<p>git commit -S -m ‘your commit message’ -&gt; Add the -S flag to the
+git commit command git push -&gt; Push them to your remote repository on
+GitHub git tag -s v1.0 -&gt; To sign a tag, add -s git tag -v v1.1 -&gt;
+Verify your signed tag</p>
+<p>echo ‘no-tty’ &gt;&gt; ~/.gnupg/gpg.conf -&gt; Since you are using an
+agent, you could as a workaround add no-tty to your gpg.conf</p>
+<p>gpg-agent -&gt; Check if gpg-agent is running gpg -s any-file.txt
+-&gt; Make sure gpg-agent has your passphrase in cache rm
+any-file.txt.gpg -&gt; Delete the newly generated signed
+any-file.txt.gpg git commit -S -m ‘my commit message’ -&gt; Signing
+commits with Git works by taking the required passphrase from
+gpg-agent.</p>
+<p>ssh: create two user accounts on rhel6 server log in as user1 over
+ssh su - root su - user2 gpg –gen-key (fails)</p>
+<p>on console: login as root su - user2 gpg –gen-key (fails)</p>
+<p>FIX $ script /dev/null $ gpg2 –gen-key ————————————————————————————–
+#signature kali repo</p>
+<p>#gpg itself has a standard way to distribute keys, #using a keyserver
+that gpg can download a key from and add it to its keyring gpg
+–keyserver hkp://keys.gnupg.net –recv-key 7D8D0BF6</p>
+<p>gpg –fingerprint 7D8D0BF6 #Check the fingerprint /bin/sh -c “gpg -a
+–export 7D8D0BF6 | apt-key add -” apt update</p>
+<p>generate a full-fingerprint imported key apt-key adv
+–list-public-keys –with-fingerprint –with-colons</p>
+<p>#receive a GPG error about the repository key being expired
+(ED444FF07D8D0BF6). wget -q -O -
+https://archive.kali.org/archive-key.asc | apt-key add</p>
+<table>
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">apt-key list #gpg itself has a standard
+way to distribute keys, #using a keyserver that gpg can download a key
+from and add it to its keyring gpg –keyserver subkeys.pgp.net –recv-keys
+55BE302B</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"># Download vagrant binary and signature
+files. curl -Os
+https://releases.hashicorp.com/vagrant/2.0.4/vagrant_2.0.4_x86_64.deb
+curl -Os
+https://releases.hashicorp.com/vagrant/2.0.4/vagrant_2.0.4_SHA256SUMS
+curl -Os
+https://releases.hashicorp.com/vagrant/2.0.4/vagrant_2.0.4_SHA256SUMS.sig
+# Verify the signature file is untampered. gpg –verify
+vagrant_2.0.4_SHA256SUMS.sig vagrant_2.0.4_SHA256SUMS # Verify the
+SHASUM matches the binary. shasum -a 256 -c
+vagrant_2.0.4_SHA256SUMS</td>
+</tr>
+</tbody>
+</table>
+<p>$ gpg –verify suricata-5.0.0.tar.gz.sig suricata-5.0.0.tar.gz gpg:
+Signature made Mon 14 Oct 2019 02:20:27 PM UTC using RSA key ID 00C1B70D
+gpg: Can’t check signature: No public key</p>
+<h1
+id="gpg-signature-made-mon-14-oct-2019-022027-pm-utc-using-rsa-key-id-00c1b70d">gpg:
+Signature made Mon 14 Oct 2019 02:20:27 PM UTC using RSA key ID
+00C1B70D</h1>
+<p>$ gpg –recv-key 00C1B70D gpg: requesting key 00C1B70D from hkp server
+keys.gnupg.net gpg: /home/vagrant/.gnupg/trustdb.gpg: trustdb created
+gpg: key 00C1B70D: public key “Open Information Security Foundation
+(OISF) <a href="mailto:releases@openinfosecfoundation.org"
+class="email">releases@openinfosecfoundation.org</a>” imported gpg: no
+ultimately trusted keys found gpg: Total number processed: 1 gpg:
+imported: 1 (RSA: 1)</p>
+<p>$ gpg –verify suricata-5.0.0.tar.gz.sig suricata-5.0.0.tar.gz gpg:
+Signature made Mon 14 Oct 2019 02:20:27 PM UTC using RSA key ID 00C1B70D
+gpg: Good signature from “Open Information Security Foundation (OISF) <a
+href="mailto:releases@openinfosecfoundation.org"
+class="email">releases@openinfosecfoundation.org</a>” gpg: WARNING: This
+key is not certified with a trusted signature! gpg: There is no
+indication that the signature belongs to the owner. Primary key
+fingerprint: 801C 7171 DAC7 4A6D 3A61 ED81 F7F9 B0A3 00C1 B70D</p>

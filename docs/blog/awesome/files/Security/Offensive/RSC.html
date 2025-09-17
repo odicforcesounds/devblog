@@ -1,0 +1,261 @@
+<h1 id="regexp-security-cheatsheet">Regexp Security Cheatsheet</h1>
+<p>Research was done to find “weak places” in regular expressions of Web
+Application Firewalls (WAFs).<br />
+Repository contains SAST, which can help you to find security
+vulnerabilities in custom regular expressions in own projects.<br />
+Contribution is highly welcomed.<br />
+This repo was first presented during BlackHat USA 2016 talk - <a
+href="https://www.blackhat.com/docs/us-16/materials/us-16-Ivanov-Web-Application-Firewalls-Analysis-Of-Detection-Logic.pdf">PDF</a></p>
+<h3 id="high-severity-issues">High severity issues:</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Requirement</th>
+<th>Vulnerable regex example</th>
+<th>Bypass example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Regexp should avoid using <code>^</code> (alternative:
+<code>\A</code>) and <code>$</code> (alternative: <code>\Z</code>)
+symbols, which are metacharacters for start and end of a string. It is
+possible to bypass regex by inserting any symbol in front or after
+regexp.</td>
+<td><code>(^a\|a$)</code></td>
+<td><code>%20a%20</code></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Regexp should be case-insensitive: <code>(?i:</code> or
+<code>/regex/i</code>. It is possible to bypass regex using upper or
+lower cases in words. <a
+href="https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#cmdLine">Modsecurity
+transformation commands</a> (which are applied on string before regex
+pattern is applied) can also be included in tests to cover more
+regexps.</td>
+<td><code>http</code></td>
+<td><code>hTtP</code></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>In case modifier <code>/m</code> is not (globally) specified, regexp
+should avoid using dot <code>.</code> symbol, which means every symbol
+except newline (<code>\n</code>). It is possible to bypass regex using
+<a
+href="https://www.htbridge.com/blog/bypassing-bitrix-web-application-firewall-via-tiny-regexp-error.html">newline
+injection</a>.</td>
+<td><code>a.*b</code></td>
+<td><code>a%0Ab</code></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Regexp should not be vulnerable to ReDoS. <a
+href="https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS">OWASP
+ReDoS article</a> 1. Find various evil patterns. 2. Generate evil string
+using e.g. “SDL Regex Fuzzer”</td>
+<td><code>(a+)+</code></td>
+<td><code>aaaaaaaaaaaaaaaaaaaa!</code></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Number of repetitions of set or group <code>{}</code> should be
+carefully used, as one can bypass such limitation by lowering or
+increasing specified numbers.</td>
+<td><code>a{1,5}</code></td>
+<td><code>aaaaaa (6 times)</code></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Nonstandard ranges (almost everything except a-z, 0-9, a-f,
+etc)</td>
+<td><code>[A-z] = [a-zA-Z] + [\]^_`</code></td>
+<td><code>aaa[\]^_`aaa</code></td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Regexp should only use plus “<code>+</code>” metacharacter in places
+where it is necessary, as it means “one or more”. Alternative
+metacharacter star “<code>*</code>”, which means “zero or more” is
+generally preferred.</td>
+<td><code>a'\s+\d</code></td>
+<td><code>a'5</code></td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>Usage of newline wildcards should be reasonable. <code>\r\n</code>
+characters can often be bypassed by either substitution, or by using
+newline alternative <code>\v</code>, <code>\f</code> and others.
+Wildcard <code>\b</code> has different meanings while using it in square
+brackets (“backspace”) and in plain regex (“word boundary”) - <a
+href="http://regexlib.com/CheatSheet.aspx">RegexLib</a></td>
+<td><code>a[^\n]*$</code></td>
+<td><code>a\n</code>? <code>a\r</code>?</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>Regexp should be applied to right scope of inputs:
+<code>Cookies names and values</code>,
+<code>Argument names and values</code>,
+<code>Header names and values</code>,
+<code>Files argument names and content</code>. Modsecurity:
+<code>grep -oP 'SecRule(.*?)"' -n</code> Other WAFs: manual
+observation.</td>
+<td>Argument values</td>
+<td>Cookie names and values</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>Regular expression writers should be careful while using only
+whitespace character (<code>%20</code>) as separators. Rule can be
+bypassed e.g. with newline character, tabulation, by skipping
+whitespace, or alternatives.</td>
+<td><code>a\s(not[whitespace]\|and)\sb</code></td>
+<td><code>a not b</code></td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>Nonstandard combinations of operators</td>
+<td><code>a\|\|b</code></td>
+<td><code>any_string</code></td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>Special cases: whitespaces before operators</td>
+<td><code>(a \|b)c</code></td>
+<td><code>ac</code></td>
+</tr>
+<tr class="odd">
+<td>13</td>
+<td>Usage of wrong syntax in POSIX character classes</td>
+<td><code>a[digit]b</code></td>
+<td><code>aab</code></td>
+</tr>
+<tr class="even">
+<td>14</td>
+<td>Opposite usage of brackets [], () and {}</td>
+<td><code>[SYSTEM\|PUBLIC]</code> or <code>(a-z123)</code></td>
+<td><code>SYSTEM</code> or <code>abcdef</code></td>
+</tr>
+</tbody>
+</table>
+<h3
+id="medium-severity-issues-non-expected-behaviour-manual-observation-needed">Medium
+severity issues (non-expected behaviour: manual observation
+needed):</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Requirement</th>
+<th>Vulnerable regex example</th>
+<th>Bypass example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>15</td>
+<td>Check backlinks, and bear in mind that <a
+href="http://php.net/manual/en/regexp.reference.escape.php"><code>\11</code>
+can be backlink -OR- 0x09</a></td>
+<td><code>(\d{1})=\1</code></td>
+<td><code>1!=2</code></td>
+</tr>
+<tr class="even">
+<td>16</td>
+<td>Unsafe usage of comments</td>
+<td><code>a(?#some comment about wildcards:\)(\w*)b</code></td>
+<td><code>afffb</code></td>
+</tr>
+<tr class="odd">
+<td>17</td>
+<td>Excessive usage of metacharacters in []</td>
+<td><code>[\w+]</code></td>
+<td><code></code></td>
+</tr>
+<tr class="even">
+<td>18</td>
+<td>Rarely used <a
+href="http://php.net/manual/en/regexp.reference.escape.php">wildcards</a>.
+All wildcards except popular: A,Z,b,r,n,t,wW,sS,dD,u,x</td>
+<td><code>\a = 0x07; \e = 0x1B; \R = \r\|\n\|\r\n; \xXX = 0xXX; \ddd = 0oddd; \cX, \x{XXXX}, \H, \V, \G</code></td>
+<td><code></code></td>
+</tr>
+<tr class="odd">
+<td>19</td>
+<td>Excessive escaping, e.g. escaping symbol which is not a
+wildcard</td>
+<td><code>\q</code></td>
+<td><code></code></td>
+</tr>
+<tr class="even">
+<td>20</td>
+<td>Unsafe usage of <a
+href="http://php.net/manual/ru/regexp.reference.recursive.php">recursion</a>,
+IF statements, etc</td>
+<td><code>(?R</code>, <code>(?(id)true\|false)</code>, …</td>
+<td><code></code></td>
+</tr>
+<tr class="odd">
+<td>21</td>
+<td>Unsafe usage of ranges</td>
+<td><code>[\0-9]</code> = <code>\0\1\2\3...$%&amp;'...789</code></td>
+<td><code></code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="experimental-rules-probably-to-be-removed">Experimental rules
+(probably to be removed):</h5>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Requirement</th>
+<th>Vulnerable regex example</th>
+<th>Bypass example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td>Greediness of regular expressions should be considered. Highlight of
+this topic is well done in <a
+href="https://www.princeton.edu/~mlovett/reference/Regular-Expressions.pdf">Chapter
+9 of Jan Goyvaert’s tutorial</a>. While greediness itself does not
+create bypasses, bad implementation of regexp Greediness can raise False
+Positive rate. This can cause excessive log-file flooding, forcing
+vulnerable rule or even whole WAF to be switched off.</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>X</td>
+<td>Best Practice from <a
+href="http://www.slideshare.net/d0znpp/lie-tomephd2013">slides of Ivan
+Novikov</a>: Modsecurity should avoid using t:base64Decode function
+(t:base64DecodeExt instead).</td>
+<td><code>t:base64Decode</code></td>
+<td><code>detected=bypassed</code></td>
+</tr>
+</tbody>
+</table>

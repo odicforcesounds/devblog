@@ -1,0 +1,35 @@
+<h1 id="add-gpg-key-to-profile">ADD GPG Key to Profile</h1>
+<p>Create or Setup your GPG key</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gpg</span> <span class="at">--full-generate-key</span> <span class="at">--expert</span></span></code></pre></div>
+<p>Create a Recocation certificate</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gpg</span> <span class="at">--output</span> ~/.gnupg/revocation.crt <span class="at">--gen-revoke</span> mysupercool@email.net</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> 600 ~/.gnupg/revocation.crt <span class="co"># Change permissions</span></span></code></pre></div>
+<p>See what is our Public Key</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gpg</span> <span class="at">--output</span> ~/.gnupg/publickey.key <span class="at">--armor</span> <span class="at">--export</span> mysupercool@email.net</span></code></pre></div>
+<p>See keys</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gpg</span> <span class="at">--list-keys</span></span></code></pre></div>
+<p>Publish public-key</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gpg</span> <span class="at">--send-keys</span> <span class="at">--keyserver</span> pgp.mit.edu mykey</span></code></pre></div>
+<p>Add public-key.key to codeberg profile</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">just</span> follow their instructions</span></code></pre></div>
+<p>Setup some of the files needed for pinentry settings</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">touch</span> .gnupg/gpg-agent.conf</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">touch</span> .gnupg/gpg.conf</span></code></pre></div>
+<p>Create content in gpg-agent.conf</p>
+<pre><code>max-cache-ttl 60480000
+default-cache-ttl 60480000</code></pre>
+<p>Create content in gpg.conf</p>
+<pre><code>personal-digest-preferences SHA512
+cert-digest-algo SHA512
+default-preference-list SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed
+personal-cipher-preferences TWOFISH CAMELLIA256 AES 3DES</code></pre>
+<p>Add to Your .bashrc file</p>
+<pre><code>export GPG_TTY=$(tty)
+gpg-connect-agent updatestartuptty /bye &gt;/dev/null</code></pre>
+<blockquote>
+<p>Any other issue, please read ArchLinux documentation about it:
+https://wiki.archlinux.org/title/GnuPG#pinentry</p>
+</blockquote>
+<p>Add your GPG key to your ~/.gitconfig file</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> git config <span class="at">--global</span> user.signingkey yourShort/LongKeyID</span></code></pre></div>

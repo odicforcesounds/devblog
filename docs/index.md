@@ -1,5 +1,6 @@
 ## Blog Posts
 
+- [A letter for a Friend](./friendly.md): Life create connections, that depend on something in between. 
 - [I Will arrest You, because I Love You](./beingSafe.md): Contradictions are the **Meaning of Life**. 
 - [Freedom](./freedom.md): You are always free to make a choice. Is up to you! 
 - [The High Way to Hell](./codingPath.md): Is not AC/DC Music, but is Heavy as Metal. 

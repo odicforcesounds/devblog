@@ -1,0 +1,118 @@
+<h1 id="install-gentoo">Install Gentoo</h1>
+<ul>
+<li>Format dist and define partitions</li>
+<li>format partitions</li>
+<li>mount partitions</li>
+<li>start installation process</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tar</span> xpJf stage3-<span class="pp">*</span>.tar.xz <span class="at">--xattrs-include</span><span class="op">=</span><span class="st">&#39;*.*&#39;</span> <span class="at">--numeric-owner</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> <span class="at">-v</span> /mnt/gentoo/etc/portage/repos.conf</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="at">-v</span> /mnt/gentoo/usr/share/portage/config/repos.conf /mnt/gentoo/etc/portage/repos.conf/gentoo.conf</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="at">-v</span> <span class="at">-L</span> /etc/resolv.conf /mnt/gentoo/etc/</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mount</span> <span class="at">-v</span> <span class="at">-t</span> proc none /mnt/gentoo/proc</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mount</span> <span class="at">-v</span> <span class="at">--rbind</span> /sys /mnt/gentoo/sys</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mount</span> <span class="at">-v</span> <span class="at">--rbind</span> /dev /mnt/gentoo/dev</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">mount</span> <span class="at">-v</span> <span class="at">--make-rslave</span> /mnt/gentoo/sys</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">mount</span> <span class="at">-v</span> <span class="at">--make-rslave</span> /mnt/gentoo/dev</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chroot</span> /mnt/gentoo /bin/bash <span class="at">-l</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">passwd</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">env-update</span> <span class="kw">&amp;&amp;</span> <span class="bu">source</span> /etc/profile <span class="kw">&amp;&amp;</span> <span class="bu">export</span> <span class="va">PS1</span><span class="op">=</span><span class="st">&quot;(chroot) </span><span class="va">$PS1</span><span class="st">&quot;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">emerge</span> <span class="at">--sync</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">eselect</span> profile list</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">eselect</span> profile set 26 <span class="co"># nomultilib</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">emerge</span> <span class="at">--ask</span> <span class="at">--verbose</span> <span class="at">--oneshot</span> portage</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">emerge</span> <span class="at">--ask</span> <span class="at">--verbose</span> portage-utils gentoolkit mirrorselect</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;Europe/Lisbon&quot;</span> <span class="op">&gt;</span> /etc/timezone</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">emerge</span> <span class="at">-v</span> <span class="at">--config</span> sys-libs/timezone-data</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nano</span> <span class="at">-w</span> /etc/locale.gen</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">locale-gen</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="ex">eselect</span> locale set <span class="st">&quot;en_US.UTF-8&quot;</span> <span class="co"># Latin Characters on SHELL PLEASE !!!</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="ex">env-update</span> <span class="kw">&amp;&amp;</span> <span class="bu">source</span> /etc/profile <span class="kw">&amp;&amp;</span> <span class="bu">export</span> <span class="va">PS1</span><span class="op">=</span><span class="st">&quot;(chroot) </span><span class="va">$PS1</span><span class="st">&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nano</span> <span class="at">-w</span> /etc/conf.d/keymaps <span class="co"># pt-latin9</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nano</span> <span class="at">-w</span> /etc/conf.d/hostname <span class="co"># ThinkAbout</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="va">COMMON_FLAGS</span><span class="op">=</span><span class="st">&quot;-O2 -pipe -march=sandybridge&quot;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="va">CFLAGS</span><span class="op">=</span><span class="st">&quot;</span><span class="va">${COMMON_FLAGS}</span><span class="st">&quot;</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="va">CXXFLAGS</span><span class="op">=</span><span class="st">&quot;</span><span class="va">${COMMON_FLAGS}</span><span class="st">&quot;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="va">FCFLAGS</span><span class="op">=</span><span class="st">&quot;</span><span class="va">${COMMON_FLAGS}</span><span class="st">&quot;</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="va">FFLAGS</span><span class="op">=</span><span class="st">&quot;</span><span class="va">${COMMON_FLAGS}</span><span class="st">&quot;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="va">CPU_FLAGS_X86</span><span class="op">=</span><span class="st">&quot;aes avx mmx mmxext pclmul popcnt sse sse2 sse3 sse4_1 sse4_2 ssse3&quot;</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="va">MAKEOPTS</span><span class="op">=</span><span class="st">&quot;-j5&quot;</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co"># USE FLAGS</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="va">USE</span><span class="op">=</span><span class="st">&quot;-ipv6 -bindist vim-pager vim-syntax savedconfig&quot;</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Features</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="va">FEATURES</span><span class="op">=</span><span class="st">&quot;split-elog buildpkg&quot;</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Licenses</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="va">ACCEPT_LICENSE</span><span class="op">=</span><span class="st">&quot;-* @FREE&quot;</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Video Card</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="va">VIDEO_CARDS</span><span class="op">=</span><span class="st">&quot;intel i915&quot;</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Audio Card</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="va">ALSA_CARDS</span><span class="op">=</span><span class="st">&quot;snd-hda-intel&quot;</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Inputs</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="va">INPUT_DEVICES</span><span class="op">=</span><span class="st">&quot;libinput&quot;</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Keywords</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a><span class="va">ACCEPT_KEYWORDS</span><span class="op">=</span><span class="st">&quot;amd64&quot;</span> <span class="co"># only stable versions</span></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Grub</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a><span class="va">GRUB_PLATFORMS</span><span class="op">=</span><span class="st">&quot;pc&quot;</span></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="co"># LLVM Targets</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="va">LLVM_TARGETS</span><span class="op">=</span><span class="st">&quot;x86 BPF&quot;</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Portage system</span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a><span class="va">PORTAGE_ELOG_CLASSES</span><span class="op">=</span><span class="st">&quot;info warn error log qa&quot;</span></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a><span class="va">PORTAGE_ELOG_SYSTEM</span><span class="op">=</span><span class="st">&quot;echo save&quot;</span></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a><span class="va">EMERGE_DEFAULT_OPTS</span><span class="op">=</span><span class="st">&quot;--ask --verbose&quot;</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a><span class="va">PORTAGE_NICENESS</span><span class="op">=</span>10</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="co"># ADD Language</span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="va">L10N</span><span class="op">=</span><span class="st">&quot;pt pt_PT&quot;</span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Portage Directories</span></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a><span class="va">PORTDIR</span><span class="op">=</span><span class="st">&quot;/var/db/repos/gentoo&quot;</span></span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a><span class="va">DISTDIR</span><span class="op">=</span><span class="st">&quot;/var/cache/distfiles&quot;</span></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a><span class="va">PKGDIR</span><span class="op">=</span><span class="st">&quot;/var/cache/binpkgs&quot;</span></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a><span class="va">LC_MESSAGES</span><span class="op">=</span>C</span></code></pre></div>
+<pre><code>emerge -av gentoo-sources grub dhcpcd syslog-ng cronie</code></pre>
+<pre><code>cd /usr/src/
+ln -s linux-version* linux
+cd linux 
+make clean 
+make clean # again?  
+make clean # yes again. 
+make menuconfig </code></pre>
+<p>Note that network cards kernel config may have selected all cards. (
+you just wish to install one or two )</p>
+<p>Maybe you don’t use LVM or Raid. The GPU Graphics are like network
+cards. You only need to select the one You use and remove all
+others.</p>
+<pre><code>make &amp;&amp; make modules &amp;&amp; make modules_install &amp;&amp; make install </code></pre>
+<pre><code>blkid 
+vim /etc/fstab</code></pre>
+<pre><code>grub-install 
+grub-mkconfig -o /boot/grub/grub.cfg</code></pre>
+<pre><code>rc-update add syslog default
+rc-update add lvm boot 
+rc-update add cronie default
+rc-update add # what ever is needed 
+reboot</code></pre>
+<p>… Now you can start thinking in what you wish to use your gentoo
+box.</p>
+<p>Maybe start with basic configurations <em>Good Idea</em></p>
+<p>Maybe install basic applications <em>Good Idea</em></p>
+<p>Maybe thinking about security <em>Good Idea</em></p>
+<p>Maybe installing Virtualization <em>Good Idea</em></p>
+<p>Maybe install X server <em>Good Idea</em></p>
+<p>Maybe install some GUI <em>Good Idea</em></p>
+<hr />
+<p>Remember, the Simple your Gentoo is, the less troubles you will get
+from it.</p>
