@@ -1,9 +1,0 @@
-## Application Development
-
-Always looking for [someone](https://book.odicforcesounds.com) help, to [play](https://play.odicforcesounds.com) with me this [game](https://art.odicforcesounds.com/pages/Data/Audio/Emotional_Signals/tracks/10_The_Game_Project/index.html), I am about to build.
-
-I am starting to invest my time and money, trying to build the application, described in the audio-track [Social Tool Kit](https://art.odicforcesounds.com/pages/YinYang/Dao/login/index.html), from the album **Emotional Signals** as a Android application. If you click the last link, then you can see the final objective of this application, which describe a Challenge for all kind of groups, from public to private, industry, governments, ET's :D (World Wide).
-
-In the **Spiritual Algorithmic** album, there is another audio-track, with a description of this application, with the name [The Challenge](https://art.odicforcesounds.com/pages/Data/Audio/Spiritual_Algorithmic/tracks/01_The_Challenge/index.html), where another tracks like **Mr. JSON**, **Data - Objects and Functions**, **Into the World of JavaScript**, **Firebase - Solar Plexus**, already point to the direction of what this application need to use. 
-
-Developing this application, will need [React Native](https://reactnative.dev/), while storing the code in [GitHub](https://github.com/) to get notification of packages updates, managed by [NPM](https://www.npmjs.com/) and used inside this application. [Figma](https://www.figma.com/) can be helpful if you know what you wish to create, which means: what functionality this application will have, to become a tools to someone else. "The Path" [Firebase](https://firebase.google.com/) structure is like JSON, and since all kind of databases, deal with data, objects and functions exist by that condition. It looks very connected, very obvious.
