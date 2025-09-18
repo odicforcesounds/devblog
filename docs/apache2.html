@@ -7,7 +7,8 @@
   <title>IRC and Apache2</title>
 </head>
 <body>
-  <h1 class="title1">Apache2</h1>
+  <h1 class="center title1">Apache2</h1>
+<div class="textbox">
 <p>I really love the <strong>old</strong> <a
 href="https://httpd.apache.org/">Apache</a>, which was published in the
 same year I start to use Internet. Those awesome times that I met the
@@ -28,73 +29,75 @@ servers.</p>
 <p>I wish to share some configurations of how to setup Apache. First you
 install it. I will assume you know to do that, or using a
 package-manager or compiling it from the source.</p>
-<div class="sourceCode" id="cb1"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># /etc/apache2/apache2.conf </span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ServerRoot</span> <span class="st">&quot;/etc/apache2&quot;</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">DefaultRunTimeDir</span> <span class="va">${APACHE_RUN_DIR}</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">PidFile</span> <span class="va">${APACHE_PID_FILE}</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Timeout</span> 300</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">KeepAlive</span> on </span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">MaxKeepAliveRequests</span> 100 </span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">KeepAliveTimeout</span> 5 </span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">User</span> <span class="va">${APACHE_RUN_USER}</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">Group</span> <span class="va">${APACHE_RUN_GROUP}</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">HostnameLookups</span> off </span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">ErrorLog</span> <span class="va">${APACHE_LOG_DIR}</span>/error.log </span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">LogLevel</span> warn </span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ex">Include</span> ports.conf </span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="ex">IncludeOptional</span> mods-enabled/<span class="pp">*</span>.load </span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ex">IncludeOptional</span> mods-enabled/<span class="pp">*</span>.conf </span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="ex">IncludeOptional</span> conf-enabled/<span class="pp">*</span>.conf</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="ex">IncludeOptional</span> sites-enabled/<span class="pp">*</span>.conf </span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="ex">Servername</span> <span class="va">${IP_OF_MY_SERVER}</span> </span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="ex">AccessFileName</span> .htaccess</span></code></pre></div>
-<p>Directory directives are similar between them</p>
-<div class="sourceCode" id="cb2"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Options</span> Indexes FollowSymLinks</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">AllowOverride</span> All </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Require</span> all granted</span></code></pre></div>
-<p>One of the best features Apache have is the way it manage
-<strong>Reverse Proxy</strong>.</p>
-<p>What ever the port your application is using, you can limit to your
-host only and link it to one single path of your site, with the name of
-your choice:</p>
-<p><code>localhost:80/secret/app/for/those/who/know/what/secret/folders/are/for/</code></p>
-<p>and your application can be running at
-<code>localhost:8080</code></p>
-<p>this is what I love most.</p>
-<p>Anyway, just use <strong>CertBot</strong> to create a
-<strong>LetsEncrypt</strong> Certificate and add all details that you
-may wish to setup. here is an example:</p>
-<div class="sourceCode" id="cb3"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># /etc/apache2/sites-enabled/myAwesomeWebSite.org </span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Servername</span> myAwesomeWebSite.org </span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">ServerAdmin</span> root@localhost </span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">DocumentRoot</span> /var/www/html </span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">LogLevel</span> info ssl:warn </span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Options</span> <span class="at">-ExecCGI</span> +MultiViews +SymLinksIfOwnerMatch</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="ex">RemoveHandler</span> .cgi, .php, .php3, .php4, .php5, .pl, .py, .pyc </span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="ex">SSLEngine</span> on </span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="ex">SSLCertificateFile</span> /etc/LetsEncrypt/live/myAwesomeWebSite/fullchain.pem </span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="ex">SSLCertificateKeyFile</span> /etc/LetsEncrypt/live/myAwesomeWebSite/privkey.pem </span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="ex">Include</span> /etc/LetsEncrypt/options-ssl-apache.conf </span></code></pre></div>
-<p>Naturally you can make this server even more secure by adding the
-.htaccess into the main folder.</p>
-<div class="sourceCode" id="cb4"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># /var/www/html/.htaccess </span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Header</span> always set X-Content-Type-Options <span class="st">&quot;nosniff&quot;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Header</span> always set X-CSS-Protection <span class="st">&quot;1; mode=block&quot;</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Header</span> always set X-Frame-Options <span class="st">&quot;DENY&quot;</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Header</span> always set Strict-Transport-Security <span class="st">&quot;max-age=31536000; includeSubDomains; preload&quot;</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Header</span> always set Referrer-Policy <span class="st">&quot;no-referrer&quot;</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ex">Header</span> always set Permissions-Policy <span class="st">&quot;geolocation=(self), microphone=()&quot;</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">Header</span> always set Content-Security-Policy <span class="st">&quot;script-src &#39;self&#39;; object-src &#39;none&#39;&quot;</span></span></code></pre></div>
+<div class="sourceCode">
+  <code>
+    # /etc/apache2/apache2.conf <br>
+ServerRootg &quot;/etc/apache2<br>
+DefaultRunTimeDirg ${APACHE_RUN_DIR}<br>
+PidFileg ${APACHE_PID_FILE}<br>
+Timeoutg 300<br>
+KeepAliveg on <br>
+MaxKeepAliveRequestsg 100 <br>
+KeepAliveTimeoutg 5 <br>
+Userg ${APACHE_RUN_USER}<br>
+Groupg ${APACHE_RUN_GROUP}<br>
+HostnameLookupsg off <br>
+ErrorLogg ${APACHE_LOG_DIR}g/error.log g<br>
+LogLevelg warn <br>
+Includeg ports.conf <br>
+IncludeOptionalg mods-enabled/*g.load <br>
+IncludeOptionalg mods-enabled/*g.conf <br>
+IncludeOptionalg conf-enabled/*g.confg<br>
+  IncludeOptionalg sites-enabled/*g.conf<br>
+  Servernameg ${IP_OF_MY_SERVER}<br>
+  AccessFileNameg .htaccessg</code>
+</div>
+  <p>Directory directives are similar between them</p>
+  <div class="sourceCode">
+  Optionsg Indexes FollowSymLinksg
+  AllowOverrideg All g
+  Requireg all grantedg</code></div>
+  <p>One of the best features Apache have is the way it manage
+  <strong>Reverse Proxy</strong>.</p>
+  <p>What ever the port your application is using, you can limit to your
+  host only and link it to one single path of your site, with the name of
+  your choice:</p>
+  <p><code>localhost:80/secret/app/for/those/who/know/what/secret/folders/are/for/</code></p>
+  <p>and your application can be running at
+  <code>localhost:8080</code></p>
+  <p>this is what I love most.</p>
+  <p>Anyway, just use <strong>CertBot</strong> to create a
+  <strong>LetsEncrypt</strong> Certificate and add all details that you
+  may wish to setup. here is an example:</p>
+  <div class="sourceCode">
+# /etc/apache2/sites-enabled/myAwesomeWebSite.org <br>
+  Servernameg myAwesomeWebSite.org <br>
+  ServerAdming root@localhost <br>
+  DocumentRootg /var/www/html <br>
+  LogLevelg info ssl:warn <br>
+  Optionsg -ExecCGIg +MultiViews +SymLinksIfOwnerMatchg<br>
+  RemoveHandlerg .cgi, .php, .php3, .php4, .php5, .pl, .py, .pyc<br>
+  SSLEngineg on<br>
+  SSLCertificateFileg /etc/LetsEncrypt/live/myAwesomeWebSite/fullchain.pem<br>
+  SSLCertificateKeyFileg /etc/LetsEncrypt/live/myAwesomeWebSite/privkey.pem<br>
+  Includeg /etc/LetsEncrypt/options-ssl-apache.conf</code></div>
+  <p>Naturally you can make this server even more secure by adding the
+  .htaccess into the main folder.</p>
+  <div class="sourceCode">
+# /var/www/html/.htaccess <br>
+  Headerg always set X-Content-Type-Options &quot;nosniff&quot;<br>
+  Headerg always set X-CSS-Protection &quot;1; mode=block&quot;<br>
+  Headerg always set X-Frame-Options &quot;DENY&quot;<br>
+  Headerg always set Strict-Transport-Security &quot;max-age=31536000; includeSubDomains; preload&quot;<br>
+  Headerg always set Referrer-Policy &quot;no-referrer&quot;<br>
+  Headerg always set Permissions-Policy &quot;geolocation=(self), microphone=()&quot;<br>
+Headerg always set Content-Security-Policy &quot;script-src &#39;self&#39;; object-src &#39;none</code></div>
 <p>… Oops, I didn’t use the Proxy Options :)</p>
 <p>Well, that is the moment you should investigate in
 Apache-website.</p>
 <p>Or, join <a href="https://libera.chat/">Libera IRC servers</a> and
 join the channel #httpd to get some help.</p>
 <p>Enjoy the Show!</p>
-  
+</div>
 </body>
 </html>
