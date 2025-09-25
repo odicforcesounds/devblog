@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--   SECURITY -->
+<!--     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:;"> -->
+    <meta name="X-Content-Type-Options" content="nosniff">
+    <meta name="X-Frame-Options" content="DENY">
+    <meta name="Referrer-Policy" content="no-referrer">
+    <meta name="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+    <!-- TITLE-WILL-BE-HERE-PLEASE -->
+    <title>BSD Systems in Dept</title>
+    <meta name="description" content="FreeBSD and Services: A deeper lookup">
+    <link rel="stylesheet" href="./index.css">
+  </head>
+
+  <body class="center">
+    <!-- TITLE -->
+    <h1 class="title1">The World of FreeBSD Systems and Services</h1>
+    <div class="textbox">
+      <!--       BODY -->
+      <p>In a <a href="./freedom.html">older</a> post, I write about some FreeBSD issues that were fixed in time. My last FreeBSD experience was some years ago and right now, many things did change for better, gladly. So, this article will have some perspective about the actual state of FreeBSD systems, in a deeper analysis.</p> <p>I am not following any Documentation manual, but I really recommend that you read the FreeBSD doucmentation, since is really better, compared to the same, about 10 years ago. Anyway, After I install FreeBSD, I assume you add libs32, ports and src packages, activate Local_Unbound, SSHD, NTP services by default, hardening the system, selecting all options.</p> <p>After this, reboot and boot a fresh FreeBSD installation. With that, login as root an type: <br> <br>
+      <code>freebsd-update fetch install</code> <br>
+      <code>shutdown -r now</code><br>
+      <code>freebsd-update install</code><br>
+      <code>cd /usr/src/</code><br>
+      <code>cp /usr/src/sys/amd64/conf/GENERIC /usr/src/sys/amd64/conf/MONKEY</code><br>
+      <code>vi /usr/src/sys/amd64/conf/MONKEY</code>
+      </p>
+      <p>Remove all *devices* you don't use and lets build the world, prepare the kernel and install it.</p>
+      <p>
+        <code>make -j(number of cpus) buildworld</code><br>
+        <code>make -j8 buildkernel CONFKERN=MONKEY</code><br>
+        <code>make -j8 installkernel CONFKERN=MONKEY</code><br>
+      </p>
+      <p>I didn't touch too much the kernel. Remove all the Ethernet Cards, Wifi cards, and all hard-disk drivers I don't use. Everything else is there.</p>
+      <p>
+      <code>shutdown -r now</code><br>
+      <code>make -j8 installworld</code><br>
+      <code>shutdown -r now</code>
+      </p>
+
+      <p>If you didn't fail on that mission, You feel motivated to continue. </p>
+      <p>Everything is new here: They use ZFS partition system, the /etc/rc.conf files and options, a Jail system, linux compatibility is possible, KVM and XEN.</p>
+    </div>
+    <h2>Maybe We need to read a lot, before starting.</h2>
+    <div class="textbox">
+    <p>Just maybe. Forget the "mount" command with ZFS, /etc/rc.conf is like Gentoo but different, or maybe Gentoo was inspired by FreeBSD, which make sense. Jails is a nasty crazy system, full of possibilities.</p>
+    <p>Thinking in the perspective of Security, it looks better, but difficult, while FreeBSD Documentation got really better. Naturally they could comment the files, like the rc.conf one, with all possible options. </p>
+    <p>If I go throught the Documentation, kernel compilation comes almost in the end, but since I am a MONKEY, is understandable. So, RTFM, don't follow my notes. :) </p>
+    <p>I feel I am the MONKEY in the cage. Here I can do what ever I want. I am free to do what I want, without any objections or deniels.</p>
+    <p>Maybe you think this is absurd, but is not. Anyway, lets continue exploring the madness of <b>Jails</b>.</p>
+    <p>Jails inside Jails, that talk with others Jails throught a virtual network inside the same host.</p>
+    <p>Guess what, I am going to dive deep into FreeBSD features, so I can create something better</p>
+    </div>
+    <footer>
+      <a href="index.html">
+        Home
+      </a>
+    </footer>
+    
+  </body>
+</html>
