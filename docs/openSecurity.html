@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <!-- TITLE-WILL-BE-HERE-PLEASE -->
+    <title>OSSS: Open & Secure Software Source</title>
+    <meta name="description" content="OpenBSD is a Secure and Open Source Project that diserve some Credits">
+    <!--   SECURITY -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:;">
+    <meta name="X-Content-Type-Options" content="nosniff">
+    <meta name="X-Frame-Options" content="DENY">
+    <meta name="Referrer-Policy" content="no-referrer">
+    <meta name="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+  </head>
+
+  <body>
+    <!-- TITLE -->
+    <h1 class="title1">The most secure OS in the world?</h1>
+
+    <p class="center title3 note">all links in this publication are other articles related to the subject of this publication, from this blog</p>
+
+    <div class="textbox">
+      <!--       BODY -->
+      <p>To those who are following along with the last posts of this blog, you know that I "fall in love" with OpenBSD. Is a different Open Source Project, from many others that I did pay attention to, in the last years. Is not Linux, is based on UNIX. </p> <p> "With <b>Cat</b>s they <b>Dump</b> Foo as  <b>Ninjas</b> can do." </p> <p> See for your self, <b>connect</b> to <i>irc.libera.chat</i> and join #OpenBSD. Many users here are like ninjas. Is a awesome source of knowledge and a community that is there to help anyone solving their problems. Like we can do with the <a href="./theHolyMan.html">man pages</a>, they normally suggest to read them, "since is one of the <a href="./hidenDocumentation.html">best</a> soap we can eat to get the proper victimins." </p>
+     <p>If you search for <b>security issues</b> in some sites like <i>https://sploitus.com/</i> and <i>https://vulners.com/</i>, you find that <a href="./beingSafe.html">FreeBSD Jails</a> can look safe, while the <a href="./bsdSystemInDept.html">difference</a> between both is more than <a href="./bsdReview.html">different configurations locations</a>, but different <a href="./nativeVMMs.html">approach</a>'s, which result in "ZERO" results on this sites, about OpenBSD <a href="./byHackers.html">security holes</a>. Security is their "holy gold", and with it, a stable and rebust Operating System. </p> 
+     <p>After almost 2 weeks, I wish to test OpenBSD security, by creating the next configurtion: </p>
+     <code> # My ISP router let me configure the DNS based on some popular services like no-ip. <br>
+       # So I setup a No-IP DNS to expose the <b>Firewall</b> that have two network cards. <br>
+       # I install the full OpenBSD system, since this machine will serve as a Desktop too. <br>
+       # Reading about OpenBSD, we find that the Native-Land already have almost everything we need to start, <br> 
+       # without installing extra software to accomplish the "Hosting a service at home" propose. <br>
+       # 1: A Firewall <i>https://www.openbsd.org/faq/pf/</i> to monitor, limit and block traffic that we don't expect <br>
+       # 2: A HTTP daemon <i>https://man.openbsd.org/httpd</i> to serve HTTP requests <br>
+       # 3: A Relay daemon <i>https://man.openbsd.org/relayd</i> to redirect traffic and much more 
+     </code>
+
+     <p>For now, we only serve a HTML page saying "hello", but the propose can grow. <br> 
+     Since I wish to run a framework with a database, I need to install few software. Here we try NodeJS and MongoDB. </p>
+     <p>Once again, the Security holes for OpenBSD: <br><i>https://vulners.com/search?query=OpenBSD</i> are old, and all related issues target Linux Kernel. <br>
+     And for my surprise: in <i>https://sploitus.com/?query=OpenBSD#exploits</i>  <br> we have 5 new (exploits) in <b>OpenSSH</b>, which we will not expose to the Internet.</p>
+     <p class="note">Those who develop Exploits, should work for the development of those systems that they are able to exploit, since in the end of this "fight", is what will happen. <br>
+     Another popular website is: <i>https://www.exploit-db.com/</i> that have some Security issues from older versions.
+     </p>
+     <p>In this Firwall Desktop I install some packages:</p>
+     <code>
+       i3, i3status, dmenu, alacritty, vim(option-6)e, git, newsboat, irssi, calcurse and ungoogled-chromium
+     </code>
+     <p>I want to dedicate a machine to HTTPD that is a "old" i3 laptop with 4 CPUs, using 2 by default. <br>
+     Another i5 will host the database. Since OpenBSD installation is really simple I setup this machines with OpenBSD. (last release 7.8) 
+     For this machines I remove all games and xlibs with '-x* -g*' option in the installation process. Hopefully was not a bad choice, but this publication will be shared, to ask advices within the OpenBSD community. What improvements I should do and what more I need to learn.
+     </p>
+    </div>
+
+     <p class="title3 center">The Firewall files</p>
+
+     <div class="textbox">
+       <code>
+         # ISP Router static IP: 10.0.0.1 <br>
+         # Firewall static IP: 10.0.0.2 (this)<br>
+         # HTTPD static IP: 10.42.35.231<br>
+         # The Database machine can only talk with our HTTPD server<br>
+         # With this configuration, the Database server cannot speak with the internet. <br>
+         # I didn't setup everything I wish to serve, but not everything is ready. <br><br>
+         # /etc/pf.conf<br>
+
+          external="re0"<br>
+          internal="re1"<br>
+          server="10.42.35.231"<br>
+          http_ports="{80,443}"<br>
+          #ssh_ports="22"<br>
+<br>
+          set skip on lo<br>
+          set optimization conservative <br>
+          set fingerprints "/etc/pf.os"<br>
+          set timeout interval 10 <br>
+          set timeout frag 30<br>
+          set loginterface re0<br>
+          set state-policy if-bound<br><br>
+
+          anchor "relayd/*"<br><br>
+
+          table <bogons4> persist { \<br>
+              0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, \<br>
+              169.254.0.0/16, 172.16.0.0/12, 192.0.2.0/24, 192.168.0.0/16, \<br>
+              198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24, 224.0.0.0/4, 240.0.0.0/4 }<br>
+          #table <ssh> persist counters<br>
+          table <http> persist<br><br>
+
+          antispoof quick for { $external, $internal }<br>
+          block all<br>
+          #block in quick from <ssh><br>
+          block in quick from <http><br>
+          block return in on ! lo0 proto tcp to port 6000:6010<br>
+          block return out log proto {tcp udp} user _pbuild<br>
+          block in quick on $external from urpf-failed label uRPF<br>
+          block in quick on $internal from urpf-failed label uRPF<br>
+          block in quick on $external from <bogons4> to any<br>
+          block drop quick proto udp to $server <br>
+          match in all scrub (no-df random-id max-mss 1440)<br>
+          match out on egress inet from !(egress:network) to any nat-to (egress:0)<br>
+          pass out on egress proto { tcp udp icmp } keep state <br>
+          # SSH max connections filtering<br>
+          # We don't expose SSH to the internet <br>
+          #block in log quick proto tcp from <ssh> to any label SSH_BRUTES<br>
+          #pass in on $external proto tcp to $server port $ssh_ports flags S/SA synproxy state (max-src-conn 1, max-src-conn-rate 3/1, overload <http> flush global)<br>
+          # HTTP max connections filtering<br>
+          # We only serve a static and simple html page, so 10 connections in 1 secound is an abuse! <br>
+          block in log quick from <http> to any label HTTP_BRUTES<br>
+          pass in on $external proto tcp to $server port $http_ports flags S/SA synproxy state (max-src-conn 1, max-src-conn-rate 10/1, overload <ssh> flush global)<br>
+          # Pass / keep going<br>
+          pass		# establish keep-state<br>
+          pass out quick inet <br>
+          pass in on $external from $server to $internal keep state<br>
+          pass out on $internal proto { tcp udp icmp } from ($internal) to $external keep state <br>
+          pass in on egress proto tcp from any to any port $http_ports rdr-to $server<br>
+          pass in quick proto udp to $server port {domain ntp}<br>
+       </code>
+       <p>Maybe I can make some improvements. If you wish to fix something, I remember you that this blog is hosted in Github, and you can find me in #OpenBSD as <b>CommonNickname</b>.</p>
+       <p>After allowing the necessary traffic for our main desktop and local servers, that are already setup and running, we can configure the RelayD. Relayd can do a lot, so read the man pages, since they can be better than many public tutorials.
+       </p>
+       <code>
+        # This Firewall Relayd to redicted traffic and filter HTTP requests
+        table <webserver> { 10.42.35.231 } <br><br>
+        log state changes<br>
+        log connection<br><br>
+
+        http protocol "http" {<br>
+                # lets log various extra things to the log<br>
+                match header log "Host"<br>
+                match header log "X-Forwarded-For"<br>
+                match header log "User-Agent"<br>
+                match header log "Referer"<br>
+                match url log<br>
+                # Return Errors<br>
+                return error<br>
+                # Update header passed to the httpd server<br>
+                match request header set "X-Forwarded-For" value "$REMOTE_ADDR"<br>
+                match request header set "X-Forwarded-By" value "$SERVER_ADDR:$SERVER_PORT"<br>
+                # Security HTTP headers response<br>
+                match response header remove "Server"<br>
+                match response header append "Strict-Transport-Security" value "max-age=31536000; includeSubDomains"<br>
+                match response header append "X-Frame-Options" value "monkeyTest.ddns.net"<br>
+                match response header append "X-XSS-Protection" value "1; mode=block"<br>
+                match response header append "X-Content-Type-Options" value "nosniff"<br>
+                match response header append "Referrer-Policy" value "strict-origin"<br>
+                match response header append "Content-Security-Policy" value "default-src https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self' unsafe-inline' 'unsafe-eval'"<br>
+                match response header append "Permissions-Policy" value "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"<br>
+                # set recommended tcp options<br>
+                tcp { nodelay, socket buffer 65536, backlog 100 }<br>
+                # Pass / Let them Pass <br>
+                pass request quick header "Host" value "monkeyTest.ddns.net" forward to <webserver><br>
+                # Block HTTP requests PATHs<br>
+                block path "/cgi-bin/*" value "*command=*"<br>
+                block request<br><br>
+        }
+        http protocol "https" {<br>
+                # Handle TLS used with Let's Encrypt Certificates<br>
+                tls keypair "monkeyTest.ddns.net" <br>
+                # lets log various extra things to the log<br>
+                match header log "Host"<br>
+                match header log "X-Forwarded-For"<br>
+                match header log "User-Agent"<br>
+                match header log "Referer"<br><br>
+        
+                match url log<br>
+                # Update header passed to the httpd server<br>
+                match request header set "X-Forwarded-Proto" value "https"<br>
+                match request header set "X-Forwarded-For" value "$REMOTE_ADDR"<br>
+                match request header set "X-Forwarded-By" value "$SERVER_ADDR:$SERVER_PORT"<br>
+                match request header set "Forward" value "by=$SERVER_ADDR:$SERVER_PORT;for=$REMOTE_ADDR;host=$HOST;proto=https"<br>
+                match response header append "Strict-Transport-Security" value "max-age=31536000; includeSubDomains"<br>
+                match response header append "X-Frame-Options" value "monkeyTest.ddns.net"<br>
+                match response header append "X-XSS-Protection" value "1; mode=block"<br>
+                match response header append "X-Content-Type-Options" value "nosniff"<br>
+                match response header append "Referrer-Policy" value "strict-origin"<br>
+                match response header append "Content-Security-Policy" value "default-src https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self' unsafe-inline' 'unsafe-eval'"<br>
+                match response header append "Permissions-Policy" value "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"<br>
+                # set recommended tcp options<br>
+                tcp { nodelay, socket buffer 65536, backlog 100 }<br>
+                # TLS and CIPHERS<br>
+                tls { no tlsv1.0, ciphers "HIGH:!aNULL:!SSLv3:!DSS:!ECDSA:!RSA:-ECDH:ECDHE:+SHA384:+SHA256" }<br>
+                # Block Paths<br>
+                block path "/cgi-bin/*" value "*command=*"<br>
+                # Pass / Let them Pass <br>
+                pass request quick header "Host" value "monkeyTest.ddns.net" forward to <webserver><br>
+        }<br><br>
+
+        relay "http_monkeyTest.ddns.net" {<br>
+                listen on * port 80<br>
+                protocol "http"<br>
+                forward to <webserver> port 80 mode loadbalance check http "/" code 200<br>
+        }<br><br>
+
+        relay "ssl_monkeyTest.ddns.net" {<br>
+                listen on * port 443 <br>
+                protocol "https"<br>
+                forward to <webserver> port 443 mode loadbalance check http "/" code 200<br>
+        } 
+       </code>
+       <p>This code have some values that are not real, like the IP of my local-network, but this configurations, work with me while I am still learning about OpenBSD.</p>
+       <p>The HTTPD server use Let's Encrypt. The domain used for this article don't exist, while the server get several attacks attemps, from the very first secounds that is alive. I suspect that <a href="./mar.html">malicious</a> activity is from people who monitor No-IP new domains, or automated bots that are everywhere. Maybe I can configure this server to use a better DNS service. Cloudflared is not part of OpenBSD packages but I need to find another one that is less popular. If you have any suggestions, let me know. </p>
+     </div>
+    <footer>
+      <a href="index.html">
+        Home
+      </a>
+    </footer>
+    
+  </body>
+</html>
