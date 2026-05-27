@@ -26,22 +26,22 @@
 
     <div class="textbox black">
       <!--       BODY -->
-      <p class="center g">It should be almost  the same for all <a href="./linux_comparation.html">Linux Distros</a> or <a href="./FreeBSD.html">BSD Distros</a></p>
+      <p class="center gr">It should be almost  the same for all <a href="./linux_comparation.html">Linux Distros</a> or <a href="./FreeBSD.html">BSD Distros</a></p>
       <p>
         In this case, we are about to install <a href="./bsdReview.html">FreeBSD</a>. I use <a href="https://www.ventoy.net/en/index.html" target="_blank" class="external">Ventoy</a> to create a <u>bootable</u> 60GB USB stick, which I can add several ISO images or extra folders/files. So, we start the <a href="./bsdResources.html">FreeBSD</a> installation and when asked about the package manager, make your choice. The Official <a href="https://www.freebsd.org/" target="_blank" class="external">FreeBSD</a> recommendations are <span class="b">[</span>use the <b>pkg</b> <i>Binary</i> system if you are not a developer.<span class="b">]</span> So, if we are not going to install new software using the <b>ports</b> system and we are not developers (which is true in my case), then we go throught the easier way. If our choice is the "New way", we will not be able to use <u>basic</u> <a href="./theFreeDocs.html">FreeBSD</a> <i>commands</i> like <code>freebsd-update fetch install</code>. I use the <b>ZFS</b> disk partition system and apply all harden rules available. I could setup a static IP but is not needed at this point. I did create a new user and add it to the <u>wheel</u> group, to be possible to <code>su -l</code> in. Installation process finish. Reboot
       </p>
       <hr>
-        <p class="center b">First time Login</p>
+        <p class="center gr">First time Login</p>
       <p>
       Login as <u>root</u>, and install the last update of <b>pkg</b>: <code>pkg update</code>. First I edit the <code>/etc/ssh/sshd_config</code> and change de default <b>ssh</b> port. I block <u>root</u> login and accept logins using passworld. After saving the changes, we start the <b>ssh service</b> by typing <code>sysrc sshd_enable=yes</code> and <code>service sshd start</code>. Then connect and add some basic applications that I always use, like <b>git</b>, <b>curl</b>, <a href="./vim.html">Vim</a> and <a href="./tmux.html">Tmux</a>: <code>pkg install tmux vim curl git</code>. We are assuming that we need to give priority to the <u>man</u> pages information, before searching the web for more information. Read the off-line manual by typing:  <code>man man</code>. It is useful to know that the default key bindings of <b>Vim</b> can be used to move throught the man pages. 
       </p>
       <hr> 
-      <p class="center b">The Scenario and Objectives</p>
+      <p class="center gr">The Scenario and Objectives</p>
       <p>
         Lets imagine that we are behind our <u>ISP</u> router and we are just exploring the system before trying to expose it publicly. We are going to imagine that we are exposing our services but we are not. Only inside our <u>intranet</u>. We going to create several <u>Virtual Machines</u> using the <a href="./nativeVMMs.html">vmm</a> system that is included by default on all <a href="./bsdResources.html">BSD</a> distros. One for the <i>HTTP</i> server and other for our <i>Database</i> server. Maybe we are developers, but not low level developers. So we can create our site, for personal use or to make it public. Our machine characteristics are: <b>Intel</b> 12 <i>CPU</i>s with 12GB of <i>RAM</i> and 1TB of <i>Disk</i> space.
       </p>
       <hr>
-      <p class="center b">Since we already know what features we will use, we start reading the manual pages.</p>
+      <p class="center gr">Since we already know what features we will use, we start reading the manual pages.</p>
       <p>
         So we start with the obvious manual for this specific case. <code>man vmm</code> will tell us how to start configuring our system to be able to use this technology. Since we wish to have <a href="./jailVSvms.html">vmm</a> active by default, we add the first suggestion of the manual to the <code>/boot/loader.conf</code> file. In case we wish to give more details about <b>CPU</b> usage for <i>vmm</i> system, we can add those options in this file, so they are loaded at boot time. Since we going to create two <u>vm</u>s, we know that they will <u>fight</u> for resources, and we can prevent they consume all physical <b>CPU</b>s of our machine. But we can strict this later for each <i>vm</i>. Really small manual, which make reference to other <u>key</u> names that we should read. Then, <code>man bhyve</code> is our next manual. This manual describe how to use <i>bhyve</i> and we feel like we should create some <code>sh</code> scripts to manage this service that ask several options at once to run our <i>vm</i>s. Hopefully, by the nature of those who are making a plan, you are adding some extra notes on some file, to understand the process and start building everything that is needed to start, before starting.  
       </p>
@@ -49,15 +49,15 @@
       Note that <a href="./BestSuperDumb_1.html">FreeBSD</a> doesn't use the same process used by <a href="./openSecurity.html">OpenBSD</a>. They have different approachs and we must continue using the manuals to figure how to setup our services. By reading the <b>bhyve</b> manual, we can explore many details that we should read, to understand each, in a deeper perspective. So we read more before starting to setup our server. <code>man virtio</code> to understand how <u>hardware virtualization</u> works, <code>man tap</code> and <code>man netgraph</code> to understand how the <u>network virtualization</u> works. <b>Bhyve</b> manual is extensive and give <u>helpful</u> examples. I continue without understanding how we going to create the virtual-disk-blocks, but the answer should be in the <i>virtio</i> man page. But is not. 
       </p>
       <hr> 
-      <p class="center b">Manuals don't help by speaking about "how to create disk files to be used by our <u>vm</u>'s</p>
+      <p class="center gr">Manuals don't help by speaking about "how to create disk files to be used by our <u>vm</u>'s</p>
       <p>
         This is the moment that you see that you don't have any manual reference about how to create new disk space to be used by your <u>vm</u>'s, and therefor you need to visit the web. <span class="b">Giving suggestions to make those manuals batter</span>. Gladly we are doing all this reading inside a <i>ssh</i> session and we have another computer to search the web and read the <i>docs.freebsd.org</i> site, to understand how we solve this doubt. <b>FreeBSD</b> makes reference to <i>truncate</i> application to create files of disk space to be used by our <i>vm</i>s, while the previous manuals don't make any reference to that application. <u>Please add reference to that application, so a Administrator can setup his machine without using the internet.</u>
       </p>
       <hr>
-      <p class="center b">Maybe we want to automate the process for future usage</p>
+      <p class="center gr">Maybe we want to automate the process for future usage</p>
       <p>Because something can go wrong, because we may wish to create more <u>vm</u>s, because we are lazy, we create several scripts to <u>start</u> and <u>stop</u> vms, create virtual disk space, start new <u>vm</u> or destroy them and delete them. But first start adding the necessary options and reboot your machine to start testing the commands and after you know how they work, you can start creating the scripts to make your life easier. Since you going to have few <u>virtual network cards</u> you may wish to add that information to some <i>file.txt</i> to remember later. Follow the examples. They are really good and you can use them as they are in most cases. </p>
       <hr>
-      <p class="center b">reboot and continue reading.</p>
+      <p class="center gr">reboot and continue reading.</p>
       <p>
         We already know that we can restrict <u>Memory</u> usage and <u>CPU</u> usage for each <u>vm</u>. It looks that we are already using our system, but we may wish to create a snapshot of our configurations using <b>ZFS</b> system for that. Is not the same as <b>btrfs</b> (is what I think not what it really is, since <b>ZFS</b> is another big manual). So, we type: <code>man zfs</code>. Even if we are not exposing our server and internal virtual servers, we wish to read about <b>FreeBSD</b> <u>firewall</u> solution called <code>pf</code>. Therefor, we do the basic <code>man pf</code> to understand how to setup the <u>pf</u> service and <code>man pf.conf</code> to see all details that are possible to be used to configure our firewall. Both are rich manuals with many useful <code>/examples</code> to use.  
       </p>
