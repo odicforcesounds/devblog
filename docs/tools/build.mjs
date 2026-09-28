@@ -1,33 +1,28 @@
 #!/usr/bin/env node
-// Inject tools/feeds.json into index.html at the __FEED_DATA__ placeholder.
-// Usage: node tools/build.mjs [feedsJsonPath]
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+// Inject tools/feeds.json into index.html (or tools/template.html when given).
+// Handles both the raw placeholder state and a previously built page.
+// Usage: node tools/build.mjs [feedsJsonPath] [pagePath]
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const feedsPath = process.argv[2] || 'tools/feeds.json';
-const pagePath = 'index.html';
+const pagePath = process.argv[3] || 'index.html';
 const MARK = '__FEED_DATA__';
 
-const feedsRaw = readFileSync(feedsPath, 'utf8');
-// Compact the JSON (single spaces) to keep the page lean; strings stay escaped properly.
-const compact = JSON.stringify(JSON.parse(feedsRaw));
+const compact = JSON.stringify(JSON.parse(readFileSync(feedsPath, 'utf8')));
 const page = readFileSync(pagePath, 'utf8');
 
-const re = new RegExp('^(.*?)' + MARK + '(.*)$', 's');
-const m = page.match(re);
-if (!m) {
-  if (page.includes(JSON.stringify(JSON.parse(feedsRaw)).slice(1, 60))) {
-    console.log('index.html already contains injected data — nothing to do.');
-    process.exit(0);
+let out;
+if (page.includes(MARK)) {
+  out = page.replace(MARK, compact);
+} else {
+  // Page was already built once: replace the existing embedded dataset.
+  const re = /window\.FEED_DATA = \{.*?\};\n/s;
+  if (!re.test(page)) {
+    console.error('No placeholder and no embedded FEED_DATA found in ' + pagePath);
+    process.exit(1);
   }
-  console.error('Placeholder ' + MARK + ' not found in index.html. Rebuild from template.');
-  process.exit(1);
+  out = page.replace(re, 'window.FEED_DATA = ' + compact + ';\n');
 }
 
-const out = m[1] + compact + m[2];
 writeFileSync(pagePath, out);
-const kb = (out.length / 1024).toFixed(0);
-console.log(`Injected feeds into index.html (${kb} KB total).`);
-if (existsSync('tools/check_results.json')) {
-  console.log('Tip: to ship only feeds verified alive, run:');
-  console.log('  node tools/filter_results.mjs && node tools/build.mjs');
-}
+console.log(`Injected feeds into ${pagePath} (${(out.length / 1024).toFixed(0)} KB total).`);
