@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTTP — From Browser Click To Server</title>
+<style>
+body{margin:0;background:#0a0c10;color:#d7dce2;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.75}
+.wrap{margin:0 auto;padding:28px 20px 90px}
+h1{font-size:1.9rem}h2{color:#7ee787;border-bottom:1px solid #222;margin-top:2.4em}h3{color:#79c0ff}
+.tip{background:#161b22;border:1px solid #30363d;border-left:6px solid #e3b341;padding:12px 16px;border-radius:8px;margin:1em 0}
+code,pre{background:#11161d;border:1px solid #2a3340;border-radius:8px;color:#ffa657}
+pre{padding:12px;overflow:auto;white-space:pre-wrap}a{color:#58a6ff}
+table{border-collapse:collapse;width:100%;margin:1em 0}th,td{border:1px solid #2a3340;padding:7px;vertical-align:top}th{color:#7ee787}
+.flow{border:1px dashed #58a6ff;border-radius:10px;padding:12px;margin:1em 0}
+</style>
+<link rel="stylesheet" href="article.css">
+</head>
+<body>
+<div class="wrap">
+<h1 class="center">HTTP — From Browser Click To Server</h1>
+<div class="textbox black">
+<p>HTTP = request/response text over TCP (usually TLS). Specs: <a href="https://httpwg.org/specs/">HTTPWG</a>, <a href="https://www.rfc-editor.org/rfc/rfc9110.html">RFC 9110 semantics</a>, <a href="https://www.rfc-editor.org/rfc/rfc9112.html">RFC 9112 HTTP/1.1</a>, <a href="https://www.rfc-editor.org/rfc/rfc9113.html">RFC 9113 HTTP/2</a>, <a href="https://www.rfc-editor.org/rfc/rfc9114.html">RFC 9114 HTTP/3</a>. MDN: <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP">MDN HTTP</a>.</p>
+
+<h2>0 — The 11-Step Journey (One Click)</h2>
+<div class="flow"><pre>1. URL parse: https://api.example.com:443/notes?page=2 → scheme+host+port+path+query
+2. Cache? memory → disk → service-worker? (Cache-Control decides)
+3. DNS: resolver → 93.184.216.34 (curl: --resolve to fake; see: dig api.example.com)
+4. TCP handshake: SYN → SYN-ACK → ACK (see tcp-packets-dark.html)
+5. TLS handshake (https): ClientHello(SNI) → ServerHello+cert → key → Finished (port 443)
+6. HTTP request bytes ride TLS records inside TCP segments inside IP inside Ethernet
+7. Server: NIC → Nginx (reverse proxy) → Node/Express route → DB → JSON
+8. HTTP response returns same tunnel: status + headers + body
+9. Browser: parse HTML/CSS/JS, fetch sub-resources ( HTTP/2 multiplex / HTTP/3 QUIC-UDP )
+10. Render, run JS (fetch/XHR), store cookies/cache per headers
+11. Keep-alive reuses TCP; close via FIN or idle timeout</pre></div>
+<div class="tip">Watch it: DevTools Network tab + <code>curl -v</code> + <code>tcpdump -i any port 443</code> (sizes) + Wireshark Follow TLS. Same story, four lenses.</div>
+
+<h2>1 — Anatomy: Request vs Response</h2>
+<pre>GET /notes?page=2 HTTP/1.1
+Host: api.example.com
+User-Agent: Mozilla/5.0
+Accept: application/json
+Authorization: Bearer &lt;token&gt;
+Cookie: sid=abc
+Connection: keep-alive
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Content-Length: 48
+Cache-Control: private, max-age=0
+Set-Cookie: sid=abc; HttpOnly; Secure; SameSite=Strict; Path=/
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+{"notes":[{"id":1,"title":"hi"}]}</pre>
+
+<h2>2 — Methods + Status (What They Mean On Wire)</h2>
+<p><b>Methods:</b> GET (read, cacheable), HEAD (headers only), POST (create), PUT (replace), PATCH (partial), DELETE (remove), OPTIONS (CORS preflight). <b>Status:</b> 1xx hold on, 2xx win (200 OK, 201 Created, 204 No Content), 3xx go elsewhere (301/302/307/308 + Location), 4xx you messed up (400/401/403/404/429), 5xx server messed up (500/502/504).</p>
+<pre>curl -sSI https://example.com | head          # status + headers
+curl -sS -X POST -H 'Content-Type: application/json' -d '{"a":1}' https://api.example.com/notes -D -</pre>
+
+<h2>3 — Headers That Matter (Examples You'll Actually Send/See)</h2>
+<table>
+<tr><th>Header</th><th>Direction</th><th>Example + why</th></tr>
+<tr><td><code>Host</code></td><td>Req</td><td><code>Host: api.example.com</code> — virtual-host routing. HTTP/1.1 mandatory.</td></tr>
+<tr><td><code>Authorization</code></td><td>Req</td><td><code>Bearer eyJ...</code> / <code>Basic dXNlcjpwYXNz</code>. Never log full value.</td></tr>
+<tr><td><code>Cookie / Set-Cookie</code></td><td>Both</td><td><code>Cookie: sid=abc</code> → <code>Set-Cookie: sid=abc; HttpOnly; Secure; SameSite=Strict</code>. Session + flags stop XSS/CSRF.</td></tr>
+<tr><td><code>Content-Type / Length</code></td><td>Both</td><td><code>application/json; charset=utf-8</code> + <code>48</code>. Mismatch = truncation bugs.</td></tr>
+<tr><td><code>Accept / Accept-Encoding</code></td><td>Req</td><td><code>Accept: application/json</code>, <code>Accept-Encoding: gzip, br</code> — negotiate format/size.</td></tr>
+<tr><td><code>Cache-Control / ETag / Last-Modified</code></td><td>Both</td><td><code>max-age=60, must-revalidate</code>, <code>ETag: "v1"</code> + <code>If-None-Match</code> → <code>304</code> saves bytes.</td></tr>
+<tr><td><code>CORS: Origin / ACAO / Vary</code></td><td>Both</td><td><code>Origin: https://app.example.com</code> → <code>Access-Control-Allow-Origin: https://app.example.com</code> + <code>Vary: Origin</code>. Wildcard + credentials = fail.</td></tr>
+<tr><td><code>Security: CSP/HSTS/X-Frame/X-Content-Type/Referrer</code></td><td>Resp</td><td><code>Content-Security-Policy: default-src 'self'</code>, <code>Strict-Transport-Security: max-age=31536000</code>, <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy: no-referrer</code>.</td></tr>
+<tr><td><code>Proxy: X-Forwarded-For / Forwarded</code></td><td>Req</td><td><code>X-Forwarded-For: 203.0.113.7</code> — real client behind Nginx. Trust only your proxy.</td></tr>
+<tr><td><code>Range / Accept-Ranges</code></td><td>Both</td><td><code>Range: bytes=0-1023</code> → <code>206 Partial Content</code>. Resume + video scrub.</td></tr>
+</table>
+
+<h2>4 — Full Trace Example (curl → Nginx → Node)</h2>
+<pre># terminal 1: sudo tcpdump -i lo -nn port 3000
+# terminal 2:
+curl -v http://127.0.0.1:3000/api/notes?page=2 -H 'Accept: application/json'
+# you see: TCP SYN/SYN-ACK/ACK → "GET /api/notes?page=2 HTTP/1.1" + Host/User-Agent/Accept
+# → "HTTP/1.1 200 OK" + Content-Type/Cache-Control + JSON → FIN
+# via Nginx (prod): client:443 Nginx, Nginx:3000 Node; X-Forwarded-For added; TLS ends at Nginx.</pre>
+
+<h2>5 — Versions: 1.1 vs 2 vs 3 (One Line Each)</h2>
+<p>1.1: text, one request per connection (keep-alive pipelining rare). 2: binary multiplex over one TCP (h2, needs ALPN). 3: QUIC over UDP, faster loss recovery. Debug: <code>curl --http1.1/--http2 -v</code> + <code>Alt-Svc</code> header.</p>
+<p>Refs: <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers">MDN header reference</a>, <a href="https://httpwg.org/specs/">HTTPWG</a>, <a href="https://www.rfc-editor.org/rfc/rfc9110.html">RFC 9110</a>.</p>
+<p><i>Type URL → DNS → TCP → TLS → HTTP bytes → proxy → app → DB → bytes back. Headers are the envelope customs stamps.</i></p>
+</div>
+</div>
+<footer>
+  <a href="index.html">Home</a>
+</footer>
+</body>
+</html>
