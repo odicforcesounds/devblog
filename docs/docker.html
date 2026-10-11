@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker — Extensive Manual: Setup, Compose, Networking, Security</title>
+<style>
+body{margin:0;background:#0a0c10;color:#d7dce2;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.75}
+.wrap{margin:0 auto;padding:28px 20px 90px}
+h1{font-size:1.9rem}h2{color:#7ee787;border-bottom:1px solid #222;margin-top:2.4em}h3{color:#79c0ff}
+.tip{background:#161b22;border:1px solid #30363d;border-left:6px solid #e3b341;padding:12px 16px;border-radius:8px;margin:1em 0}
+.warn{background:#1a0e0e;border:1px solid #f85149;border-left:6px solid #f85149;padding:12px 16px;border-radius:8px}
+code,pre{background:#11161d;border:1px solid #2a3340;border-radius:8px;color:#ffa657}
+pre{padding:12px;overflow:auto;white-space:pre-wrap}a{color:#58a6ff}
+</style>
+<link rel="stylesheet" href="article.css">
+</head>
+<body>
+<div class="wrap">
+<h1 class="center">Docker — Extensive Manual</h1>
+<div class="textbox black">
+<p>Run 1 or 50 containers with confidence. Docs: <a href="https://docs.docker.com/">docs.docker.com</a>, <a href="https://docs.docker.com/engine/install/debian/">Debian install</a>, <a href="https://docs.docker.com/compose/">Compose</a>, <a href="https://docs.docker.com/network/">Networking</a>, <a href="https://docs.docker.com/engine/security/">Security</a>.</p>
+
+<h2>0 — Install On Debian (Correct Way)</h2>
+<pre>sudo apt update && sudo apt install -y ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo "deb [signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(. /etc/os-release && echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list
+sudo apt update && sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo usermod -aG docker $USER  # re-login; or use sudo
+docker run --rm hello-world; docker version; docker compose version</pre>
+<div class="tip">Use Docker's official repo, not stale distro package. <code>hello-world</code> proves daemon + pull work.</div>
+
+<h2>1 — First Containers (One, Then Many)</h2>
+<pre># one nginx on 8080:
+docker run -d --name web --restart unless-stopped -p 8080:80 nginx:alpine
+docker ps; docker logs -f web; curl http://127.0.0.1:8080
+# shell + inspect + stop:
+docker exec -it web sh; docker inspect web; docker stop web; docker rm web
+# volumes persist beyond rm:
+docker run -d --name db -e POSTGRES_PASSWORD=$(openssl rand -hex 16) -v pgdata:/var/lib/postgresql/data postgres:16-alpine</pre>
+
+<h2>2 — Compose: Multi-Container App (Node + PG + Nginx)</h2>
+<pre># compose.yaml
+services:
+  app:
+    build: ./app
+    restart: unless-stopped
+    env_file: [.env]          # 600, never committed
+    networks: [front, back]
+    depends_on: [db]
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASS:?set me}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    networks: [back]
+  proxy:
+    image: nginx:alpine
+    ports: ["80:80", "443:443"]
+    volumes: ["./nginx.conf:/etc/nginx/nginx.conf:ro", "./certs:/etc/certs:ro"]
+    networks: [front]
+    depends_on: [app]
+networks: { front: {}, back: { internal: true } }
+volumes: { pgdata: {} }
+# run:
+docker compose up -d --build; docker compose ps; docker compose logs -f</pre>
+<div class="tip"><code>internal:true</code> on <code>back</code> = DB unreachable from internet even by mistake. Secrets via <code>env_file</code>, never baked into images.</div>
+
+<h2>3 — Networking In Depth</h2>
+<p><b>bridge</b> (default single-host), <b>user-defined bridge</b> (DNS by name: <code>app→db:5432</code>), <b>host</b> (no isolation, fast), <b>none</b>, <b>overlay</b> (Swarm multi-host), <b>macvlan</b> (real LAN IPs).</p>
+<pre>docker network create front
+docker network ls; docker network inspect front
+# attach + test DNS:
+docker run --rm --network front alpine nslookup app
+docker run --rm --network front nicolaka/netshoot ss -tlnp  # debug toolbox
+# publish safely: 127.0.0.1:3000:3000 (localhost only) vs 0.0.0.0:3000 (world)</pre>
+<div class="tip">Compose creates DNS automatically per network. Only <code>proxy</code> publishes ports; app/db stay private. <code>internal:true</code> + no <code>ports</code> = invisible to LAN.</div>
+
+<h2>4 — Security (Paranoid But Practical)</h2>
+<pre># 1. non-root inside:
+# Dockerfile: FROM node:20-slim
+# RUN useradd -m app && USER app
+# 2. read-only + no new privs + caps drop:
+docker run -d --read-only --tmpfs /tmp --cap-drop=ALL --cap-add=NET_BIND_SERVICE \
+  --security-opt no-new-privileges:true -p 127.0.0.1:3000:3000 myapp:1.0
+# 3. secrets, not env -e on CLI (leaks in ps):
+echo "sekret" | docker secret create db_pass -  # swarm; compose: env_file 600
+# 4. images: pin digests, slim base, scan:
+docker scout cves myapp:1.0  # or: grype myapp:1.0 (https://github.com/anchore/grype)
+# 5. daemon: /etc/docker/daemon.json {"icc": false, "log-driver":"json-file","log-opts":{"max-size":"10m","max-file":"3"}}
+# 6. updates: watchtower pinned minor only, or manual compose pull</pre>
+<div class="warn">Never <code>--privileged</code>, never mount <code>/var/run/docker.sock</code> into untrusted containers, never <code>-p 5432:5432</code> DB to world. Rootless mode (<a href="https://docs.docker.com/engine/security/rootless/">rootless docs</a>) for extra isolation.</div>
+
+<h2>5 — Daily Ops Cheat</h2>
+<pre>docker compose up -d --build; docker compose logs -f --tail=100
+docker stats; docker system df; docker system prune -f  # reclaim
+docker exec -it db psql -U app -d app
+docker compose pull && docker compose up -d  # update
+docker backup: docker run --rm -v pgdata:/src -v $(pwd):/dst alpine tar czf /dst/pg.tgz /src</pre>
+<p>Refs: <a href="https://docs.docker.com/engine/security/">Engine security</a>, <a href="https://docs.docker.com/compose/">Compose spec</a>, <a href="https://github.com/anchore/grype">Grype</a>, <a href="https://github.com/nicolaka/netshoot">netshoot</a>.</p>
+<p><i>One network per trust level, one secret per service, least priv always. Compose up, sleep well.</i></p>
+</div></div>
+<footer>
+  <a href="index.html">Home</a>
+</footer>
+</body>
+</html>
