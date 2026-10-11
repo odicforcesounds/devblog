@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wireshark + Nmap — Big Manual</title>
+<style>
+body{margin:0;background:#0a0c10;color:#d7dce2;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.75}
+.wrap{margin:0 auto;padding:28px 20px 90px}
+h1{font-size:1.9rem}h2{color:#7ee787;border-bottom:1px solid #222;margin-top:2.6em}h3{color:#79c0ff}
+.tip{background:#161b22;border:1px solid #30363d;border-left:6px solid #e3b341;padding:12px 16px;border-radius:8px;margin:1em 0}
+.warn{background:#1a0e0e;border:1px solid #f85149;border-left:6px solid #f85149;padding:12px 16px;border-radius:8px}
+code,pre{background:#11161d;border:1px solid #2a3340;border-radius:8px;color:#ffa657}
+pre{padding:12px;overflow:auto;white-space:pre-wrap}a{color:#58a6ff}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}
+</style>
+<link rel="stylesheet" href="article.css">
+</head>
+<body>
+<div class="wrap">
+<h1 class="center">Wireshark + Nmap — Big Manual</h1>
+<div class="textbox black">
+
+<p>Two tools, one job: <b>see the network</b>. <b>Nmap</b> asks <i>what's there?</i> <b>Wireshark</b> watches <i>what's said?</i> Use only on your own lab/nets or written-authorized scope. Docs: <a href="https://www.wireshark.org/docs/">Wireshark docs</a>, <a href="https://nmap.org/docs.html">Nmap docs</a>, <a href="https://nmap.org/book/">Nmap book</a>.</p>
+<div class="warn"><b>Rule:</b> scan/capture only what you own or are hired to test. Lab range in examples: <code>192.168.56.0/24</code>. Never scan strangers, never post pcaps with secrets (<code>chmod 600</code>).</div>
+
+<h2>PART A — Wireshark (Read Everything)</h2>
+<h3>A1. Setup + first capture</h3>
+<pre>sudo apt install -y wireshark tshark
+sudo usermod -aG wireshark $USER  # re-login; or run with sudo
+# GUI: pick interface → capture filter e.g. "host 192.168.56.101" → Start
+# CLI: tshark -i eth0 -f "port 443" -w /tmp/lab.pcap
+# open: wireshark /tmp/lab.pcap</pre>
+<div class="tip">Capture filter (BPF, kernel) narrows <i>what's saved</i>: <code>host X</code>, <code>port 443</code>. Display filter (Wireshark) narrows <i>what's shown</i>: <code>ip.addr==X &amp;&amp; tls</code>. Capture small, display smart.</div>
+<h3>A2. Display filters you'll use forever</h3>
+<pre>ip.addr == 192.168.56.101
+tcp.port == 443 || tcp.port == 80
+dns.qry.name contains "example.com"
+http.request.method == "GET"
+tls.handshake.type == 1          # ClientHello
+tcp.analysis.retransmission
+icmp
+arp.duplicate-address-detected
+(data contains "password")       # lab only — then fix the app!</pre>
+<h3>A3. Workflows (follow streams, not packets)</h3>
+<p>Right-click packet → <i>Follow → TCP/HTTP/TLS Stream</i>. <i>Statistics → Protocol Hierarchy / Conversations / I/O Graph</i> finds top talkers + spikes. <i>Analyze → Expert Info</i> flags retrans/dup-ACK/reset. Profiles: one for DNS, one for TLS, one for VoIP.</p>
+<div class="cols"><div><h3>A4. TLS case</h3><pre>tshark -r tls.pcap -Y tls -T fields -e tls.handshake.version -e tls.handshake.ciphersuite | head
+# no SNI/cipher overlap = fail. Decrypt OWN lab only:
+# Edit→Prefs→Protocols→TLS→(Pre)-Master-Secret log → SSLKEYLOGFILE</pre></div><div><h3>A5. DNS/DHCP cases</h3><pre>dns.flags.response==0   # queries
+dns.flags.rcode != 0     # errors (NXDOMAIN/SERVFAIL)
+bootp.option.dhcp==53    # Discover/Offer/Req/ACK
+# slow DHCP? filter bootp, check Offer time gap.</pre></div></div>
+<h3>A6. Performance + hygiene</h3>
+<p>Ring buffer, <code>tshark -b filesize:102400 -b files:10 -w cap.pcapng</code>, <code>capinfos</code>, <code>editcap -c 100k big.pcap small.pcap</code>, <code>mergecap</code>. Strip secrets before sharing: <code>tracewrangler</code>.</p>
+
+<h2>PART B — Nmap (Map Before You Stare)</h2>
+<h3>B1. Install + first safe scans (own lab)</h3>
+<pre>sudo apt install -y nmap
+nmap -sn 192.168.56.0/24              # ping sweep: who is up
+nmap -sV -O 192.168.56.101            # versions + OS guess
+nmap -sC -sV 192.168.56.101           # default scripts + versions (noisy — lab only)
+nmap -p- --min-rate 500 192.168.56.101 # full ports, faster (lab)</pre>
+<div class="tip">Scan types: <code>-sS</code> SYN half-open (fast/stealthy-ish, needs root), <code>-sT</code> connect (no root), <code>-sU</code> UDP (slow, top ports first), <code>-sV</code> versions, <code>-O</code> OS, <code>-A</code> aggressive (= -O -sV -sC + traceroute — loud, lab). Timing <code>-T0..T5</code> (T4 typical lab, T2 polite).</div>
+<h3>B2. Pick ports + speed without melting net</h3>
+<pre>nmap --top-ports 100 192.168.56.101
+nmap -p 22,80,443,3000,5432 192.168.56.0/24
+nmap -F 192.168.56.101                # fast 100
+nmap --min-rate 200 --max-retries 2 -T4 192.168.56.0/24  # lab reasonable</pre>
+<h3>B3. Scripts (NSE) — audit, don't attack</h3>
+<pre>nmap --script=vuln 192.168.56.101     # CVE check vs versions (then PATCH)
+nmap --script=http-title,http-headers,ssl-cert -p 80,443 192.168.56.101
+nmap --script=smb-security-mode,smb-os-discovery -p 445 192.168.56.101
+ls /usr/share/nmap/scripts/ | grep -i -E 'http|ssl|smb|dns'</pre>
+<div class="tip">NSE finds <i>candidate</i> issues. Confirm manually, then fix: close port, update, firewall, least priv. Never run <code>vuln/intrusive</code> outside scope.</div>
+<h3>B4. Output + defend from your own scan</h3>
+<pre>nmap -oA lab-scan 192.168.56.0/24   # .nmap/.xml/.gnmap triple
+ndiff scan1.xml scan2.xml            # what changed? new ports = investigate
+# Blue response: ufw/nftables deny, update (unattended-upgrades), banners minimal,
+# fail2ban, Suricata (https://suricata.io/) alert on sweeps.</pre>
+
+<h2>PART C — Together: 5 End-to-End Labs</h2>
+<p><b>1. New web app:</b> <code>nmap -sV -p 80,443 app</code> → <code>tshark -f "host app and port 443"</code> → curl → Wireshark Follow TLS → fix HSTS/CSP. <b>2. Mystery slowness:</b> I/O graph spike → Conversations top talker → <code>tcp.analysis.retransmission</code> → MTU/firewall/NIC. <b>3. Rogue DHCP:</b> <code>bootp</code> two Offers → find MAC → port-shutdown. <b>4. Cerrt expiry:</b> <code>ssl.handshake.certificates</code> dates + <code>nmap --script ssl-cert</code> → rotate via Certbot. <b>5. Baseline/drift:</b> weekly <code>-oA</code> + <code>ndiff</code> → ticket every delta.</p>
+<p>Refs: <a href="https://wiki.wireshark.org/DisplayFilters">DisplayFilters</a>, <a href="https://tshark.dev/">tshark.dev</a>, <a href="https://nmap.org/book/man.html">Nmap man</a>, <a href="https://nmap.org/nsedoc/">NSE docs</a>, <a href="https://www.netresec.com/">Netresec</a>.</p>
+<p><i>Map with Nmap, prove with Wireshark, fix the cause. Packets don't lie — configs do.</i></p>
+</div></div>
+<footer>
+  <a href="index.html">Home</a>
+</footer>
+</body>
+</html>
