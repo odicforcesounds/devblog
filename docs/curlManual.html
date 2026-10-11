@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>curl — Complete Manual</title>
+<style>
+body{margin:0;background:#0a0c10;color:#d7dce2;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.75}
+.wrap{margin:0 auto;padding:28px 20px 90px}
+h1{font-size:1.9rem}h2{color:#7ee787;border-bottom:1px solid #222;margin-top:2.4em}h3{color:#79c0ff}
+.tip{background:#161b22;border:1px solid #30363d;border-left:6px solid #e3b341;padding:12px 16px;border-radius:8px;margin:1em 0}
+.warn{background:#1a0e0e;border:1px solid #f85149;border-left:6px solid #f85149;padding:12px 16px;border-radius:8px}
+code,pre{background:#11161d;border:1px solid #2a3340;border-radius:8px;color:#ffa657}
+pre{padding:12px;overflow:auto;white-space:pre-wrap}a{color:#58a6ff}
+table{border-collapse:collapse;width:100%;margin:1em 0}th,td{border:1px solid #2a3340;padding:7px}th{color:#7ee787}
+</style>
+<link rel="stylesheet" href="article.css">
+</head>
+<body>
+<div class="wrap">
+<h1 class="center">curl — Complete Manual</h1>
+<div class="textbox black">
+<p>Transfer URLs, test APIs, debug TLS. Docs: <a href="https://curl.se/">curl.se</a>, <a href="https://curl.se/docs/manpage.html">manpage</a>, <a href="https://everything.curl.dev/">Everything curl (free book)</a>.</p>
+
+<h2>0 — First Five Commands</h2>
+<pre>curl https://example.com                 # GET, print body
+curl -I https://example.com              # HEAD: headers only (-I)
+curl -v https://example.com              # verbose: DNS+TLS+req/resp (king of debug)
+curl -L https://example.com              # follow redirects (-L)
+curl -o out.html https://example.com     # save to file (-o); -O uses remote name</pre>
+<div class="tip">Trio for life: <code>-v</code> see truth, <code>-L</code> follow, <code>-sS</code> silent but show errors. Add <code>-w</code> for timing (below).</div>
+
+<h2>1 — Options Explained (The Ones That Matter)</h2>
+<table>
+<tr><th>Option</th><th>Plain meaning + when</th></tr>
+<tr><td><code>-X GET/POST/PUT/DELETE</code></td><td>Force method. GET default; POST with <code>-d</code>. Use <code>--request</code> long form in scripts.</td></tr>
+<tr><td><code>-H 'K: V'</code></td><td>Add header. <code>-H 'Authorization: Bearer X' -H 'Content-Type: application/json'</code>. Repeatable.</td></tr>
+<tr><td><code>-d 'a=1&b=2' / --json '{"a":1}'</code></td><td>Body. <code>-d</code> = form + POST; <code>--json</code> sets JSON type + POST. <code>--data-binary @file</code> exact bytes.</td></tr>
+<tr><td><code>-F file=@a.png / -F 'x=1'</code></td><td>Multipart upload (forms/files). <code>@</code> reads file. For pure binary PUT: <code>-T file</code>.</td></tr>
+<tr><td><code>-u user:pass / --netrc</code></td><td>Basic auth. Prefer header/token; <code>.netrc 600</code> beats shell history. Never <code>-u</code> with secrets inline on shared box.</td></tr>
+<tr><td><code>-b/-c cookies.txt</code></td><td>Send (<code>-b</code>) / save (<code>-c</code>) cookies. <code>-b ''</code> enables engine without file.</td></tr>
+<tr><td><code>-e ref / -A agent</code></td><td>Referer + User-Agent spoof for testing variants.</td></tr>
+<tr><td><code>-k / --cacert CA.pem</code></td><td><code>-k</code> skips verify (lab only!); <code>--cacert</code> trusts private CA properly.</td></tr>
+<tr><td><code>--cert/--key/--tlsv1.3</code></td><td>mTLS + version pin. Debug ciphers: <code>--ciphers</code>.</td></tr>
+<tr><td><code>-x proxy / --noproxy</code></td><td>Proxy + bypass list. Env <code>https_proxy</code> also read.</td></tr>
+<tr><td><code>--resolve h:443:IP / --connect-to</code></td><td>Override DNS/SNI for staging tests without /etc/hosts.</td></tr>
+<tr><td><code>-m 10 / --connect-timeout 5 --retry 3</code></td><td>Timeouts + retries. Always set <code>-m</code> in scripts or hangs forever.</td></tr>
+<tr><td><code>-sS -o /dev/null -w '%{http_code} %{time_total}\n'</code></td><td>Health-check pattern: silent, code + seconds. Full vars below.</td></tr>
+<tr><td><code>-D headers.txt / -i</code></td><td>Dump headers to file (<code>-D</code>) or prefix body (<code>-i</code> = include).</td></tr>
+</table>
+
+<h2>2 — Normal Usage (Daily Bread)</h2>
+<pre># JSON API GET with token:
+curl -sS -H "Authorization: Bearer $TOKEN" https://api.example.com/notes | jq .
+# POST JSON:
+curl -sS -X POST -H 'Content-Type: application/json' -d '{"title":"hi"}' https://api.example.com/notes
+# form login + cookies:
+curl -sS -c jar.txt -d 'user=a&pass=b' https://example.com/login
+curl -sS -b jar.txt https://example.com/me
+# upload:
+curl -F 'file=@report.pdf' -F 'note=final' https://example.com/upload
+# download resume:
+curl -L -C - -O https://example.com/big.iso
+# headers/status only:
+curl -sSI https://example.com | head -20</pre>
+
+<h2>3 — Testing APIs Like A Pro</h2>
+<pre># pretty + fail on HTTP error:
+curl -sSf http://127.0.0.1:3000/api/health
+# timing breakdown:
+curl -o /dev/null -sS -w 'code:%{http_code} dns:%{time_namelookup} tls:%{time_appconnect} ttfb:%{time_starttransfer} total:%{time_total}\n' https://api.example.com/
+# all methods smoke test:
+for m in GET POST PUT DELETE; do echo -n "$m: "; curl -s -o /dev/null -w '%{http_code}\n' -X $m http://127.0.0.1:3000/api/notes; done
+# load-ish (10 parallel):
+seq 1 10 | xargs -P10 -I{} curl -s -o /dev/null -w '{}
+%{http_code}\n' http://127.0.0.1:3000/api/health
+# Contract: diff live vs golden JSON (keys sorted):
+curl -s http://127.0.0.1:3000/api/notes | jq -S . > live.json; diff golden.json live.json</pre>
+<div class="tip">In CI assert <code>http_code==200</code> + JSON schema (<code>jq -e</code>), not just "didn't crash". Save <code>-D</code> headers on failure.</div>
+
+<h2>4 — TLS / Auth / Proxy Debugging</h2>
+<pre>curl -v https://expired.badssl.com/              # see verify fail (https://badssl.com/)
+curl -k https://self-signed.local/               # LAB ONLY bypass
+curl --cacert ./myCA.pem https://internal.local/ # right way: trust CA
+curl --resolve api.example.com:443:10.0.0.5 https://api.example.com/  # staging IP
+curl -x http://127.0.0.1:8080 -k https://api.example.com/  # via Burp/ZAP (lab)
+curl --cert client.pem --key client.key https://mtls.local/
+curl -v --tlsv1.3 https://api.example.com/ 2>&1 | grep -i -E 'cipher|TLS|cert'</pre>
+<div class="warn">Secrets hygiene: prefer env vars + <code>~/.netrc (600)</code>, never paste tokens in tickets. <code>history -c</code> after manual token test.</div>
+
+<h2>5 — Scripts That Don't Hang At 3am</h2>
+<pre>#!/bin/bash
+set -euo pipefail
+code=$(curl -sS -m 10 -o /tmp/body -w '%{http_code}' https://api.example.com/health)
+[[ "$code" == "200" ]] || { echo "bad $code"; cat /tmp/body; exit 1; }
+# config file for repeats: ~/.curlrc or -K file
+# -K deploy.conf:
+#   silent=true
+#   show-error=true
+#   max-time=10</pre>
+
+<h2>6 — Cheat Pairs (curl ↔ what it means)</h2>
+<p><code>curl -I</code>=headers? <code>-v</code>=why fail? <code>-L</code>=redirect loop? <code>--resolve</code>=DNS lie? <code>-k</code>=cert or bypass? <code>-w time_*</code>=slow DNS/TLS/TTFB? Pair with <code>dig</code>, <code>openssl s_client -connect h:443 -servername h</code>, <code>tcpdump port 443</code>.</p>
+<p>Refs: <a href="https://everything.curl.dev/">Everything curl</a>, <a href="https://curl.se/docs/manpage.html">man</a>, <a href="https://github.com/curl/curl">github/curl</a>, <a href="https://badssl.com/">badssl.com (test beds)</a>.</p>
+<p><i>Verbose first, assume nothing, time everything. curl never lies — servers do.</i></p>
+</div>
+</div>
+</><footer>
+  <a href="index.html">Home</a>
+</footer>
+</body>
+</html>
