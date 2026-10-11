@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assembly Then C — From Zero To Good Code</title>
+<style>
+body{margin:0;background:#0a0c10;color:#d7dce2;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.8}
+.wrap{margin:0 auto;padding:28px 20px 90px}
+h1{font-size:1.9rem}h2{color:#7ee787;border-bottom:1px solid #222;margin-top:2.4em}h3{color:#79c0ff}
+.tip{background:#161b22;border:1px solid #30363d;border-left:6px solid #e3b341;padding:12px 16px;border-radius:8px;margin:1em 0}
+code,pre{background:#11161d;border:1px solid #2a3340;border-radius:8px;color:#ffa657}
+pre{padding:12px;overflow:auto}a{color:#58a6ff}
+</style>
+<link rel="stylesheet" href="article.css">
+</head>
+<body>
+<div class="wrap">
+<h1 class="center">Assembly Then C — From Zero To Good Code</h1>
+<div class="textbox black">
+<p>Path: <b>asm</b> first for truth (registers, stack, syscalls), then <b>C</b> for power. Linux x86-64, <b>NASM</b> + <b>GCC</b> + <b>GDB</b>. All code runnable on Debian.</p>
+
+<h2>0 — Setup (5 Minutes)</h2>
+<pre>sudo apt update && sudo apt install -y nasm gcc make gdb strace ltrace manpages-dev
+nasm -v; gcc --version; gdb --version
+# docs: https://www.nasm.us/doc/ | https://gcc.gnu.org/onlinedocs/ | https://sourceware.org/gdb/documentation/</pre>
+<div class="tip">Learn to read errors. <code>strace ./prog</code> shows every syscall. <code>gdb ./prog</code> + <code>layout regs</code> shows truth.</div>
+
+<h2>1 — Assembly Mental Model (x86-64 Linux)</h2>
+<p>Registers: <code>rax rbx rcx rdx rsi rdi rbp rsp r8-r15</code> (64-bit), <code>e-kind</code> low 32, <code>ax/al</code> low 16/8. Syscall ABI: <code>rax=sysnr, rdi,rsi,rdx,r10,r8,r9=args, syscall</code>. Syscall numbers: <code>0=read 1=write 60=exit</code> (see <code>ausyscall --dump</code>, <a href="https://filippo.io/linux-syscall-table/">syscall table</a>). Stack grows down, <code>rsp</code> top, <code>call</code> pushes return, <code>ret</code> pops.</p>
+
+<h2>2 — First Program: exit(42) + hello</h2>
+<pre>; exit42.asm — nasm -felf64 exit42.asm && ld exit42.o -o exit42; ./exit42; echo $?
+section .text
+global _start
+_start:
+  mov rax, 60      ; sys_exit
+  mov rdi, 42
+  syscall</pre>
+<pre>; hello.asm — nasm -felf64 hello.asm && ld hello.o -o hello
+section .data
+  msg db "hi from asm", 10
+  len equ $ - msg
+section .text
+global _start
+_start:
+  mov rax, 1       ; sys_write(1, msg, len)
+  mov rdi, 1
+  mov rsi, msg
+  mov rdx, len
+  syscall
+  mov rax, 60
+  xor rdi, rdi
+  syscall</pre>
+<div class="tip">Good asm tip #1: comment every syscall with prototype. #2: <code>xor rdi,rdi</code> &gt; <code>mov rdi,0</code> (shorter). #3: keep <code>.data/.bss/.text</code> separated.</div>
+
+<h2>3 — Functions, Stack, Calling C</h2>
+<p>Linux user calling convention (System V): args <code>rdi,rsi,rdx,rcx,r8,r9</code>, return <code>rax</code>, callee-save <code>rbx,rbp,r12-r15</code>. Align stack to 16 before <code>call</code>.</p>
+<pre>; strlen.asm callable from C
+; nasm -felf64 strlen.asm; gcc main.c strlen.o -o main
+section .text
+global my_strlen
+my_strlen:          ; rdi = char*
+  xor rax, rax
+.loop: cmp byte [rdi+rax], 0
+  je .done
+  inc rax
+  jmp .loop
+.done: ret</pre>
+<pre>// main.c
+#include &lt;stdio.h&gt;
+size_t my_strlen(const char *s);
+int main(){ printf("%zu\n", my_strlen("hello")); }</pre>
+<div class="tip">Good asm tips: frame with <code>push rbp; mov rbp,rsp</code> for debug, or frameless + <code>.eh_frame</code> for perf. Preserve callee-saved regs. Test with <code>gdb</code> breakpoints + <code>info regs</code>.</div>
+<h2>4 — C From Zero: Build Like Assembly With Types</h2>
+<pre>sudo apt install -y build-essential clang cppcheck valgrind
+gcc -std=c17 -Wall -Wextra -Werror -pedantic -g -O2 -o prog main.c
+# strict + debug + sanitize while learning:
+gcc -std=c17 -Wall -Wextra -g -O1 -fsanitize=address,undefined -o prog main.c</pre>
+<pre>// good.c — start here
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+int main(void){
+  char buf[128];
+  if(!fgets(buf, sizeof buf, stdin)) return 1;
+  printf("you said: %s", buf);
+  return 0;
+}</pre>
+<div class="tip">Good C rule #1: <code>-Wall -Wextra -Werror</code> always. #2: init every variable. #3: check every return (<code>malloc, fopen, read</code>).</div>
+
+<h2>5 — Memory Done Right (Where C Beginners Die)</h2>
+<pre>// BAD: char *p = malloc(10); strcpy(p, "too long string here..."); // overflow
+// GOOD:
+#include &lt;string.h&gt;
+char *p = malloc(64);
+if(!p) return 1;
+snprintf(p, 64, "%s", input); // bounded
+free(p); p = NULL;
+char dst[32]; strncpy(dst, src, sizeof dst - 1); dst[sizeof dst - 1] = '\0';</pre>
+<p>Stack vs heap: <code>char a[64]</code> auto-freed, <code>malloc</code> manual. Strings always <code>+1</code> for <code>'\0'</code>. Use <a href="https://valgrind.org/">Valgrind</a> + <a href="https://github.com/google/sanitizers">ASan/UBSan</a> until clean. Harden builds: <code>-fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wl,-z,RelRO,-z,Now -fPIE -pie</code>, verify with <code>checksec --file=./prog</code> (<a href="https://github.com/slimm609/checksec.sh">checksec.sh</a>).</p>
+
+<h2>6 — Good Code Habits (Asm → C Transfer)</h2>
+<p>1) Small functions, one job, early return. 2) <code>const</code> correctness, <code>size_t</code> for sizes, <code>&lt;stdint.h&gt;</code> fixed widths. 3) No magic numbers: <code>#define BUF 128</code> / <code>enum</code>. 4) Errors as values: return <code>-1/NULL + errno</code>, print with <code>perror/strerror</code>. 5) <code>Makefile</code> + <code>format</code> (<code>clang-format</code>) + <code>cppcheck</code> in CI. 6) Comment <i>why</i>, not <i>what</i> — asm taught you that.</p>
+<pre>CC=gcc
+CFLAGS=-std=c17 -Wall -Wextra -Werror -g -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2
+all: prog
+clean:; rm -f prog *.o</pre>
+
+<h2>7 — Debug Like A Pro</h2>
+<pre>gdb ./prog         # b main, r, n/s, p var, bt, layout regs/src
+strace -f ./prog   # syscalls; ltrace ./prog  # lib calls
+valgrind --leak-check=full ./prog
+gcc -g -fsanitize=address,undefined ... && ./prog  # fastest bug finder</pre>
+<div class="tip">Reproduce tiny, then fix. One bug per commit. Write the failing test first.</div>
+
+<h2>8 — Where To Learn More (Curated, Free)</h2>
+<p><b>Assembly:</b> <a href="https://www.nasm.us/doc/">NASM manual</a>, <a href="https://cs.lmu.edu/~ray/notes/nasmtutorial/">NASM tutorial (LMU)</a>, <a href="https://filippo.io/linux-syscall-table/">syscall table</a>, <a href="https://blog.rchapman.org/posts/Linux_System_Call_Table_for_x86_64/">x86-64 syscall primer</a>, <a href="https://pwn.college/">pwn.college</a> (asm+debug labs), <a href="https://github.com/0xAX/asm">0xAX asm book</a>.</p>
+<p><b>C:</b> <a href="https://en.cppreference.com/w/c">cppreference C</a>, <a href="https://www.gnu.org/software/libc/manual/">glibc manual</a>, <a href="https://beej.us/guide/bgc/">Beej's Guide to C</a>, <a href="https://github.com/oz123/awesome-c">awesome-c</a>, <a href="https://wiki.sei.cmu.edu/confluence/display/c/SEI+CERT+C+Coding+Standard">SEI CERT C</a>, <a href="https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/">OWASP Secure Coding</a>.</p>
+<p><b>Practice:</b> <a href="https://exercism.org/tracks/c">Exercism C track</a>, <a href="https://www.codingame.com/">CodinGame</a>, <a href="https:// overthewire.org">OverTheWire (bandit → disciplined CLI)</a> at <a href="https://overthewire.org/wargames/">overthewire.org</a>, build tiny tools: <code>cat/clone, wc/clone, http-client</code>.</p>
+<p><i>Asm shows cost. C spends it wisely. Write small, check all, sanitize always — good code is boring code that never surprises at 3am.</i></p>
+</div>
+</div>
+<footer>
+  <a href="index.html">Home</a>
+</footer>
+</body>
+</html>
