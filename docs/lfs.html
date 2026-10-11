@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LFS — Linux From Scratch: Zero to Booted OS</title>
+<style>
+body{background:#0b0e14;color:#d8e0ee;font-family:Menlo,Consolas,monospace;line-height:1.75;margin:0}
+.wrap{margin:auto;padding:28px 20px 90px}
+h1{color:#7dd3fc}h2{color:#f0abfc;border-bottom:1px solid #2a3450;padding-bottom:6px;margin-top:48px}h3{color:#86efac}
+a{color:#7dd3fc}.card{background:#111624;border:1px solid #263049;border-radius:10px;padding:16px;margin:14px 0}
+pre{background:#05070c;border:1px solid #263049;border-radius:8px;padding:14px;overflow-x:auto;color:#c4f5ff;font-size:13px}
+code{background:#1c2333;padding:2px 6px;border-radius:5px;color:#ffe08a}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}th,td{border:1px solid #2c3a55;padding:8px;text-align:left}th{background:#182034;color:#7dd3fc}
+.note{border-left:4px solid #facc15;background:#1a1503;padding:10px 14px;margin:12px 0}
+.warn{border-left:4px solid #f87171;background:#1f0a0a;padding:10px 14px;margin:12px 0}
+.ok{border-left:4px solid #86efac;background:#07170e;padding:10px 14px;margin:12px 0}
+.kbd{color:#f0abfc}
+</style>
+  <link rel="stylesheet" href="article.css">
+  </head><body><div class="wrap">
+<h1 class="center">LFS — Linux From Scratch: From Zero to a Booted OS</h1>
+<div class="textbox black">
+<p>You start with a running Linux host and an empty partition. You end with <b>your own compiled Linux system</b> that boots without the host. No installer, no package manager — every binary built by you, in order. Based on <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/">LFS 13.1-systemd (2026, kernel 7.1.8, GCC 16.2, glibc 2.44, Binutils 2.47)</a>. Older stable: <a href="https://www.linuxfromscratch.org/lfs/view/12.4/">12.4</a>. News: <a href="https://www.linuxfromscratch.org/lfs/news.html">lfs/news</a>. Overview: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter01/how.html">how LFS builds</a>.</p>
+<div class="warn"><b>Rules:</b> follow ONE book version exactly — never mix versions. Backup the host. Disk names below (<code>/dev/sda</code>) are examples — use <code>lsblk</code> for yours. Full build takes 4–12h depending on CPU. 4 cores + 8GB RAM recommended.</div>
+
+<h2>1. What LFS Is (and Is Not)</h2>
+<div class="card">
+<p>LFS is a <b>recipe book</b>, not a distro. It teaches: cross-toolchain → temp tools → chroot → final system → kernel → bootloader. You learn what a distro hides: how <code>glibc</code> talks to the kernel, why build order matters, what <code>/tools</code> isolation is for.</p>
+<table><tr><th>LFS gives you</th><th>LFS does NOT give you</th></tr>
+<tr><td>Minimal bootable systemd Linux, sources + patches</td><td>Package manager, desktop, wifi wizard</td></tr>
+<tr><td>Deep understanding of toolchain</td><td>Security updates automatically (you rebuild)</td></tr>
+<tr><td>Base for BLFS (desktop, server on top)</td><td>Shortcuts — every package compiled in order</td></tr></table>
+<p>After LFS comes <a href="https://www.linuxfromscratch.org/blfs/">BLFS (Beyond LFS)</a> for X, desktop, network services.</p></div>
+
+<h2>2. Host Preparation</h2>
+<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter02/hostreqs.html">host requirements</a>. Host kernel ≥ 5.10, bash, gcc, binutils, bison, coreutils, make, perl, python3, etc.</p>
+<pre># Run the book's version-check script (download from book ch.2), then:
+bash version-check.sh
+# Must all pass. On Debian/Ubuntu, roughly:
+sudo apt install build-essential bison gawk m4 texinfo python3 libncurses-dev
+uname -r   # >= 5.10 ?
+ls -l /bin/sh   # must point to bash, NOT dash: sudo dpkg-reconfigure dash</pre>
+<div class="note">Host GCC newer than the book's (16.2) or binutils newer than 2.47 = <b>untested</b>. Prefer a host close to the book. First-timers: do NOT add custom CFLAGS — chapter 8 warns optimizations break builds.</div>
+
+<h2>3. Partition, Filesystem, Mount</h2>
+<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter02/creatingpartition.html">partitioning</a>, <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter02/creatingfilesystem.html">filesystems</a>. Need ≥10GB, 30GB comfortable, ~20GB sweet spot. ext4 default. UEFI needs ESP 128–256MB; BIOS+GPT needs BIOS Boot partition; optional 200MB /boot.</p>
+<pre>lsblk                 # IDENTIFY your empty disk/partition first!
+sudo cfdisk /dev/sdb  # example: sdb1 512M EFI (if UEFI), sdb2 30G Linux, sdb3 swap
+sudo mkfs.ext4 /dev/sdb2
+sudo mkfs.vfat -F32 /dev/sdb1   # only if UEFI ESP
+sudo mkswap /dev/sdb3; sudo swapon /dev/sdb3
+export LFS=/mnt/lfs   # book convention — keep in every shell!
+sudo mkdir -pv $LFS; sudo mount -v -t ext4 /dev/sdb2 $LFS
+# Save it: echo "export LFS=/mnt/lfs" >> ~/.bashrc</pre>
+
+<h2>4. Sources, Layout, lfs User</h2>
+<pre>sudo mkdir -v $LFS/sources; sudo chmod -v a+wt $LFS/sources
+# Download all tarballs + patches listed in book ch.3-4 (wget-list in book)
+sudo mkdir -pv $LFS/{etc,var,tools} $LFS/usr/{bin,lib,sbin}
+sudo groupadd lfs; sudo useradd -s /bin/bash -g lfs -m -k /dev/null lfs
+sudo chown -v lfs $LFS/{usr/*,lib,var,etc,bin,sbin,tools,sources}
+su - lfs
+cat > ~/.bash_profile <<'EOF'
+exec env -i HOME=$HOME TERM=$TERM PS1='\u:\w\$ ' /bin/bash
+EOF
+cat > ~/.bashrc <<'EOF'
+set +h; umask 022; LFS=/mnt/lfs
+LC_ALL=POSIX; LFS_TGT=$(uname -m)-lfs-linux-gnu; PATH=/usr/bin
+[ ! -L /bin ] || PATH=/bin:$PATH
+PATH=$LFS/tools/bin:$PATH; CONFIG_SITE=$LFS/usr/share/config.site
+export LFS LC_ALL LFS_TGT PATH CONFIG_SITE MAKEFLAGS=-j$(nproc)
+EOF
+source ~/.bash_profile; echo $LFS_TGT   # e.g. x86_64-lfs-linux-gnu</pre>
+<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter04/addinguser.html">lfs user</a>. Building as <code>lfs</code> protects the host; root only where the book says.</p>
+
+<h2>5. Cross-Toolchain (Chapter 5) — Isolation From Host</h2>
+<p>Goal: compiler that outputs for <code>$LFS</code> without linking host libs. Order matters: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter05/binutils-pass1.html">Binutils pass 1</a> → <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter05/gcc-pass1.html">GCC pass 1 (limited, no full libc yet)</a> → Linux headers → <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter05/glibc.html">glibc</a> → libstdc++.</p>
+<pre># Pattern for EVERY package (exact flags in book — copy them, don't improvise):
+tar xf binutils-2.47.tar.xz; cd binutils-2.47
+mkdir -v build; cd build
+../configure --prefix=$LFS/tools --with-sysroot=$LFS \
+  --target=$LFS_TGT --disable-nls --disable-werror
+make; make install; cd ../..; rm -rf binutils-2.47 build
+# Then GCC pass 1 (needs mpfr/gmp/mpc unpacked INSIDE gcc dir per book),
+# then: linux-7.1.8 headers 'make headers', then glibc 2.44, then libstdc++.
+# Sanity check after toolchain:
+echo 'int main(){}' | $LFS_TGT-gcc -xc - -v -o /tmp/a.out 2>&1 | grep -i sysroot</pre>
+<div class="note"><b>Why two passes?</b> Pass 1 builds with host help. Later (ch.6) Binutils/GCC pass 2 rebuild using the new libc inside $LFS — cutting the cord to the host.</div>
+
+<h2>6. Temporary Tools (Chapter 6) + Enter Chroot (Chapter 7)</h2>
+<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter06/introduction.html">ch.6 intro</a>. Cross-compile m4, ncurses, bash, coreutils, diffutils, file, findutils, gawk, grep, gzip, make, patch, sed, tar, xz, binutils pass 2, gcc pass 2 — installed under <code>$LFS/tools</code> and <code>$LFS/usr</code>.</p>
+<pre># As root (exit lfs user), mount virtual filesystems:
+sudo mount -v --bind /dev $LFS/dev
+sudo mount -vt devpts devpts $LFS/dev/pts -o gid=5,mode=0620
+sudo mount -vt proc proc $LFS/proc
+sudo mount -vt sysfs sysfs $LFS/sys
+sudo mount -vt tmpfs shm $LFS/dev/shm
+# Then chroot — /tools/bin GONE from PATH now, target tools used:
+sudo chroot "$LFS" /usr/bin/env -i HOME=/root TERM="$TERM" \
+  PS1='(lfs chroot) \u:\w\$ ' PATH=/usr/bin:/usr/sbin /bin/bash --login
+# Ref: https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter07/chroot.html
+# Inside: ch.7 temp tools + cleanup /tools.</pre>
+
+<h2>7. Final System (Chapter 8) — The Real Build</h2>
+<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter08/introduction.html">ch.8 intro</a>, <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/">contents</a>. ~70 packages in strict order: glibc (final) → binutils → gcc → … → systemd → grub. Each follows configure/make/test/install; run tests where book says (GCC/glibc tests take long but catch breakage).</p>
+<pre># Inside chroot, example rhythm (READ book flags per package!):
+tar xf glibc-2.44.tar.xz; cd glibc-2.44
+mkdir -v build; cd build
+../configure --prefix=/usr --disable-werror --enable-kernel=5.10 \
+  --enable-stack-protector=strong --disable-nscd libc_cv_slibdir=/usr/lib
+make; make check   # expect some failures — book lists which are OK
+make install; cd ../..; rm -rf glibc-2.44 build
+# Continue per book: zlib, bzip2, xz, zstd, file, readline, m4, bc, flex,
+# binutils, gmp/mpfr/mpc, attr/acl, shadow, gcc (final), ncurses, sed,
+# psmisc, gettext, bison, grep, bash, libtool, gdbm, gperf, expat, inetutils,
+# less, perl, XML::Parser, intel-ucode?, libffi, openssl, python3, ninja,
+# meson, kmod, libelf, libffi, e2fsprogs, coreutils, ..., systemd, ..., grub.</pre>
+<div class="warn"><b>Common failures:</b> skipped <code>make check</code> confusion (compare with book's expected fails), wrong timezone of errors from custom CFLAGS, running out of disk (need ~10GB free during gcc), /dev not mounted before udev/systemd steps.</div>
+
+<h2>8. System Configuration (Chapter 9)</h2>
+<pre># fstab — ADAPT UUIDs (blkid):
+cat > /etc/fstab <<'EOF'
+# file-sys  mount  type  opts          dump fsck
+/dev/sdb2   /      ext4  defaults      1    1
+/dev/sdb1   /boot/efi vfat defaults   0    2
+/dev/sdb3   swap   swap  pri=1         0    0
+proc        /proc  proc  nosuid,noexec,nodev 0 0
+sysfs       /sys   sysfs nosuid,noexec,nodev 0 0
+devpts      /dev/pts devpts gid=5,mode=620 0 0
+tmpfs       /run   tmpfs defaults      0    0
+devtmpfs    /dev   devtmpfs mode=0755,nosuid 0 0
+EOF
+# Locale, clock, hostname, hosts, network (systemd-networkd), root passwd:
+echo "lfsbox" > /etc/hostname
+passwd root
+ln -sfv /usr/share/zoneinfo/Europe/Lisbon /etc/localtime
+# systemd-networkd .network file per book; systemctl enable systemd-networkd systemd-resolved</pre>
+
+<h2>9. Kernel + Bootloader (Chapter 10) → First Boot (Ch.11)</h2>
+<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter10/kernel.html">kernel</a>, <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter10/grub.html">grub</a>. Disable Secure Boot (book procedure doesn't support it).</p>
+<pre># In chroot, /sources:
+tar xf linux-7.1.8.tar.xz; cd linux-7.1.8
+make mrproper
+make defconfig; make menuconfig
+# MUST enable: your disk (AHCI/NVMe!), ext4, EFI stub if UEFI, SMP.
+make -j$(nproc); make modules_install
+cp -v arch/x86/boot/bzImage /boot/vmlinuz-7.1.8-lfs
+cp -v System.map /boot/System.map-7.1.8; cp -v .config /boot/config-7.1.8
+# GRUB BIOS: grub-install /dev/sdb --target=i386-pc   (whole disk, CAREFUL)
+# GRUB UEFI: mount ESP at /boot/efi, then:
+grub-install --target=x86_64-efi --removable
+cat > /boot/grub/grub.cfg <<'EOF'
+set default=0; set timeout=5
+menuentry "LFS 13.1" {
+  linux /vmlinuz-7.1.8-lfs root=/dev/sdb2 ro
+}
+EOF
+exit   # leave chroot
+sudo umount -Rv $LFS/dev/shm $LFS/dev/pts $LFS/{sys,proc,run,dev} $LFS 2>/dev/null
+sudo reboot  # select LFS disk in BIOS/UEFI</pre>
+<div class="ok"><b>Booted?</b> Login as root → <code>uname -a; systemctl status</code>. You now run a self-built OS. Next: BLFS for networking extras, firmware, editor, SSH, desktop.</div>
+
+<h2>10. After Boot — Make It Usable & Safe</h2>
+<pre># Inside new LFS:
+systemd-firstboot? # set locale/time/hostname if skipped
+useradd -m -G wheel andre; passwd andre   # stop using root daily
+# BLFS next steps: linux-firmware, dhcpcd/NetworkManager, openssh, vim, curl, ca-certificates
+# Backups: dd or fsarchiver the partition BEFORE experimenting:
+#   fsarchiver savefs /backup/lfs-clean.fsa /dev/sdb2</pre>
+<table><tr><th>If this happens</th><th>Do this</th></tr>
+<tr><td>Kernel panic: can't mount root</td><td>Wrong root= name or missing disk/ext4 driver — rebuild kernel with AHCI/NVMe + ext4 built-in (not modules)</td></tr>
+<tr><td>GRUB rescue&gt;</td><td>Boot live USB, mount, re-run grub-install with right --target + fix grub.cfg paths</td></tr>
+<tr><td>No network</td><td>Missing NIC driver/firmware — lspci from host, enable driver, add linux-firmware via BLFS</td></tr>
+<tr><td>Build fails at package X</td><td>Re-read that page: missed dep? wrong user (lfs vs root vs chroot)? clean src dir and retry exactly</td></tr></table>
+<p style="color:#64748b;font-size:13px">Sources: LFS news, 13.1-systemd book ch.1/2/4/5/6/7/8/10, kernel+grub pages, BLFS project — all linked above.</p>
+</div></div>
+  <footer>
+    <a href="index.html">Home</a>
+  </footer>
+  </body></html>
