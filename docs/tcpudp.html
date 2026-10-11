@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TCP/IP & UDP/IP Packets — What Actually Travels the Wire</title>
+<style>
+body{background:#0b0e14;color:#d8e0ee;font-family:Menlo,Consolas,monospace;line-height:1.7;margin:0;padding:0}
+.wrap{margin:auto;padding:28px 20px 80px}
+h1{color:#7dd3fc}h2{color:#f0abfc;border-bottom:1px solid #333;padding-bottom:6px;margin-top:44px}h3{color:#86efac}
+a{color:#7dd3fc}.card{background:#111624;border:1px solid #263049;border-radius:10px;padding:16px;margin:14px 0}
+pre{background:#05070c;border:1px solid #263049;border-radius:8px;padding:14px;overflow-x:auto;color:#c4f5ff;font-size:13px}
+code{background:#1c2333;padding:2px 6px;border-radius:5px;color:#ffe08a}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}th,td{border:1px solid #2c3a55;padding:8px;text-align:left}th{background:#182034;color:#7dd3fc}
+.tcp{color:#7dd3fc}.udp{color:#facc15}.imp{color:#f87171;font-weight:bold}.ok{color:#86efac}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;margin-right:6px}.t-tcp{background:#0c4a6e;color:#bae6fd}.t-udp{background:#713f12;color:#fde68a}.t-ip{background:#3b0764;color:#e9d5ff}
+.note{border-left:4px solid #facc15;background:#1a1503;padding:10px 14px;margin:12px 0}
+.warn{border-left:4px solid #f87171;background:#1f0a0a;padding:10px 14px;margin:12px 0}
+</style>
+  <link rel="stylesheet" href="article.css">
+  </head><body><div class="wrap">
+<h1 class="center">TCP/IP &amp; UDP/IP Packets — Every Byte Explained</h1>
+<div class="textbox black">
+
+<p>Everything on the network is a packet. An envelope (IP) + letter inside (TCP or UDP) + payload (your data). Understand these two envelopes and you understand 95% of debugging. References: <a href="https://www.rfc-editor.org/rfc/rfc791.html">RFC 791 IP</a>, <a href="https://www.rfc-editor.org/rfc/rfc9293.html">RFC 9293 TCP</a>, <a href="https://www.rfc-editor.org/rfc/rfc768.html">RFC 768 UDP</a>, <a href="https://www.tcpdump.org/">tcpdump.org</a>.</p>
+
+<h2>1. The Big Picture: Encapsulation in 30 seconds</h2>
+<div class="card"><span class="tag t-ip">IPv4 20 bytes</span> <span class="tag t-tcp">TCP 20-60 bytes</span> <span class="tag t-udp">UDP 8 bytes</span>
+<pre>[ Ethernet 14B ][  IP header 20B  ][ TCP 20B or UDP 8B ][  YOUR DATA  ][ FCS ]
+      |                  |                       |                |
+   who on LAN     who on Internet         which app/port     HTTP, DNS, game...</pre>
+<p><span class="imp">Why it matters:</span> Overhead decides everything. TCP costs ≥40 bytes per packet before data. UDP costs 28 bytes. On a 100-byte VoIP voice chunk that difference is huge: 40% overhead vs 28%. That is why voice uses UDP and files use TCP.</p></div>
+
+<h2>2. IP Header — The Envelope (20 bytes minimum)</h2>
+<table><tr><th>Field</th><th>Size</th><th>What it means (plain)</th></tr>
+<tr><td>Version / IHL</td><td>1B</td><td><code>45</code> = IPv4, header 5×4=20 bytes. If you see <code>46</code>, options present.</td></tr>
+<tr><td>DSCP/ECN</td><td>1B</td><td>QoS wish + congestion signal. <code>0x00</code> = best effort.</td></tr>
+<tr><td>Total Length</td><td>2B</td><td>Whole IP packet. 1500 typical on Ethernet (MTU).</td></tr>
+<tr><td>Identification / Flags / Fragment Offset</td><td>4B</td><td>Fragmentation puzzle pieces. <code>DF</code> bit = do not fragment; if packet too big, router drops + sends ICMP "need to frag".</td></tr>
+<tr><td>TTL</td><td>1B</td><td>Hop countdown. Starts 64/128/255, each router -1. <code>0</code> = die. Prevents loops. <code>traceroute</code> abuses this.</td></tr>
+<tr><td>Protocol</td><td>1B</td><td><code>6</code>=TCP, <code>17</code>=UDP, <code>1</code>=ICMP. Tells kernel which handler gets payload.</td></tr>
+<tr><td>Checksum</td><td>2B</td><td>Header-only check (not data). Routers verify quickly.</td></tr>
+<tr><td>Src / Dst IP</td><td>8B</td><td>Who sends, who receives. NAT rewrites these.</td></tr></table>
+<pre>Example tcpdump:  IP 192.168.1.10.54322 &gt; 93.184.216.34.443: Flags [S], seq 1000, win 64240, len 0
+                  |____ src ____|  |____ dst ____|  |TCP flags inside IP payload|</pre>
+<div class="note"><b>Example meaning:</b> <code>Protocol 6</code> inside IP tells you "unwrap TCP next". <code>TTL 53</code> on arrival when it left at 64 = crossed ~11 routers. <code>DF set + len 1500</code> with VPN overhead = classic "page hangs, small packets pass" MTU bug.</div>
+
+<h2>3. TCP Header — The Registered Letter (20 bytes minimum)</h2>
+<pre> 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Source Port      |    Destination Port   |  ex: 54322 -&gt; 443
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Sequence Number          |  ex: 1000
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                   Acknowledgment Number       |  ex: 0 / 5001
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|DataOff|Res|NS|CWR|ECE|URG|ACK|PSH|RST|SYN|FIN|  flags = meaning
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          Window Size          |  Checksum     | Urgent Pointer  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|            Options (MSS, SACK, Timestamps...) | if DataOff &gt; 5  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</pre>
+<table><tr><th>Field</th><th>Why you care + example</th></tr>
+<tr><td>Ports (2+2B)</td><td>Which app. <code>443→54322</code> = server answering your browser. <code>nmap</code> open/closed guesses from replies here.</td></tr>
+<tr><td>Seq / Ack (4+4B)</td><td>Byte counters, not packet counters. <code>seq 1000 len 1400</code> then next must be <code>seq 2400</code>. Gap = loss. Dup ACKs = "resend please".</td></tr>
+<tr><td>Flags (1B)</td><td><code>SYN</code>=knock, <code>SYN+ACK</code>=come in, <code>ACK</code>=got it, <code>PSH</code>=deliver now, <code>FIN</code>=bye, <code>RST</code>=go away angrily.</td></tr>
+<tr><td>Window (2B)</td><td>Receive buffer space. <code>win 0</code> = "stop, I'm full" → sender stalls. Classic slow-download cause.</td></tr>
+<tr><td>Checksum (2B)</td><td>Covers header+data+pseudo-IP. Broken NIC = bad checksums everywhere.</td></tr>
+<tr><td>Options</td><td><code>MSS 1460</code> (max data per packet), <code>SACK</code> (selective resend), <code>WSCALE 7</code> (window ×128).</td></tr></table>
+
+<h3>Example 1 — Clean handshake (curl https://example.com)</h3>
+<pre>$ tcpdump -nn -S 'tcp port 443'
+1. 10.0.0.5.54322 &gt; 93.184.216.34.443: Flags [S], seq 1000, win 64240, mss 1460
+   --&gt; I want to talk. My bytes start at 1000. I take 1460-byte chunks.
+2. 93.184.216.34.443 &gt; 10.0.0.5.54322: Flags [S.], seq 8000, ack 1001, win 65160, mss 1460
+   --&gt; OK. My bytes start at 8000. I confirm yours (1000+1 for SYN).
+3. 10.0.0.5.54322 &gt; 93.184.216.34.443: Flags [.], ack 8001
+   --&gt; Confirmed. Connection ESTABLISHED. TLS starts now.</pre>
+
+<h3>Example 2 — Data + close</h3>
+<pre>4. client &gt; server: Flags [P.], seq 1001:1200, ack 8001, len 199
+   --&gt; 199 bytes of TLS ClientHello. P = push to app now, don't buffer.
+5. server &gt; client: Flags [.], ack 1200
+   --&gt; Got all 199 (1001+199=1200). Nothing to send back yet.
+6. client &gt; server: Flags [F.], seq 3500, ack 9000
+   --&gt; Done sending. FIN = polite hangup. Needs ACK then server's own FIN.</pre>
+
+<h3>Example 3 — The three ugly packets you must recognize</h3>
+<pre># RST — port closed / refused
+server &gt; client: Flags [R.], seq 0, ack 1001  --&gt; "nothing here". nmap CLOSED.
+
+# Retransmit — loss
+client &gt; server: seq 2400:3800 len 1400   (sent twice, no ACK between)
+--&gt; packet lost or ACK lost. Many = congested link, check 'tcp.analysis.retransmission' in Wireshark.
+
+# Zero window — receiver choking
+client &gt; server: win 0, ack 5000  --&gt; app not reading (frozen browser, full buffer).
+Follow with 'win 32768' later = recovered.</pre>
+
+<h2>4. UDP Header — The Postcard (only 8 bytes)</h2>
+<pre> 0      7 8     15 16    23 24    31
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Source Port   |  Dest Port        |  ex: 53411 -&gt; 53 (DNS)
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Length        |  Checksum         |  ex: len 56 = 8 hdr + 48 data
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</pre>
+<p>That's it. <span class="ok">No seq, no ack, no window, no flags.</span> Delivery, order, duplicates are <b>your app's problem</b>. Reward: tiny, fast, no handshake.</p>
+<table><tr><th>Field</th><th>Meaning + example</th></tr>
+<tr><td>Length</td><td>Header+data. <code>len 72</code> with 8 header = 64 bytes DNS query. If &gt; MTU, IP fragments it (fragile — one fragment lost = whole datagram lost).</td></tr>
+<tr><td>Checksum</td><td>Optional in IPv4 (0 = skipped), mandatory in IPv6. Broken = silent drop, no notice.</td></tr></table>
+
+<h3>Example 4 — DNS over UDP (the most common UDP you will see)</h3>
+<pre>$ tcpdump -nn -v 'udp port 53'
+10.0.0.5.53411 &gt; 1.1.1.1.53: 1234+ A? example.com (28)
+1.1.1.1.53 &gt; 10.0.0.5.53411: 1234 1/0/0 example.com. A 93.184.216.34 (44)
+
+Reading: sport 53411 random (security), dport 53 DNS.
+Query ID 1234 matches reply 1234. One request, one reply, done in 1 RTT.
+No handshake = fast. No retry by UDP itself — 'dig' resends after 5s if no reply.</pre>
+
+<h3>Example 5 — Video call / game (why loss is OK)</h3>
+<pre>client.5004 &gt; server.5004: UDP, length 172   (20ms of Opus audio)
+client.5004 &gt; server.5004: UDP, length 172   (next 20ms)
+... one missing ... nobody resends: player just conceals 20ms gap.
+TCP would stall everything waiting for the lost one — terrible for live.</pre>
+
+<h3>Example 6 — UDP fragmentation trap</h3>
+<pre>server &gt; client: IP frag 1480/1480/40 (one 3000B DNSSEC reply in 3 fragments)
+client never ACKs (UDP has no ACK). If middle fragment dropped by firewall
+that blocks fragments → whole reply lost → 'dig +tcp' suddenly works.
+Lesson: big UDP + strict firewall = mysterious failures.</pre>
+
+<h2>5. TCP vs UDP — Side by Side</h2>
+<table><tr><th></th><th class="tcp">TCP</th><th class="udp">UDP</th></tr>
+<tr><td>Handshake</td><td>3-way (1 RTT before data)</td><td>None (send instantly)</td></tr>
+<tr><td>Reliability</td><td>Retransmits, orders, dedups</td><td>None — app does it or accepts loss</td></tr>
+<tr><td>Speed / overhead</td><td>Slower, ≥20B header + ACKs</td><td>Faster, 8B header, no ACKs</td></tr>
+<tr><td>Use when</td><td>Files, web, mail, SSH — must be perfect</td><td>DNS, live audio/video, games, DHCP, SNMP, QUIC</td></tr>
+<tr><td>Firewall view</td><td>Stateful easy (SYN→ESTABLISHED)</td><td>Pseudo-state (timeout guess, ~30s)</td></tr></table>
+
+<h2>6. Hex Dump — See It With Your Eyes</h2>
+<pre># UDP DNS query, 44 bytes on wire (Ethernet stripped):
+45 00 00 2c  ab cd 00 00  40 11 5c 9e  0a 00 00 05  01 01 01 01
+|IP v4/HL|len=44 |  ID   |flags| TTL=64 proto=17(UDP) cksum | src 10.0.0.5 | dst 1.1.1.1 |
+d1 6b 00 35  00 18 12 34
+|sp=53515|dp=53|len=24|cksum|  --&gt; then 16 bytes DNS payload
+
+# TCP SYN, 40 bytes (IP 20 + TCP 20, no data):
+45 00 00 28 ... 06 ... 0a 00 00 05 5d b8 d8 22
+d3 12 01 bb  00 00 03 e8  00 00 00 00  50 02  fa f0  00 00 00 00
+|sp=54034|dp=443|seq=1000|ack=0|off=5 flags=02(SYN)|win=64240|</pre>
+<p>Try yourself: <code>tcpdump -i any -nn -X -c 3 'udp port 53'</code> shows this hex live. Match <code>06</code> vs <code>11</code> (hex for 6/17) in the IP header to tell TCP from UDP without any tool help.</p>
+
+<h2>7. Which Breaks How — Cheat Table</h2>
+<table><tr><th>Symptom</th><th>Likely packet truth</th><th>Confirm with</th></tr>
+<tr><td>Site hangs, small sites OK</td><td>MTU / DF drop, big TCP segs die</td><td><code>ping -M do -s 1472 host</code>, <code>tcpdump 'icmp[0]==3'</code></td></tr>
+<tr><td>DNS sometimes fails, TCP retry works</td><td>Big UDP fragmented + filtered</td><td><code>dig +bufsize=512</code> vs <code>dig +tcp</code></td></tr>
+<tr><td>Video freezes but file download fine</td><td>TCP head-of-line blocking vs UDP loss — different tradeoffs</td><td>Wireshark <code>rtp.seq</code> gaps vs <code>tcp.analysis</code></td></tr>
+<tr><td>Connection refused instantly</td><td>RST from closed port</td><td><code>tcpdump 'tcp[tcpflags] & tcp-rst != 0'</code></td></tr>
+<tr><td>Upload stalls at same %</td><td>Zero window — receiver app stuck</td><td><code>tcpdump -nn 'tcp[14:2]=0'</code></td></tr></table>
+
+<div class="warn"><b>Lab-only reminder:</b> capture only your own traffic or traffic you are allowed to inspect. <code>tcpdump -w lab.pcap</code> then read with Wireshark — never ship pcaps with cookies/tokens inside.</div>
+<p style="color:#64748b;font-size:13px">Sources: RFC 791, RFC 9293, RFC 768, <a href="https://wiki.wireshark.org/">Wireshark Wiki</a>, <a href="https://www.tcpdump.org/manpages/pcap-filter.7.html">pcap-filter man</a>, <a href="https://www.cloudflare.com/learning/ddos/glossary/tcp-ip/">Cloudflare TCP/IP explainer</a>.</p>
+</div>
+  </div>
+  <footer>
+    <a href="index.html">Home</a>
+  </footer>
+  </body></html>
