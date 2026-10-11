@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Hacking Happens — And How To Stop It: Red/Blue Lab Manual</title>
+<style>
+body{margin:0;background:#080a0f;color:#d6dbe2;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.8}
+.wrap{margin:0 auto;padding:28px 20px 90px}
+h1{font-size:1.9rem}h2{color:#ff7b72;border-bottom:1px solid #222;margin-top:2.6em}h3{color:#79c0ff}
+.warn{background:#1a0e0e;border:1px solid #f85149;border-left:6px solid #f85149;padding:12px 16px;border-radius:8px}
+.blue{background:#0e1a2a;border:1px solid #58a6ff;border-left:6px solid #58a6ff;padding:12px 16px;border-radius:8px}
+.tip{background:#161b22;border:1px solid #30363d;border-left:6px solid #e3b341;padding:12px 16px;border-radius:8px}
+code,pre{background:#11161d;border:1px solid #2a3340;border-radius:8px;color:#ffa657}
+pre{padding:12px;overflow:auto}a{color:#58a6ff}
+</style>
+<link rel="stylesheet" href="article.css">
+</head>
+<body>
+<div class="wrap">
+<h1>How Hacking Happens — And How To Stop It</h1>
+<p><i>Blue team to understand attack paths. Red team to break them. Lab only. No real targets without written permission. Ever.</i></p>
+<div class="textbox black">
+<div class="warn"><b>Ethics first — read or close this file:</b> Only hack systems you own or are explicitly authorized to test (your lab, CTF, bug-bounty scope). Unauthorized access, credential cracking against real accounts, malware, ransomware, doxxing = crimes. This manual teaches <b>concepts + defense + lab practice</b>, not how to break into real systems. If in doubt, defend.</div>
+
+<h2>0 — Map: Hats, Teams, Bounties</h2>
+<p><b>White hat:</b> authorized defender/researcher. <b>Black hat:</b> criminal. <b>Gray hat:</b> unauthorized but claims good intent — still illegal, don't. <b>Red team:</b> authorized adversary emulation. <b>Blue team:</b> detect/respond/harden. <b>Purple:</b> both collaborate. <b>Bug bounty:</b> legal hacking inside a scope + rules (see <a href="https://www.hackerone.com/">HackerOne</a>, <a href="https://www.bugcrowd.com/">Bugcrowd</a>, <a href="https://docs.github.com/en/code-security/security-advisories">GitHub Security Lab</a>). Start with <a href="https://owasp.org/www-project-top-ten/">OWASP Top 10</a> + <a href="https://owasp.org/www-project-web-security-testing-guide/">OWASP Testing Guide</a>.</p>
+<p>Papers to read (defensive lens): <a href="https://csrc.nist.gov/publications/sp800">NIST SP 800 series (800-53, 800-115 testing)</a>, <a href="https://attack.mitre.org/">MITRE ATT&amp;CK</a> (adversary tactics map), <a href="https://www.lockheedmartin.com/en-us/capabilities/cyber/cyber-kill-chain.html">Cyber Kill Chain</a> (Lockheed), <a href="https://csrc.nist.gov/pubs/sp/800/61/r2/final">NIST Incident Handling 800-61</a>.</p>
+
+<h2>1 — Lab, Not Real Life: Isolate Your Experiments</h2>
+<p>Build a lab you can break without breaking law or others:</p>
+<pre>Host: Debian/Ubuntu, updated, firewall on
+Hypervisor: VirtualBox (https://www.virtualbox.org/) or KVM/QEMU + virt-manager
+Net: Host-only / NAT, NO bridge to home LAN for vulnerable VMs
+Targets (vulnerable-by-design, local only):
+  - Metasploitable 2/3 (https://github.com/rapid7/metasploitable3)
+  - OWASP Juice Shop (https://github.com/juice-shop/juice-shop)
+  - DVWA (https://github.com/digininja/DVWA)
+  - WebGoat (https://github.com/WebGoat/WebGoat)
+Attacker: Kali Linux (https://www.kali.org/) as a toolbox, snapshots before/after
+Capture: Wireshark (https://www.wireshark.org/) on host-only only</pre>
+<div class="tip">Snapshot everything. Lab firewall: vulnerable VMs must never reach internet. No real credentials, no real data, no scanning outside <code>192.168.56.0/24</code> lab range.</div>
+<p>Secure your lab: separate user, encrypted disk (<a href="https://help.ubuntu.com/community/FullDiskEncryptionHowto">LUKS docs</a>), <code>ufw deny incoming</code> on host, VPN kill-switch if you must fetch tools, GPG-verify ISOs.</p>
+
+<h2>2 — How Attacks Are Structured (Kill Chain → ATT&amp;CK, Defensive View)</h2>
+<p>Recon → weaponize → deliver → exploit → install → command → act. Map each to <a href="https://attack.mitre.org/">ATT&amp;CK</a> tactics. Blue counters: harden, detect, segment, log, respond. Example: phishing (Initial Access) fails if MFA + user training + mail filtering win. Study <a href="https://www.nist.gov/cyberframework">NIST CSF</a>: Govern/Identify/Protect/Detect/Respond/Recover.</p>
+
+<h2>3 — Recon &amp; Scanning: What Attackers See, How Defenders Shrink It</h2>
+<p>Concept: DNS, subdomains, ports, services, versions leak attack surface. Tools defenders use to audit own scope: <b>Nmap</b> (<a href="https://nmap.org/">nmap.org</a>, <a href="https://github.com/nmap/nmap">github/nmap</a>), <b>Amass</b> (<a href="https://github.com/owasp-amass/amass">owasp-amass</a>), <b>theHarvester</b> (<a href="https://github.com/laramies/theHarvester">theHarvester</a>), <b>Shodan</b> (<a href="https://www.shodan.io/">shodan.io</a> — defender search for own exposure).</p>
+<pre># LAB ONLY against your own VMs, e.g. 192.168.56.101:
+nmap -sV -O 192.168.56.101   # versions, OS guess — then YOU patch/hide them
+# Blue: close ports, least service, banner minimization, WAF/CDN in front</pre>
+<div class="blue"><b>Blue lesson:</b> every open port/version you see, attacker sees. Inventory with <a href="https://github.com/nmap/nmap">Nmap</a>, then firewall, update, segment. Log scans with <a href="https://suricata.io/">Suricata</a>/<a href="https://www.snort.org/">Snort</a>.</div>
+
+<h2>4 — Web: The #1 Real-World Path (Understand → Fix)</h2>
+<p>Learn <a href="https://owasp.org/www-project-top-ten/">OWASP Top 10</a>: injection, broken access control, XSS, SSRF, misconfig. Practice <b>defensively</b> on <a href="https://github.com/juice-shop/juice-shop">Juice Shop</a>/<a href="https://github.com/digininja/DVWA">DVWA</a> locally; intercept with <b>Burp Suite Community</b> (<a href="https://portswigger.net/burp/communitydownload">portswigger</a>) or <b>OWASP ZAP</b> (<a href="https://www.zaproxy.org/">zaproxy</a>, <a href="https://github.com/zaproxy/zaproxy">github</a>).</p>
+<p>Defense pattern (the point): parameterize queries, ORM, allow-list validation (<a href="https://github.com/colinhacks/zod">Zod</a>), output-encode, CSP + HttpOnly/SameSite cookies via <b>Helmet</b> (<a href="https://helmetjs.github.io/">helmetjs</a>), strict access checks server-side, SSRF allow-lists + no cloud metadata access. Scan own code with <a href="https://github.com/returntocorp/semgrep">Semgrep</a>, deps with <a href="https://github.com/anchore/grype">Grype</a>.</p>
+
+<h2>5 — C Fundamentals: Stack, Memory, Why Safe Code Matters</h2>
+<p>You don't need to exploit to defend — but you must grasp <i>why</i> memory bugs are critical. Theory only, lab only:</p>
+<pre>// stack frame (simplified x86-64): high -&gt; low
+// [args][ret addr][saved rbp][locals: char buf[64]]
+// Unsafe copy can overflow locals -&gt; crash/hijack in theory.
+// Defense: -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wl,-z,RelRO,-z,Now -fPIE -pie
+// + ASLR, NX, canaries, fuzzing, modern langs (Rust/Go) for new code.</pre>
+<p>Learn safely: <a href="https://github.com/RPISEC/MBE">RPISEC MBE</a> (course), <a href="https://pwn.college/">pwn.college</a> (ASU, lab + defense), <a href="https://github.com/naorlivne/awesome-pwn">awesome-pwn (curated learning)</a>, papers: <a href="http://phrack.org/issues/49/14.html">Smashing the Stack (Phrack 49, historic)</a> — read as history + why mitigations exist. Practice defense: compile with protections, run <a href="https://github.com/google/sanitizers">ASan/UBSan</a>, fuzz with <a href="https://github.com/google/AFL">AFL++</a> on <i>your own</i> code, verify with <code>checksec</code>/<code>hardening-check</code>.</p>
+
+<h2>6 — Passwords/Cracking: Why We Harden Auth (No Real Cracking)</h2>
+<p>Concept: weak/reused passwords + no MFA = breach. Attackers use leaked lists + guessing in theory; <b>your job is to make it fail</b>: long unique passwords in <b>KeePassXC</b> (<a href="https://keepassxc.org/">keepassxc.org</a>), MFA everywhere (TOTP/WebAuthn), <b>bcrypt/argon2</b> server-side, rate-limit + lockout, breach monitoring (<a href="https://haveibeenpwned.com/">HIBP</a>). Audit own hashes in lab only with <b>John</b> (<a href="https://www.openwall.com/john/">openwall</a>) / <b>Hashcat</b> (<a href="https://hashcat.net/">hashcat</a>) docs to prove policy works — never against others.</p>
+
+<h2>7 — Blue Team: Detect, Log, Respond</h2>
+<p>Tools: <b>Wireshark</b> (<a href="https://www.wireshark.org/">wireshark</a>) for packets, <b>Suricata</b>/<b>Snort</b> IDS, <b>Wazuh</b> (<a href="https://wazuh.com/">wazuh</a>, <a href="https://github.com/wazuh/wazuh">github</a>) SIEM, <b>TheHive+Cortex</b> (<a href="https://github.com/TheHive-Project/TheHive">TheHive</a>) case mgmt, <b>Velociraptor</b> (<a href="https://github.com/Velocidex/velociraptor">velociraptor</a>) DFIR, <b>Ghidra</b> (<a href="https://ghidra-sre.org/">ghidra</a>, <a href="https://github.com/NationalSecurityAgency/ghidra">NSA github</a>) for malware <i>analysis in isolated VM</i>. Playbooks: <a href="https://csrc.nist.gov/pubs/sp/800/61/r2/final">NIST 800-61</a>, <a href="https://www.sans.org/white-papers/">SANS whitepapers</a>.</p>
+<div class="tip">Log centrally, time-sync (NTP), alert on ATT&amp;CK techniques you actually see in lab, rehearse restore from offline backups. Blue wins by preparation, not heroics.</div>
+
+<h2>8 — Bug Bounty Path (Legal Hacking Career)</h2>
+<p>1) Learn web + networking basics. 2) Lab: Juice Shop → PortSwigger Academy (<a href="https://portswigger.net/web-security">portswigger academy</a>). 3) Read scopes twice, respect out-of-scope, rate limits, disclosure rules. 4) Report: repro, impact, fix. Repos: <a href="https://github.com/OWASP/wstg">OWASP WSTG checklist</a>, <a href="https://github.com/carlospolop/hacktricks">HackTricks (defensive reference — use on own scope only)</a>, <a href="https://github.com/swisskyrepo/PayloadsAllTheThings">PayloadsAllTheThings (test payloads for own lab/scope)</a>. Never extort, never pivot beyond scope, never access real user data.</p>
+
+<h2>9 — Study Plan (6 Weeks, Lab + Defense)</h2>
+<p>W1 Linux+networking + lab build. W2 OWASP Top 10 on Juice Shop + fix code. W3 Nmap/ZAP on own VMs + harden. W4 C/memory theory + compiler mitigations + fuzz own toy program. W5 Blue: Suricata+Wazuh alerts + IR drill. W6 Bounty-style report on lab target with fix PR. Throughout: ATT&amp;CK mapping, write-ups, clean snapshots.</p>
+<p><i>Hack to protect. Learn stacks to build safer stacks. The best hacker on your network is the defender you trained.</i></p>
+</div>
+</div>
+<footer>
+  <a href="index.html">Home</a>
+</footer>
+</body>
+</html>
