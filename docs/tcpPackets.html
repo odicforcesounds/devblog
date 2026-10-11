@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TCP Packets In Detail — Headers, Handshakes, Examples</title>
+<style>
+body{margin:0;background:#0a0c10;color:#d7dce2;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.75}
+.wrap{margin:0 auto;padding:28px 20px 90px}
+h1{font-size:1.9rem}h2{color:#7ee787;border-bottom:1px solid #222;margin-top:2.4em}h3{color:#79c0ff}
+.tip{background:#161b22;border:1px solid #30363d;border-left:6px solid #e3b341;padding:12px 16px;border-radius:8px;margin:1em 0}
+code,pre{background:#11161d;border:1px solid #2a3340;border-radius:8px;color:#ffa657}
+pre{padding:12px;overflow:auto;white-space:pre-wrap}a{color:#58a6ff}
+table{border-collapse:collapse;width:100%;margin:1em 0}th,td{border:1px solid #2a3340;padding:7px;vertical-align:top}th{color:#7ee787}
+.diag{border:1px dashed #58a6ff;border-radius:10px;padding:12px;margin:1em 0}
+</style>
+<link rel="stylesheet" href="article.css">
+</head>
+<body>
+<div class="wrap">
+<h1 class="center">TCP Packets In Detail</h1>
+<div class="textbox black">
+<p>TCP = reliable ordered byte stream over IP. Docs: <a href="https://www.rfc-editor.org/rfc/rfc793.html">RFC 793</a>, <a href="https://www.rfc-editor.org/rfc/rfc9293.html">RFC 9293 (obsoletes 793)</a>, <a href="https://wiki.wireshark.org/Transmission_Control_Protocol">Wireshark TCP wiki</a>.</p>
+
+<h2>0 — Where TCP Lives (Encapsulation)</h2>
+<pre>[Eth dst|src|type] [IP ver/IHL/DSCP/len|ID|flags/frag|TTL=64|proto=6|cksum|src|dst] [TCP ...] [DATA http/tls/...]
+# tcpdump -i any -nn -e -X port 80   → see all three layers
+# Wireshark: Frame → Ethernet II → IPv4 → TCP → HTTP</pre>
+
+<h2>1 — Header Map (20 bytes + options)</h2>
+<pre> 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          Source Port          |       Destination Port        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Sequence Number                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Acknowledgment Number                      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| DataOf| R |C|E|U|A|P|R|S|F|                               |
+| fset  | S |W|C|R|C|S|S|Y|I|            Window             |
+|       |   |R|E|G|K|H|T|N|N|                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Checksum            |         Urgent Pointer        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options (0-40B, MSS/SACK/TS/WSCALE)        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</pre>
+<table>
+<tr><th>Field</th><th>Size</th><th>Plain meaning + example</th></tr>
+<tr><td>Src/Dst Port</td><td>16+16</td><td>Who→what service. <code>10.0.0.5.54321 &gt; 10.0.0.10.443</code>. Ephemeral 32768–61000 typical Linux.</td></tr>
+<tr><td>Seq / Ack</td><td>32+32</td><td>Byte counters. ISN random per connection. <code>seq 0</code> then <code>ack 1</code> after SYN. Data advances: <code>seq 1:1441 (1440B)</code>.</td></tr>
+<tr><td>Data Offset</td><td>4b</td><td>Header length in 32-bit words. <code>5</code>=20B none, <code>8</code>=32B +12B options.</td></tr>
+<tr><td>Flags CWR ECE URG ACK PSH RST SYN FIN</td><td>8b</td><td><code>[S]</code>=open, <code>[S.]</code>=accept, <code>[P.]</code>=data+ack, <code>[F.]</code>=close, <code>[R]</code>=abort. ECN: CWR+ECE congestion.</td></tr>
+<tr><td>Window</td><td>16</td><td>Receive buffer free. <code>win 64240</code>, scaling ×256 common. Zero = "stop, I'm full".</td></tr>
+<tr><td>Checksum</td><td>16</td><td>Pseudo-header + TCP. Offload shows wrong in capture — normal on sender.</td></tr>
+<tr><td>Options</td><td>var</td><td>MSS (max segment), WSCALE (window ×2^n), SACK (selective re-send), Timestamps (RTT).</td></tr>
+</table>
+
+<h2>2 — Handshake / Data / Close (Annotated)</h2>
+<div class="diag"><pre># tcpdump -i lo -nn 'port 3000'
+1. C→S [S]      seq 1000                       # "can we talk? ISN=1000"
+2. S→C [S.]     seq 5000, ack 1001             # "yes. ISN=5000, got yours"
+3. C→S [.]      ack 5001                       # "got yours. open."
+4. C→S [P.]     seq 1001:1101, ack 5001, len 100  # 100B request
+5. S→C [P.]     seq 5001:5201, ack 1101, len 200  # 200B reply
+6. C→S [F.]     seq 1101, ack 5201             # "done sending"
+7. S→C [F.]     seq 5201, ack 1102             # "done too"
+8. C→S [.]      ack 5202                       # closed. (RST aborts instantly.)</pre></div>
+<div class="tip">Wireshark filters: <code>tcp.flags.syn==1 &amp;&amp; tcp.flags.ack==0</code> (opens), <code>tcp.analysis.retransmission</code>, <code>tcp.window_size==0</code> (stalled receiver).</div>
+
+<h2>3 — Live Examples (Your Lab)</h2>
+<pre># 1. Watch handshake to local app:
+sudo tcpdump -i lo -nn 'port 3000'
+# (other shell) curl http://127.0.0.1:3000/api/health
+# expect S → S. → ACK → P./ACK → F./F.
+
+# 2. Full options decode:
+sudo tcpdump -i any -nn -vv -s0 'host 192.168.56.101 and port 80' -c 3
+# look: mss 1460, wscale 7, sackOK, TS val, nop padding
+
+# 3. Retransmit hunt:
+sudo tcpdump -i eth0 -nn 'host DB and port 5432' | grep -i -E 'retrans|dup'
+# many = MTU/firewall/NIC. Probe: ping -M do -s 1472 DB
+
+# 4. RST vs FIN close:
+curl http://127.0.0.1:3000/ & sleep 0.2; ss -tnp | grep 3000
+# FIN = polite; RST = killed (timeout, crash, firewall reject)</pre>
+
+<h2>4 — Numbers That Bite (MSS/MTU/Window)</h2>
+<p>Ethernet 1500 − IP 20 − TCP 20 = <b>MSS 1460</b>. Below: <code>1460</code> in SYN. Above 1500 (tunnels/VPN) fragments or drops — fix MTU/MSS-clamp. Window × WSCALE = true buffer (e.g. 64240×256 ≈ 16MB). Small/zero window + big app queue = slow receiver, not slow net. SACK lets re-send only holes; without it, go-back-N wastes.</p>
+
+<h2>5 — Cheat: tcpdump ↔ Wireshark ↔ Cause</h2>
+<p><code>[S]</code> no reply = filtered/port closed. <code>[R]</code> after SYN = refused. Dup ACK storm = loss. Zero window = app stuck. RST mid-stream = timeout/crash/policy. Pair with <code>ss -tin</code> (retrans/rtt/cwnd), <code>ip -s link</code> (errors/drops).</p>
+<p>Refs: <a href="https://www.rfc-editor.org/rfc/rfc9293.html">RFC 9293</a>, <a href="https://wiki.wireshark.org/Transmission_Control_Protocol">TCP wiki</a>, <a href="https://www.tcpdump.org/manpages/tcpdump.1.html">tcpdump man</a>.</p>
+<p><i>Seq counts bytes, Ack wants next, Flags tell story, Window tells capacity. Read four, know the connection.</i></p>
+</div>
+</div>
+<footer>
+  <a href="index.html">Home</a>
+</footer>
+</body>
+</html>
