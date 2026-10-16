@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Lenda do Macaco Dragão - OdicforceSounds</title>
+    <style>
+        /* ==========================================================================
+           DESIGN SYSTEM & CSS VARIABLES
+           ========================================================================== */
+        :root {
+            --bg-deep: #07090e;
+            --bg-card: rgba(15, 23, 42, 0.75);
+            --bg-card-hover: rgba(30, 41, 59, 0.85);
+            --gold-primary: #f59e0b;
+            --gold-light: #fbbf24;
+            --dragon-red: #ef4444;
+            --dragon-ember: #dc2626;
+            --teal-cyan: #06b6d4;
+            --teal-bright: #22d3ee;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-glow: rgba(245, 158, 11, 0.25);
+            --border-cyan: rgba(6, 182, 212, 0.3);
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        /* ==========================================================================
+           BASE & RESET
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(239, 68, 68, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 70%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.04) 0%, transparent 60%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-deep);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+            border: 1px solid var(--border-glow);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gold-primary);
+        }
+
+        /* ==========================================================================
+           HEADER & NAVIGATION
+           ========================================================================== */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(7, 9, 14, 0.85);
+            border-bottom: 1px solid var(--border-glow);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--dragon-red), var(--gold-primary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .brand-text h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--gold-light), var(--teal-bright));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover {
+            color: var(--gold-light);
+            background: rgba(245, 158, 11, 0.08);
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+
+        .nav-btn.active {
+            color: #07090e;
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-light));
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+            border-color: transparent;
+        }
+
+        .audio-toggle-btn {
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid var(--border-cyan);
+            color: var(--teal-bright);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition-smooth);
+        }
+
+        .audio-toggle-btn:hover {
+            background: rgba(6, 182, 212, 0.25);
+            box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
+        }
+
+        .audio-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--teal-bright);
+            display: inline-block;
+        }
+
+        .audio-pulse.playing {
+            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.7); }
+            70% { transform: scale(1.3); box-shadow: 0 0 0 8px rgba(34, 211, 238, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
+        }
+
+        /* ==========================================================================
+           MAIN CONTAINER & LAYOUT
+           ========================================================================== */
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==========================================================================
+           TAB 1: ENREDO & NARRATIVA (STORY)
+           ========================================================================== */
+        .story-hero {
+            background: linear-gradient(180deg, rgba(239, 68, 68, 0.1) 0%, rgba(15, 23, 42, 0.8) 100%);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-lg);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .story-hero::before {
+            content: "🐉";
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 10rem;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+
+        .story-hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, var(--gold-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .story-hero p {
+            max-width: 800px;
+            margin: 0 auto;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .chapter-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .chapter-tab {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition-smooth);
+        }
+
+        .chapter-tab:hover, .chapter-tab.active {
+            color: var(--gold-light);
+            border-color: var(--gold-primary);
+            background: rgba(245, 158, 11, 0.12);
+        }
+
+        .chapter-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .chapter-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+        }
+
+        .chapter-number {
+            background: linear-gradient(135deg, var(--dragon-red), var(--gold-primary));
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+
+        .chapter-title {
+            font-size: 1.5rem;
+            color: var(--gold-light);
+        }
+
+        .chapter-body p {
+            margin-bottom: 1.2rem;
+            color: #cbd5e1;
+            font-size: 1.05rem;
+            text-align: justify;
+        }
+
+        .quote-box {
+            background: rgba(6, 182, 212, 0.08);
+            border-left: 4px solid var(--teal-cyan);
+            padding: 1.2rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            font-style: italic;
+            color: var(--teal-bright);
+        }
+
+        /* ==========================================================================
+           TAB 2: NAVEGADOR DE SUBDOMÍNIOS (KNOWLEDGE PORTAL)
+           ========================================================================== */
+        .portal-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex-grow: 1;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border-radius: var(--radius-md);
+            color: #fff;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .search-box input:focus {
+            border-color: var(--teal-cyan);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+        }
+
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+
+        .filter-pills {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: var(--transition-smooth);
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--teal-cyan);
+            color: #07090e;
+            font-weight: 600;
+        }
+
+        .domains-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .domain-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-lg);
+            padding: 1.8rem;
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .domain-card:hover {
+            transform: translateY(-5px);
+            background: var(--bg-card-hover);
+            border-color: var(--border-glow);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .domain-badge {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--teal-bright);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .domain-card h3 {
+            font-size: 1.3rem;
+            color: var(--gold-light);
+            margin-bottom: 0.8rem;
+        }
+
+        .domain-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .domain-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 1.2rem;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: #cbd5e1;
+        }
+
+        .domain-action {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-visit {
+            flex-grow: 1;
+            text-align: center;
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-light));
+            color: #07090e;
+            padding: 0.6rem 1rem;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-visit:hover {
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+            opacity: 0.95;
+        }
+
+        .btn-details {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 0.6rem 0.8rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-details:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ==========================================================================
+           TAB 3: ALQUIMIA DO MACACO DRAGÃO (VISUALIZER)
+           ========================================================================== */
+        .alchemy-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        @media (max-width: 850px) {
+            .alchemy-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .alchemy-diagram {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 420px;
+            position: relative;
+        }
+
+        .alchemy-nodes {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+
+        .node-btn {
+            background: var(--bg-deep);
+            border: 2px solid var(--border-cyan);
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-align: center;
+        }
+
+        .node-btn .icon {
+            font-size: 1.8rem;
+        }
+
+        .node-btn .label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 2px;
+            color: var(--text-muted);
+        }
+
+        .node-btn:hover, .node-btn.active {
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+            transform: scale(1.08);
+        }
+
+        .node-btn.active .label {
+            color: var(--gold-light);
+        }
+
+        .alchemy-core {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(245, 158, 11, 0.2));
+            border: 2px dashed var(--gold-primary);
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: pulseGlow 3s infinite alternate;
+            cursor: pointer;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); transform: scale(1); }
+            100% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.5); transform: scale(1.05); }
+        }
+
+        .alchemy-core .icon {
+            font-size: 3rem;
+        }
+
+        .alchemy-core h4 {
+            font-size: 0.85rem;
+            color: var(--gold-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .alchemy-info {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+        }
+
+        .alchemy-info h3 {
+            color: var(--gold-light);
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alchemy-formula {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            font-family: monospace;
+            color: var(--teal-bright);
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        /* ==========================================================================
+           TAB 4: SINTETIZADOR & ORÁCULO DO TAO
+           ========================================================================== */
+        .oracle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 850px) {
+            .oracle-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .oracle-card, .synth-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .oracle-display {
+            background: rgba(7, 9, 14, 0.8);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        .oracle-quote {
+            font-size: 1.15rem;
+            color: #f1f5f9;
+            font-style: italic;
+            line-height: 1.7;
+        }
+
+        .oracle-source {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--gold-light);
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, var(--dragon-red), var(--gold-primary));
+            color: #fff;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            width: 100%;
+        }
+
+        .btn-generate:hover {
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Synth Control Panel */
+        .synth-controls {
+            margin: 1.5rem 0;
+        }
+
+        .control-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .synth-slider {
+            width: 100%;
+            accent-color: var(--teal-cyan);
+            background: #1e293b;
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .synth-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .sound-btn {
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid var(--border-cyan);
+            color: var(--teal-bright);
+            padding: 0.6rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+        }
+
+        .sound-btn:hover, .sound-btn.active {
+            background: var(--teal-cyan);
+            color: #07090e;
+        }
+
+        /* ==========================================================================
+           MODAL DIALOG
+           ========================================================================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition-smooth);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-card {
+            background: var(--bg-deep);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 650px;
+            padding: 2rem;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            transform: scale(0.9);
+            transition: var(--transition-smooth);
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        /* ==========================================================================
+           FOOTER
+           ========================================================================== */
+        footer {
+            max-width: 1200px;
+            margin: 4rem auto 2rem auto;
+            padding: 2rem 1.5rem 0 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 1rem;
+        }
+
+        .footer-links a {
+            color: var(--gold-light);
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER / NAV -->
+    <header>
+        <div class="brand" id="brand-home">
+            <div class="brand-icon">🐉</div>
+            <div class="brand-text">
+                <h1>ODICFORCESOUNDS</h1>
+                <p>A Reencarnação do Dragão & O Macaco</p>
+            </div>
+        </div>
+
+        <nav>
+            <button class="nav-btn active" data-tab="tab-story">📜 História</button>
+            <button class="nav-btn" data-tab="tab-domains">🌐 Subdomínios</button>
+            <button class="nav-btn" data-tab="tab-alchemy">🐒 Símbolo & Alquimia</button>
+            <button class="nav-btn" data-tab="tab-oracle">🧘 Oráculo & Áudio</button>
+        </nav>
+
+        <button class="audio-toggle-btn" id="audio-toggle">
+            <span class="audio-pulse" id="audio-indicator"></span>
+            <span id="audio-label">Sintetizador Off</span>
+        </button>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main>
+
+        <!-- ===================================================================
+             TAB 1: ENREDO E NARRATIVA DE D. PEDRO IV
+             =================================================================== -->
+        <section id="tab-story" class="tab-content active">
+            <div class="story-hero">
+                <h2>O Despertar da Serpe na Era Digital</h2>
+                <p>No século XIX, combateu pela liberdade com o brasão do Dragão da Casa de Bragança. Hoje, o mesmo espírito renasce para libertar as mentes da ilusão através do conhecimento livre.</p>
+            </div>
+
+            <div class="chapter-nav" id="chapter-nav">
+                <!-- Dynamic Chapter Pills -->
+            </div>
+
+            <div class="chapter-card" id="chapter-display">
+                <!-- Active Chapter Content Hydrated via JS -->
+            </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 2: SUBDOMÍNIOS ODICFORCESOUNDS
+             =================================================================== -->
+        <section id="tab-domains" class="tab-content">
+            <div class="portal-controls">
+                <div class="search-box">
+                    <input type="text" id="domain-search" placeholder="Pesquisar conhecimentos, livros, wikis...">
+                </div>
+                <div class="filter-pills">
+                    <button class="filter-btn active" data-filter="all">Todos</button>
+                    <button class="filter-btn" data-filter="arte">Arte & Som</button>
+                    <button class="filter-btn" data-filter="filosofia">Filosofia</button>
+                    <button class="filter-btn" data-filter="pratica">Lógica & Wiki</button>
+                </div>
+            </div>
+
+            <div class="domains-grid" id="domains-grid">
+                <!-- Domain Cards Rendered via JS -->
+            </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 3: ALQUIMIA DO MACACO DRAGÃO
+             =================================================================== -->
+        <section id="tab-alchemy" class="tab-content">
+            <div class="alchemy-container">
+                <div class="alchemy-diagram">
+                    <div class="alchemy-nodes">
+                        <div class="node-btn active" data-node="monkey">
+                            <span class="icon">🐒</span>
+                            <span class="label">MACACO</span>
+                        </div>
+                        <div class="node-btn" data-node="tiger">
+                            <span class="icon">🐅</span>
+                            <span class="label">TIGRE</span>
+                        </div>
+                        <div class="node-btn" data-node="dragon">
+                            <span class="icon">🐉</span>
+                            <span class="label">DRAGÃO</span>
+                        </div>
+                    </div>
+
+                    <div class="alchemy-core" id="core-trigger">
+                        <span class="icon">☯️</span>
+                        <h4>Macaco Dragão</h4>
+                    </div>
+                </div>
+
+                <div class="alchemy-info" id="node-info-panel">
+                    <!-- Hydrated via JS based on selected node -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 4: ORÁCULO DO TAO E AMBIENTE SONORO
+             =================================================================== -->
+        <section id="tab-oracle" class="tab-content">
+            <div class="oracle-grid">
+                
+                <!-- Oráculo de Sabedoria -->
+                <div class="oracle-card">
+                    <div>
+                        <h3>✨ Oráculo da Evolução Humana</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Receba uma reflexão guiada pelo fluxo do Tao, pelo desacoplamento da ilusão e pela sabedoria do Macaco Dragão.</p>
+                        
+                        <div class="oracle-display">
+                            <p class="oracle-quote" id="oracle-quote-text">"A imaginação dá a visão, a lógica constrói o caminho, mas só a aplicação liberta o espírito."</p>
+                            <p class="oracle-source" id="oracle-quote-source">— Manifesto OdicforceSounds</p>
+                        </div>
+                    </div>
+
+                    <button class="btn-generate" id="btn-oracle-generate">Consultar Nova Citação</button>
+                </div>
+
+                <!-- Sintetizador Místico Web Audio API -->
+                <div class="synth-card">
+                    <div>
+                        <h3>🎵 Sintetizador Áudio Ambient Xamânico</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Frequências harmónicas geradas diretamente no seu navegador para meditação e estudo.</p>
+
+                        <div class="synth-controls">
+                            <div class="control-group">
+                                <label for="freq-slider">Frequência Base: <span id="freq-val">432 Hz</span></label>
+                                <input type="range" id="freq-slider" class="synth-slider" min="100" max="800" value="432">
+                            </div>
+
+                            <div class="control-group">
+                                <label for="volume-slider">Volume Principal</label>
+                                <input type="range" id="volume-slider" class="synth-slider" min="0" max="1" step="0.05" value="0.3">
+                            </div>
+
+                            <div class="synth-buttons">
+                                <button class="sound-btn active" data-preset="drone">Hum Zen</button>
+                                <button class="sound-btn" data-preset="binaural">Binaural 8Hz</button>
+                                <button class="sound-btn" data-preset="space">Frequência Solfeggio</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+                        Utiliza a Web Audio API nativa. Isento de amostras externas.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL POPUP FOR DOMAIN DETAILS -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" id="modal-close">&times;</button>
+            <div id="modal-content">
+                <!-- Dynamic Content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <p><strong>OdicforceSounds</strong> — Projeto Aberto de Evolução e Conhecimento Livre</p>
+        <p>Inspirado na coragem histórica de D. Pedro IV (a Serpe Real) e no símbolo sagrado do Macaco Dragão.</p>
+        <div class="footer-links">
+            <a href="https://blog.odicforcesounds.com" target="_blank">blog.odicforcesounds.com</a> •
+            <a href="https://wiki.odicforcesounds.com" target="_blank">wiki.odicforcesounds.com</a> •
+            <a href="https://book.odicforcesounds.com" target="_blank">book.odicforcesounds.com</a> •
+            <a href="https://art.odicforcesounds.com" target="_blank">art.odicforcesounds.com</a>
+        </div>
+    </footer>
+
+    <!-- ==========================================================================
+         JAVASCRIPT LOGIC
+         ========================================================================== -->
+    <script>
+        /* ==========================================================================
+           DATA STRUCTURES: CHAPTERS, DOMAINS, ALCHEMY & ORACLE
+           ========================================================================== */
+        
+        const CHAPTERS_DATA = [
+            {
+                id: 1,
+                title: "Capítulo I: A Reencarnação da Serpe",
+                badge: "A Herança Imperial",
+                content: `
+                    <p>No século XIX, o Rei D. Pedro IV ficou eternizado na história de Portugal e do Brasil não apenas pela sua coroa, mas pela coragem indomável. Conhecido como "O Libertador" ou "O Rei-Soldado", D. Pedro carregou consigo o símbolo heráldico da Casa de Bragança: a <strong>Serpe Real</strong>, o dragão negro que defenderia a liberdade no lendário Cerco do Porto.</p>
+                    <div class="quote-box">"Se a espada libertou o povo do absolutismo no passado, é a luz do conhecimento que libertará o espírito no presente."</div>
+                    <p>Nascer na atualidade não alterou a sua essência. A espada e as muralhas foram substituídas por linhas de código, redes digitais e servidores abertos. A valentia primária que outrora liderava exércitos libertadores agora combate a maior das tiranias modernas: a ignorância, a ilusão e a privatização do conhecimento.</p>
+                `
+            },
+            {
+                id: 2,
+                title: "Capítulo II: O Símbolo Sagrado do Macaco Dragão",
+                badge: "União das Tradições",
+                content: `
+                    <p>Ao renascer no mundo contemporâneo, o autor compreendeu que o antigo símbolo do Dragão necessitava de uma nova dimensão para dialogar com a evolução humana. Na célebre metáfora da <em>Jornada Xamânica</em>, o Dragão uniu-se ao <strong>Macaco</strong> e ao <strong>Tigre</strong>.</p>
+                    <p>O <strong>Macaco</strong> representa a mente curiosa e incansável do ser humano — aquela que explora, questiona e tenta quebrar as correntes da ilusão terrestre. O <strong>Tigre</strong> concede a visão penetrante e a capacidade de enxergar a verdade nua. Finalmente, o <strong>Dragão</strong> aporta a sabedoria ancestral, silenciosa e profunda do espírito, conferindo voz e propósito às descobertas do Macaco.</p>
+                    <div class="quote-box">O Macaco Dragão é o grande emblema desta era: a mente desperta que usa a curiosidade para alcançar a sabedoria do Dragão.</div>
+                `
+            },
+            {
+                id: 3,
+                title: "Capítulo III: A Quadrilogia dos Subdomínios",
+                badge: "Arquitetura do Saber",
+                content: `
+                    <p>Para cumprir a missão de disponibilizar conhecimento útil e gratuito para toda a humanidade, a expressão do Macaco Dragão foi dividida numa quadrilogia de plataformas digitais interligadas:</p>
+                    <ul>
+                        <li style="margin-bottom:0.5rem">🎨 <strong>art.odicforcesounds.com:</strong> A porta da Imaginação, onde a música ambiental xamânica e as expressões visuais ativam o espírito.</li>
+                        <li style="margin-bottom:0.5rem">📖 <strong>blog.odicforcesounds.com:</strong> O diário do Caminho, contendo reflexões filosóficas profundas sobre o Tao e a superação do ego.</li>
+                        <li style="margin-bottom:0.5rem">🧠 <strong>wiki.odicforcesounds.com:</strong> A estrutura da Lógica e Aplicação Prática, mapeando conceitos para uso diário.</li>
+                        <li style="margin-bottom:0.5rem">📚 <strong>book.odicforcesounds.com:</strong> O compêndio estruturado sobre a ilusão e a libertação da consciência.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 4,
+                title: "Capítulo IV: O Manifesto da Consciência Livre",
+                badge: "A Alquimia Fundamental",
+                content: `
+                    <p>O trabalho oferecido em <strong>odicforcesounds.com</strong> apoia-se numa equação alquímica para a evolução da humanidade:</p>
+                    <div class="quote-box" style="text-align: center; font-size: 1.2rem; font-weight: bold;">
+                        Imaginação (Arte) + Lógica (Wiki/GitHub) = Aplicação (Livro/Vida)
+                    </div>
+                    <p>A valentia de D. Pedro IV permanece bem viva. Oferecer conteúdos ricos, áudios estimulantes, reflexões filosóficas e guias práticos sem qualquer barreira financeira ou registo é o ato supremo de liberdade da nossa era. A evolução da consciência humana é um direito universal.</p>
+		    <h2>Ir para a <a href="index.html">Página Principal</a></h2>
+                `
+            }
+        ];
+
+        const DOMAINS_DATA = [
+            {
+                id: "art",
+                title: "art.odicforcesounds.com",
+                category: "arte",
+                badge: "Imaginação & Jornada Xamânica",
+                desc: "Plataforma dedicada à expressão musical e às artes visuais místicas. Apresenta faixas e projetos sonoros desenvolvidos para auxiliar em estados de meditação, foco e expansão de consciência.",
+                tags: ["Música Ambient", "Xamanismo", "Solfeggio", "Arte Visional"],
+                link: "https://art.odicforcesounds.com",
+                details: "No subdomínio 'art', o áudio e a imagem atuam como catalisadores para a imaginação. É onde a linguagem silenciosa do Dragão ganha forma através de frequências sonoras que ajudam a mente a acalmar o ruído externo."
+            },
+            {
+                id: "blog",
+                title: "blog.odicforcesounds.com",
+                category: "filosofia",
+                badge: "O Caminho, o Sonho & O Tao",
+                desc: "O centro de ensaios e reflexões. Explora temas como a libertação da ilusão material, o fluxo natural do Tao (道), a desconstrução das armadilhas do ego e os relatos da jornada humana.",
+                tags: ["Taoismo", "Filosofia", "O Caminho e o Sonho", "Despertar"],
+                link: "https://blog.odicforcesounds.com",
+                details: "O Blog reúne artigos e ensaios profundamente reflexivos sobre a vida contemporânea. Aborda a transição entre o mundo das ilusões e a aceitação do fluxo natural da existência através do ensinamento antigo do Tao."
+            },
+            {
+                id: "wiki",
+                title: "wiki.odicforcesounds.com",
+                category: "pratica",
+                badge: "Lógica, Estrutura & Aplicação",
+                desc: "Base de conhecimento estruturada e pragmática. Sintetiza conceitos, tutoriais e ferramentas lógicas necessárias para aplicar a filosofia do Macaco Dragão no dia a dia.",
+                tags: ["Base de Conhecimento", "Lógica", "Guias Práticos", "Sistemas"],
+                link: "https://wiki.odicforcesounds.com",
+                details: "A Wiki traduz grandes visões abstratas em passos concretos e compreensíveis. Representa a mente metódica necessária para construir pontes sólidas entre o pensamento filosófico e a ação diária."
+            },
+            {
+                id: "book",
+                title: "book.odicforcesounds.com",
+                category: "filosofia",
+                badge: "Compêndio & Transcendência",
+                desc: "Repositório em formato de livro digital sobre a ilusão e a evolução da humanidade. Reúne a síntese do conhecimento do Macaco, do Tigre e do Dragão num formato contínuo e integrado.",
+                tags: ["Livro Digital", "Ilusão", "Evolução Humana", "Estudo Profundo"],
+                link: "https://book.odicforcesounds.com",
+                details: "O Book funciona como o texto fundamental do projeto. Organizado para leitura sequencial, examina os mecanismos que mantêm a mente aprisionada e oferece a chave para a libertação pessoal."
+            }
+        ];
+
+        const ALCHEMY_DATA = {
+            monkey: {
+                title: "🐒 O Macaco: Curiosidade & Ação",
+                formula: "Mente Inquieta + Busca Ativa = Rompimento da Ilusão",
+                content: "O Macaco é a personificação do ser humano em busca de respostas. Ele é curioso, ágil e inconformado com as gaiolas do mundo material. Contudo, sem discernimento, a mente do macaco pode dispersar-se em distrações artificiais."
+            },
+            tiger: {
+                title: "🐅 O Tigre: A Visão Penetrante",
+                formula: "Discernimento + Foco Implacável = Percepção da Verdade",
+                content: "O Tigre traz a acuidade visual e o foco no presente. Ele observa o ambiente sem ser enganado pelas ilusões do ego, permitindo identificar claramente o que é real e o que é mera projeção mental."
+            },
+            dragon: {
+                title: "🐉 O Dragão: A Sabedoria Ancestral",
+                formula: "Silêncio Interior + Força Espiritual = A Voz da Verdade",
+                content: "O Dragão é o símbolo máximo da tradição e da linhagem imperial de D. Pedro IV. Representa a força silenciosa, o conhecimento profundo acumulado e a capacidade de expressar a verdade para libertar os outros."
+            },
+            core: {
+                title: "☯️ Macaco Dragão: A Síntese Suprema",
+                formula: "Imaginação (Arte) + Lógica (Wiki) = Aplicação Prática (Livro)",
+                content: "A fusão perfeita: o Macaco atua no mundo e explora com curiosidade; o Tigre garante a visão límpida; e o Dragão concede a elevação do espírito. Juntos formam o pilar central do OdicforceSounds."
+            }
+        };
+
+        const ORACLE_QUOTES = [
+            { quote: "A imaginação dá a visão, a lógica constrói o caminho, mas só a aplicação liberta o espírito.", source: "— Equação Macaco Dragão" },
+            { quote: "Quem tenta dominar o fluxo do Tao perde-se na ilusão; quem flui com ele torna-se invencível como a água.", source: "— blog.odicforcesounds.com" },
+            { quote: "O conhecimento verdadeiro não se vende nem se esconde; distribui-se gratuitamente para acelerar a evolução de todos.", source: "— Manifesto de D. Pedro IV na Era Digital" },
+            { quote: "O Macaco questiona as grades da gaiola; o Tigre descobre onde está a fechadura; o Dragão abre as portas para sempre.", source: "— book.odicforcesounds.com" },
+            { quote: "A harmonia não é a ausência de som, mas o alinhamento perfeito de todas as frequências da consciência.", source: "— art.odicforcesounds.com" },
+            { quote: "Praticar a lógica sem compaixão gera frieza; buscar a espiritualidade sem estrutura gera ilusão.", source: "— wiki.odicforcesounds.com" }
+        ];
+
+        /* ==========================================================================
+           STATE MANAGEMENT
+           ========================================================================== */
+        let activeTab = 'tab-story';
+        let activeChapter = 1;
+        let isAudioPlaying = false;
+        let audioCtx = null;
+        let masterGain = null;
+        let osc1 = null, osc2 = null;
+        let currentPreset = 'drone';
+
+        /* ==========================================================================
+           INITIALIZATION & EVENT LISTENERS
+           ========================================================================== */
+        document.addEventListener('DOMContentLoaded', () => {
+            initNavigation();
+            renderChaptersNav();
+            renderChapterDisplay(activeChapter);
+            renderDomains(DOMAINS_DATA);
+            initDomainsSearchAndFilter();
+            initAlchemyVisualizer();
+            initOracle();
+            initAudioSynth();
+            initModal();
+        });
+
+        /* Navigation Logic */
+        function initNavigation() {
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetTab = btn.getAttribute('data-tab');
+                    
+                    navButtons.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+
+                    btn.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                    activeTab = targetTab;
+                });
+            });
+
+            document.getElementById('brand-home').addEventListener('click', () => {
+                document.querySelector('[data-tab="tab-story"]').click();
+            });
+        }
+
+        /* ==========================================================================
+           TAB 1 LOGIC: CHAPTERS & STORY
+           ========================================================================== */
+        function renderChaptersNav() {
+            const container = document.getElementById('chapter-nav');
+            container.innerHTML = CHAPTERS_DATA.map(chap => `
+                <button class="chapter-tab ${chap.id === activeChapter ? 'active' : ''}" data-chap="${chap.id}">
+                    ${chap.title.split(':')[0]}
+                </button>
+            `).join('');
+
+            container.querySelectorAll('.chapter-tab').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeChapter = parseInt(btn.getAttribute('data-chap'));
+                    renderChaptersNav();
+                    renderChapterDisplay(activeChapter);
+                });
+            });
+        }
+
+        function renderChapterDisplay(chapId) {
+            const chap = CHAPTERS_DATA.find(c => c.id === chapId);
+            const display = document.getElementById('chapter-display');
+            
+            display.innerHTML = `
+                <div class="chapter-header">
+                    <div class="chapter-number">${chap.id}</div>
+                    <div>
+                        <div style="font-size: 0.8rem; color: var(--teal-bright); font-weight:700;">${chap.badge}</div>
+                        <h3 class="chapter-title">${chap.title}</h3>
+                    </div>
+                </div>
+                <div class="chapter-body">
+                    ${chap.content}
+                </div>
+            `;
+        }
+
+        /* ==========================================================================
+           TAB 2 LOGIC: DOMAINS PORTAL
+           ========================================================================== */
+        function renderDomains(data) {
+            const grid = document.getElementById('domains-grid');
+            if (data.length === 0) {
+                grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem;">Nenhum subdomínio encontrado para esta pesquisa.</p>`;
+                return;
+            }
+
+            grid.innerHTML = data.map(item => `
+                <div class="domain-card">
+                    <div>
+                        <div class="domain-badge">${item.badge}</div>
+                        <h3>${item.title}</h3>
+                        <p>${item.desc}</p>
+                    </div>
+                    <div>
+                        <div class="domain-tags">
+                            ${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                        </div>
+                        <div class="domain-action">
+                            <a href="${item.link}" target="_blank" class="btn-visit">Visitar Domínio ↗</a>
+                            <button class="btn-details" data-id="${item.id}">ℹ️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            grid.querySelectorAll('.btn-details').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const domainId = btn.getAttribute('data-id');
+                    openDomainModal(domainId);
+                });
+            });
+        }
+
+        function initDomainsSearchAndFilter() {
+            const searchInput = document.getElementById('domain-search');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+
+            let currentCategory = 'all';
+            let currentSearch = '';
+
+            function applyFilters() {
+                const filtered = DOMAINS_DATA.filter(item => {
+                    const matchesCategory = currentCategory === 'all' || item.category === currentCategory;
+                    const matchesSearch = item.title.toLowerCase().includes(currentSearch) ||
+                                          item.desc.toLowerCase().includes(currentSearch) ||
+                                          item.tags.some(t => t.toLowerCase().includes(currentSearch));
+                    return matchesCategory && matchesSearch;
+                });
+                renderDomains(filtered);
+            }
+
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value.toLowerCase().trim();
+                applyFilters();
+            });
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCategory = btn.getAttribute('data-filter');
+                    applyFilters();
+                });
+            });
+        }
+
+        /* ==========================================================================
+           TAB 3 LOGIC: ALCHEMY VISUALIZER
+           ========================================================================== */
+        function initAlchemyVisualizer() {
+            const nodeBtns = document.querySelectorAll('.node-btn');
+            const coreBtn = document.getElementById('core-trigger');
+            
+            // Default to core/monkey
+            updateAlchemyInfo('monkey');
+
+            nodeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    nodeBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const key = btn.getAttribute('data-node');
+                    updateAlchemyInfo(key);
+                });
+            });
+
+            coreBtn.addEventListener('click', () => {
+                nodeBtns.forEach(b => b.classList.remove('active'));
+                updateAlchemyInfo('core');
+            });
+        }
+
+        function updateAlchemyInfo(key) {
+            const info = ALCHEMY_DATA[key];
+            const panel = document.getElementById('node-info-panel');
+            
+            panel.innerHTML = `
+                <h3>${info.title}</h3>
+                <div class="alchemy-formula">${info.formula}</div>
+                <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.7;">${info.content}</p>
+            `;
+        }
+
+        /* ==========================================================================
+           TAB 4 LOGIC: ORACLE & SOUND SYNTHESIZER (WEB AUDIO API)
+           ========================================================================== */
+        function initOracle() {
+            const btn = document.getElementById('btn-oracle-generate');
+            const quoteText = document.getElementById('oracle-quote-text');
+            const quoteSource = document.getElementById('oracle-quote-source');
+
+            btn.addEventListener('click', () => {
+                const randomIdx = Math.floor(Math.random() * ORACLE_QUOTES.length);
+                const item = ORACLE_QUOTES[randomIdx];
+
+                quoteText.style.opacity = '0';
+                quoteSource.style.opacity = '0';
+
+                setTimeout(() => {
+                    quoteText.textContent = `"${item.quote}"`;
+                    quoteSource.textContent = item.source;
+                    quoteText.style.opacity = '1';
+                    quoteSource.style.opacity = '1';
+                }, 200);
+            });
+        }
+
+        function initAudioSynth() {
+            const toggleBtn = document.getElementById('audio-toggle');
+            const label = document.getElementById('audio-label');
+            const indicator = document.getElementById('audio-indicator');
+            const freqSlider = document.getElementById('freq-slider');
+            const freqVal = document.getElementById('freq-val');
+            const volumeSlider = document.getElementById('volume-slider');
+            const presetBtns = document.querySelectorAll('.sound-btn');
+
+            toggleBtn.addEventListener('click', () => {
+                if (!isAudioPlaying) {
+                    startAudio();
+                } else {
+                    stopAudio();
+                }
+            });
+
+            freqSlider.addEventListener('input', (e) => {
+                const val = e.target.value;
+                freqVal.textContent = `${val} Hz`;
+                if (osc1 && audioCtx) {
+                    osc1.frequency.setValueAtTime(parseFloat(val), audioCtx.currentTime);
+                    if (currentPreset === 'binaural') {
+                        osc2.frequency.setValueAtTime(parseFloat(val) + 8, audioCtx.currentTime);
+                    } else {
+                        osc2.frequency.setValueAtTime(parseFloat(val) * 1.5, audioCtx.currentTime);
+                    }
+                }
+            });
+
+            volumeSlider.addEventListener('input', (e) => {
+                if (masterGain && audioCtx) {
+                    masterGain.gain.setValueAtTime(parseFloat(e.target.value), audioCtx.currentTime);
+                }
+            });
+
+            presetBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    presetBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentPreset = btn.getAttribute('data-preset');
+
+                    if (currentPreset === 'drone') {
+                        freqSlider.value = 432;
+                    } else if (currentPreset === 'binaural') {
+                        freqSlider.value = 216;
+                    } else if (currentPreset === 'space') {
+                        freqSlider.value = 528;
+                    }
+                    freqSlider.dispatchEvent(new Event('input'));
+                });
+            });
+
+            function startAudio() {
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (!audioCtx) {
+                        audioCtx = new AudioContext();
+                    }
+
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume();
+                    }
+
+                    masterGain = audioCtx.createGain();
+                    masterGain.gain.setValueAtTime(parseFloat(volumeSlider.value), audioCtx.currentTime);
+                    masterGain.connect(audioCtx.destination);
+
+                    const baseFreq = parseFloat(freqSlider.value);
+
+                    osc1 = audioCtx.createOscillator();
+                    osc1.type = 'sine';
+                    osc1.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
+
+                    osc2 = audioCtx.createOscillator();
+                    osc2.type = 'triangle';
+                    
+                    if (currentPreset === 'binaural') {
+                        osc2.frequency.setValueAtTime(baseFreq + 8, audioCtx.currentTime);
+                    } else {
+                        osc2.frequency.setValueAtTime(baseFreq * 1.5, audioCtx.currentTime);
+                    }
+
+                    const osc2Gain = audioCtx.createGain();
+                    osc2Gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+
+                    osc1.connect(masterGain);
+                    osc2.connect(osc2Gain);
+                    osc2Gain.connect(masterGain);
+
+                    osc1.start();
+                    osc2.start();
+
+                    isAudioPlaying = true;
+                    label.textContent = "Sintetizador On";
+                    indicator.classList.add('playing');
+                } catch (e) {
+                    console.error("Web Audio API Error:", e);
+                }
+            }
+
+            function stopAudio() {
+                if (osc1) { osc1.stop(); osc1.disconnect(); }
+                if (osc2) { osc2.stop(); osc2.disconnect(); }
+                isAudioPlaying = false;
+                label.textContent = "Sintetizador Off";
+                indicator.classList.remove('playing');
+            }
+        }
+
+        /* ==========================================================================
+           MODAL DIALOG LOGIC
+           ========================================================================== */
+        function initModal() {
+            const overlay = document.getElementById('modal-overlay');
+            const closeBtn = document.getElementById('modal-close');
+
+            closeBtn.addEventListener('click', () => {
+                overlay.classList.remove('active');
+            });
+
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
+                }
+            });
+        }
+
+        function openDomainModal(domainId) {
+            const domain = DOMAINS_DATA.find(d => d.id === domainId);
+            const overlay = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-content');
+
+            content.innerHTML = `
+                <div style="font-size: 0.8rem; color: var(--teal-bright); font-weight:700; text-transform:uppercase; margin-bottom: 0.5rem;">${domain.badge}</div>
+                <h2 style="color: var(--gold-light); margin-bottom: 1rem;">${domain.title}</h2>
+                <p style="color: #cbd5e1; font-size: 1.05rem; margin-bottom: 1.5rem;">${domain.details}</p>
+                
+                <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Etiquetas & Conceitos:</div>
+                    <div style="display:flex; gap: 8px; flex-wrap:wrap;">
+                        ${domain.tags.map(t => `<span class="tag" style="background: rgba(6,182,212,0.2); color: var(--teal-bright);">${t}</span>`).join('')}
+                    </div>
+                </div>
+
+                <a href="${domain.link}" target="_blank" class="btn-visit" style="display: block; text-align: center; padding: 0.8rem;">
+                    Abrir Plataforma Gratuita ↗
+                </a>
+            `;
+
+            overlay.classList.add('active');
+        }
+    </script>
+</body>
+</html>
