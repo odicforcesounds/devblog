@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Core Architecture // Technical Pipeline</title>
+    <style>
+        :root {
+            --bg-deep: #030308;
+            --bg-panel: #0a0b14;
+            --bg-panel-hover: #121424;
+            --neon-cyan: #00f0ff;
+            --neon-magenta: #ff007f;
+            --neon-green: #00ff66;
+            --neon-yellow: #ffe600;
+            --text-main: #c0c8e0;
+            --text-dim: #6b7280;
+            --border-glow: rgba(0, 240, 255, 0.3);
+            --scanline: rgba(18, 16, 16, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace, system-ui, -apple-system;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Scanlines Effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 9999;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* Tech Grid Background */
+        .tech-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+        }
+
+        /* Header Layout */
+        header {
+            border-bottom: 2px solid var(--neon-cyan);
+            padding: 2rem;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(0,240,255,0.05) 0%, transparent 100%);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+            position: relative;
+        }
+
+        header h1 {
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px rgba(0,240,255,0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.25rem 0.75rem;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            font-size: 0.8rem;
+            text-shadow: 0 0 5px var(--neon-green);
+            box-shadow: inset 0 0 5px rgba(0,255,102,0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            padding-bottom: 1rem;
+        }
+
+        .tab-btn {
+            background: var(--bg-panel);
+            border: 1px solid var(--text-dim);
+            color: var(--text-main);
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-btn:hover {
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+
+        .tab-btn.active {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 8px var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+
+        /* Content Panels */
+        .panel {
+            display: none;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-glow);
+            padding: 2.5rem;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 240, 255, 0.05);
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .panel.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel h2 {
+            color: var(--neon-magenta);
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .panel h2::before {
+            content: "//";
+            color: var(--neon-cyan);
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        p {
+            line-height: 1.7;
+            margin-bottom: 1rem;
+            color: #b0b8d0;
+        }
+
+        ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            color: #b0b8d0;
+        }
+
+        /* Code Blocks */
+        .code-box {
+            background: #010206;
+            border: 1px solid #1f293d;
+            border-left: 4px solid var(--neon-cyan);
+            padding: 1.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            color: #d1d5db;
+            margin: 1.5rem 0;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .keyword { color: var(--neon-magenta); }
+        .function { color: var(--neon-cyan); }
+        .string { color: var(--neon-green); }
+        .comment { color: var(--text-dim); font-style: italic; }
+        .number { color: var(--neon-yellow); }
+
+        /* Interactive Neural Visualizer Panel */
+        .visualizer-container {
+            background: #020307;
+            border: 1px solid var(--neon-cyan);
+            padding: 1.5rem;
+            border-radius: 4px;
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 350px;
+            background: #010204;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .cyber-btn {
+            background: transparent;
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 0.6rem 1.2rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            box-shadow: 0 0 8px rgba(0,240,255,0.2);
+        }
+
+        .cyber-btn:hover {
+            background: var(--neon-cyan);
+            color: var(--bg-deep);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+
+        .metric-display {
+            background: rgba(0,240,255,0.05);
+            border: 1px solid rgba(0,240,255,0.2);
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+            color: var(--neon-cyan);
+        }
+
+        /* Formula display */
+        .formula {
+            background: rgba(255, 0, 127, 0.05);
+            border-left: 3px solid var(--neon-magenta);
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: monospace;
+            color: #ff88cc;
+            letter-spacing: 1px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            border-top: 1px solid rgba(0, 240, 255, 0.1);
+            letter-spacing: 1px;
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tech-grid"></div>
+
+    <header>
+        <h1>Neural Core Architecture</h1>
+        <p>Technical Specification & Processing Pipeline</p>
+        <div class="status-badge">STATUS: ONLINE // READY FOR VECTOR STREAM</div>
+    </header>
+
+    <div class="container">
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs" role="tablist">
+            <button class="tab-btn active" onclick="switchTab(event, 'tab-ingestion')">1. Tokenization</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-embeddings')">2. Embeddings</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-matrix')">3. Forward Pass</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-activations')">4. Activations</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-backprop')">5. Backpropagation</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-simulator')">6. Live Simulator</button>
+        </nav>
+
+        <!-- Tab 1: Ingestion & Tokenization -->
+        <section id="tab-ingestion" class="panel active">
+            <h2>Data Ingestion & Tokenization</h2>
+            <div class="grid-layout">
+                <div>
+                    <p>Before raw data can enter an artificial intelligence pipeline, unstructured input (text, images, audio) undergoes rigorous parsing. For Large Language Models (LLMs), text strings are split into discrete sub-word tokens using algorithms like Byte-Pair Encoding (BPE) or WordPiece.</p>
+                    <p>Each token is mapped to an immutable integer index within a pre-defined vocabulary matrix $V$, typically containing between 32,000 to over 250,000 distinct tokens.</p>
+                    <ul>
+                        <li><strong>Raw String:</strong> "Cyberpunk AI Core"</li>
+                        <li><strong>Token Sequence:</strong> `["Cyber", "punk", " AI", " Core"]`</li>
+                        <li><strong>Vocabulary IDs:</strong> `[14280, 18439, 9374, 5821]`</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="code-box">
+<span class="comment"># Python implementation of basic BPE Tokenization Simulation</span>
+<span class="keyword">import</span> re
+
+<span class="keyword">class</span> <span class="function">SimpleTokenizer</span>:
+    <span class="keyword">def</span> <span class="function">__init__</span>(self, vocab):
+        self.vocab = vocab
+        self.inv_vocab = {v: k <span class="keyword">for</span> k, v <span class="keyword">in</span> vocab.items()}
+
+    <span class="keyword">def</span> <span class="function">encode</span>(self, text: <span class="string">str</span>) -> <span class="string">list</span>:
+        <span class="comment"># Regex tokenizer partition</span>
+        tokens = re.findall(<span class="string">r'\w+|[^\w\s]'</span>, text)
+        <span class="keyword">return</span> [self.vocab.get(t, <span class="number">0</span>) <span class="keyword">for</span> t <span class="keyword">in</span> tokens]
+
+<span class="comment"># Execution Core</span>
+vocab_map = {<span class="string">"Cyber"</span>: <span class="number">101</span>, <span class="string">"punk"</span>: <span class="number">102</span>, <span class="string">"AI"</span>: <span class="number">103</span>}
+tokenizer = SimpleTokenizer(vocab_map)
+token_ids = tokenizer.encode(<span class="string">"Cyber punk AI"</span>)
+print(token_ids) <span class="comment"># Output: [101, 102, 103]</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 2: Embeddings & Vector Space -->
+        <section id="tab-embeddings" class="panel">
+            <h2>Vectorization & Embeddings</h2>
+            <div class="grid-layout">
+                <div>
+                    <p>Integer IDs lack semantic meaning (e.g., token 500 isn't "greater" than token 100). The embedding layer transforms discrete token indices into continuous, high-dimensional dense vectors $\mathbb{x} \in \mathbb{R}^d$ (where dimension $d$ ranges from 768 to 12,800+).</p>
+                    <p>Furthermore, because transformers process inputs in parallel rather than sequentially, <strong>Positional Encodings</strong> or Rotary Embeddings (RoPE) are added directly to token vectors to encode word order and relative distance.</p>
+                    <div class="formula">
+                        $\mathbf{H}_0 = \text{Embedding}(X) + \text{PositionalEncoding}$
+                    </div>
+                </div>
+                <div>
+                    <div class="code-box">
+<span class="keyword">import</span> torch
+<span class="keyword">import</span> torch.nn as nn
+
+<span class="keyword">class</span> <span class="function">EmbeddingPipeline</span>(nn.Module):
+    <span class="keyword">def</span> <span class="function">__init__</span>(self, vocab_size, d_model):
+        <span class="keyword">super</span>().__init__()
+        self.token_embed = nn.Embedding(vocab_size, d_model)
+        self.pos_embed = nn.Embedding(<span class="number">512</span>, d_model)
+
+    <span class="keyword">def</span> <span class="function">forward</span>(self, input_ids):
+        seq_len = input_ids.size(<span class="number">1</span>)
+        positions = torch.arange(<span class="number">0</span>, seq_len, device=input_ids.device)
+        
+        <span class="comment"># Combine semantic and positional vectors</span>
+        out = self.token_embed(input_ids) + self.pos_embed(positions)
+        <span class="keyword">return</span> out</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 3: Forward Pass & Matrix Operations -->
+        <section id="tab-matrix" class="panel">
+            <h2>Neural Network Forward Pass & Matrix Operations</h2>
+            <div class="grid-layout">
+                <div>
+                    <p>The core computational engine of modern deep learning relies on massive matrix multiplications (GEMM). At each linear layer, incoming activation tensors $\mathbf{X}$ are multiplied by weight matrices $\mathbf{W}$ and added to bias vectors $\mathbf{b}$.</p>
+                    <p>In attention mechanisms (Transformers), this expands into Query ($\mathbf{Q}$), Key ($\mathbf{K}$), and Value ($\mathbf{V}$) projections:</p>
+                    <div class="formula">
+                        $\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{d_k}}\right)\mathbf{V}$
+                    </div>
+                    <p>Hardware accelerators (GPUs/TPUs) parallelize these dot-product operations across thousands of streaming multiprocessors simultaneously.</p>
+                </div>
+                <div>
+                    <div class="code-box">
+<span class="keyword">import</span> math
+<span class="keyword">import</span> torch
+<span class="keyword">import</span> torch.nn.functional as F
+
+<span class="keyword">def</span> <span class="function">scaled_dot_product_attention</span>(Q, K, V):
+    d_k = Q.size(-<span class="number">1</span>)
+    <span class="comment"># Matrix multiplication of Query and Transposed Key</span>
+    scores = torch.matmul(Q, K.transpose(-<span class="number">2</span>, -<span class="number">1</span>)) / math.sqrt(d_k)
+    
+    <span class="comment"># Normalization via Softmax</span>
+    weights = F.softmax(scores, dim=-<span class="number">1</span>)
+    
+    <span class="comment"># Final dot product with Value matrix</span>
+    <span class="keyword">return</span> torch.matmul(weights, V), weights</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 4: Activation Functions -->
+        <section id="tab-activations" class="panel">
+            <h2>Activation Functions (ReLU / GELU)</h2>
+            <div class="grid-layout">
+                <div>
+                    <p>Linear transformations alone stack into a single linear operation. <strong>Activation functions</strong> introduce non-linearity, enabling artificial neural networks to approximate complex, non-linear functions (Universal Approximation Theorem).</p>
+                    <ul>
+                        <li><strong>ReLU (Rectified Linear Unit):</strong> $\text{ReLU}(x) = \max(0, x)$. Computationally fast, prevents vanishing gradients for positive inputs.</li>
+                        <li><strong>GELU (Gaussian Error Linear Unit):</strong> Weights inputs by their relative magnitude, widely used in modern transformer architectures like GPT and BERT.</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="code-box">
+<span class="keyword">import</span> torch
+<span class="keyword">import</span> torch.nn as nn
+
+<span class="keyword">class</span> <span class="function">CustomActivations</span>:
+    @staticmethod
+    <span class="keyword">def</span> <span class="function">relu</span>(x):
+        <span class="keyword">return</span> torch.clamp(x, min=<span class="number">0.0</span>)
+
+    @staticmethod
+    <span class="keyword">def</span> <span class="function">gelu</span>(x):
+        <span class="comment"># Gaussian Error Linear Unit approximation</span>
+        <span class="keyword">return</span> <span class="number">0.5</span> * x * (<span class="number">1.0</span> + torch.tanh(
+            math.sqrt(<span class="number">2.0</span> / math.pi) * (x + <span class="number">0.044715</span> * torch.pow(x, <span class="number">3</span>))
+        ))</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 5: Backpropagation & Gradient Descent -->
+        <section id="tab-backprop" class="panel">
+            <h2>Backpropagation & Gradient Descent</h2>
+            <div class="grid-layout">
+                <div>
+                    <p>During training, the model evaluates its prediction error against ground truth targets using a Loss Function (e.g., Cross-Entropy Loss).</p>
+                    <p><strong>Backpropagation</strong> applies the chain rule of calculus in reverse order, calculating the partial derivative of the loss with respect to every weight parameter in the network ($\frac{\partial L}{\partial W}$).</p>
+                    <div class="formula">
+                        $\theta_{t+1} = \theta_t - \eta \nabla_\theta L(\theta_t)$
+                    </div>
+                    <p>Optimizers like AdamW use adaptive learning rates and momentum vectors to update weights efficiently across high-dimensional loss landscapes.</p>
+                </div>
+                <div>
+                    <div class="code-box">
+<span class="keyword">import</span> torch
+<span class="keyword">import</span> torch.optim as optim
+
+<span class="comment"># Dummy model and optimizer setup</span>
+model = torch.nn.Linear(<span class="number">10</span>, <span class="number">2</span>)
+optimizer = optim.AdamW(model.parameters(), lr=<span class="number">1e-3</span>)
+criterion = torch.nn.CrossEntropyLoss()
+
+<span class="comment"># Training Step Iteration</span>
+optimizer.zero_grad() <span class="comment"># Clear stale gradients</span>
+outputs = model(torch.randn(<span class="number">4</span>, <span class="number">10</span>))
+loss = criterion(outputs, torch.tensor([<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>]))
+
+loss.backward()       <span class="comment"># Compute gradients via backprop</span>
+optimizer.step()      <span class="comment"># Update weights via gradient descent</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 6: Live Interactive Neural Simulator -->
+        <section id="tab-simulator" class="panel">
+            <h2>Interactive Neural Architecture Simulation</h2>
+            <p>Simulate signal propagation through a deep neural network layer. Click 'Trigger Forward Pass' to propagate randomized tensors through node weights with activation thresholding.</p>
+            
+            <div class="visualizer-container">
+                <canvas id="neuralCanvas"></canvas>
+                <div class="controls">
+                    <button class="cyber-btn" onclick="triggerSignal()">Trigger Forward Pass</button>
+                    <button class="cyber-btn" onclick="resetNetwork()">Reset Weights</button>
+                    <div class="metric-display" id="metricEpoch">Epoch: 0042 // Loss: 0.0142</div>
+                    <div class="metric-display" id="metricStatus">Status: Idle</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p><a href="index.html">ALL RIGHTS RESERVED</a></p>
+    </footer>
+
+    <script>
+        // Tab switching logic
+        function switchTab(evt, tabId) {
+            const panels = document.querySelectorAll('.panel');
+            panels.forEach(p => p.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+            
+            if(tabId === 'tab-simulator') {
+                resizeCanvas();
+                drawNetwork();
+            }
+        }
+
+        // Neural Architecture Visualizer Canvas
+        const canvas = document.getElementById('neuralCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let layers = [3, 5, 5, 3];
+        let nodes = [];
+        let pulses = [];
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = 350;
+            initNodes();
+        }
+
+        window.addEventListener('resize', () => {
+            if(document.getElementById('tab-simulator').classList.contains('active')) {
+                resizeCanvas();
+                drawNetwork();
+            }
+        });
+
+        function initNodes() {
+            nodes = [];
+            const colWidth = canvas.width / (layers.length + 1);
+            
+            for (let l = 0; l < layers.length; l++) {
+                let layerNodes = [];
+                let rowHeight = canvas.height / (layers[l] + 1);
+                for (let n = 0; n < layers[l]; n++) {
+                    layerNodes.push({
+                        x: colWidth * (l + 1),
+                        y: rowHeight * (n + 1),
+                        activation: Math.random()
+                    });
+                }
+                nodes.push(layerNodes);
+            }
+        }
+
+        function drawNetwork() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw connections (weights)
+            for (let l = 0; l < nodes.length - 1; l++) {
+                for (let i = 0; i < nodes[l].length; i++) {
+                    for (let j = 0; j < nodes[l+1].length; j++) {
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[l][i].x, nodes[l][i].y);
+                        ctx.lineTo(nodes[l+1][j].x, nodes[l+1][j].y);
+                        ctx.strokeStyle = 'rgba(0, 240, 255, 0.15)';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Draw pulses
+            pulses.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff007f';
+                ctx.shadowColor = '#ff007f';
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            // Draw nodes
+            for (let l = 0; l < nodes.length; l++) {
+                for (let n = 0; n < nodes[l].length; n++) {
+                    let node = nodes[l][n];
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, 8, 0, Math.PI * 2);
+                    ctx.fillStyle = l === 0 ? '#00ff66' : (l === nodes.length - 1 ? '#ff007f' : '#00f0ff');
+                    ctx.shadowColor = ctx.fillStyle;
+                    ctx.shadowBlur = 8;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+        }
+
+        function triggerSignal() {
+            document.getElementById('metricStatus').innerText = "Status: Propagating...";
+            pulses = [];
+            
+            // Create pulse traveling from layer to layer
+            for (let l = 0; l < nodes.length - 1; l++) {
+                let startNode = nodes[l][Math.floor(Math.random() * nodes[l].length)];
+                let endNode = nodes[l+1][Math.floor(Math.random() * nodes[l+1].length)];
+                
+                pulses.push({
+                    x: startNode.x,
+                    y: startNode.y,
+                    targetX: endNode.x,
+                    targetY: endNode.y,
+                    progress: 0,
+                    speed: 0.03 + Math.random() * 0.03
+                });
+            }
+
+            animatePulses();
+        }
+
+        function animatePulses() {
+            let active = false;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawNetwork();
+
+            pulses.forEach(p => {
+                if (p.progress < 1) {
+                    p.progress += p.speed;
+                    p.x = p.x + (p.targetX - p.x) * p.speed;
+                    p.y = p.y + (p.targetY - p.y) * p.speed;
+                    active = true;
+                }
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffe600';
+                ctx.shadowColor = '#ffe600';
+                ctx.shadowBlur = 12;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            if (active) {
+                requestAnimationFrame(animatePulses);
+            } else {
+                document.getElementById('metricStatus').innerText = "Status: Forward Pass Complete";
+                // Randomize metric update slightly
+                let currentLoss = (Math.random() * 0.01 + 0.005).toFixed(4);
+                document.getElementById('metricEpoch').innerText = `Epoch: 0043 // Loss: ${currentLoss}`;
+            }
+        }
+
+        function resetNetwork() {
+            pulses = [];
+            initNodes();
+            drawNetwork();
+            document.getElementById('metricStatus').innerText = "Status: Weights Reset";
+        }
+
+        // Initialize canvas on load
+        window.onload = function() {
+            resizeCanvas();
+            drawNetwork();
+        };
+    </script>
+</body>
+</html>
