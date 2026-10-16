@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastering Vim: From Zero to Hero</title>
+    <style>
+        /* CSS RESET & VARIABLES */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-main: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-card: #182234;
+            --bg-code: #0b1120;
+            --border-color: #334155;
+            --border-subtle: #1e293b;
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            
+            --accent-cyan: #38bdf8;
+            --accent-purple: #a855f7;
+            --accent-emerald: #34d399;
+            --accent-rose: #f43f5e;
+            --accent-amber: #fbbf24;
+            --accent-indigo: #818cf8;
+
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+        }
+
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-purple);
+        }
+
+        /* LAYOUT STRUCTURE */
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-icon {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            color: #fff;
+            padding: 0.4rem 0.65rem;
+            border-radius: 0.5rem;
+            font-family: var(--font-mono);
+            font-weight: 800;
+            font-size: 1.1rem;
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+        }
+
+        .brand-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        .brand-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .app-container {
+            display: flex;
+            flex: 1;
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* SIDEBAR NAVIGATION */
+        aside {
+            width: 280px;
+            position: sticky;
+            top: 57px;
+            height: calc(100vh - 57px);
+            background-color: var(--bg-main);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem 1rem;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .toc-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            padding-left: 0.5rem;
+        }
+
+        .toc-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-left: 2px solid transparent;
+        }
+
+        .toc-link:hover {
+            color: var(--text-primary);
+            background-color: var(--bg-surface);
+            border-left-color: var(--accent-purple);
+        }
+
+        /* MAIN CONTENT AREA */
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 3.5rem;
+            overflow-x: hidden;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: ":wq!";
+            position: absolute;
+            right: -10px;
+            bottom: -20px;
+            font-family: var(--font-mono);
+            font-size: 8rem;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.03);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background-color: rgba(168, 85, 247, 0.15);
+            color: var(--accent-purple);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #ffffff, var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            max-width: 680px;
+            margin-bottom: 1.5rem;
+        }
+
+        .formula-box {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--bg-code);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            width: fit-content;
+            flex-wrap: wrap;
+        }
+
+        /* SECTION HEADINGS */
+        .section-header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-number {
+            font-family: var(--font-mono);
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-purple);
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        p.description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* CARDS & GRIDS */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(168, 85, 247, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* BADGES & COMMAND SPANS */
+        .cmd {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 0.15rem 0.45rem;
+            border-radius: 0.25rem;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .cmd-purple {
+            background-color: rgba(168, 85, 247, 0.15);
+            color: var(--accent-purple);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .cmd-cyan {
+            background-color: rgba(56, 189, 248, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .cmd-emerald {
+            background-color: rgba(52, 211, 153, 0.15);
+            color: var(--accent-emerald);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .cmd-amber {
+            background-color: rgba(251, 191, 36, 0.15);
+            color: var(--accent-amber);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .cmd-rose {
+            background-color: rgba(244, 63, 94, 0.15);
+            color: var(--accent-rose);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        /* TABLES */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            background-color: var(--bg-card);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        th {
+            background-color: var(--bg-surface);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+            color: var(--text-primary);
+        }
+
+        /* TERMINAL / CODE BLOCKS */
+        .terminal-block {
+            background-color: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        .terminal-header {
+            background-color: var(--bg-surface);
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background-color: #f87171; }
+        .dot-yellow { background-color: #fbbf24; }
+        .dot-green { background-color: #34d399; }
+
+        .terminal-title {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .terminal-body {
+            padding: 1.25rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            color: var(--text-secondary);
+        }
+
+        .code-comment { color: var(--text-muted); font-style: italic; }
+        .code-keyword { color: var(--accent-purple); font-weight: 600; }
+        .code-string { color: var(--accent-emerald); }
+        .code-cmd { color: var(--accent-cyan); font-weight: 600; }
+        .code-num { color: var(--accent-amber); }
+
+        /* CALLOUT BOXES */
+        .callout {
+            border-left: 4px solid var(--accent-cyan);
+            background-color: rgba(56, 189, 248, 0.05);
+            padding: 1rem 1.25rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 1rem 0;
+        }
+
+        .callout-title {
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .callout-amber {
+            border-left-color: var(--accent-amber);
+            background-color: rgba(251, 191, 36, 0.05);
+        }
+        .callout-amber .callout-title { color: var(--accent-amber); }
+
+        /* LIST STYLES */
+        ul.styled-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        ul.styled-list li {
+            position: relative;
+            padding-left: 1.25rem;
+        }
+
+        ul.styled-list li::before {
+            content: "›";
+            position: absolute;
+            left: 0;
+            color: var(--accent-purple);
+            font-weight: 700;
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 2rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: auto;
+            background-color: var(--bg-main);
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 1024px) {
+            aside {
+                display: none; /* Hide sidebar on tablet/mobile for fluid layout */
+            }
+            main {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            .section-title {
+                font-size: 1.35rem;
+            }
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="brand">
+            <span class="brand-icon">V</span>
+            <div>
+                <span class="brand-title">Vim Master Guide</span>
+                <span class="brand-subtitle">Pure Vanilla Text Architecture</span>
+            </div>
+        </div>
+        <span class="cmd cmd-purple">v9.0 / Neovim</span>
+    </header>
+
+    <div class="app-container">
+
+        <!-- SIDEBAR NAVIGATION -->
+        <aside>
+            <div class="toc-title">Table of Contents</div>
+            <ul class="toc-list">
+                <li><a href="#modal-philosophy" class="toc-link">1. Modal Philosophy</a></li>
+                <li><a href="#basic-navigation" class="toc-link">2. Basic Navigation & Edits</a></li>
+                <li><a href="#text-objects" class="toc-link">3. Text Objects & Motions</a></li>
+                <li><a href="#registers-marks" class="toc-link">4. Registers, Marks & Macros</a></li>
+                <li><a href="#windows-buffers" class="toc-link">5. Splits, Buffers & Tabs</a></li>
+                <li><a href="#power-features" class="toc-link">6. Vanilla Power Features</a></li>
+                <li><a href="#vimrc-masterclass" class="toc-link">7. Ultimate .vimrc Setup</a></li>
+                <li><a href="#plugin-ecosystem" class="toc-link">8. Modern Ecosystem</a></li>
+            </ul>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main>
+
+            <!-- HERO SECTION -->
+            <section class="hero">
+                <span class="hero-badge">Zero to Hero Mastery</span>
+                <h1>Master Text Editing at the Speed of Thought</h1>
+                <p>Vim isn't just a text editor—it is a composable, domain-specific language for manipulating text. Stop using arrows and mouse clicks; start speaking Vim.</p>
+                
+                <div class="formula-box">
+                    <span style="color: var(--text-muted)">The Grammar:</span>
+                    <span class="cmd cmd-amber">[Count]</span> + 
+                    <span class="cmd cmd-purple">[Operator / Verb]</span> + 
+                    <span class="cmd cmd-emerald">[Text Object / Motion]</span>
+                </div>
+            </section>
+
+            <!-- SECTION 1: MODAL PHILOSOPHY -->
+            <section id="modal-philosophy">
+                <div class="section-header">
+                    <span class="section-number">01.</span>
+                    <h2 class="section-title">Introduction & Modal Philosophy</h2>
+                </div>
+                <p class="description">Traditional editors assume every key press inserts text. Vim assumes you spend most of your time reading, navigating, and refactoring code, reserving typing for specific modes.</p>
+
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Normal Mode</span>
+                            <span class="cmd cmd-purple">Esc / Ctrl+[</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">The command hub. Keys act as actions, navigation commands, and operators rather than text inputs.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Insert Mode</span>
+                            <span class="cmd cmd-cyan">i / a / o</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">Standard typing mode. Keypresses insert literal characters into the active buffer.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Visual Mode</span>
+                            <span class="cmd cmd-emerald">v / V / Ctrl+v</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">Highlight text regions character-wise (<span class="cmd cmd-emerald">v</span>), line-wise (<span class="cmd cmd-emerald">V</span>), or block-wise (<span class="cmd cmd-emerald">Ctrl+v</span>).</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Command-Line</span>
+                            <span class="cmd cmd-amber">: / ? / !</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">Execute Ex commands for saving, quitting, buffer operations, search, and system execution.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Select Mode</span>
+                            <span class="cmd cmd-rose">gh</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">Behaves like traditional IDE text highlighting where typing immediately overwrites selection.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Terminal Mode</span>
+                            <span class="cmd cmd-purple">:terminal</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">Interacts with an embedded terminal shell directly inside a Vim window split.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: BASIC NAVIGATION & EDITING -->
+            <section id="basic-navigation">
+                <div class="section-header">
+                    <span class="section-number">02.</span>
+                    <h2 class="section-title">Basic Navigation & Fundamental Editing</h2>
+                </div>
+                <p class="description">Master home-row navigation and fundamental editing mechanics before learning complex sequences.</p>
+
+                <div class="table-container" style="margin-bottom: 1.5rem;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Keys</th>
+                                <th>Action Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Core Directional</strong></td>
+                                <td><span class="cmd cmd-purple">h</span> <span class="cmd cmd-purple">j</span> <span class="cmd cmd-purple">k</span> <span class="cmd cmd-purple">l</span></td>
+                                <td>Left, Down, Up, Right (keep hands on home-row)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Word Motions</strong></td>
+                                <td><span class="cmd cmd-cyan">w</span> / <span class="cmd cmd-cyan">W</span> | <span class="cmd cmd-cyan">b</span> / <span class="cmd cmd-cyan">B</span></td>
+                                <td>Next word / WORD start | Previous word / WORD start</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Word Endings</strong></td>
+                                <td><span class="cmd cmd-cyan">e</span> / <span class="cmd cmd-cyan">E</span> | <span class="cmd cmd-cyan">ge</span> / <span class="cmd cmd-cyan">gE</span></td>
+                                <td>Forward to end of word / WORD | Backward to end of word / WORD</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Line Bounds</strong></td>
+                                <td><span class="cmd cmd-emerald">0</span> | <span class="cmd cmd-emerald">^</span> | <span class="cmd cmd-emerald">$</span></td>
+                                <td>Column 0 (absolute start) | First non-whitespace char | End of line</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Inline Character Find</strong></td>
+                                <td><span class="cmd cmd-amber">f{char}</span> / <span class="cmd cmd-amber">t{char}</span></td>
+                                <td>Find character forward / Till character forward (place cursor before)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Repeat Find</strong></td>
+                                <td><span class="cmd cmd-amber">;</span> / <span class="cmd cmd-amber">,</span></td>
+                                <td>Repeat last <span class="cmd cmd-amber">f/t</span> search forward / Repeat backward</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Vertical Paging</strong></td>
+                                <td><span class="cmd cmd-rose">Ctrl+u</span> / <span class="cmd cmd-rose">Ctrl+d</span></td>
+                                <td>Scroll half-page Up / Scroll half-page Down</td>
+                            </tr>
+                            <tr>
+                                <td><strong>File Navigation</strong></td>
+                                <td><span class="cmd cmd-rose">gg</span> / <span class="cmd cmd-rose">G</span> | <span class="cmd cmd-rose">{num}G</span></td>
+                                <td>First line of buffer / Last line of buffer | Jump directly to line {num}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="callout callout-amber">
+                    <div class="callout-title">The Dot Operator (.)</div>
+                    The single most powerful core command in Vim. <span class="cmd cmd-amber">.</span> repeats the last editing change (e.g., <span class="cmd cmd-purple">cw</span> + type word + <span class="cmd cmd-purple">Esc</span>, then hit <span class="cmd cmd-amber">.</span> on another word to instantly replace it).
+                </div>
+            </section>
+
+            <!-- SECTION 3: TEXT OBJECTS & ADVANCED MOTIONS -->
+            <section id="text-objects">
+                <div class="section-header">
+                    <span class="section-number">03.</span>
+                    <h2 class="section-title">Text Objects & Advanced Motions</h2>
+                </div>
+                <p class="description">Text objects allow operating on structural constructs (words, quotes, brackets, tags) regardless of where the cursor is inside the object.</p>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Inner (<span class="cmd cmd-cyan">i</span>) vs Around (<span class="cmd cmd-purple">a</span>)</span>
+                        </div>
+                        <ul class="styled-list">
+                            <li><span class="cmd cmd-cyan">i</span> targets <strong>only the content</strong> inside the boundaries.</li>
+                            <li><span class="cmd cmd-purple">a</span> targets the content <strong>PLUS surrounding delimiters & whitespace</strong>.</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Common Target Objects</span>
+                        </div>
+                        <ul class="styled-list">
+                            <li><span class="cmd cmd-emerald">w</span> / <span class="cmd cmd-emerald">s</span> / <span class="cmd cmd-emerald">p</span> - Words, Sentences, Paragraphs</li>
+                            <li><span class="cmd cmd-emerald">"</span>, <span class="cmd cmd-emerald">'</span>, <span class="cmd cmd-emerald">`</span> - Single, Double, or Backtick Quotes</li>
+                            <li><span class="cmd cmd-emerald">(</span>, <span class="cmd cmd-emerald">[</span>, <span class="cmd cmd-emerald">{</span>, <span class="cmd cmd-emerald">&lt;</span> - Parentheses, Brackets, Braces, Angle brackets</li>
+                            <li><span class="cmd cmd-emerald">t</span> - HTML / XML Tags</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="table-container" style="margin-top: 1.25rem;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Expression Command</th>
+                                <th>Target Text</th>
+                                <th>Resulting Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="cmd cmd-purple">ciw</span></td>
+                                <td><code>const <span style="color:var(--accent-cyan)">variable</span> = true;</code></td>
+                                <td>Deletes inner word and drops into Insert mode.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="cmd cmd-purple">di"</span></td>
+                                <td><code>console.log("<span style="color:var(--accent-emerald)">Hello World</span>");</code></td>
+                                <td>Wipes text inside quotes, keeping empty quotes <code>""</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="cmd cmd-purple">da(</span></td>
+                                <td><code>func<span style="color:var(--accent-rose)">(arg1, arg2)</span>;</code></td>
+                                <td>Deletes parentheses AND everything contained inside.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="cmd cmd-purple">cit</span></td>
+                                <td><code>&lt;h1&gt;<span style="color:var(--accent-amber)">Page Title</span>&lt;/h1&gt;</code></td>
+                                <td>Changes contents between opening and closing HTML tags.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- SECTION 4: REGISTERS, MARKS & MACROS -->
+            <section id="registers-marks">
+                <div class="section-header">
+                    <span class="section-number">04.</span>
+                    <h2 class="section-title">Registers, Marks & Macros</h2>
+                </div>
+                <p class="description">Store text snippets, bookmark arbitrary code lines, and record repetitive keystroke sequences for massive automation.</p>
+
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Key Registers</span>
+                            <span class="cmd cmd-purple">"{reg}</span>
+                        </div>
+                        <ul class="styled-list">
+                            <li><span class="cmd cmd-cyan">""</span> Unnamed register (last delete/yank)</li>
+                            <li><span class="cmd cmd-cyan">"0</span> Last <em>yank</em> register (unaffected by deletes)</li>
+                            <li><span class="cmd cmd-cyan">"+</span> System Clipboard (OS copy/paste)</li>
+                            <li><span class="cmd cmd-cyan">"_</span> Blackhole register (discards text)</li>
+                            <li><span class="cmd cmd-cyan">"=</span> Expression evaluation calculator</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Jump Marks</span>
+                            <span class="cmd cmd-emerald">m{mark}</span>
+                        </div>
+                        <ul class="styled-list">
+                            <li><span class="cmd cmd-emerald">ma</span> Set local mark <code>a</code> for current buffer</li>
+                            <li><span class="cmd cmd-emerald">mA</span> Set global mark <code>A</code> across buffers</li>
+                            <li><span class="cmd cmd-emerald">'a</span> Jump to line of mark <code>a</code></li>
+                            <li><span class="cmd cmd-emerald">`a</span> Jump to exact column & line of mark <code>a</code></li>
+                            <li><span class="cmd cmd-emerald">''</span> Jump back to location before last jump</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Macros</span>
+                            <span class="cmd cmd-amber">q{reg}</span>
+                        </div>
+                        <ul class="styled-list">
+                            <li><span class="cmd cmd-amber">qa</span> Start recording keystrokes into register <code>a</code></li>
+                            <li><span class="cmd cmd-amber">q</span> Stop recording macro</li>
+                            <li><span class="cmd cmd-amber">@a</span> Execute macro <code>a</code> once</li>
+                            <li><span class="cmd cmd-amber">@@</span> Repeat last executed macro</li>
+                            <li><span class="cmd cmd-amber">10@a</span> Run macro <code>a</code> 10 times consecutively</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: SPLITS, BUFFERS, WINDOWS & TABS -->
+            <section id="windows-buffers">
+                <div class="section-header">
+                    <span class="section-number">05.</span>
+                    <h2 class="section-title">Splits, Buffers, Windows & Tabs</h2>
+                </div>
+                <p class="description">Understand the core distinction: A <strong>Buffer</strong> is a file loaded into memory. A <strong>Window</strong> is a viewport into a buffer. A <strong>Tab</strong> is a collection of window viewports.</p>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Buffer Operations</span>
+                        </div>
+                        <ul class="styled-list">
+                            <li><span class="cmd cmd-cyan">:ls</span> or <span class="cmd cmd-cyan">:buffers</span> — List active memory buffers</li>
+                            <li><span class="cmd cmd-cyan">:bnext</span> (<span class="cmd cmd-cyan">:bn</span>) / <span class="cmd cmd-cyan">:bprev</span> (<span class="cmd cmd-cyan">:bp</span>) — Cycle buffers</li>
+                            <li><span class="cmd cmd-cyan">:b {num_or_name}</span> — Switch to buffer ID or partial match</li>
+                            <li><span class="cmd cmd-cyan">:bdelete</span> (<span class="cmd cmd-cyan">:bd</span>) — Unload buffer without quitting</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Window Splits</span>
+                        </div>
+                        <ul class="styled-list">
+                            <li><span class="cmd cmd-purple">:sp</span> / <span class="cmd cmd-purple">:vsp</span> — Horizontal / Vertical window split</li>
+                            <li><span class="cmd cmd-purple">Ctrl+w h/j/k/l</span> — Move focus between split directions</li>
+                            <li><span class="cmd cmd-purple">Ctrl+w =</span> — Equalize dimensions of all open splits</li>
+                            <li><span class="cmd cmd-purple">Ctrl+w o</span> — Close all splits except current active window</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 6: POWER USER BUILT-IN FEATURES -->
+            <section id="power-features">
+                <div class="section-header">
+                    <span class="section-number">06.</span>
+                    <h2 class="section-title">Power User Built-in Features (Zero Plugins Required)</h2>
+                </div>
+                <p class="description">Vim comes out of the box with built-in tools that eliminate the absolute necessity for third-party extensions.</p>
+
+                <div class="terminal-block">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <div class="dot dot-red"></div>
+                            <div class="dot dot-yellow"></div>
+                            <div class="dot dot-green"></div>
+                        </div>
+                        <span class="terminal-title">Built-In Power Workflows</span>
+                    </div>
+                    <div class="terminal-body">
+                        <span class="code-comment">" 1. Netrw File Explorer (Native file tree)</span><br>
+                        <span class="code-cmd">:Ex</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">" Open Netrw file explorer in current window</span><br>
+                        <span class="code-cmd">:Vex</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">" Open Netrw in vertical split</span><br>
+                        <span class="code-comment">" Inside Netrw: 'd' creates dir, '%' creates file, 'R' renames</span><br><br>
+
+                        <span class="code-comment">" 2. Global Command (:g) - Run Ex actions on pattern matches</span><br>
+                        <span class="code-cmd">:g</span><span class="code-string">/^$/</span><span class="code-keyword">d</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">" Delete all empty lines in entire file</span><br>
+                        <span class="code-cmd">:g</span><span class="code-string">/TODO/</span><span class="code-cmd">t$</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">" Copy all lines containing 'TODO' to end of file</span><br>
+                        <span class="code-cmd">:v</span><span class="code-string">/DEBUG/</span><span class="code-keyword">d</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">" Delete all lines that DO NOT match 'DEBUG'</span><br><br>
+
+                        <span class="code-comment">" 3. Quickfix List - Project-wide Search & Replace</span><br>
+                        <span class="code-cmd">:vimgrep</span> <span class="code-string">/getUser/</span> <span class="code-num">src/**/*.ts</span><br>
+                        <span class="code-cmd">:copen</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">" Open quickfix results window</span><br>
+                        <span class="code-cmd">:cfdo</span> <span class="code-string">%s/getUser/fetchUser/g</span> | <span class="code-keyword">update</span> <span class="code-comment">" Batch substitute across all search files</span><br><br>
+
+                        <span class="code-comment">" 4. Native Autocompletion (Insert Mode)</span><br>
+                        <span class="cmd cmd-cyan">Ctrl+n</span> / <span class="cmd cmd-cyan">Ctrl+p</span> &nbsp;<span class="code-comment">" Keyword match in current / open buffers</span><br>
+                        <span class="cmd cmd-cyan">Ctrl+x Ctrl+f</span> &nbsp;<span class="code-comment">" File path autocompletion</span><br>
+                        <span class="cmd cmd-cyan">Ctrl+x Ctrl+l</span> &nbsp;<span class="code-comment">" Whole line autocompletion</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 7: ULTIMATE .VIMRC MASTERCLASS -->
+            <section id="vimrc-masterclass">
+                <div class="section-header">
+                    <span class="section-number">07.</span>
+                    <h2 class="section-title">The Ultimate Vanilla .vimrc Masterclass</h2>
+                </div>
+                <p class="description">A production-ready, sensible configuration file written in standard Vimscript.</p>
+
+                <div class="terminal-block">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <div class="dot dot-red"></div>
+                            <div class="dot dot-yellow"></div>
+                            <div class="dot dot-green"></div>
+                        </div>
+                        <span class="terminal-title">~/.vimrc</span>
+                    </div>
+                    <div class="terminal-body">
+<span class="code-comment">" ============================================================================</span>
+<span class="code-comment">" PRODUCTION-READY VANILLA .VIMRC</span>
+<span class="code-comment">" ============================================================================</span>
+
+<span class="code-keyword">set</span> nocompatible              <span class="code-comment">" Disable Vi compatibility mode</span>
+<span class="code-keyword">filetype</span> plugin indent <span class="code-keyword">on</span>     <span class="code-comment">" Enable filetype detection and auto-indent</span>
+<span class="code-keyword">syntax</span> <span class="code-keyword">on</span>                     <span class="code-comment">" Enable syntax highlighting</span>
+
+<span class="code-comment">" --- UI Settings ---</span>
+<span class="code-keyword">set</span> number                    <span class="code-comment">" Absolute line number on cursor</span>
+<span class="code-keyword">set</span> relativenumber            <span class="code-comment">" Relative line numbers for easy jump motions</span>
+<span class="code-keyword">set</span> cursorline                <span class="code-comment">" Highlight current line</span>
+<span class="code-keyword">set</span> scrolloff=<span class="code-num">8</span>               <span class="code-comment">" Keep 8 padding lines visible above/below cursor</span>
+<span class="code-keyword">set</span> signcolumn=yes            <span class="code-comment">" Always display sign column to prevent layout shifts</span>
+<span class="code-keyword">set</span> termguicolors             <span class="code-comment">" Enable 24-bit True Color support</span>
+<span class="code-keyword">set</span> wildmenu                  <span class="code-comment">" Enhanced visual command-line completion</span>
+<span class="code-keyword">set</span> wildmode=longest:full,full
+
+<span class="code-comment">" --- Indentation & Tabs ---</span>
+<span class="code-keyword">set</span> tabstop=<span class="code-num">4</span>                 <span class="code-comment">" Visual spaces per TAB</span>
+<span class="code-keyword">set</span> softtabstop=<span class="code-num">4</span>             <span class="code-comment">" Spaces inserted while editing</span>
+<span class="code-keyword">set</span> shiftwidth=<span class="code-num">4</span>              <span class="code-comment">" Spaces used for auto-indenting</span>
+<span class="code-keyword">set</span> expandtab                 <span class="code-comment">" Convert tabs to spaces</span>
+<span class="code-keyword">set</span> autoindent smartindent    <span class="code-comment">" Smart code indentation logic</span>
+
+<span class="code-comment">" --- Search & Splitting ---</span>
+<span class="code-keyword">set</span> ignorecase smartcase      <span class="code-comment">" Case-insensitive unless query contains Capital</span>
+<span class="code-keyword">set</span> incsearch hlsearch        <span class="code-comment">" Incremental search & persistent highlights</span>
+<span class="code-keyword">set</span> splitbelow splitright     <span class="code-comment">" Natural split orientation (bottom & right)</span>
+
+<span class="code-comment">" --- History & Undo ---</span>
+<span class="code-keyword">set</span> hidden                    <span class="code-comment">" Allow switching buffers without saving</span>
+<span class="code-keyword">set</span> undofile                  <span class="code-comment">" Persistent undo trees saved across reboots</span>
+<span class="code-keyword">set</span> undodir=~/.vim/undodir
+
+<span class="code-comment">" --- Custom Keymappings ---</span>
+<span class="code-keyword">let</span> mapleader = <span class="code-string">" "</span>           <span class="code-comment">" Set Spacebar as Leader key</span>
+
+<span class="code-comment">" Fast saving & quitting</span>
+<span class="code-keyword">nnoremap</span> &lt;Leader&gt;w :w&lt;CR&gt;
+<span class="code-keyword">nnoremap</span> &lt;Leader&gt;q :q&lt;CR&gt;
+
+<span class="code-comment">" Clear search highlight using Space + h</span>
+<span class="code-keyword">nnoremap</span> &lt;Leader&gt;h :nohlsearch&lt;CR&gt;
+
+<span class="code-comment">" Keep selection highlighted when shifting indents</span>
+<span class="code-keyword">vnoremap</span> &lt; &lt;gv
+<span class="code-keyword">vnoremap</span> &gt; &gt;gv
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 8: THE MODERN PLUGIN ECOSYSTEM -->
+            <section id="plugin-ecosystem">
+                <div class="section-header">
+                    <span class="section-number">08.</span>
+                    <h2 class="section-title">The Modern Vim / Neovim Plugin Ecosystem</h2>
+                </div>
+                <p class="description">When pure vanilla functionality needs extending, these modern plugins transform Vim into a lightning-fast modern IDE.</p>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">lazy.nvim / vim-plug</span>
+                            <span class="cmd cmd-purple">Plugin Managers</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">High-performance plugin managers featuring lazy loading, concurrent installation, and lockfile versioning.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Telescope.nvim / fzf.vim</span>
+                            <span class="cmd cmd-cyan">Fuzzy Finder</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">Asynchronous fuzzy search windows over files, git commits, LSP symbols, and live project grep results.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">nvim-treesitter</span>
+                            <span class="cmd cmd-emerald">Syntax Parsing</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">Uses incremental AST parsers for context-aware syntax highlighting, scope selection, and code folding.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Mason & nvim-lspconfig</span>
+                            <span class="cmd cmd-amber">LSP Integration</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">Seamlessly installs and hooks language servers directly into built-in autocompletion and linting diagnostics.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Oil.nvim / nvim-tree</span>
+                            <span class="cmd cmd-rose">File Management</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">Edit directory files directly like a Vim buffer (Oil) or display a modern file tree explorer sidebar.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Mini.surround / vim-surround</span>
+                            <span class="cmd cmd-purple">Text Surround</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">Adds surround verbs: <span class="cmd cmd-purple">cs"'</span> (change double quotes to single), <span class="cmd cmd-purple">ds(</span> (delete parens), <span class="cmd cmd-purple">ysiw)</span> (add parens to word).</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <p><a href="index.html">Mastering Vim</a></p>
+    </footer>
+
+</body>
+</html>
