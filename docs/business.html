@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business Hero — From Zero to Tycoon</title>
+<meta name="description" content="A gamified business school: 8 levels, animated examples, interactive labs, quizzes. Pure vanilla JS + CSS, zero external resources.">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0b1026;--bg2:#141b3d;--card:#1a2247;--card2:#222c5c;--ink:#eef1ff;--mut:#a8b1d6;--line:rgba(255,255,255,.12);--gold:#ffd34d;--gold2:#ff9d2e;--green:#3ddc84;--red:#ff6b6b;--blue:#5aa2ff;--purple:#b388ff;--cyan:#4de3ff;--r:18px;--shadow:0 18px 50px rgba(0,0,0,.45)}
+html{scroll-behavior:smooth}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:radial-gradient(1200px 600px at 20% -10%,#2a3570 0%,transparent 60%),radial-gradient(1000px 500px at 90% 10%,#4a2a6b 0%,transparent 55%),linear-gradient(180deg,var(--bg),#070b1d);color:var(--ink);min-height:100vh;overflow-x:hidden}
+#bg-orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#bg-orbs i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.35;animation:drift 14s ease-in-out infinite alternate}
+#bg-orbs i:nth-child(1){width:340px;height:340px;background:#3b5bff;left:-80px;top:10%}
+#bg-orbs i:nth-child(2){width:280px;height:280px;background:#a24bff;right:-60px;top:30%;animation-delay:-4s}
+#bg-orbs i:nth-child(3){width:220px;height:220px;background:#00d4ff;left:30%;bottom:-80px;animation-delay:-8s}
+#bg-orbs i:nth-child(4){width:160px;height:160px;background:#ffb02e;left:60%;top:8%;animation-delay:-2s}
+#bg-orbs i:nth-child(5){width:200px;height:200px;background:#3ddc84;right:20%;bottom:10%;animation-delay:-6s}
+@keyframes drift{to{transform:translate(40px,50px) scale(1.15)}}
+#hud{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:16px;padding:10px 18px;background:rgba(11,16,38,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.hud-left{display:flex;align-items:center;gap:10px}
+#logo{font-weight:900;letter-spacing:.5px;display:flex;align-items:center;gap:8px;font-size:18px}
+#logo span b{color:var(--gold)}
+.rank{background:linear-gradient(135deg,#2ee6a8,#1aa6ff);padding:6px 12px;border-radius:999px;font-weight:800;font-size:13px;color:#06121f;white-space:nowrap}
+.hud-mid{flex:1;max-width:520px;margin:0 auto}
+.xp-top{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--mut);margin-bottom:6px}
+.xp-top #coins-label{color:var(--gold)}
+.xp-bar{height:14px;background:#0a0f2a;border:1px solid var(--line);border-radius:999px;overflow:hidden;position:relative}
+#xp-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--gold2),#ff5e7a);border-radius:999px;transition:width .8s cubic-bezier(.2,.9,.2,1)}
+#xp-shine{position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);animation:shine 2.8s linear infinite}
+@keyframes shine{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.hud-right{display:flex;align-items:center;gap:8px}
+#streak{background:#23160a;border:1px solid #6b4313;color:#ffb02e;padding:6px 10px;border-radius:999px;font-weight:900;font-size:14px}
+#progress-line{position:absolute;left:0;right:0;bottom:-2px;height:2px;background:rgba(255,255,255,.08)}
+#progress-fill{height:100%;width:0%;background:var(--green);transition:width .6s}
+.btn{border:0;cursor:pointer;font-weight:900;color:#0a0f2a;background:linear-gradient(135deg,var(--gold),var(--gold2));padding:12px 20px;border-radius:14px;font-size:15px;box-shadow:0 8px 24px rgba(255,180,40,.35);transition:transform .15s,box-shadow .15s,filter .15s}
+.btn:hover{transform:translateY(-2px) scale(1.02);filter:brightness(1.05)}
+.btn:active{transform:scale(.97)}
+.btn.secondary{background:linear-gradient(135deg,#2a3568,#3a4a8f);color:#fff;box-shadow:none;border:1px solid var(--line)}
+.btn.small{padding:8px 12px;font-size:13px;border-radius:10px}
+.btn.big{padding:14px 26px;font-size:17px;border-radius:16px}
+.btn.ghost{background:transparent;color:var(--mut);border:1px solid var(--line);box-shadow:none}
+.btn.icon{padding:8px 10px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+#app{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:22px 18px 60px}
+.screen{display:none}.screen.active{display:block;animation:fadeUp .4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:var(--shadow);overflow:hidden;position:relative}
+.kicker{font-size:12px;font-weight:900;letter-spacing:1px;color:var(--cyan);margin-bottom:10px}
+.hero h1{font-size:clamp(32px,5vw,56px);line-height:1.02;letter-spacing:-1px}
+.grad{background:linear-gradient(90deg,#4de3ff,#5aa2ff,#b388ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.grad.gold{background:linear-gradient(90deg,#ffe27a,#ffb02e,#ff5e7a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{color:var(--mut);margin:14px 0 18px;line-height:1.6}
+.hero-cta{display:flex;gap:10px;flex-wrap:wrap}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+.hero-stats div{background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.hero-stats b{display:block;font-size:20px;color:var(--gold)}
+.hero-stats span{font-size:12px;color:var(--mut)}
+.hero-game{display:flex;flex-direction:column;gap:12px}
+.mini-tycoon{position:relative;height:230px;background:linear-gradient(180deg,#2b3a7a,#162050);border-radius:18px;border:1px solid var(--line);overflow:hidden}
+.mt-shop{position:absolute;left:22px;bottom:40px;font-size:52px;animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.mt-sign{font-size:11px;font-weight:900;background:#ffcf4d;color:#3a2400;padding:4px 8px;border-radius:8px;text-align:center;margin-top:2px}
+.mt-awning{height:10px;background:repeating-linear-gradient(90deg,#ff5e7a 0 12px,#fff 12px 24px);border-radius:0 0 8px 8px;margin-top:4px}
+.mt-road{position:absolute;left:0;right:0;bottom:0;height:36px;background:#0a0f2a;border-top:2px dashed rgba(255,255,255,.25)}
+.mt-cust{position:absolute;bottom:28px;font-size:30px;animation:walk 6s linear infinite}
+.mt-cust.c1{animation-delay:0s}.mt-cust.c2{animation-delay:-2s}.mt-cust.c3{animation-delay:-4s}
+@keyframes walk{from{left:100%}to{left:-10%}}
+.mt-coin{position:absolute;left:90px;bottom:90px;animation:coinUp 6s linear infinite;font-size:18px}
+.mt-coin.q2{animation-delay:-2s}.mt-coin.q3{animation-delay:-4s}
+@keyframes coinUp{0%{opacity:0;transform:translateY(10px)}15%{opacity:1}80%{opacity:1;transform:translateY(-60px)}100%{opacity:0;transform:translateY(-80px)}}
+.mt-chart{position:absolute;right:14px;bottom:14px;display:flex;align-items:end;gap:5px;height:90px;background:rgba(0,0,0,.35);padding:8px;border-radius:12px;border:1px solid var(--line)}
+.mt-chart i{width:18px;height:var(--h);background:linear-gradient(180deg,var(--green),#1a8a55);border-radius:6px;animation:grow 2s ease-in-out infinite alternate}
+@keyframes grow{from{transform:scaleY(.85)}to{transform:scaleY(1)}}
+.howto{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.howto div{background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;padding:10px}
+.howto b{display:block;color:var(--gold);font-size:13px}.howto span{font-size:12px;color:var(--mut)}
+.map-title{margin:26px 0 12px;font-size:22px}.map-title small{color:var(--mut);font-weight:400;font-size:14px}
+#world-map{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.node{position:relative;text-align:left;background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:18px;padding:16px;cursor:pointer;overflow:hidden;transition:transform .15s}
+.node:hover:not(.locked){transform:translateY(-4px)}
+.node.locked{opacity:.65;filter:grayscale(.6);cursor:not-allowed}
+.node.done{border-color:rgba(61,220,132,.6);box-shadow:0 0 0 1px rgba(61,220,132,.4),0 12px 30px rgba(0,0,0,.35)}
+.node .lvl{font-size:11px;font-weight:900;letter-spacing:1px;color:var(--cyan)}
+.node h3{margin:6px 0;font-size:18px;line-height:1.2}
+.node p{font-size:13px;color:var(--mut);line-height:1.5;min-height:40px}
+.node .thumb{font-size:44px;margin:8px 0;filter:drop-shadow(0 6px 12px rgba(0,0,0,.5))}
+.node .meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;font-weight:800}
+.pill{background:rgba(255,255,255,.1);padding:4px 10px;border-radius:999px}
+.pill.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#231600}
+.pill.green{background:var(--green);color:#052e1a}
+.concepts-strip{margin-top:22px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:18px;padding:16px}
+.concepts-strip h3{margin-bottom:10px}
+#concepts-cloud{display:flex;flex-wrap:wrap;gap:8px}
+#concepts-cloud span{background:#0e1533;border:1px solid var(--line);padding:6px 11px;border-radius:999px;font-size:12px;color:var(--mut)}
+#concepts-cloud span:hover{color:#fff;border-color:var(--gold)}
+.foot{margin-top:16px;color:var(--mut);font-size:12px;text-align:center;line-height:1.6}
+#level-head{text-align:center;margin:10px 0 16px}
+#level-num{display:inline-block;font-weight:900;letter-spacing:2px;font-size:12px;background:rgba(77,227,255,.15);border:1px solid rgba(77,227,255,.4);color:var(--cyan);padding:6px 14px;border-radius:999px}
+#level-title{font-size:clamp(26px,4vw,40px);margin:10px 0 6px}
+#level-sub{color:var(--mut);max-width:720px;margin:0 auto;line-height:1.6}
+.steps{display:flex;gap:8px;justify-content:center;margin-top:12px}
+.steps span{font-size:12px;font-weight:900;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--mut);border:1px solid var(--line)}
+.steps span.on{background:var(--gold);color:#231600;border-color:transparent}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:20px;padding:22px;margin:14px 0;box-shadow:var(--shadow)}
+.card h3{font-size:22px;margin-bottom:8px}
+.card h4{color:var(--gold);margin:14px 0 6px;font-size:15px;letter-spacing:.3px}
+.card p,.card li{color:#d6dbf5;line-height:1.7;font-size:15px}
+.card ul{padding-left:20px;margin:8px 0}
+.formula{background:#0a0f2a;border:1px dashed rgba(255,211,77,.6);border-radius:14px;padding:14px;text-align:center;font-weight:900;font-size:18px;margin:12px 0;color:var(--gold)}
+.demo{background:#0a0f2a;border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;overflow:hidden;position:relative}
+.demo-title{font-size:12px;font-weight:900;letter-spacing:1px;color:var(--cyan);margin-bottom:10px}
+.flow{display:flex;align-items:center;justify-content:space-around;gap:8px;flex-wrap:wrap}
+.flow .box{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:110px;text-align:center}
+.flow .box .e{font-size:32px}.flow .box b{display:block;margin-top:4px}.flow .box small{color:var(--mut)}
+.arrow{font-size:26px;animation:nudge 1s ease-in-out infinite alternate}
+@keyframes nudge{to{transform:translateX(6px)}}
+.coin-rain{position:relative;height:90px}
+.coin-rain i{position:absolute;top:-10px;font-size:22px;animation:fall 1.8s linear infinite}
+@keyframes fall{to{transform:translateY(100px);opacity:0}}
+.bars{display:flex;align-items:end;gap:10px;height:140px;justify-content:center;padding:10px}
+.bars div{width:44px;border-radius:10px 10px 4px 4px;display:flex;align-items:flex-end;justify-content:center;color:#06121f;font-weight:900;padding-bottom:6px;animation:barUp 1.2s ease both}
+@keyframes barUp{from{transform:scaleY(0);transform-origin:bottom}}
+.funnel{width:220px;margin:0 auto}
+.funnel div{text-align:center;color:#0a0f2a;font-weight:900;padding:10px;border-radius:8px;margin:4px auto;animation:funnelPulse 2s ease-in-out infinite alternate}
+.funnel div:nth-child(1){width:220px;background:#4de3ff}
+.funnel div:nth-child(2){width:170px;background:#5aa2ff}
+.funnel div:nth-child(3){width:120px;background:#b388ff}
+.funnel div:nth-child(4){width:80px;background:var(--gold)}
+@keyframes funnelPulse{to{filter:brightness(1.15);transform:scale(1.03)}}
+.marquee{display:flex;gap:10px;overflow:hidden}
+.marquee span{white-space:nowrap;background:#141c44;border:1px solid var(--line);padding:8px 14px;border-radius:999px;animation:slideX 10s linear infinite}
+@keyframes slideX{from{transform:translateX(20%)}to{transform:translateX(-120%)}}
+.lab{background:linear-gradient(180deg,#1d2a63,#141b3d);border:2px solid rgba(255,211,77,.5);border-radius:18px;padding:18px;margin:16px 0}
+.lab h3{color:var(--gold)}
+.lab p{color:var(--mut);font-size:14px;margin:6px 0 12px;line-height:1.6}
+.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.controls label{font-size:13px;font-weight:800;color:var(--mut)}
+input[type=range]{accent-color:var(--gold);width:180px}
+select,input[type=number]{background:#0a0f2a;color:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px}
+.big-num{font-size:34px;font-weight:900;color:var(--green)}
+.big-num.neg{color:var(--red)}
+.sort-game{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.sort-col{background:#0a0f2a;border:1px solid var(--line);border-radius:12px;padding:10px;min-height:140px}
+.sort-col h5{text-align:center;margin-bottom:8px}
+.chip{display:inline-block;background:#2a3568;border:1px solid var(--line);padding:8px 12px;border-radius:999px;margin:4px;cursor:pointer;font-size:13px;font-weight:700}
+.chip:hover{border-color:var(--gold)}.chip.ok{background:var(--green);color:#052e1a}.chip.bad{background:var(--red);color:#fff;animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.quiz-q{background:#0a0f2a;border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+.quiz-q b{display:block;margin-bottom:10px;line-height:1.5}
+.opt{display:block;width:100%;text-align:left;background:#1a2247;color:#fff;border:1px solid var(--line);padding:11px 12px;border-radius:12px;margin:6px 0;cursor:pointer;font-size:14px}
+.opt:hover{border-color:var(--cyan)}
+.opt.correct{background:rgba(61,220,132,.2);border-color:var(--green)}
+.opt.wrong{background:rgba(255,107,107,.2);border-color:var(--red)}
+.explain{font-size:13px;color:var(--mut);margin-top:8px;line-height:1.6;display:none}
+.explain.show{display:block}
+#level-nav{display:flex;align-items:center;justify-content:space-between;margin:18px 0}
+#dots{display:flex;gap:8px}
+#dots i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.2)}
+#dots i.on{background:var(--gold)}
+#modal{position:fixed;inset:0;z-index:100;background:rgba(3,6,18,.75);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px}
+#modal.hidden{display:none}
+#modal-card{position:relative;max-width:520px;width:100%;background:linear-gradient(180deg,#232e68,#10163a);border:1px solid rgba(255,211,77,.5);border-radius:22px;padding:28px;text-align:center;box-shadow:var(--shadow);overflow:hidden;animation:pop .35s ease}
+@keyframes pop{from{transform:scale(.9);opacity:0}}
+#modal-emoji{font-size:64px;animation:bob 1.6s ease-in-out infinite}
+#modal-title{margin:8px 0}
+#modal-text{color:var(--mut);line-height:1.6}
+#modal-rewards{display:flex;gap:8px;justify-content:center;margin:14px 0;flex-wrap:wrap}
+#modal-rewards span{background:rgba(255,211,77,.15);border:1px solid rgba(255,211,77,.5);padding:8px 14px;border-radius:999px;font-weight:900;color:var(--gold)}
+.modal-btns{display:flex;gap:10px;justify-content:center;margin-top:8px}
+#confetti i{position:absolute;top:-12px;width:10px;height:14px;border-radius:2px;animation:fall 2.4s linear infinite}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0e1533;border:1px solid var(--gold);color:#fff;padding:12px 18px;border-radius:999px;font-weight:800;z-index:120;box-shadow:var(--shadow)}
+#toast.hidden{display:none}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+.kpi{background:#0a0f2a;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.kpi b{display:block;font-size:20px}.kpi span{font-size:11px;color:var(--mut)}
+.ledger{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:#070b1d;border-radius:12px;padding:12px;border:1px solid var(--line);max-height:150px;overflow:auto;line-height:1.7}
+.ledger .pos{color:var(--green)}.ledger .neg{color:var(--red)}
+table.t{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}
+table.t th,table.t td{border:1px solid var(--line);padding:8px;text-align:left}
+table.t th{background:rgba(255,255,255,.06)}
+@media(max-width:900px){.hero{grid-template-columns:1fr}#world-map{grid-template-columns:1fr 1fr}.kpi-row{grid-template-columns:1fr 1fr}.hero-stats{grid-template-columns:1fr 1fr}#hud{flex-wrap:wrap}.hud-mid{order:3;flex-basis:100%;max-width:none}}
+@media(max-width:560px){#world-map{grid-template-columns:1fr}.sort-game{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+<div id="bg-orbs" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+<header id="hud">
+  <div class="hud-left">
+    <div id="logo" title="Business Hero">💼<span>BUSINESS<b>HERO</b></span></div>
+    <div id="rank-badge" class="rank">🌱 Intern</div>
+  </div>
+  <div class="hud-mid">
+    <div class="xp-wrap">
+      <div class="xp-top"><span id="xp-label">LV 1 • 0 XP</span><span id="coins-label">🪙 0</span></div>
+      <div class="xp-bar"><div id="xp-fill"></div><div id="xp-shine"></div></div>
+    </div>
+  </div>
+  <div class="hud-right">
+    <div id="streak" title="Levels completed">🔥 0</div>
+    <button id="btn-map" class="btn small">🗺 Map</button>
+    <button id="btn-sound" class="btn small icon" title="Toggle sound">🔊</button>
+    <button id="btn-reset" class="btn small ghost" title="Reset progress">↺</button>
+  </div>
+  <div id="progress-line"><div id="progress-fill"></div></div>
+</header>
+
+<main id="app">
+  <!-- MAP SCREEN -->
+  <section id="screen-map" class="screen active">
+    <div class="hero">
+      <div class="hero-text">
+        <div class="kicker">🎮 A GAMIFIED BUSINESS SCHOOL • 100% VANILLA • OFFLINE READY</div>
+        <h1>From <span class="grad">Zero</span> to <span class="grad gold">Business Hero.</span></h1>
+        <p class="lede">You start with a lemonade stand and <b>0 coins</b>. Finish with an empire. Each level unlocks the next — you <b>must play to learn</b>: run animated simulations, tweak prices, survive cash-flow, then pass the quiz to advance.</p>
+        <div class="hero-cta">
+          <button id="btn-start" class="btn big">▶ Start Adventure</button>
+          <button id="btn-continue" class="btn big secondary">Continue ▸</button>
+        </div>
+        <div class="hero-stats">
+          <div><b id="stat-xp">0</b><span>XP earned</span></div>
+          <div><b id="stat-levels">0/8</b><span>levels cleared</span></div>
+          <div><b id="stat-coins">0</b><span>coins banked</span></div>
+          <div><b>~45 min</b><span>zero → hero</span></div>
+        </div>
+      </div>
+      <div class="hero-game">
+        <div class="mini-tycoon" aria-hidden="true">
+          <div class="mt-shop">🍋<div class="mt-sign">LEMONADE 50¢</div><div class="mt-awning"></div></div>
+          <div class="mt-road"></div>
+          <div class="mt-cust c1">🧑</div><div class="mt-cust c2">👩‍🦰</div><div class="mt-cust c3">🧓</div>
+          <div class="mt-coin q1">🪙</div><div class="mt-coin q2">🪙</div><div class="mt-coin q3">🪙</div>
+          <div class="mt-chart"><i style="--h:30%"></i><i style="--h:55%"></i><i style="--h:42%"></i><i style="--h:80%"></i><i style="--h:100%"></i></div>
+        </div>
+        <div class="howto">
+          <div><b>1. LEARN</b><span>Animated story + concept cards</span></div>
+          <div><b>2. PLAY</b><span>Interactive money lab</span></div>
+          <div><b>3. PROVE</b><span>Quiz ≥ 70% to unlock next</span></div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="map-title">🗺 Your Hero Map <small>— complete levels in order. Locked levels must be unlocked by passing the previous quiz.</small></h2>
+    <div id="world-map"></div>
+
+    <div class="concepts-strip">
+      <h3>📚 Every concept you'll master</h3>
+      <div id="concepts-cloud"></div>
+    </div>
+
+    <footer class="foot"> 🔊 <a class="btn-primary">Home</a></footer>
+  </section>
+
+  <!-- LEVEL SCREEN -->
+  <section id="screen-level" class="screen">
+    <button id="btn-back" class="btn small ghost">◂ Back to map</button>
+    <div id="level-head">
+      <div id="level-num">LEVEL 1</div>
+      <h2 id="level-title"></h2>
+      <p id="level-sub"></p>
+      <div id="level-steps" class="steps"><span class="on">1 Learn</span><span>2 Play</span><span>3 Prove</span></div>
+    </div>
+    <div id="level-body"></div>
+    <div id="level-nav">
+      <button id="btn-prev-step" class="btn secondary">◂ Prev</button>
+      <div id="dots"></div>
+      <button id="btn-next-step" class="btn">Next ▸</button>
+    </div>
+  </section>
+</main>
+
+<!-- LEVEL UP MODAL -->
+<div id="modal" class="hidden">
+  <div id="modal-card">
+    <div id="confetti" aria-hidden="true"></div>
+    <div id="modal-emoji">🏆</div>
+    <h2 id="modal-title">Level Complete!</h2>
+    <p id="modal-text"></p>
+    <div id="modal-rewards"></div>
+    <div class="modal-btns">
+      <button id="modal-map" class="btn secondary">🗺 Map</button>
+      <button id="modal-next" class="btn big">Next Level ▸</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="hidden"></div>
+
+<script>
+/* BUSINESS HERO — pure vanilla JS, no external resources */
+(function(){
+"use strict";
+var LS_KEY="bizHeroSaveV1";
+var save={xp:0,coins:0,unlocked:1,completed:{},sound:true};
+try{var s=JSON.parse(localStorage.getItem(LS_KEY));if(s&&typeof s.xp==="number")save=Object.assign(save,s);}catch(e){}
+function persist(){try{localStorage.setItem(LS_KEY,JSON.stringify(save));}catch(e){}}
+var RANKS=[[0,"🌱 Intern"],[200,"🛒 Seller"],[450,"📦 Shopkeeper"],[750,"📈 Marketer"],[1100,"🏭 Operator"],[1500,"💰 Investor"],[1900,"♟️ Strategist"],[2300,"👑 Tycoon"],[2700,"🦸 Business Hero"]];
+function rankFor(xp){var r=RANKS[0][1];for(var i=0;i<RANKS.length;i++){if(xp>=RANKS[i][0])r=RANKS[i][1];}return r;}
+function levelFor(xp){var l=1;for(var i=0;i<RANKS.length;i++){if(xp>=RANKS[i][0])l=i+1;}return Math.min(l,9);}
+
+/* --- tiny sound engine (WebAudio, no files) --- */
+var AC=null;
+function beep(freq,dur,type,vol){if(!save.sound)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();var o=AC.createOscillator(),g=AC.createGain();o.type=type||"sine";o.frequency.value=freq;g.gain.value=vol||0.12;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+(dur||0.15));o.stop(AC.currentTime+(dur||0.15));}catch(e){}}
+function sClick(){beep(600,0.08,"square",0.06);}function sGood(){beep(523,0.12,"sine",0.12);setTimeout(function(){beep(659,0.12,"sine",0.12);},110);setTimeout(function(){beep(784,0.2,"sine",0.12);},220);}function sBad(){beep(200,0.25,"sawtooth",0.08);}function sCoin(){beep(988,0.08,"square",0.07);setTimeout(function(){beep(1319,0.15,"square",0.07);},80);}
+
+/* --- CURRICULUM --- */
+var LEVELS=[
+{id:1,icon:"🍋",title:"What Is Business, Really?",sub:"Value • Needs vs Wants • Problem → Solution. Your lemonade stand opens.",xp:200,coins:50,
+story:"Maya is broke on a hot street. Thirsty joggers run past. She has lemons, water, sugar. That gap between <b>pain</b> and <b>relief</b> is where every business is born. Business = <b>solving someone's problem</b> so well they happily pay more than it cost you.",
+lessons:[
+{t:"💡 The one-sentence definition",h:"<p>A <b>business</b> creates <b>value</b> (something people want) and captures some of it as <b>profit</b>. No value → no payment → no business. Everything else — marketing, hiring, funding — is just a magnifier of this loop.</p><div class='demo'><div class='demo-title'>▶ ANIMATED LOOP: VALUE → MONEY → MORE VALUE</div><div class='flow'><div class='box'><div class='e'>😰</div><b>Problem</b><br><small>thirsty jogger</small></div><div class='arrow'>➜</div><div class='box'><div class='e'>🍋</div><b>Solution</b><br><small>ice lemonade</small></div><div class='arrow'>➜</div><div class='box'><div class='e'>🪙</div><b>Payment</b><br><small>50¢ > 20¢ cost</small></div><div class='arrow'>➜</div><div class='box'><div class='e'>🌱</div><b>Reinvest</b><br><small>bigger stand</small></div></div><div class='coin-rain'><i style='left:10%'>🪙</i><i style='left:30%;animation-delay:-.6s'>🪙</i><i style='left:55%;animation-delay:-1.1s'>🪙</i><i style='left:75%;animation-delay:-.3s'>🪙</i><i style='left:90%;animation-delay:-.9s'>🪙</i></div></div><h4>Remember</h4><ul><li><b>Value first, money second.</b> Money is applause for value.</li><li>People pay to move from painful <b>Before</b> to dreamy <b>After</b>.</li><li>Profit is fuel: it lets you serve the next 100 customers.</li></ul>"},
+{t:"🎯 Needs vs Wants (sell vitamins or painkillers?)",h:"<p><b>Needs</b> = survival (food, shelter, safety). <b>Wants</b> = desires (bubble tea, sneakers, games). Painkillers (urgent problems) sell 10x faster than vitamins (nice-to-haves). Maya sells a painkiller on a 38°C day.</p><div class='formula'>Willingness to Pay = Pain × Urgency × Trust</div><ul><li>Need + urgency = premium price (umbrella in rain ☔).</li><li>Want + status = premium price (limited sneakers 👟).</li><li>Hero move: turn a want into a ritual (morning coffee ☕).</li></ul>"},
+{t:"🧲 Scarcity, demand & the price dance",h:"<p><b>Demand</b> = how many want it. <b>Supply</b> = how many exist. <b>Scarcity</b> + high demand = price rises. Flood the street with 20 lemonade stands = price crashes.</p><div class='demo'><div class='demo-title'>▶ SUPPLY SHOCK ANIMATION</div><div class='marquee'><span>🍋 stand 1 → 50¢</span><span>🍋🍋 5 stands → 40¢</span><span>🍋🍋🍋 20 stands → 15¢ 📉</span><span>🥵 heatwave → 80¢ 📈</span></div></div><ul><li>Find thirst (demand) before squeezing lemons (supply).</li><li>Differentiate or die: ice + mint + smile = you win.</li></ul>"}],
+lab:{title:"🧪 LAB 1 — Painkiller Sorter + Value Slider",desc:"Drag with clicks: tap an item to send it to NEED or WANT. Then move the Tastiness slider and watch happiness (willingness to pay) animate. Score 5/6 to power the stand.",type:"sort"},
+quiz:[
+{q:"What is a business in one sentence?",opts:["Taking money from people","Creating value people pay more than it cost","Having a logo and office","Posting on social media"],a:1,ex:"Value creation + value capture. Everything else is decoration."},
+{q:"Which sells fastest on a scorching day?",opts:["A vitamin e-book about hydration","Ice-cold lemonade in front of joggers","Lemon-scented candles","A course on lemon history"],a:1,ex:"Painkiller beats vitamin. Urgent pain = instant payment."},
+{q:"20 identical lemonade stands open. What happens to price?",opts:["It rises — more choice is premium","It crashes — supply floods demand","It stays same forever","Money disappears"],a:1,ex:"Supply up + same demand = price war. Differentiate!"},
+{q:"Maya's cup costs 20¢, sells at 50¢. Profit per cup?",opts:["70¢","50¢","30¢","20¢"],a:2,ex:"Profit = Price − Cost = 30¢. That 30¢ is the engine."}]},
+{id:2,icon:"🏪",title:"Business Models & Players",sub:"B2B • B2C • C2C • Products vs Services • Recurring gold.",xp:250,coins:60,
+story:"Maya's stand works. Now a café offers to buy 100 cups/day (<b>B2B</b>), kids resell her cups (<b>C2C</b>), and a subscriber wants daily delivery. Same lemonade, 4 different <b>business models</b> — 4 different fortunes.",
+lessons:[
+{t:"🤝 B2C, B2B, C2C, B2G — who pays you?",h:"<ul><li><b>B2C</b> (Business→Consumer): you → jogger. Fast, emotional, small tickets.</li><li><b>B2B</b> (Business→Business): you → café. Slow, rational, BIG tickets. One contract = 100 cups.</li><li><b>C2C</b> (Consumer→Consumer): kid resells your cup on a marketplace. You own the platform, take a cut.</li><li><b>B2G</b>: you → city marathon. Bureaucratic but giant.</li></ul><div class='demo'><div class='demo-title'>▶ MONEY-PER-DEAL</div><div class='bars'><div style='height:40px;background:#4de3ff'>B2C<br>1×</div><div style='height:90px;background:#5aa2ff'>B2B<br>100×</div><div style='height:65px;background:#b388ff'>C2C<br>cut</div><div style='height:120px;background:linear-gradient(180deg,#ffe27a,#ff9d2e)'>B2G<br>1000×</div></div></div>"},
+{t:"📦 Product vs Service vs Platform",h:"<ul><li><b>Product:</b> sell once (bottle). Scales with factories.</li><li><b>Service:</b> sell time (catering a party). High touch, hard to scale — unless you productize it.</li><li><b>Platform:</b> connect others (lemonade delivery app). You take 15–30% of every transaction. Hardest to start, strongest moat.</li></ul><div class='formula'>One-time sale = linear • Subscription = compounding</div>"},
+{t:"🔁 The holy grail: recurring revenue",h:"<p>One jogger pays 50¢ once = $0.50. Same jogger on <b>$12/month subscription</b> = $144/year. Subscriptions (Netflix, Spotify, Maya's Monthly Lemon Club) make revenue <b>predictable</b> and the company 5–10x more valuable.</p><ul><li>Transaction → Relationship.</li><li>Churn (cancellations) is the leak — plug it with habit + delight.</li></ul>"}],
+lab:{title:"🧪 LAB 2 — Model Matcher",desc:"A customer appears. Tap the correct model: B2C, B2B, C2C or SUBSCRIPTION. Get 4 in a row!",type:"match"},
+quiz:[
+{q:"A bakery selling 500 loaves to a hotel is…",opts:["B2C","B2B","C2C","B2G"],a:1,ex:"Business selling to Business. Bigger tickets, longer sales cycle."},
+{q:"Why do investors love subscriptions?",opts:["They sound cool","Revenue is predictable & compounding","They need no customers","They avoid all costs"],a:1,ex:"Recurring revenue = forecastable future cash. Worth a premium."},
+{q:"Airbnb / eBay are mainly…",opts:["Products","Services","Platforms taking a cut","Charities"],a:2,ex:"Platforms connect two sides and tax the transaction."},
+{q:"Biggest risk of a service business?",opts:["Too much scale","Trading time for money — hard to scale","No customers needed","Too much profit"],a:1,ex:"Hours don't scale. Productize or platformize to escape."}]},
+{id:3,icon:"💰",title:"Money 101 — Profit or Die",sub:"Revenue • Costs • Profit • Margin • Cash flow. The lemonade math.",xp:300,coins:80,
+story:"Maya sold 200 cups at 50¢ = $100 revenue! She's rich! …Until sugar, cups, and her brother's wages eat $85. <b>Revenue is vanity. Profit is sanity. Cash is reality.</b> This level is the math that kills 82% of businesses.",
+lessons:[
+{t:"🧾 Revenue − Costs = Profit (the only formula that matters)",h:"<div class='formula'>PROFIT = REVENUE − COSTS &nbsp;•&nbsp; MARGIN = PROFIT ÷ REVENUE</div><ul><li><b>Revenue:</b> price × units. 200 × $0.50 = $100.</li><li><b>Fixed costs:</b> rent, stand — pay even at zero sales.</li><li><b>Variable costs:</b> lemons, cups — grow with each sale.</li><li><b>Profit:</b> what stays. $100 − $85 = $15. Margin = 15%.</li></ul><div class='demo'><div class='demo-title'>▶ WHERE EACH COIN GOES</div><div class='flow'><div class='box'><div class='e'>💵</div><b>$100</b><br><small>revenue</small></div><div class='arrow'>➜</div><div class='box'><div class='e'>🍋</div><b>−$85</b><br><small>costs</small></div><div class='arrow'>➜</div><div class='box'><div class='e'>🪙</div><b>$15</b><br><small>profit 15%</small></div></div></div>"},
+{t:"💧 Cash flow: profitable but bankrupt?!",h:"<p>A café orders $1,000 but <b>pays in 60 days</b>. You must buy lemons <b>today</b>. You're profitable on paper, dead in reality. That's <b>cash-flow death</b>.</p><ul><li>Profit = opinion. Cash = fact.</li><li>Hero rules: get paid fast, pay slow, keep 3–6 months buffer.</li><li>Burn rate = cash spent/month. Runway = cash ÷ burn.</li></ul>"},
+{t:"📊 Unit economics: one cup must win",h:"<p>If you lose 5¢ on every cup, selling a million cups loses $50,000. <b>Scale amplifies unit economics — it never fixes them.</b></p><div class='formula'>Unit Profit = Price − Variable Cost &nbsp;must be &gt; 0</div><ul><li>Fix the one cup first, then scale.</li><li>Track: CAC, gross margin, payback period (Level 4 reveals them).</li></ul>"}],
+lab:{title:"🧪 LAB 3 — Lemonade Profit Machine",desc:"You are the CFO. Drag Price, Cost and Cups sliders. Find the combo that hits $40+ profit. Watch the till animate!",type:"profit"},
+quiz:[
+{q:"Revenue $500, costs $380. Margin?",opts:["$120","24%","$880","120%"],a:1,ex:"Profit $120. Margin = 120/500 = 24%."},
+{q:"Which cost do you pay even with zero sales?",opts:["Lemons per cup","Cups","Monthly stand rent (fixed)","Sugar per cup"],a:2,ex:"Fixed costs ignore volume. That's why volume matters."},
+{q:"Profitable on paper but no cash to buy lemons. This is…",opts:["A miracle","Cash-flow crisis","Infinite growth","No problem"],a:1,ex:"Timing of cash kills. Get paid fast, keep a buffer."},
+{q:"You lose $1 per unit. Selling 10x more will…",opts:["Fix it with scale","Lose 10x more money","Become profitable magically","Cut fixed costs to zero"],a:1,ex:"Scale amplifies unit economics. Fix the unit first."}]},
+{id:4,icon:"📣",title:"Marketing — Get Customers",sub:"4Ps • Funnel • CAC vs LTV. Shout so the thirsty come.",xp:300,coins:80,
+story:"Best lemonade on an empty street = $0. Maya learns <b>marketing = making the right people know, want, and buy</b>. She builds a funnel: 1,000 see → 100 stop → 20 buy → 5 subscribe. Numbers game!",
+lessons:[
+{t:"🎛 The 4Ps — your marketing joystick",h:"<ul><li><b>Product:</b> mint-lemon + eco cup. Solve + delight.</li><li><b>Price:</b> 50¢ impulse vs $3 premium. Price signals quality.</li><li><b>Place:</b> marathon finish line > empty alley. Be where thirst peaks.</li><li><b>Promotion:</b> free sip + big sign + TikTok kid. Attention → trial.</li></ul><div class='demo'><div class='demo-title'>▶ THE FUNNEL (1000 → 5)</div><div class='funnel'><div>👀 1000 SEE</div><div>🦶 100 STOP</div><div>👅 20 TASTE</div><div>💳 5 SUBSCRIBE</div></div></div>"},
+{t:"🎯 Brand vs Performance: farm vs hunt",h:"<ul><li><b>Performance (hunt):</b> flyers, ads — pay, get customer today. Stops when you stop paying.</li><li><b>Brand (farm):</b> story, reviews, vibe — slow, then customers come free forever.</li><li>Heroes hunt to survive, farm to get rich. Word-of-mouth = free salesforce.</li></ul>"},
+{t:"⚖️ CAC vs LTV — the growth equation",h:"<div class='formula'>LTV (lifetime value) must be &gt; 3 × CAC (acquisition cost)</div><p>If a flyer costs $10 and brings 5 buyers = CAC $2. If each buyer brings $12 lifetime = LTV $12. Ratio 6:1 → <b>print more flyers!</b> If CAC > LTV → you buy bankruptcy.</p>"}],
+lab:{title:"🧪 LAB 4 — Funnel Commander",desc:"Set Ad Spend and Price. Launch the funnel: watch 1000 eyeballs melt into buyers. Get LTV:CAC ≥ 3 to win.",type:"funnel"},
+quiz:[
+{q:"Which is Place (P)?",opts:["Logo color","Selling at marathon finish vs empty alley","Smiling","Recipe"],a:1,ex:"Place = being where demand peaks."},
+{q:"CAC $4, LTV $20. Healthy?",opts:["No, kill it","Yes — 5:1 ratio, scale it","Break even","Impossible"],a:1,ex:"LTV > 3×CAC is the golden rule. 5:1 = scale!"},
+{q:"Best example of brand (farm)?",opts:["One-day discount ad","Customers tattooing your logo & referring friends","Spam DMs","Buying followers"],a:1,ex:"Brand compounds. Referrals are free acquisition."},
+{q:"1000 see → 10 buy. Conversion?",opts:["10%","1%","0.1%","100%"],a:1,ex:"10/1000 = 1%. Funnels are leaky — optimize each step."}]},
+{id:5,icon:"🏭",title:"Operations & Team",sub:"Supply chain • Systems • Hiring. From hustle to machine.",xp:350,coins:90,
+story:"Maya can't squeeze, sell, and smile at once. Queues leave. Lemons rot. She must turn <b>hustle into a machine</b>: suppliers, recipes (SOPs), and a team that works without her.",
+lessons:[
+{t:"🔗 Supply chain: from farm to sip",h:"<div class='demo'><div class='demo-title'>▶ THE CHAIN — BREAK ONE LINK, BREAK ALL</div><div class='flow'><div class='box'><div class='e'>🚜</div><b>Farm</b><br><small>lemons</small></div><div class='arrow'>➜</div><div class='box'><div class='e'>🚚</div><b>Logistics</b><br><small>cold + fast</small></div><div class='arrow'>➜</div><div class='box'><div class='e'>🏪</div><b>Stand</b><br><small>make + sell</small></div><div class='arrow'>➜</div><div class='box'><div class='e'>😋</div><b>Fan</b><br><small>repeat</small></div></div></div><ul><li>One supplier = hostage. Always have backup #2.</li><li>Inventory: too much rots (cash stuck), too little = lost sales. Just-in-time + buffer.</li><li>Quality at scale = checklists, not memory.</li></ul>"},
+{t:"⚙️ Systems: work ON the business, not IN it",h:"<p><b>SOP</b> (Standard Operating Procedure): the recipe card so a 16-year-old makes Maya's lemonade perfectly on day one. <b>Automation</b> eats repetitive tasks. What gets <b>measured</b> gets managed.</p><div class='formula'>You don't have a business until it runs without you</div>"},
+{t:"🧑‍🤝‍🧑 Hiring: slow to hire, fast to fire (kindly)",h:"<ul><li>Hire for <b>attitude + values</b>, train skill. One toxic star poisons ten solids.</li><li><b>Culture</b> = what happens when the boss leaves. Smile, ownership, honesty.</li><li>Pay fairly + share wins (tips, bonus per 5-star review) → owners, not renters.</li></ul>"}],
+lab:{title:"🧪 LAB 5 — Rush Hour Commander",desc:"Customers flood in! Tap customers to serve before patience runs out. Serve 12 in 30s — but don't burn out: rest the team!",type:"rush"},
+quiz:[
+{q:"Your only lemon supplier doubles prices. Lesson?",opts:["Accept forever","Always have supplier #2 — single source = hostage","Stop selling","Blame customers"],a:1,ex:"Redundancy is the supply-chain seatbelt."},
+{q:"An SOP is…",opts:["A soup","A step-by-step recipe so anyone delivers quality","A tax form","A slogan"],a:1,ex:"Systems transfer skill from brain to paper to team."},
+{q:"Too much lemon inventory causes…",opts:["Infinite cash","Rot + cash stuck on shelves","Happier customers forever","Zero risk"],a:1,ex:"Inventory is cash sleeping. It can rot."},
+{q:"Best hiring signal?",opts:["Fancy degree only","Attitude + values fit, trainable skill","Cheapest salary","Loudest talker"],a:1,ex:"Skills train in weeks. Character compounds for years."}]},
+{id:6,icon:"📈",title:"Pricing, Break-Even & Funding",sub:"Break-even • Psychology pricing • Debt vs Equity • Compounding.",xp:350,coins:100,
+story:"Maya needs $2,000 for a juice machine. Bank offers a <b>loan</b> (debt). An investor offers $2,000 for <b>20% of the business</b> (equity). Meanwhile: at what cup does she stop losing money? Welcome to <b>finance</b>.",
+lessons:[
+{t:"🎯 Break-even: the survival number",h:"<div class='formula'>Break-Even Units = Fixed Costs ÷ (Price − Variable Cost)</div><p>Rent $300/mo, cup price $1, variable $0.40 → contribution $0.60 → break-even = 500 cups. Cup 501 = pure joy (profit). Every business must know this number by heart.</p>"},
+{t:"🧠 Pricing psychology: $0.99 is not an accident",h:"<ul><li><b>Charm:</b> $2.99 feels < $3. <b>Anchor:</b> show $5 crossed → $3 feels steal.</li><li><b>Decoy:</b> Small $2 / Medium $3.50 / Large $3.70 → everyone picks Large.</li><li><b>Premium:</b> higher price = higher perceived quality. Too cheap = suspicious.</li><li>Raise prices 10% with same costs? Profit can jump 50%+. Pricing is the highest-leverage lever.</li></ul>"},
+{t:"💸 Debt vs Equity + the miracle of compounding",h:"<ul><li><b>Debt:</b> borrow, repay + interest, keep ownership. Must repay even if you fail. Bank owns your sleep.</li><li><b>Equity:</b> sell a slice. No repayment, but you marry the investor. 20% of a watermelon > 100% of a grape.</li></ul><div class='demo'><div class='demo-title'>▶ $100/MO AT 10%/YR COMPOUNDING</div><div class='bars'><div style='height:30px;background:#4de3ff'>Y1<br>1.2k</div><div style='height:60px;background:#5aa2ff'>Y5<br>7k</div><div style='height:95px;background:#b388ff'>Y10<br>19k</div><div style='height:130px;background:linear-gradient(180deg,#ffe27a,#ff9d2e)'>Y20<br>69k</div></div></div><p>Time + reinvested returns = snowball. Start early, never interrupt it.</p>"}],
+lab:{title:"🧪 LAB 6 — Break-Even Hunter",desc:"Move Fixed Costs and Price sliders. Land break-even between 300–500 cups AND keep margin ≥ 40%. Real CFO work.",type:"breakeven"},
+quiz:[
+{q:"Fixed $300, price $1, variable $0.40. Break-even?",opts:["300 cups","500 cups","750 cups","120 cups"],a:1,ex:"300 ÷ 0.60 = 500. Memorize the formula."},
+{q:"Why does $2.99 beat $3.00?",opts:["Math","Left-digit psychology — feels much cheaper","It is 50% off","Laws require it"],a:1,ex:"Brains read left to right. 2 > 3 emotionally."},
+{q:"Main danger of debt?",opts:["You keep ownership","Must repay + interest even if sales flop","No interest","Investors boss you"],a:1,ex:"Debt doesn't care about your bad month. Equity shares risk."},
+{q:"Power of compounding needs most…",opts:["Timing the market daily","Time + reinvesting + patience","A lottery win","Quitting early"],a:1,ex:"Snowballs need long hills. Start early, stay in."}]},
+{id:7,icon:"♟️",title:"Strategy & Moat",sub:"Competition • SWOT • Moats • Blue Ocean. Win without fighting.",xp:400,coins:110,
+story:"Three copycat stands surround Maya. Price war → everyone bleeds. She stops fighting on price and builds a <b>moat</b>: secret recipe + Lemon Club subscriptions + marathon exclusivity. Rivals can copy cups, not the castle.",
+lessons:[
+{t:"⚔️ Know your battlefield (Porter in 60s)",h:"<ul><li><b>Perfect competition</b> (20 lemonade stands): price = cost, profit ≈ 0. Hell.</li><li><b>Monopoly-ish</b> (only stand at festival, patented recipe): pricing power. Heaven — but must stay legal & loved.</li><li>5 forces squeeze you: rivals, new entrants, substitutes (soda!), supplier power, buyer power.</li></ul><div class='formula'>Compete on price = race to zero • Compete on uniqueness = race to freedom</div>"},
+{t:"🔍 SWOT: the 4-box mirror",h:"<p><b>S</b>trengths + <b>W</b>eaknesses (inside, you control) × <b>O</b>pportunities + <b>T</b>hreats (outside). Maya: S = secret mint recipe, W = one stand, O = office subscriptions, T = soda giant. Strategy = use S to grab O, fix W, dodge T.</p>"},
+{t:"🏰 Moats: why customers can't leave",h:"<ul><li>🧪 <b>Secret / brand:</b> Coca-Cola recipe, Apple love.</li><li>🕸 <b>Network:</b> everyone is on it (WhatsApp, marketplaces).</li><li>💰 <b>Scale cost:</b> giants produce cheaper than you ever can.</li><li>🔒 <b>Switching cost:</b> your photos, data, habits live here (iCloud, Lemon Club points).</li><li>🌊 <b>Blue Ocean:</b> don't fight in bloody red water — sail where no one is (lemonade + yoga mornings).</li></ul>"}],
+lab:{title:"🧪 LAB 7 — Moat Builder: survive the price war",desc:"Rivals slash to 30¢! Choose 3 moves (recipe, club, festival deal, ads…). Each has cost & defense. Survive 5 rounds with profit > 0.",type:"moat"},
+quiz:[
+{q:"In perfect competition with identical products…",opts:["Everyone gets rich","Price falls to cost, profit ≈ 0","Customers vanish","Monopoly appears"],a:1,ex:"No difference = no pricing power. Differentiate or die."},
+{q:"Which is a W (internal weakness)?",opts:["New soda tax law","Only one stand, no delivery","Viral thirst for healthy drinks","Rival opens nearby"],a:1,ex:"Weakness = inside & fixable. Outside events are O/T."},
+{q:"Strongest moat for a messaging app?",opts:["A nicer logo","Network effects — friends are all here","Cheaper pens","Longer hours"],a:1,ex:"Leaving means leaving friends. That's a real moat."},
+{q:"Blue Ocean means…",opts:["Fighting harder on price","Creating uncontested space (lemonade+yoga)","Copying rivals exactly","Selling only blue drinks"],a:1,ex:"Make competition irrelevant by creating new demand."}]},
+{id:8,icon:"👑",title:"BOSS LEVEL — Empire Tycoon",sub:"12 months. 6 decisions. One empire. Prove you're the Hero.",xp:500,coins:200,
+story:"Year finale. You own 3 stands, $5,000 cash, a team of 4. Each month throws an event: heatwave, broken machine, viral review, investor knock. <b>Decide like a CEO</b>: every choice moves cash, fans, and team morale. End with cash > $0 AND fans ≥ 60 = HERO.",
+lessons:[
+{t:"👑 The CEO dashboard: cash • fans • team",h:"<p>Heroes watch three dials, not one:</p><ul><li>💵 <b>Cash:</b> below zero = game over, whatever fans say.</li><li>😍 <b>Fans (0–100):</b> brand + loyalty. High fans = pricing power + referrals.</li><li>💪 <b>Team (0–100):</b> low morale = mistakes, quits, bad reviews. Rest + bonuses repair it.</li></ul><div class='formula'>Profit without fans is fragile • Fans without profit is charity • Both without team is luck</div>"},
+{t:"🧠 How Heroes decide (mini-MBA)",h:"<ul><li><b>Opportunity cost:</b> festival deal means skipping catering. What do you give up?</li><li><b>Expected value:</b> 50% chance of +$2,000 = worth $1,000. Take +EV bets repeatedly.</li><li><b>Asymmetric bets:</b> small downside, huge upside (viral video) = always take.</li><li><b>Regret minimization:</b> in 10 years, what will you wish you tried?</li></ul><p>Now — the simulation. No more theory. <b>Rule the empire.</b></p>"}],
+lab:{title:"🧪 FINAL SIM — 12 Months as CEO",desc:"Press 'Next Month'. Read the event, pick A or B. Survive 12 rounds. Then take the graduation quiz.",type:"empire"},
+quiz:[
+{q:"Cash $200, payroll $800 due tomorrow, client pays $2,000 in 30 days. Best?",opts:["Wait calmly — profit covers it","Bridge it NOW: overdraft / deposit / cut costs — cash timing kills","Ignore payroll","Borrow to buy ads"],a:1,ex:"Cash timing > paper profit. Bridge the gap today."},
+{q:"CAC $5, LTV $8. Scale ads?",opts:["Yes, growth at all costs!","No — fix to 3:1 first (raise price/retention or cut CAC)","Lower price more","Stop all marketing"],a:1,ex:"8/5 = 1.6:1. Scaling this buys bankruptcy. Fix unit first."},
+{q:"Rival copies your drink at half price. Best moat move?",opts:["Match half price forever","Build moat: secret recipe + club + exclusive spots","Insult them online","Quit"],a:1,ex:"Price wars kill both. Uniqueness + lock-in wins."},
+{q:"Team morale 30/100, mistakes rising. CEO move?",opts:["Push harder, no days off","Rest + bonus + listen — burnout is expensive","Fire everyone instantly","Ignore it"],a:1,ex:"Morale is capacity. Repair it before it repairs you."},
+{q:"$10k profit. Asymmetric bet: cost $1k, 20% chance of $50k channel. Take it?",opts:["No, protect every dollar","Yes — EV = $10k for $1k risk, small downside huge upside","Bet all $10k","Flip a coin instead"],a:1,ex:"EV $10k > $1k cost. Heroes collect +EV asymmetric bets."}]}
+];
+
+/* --- CONCEPTS CLOUD --- */
+var CONCEPTS=["Value","Needs vs Wants","Supply & Demand","B2B / B2C / C2C","Product vs Service","Platform","Subscription","Churn","Revenue","Fixed vs Variable Costs","Profit & Margin","Cash Flow","Runway","Unit Economics","4Ps","Funnel","Brand vs Performance","CAC","LTV","Supply Chain","SOP","Culture","Break-Even","Pricing Psychology","Debt vs Equity","Compounding","Competition","SWOT","Moat","Network Effects","Blue Ocean","Opportunity Cost"];
+
+/* --- STATE --- */
+var curLevel=null,curStep=0,labDone=false,quizState={};
+function toast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.remove("hidden");clearTimeout(t._h);t._h=setTimeout(function(){t.classList.add("hidden");},2600);}
+function addXP(n){save.xp+=n;addCoins(Math.round(n/5));persist();renderHUD();}
+function addCoins(n){save.coins+=n;persist();renderHUD();sCoin();}
+function renderHUD(){
+ document.getElementById("xp-label").textContent="LV "+levelFor(save.xp)+" • "+save.xp+" XP";
+ document.getElementById("xp-fill").style.width=Math.min(100,(save.xp/2800)*100)+"%";
+ document.getElementById("coins-label").textContent="🪙 "+save.coins;
+ document.getElementById("rank-badge").textContent=rankFor(save.xp);
+ var done=Object.keys(save.completed).length;
+ document.getElementById("streak").textContent="🔥 "+done;
+ document.getElementById("progress-fill").style.width=(done/8*100)+"%";
+ document.getElementById("stat-xp").textContent=save.xp;
+ document.getElementById("stat-levels").textContent=done+"/8";
+ document.getElementById("stat-coins").textContent=save.coins;
+ var cont=document.getElementById("btn-continue");
+ if(save.unlocked>1&&done<8){cont.style.display="";cont.textContent="Continue: Level "+save.unlocked+" ▸";}
+ else if(done>=8){cont.style.display="";cont.textContent="🏆 Replay Empire";}
+ else cont.style.display="none";
+}
+
+/* --- MAP --- */
+function renderMap(){
+ var w=document.getElementById("world-map");w.innerHTML="";
+ LEVELS.forEach(function(L,i){
+  var num=i+1,locked=num>save.unlocked,done=!!save.completed[L.id];
+  var d=document.createElement("div");d.className="node"+(locked?" locked":"")+(done?" done":"");
+  d.innerHTML="<div class='lvl'>LEVEL "+num+(done?" • CLEARED ✅":locked?" • 🔒 LOCKED":" • ▶ PLAY")+"</div><div class='thumb'>"+L.icon+"</div><h3>"+L.title+"</h3><p>"+L.sub+"</p><div class='meta'><span class='pill gold'>+"+L.xp+" XP</span><span class='pill'>🪙 "+L.coins+"</span><span class='pill"+(done?" green":"")+"'>"+(done?"★ Done":locked?"🔒":"▶")+"</span></div>";
+  if(!locked){d.onclick=function(){sClick();openLevel(L.id);};}
+  else{d.onclick=function(){sBad();toast("🔒 Pass Level "+(num-1)+" quiz (≥70%) to unlock this!");};}
+  w.appendChild(d);
+ });
+ var c=document.getElementById("concepts-cloud");c.innerHTML="";
+ CONCEPTS.forEach(function(t){var s=document.createElement("span");s.textContent=t;c.appendChild(s);});
+}
+
+/* --- LEVEL FLOW --- */
+function showScreen(id){document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});document.getElementById(id).classList.add("active");window.scrollTo({top:0,behavior:"smooth"});}
+function openLevel(id){curLevel=LEVELS.filter(function(l){return l.id===id;})[0];curStep=0;labDone=false;quizState={};renderLevel();showScreen("screen-level");}
+function renderLevel(){
+ var L=curLevel;if(!L)return;
+ document.getElementById("level-num").textContent="LEVEL "+L.id+" / 8 • "+L.icon;
+ document.getElementById("level-title").textContent=L.title;
+ document.getElementById("level-sub").textContent=L.sub;
+ var steps=document.querySelectorAll("#level-steps span");
+ steps.forEach(function(s,i){s.classList.toggle("on",i===curStep);});
+ steps[0].textContent="1 Learn 📖";steps[1].textContent="2 Play 🧪";steps[2].textContent="3 Prove 🏆";
+ var dots=document.getElementById("dots");dots.innerHTML="";for(var i=0;i<3;i++){var d=document.createElement("i");if(i===curStep)d.className="on";dots.appendChild(d);}
+ var body=document.getElementById("level-body");body.innerHTML="";
+ document.getElementById("btn-prev-step").disabled=(curStep===0);
+ document.getElementById("btn-next-step").textContent=(curStep===2?"Finish ✦":"Next ▸");
+ if(curStep===0){
+  var intro=document.createElement("div");intro.className="card";intro.innerHTML="<h3>📜 Mission briefing</h3><p>"+L.story+"</p><p style='margin-top:8px;color:var(--gold);font-weight:800'>👇 Read the "+L.lessons.length+" concept cards, then press Next to PLAY the money lab.</p>";body.appendChild(intro);
+  L.lessons.forEach(function(ls){var c=document.createElement("div");c.className="card";c.innerHTML="<h3>"+ls.t+"</h3>"+ls.h;body.appendChild(c);});
+ }else if(curStep===1){buildLab(body,L);}
+ else{buildQuiz(body,L);}
+}
+function buildLab(body,L){
+ var lab=L.lab;
+ var wrap=document.createElement("div");wrap.className="lab";
+ wrap.innerHTML="<h3>"+lab.title+"</h3><p>"+lab.desc+"</p><div class='lab-stage'></div><div class='lab-result'></div>";
+ body.appendChild(wrap);
+ var stage=wrap.querySelector(".lab-stage"),res=wrap.querySelector(".lab-result");
+ function win(msg){if(labDone)return;labDone=true;sGood();res.innerHTML="<div class='formula'>✅ LAB CLEARED! "+msg+" (+50 XP)</div>";addXP(50);toast("🧪 Lab cleared! +50 XP — now PROVE it in the quiz.");}
+ var builders={sort:buildSort,match:buildMatch,profit:buildProfit,funnel:buildFunnel,rush:buildRush,breakeven:buildBreakeven,moat:buildMoat,empire:buildEmpire};
+ (builders[lab.type]||buildSort)(stage,res,win);
+ var hint=document.createElement("div");hint.className="card";hint.innerHTML="<h3>🎓 Why this lab matters</h3><p>Every tycoon rehearsed with play money before risking real money. Master the toy version — the real version obeys the same math.</p>";body.appendChild(hint);
+}
+
+/* LAB: sort needs vs wants */
+function buildSort(stage,res,win){
+ var items=[["🍞 Bread","need"],["🎮 Video game","want"],["💧 Water","need"],["👟 Limited sneakers","want"],["🏠 Shelter","need"],["☕ Daily latte","want"],["💊 Medicine","need"],["🎬 Cinema","want"]];
+ var score=0,done=0;
+ stage.innerHTML="<div class='controls'><span>Tap an item, then tap the right bucket. <b id='sort-score'>0 pts</b></span></div><div id='chips'></div><div class='sort-game'><div class='sort-col' id='c-need'><h5>🍞 NEEDS</h5></div><div class='sort-col' id='c-want'><h5>🎮 WANTS</h5></div></div><div style='margin-top:10px'><label>Tastiness (value) <input type='range' id='taste' min='1' max='10' value='6'></label> <span id='happy' style='font-size:26px'>🙂</span> <span id='wtp' class='pill gold'>WTP 60¢</span></div>";
+ var box=stage.querySelector("#chips");
+ items.forEach(function(it){
+  var b=document.createElement("span");b.className="chip";b.textContent=it[0];b.dataset.k=it[1];
+  b.onclick=function(){sClick();b.style.outline="2px solid var(--gold)";stage._sel=b;};
+  box.appendChild(b);
+ });
+ function pick(kind){
+  var b=stage._sel;if(!b||b.dataset.done)return;
+  if(b.dataset.k===kind){b.classList.add("ok");b.dataset.done="1";score++;sGood();}
+  else{b.classList.add("bad");sBad();setTimeout(function(){b.classList.remove("bad");},400);}
+  done++;stage._sel=null;stage.querySelector("#sort-score").textContent=score+" pts ("+done+"/"+items.length+")";
+  if(done>=items.length){if(score>=5)win("You spot painkillers instantly. Score "+score+"/"+items.length+".");else res.innerHTML="<div class='formula'>😅 Score "+score+"/"+items.length+" — need 5+. Tap Map → replay level to retry!</div>";}
+ }
+ stage.querySelector("#c-need").onclick=function(){pick("need");};
+ stage.querySelector("#c-want").onclick=function(){pick("want");};
+ var t=stage.querySelector("#taste");
+ t.oninput=function(){var v=+t.value;stage.querySelector("#wtp").textContent="WTP "+(v*10)+"¢";stage.querySelector("#happy").textContent=v<4?"🙁":v<7?"🙂":v<9?"😍":"🤩";};
+}
+/* LAB: match models */
+function buildMatch(stage,res,win){
+ var rounds=[["Café orders 100 cups daily","B2B"],["Jogger buys 1 cup","B2C"],["Kid resells your cup on app","C2C"],["Monthly Lemon Club delivery","SUB"],["City marathon 5,000 cups","B2B"],["Tourist grabs a bottle","B2C"]];
+ var i=0,streak=0;
+ stage.innerHTML="<div class='kpi-row'><div class='kpi'><b id='m-q'>1/"+rounds.length+"</b><span>round</span></div><div class='kpi'><b id='m-s'>0 🔥</b><span>streak (need 4)</span></div></div><h2 id='m-cust' style='text-align:center;font-size:22px;margin:10px 0'></h2><div class='controls' style='justify-content:center' id='m-btns'></div><div id='m-fb' style='text-align:center;color:var(--mut)'></div>";
+ var btns=stage.querySelector("#m-btns");
+ ["B2C","B2B","C2C","SUB"].forEach(function(k){var b=document.createElement("button");b.className="btn secondary";b.textContent=k;b.onclick=function(){sClick();if(k===rounds[i][1]){streak++;sGood();stage.querySelector("#m-fb").textContent="✅ Correct! "+explain(k);}else{streak=0;sBad();stage.querySelector("#m-fb").textContent="❌ Nope — this is "+rounds[i][1]+". "+explain(rounds[i][1]);}i++;if(i>=rounds.length)i=0;stage.querySelector("#m-s").textContent=streak+" 🔥";stage.querySelector("#m-q").textContent=(i+1)+"/"+rounds.length;next();if(streak>=4)win("4 in a row — you speak Business Models fluently!");};btns.appendChild(b);});
+ function explain(k){return k==="B2B"?"Big bulk deal to a business.":k==="B2C"?"One sale to one consumer.":k==="C2C"?"Consumer reselling to consumer.":"Recurring subscription gold.";}
+ function next(){stage.querySelector("#m-cust").textContent="🧍 "+rounds[i][0]+" → ?";}
+ next();
+}
+/* LAB: profit machine */
+function buildProfit(stage,res,win){
+ stage.innerHTML="<div class='controls'><label>Price $<input type='number' id='p-price' value='1' min='0.2' max='5' step='0.1' style='width:70px'></label><label>Cost/cup $<input type='number' id='p-cost' value='0.4' min='0.1' max='3' step='0.05' style='width:70px'></label><label>Cups <input type='range' id='p-cups' min='20' max='500' value='150'></label><b id='p-n'>150 cups</b></div><div class='kpi-row'><div class='kpi'><b id='k-rev'>$0</b><span>revenue</span></div><div class='kpi'><b id='k-cost'>$0</b><span>costs</span></div><div class='kpi'><b id='k-prof' class='big-num'>$0</b><span>profit</span></div><div class='kpi'><b id='k-marg'>0%</b><span>margin</span></div></div><div class='demo'><div class='demo-title'>🧾 LIVE TILL</div><div class='ledger' id='p-led'></div></div>";
+ function upd(){
+  var pr=+stage.querySelector("#p-price").value||0,co=+stage.querySelector("#p-cost").value||0,cu=+stage.querySelector("#p-cups").value||0;
+  stage.querySelector("#p-n").textContent=cu+" cups";
+  var rev=pr*cu,cost=co*cu,prof=rev-cost,marg=rev?Math.round(prof/rev*100):0;
+  stage.querySelector("#k-rev").textContent="$"+rev.toFixed(0);
+  stage.querySelector("#k-cost").textContent="$"+cost.toFixed(0);
+  var kp=stage.querySelector("#k-prof");kp.textContent=(prof<0?"−$":"$")+Math.abs(prof).toFixed(0);kp.className="big-num"+(prof<0?" neg":"");
+  stage.querySelector("#k-marg").textContent=marg+"%";
+  stage.querySelector("#p-led").innerHTML="sold "+cu+" × $"+pr.toFixed(2)+" = <span class='pos'>+$"+rev.toFixed(2)+"</span><br>cost "+cu+" × $"+co.toFixed(2)+" = <span class='neg'>−$"+cost.toFixed(2)+"</span><br><b>PROFIT = <span class='"+(prof>=0?"pos":"neg")+"'>$"+prof.toFixed(2)+"</span> • margin "+marg+"%</b>";
+  if(prof>=40&&marg>=20)win("Profit $"+prof.toFixed(0)+" at "+marg+"% margin. CFO material!");
+ }
+ ["p-price","p-cost","p-cups"].forEach(function(id){stage.querySelector("#"+id).oninput=upd;});upd();
+}
+/* LAB: funnel */
+function buildFunnel(stage,res,win){
+ stage.innerHTML="<div class='controls'><label>Ad spend $<input type='range' id='f-sp' min='10' max='300' value='80'></label><b id='f-spv'>$80</b><label>Price $<input type='number' id='f-pr' value='3' min='1' max='10' step='0.5' style='width:70px'></label><button class='btn' id='f-go'>🚀 Launch funnel</button></div><div class='funnel'><div id='f1'>👀 1000 SEE</div><div id='f2'>🦶 — STOP</div><div id='f3'>👅 — TASTE</div><div id='f4'>💳 — BUY</div></div><div class='kpi-row'><div class='kpi'><b id='f-cac'>—</b><span>CAC</span></div><div class='kpi'><b id='f-ltv'>—</b><span>LTV</span></div><div class='kpi'><b id='f-ratio'>—</b><span>LTV : CAC</span></div><div class='kpi'><b id='f-prof'>—</b><span>profit</span></div></div>";
+ var sp=stage.querySelector("#f-sp");sp.oninput=function(){stage.querySelector("#f-spv").textContent="$"+sp.value;};
+ stage.querySelector("#f-go").onclick=function(){
+  sClick();var spend=+sp.value,price=+stage.querySelector("#f-pr").value||3;
+  var stop=Math.min(1000,Math.round(spend*2.2)),taste=Math.round(stop*0.25),buy=Math.round(taste*Math.max(0.08,0.3-(price-1)*0.025));
+  var buyers=Math.max(1,buy),cac=spend/buyers,ltv=price*3.2,ratio=ltv/cac,prof=buyers*price*0.55-spend;
+  var seq=[[1000,"👀 "+1000+" SEE"],[stop,"🦶 "+stop+" STOP"],[taste,"👅 "+taste+" TASTE"],[buyers,"💳 "+buyers+" BUY"]];
+  seq.forEach(function(s2,idx){setTimeout(function(){document.getElementById("f"+(idx+1)).textContent=s2[1];beep(400+idx*150,0.1,"square",0.06);},idx*350);});
+  setTimeout(function(){
+   stage.querySelector("#f-cac").textContent="$"+cac.toFixed(2);
+   stage.querySelector("#f-ltv").textContent="$"+ltv.toFixed(2);
+   stage.querySelector("#f-ratio").textContent=ratio.toFixed(1)+":1";
+   stage.querySelector("#f-prof").textContent=(prof>=0?"+$":"−$")+Math.abs(prof).toFixed(0);
+   if(ratio>=3&&prof>0)win("LTV:CAC "+ratio.toFixed(1)+":1 with +$"+prof.toFixed(0)+" profit. Scale it!");
+   else{res.innerHTML="<div class='formula'>📉 Ratio "+ratio.toFixed(1)+":1 — need ≥3:1 + profit. Try lower spend or price ≈ $2–4.</div>";sBad();}
+  },1600);
+ };
+}
+/* LAB: rush hour */
+function buildRush(stage,res,win){
+ var served=0,time=30,playing=false,timer=null,spawn=null;
+ stage.innerHTML="<div class='controls'><button class='btn big' id='r-start'>▶ Start rush (30s)</button><b id='r-info'>Serve 12 customers • tap them before patience empties!</b></div><div class='kpi-row'><div class='kpi'><b id='r-served'>0</b><span>served / 12</span></div><div class='kpi'><b id='r-time'>30s</b><span>left</span></div><div class='kpi'><b id='r-mood'>💪 100</b><span>team energy</span></div></div><div id='r-floor' style='position:relative;height:180px;background:#0a0f2a;border-radius:12px;border:1px solid var(--line);overflow:hidden'></div><div class='controls'><button class='btn secondary' id='r-rest'>☕ Rest team (+energy, −2s)</button></div>";
+ var energy=100;
+ stage.querySelector("#r-rest").onclick=function(){if(!playing)return;energy=Math.min(100,energy+25);time=Math.max(0,time-2);sClick();};
+ stage.querySelector("#r-start").onclick=function(){
+  if(playing)return;playing=true;served=0;time=30;energy=100;
+  sClick();var floor=stage.querySelector("#r-floor");floor.innerHTML="";
+  timer=setInterval(function(){time--;stage.querySelector("#r-time").textContent=time+"s";energy=Math.max(0,energy-2);stage.querySelector("#r-mood").textContent=(energy>50?"💪 ":"😩 ")+energy;if(time<=0||served>=12)end();},1000);
+  spawn=setInterval(function(){
+   if(!playing)return;
+   var c=document.createElement("button");var faces=["🧑","👩","🧓","👦","👩‍🦰","🧔"];c.textContent=faces[Math.floor(Math.random()*faces.length)];
+   c.style.cssText="position:absolute;font-size:34px;background:none;border:0;cursor:pointer;left:"+Math.random()*85+"%;top:"+Math.random()*60+"%;transition:transform .15s";
+   var pat=100;var bar=document.createElement("div");bar.style.cssText="height:5px;background:var(--green);border-radius:99px;margin-top:-4px";c.appendChild(bar);
+   var iv=setInterval(function(){pat-=energy>30?9:16;bar.style.width=pat+"%";bar.style.background=pat>50?"var(--green)":pat>25?"var(--gold)":"var(--red)";if(pat<=0){clearInterval(iv);if(c.parentNode)c.parentNode.removeChild(c);sBad();}},300);
+   c.onclick=function(){clearInterval(iv);if(c.parentNode)c.parentNode.removeChild(c);served++;energy=Math.max(0,energy-4);stage.querySelector("#r-served").textContent=served;stage.querySelector("#r-mood").textContent=(energy>50?"💪 ":"😩 ")+energy;sCoin();c.style.transform="scale(1.4)";if(served>=12)end();};
+   floor.appendChild(c);
+   setTimeout(function(){if(c.parentNode&&c.parentNode.contains(c)){/*leave*/}},6000);
+  },900);
+  function end(){playing=false;clearInterval(timer);clearInterval(spawn);if(served>=12)win("Served "+served+" in the rush — systems + team = machine!");else res.innerHTML="<div class='formula'>😅 Served "+served+"/12. Rest the team and tap faster — retry!</div>";}
+ };
+}
+/* LAB: breakeven */
+function buildBreakeven(stage,res,win){
+ stage.innerHTML="<div class='controls'><label>Fixed $/mo <input type='range' id='b-f' min='100' max='1000' value='300'></label><b id='b-fv'>$300</b><label>Price $ <input type='range' id='b-p' min='0.8' max='4' step='0.1' value='1.2'></label><b id='b-pv'>$1.20</b></div><p>Variable cost fixed at $0.40/cup. Goal: break-even 300–500 cups AND margin ≥ 40%.</p><div class='kpi-row'><div class='kpi'><b id='b-be'>—</b><span>break-even cups</span></div><div class='kpi'><b id='b-m'>—</b><span>margin</span></div><div class='kpi'><b id='b-c'>—</b><span>contribution</span></div></div><div class='bars' id='b-bars'><div style='height:50px;background:#ff6b6b'>LOSS</div><div style='height:100px;background:var(--gold)'>BE</div><div style='height:130px;background:var(--green)'>PROFIT</div></div>";
+ function upd(){var f=+stage.querySelector("#b-f").value,p=+stage.querySelector("#b-p").value,v=0.4;stage.querySelector("#b-fv").textContent="$"+f;stage.querySelector("#b-pv").textContent="$"+p.toFixed(2);var contrib=p-v,be=contrib>0?Math.round(f/contrib):9999,marg=Math.round((p-v)/p*100);stage.querySelector("#b-be").textContent=be+" cups";stage.querySelector("#b-m").textContent=marg+"%";stage.querySelector("#b-c").textContent="$"+contrib.toFixed(2);if(be>=300&&be<=500&&marg>=40)win("BE = "+be+" cups at "+marg+"% margin. Bank-ready!");}
+ ["b-f","b-p"].forEach(function(id){stage.querySelector("#"+id).oninput=upd;});upd();
+}
+/* LAB: moat war */
+function buildMoat(stage,res,win){
+ var moves=[{n:"🧪 Secret mint recipe",c:120,d:30,t:"Rivals can't copy taste. +fans."},{n:"💳 Lemon Club (points)",c:150,d:35,t:"Lock-in: points trap customers."},{n:"🏟 Festival exclusive",c:200,d:40,t:"Only YOU at the marathon."},{n:"📣 TikTok ads blitz",c:80,d:10,t:"Fast spike, no moat."},{n:"💸 Slash price to 25¢",c:0,d:-15,t:"Bleeds you AND them."},{n:"🤝 Hire smiley crew",c:100,d:20,t:"Service people pay extra for."}];
+ var cash=600,fans=40,round=0,picked=[];
+ stage.innerHTML="<div class='kpi-row'><div class='kpi'><b id='mo-c'>$600</b><span>cash</span></div><div class='kpi'><b id='mo-f'>40</b><span>fans</span></div><div class='kpi'><b id='mo-r'>0/5</b><span>rounds</span></div></div><div id='mo-list'></div><div class='ledger' id='mo-log'>📣 Rival slashed to 30¢! Pick 3 moat moves, then press SURVIVE.<br></div><div class='controls'><button class='btn big' id='mo-go'>🛡 Survive 5 rounds</button></div>";
+ var list=stage.querySelector("#mo-list");
+ moves.forEach(function(m){
+  var b=document.createElement("button");b.className="opt";b.textContent=m.n+" — $"+m.c+" • defense "+m.d+" — "+m.t;
+  b.onclick=function(){sClick();if(picked.indexOf(m)>=0){picked=picked.filter(function(x){return x!==m;});b.classList.remove("correct");}else{if(picked.length>=3){toast("Max 3 moves — unpick one first!");return;}picked.push(m);b.classList.add("correct");}};
+  list.appendChild(b);
+ });
+ stage.querySelector("#mo-go").onclick=function(){
+  if(picked.length!==3){toast("Pick exactly 3 moves!");sBad();return;}
+  var cost=picked.reduce(function(a,m){return a+m.c;},0),def=picked.reduce(function(a,m){return a+m.d;},0);
+  cash-=cost;var log=stage.querySelector("#mo-log");log.innerHTML+="💸 You spent $"+cost+" on: "+picked.map(function(m){return m.n;}).join(", ")+"<br>";
+  var r=0;var iv=setInterval(function(){
+   r++;round++;var dmg=Math.max(0,55-def+Math.floor(Math.random()*20));cash+=120-dmg;fans=Math.max(0,Math.min(100,fans+Math.round(def/4)-8));
+   stage.querySelector("#mo-c").textContent="$"+cash;stage.querySelector("#mo-f").textContent=fans;stage.querySelector("#mo-r").textContent=Math.min(5,r)+"/5";
+   log.innerHTML+="Round "+r+": rival attacks −$"+dmg+", you earn +$120 → cash $"+cash+", fans "+fans+"<br>";log.scrollTop=9999;beep(300+r*100,0.12,"square",0.07);
+   if(r>=5){clearInterval(iv);if(cash>0&&fans>=35)win("Cash $"+cash+", fans "+fans+" — castle held! 🏰");else{res.innerHTML="<div class='formula'>💀 Cash $"+cash+", fans "+fans+" — castle fell. Hint: recipe + club + festival = real moat. Retry!</div>";sBad();}}
+  },700);
+ };
+}
+/* LAB: empire sim */
+var EMPIRE=[
+ {e:"🔥 Heatwave! Thirst everywhere.",a:"Raise price +20% (cash grab)",b:"Keep price, push Lemon Club (fans)",fa:{cash:900,fans:-5,team:-5},fb:{cash:400,fans:18,team:5}},
+ {e:"🔧 Machine broke. Repair $600, 2 days closed.",a:"Pay & upgrade (fast, costly)",b:"DIY patch (cheap, risky)",fa:{cash:-600,fans:5,team:5},fb:{cash:-150,fans:-12,team:-8}},
+ {e:"⭐ Viral review: 'BEST lemonade EVER!' Queue explodes.",a:"Hire temp crew $400",b:"Grind team overtime free",fa:{cash:300,fans:15,team:8},fb:{cash:700,fans:5,team:-18}},
+ {e:"🏟 Festival: exclusive booth $800, expects $2,500.",a:"Take the booth (big bet)",b:"Skip, sell at stands",fa:{cash:1700,fans:12,team:-5},fb:{cash:300,fans:2,team:3}},
+ {e:"😤 Star employee wants raise $300 or quits.",a:"Give raise + bonus",b:"Refuse, hire rookie cheap",fa:{cash:-300,fans:5,team:15},fb:{cash:100,fans:-8,team:-15}},
+ {e:"🥤 Soda giant copies you at half price.",a:"Launch secret flavor + club",b:"Price war to 25¢",fa:{cash:-200,fans:18,team:5},fb:{cash:-700,fans:-15,team:-10}},
+ {e:"📰 Health mag features sugar dangers.",a:"Launch zero-sugar line $500",b:"Ignore, it's a fad",fa:{cash:200,fans:14,team:0},fb:{cash:-300,fans:-14,team:0}},
+ {e:"💼 Investor: $5,000 for 25% of empire.",a:"Take it (fuel + pressure)",b:"Stay independent",fa:{cash:5000,fans:5,team:5},fb:{cash:0,fans:8,team:8}},
+ {e:"🌧 Rainy month. Foot traffic −50%.",a:"Delivery + catering push",b:"Close stands, wait",fa:{cash:200,fans:8,team:5},fb:{cash:-500,fans:-8,team:-5}},
+ {e:"🎄 Holiday catering order: 2,000 cups in 3 days!",a:"Accept + night shifts + bonus",b:"Decline, too risky",fa:{cash:1400,fans:12,team:-8},fb:{cash:0,fans:-3,team:5}},
+ {e:"🐀 Bad hygiene rumor (false) spreads!",a:"Open kitchen + lab tests $300",b:"Deny online angrily",fa:{cash:-300,fans:10,team:5},fb:{cash:0,fans:-20,team:-8}},
+ {e:"🏁 Final month: marathon + heatwave together!",a:"All-in: all stands + temps",b:"Play safe, normal ops",fa:{cash:1800,fans:15,team:-8},fb:{cash:500,fans:3,team:3}}];
+function buildEmpire(stage,res,win){
+ var m=0,cash=5000,fans=55,team=70;
+ stage.innerHTML="<div class='kpi-row'><div class='kpi'><b id='e-c'>$5000</b><span>cash</span></div><div class='kpi'><b id='e-f'>55</b><span>fans</span></div><div class='kpi'><b id='e-t'>70</b><span>team</span></div><div class='kpi'><b id='e-m'>1/12</b><span>month</span></div></div><div class='quiz-q'><b id='e-ev'></b><button class='opt' id='e-a'></button><button class='opt' id='e-b'></button></div><div class='ledger' id='e-log'>👑 Year starts: $5,000 • fans 55 • team 70. Good luck, CEO.<br></div>";
+ function show(){
+  if(m>=12){finish();return;}
+  stage.querySelector("#e-ev").textContent="Month "+(m+1)+"/12 — "+EMPIRE[m].e;
+  stage.querySelector("#e-a").textContent="A. "+EMPIRE[m].a;
+  stage.querySelector("#e-b").textContent="B. "+EMPIRE[m].b;
+  stage.querySelector("#e-m").textContent=(m+1)+"/12";
+  [stage.querySelector("#e-a"),stage.querySelector("#e-b")].forEach(function(btn,idx){
+   btn.className="opt";btn.onclick=function(){
+    var d=idx===0?EMPIRE[m].fa:EMPIRE[m].fb;
+    cash+=d.cash;fans=Math.max(0,Math.min(100,fans+d.fans));team=Math.max(0,Math.min(100,team+d.team));
+    btn.classList.add(d.cash>=0?"correct":"wrong");sClick();
+    var log=stage.querySelector("#e-log");log.innerHTML+="M"+(m+1)+": "+(idx===0?EMPIRE[m].a:EMPIRE[m].b)+" → cash "+(d.cash>=0?"+":"")+d.cash+", fans "+(d.fans>=0?"+":"")+d.fans+", team "+(d.team>=0?"+":"")+d.team+"<br>";log.scrollTop=9999;
+    stage.querySelector("#e-c").textContent="$"+cash;stage.querySelector("#e-f").textContent=fans;stage.querySelector("#e-t").textContent=team;
+    m++;setTimeout(function(){if(cash<0){log.innerHTML+="<b class='neg'>💀 BANKRUPT in month "+m+"! Cash below zero. Retry, CEO.</b><br>";res.innerHTML="<div class='formula'>💀 Bankrupt! Press Map → replay Boss Level. Hint: hoard cash early.</div>";sBad();stage.querySelector("#e-ev").textContent="💀 BANKRUPT. Replay from map.";stage.querySelector("#e-a").style.display="none";stage.querySelector("#e-b").style.display="none";return;}show();},650);
+   };
+  });
+ }
+ function finish(){
+  var hero=cash>0&&fans>=60;
+  stage.querySelector("#e-ev").textContent=hero?"🏆 YEAR COMPLETE — HERO!":"📊 Year over — so close!";
+  stage.querySelector("#e-a").style.display="none";stage.querySelector("#e-b").style.display="none";
+  var log=stage.querySelector("#e-log");log.innerHTML+="<b>FINAL: cash $"+cash+" • fans "+fans+" • team "+team+"</b><br>"+(hero?"🦸 HERO STATUS CONFIRMED.":"Need cash>0 AND fans≥60. Replay!")+"<br>";
+  if(hero)win("Empire survives: $"+cash+" cash, "+fans+" fans, "+team+" team. Now graduate!");
+  else{res.innerHTML="<div class='formula'> ended $"+cash+" / fans "+fans+" (need $>0 & fans≥60). Replay the year!</div>";sBad();}
+ }
+ show();
+}
+
+/* --- QUIZ --- */
+function buildQuiz(body,L){
+ var wrap=document.createElement("div");wrap.className="card";
+ wrap.innerHTML="<h3>🏆 Final exam — "+L.quiz.length+" questions, need 70% to unlock next level</h3><p style='color:var(--mut)'>No pressure. Heroes fail, learn, retry. Each pass = +"+L.xp+" XP + 🪙 "+L.coins+".</p><div class='quiz-list'></div><button class='btn big' id='q-submit' disabled>Submit answers ✦</button><div id='q-res'></div>";
+ body.appendChild(wrap);
+ var list=wrap.querySelector(".quiz-list"),answers=new Array(L.quiz.length).fill(-1);
+ L.quiz.forEach(function(qq,qi){
+  var q=document.createElement("div");q.className="quiz-q";q.innerHTML="<b>Q"+(qi+1)+". "+qq.q+"</b>";
+  qq.opts.forEach(function(op,oi){
+   var b=document.createElement("button");b.className="opt";b.textContent=String.fromCharCode(65+oi)+". "+op;
+   b.onclick=function(){sClick();answers[qi]=oi;Array.prototype.forEach.call(q.querySelectorAll(".opt"),function(x){x.classList.remove("correct");});b.classList.add("correct");if(answers.every(function(a){return a>=0;}))wrap.querySelector("#q-submit").disabled=false;};
+   q.appendChild(b);
+  });
+  var ex=document.createElement("div");ex.className="explain";ex.id="ex-"+qi;q.appendChild(ex);list.appendChild(q);
+ });
+ wrap.querySelector("#q-submit").onclick=function(){
+  var score=0;L.quiz.forEach(function(qq,qi){if(answers[qi]===qq.a)score++;});
+  var pct=Math.round(score/L.quiz.length*100);
+  L.quiz.forEach(function(qq,qi){
+   var q=list.children[qi],opts=q.querySelectorAll(".opt"),ex=document.getElementById("ex-"+qi);
+   opts.forEach(function(b,oi){b.classList.remove("correct","wrong");if(oi===qq.a)b.classList.add("correct");else if(oi===answers[qi])b.classList.add("wrong");b.onclick=null;});
+   ex.innerHTML=(answers[qi]===qq.a?"✅ ":"❌ ")+qq.ex;ex.classList.add("show");
+  });
+  var resEl=wrap.querySelector("#q-res");
+  if(pct>=70){
+   var first=!save.completed[L.id];
+   save.completed[L.id]=true;save.unlocked=Math.max(save.unlocked,Math.min(8,L.id+1));
+   if(L.id===8)save.unlocked=8;
+   persist();sGood();addXP(L.xp);save.coins+=L.coins;persist();renderHUD();renderMap();
+   resEl.innerHTML="<div class='formula'>🎉 "+score+"/"+L.quiz.length+" ("+pct+"%) — PASSED!</div>";
+   showModal(L,score,pct,first);
+  }else{sBad();resEl.innerHTML="<div class='formula'>📚 "+score+"/"+L.quiz.length+" ("+pct+"%) — need 70%. Review the cards and retry — heroes don't quit!</div>";toast("Need 70% — retry the quiz!");}
+ };
+}
+
+/* --- MODAL --- */
+function showModal(L,score,pct,first){
+ var m=document.getElementById("modal");m.classList.remove("hidden");
+ document.getElementById("modal-emoji").textContent=L.id===8?"🦸":"🏆";
+ document.getElementById("modal-title").textContent=L.id===8?"🦸 YOU ARE A BUSINESS HERO!":"Level "+L.id+" Complete!";
+ document.getElementById("modal-text").innerHTML=L.id===8?"You ruled 12 months, mastered value → money → moat → empire. Final score "+score+". From lemonade to legacy. <b>"+rankFor(save.xp)+"</b> — wear it proudly.":"You scored "+score+" ("+pct+"%). <b>"+L.title+"</b> mastered. +"+L.xp+" XP + 🪙 "+L.coins+". Next: <b>"+(LEVELS[L.id]?LEVELS[L.id].title:"Victory lap")+"</b>";
+ document.getElementById("modal-rewards").innerHTML="<span>+"+L.xp+" XP</span><span>🪙 "+L.coins+" coins</span><span>"+rankFor(save.xp)+"</span>";
+ var cf=document.getElementById("confetti");cf.innerHTML="";var colors=["#ffd34d","#ff5e7a","#4de3ff","#3ddc84","#b388ff"];
+ for(var i=0;i<40;i++){var p=document.createElement("i");p.style.left=Math.random()*100+"%";p.style.background=colors[i%colors.length];p.style.animationDelay=(-Math.random()*2)+"s";cf.appendChild(p);}
+ document.getElementById("modal-next").textContent=L.id===8?"👑 Replay Empire":"Next Level ▸";
+ document.getElementById("modal-next").onclick=function(){sClick();m.classList.add("hidden");if(L.id<8)openLevel(L.id+1);else openLevel(8);};
+ document.getElementById("modal-map").onclick=function(){sClick();m.classList.add("hidden");showScreen("screen-map");};
+}
+
+/* --- NAV --- */
+document.getElementById("btn-next-step").onclick=function(){
+ sClick();
+ if(curStep===1&&!labDone){toast("🧪 Finish the LAB first — play to learn!");sBad();return;}
+ if(curStep<2){curStep++;renderLevel();}
+ else{toast("🏆 Pass the quiz above to advance!");}
+};
+document.getElementById("btn-prev-step").onclick=function(){sClick();if(curStep>0){curStep--;renderLevel();}};
+document.getElementById("btn-back").onclick=function(){sClick();showScreen("screen-map");};
+document.getElementById("btn-map").onclick=function(){sClick();showScreen("screen-map");};
+document.getElementById("btn-start").onclick=function(){sClick();openLevel(save.unlocked>8?8:save.unlocked);};
+document.getElementById("btn-continue").onclick=function(){sClick();if(Object.keys(save.completed).length>=8)openLevel(8);else openLevel(save.unlocked);};
+document.getElementById("btn-sound").onclick=function(){save.sound=!save.sound;persist();document.getElementById("btn-sound").textContent=save.sound?"🔊":"🔇";if(save.sound)sGood();};
+document.getElementById("btn-reset").onclick=function(){if(confirm("Reset all progress and start from zero?")){save={xp:0,coins:0,unlocked:1,completed:{},sound:save.sound};persist();renderHUD();renderMap();showScreen("screen-map");toast("Fresh start — zero to hero, again!");}};
+
+document.getElementById("btn-sound").textContent=save.sound?"🔊":"🔇";
+renderHUD();renderMap();
+})();
+
+</script>
+</body>
+</html>
