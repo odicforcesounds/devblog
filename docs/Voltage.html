@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOLTA QUEST — From Zero to Hero in Electronics</title>
+<meta name="description" content="A game-like interactive journey through electronics: from atoms to microcontrollers. Pure vanilla JS + CSS3, zero external resources.">
+<style>
+/* VOLTA QUEST — pure CSS3, no externals. System fonts only. */
+*{box-sizing:border-box}
+:root{
+  --bg:#070b18; --bg2:#0b1020; --card:#101736; --card2:#141d42;
+  --line:#24315e; --txt:#eaf0ff; --mut:#9aa7d0; --acc:#38f0ff; --acc2:#7c6bff;
+  --gold:#ffd23f; --pink:#ff5da2; --green:#7cff6b; --red:#ff5d5d;
+  --r:16px; --shadow:0 12px 40px rgba(0,0,0,.45);
+}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--txt);
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  min-height:100vh; overflow-x:hidden;
+}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#00000055;padding:2px 6px;border-radius:6px;border:1px solid #ffffff22}
+.tiny{font-size:.82rem;color:var(--mut)} .center{text-align:center}
+#bg-grid{position:fixed;inset:0;z-index:-2;
+  background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);
+  background-size:34px 34px; mask-image:radial-gradient(ellipse at 50% 0%,black 60%,transparent 100%);
+}
+#bg-glow{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(700px 380px at 20% -5%,#7c6bff44,transparent),radial-gradient(700px 380px at 85% 10%,#38f0ff33,transparent),radial-gradient(600px 500px at 50% 110%,#ff5da222,transparent);
+}
+/* HUD */
+#hud{position:sticky;top:0;z-index:20;display:flex;gap:16px;align-items:center;justify-content:space-between;
+  padding:10px 16px;background:rgba(7,11,24,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.hud-left{display:flex;align-items:center;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.08em}
+.logo-bolt{background:linear-gradient(180deg,var(--gold),#ff8a00);width:36px;height:36px;display:grid;place-items:center;border-radius:10px;box-shadow:0 0 18px #ffd23f66;animation:boltPulse 2s infinite}
+@keyframes boltPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.logo-text em{font-style:normal;background:linear-gradient(90deg,var(--acc),var(--acc2),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hud-subtitle{font-size:.75rem;color:var(--mut);border-left:1px solid var(--line);padding-left:12px}
+.hud-center{flex:1;max-width:520px}
+.xp-top{display:flex;justify-content:space-between;font-size:.8rem;color:var(--mut);margin-bottom:6px}
+.xp-top #xp-label{color:var(--gold);font-weight:800}
+.xp-bar{position:relative;height:14px;background:#00000088;border:1px solid var(--line);border-radius:99px;overflow:hidden}
+#xp-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--acc2),var(--pink));transition:width .8s cubic-bezier(.2,.9,.2,1);box-shadow:0 0 14px #38f0ff88}
+.xp-shine{position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,#ffffff55 50%,transparent 70%);animation:shine 2.8s linear infinite}
+@keyframes shine{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.hud-right{display:flex;align-items:center;gap:8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-weight:800;font-size:.9rem}
+.icon-btn{background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:6px 10px;cursor:pointer}
+.icon-btn:hover{border-color:var(--acc)}
+/* layout */
+#layout{display:grid;grid-template-columns:300px 1fr;gap:18px;max-width:1280px;margin:0 auto;padding:18px 16px 40px}
+#worldmap{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:16px;height:fit-content;position:sticky;top:70px;box-shadow:var(--shadow)}
+#worldmap h2{margin:0;letter-spacing:.15em;font-size:.85rem;color:var(--acc)}
+.map-hint{font-size:.83rem;color:var(--mut)}
+#map-nodes{list-style:none;margin:12px 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.map-node{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:9px 10px;border-radius:12px;border:1px solid var(--line);background:#00000033;cursor:pointer;transition:.2s}
+.map-node:hover{transform:translateX(3px);border-color:var(--acc)}
+.map-node .n-ico{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:var(--card2);font-size:1.2rem}
+.map-node.locked{opacity:.55;filter:grayscale(.7);cursor:not-allowed}
+.map-node.current{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 18px #ffd23f33}
+.map-node.done{border-color:var(--green)}
+.map-node .n-title{font-weight:800;font-size:.9rem} .map-node .n-sub{font-size:.75rem;color:var(--mut)}
+.map-node .n-state{font-size:.75rem;font-weight:900;padding:4px 8px;border-radius:99px;background:#ffffff11}
+.map-node.done .n-state{background:#7cff6b22;color:var(--green)} .map-node.current .n-state{background:#ffd23f22;color:var(--gold)}
+.player-card{display:flex;gap:10px;align-items:center;margin-top:12px;background:#00000044;border:1px dashed var(--line);border-radius:12px;padding:10px}
+.avatar{font-size:1.8rem;background:var(--card2);border-radius:12px;width:48px;height:48px;display:grid;place-items:center}
+#player-title{font-weight:800;color:var(--gold);font-size:.9rem}
+.ghost-btn{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:10px;padding:7px 10px;cursor:pointer;width:100%;margin-top:10px}
+.ghost-btn:hover{color:var(--txt);border-color:var(--acc)}
+/* stage */
+#stage{min-width:0}
+.screen{display:none} .screen.active{display:block;animation:fadeUp .4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;background:linear-gradient(180deg,var(--card2),var(--bg2));border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow);overflow:hidden;position:relative}
+.pill{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.06em;background:#38f0ff15;border:1px solid #38f0ff44;color:var(--acc);padding:6px 10px;border-radius:99px}
+.hero h1{font-size:clamp(2rem,4vw,3.2rem);line-height:1.02;margin:12px 0}
+.grad{background:linear-gradient(90deg,var(--acc),#7cff6b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.grad2{background:linear-gradient(90deg,var(--gold),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{color:#cdd6f5;line-height:1.6}
+.hero-cta{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.btn-primary{background:linear-gradient(90deg,var(--acc2),var(--acc));border:0;color:#06121a;font-weight:900;padding:12px 18px;border-radius:12px;cursor:pointer;box-shadow:0 6px 22px #38f0ff44;transition:.2s}
+.btn-primary:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.btn-primary.big{font-size:1.05rem} .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-ghost{background:#ffffff0d;border:1px solid var(--line);color:var(--txt);padding:12px 16px;border-radius:12px;cursor:pointer}
+.btn-ghost:hover{border-color:var(--acc)}
+.hero-feats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.hero-feats div{background:#0000003d;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:.85rem}
+.hero-feats span{color:var(--mut);font-size:.78rem}
+.demo-card{background:#070b18;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.demo-head{display:flex;align-items:center;gap:6px;padding:10px 12px;font-size:.72rem;letter-spacing:.08em;color:var(--mut);border-bottom:1px solid var(--line);font-weight:800}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block} .dot.r{background:var(--red)} .dot.y{background:var(--gold)} .dot.g{background:var(--green)}
+.circuit-svg{width:100%;height:auto;display:block;background:radial-gradient(circle at 50% 50%,#141d42 0,#070b18 70%)}
+.flow{animation:dashFlow 1s linear infinite}
+@keyframes dashFlow{to{stroke-dashoffset:-26}}
+.e1{animation:orbit1 3s linear infinite} .e2{animation:orbit1 3s linear infinite;animation-delay:-1s} .e3{animation:orbit1 3s linear infinite;animation-delay:-2s}
+@keyframes orbit1{0%{transform:translate(0,0);opacity:1}25%{transform:translate(220px,0)}50%{transform:translate(220px,90px)}75%{transform:translate(0,90px)}100%{transform:translate(0,0)}}
+.demo-row{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.demo-row input[type=range]{flex:1;accent-color:var(--acc)}
+.howto{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-top:16px}
+.howto ol{line-height:1.7;color:#cdd6f5}
+/* level nav + cards */
+.level-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.lvl-tab{background:var(--card);border:1px solid var(--line);color:var(--mut);border-radius:99px;padding:8px 12px;cursor:pointer;font-weight:800;font-size:.82rem}
+.lvl-tab.done{color:var(--green);border-color:var(--green)}
+.lvl-tab.current{color:#06121a;background:linear-gradient(90deg,var(--gold),#ffb700);border-color:transparent}
+.lvl-tab.locked{opacity:.5;cursor:not-allowed}
+.level-card{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
+.level-hero{display:grid;grid-template-columns:90px 1fr auto;gap:14px;align-items:center;padding:18px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#ffffff08,transparent)}
+.lvl-num{width:72px;height:72px;border-radius:18px;display:grid;place-items:center;font-size:2rem;background:radial-gradient(circle at 30% 30%,var(--card2),#000);border:1px solid var(--line)}
+.level-hero h2{margin:0;font-size:1.4rem} .level-hero p{margin:6px 0 0;color:var(--mut)}
+.xp-badge{background:#ffd23f1a;border:1px solid #ffd23f66;color:var(--gold);font-weight:900;border-radius:99px;padding:8px 12px;white-space:nowrap}
+.level-body{padding:18px;display:grid;gap:16px}
+.comic{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.comic-panel{background:#00000045;border:1px solid var(--line);border-radius:14px;padding:14px;line-height:1.6;font-size:.93rem}
+.comic-panel h4{margin:0 0 8px;color:var(--acc)}
+.comic-panel .analogy{background:#7c6bff18;border-left:3px solid var(--acc2);padding:8px 10px;border-radius:0 8px 8px 0;margin-top:10px;font-size:.88rem}
+.formula{display:flex;gap:10px;align-items:center;justify-content:center;background:#000;padding:12px;border-radius:12px;border:1px solid var(--gold);font-family:ui-monospace,monospace;font-size:1.2rem;color:var(--gold);margin:10px 0}
+.lab{background:#050816;border:1px solid var(--acc);border-radius:16px;padding:14px;position:relative;overflow:hidden}
+.lab::before{content:"● LIVE LAB — TOUCH IT!";position:absolute;top:0;left:0;right:0;background:linear-gradient(90deg,var(--acc2),var(--acc));color:#06121a;font-weight:900;font-size:.72rem;letter-spacing:.08em;padding:4px 12px}
+.lab-inner{margin-top:22px}
+.lab-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:10px 0}
+.lab-controls label{background:#ffffff0a;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:.85rem;display:flex;flex-direction:column;gap:6px}
+.lab-controls input[type=range]{width:100%;accent-color:var(--acc)}
+.lab-readout{display:flex;gap:10px;flex-wrap:wrap}
+.read{background:#000;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-family:ui-monospace,monospace}
+.read b{color:var(--gold)}
+canvas.scope, canvas.sim{width:100%;height:180px;background:#02040c;border:1px solid var(--line);border-radius:12px;display:block}
+.switch-row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.toggle{border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:99px;padding:8px 14px;cursor:pointer;font-weight:800}
+.toggle.on{background:#7cff6b22;border-color:var(--green);color:var(--green);box-shadow:0 0 12px #7cff6b44}
+.toggle.off{background:#ff5d5d18;border-color:var(--red);color:var(--red)}
+.bulb{width:54px;height:54px;border-radius:50%;margin:8px auto;background:#222;border:3px solid #444;transition:.25s}
+.bulb.lit{background:radial-gradient(circle at 35% 35%,#fff8c9,var(--gold) 60%,#ff8a00);box-shadow:0 0 30px var(--gold),0 0 60px #ff8a0088;border-color:var(--gold);animation:glowFlicker 1.2s infinite alternate}
+@keyframes glowFlicker{from{filter:brightness(1)}to{filter:brightness(1.12)}}
+.wire{height:10px;background:repeating-linear-gradient(90deg,var(--acc) 0 14px,transparent 14px 22px);border-radius:99px;animation:wireFlow .6s linear infinite;opacity:.9}
+@keyframes wireFlow{to{background-position:22px 0}}
+.gate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.gate-card{background:#ffffff08;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.gate-card .led{width:22px;height:22px;border-radius:50%;background:#333;margin:8px auto;border:2px solid #555}
+.gate-card .led.on{background:var(--green);box-shadow:0 0 14px var(--green);border-color:var(--green)}
+.quiz{border:1px solid var(--gold);border-radius:16px;background:linear-gradient(180deg,#ffd23f0d,transparent);padding:14px}
+.quiz-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.quiz-head .boss{font-size:2rem;animation:bossBob 1.6s ease-in-out infinite}
+@keyframes bossBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.q{margin:12px 0;background:#0000004d;border:1px solid var(--line);border-radius:12px;padding:10px}
+.q p{margin:0 0 8px;font-weight:700}
+.q label{display:block;background:#ffffff08;border:1px solid transparent;border-radius:10px;padding:8px 10px;margin:6px 0;cursor:pointer}
+.q label:hover{border-color:var(--acc)} .q input{margin-right:8px;accent-color:var(--gold)}
+.q.correct{border-color:var(--green)} .q.wrong{border-color:var(--red)}
+.quiz-result{font-weight:900;margin-top:10px;padding:10px;border-radius:10px;display:none}
+.quiz-result.pass{display:block;background:#7cff6b18;border:1px solid var(--green);color:var(--green)}
+.quiz-result.fail{display:block;background:#ff5d5d18;border:1px solid var(--red);color:var(--red)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.comp{background:#ffffff07;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;cursor:pointer;transition:.2s}
+.comp:hover{transform:translateY(-3px);border-color:var(--acc)}
+.comp .sym{font-size:2rem} .comp.active{border-color:var(--gold);box-shadow:0 0 16px #ffd23f33}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(20px);background:#0b1020;border:1px solid var(--acc);color:var(--txt);padding:12px 18px;border-radius:99px;opacity:0;pointer-events:none;transition:.3s;z-index:99;box-shadow:var(--shadow);max-width:90vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:90}
+.victory-card{background:linear-gradient(180deg,var(--card2),var(--bg2));border:2px solid var(--gold);border-radius:20px;padding:28px;text-align:center;box-shadow:0 0 40px #ffd23f33}
+.trophy{font-size:4rem;animation:bossBob 1.5s infinite}
+.cert{border:2px dashed var(--gold);border-radius:14px;padding:14px;margin:16px auto;max-width:420px;background:#ffd23f0a}
+.cert strong{font-size:1.4rem;display:block;color:var(--gold)}
+footer{max-width:1280px;margin:0 auto;padding:0 16px 30px;color:var(--mut);font-size:.85rem;text-align:center}
+.linklike{background:none;border:none;color:var(--acc);cursor:pointer;text-decoration:underline;font-size:inherit}
+.color-dots{display:flex;gap:6px;justify-content:center;margin:8px 0}
+.color-dots span{width:22px;height:22px;border-radius:50%;border:2px solid #fff3}
+table.truth{width:100%;border-collapse:collapse;font-family:ui-monospace,monospace;font-size:.9rem;margin-top:8px}
+table.truth th,table.truth td{border:1px solid var(--line);padding:6px;text-align:center}
+table.truth th{background:#ffffff10}
+@media(max-width:960px){
+  #layout{grid-template-columns:1fr}
+  #worldmap{position:static}
+  .hero{grid-template-columns:1fr}
+  .comic{grid-template-columns:1fr}
+  .level-hero{grid-template-columns:64px 1fr}
+  .xp-badge{grid-column:1/-1;justify-self:start}
+  .hud-subtitle{display:none}
+  #hud{flex-wrap:wrap}
+  .hud-center{order:3;flex-basis:100%;max-width:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+
+</style>
+</head>
+<body>
+<div id="bg-grid" aria-hidden="true"></div>
+<div id="bg-glow" aria-hidden="true"></div>
+
+<header id="hud">
+  <div class="hud-left">
+    <div class="logo" aria-label="Volta Quest logo">
+      <span class="logo-bolt">⚡</span>
+      <span class="logo-text">VOLTA <em>QUEST</em></span>
+    </div>
+    <div class="hud-subtitle">zero → hero · electronics RPG</div>
+  </div>
+  <div class="hud-center">
+    <div class="xp-wrap">
+      <div class="xp-top"><span id="xp-label">LV 1 · Novice</span><span id="xp-num">0 XP</span></div>
+      <div class="xp-bar"><div id="xp-fill"></div><div class="xp-shine"></div></div>
+    </div>
+  </div>
+  <div class="hud-right">
+    <div class="stat" title="Levels completed"><span class="stat-ico">🏆</span><span id="stat-levels">0/7</span></div>
+    <div class="stat" title="Streak / badges"><span class="stat-ico">🔥</span><span id="stat-badges">0</span></div>
+    <button id="btn-sound" class="icon-btn" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+    <button id="btn-reset" class="icon-btn" title="Reset progress" aria-label="Reset progress">↺</button>
+  </div>
+</header>
+
+<div id="layout">
+  <!-- WORLD MAP -->
+  <aside id="worldmap" aria-label="World map">
+    <h2>WORLD MAP</h2>
+    <p class="map-hint">Complete each level's <b>BOSS QUIZ</b> to unlock the next.</p>
+    <ol id="map-nodes"></ol>
+    <div class="player-card">
+      <div class="avatar" id="avatar">🧑‍🔧</div>
+      <div>
+        <div id="player-title">Rank: Electron Noob</div>
+        <div id="player-progress" class="tiny">Progress saved locally · no account needed</div>
+      </div>
+    </div>
+    <div class="cheat-row">
+      <button id="btn-demo" class="ghost-btn">▶ Demo: unlock all</button>
+    </div>
+  </aside>
+
+  <!-- STAGE -->
+  <main id="stage">
+    <!-- INTRO / HERO -->
+    <section id="screen-intro" class="screen active">
+      <div class="hero">
+        <div class="hero-text">
+          <div class="pill">⚡ 100% VANILLA JS + CSS3 · 0 EXTERNAL FILES · OFFLINE READY</div>
+          <h1>From <span class="grad">Zero</span> to <span class="grad2">Hero</span> in electronics.</h1>
+          <p class="lede">You are a tiny electron lost in a dark circuit. <b>Fight through 7 levels</b>, wire live animated labs, and defeat quiz bosses to become the <b>Circuit Master</b>.</p>
+          <div class="hero-cta">
+            <button class="btn-primary big" data-goto="level-1">▶ START QUEST — Level 1</button>
+            <button class="btn-ghost" id="btn-continue">Continue where I left off →</button>
+          </div>
+          <div class="hero-feats">
+            <div>🎮 <b>7 locked levels</b><br><span>XP, ranks & badges</span></div>
+            <div>🔬 <b>7 live labs</b><br><span>drag sliders, flip switches</span></div>
+            <div>👾 <b>Boss quizzes</b><br><span>pass ≥70% to advance</span></div>
+          </div>
+        </div>
+        <div class="hero-demo">
+          <div class="demo-card">
+            <div class="demo-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span>LIVE CIRCUIT — CSS ANIMATION</span></div>
+            <svg viewBox="0 0 300 180" class="circuit-svg" aria-label="Animated circuit demo">
+              <rect x="20" y="20" width="260" height="140" rx="16" fill="none" stroke="#2a3a5e" stroke-width="6"/>
+              <rect x="20" y="20" width="260" height="140" rx="16" fill="none" stroke="#38f0ff" stroke-width="3" stroke-dasharray="12 14" class="flow"/>
+              <rect x="125" y="8" width="50" height="24" rx="6" fill="#0b1020" stroke="#ffd23f" stroke-width="2"/>
+              <text x="150" y="25" text-anchor="middle" fill="#ffd23f" font-size="13" font-family="monospace">9V</text>
+              <g id="demo-bulb">
+                <circle cx="150" cy="150" r="22" fill="#1a2340" stroke="#ffd23f" stroke-width="3"/>
+                <path d="M140 150 Q150 135 160 150 Q150 165 140 150" fill="none" stroke="#ffd23f" stroke-width="2"/>
+              </g>
+              <circle cx="40" cy="90" r="6" fill="#38f0ff" class="e e1"/>
+              <circle cx="40" cy="90" r="6" fill="#ff5da2" class="e e2"/>
+              <circle cx="40" cy="90" r="6" fill="#7CFF6B" class="e e3"/>
+            </svg>
+            <div class="demo-row">
+              <label>⚡ Voltage <input type="range" id="demo-voltage" min="0" max="12" value="9" step="1"></label>
+              <span id="demo-volt-val">9V</span>
+            </div>
+            <p class="tiny center">Faster dashes = more current. This is pure CSS <code>stroke-dashoffset</code> animation.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="howto">
+        <h3>📜 How to play</h3>
+        <ol>
+          <li><b>READ</b> the comic lesson (2 min).</li>
+          <li><b>PLAY</b> with the animated lab — every level has one.</li>
+          <li><b>FIGHT</b> the boss quiz. Score ≥70% to unlock the next level + earn XP.</li>
+          <li>Become <b>Circuit Master</b> at 1000 XP. Progress auto-saves in your browser.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- LEVELS CONTAINER (injected nav + sections rendered statically for no-JS fallback & SEO) -->
+    <div id="level-nav" class="level-nav" role="tablist" aria-label="Levels"></div>
+    <div id="levels"></div>
+
+    <!-- VICTORY -->
+    <section id="screen-victory" class="screen">
+      <div class="victory-card">
+        <div class="trophy">🏆</div>
+        <h2>YOU ARE THE CIRCUIT MASTER!</h2>
+        <p>You finished all 7 levels. You can now read schematics, use Ohm's law in your sleep, and explain transistors at parties.</p>
+        <div class="cert">
+          <div>CERTIFICATE OF HEROISM</div>
+          <strong id="cert-name">Electron Hero</strong>
+          <span id="cert-stats">1000 XP · 7 badges</span>
+        </div>
+        <div class="row center">
+          <button class="btn-primary" id="btn-play-again">↻ Play again</button>
+          <button class="btn-ghost" data-goto="level-1">Review levels</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <span>Made with ⚡ + pure vanilla JS/CSS3 · No libraries · No fonts · No images · Works offline · <button id="btn-export" class="linklike">Copy my progress</button></span>
+</footer>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+/* VOLTA QUEST — pure vanilla JS. No libraries. */
+(function(){
+"use strict";
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const storeKey="volta-quest-v1";
+
+/* ---------- DATA ---------- */
+const LEVELS=[
+{ id:"level-1", icon:"🔌", title:"Level 1 · Sparks & Atoms", sub:"charge · current · voltage · resistance",
+  xp:100, badge:"⚡ Spark Tamer",
+  story:"You wake up as an electron inside a copper wire. Everything is dark until a battery shouts: MOVE!",
+  panels:[
+    {h:"⚛️ Everything is atoms", t:"All stuff is made of <b>atoms</b>: protons (+) in the nucleus, electrons (−) zooming around. In metals like copper, some electrons are <b>free</b> — they can drift from atom to atom. That's the secret of electronics.", a:"🍯 Analogy: free electrons are like marbles in a tube full of honey. Push one end, one pops out the other — instantly."},
+    {h:"💧 The water analogy (use it!)", t:"<b>Voltage (V)</b> = water pressure — how hard electrons are pushed. <b>Current (I, amps)</b> = flow rate — how many electrons pass per second. <b>Resistance (R, ohms Ω)</b> = narrow pipe — how hard it is to flow. No pressure + closed pipe = flow!", a:"Think: big battery = tall water tower. Thin wire = narrow hose."},
+    {h:"🔋 Open vs closed loop", t:"Electrons need a <b>complete loop</b> (circuit) to flow back to the battery. A <b>switch</b> opens/closes the loop. Break the loop anywhere and <b>all</b> flow stops — like cutting a water pipe.", a:"Try the lab: open the switch and watch electrons freeze."},
+    {h:"📏 Units you'll use daily", t:"<b>Volt (V)</b> — push. AA battery ≈1.5V, USB =5V, wall =120/230V AC. <b>Amp (A)</b> — flow. LED needs 0.02A, phone charges at 2A. <b>Ohm (Ω)</b> — friction. <b>Watt (W)</b> — power = V×I.", a:"Memorize: V = push, I = flow, R = friction."}
+  ],
+  labTitle:"LAB 1 — Push the electrons",
+  labDesc:"Drag voltage. More volts = faster electrons = more current. Open the switch to freeze them. This canvas animation is pure JS — no libraries.",
+  labHTML:`
+    <canvas class="sim" id="sim1" width="640" height="180"></canvas>
+    <div class="lab-controls">
+      <label>⚡ Voltage <span><b id="l1-v-val">4.5</b>V</span><input type="range" id="l1-v" min="0" max="12" step="0.5" value="4.5"></label>
+      <label>🧱 Resistance <span><b id="l1-r-val">10</b>Ω</span><input type="range" id="l1-r" min="2" max="40" step="1" value="10"></label>
+      <label>🔌 Switch <span id="l1-sw-val">CLOSED</span><input type="range" id="l1-sw" min="0" max="1" step="1" value="1"></label>
+    </div>
+    <div class="lab-readout"><span class="read">Current I = <b id="l1-i">0.45 A</b></span><span class="read">Electrons/s ≈ <b id="l1-e">2.8×10¹⁸</b></span><span class="read" id="l1-msg">Circuit CLOSED — flowing!</span></div>`,
+  quiz:[
+    {q:"What is electric current?", o:["Flow of electrons through a conductor","Stored pressure in a battery","Resistance of a wire","A type of magnet"], a:0},
+    {q:"Voltage is best described as…", o:["How fast wires heat up","Electrical pressure that pushes charges","The number of resistors","AC only"], a:1},
+    {q:"You open a switch in a single loop. What happens?", o:["Current doubles","Current stops everywhere","Only the battery stops","Nothing changes"], a:1},
+    {q:"Which needs the MOST current?", o:["A small LED (~0.02A)","A phone charging (~2A)","A TV remote idle","A lemon battery"], a:1}
+  ]},
+{ id:"level-2", icon:"📐", title:"Level 2 · Ohm's Law", sub:"V = I × R · the only formula you must tattoo",
+  xp:150, badge:"📐 Ohm Whisperer",
+  story:"A stone golem blocks the path. It only moves if you speak the magic spell: V equals I times R.",
+  panels:[
+    {h:"✨ The spell: V = I × R", t:"<b>V = I × R</b>. Push (V) = Flow (I) × Friction (R). Rearranged: <b>I = V/R</b> and <b>R = V/I</b>. If you know two, you know the third. That's 90% of circuit math.", a:"Cover one letter of the V-I-R triangle with your finger: the other two show the formula."},
+    {h:"💡 Why bulbs dim", t:"Same battery, bigger resistor → less current → dimmer bulb. Same resistor, bigger battery → more current → brighter (until 💥 pop!). Current heats the filament until it glows.", a:"Lab below: crank resistance and watch the bulb die."},
+    {h:"🔥 Power: P = V × I", t:"<b>Power (watts)</b> is how fast energy turns into light/heat/motion. Phone charger 5V×2A=10W. Kettle 230V×10A=2300W. Resistors have watt ratings — exceed them and they smoke.", a:"Rule of thumb: if it gets hot, it's dissipating power."},
+    {h:"🧮 Worked example", t:"9V battery + 450Ω resistor + LED. I = V/R = 9/450 = <b>0.02A = 20mA</b> — perfect for an LED. With only 45Ω: I=0.2A — LED becomes a tiny firework.", a:"LEDs ALWAYS need a resistor. Memorize 220–1000Ω for 5–9V."}
+  ],
+  labTitle:"LAB 2 — Ohm's Law playground",
+  labDesc:"Two sliders control the universe. The bulb brightness, wire speed and numbers all obey V=IR live.",
+  labHTML:`
+    <div class="row"><div class="bulb" id="l2-bulb"></div><div class="wire" id="l2-wire" style="flex:1"></div></div>
+    <div class="lab-controls">
+      <label>🔋 Voltage V <span><b id="l2-v-val">9</b>V</span><input type="range" id="l2-v" min="0" max="12" step="0.5" value="9"></label>
+      <label>🧱 Resistance R <span><b id="l2-r-val">450</b>Ω</span><input type="range" id="l2-r" min="10" max="1000" step="10" value="450"></label>
+    </div>
+    <div class="formula">I = V ÷ R = <span id="l2-i">20 mA</span></div>
+    <div class="lab-readout"><span class="read">Power P=V×I = <b id="l2-p">0.18 W</b></span><span class="read" id="l2-verdict">✅ LED happy</span></div>`,
+  quiz:[
+    {q:"Ohm's law is…", o:["V = I × R","P = V + R","I = R × P","V = R ÷ I"], a:0},
+    {q:"12V across 6Ω gives…", o:["2A","72A","0.5A","18A"], a:0},
+    {q:"You double resistance with same battery. Current…", o:["Doubles","Halves","Stays same","Becomes AC"], a:1},
+    {q:"A 5V, 2A charger delivers…", o:["10W","7W","2.5W","25W"], a:0}
+  ]},
+{ id:"level-3", icon:"🔁", title:"Level 3 · Series vs Parallel", sub:"loops · Kirchhoff · shorts",
+  xp:150, badge:"🔁 Loop Master",
+  story:"Two bridges cross the lava. One forces everyone single-file (series). The other lets them split (parallel). Choose wisely.",
+  panels:[
+    {h:"🚂 Series: one path", t:"Components in a <b>single chain</b>. Same current everywhere. Voltages <b>split</b>. If one bulb dies, ALL go out (classic Christmas lights fail). Total R = R₁+R₂+…", a:"Analogy: one-lane road — a crash blocks everyone."},
+    {h:"🌊 Parallel: many paths", t:"Each branch gets the <b>full voltage</b>. Currents <b>split</b> and rejoin. One bulb dies, others stay lit (your house wiring). Total current = sum of branches.", a:"Analogy: highway with exits — closing one exit doesn't stop traffic."},
+    {h:"⚠️ Short circuits", t:"A <b>short</b> is a zero-resistance sneak path. Almost ALL current takes it (I=V/≈0 → huge!). Wires melt, batteries puff. Fuses/breakers sacrifice themselves to stop it.", a:"NEVER connect battery + to − with just a wire."},
+    {h:"📜 Kirchhoff in one breath", t:"<b>KCL:</b> current entering a junction = current leaving. <b>KVL:</b> voltages around any loop sum to zero. Fancy words for 'no electrons lost, all push used up.'", a:"You'll use this instinctively when debugging."}
+  ],
+  labTitle:"LAB 3 — Wire it series or parallel",
+  labDesc:"Flip the topology and the switch. Notice: series shares voltage (dimmer), parallel shares current (brighter, drains battery faster).",
+  labHTML:`
+    <div class="switch-row">
+      <button class="toggle on" id="l3-topo">Topology: PARALLEL</button>
+      <button class="toggle on" id="l3-sw">Switch: CLOSED</button>
+    </div>
+    <div class="row" style="justify-content:center"><div class="bulb" id="l3-b1"></div><div class="bulb" id="l3-b2"></div></div>
+    <div class="wire" id="l3-wire"></div>
+    <div class="lab-readout" style="margin-top:10px"><span class="read">Each bulb gets <b id="l3-v">9.0V</b></span><span class="read">Battery current <b id="l3-i">40 mA</b></span><span class="read" id="l3-msg">Parallel: full brightness!</span></div>`,
+  quiz:[
+    {q:"In SERIES, what is the same everywhere?", o:["Voltage","Current","Resistance","Brightness always"], a:1},
+    {q:"In PARALLEL, each branch gets…", o:["Split voltage","Full voltage","Zero current","Half resistance always"], a:1},
+    {q:"One bulb burns out. Others stay lit. Wiring is…", o:["Series","Parallel","Shorted","AC"], a:1},
+    {q:"A short circuit is dangerous because…", o:["Voltage becomes zero everywhere forever","Huge current flows through near-zero resistance","Electrons reverse direction","Resistors become capacitors"], a:1}
+  ]},
+{ id:"level-4", icon:"🧩", title:"Level 4 · Component Zoo", sub:"resistor · capacitor · diode · LED · transistor",
+  xp:150, badge:"🧩 Zoo Keeper",
+  story:"Caged beasts growl: a striped resistor, a tiny bucket (capacitor), a one-way shark (diode) and a faucet that controls a river (transistor).",
+  panels:[
+    {h:"🦓 Resistor — the brake", t:"Limits current, drops voltage. Marked with <b>color bands</b> (e.g. red-red-brown = 220Ω). Bigger body = more watts it can survive. Essential roommate of every LED.", a:"No polarity — plug it either way."},
+    {h:"🪣 Capacitor — the bucket", t:"Stores charge like a tiny rechargeable bucket. <b>Blocks DC</b> once full, <b>passes AC</b>. Smooths wobbly power supplies. Unit: <b>farad (µF, nF)</b>. Big ones have +/− polarity!", a:"Touch a charged big cap = nasty zap. Discharge first."},
+    {h:"🦈 Diode + LED — one-way streets", t:"<b>Diode</b> lets current flow one way only (stripe = blocked side). <b>LED</b> is a diode that glows. Long leg = + (anode). Needs current-limiting resistor or it dies in seconds.", a:"LED not lighting? Flip it around first."},
+    {h:"🚰 Transistor — electric faucet", t:"A tiny current into the <b>base/gate</b> controls a big current through the rest. Used as <b>switch</b> (on/off) or <b>amplifier</b>. The building block of ALL chips — billions per CPU.", a:"NPN: small base current opens collector→emitter floodgate."}
+  ],
+  labTitle:"LAB 4 — Pet the components",
+  labDesc:"Click each beast to inspect it. Charge/discharge the capacitor, bias the transistor, flip the LED.",
+  labHTML:`
+    <div class="comp-grid" id="l4-grid">
+      <div class="comp active" data-c="res"><div class="sym">🦓</div><b>Resistor</b><div class="tiny">220Ω</div></div>
+      <div class="comp" data-c="cap"><div class="sym">🪣</div><b>Capacitor</b><div class="tiny">1000µF</div></div>
+      <div class="comp" data-c="diode"><div class="sym">🦈</div><b>Diode</b><div class="tiny">1N4148</div></div>
+      <div class="comp" data-c="led"><div class="sym">💡</div><b>LED</b><div class="tiny">red 2V</div></div>
+      <div class="comp" data-c="trans"><div class="sym">🚰</div><b>Transistor</b><div class="tiny">2N2222</div></div>
+    </div>
+    <div class="comic-panel" id="l4-info" style="margin-top:10px"><h4>🦓 Resistor 220Ω</h4><p>Drops voltage & limits current. Bands: red-red-brown-gold. Boring but saves LEDs daily.</p><div class="color-dots"><span style="background:red"></span><span style="background:red"></span><span style="background:brown"></span><span style="background:gold"></span></div></div>
+    <div class="lab-controls"><label>🔬 Component action<input type="range" id="l4-slider" min="0" max="100" value="50"><span id="l4-sval">50%</span></label></div>
+    <div class="lab-readout"><span class="read" id="l4-read">Current limited to 20mA</span></div>`,
+  quiz:[
+    {q:"Which component stores charge?", o:["Resistor","Capacitor","Diode","Wire"], a:1},
+    {q:"An LED's long leg is…", o:["Cathode (−)","Anode (+)","Gate","Ground always"], a:1},
+    {q:"A diode does what?", o:["Stores voltage","Lets current flow one way","Amplifies signals","Measures light"], a:1},
+    {q:"A transistor can act as…", o:["A fuse only","An electrically controlled switch/amplifier","A battery","An antenna"], a:1}
+  ]},
+{ id:"level-5", icon:"🧠", title:"Level 5 · Digital Brain", sub:"binary · logic gates · from sand to software",
+  xp:150, badge:"🧠 Logic Mage",
+  story:"The stone door has two levers and runes: AND, OR, NOT. Speak binary and the door computes your fate.",
+  panels:[
+    {h:"0️⃣1️⃣ Binary: counting with two fingers", t:"Digital circuits only know <b>ON (1, ~5V/3.3V)</b> and <b>OFF (0, 0V)</b>. Numbers are base-2: 0,1,10 (=2),11 (=3),100 (=4). 8 bits = 1 byte = 0–255. Your photos, music, games — all ones and zeros.", a:"Count on fingers in binary: 1,10,11,100… you're a computer now."},
+    {h:"🚪 Gates: tiny decisions", t:"<b>NOT</b> flips. <b>AND</b> outputs 1 only if A AND B are 1. <b>OR</b> outputs 1 if either is 1. <b>XOR</b> outputs 1 if inputs differ. Combine thousands → adders, memory, CPUs.", a:"Memorize: AND=both, OR=either, XOR=different."},
+    {h:"💾 How memory + CPUs happen", t:"Feedback loops of gates (flip-flops) <b>remember</b> bits. Clocks tick billions of times/s to march data through. A microcontroller = CPU + memory + pins in one cheap chip (e.g. Arduino).", a:"RAM forgets without power. Flash doesn't."},
+    {h:"📊 Analog vs digital", t:"<b>Analog</b> = smooth (dimmer knob, voice). <b>Digital</b> = steps (buttons, files). Sensors bridge worlds via <b>ADCs</b>. Noise hurts analog more; digital just needs 0 vs 1.", a:"Volume knob = analog. Mute button = digital."}
+  ],
+  labTitle:"LAB 5 — Gate playground",
+  labDesc:"Flip A and B, switch the gate type. The LED + truth table update live — this is literally how CPUs think.",
+  labHTML:`
+    <div class="switch-row">
+      <button class="toggle off" id="l5-a">Input A: 0</button>
+      <button class="toggle off" id="l5-b">Input B: 0</button>
+      <select id="l5-gate" class="toggle" style="background:var(--card2)"><option>AND</option><option>OR</option><option>XOR</option><option>NAND</option><option>NOR</option><option>NOT A</option></select>
+    </div>
+    <div class="gate-grid">
+      <div class="gate-card"><b>Output Q</b><div class="led" id="l5-led"></div><div class="read">Q = <b id="l5-q">0</b></div></div>
+      <div class="gate-card"><b>Meaning</b><div class="tiny" id="l5-mean" style="margin-top:10px">AND: 1 only if A=1 AND B=1</div></div>
+    </div>
+    <table class="truth" id="l5-truth"><tr><th>A</th><th>B</th><th>Q</th></tr></table>`,
+  quiz:[
+    {q:"Binary 101 equals decimal…", o:["3","5","6","101"], a:1},
+    {q:"AND gate outputs 1 when…", o:["Either input is 1","Both inputs are 1","Inputs differ","Always"], a:1},
+    {q:"XOR outputs 1 when…", o:["Both 1","Both 0","Inputs are different","Never"], a:2},
+    {q:"Flip-flops made of gates can…", o:["Store a bit of memory","Generate AC power","Measure resistance","Cool a CPU"], a:0}
+  ]},
+{ id:"level-6", icon:"🌊", title:"Level 6 · AC vs DC + Time Tricks", sub:"oscilloscope · capacitor · inductor · frequency",
+  xp:150, badge:"🌊 Wave Rider",
+  story:"Two rivers: one flows steadily to the sea (DC), the other sloshes back and forth (AC). Surfers (capacitors & coils) ride the waves.",
+  panels:[
+    {h:"🔋 DC vs 🔌 AC", t:"<b>DC</b> flows one way, constant voltage (batteries, USB). <b>AC</b> flips direction 50/60× per second (wall power). AC wins for long-distance transport (transformers!); DC wins for electronics.", a:"Battery = calm canal. Wall socket = ocean wave."},
+    {h:"📈 Frequency & oscilloscopes", t:"<b>Frequency (Hz)</b> = wiggles per second. Mains 50/60Hz, audio 20–20kHz, Wi-Fi 2.4GHz. An <b>oscilloscope</b> draws voltage vs time — the stethoscope of electronics.", a:"Higher pitch = higher frequency. Same for signals."},
+    {h:"🪣⚡ Capacitors + coils love AC", t:"Capacitors <b>pass fast changes, block steady DC</b> (great filters). Inductors/coils do the <b>opposite</b>: resist changes, smooth current. Together they tune radios, kill noise, build power supplies.", a:"Cap = shock absorber for voltage spikes."},
+    {h:"⚠️ Respect the wall", t:"Wall AC can <b>kill</b>. Never breadboard mains. Keep one hand in pocket around high voltage, use fuses, assume capacitors are charged. 5–12V DC is your safe playground.", a:"If it plugs into the wall, don't open it as a beginner."}
+  ],
+  labTitle:"LAB 6 — Oscilloscope",
+  labDesc:"Switch DC/AC, drag frequency and voltage. Watch the trace draw live on canvas — just like a real bench scope.",
+  labHTML:`
+    <div class="switch-row"><button class="toggle on" id="l6-mode">Mode: AC sine</button></div>
+    <canvas class="scope" id="scope" width="640" height="180"></canvas>
+    <div class="lab-controls">
+      <label>🔊 Frequency <span><b id="l6-f-val">2</b> Hz (slowed)</span><input type="range" id="l6-f" min="0.5" max="10" step="0.5" value="2"></label>
+      <label>⚡ Amplitude <span><b id="l6-a-val">5</b>V</span><input type="range" id="l6-a" min="0" max="12" step="0.5" value="5"></label>
+    </div>
+    <div class="lab-readout"><span class="read" id="l6-read">AC 5V peak · 2 Hz</span></div>`,
+  quiz:[
+    {q:"Wall power is…", o:["DC","AC","Both at once","Neither"], a:1},
+    {q:"Frequency means…", o:["Voltage height","Cycles per second (Hz)","Wire thickness","Battery age"], a:1},
+    {q:"A capacitor…", o:["Blocks AC, passes DC","Blocks steady DC, passes changing AC","Creates power","Is just a resistor"], a:1},
+    {q:"Safe beginner playground is…", o:["Wall mains","5–12V DC circuits","Microwave interior","High-voltage caps"], a:1}
+  ]},
+{ id:"level-7", icon:"👑", title:"Level 7 · Real-World Hero", sub:"breadboard · multimeter · build your night-light",
+  xp:150, badge:"👑 Circuit Master",
+  story:"Final trial: the village is dark. Build an automatic night-light (battery + resistor + LED + light sensor) and light the way.",
+  panels:[
+    {h:"🍞 Breadboards: solder-free Lego", t:"Holes in <b>rows of 5</b> are connected underneath; the two long side rails are power buses (+/−). Push legs in — no soldering. Keep leads short, keep polarity right.", a:"Power rails run lengthwise. Component rows run across."},
+    {h:"📟 Multimeter: your eyes", t:"Measure <b>V</b> in parallel, <b>current</b> in series (break the loop!), <b>resistance/continuity</b> with power OFF. Red = +, black = COM/−. Beep mode finds bad wires in seconds.", a:"Black to ground first. Then probe with red."},
+    {h:"🛡️ Hero habits", t:"1) Power OFF while wiring. 2) LED + resistor always. 3) Check polarity (LED, caps, chips). 4) If it smells hot, kill power. 5) Draw your schematic before building.", a:"Pros debug by halves: split the circuit, test each side."},
+    {h:"🌙 Final build: night-light", t:"Battery → <b>switch</b> → <b>resistor 330Ω</b> → <b>LED</b> → back. (Real auto version adds an LDR + transistor.) Assemble it in order in the lab, then pass the boss quiz.", a:"Current must flow through ALL parts in one loop."}
+  ],
+  labTitle:"LAB 7 — FINAL MISSION: assemble the night-light",
+  labDesc:"Click parts in the correct order to wire the loop: BATTERY → SWITCH → RESISTOR → LED. Wrong order = spark (try it!).",
+  labHTML:`
+    <div class="switch-row" id="l7-parts">
+      <button class="toggle" data-p="BATTERY">🔋 BATTERY</button>
+      <button class="toggle" data-p="SWITCH">🔌 SWITCH</button>
+      <button class="toggle" data-p="RESISTOR">🧱 RESISTOR 330Ω</button>
+      <button class="toggle" data-p="LED">💡 LED</button>
+      <button class="toggle" data-p="MOTOR">🌀 MOTOR (trap!)</button>
+    </div>
+    <div class="wire"></div>
+    <div class="lab-readout" style="margin-top:10px"><span class="read">Build: <b id="l7-seq">(empty)</b></span><span class="read" id="l7-status">Pick 4 parts in order…</span></div>
+    <div class="row" style="margin-top:10px"><div class="bulb" id="l7-bulb"></div><button class="btn-primary" id="l7-clear">Clear</button></div>`,
+  quiz:[
+    {q:"Breadboard: holes in one row of 5 are…", o:["All isolated","Connected together","Connected to wall power","Only for resistors"], a:1},
+    {q:"To measure current you must…", o:["Touch probes in parallel","Break the loop and go in series","Turn power off and guess","Use continuity mode live"], a:1},
+    {q:"Correct LED loop order (one valid loop)?", o:["Battery → switch → resistor → LED → battery","Battery → LED → LED → battery (no resistor)","Battery + to battery − with wire","Resistor alone across battery"], a:0},
+    {q:"Circuit smells hot. First move?", o:["Blow on it and continue","Kill power immediately, then inspect","Add more voltage","Touch parts to find heat"], a:1}
+  ]}
+];
+
+const RANKS=[[0,"Electron Noob","🧑‍🔧"],[100,"Spark Tamer","⚡"],[250,"Ohm Whisperer","📐"],[400,"Loop Master","🔁"],[550,"Zoo Keeper","🧩"],[700,"Logic Mage","🧠"],[850,"Wave Rider","🌊"],[1000,"Circuit Master","👑"]];
+
+/* ---------- STATE ---------- */
+let state={xp:0,done:[],current:null,sound:true};
+try{const s=JSON.parse(localStorage.getItem(storeKey));if(s&&typeof s.xp==="number")state=Object.assign(state,s);}catch(e){}
+function save(){localStorage.setItem(storeKey,JSON.stringify(state));}
+function totalXP(){return LEVELS.reduce((a,l)=>a+l.xp,0);}
+function unlocked(i){return i===0||state.done.includes(LEVELS[i-1].id);}
+function rank(){let r=RANKS[0];for(const x of RANKS)if(state.xp>=x[0])r=x;return r;}
+
+/* ---------- HELPERS ---------- */
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2600);}
+function beep(f,d,type){if(!state.sound)return;try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;beep._c=beep._c||new C();const c=beep._c,o=c.createOscillator(),g=c.createGain();o.type=type||"square";o.frequency.value=f||440;g.gain.value=0.06;o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+(d||0.12));o.stop(c.currentTime+(d||0.12));}catch(e){}}
+const fanfare=()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.15,"square"),i*110));};
+const sad=()=>{beep(200,.2,"sawtooth");setTimeout(()=>beep(140,.3,"sawtooth"),140);};
+
+function confetti(){const c=$("#confetti"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;const P=[];const cols=["#38f0ff","#ffd23f","#ff5da2","#7cff6b","#7c6bff"];for(let i=0;i<160;i++)P.push({x:Math.random()*c.width,y:-20-Math.random()*c.height*0.3,vx:(Math.random()-.5)*2,vy:2+Math.random()*3,s:4+Math.random()*6,c:cols[i%5],r:Math.random()*Math.PI});let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=.1;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);x.restore();});if(++f<220)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height);})();}
+
+/* ---------- RENDER ---------- */
+function renderHUD(){
+  $("#xp-fill").style.width=Math.min(100,state.xp/totalXP()*100)+"%";
+  const r=rank();$("#xp-label").textContent="LV "+(RANKS.indexOf(r)+1)+" · "+r[1];
+  $("#xp-num").textContent=state.xp+" / "+totalXP()+" XP";
+  $("#stat-levels").textContent=state.done.length+"/"+LEVELS.length;
+  $("#stat-badges").textContent=state.done.length;
+  $("#avatar").textContent=r[2];$("#player-title").textContent="Rank: "+r[1];
+  $("#btn-sound").textContent=state.sound?"🔊":"🔇";
+}
+function renderMap(){
+  const ol=$("#map-nodes");ol.innerHTML="";
+  LEVELS.forEach((l,i)=>{
+    const done=state.done.includes(l.id), un=unlocked(i);
+    const li=document.createElement("li");
+    li.className="map-node "+(done?"done":un?"current":"locked");
+    li.innerHTML=`<span class="n-ico">${un||done?l.icon:"🔒"}</span><span><div class="n-title">${l.title}</div><div class="n-sub">${l.sub} · +${l.xp} XP</div></span><span class="n-state">${done?"DONE ✓":un?"PLAY":"LOCK"}</span>`;
+    li.title=done?l.badge:un?"Click to play":"Finish previous level first";
+    li.onclick=()=>{if(!un){toast("🔒 Finish the previous boss first!");sad();return;}goto(l.id);};
+    ol.appendChild(li);
+  });
+  const nav=$("#level-nav");nav.innerHTML="";
+  const home=document.createElement("button");home.className="lvl-tab";home.textContent="🏠 Intro";home.onclick=()=>goto("intro");nav.appendChild(home);
+  LEVELS.forEach((l,i)=>{
+    const done=state.done.includes(l.id),un=unlocked(i);
+    const b=document.createElement("button");
+    b.className="lvl-tab "+(done?"done":un?"current":"locked");
+    b.textContent=(done?"✓ ":"")+l.icon+" "+(i+1);
+    b.title=l.title+(un?"":" (locked)");
+    b.onclick=()=>{if(!un){toast("🔒 Locked — beat the previous boss!");return;}goto(l.id);};
+    nav.appendChild(b);
+  });
+}
+function renderLevels(){
+  const wrap=$("#levels");wrap.innerHTML="";
+  LEVELS.forEach((l,i)=>{
+    const sec=document.createElement("section");
+    sec.className="screen";sec.id="screen-"+l.id;
+    const un=unlocked(i),done=state.done.includes(l.id);
+    sec.innerHTML=`
+    <article class="level-card">
+      <div class="level-hero">
+        <div class="lvl-num">${l.icon}</div>
+        <div><h2>${l.title}</h2><p>🎬 ${l.story}<br><span class="tiny">${l.sub}</span></p></div>
+        <div class="xp-badge">+${l.xp} XP ${done?"· ✓ DONE":""}</div>
+      </div>
+      <div class="level-body">
+        ${!un?`<div class="quiz"><b>🔒 Locked.</b> Defeat the previous level's boss quiz to enter.</div>`:""}
+        <div class="comic">${l.panels.map(p=>`<div class="comic-panel"><h4>${p.h}</h4><p>${p.t}</p><div class="analogy">${p.a}</div></div>`).join("")}</div>
+        <div class="lab"><div class="lab-inner">
+          <h3 style="margin:0 0 4px">🔬 ${l.labTitle}</h3>
+          <p class="tiny" style="margin:0 0 8px">${l.labDesc}</p>
+          ${l.labHTML}
+        </div></div>
+        <div class="quiz">
+          <div class="quiz-head"><span class="boss">👾</span><div><b>BOSS QUIZ — ${l.title}</b><br><span class="tiny">Score ≥70% (${Math.ceil(l.quiz.length*0.7)} of ${l.quiz.length}) to unlock next level + earn ${l.xp} XP.</span></div></div>
+          ${l.quiz.map((q,qi)=>`<div class="q" data-qi="${qi}"><p>${qi+1}. ${q.q}</p>${q.o.map((o,oi)=>`<label><input type="radio" name="${l.id}-q${qi}" value="${oi}"> ${o}</label>`).join("")}</div>`).join("")}
+          <div class="row"><button class="btn-primary" data-quiz="${l.id}">⚔️ Attack boss</button><span class="tiny">No penalty — retry until you win.</span></div>
+          <div class="quiz-result" id="res-${l.id}"></div>
+        </div>
+        <div class="row">
+          ${i>0?`<button class="btn-ghost" data-goto="${LEVELS[i-1].id}">← Prev</button>`:`<button class="btn-ghost" data-goto="intro">← Intro</button>`}
+          ${i<LEVELS.length-1?`<button class="btn-primary" data-goto="${LEVELS[i+1].id}" data-needs="${l.id}">Next →</button>`:`<button class="btn-primary" data-goto="victory" data-needs="${l.id}">Claim 👑 →</button>`}
+        </div>
+      </div>
+    </article>`;
+    wrap.appendChild(sec);
+  });
+}
+
+/* ---------- NAV ---------- */
+function goto(where){
+  $$(".screen").forEach(s=>s.classList.remove("active"));
+  let id="screen-intro";
+  if(where==="intro")id="screen-intro";
+  else if(where==="victory")id="screen-victory";
+  else id="screen-"+where;
+  const el=document.getElementById(id);
+  if(el)el.classList.add("active");
+  state.current=where;save();
+  window.scrollTo({top:0,behavior:"smooth"});
+  renderMap();
+  const titles={intro:"Intro",victory:"Victory"};
+  toast("📍 "+(LEVELS.find(l=>l.id===where)?.title||titles[where]||where));
+}
+
+/* ---------- QUIZ ---------- */
+function grade(levelId){
+  const lvl=LEVELS.find(l=>l.id===levelId);
+  let score=0;
+  lvl.quiz.forEach((q,qi)=>{
+    const box=$(`#screen-${levelId} .q[data-qi="${qi}"]`);
+    const sel=$('input:checked',box);
+    box.classList.remove("correct","wrong");
+    if(sel&&+sel.value===q.a){score++;box.classList.add("correct");}
+    else box.classList.add("wrong");
+  });
+  const need=Math.ceil(lvl.quiz.length*0.7);
+  const res=$("#res-"+levelId);
+  if(score>=need){
+    res.className="quiz-result pass";
+    res.textContent=`🏆 BOSS DEFEATED! ${score}/${lvl.quiz.length} — +${lvl.xp} XP earned!`;
+    if(!state.done.includes(levelId)){
+      state.done.push(levelId);state.xp=Math.min(totalXP(),state.xp+lvl.xp);save();
+      fanfare();confetti();
+      const idx=LEVELS.findIndex(l=>l.id===levelId);
+      setTimeout(()=>{if(idx<LEVELS.length-1){toast(`🔓 Level ${idx+2} unlocked!`);}},1200);
+    } else { fanfare(); toast("Boss re-defeated. XP already banked."); }
+    renderHUD();renderMap();renderVictoryCheck();
+  }else{
+    res.className="quiz-result fail";
+    res.textContent=`💀 Boss survives… ${score}/${lvl.quiz.length} (need ${need}). Review the comic + lab and retry!`;
+    sad();
+  }
+  res.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function renderVictoryCheck(){
+  if(state.done.length===LEVELS.length){
+    $("#cert-stats").textContent=`${state.xp} XP · ${state.done.length} badges · ${rank()[1]}`;
+    setTimeout(()=>goto("victory"),900);
+  }
+}
+
+/* ---------- LABS ---------- */
+function animLoop(fn){let raf;const step=t=>{fn(t);raf=requestAnimationFrame(step);};raf=requestAnimationFrame(step);return ()=>cancelAnimationFrame(raf);}
+const cancels=[];
+function initLabs(){
+  cancels.forEach(c=>c());cancels.length=0;
+  initIntroDemo();initL1();initL2();initL3();initL4();initL5();initL6();initL7();
+}
+function initIntroDemo(){
+  const r=$("#demo-voltage"),v=$("#demo-volt-val");if(!r)return;
+  const upd=()=>{v.textContent=r.value+"V";const svg=r.closest(".demo-card").querySelector(".flow");const sp=(13-r.value*0.9).toFixed(2);svg.style.animationDuration=Math.max(.25,sp/6)+"s";beep(300+ +r.value*30,.05);};
+  r.oninput=upd;upd();
+}
+/* L1 canvas electrons */
+function initL1(){
+  const c=$("#sim1");if(!c)return;const x=c.getContext("2d");
+  const V=$("#l1-v"),R=$("#l1-r"),S=$("#l1-sw");
+  let parts=Array.from({length:26},(_,i)=>({p:Math.random()}));
+  const draw=t=>{
+    const v=+V.value,r=+R.value,closed=+S.value===1;
+    const I=closed?(v/r):0;
+    $("#l1-v-val").textContent=v.toFixed(1);$("#l1-r-val").textContent=r;
+    $("#l1-sw-val").textContent=closed?"CLOSED":"OPEN";
+    $("#l1-i").textContent=I.toFixed(2)+" A";
+    $("#l1-e").textContent=(I*6.24e18).toExponential(1).replace("e","×10^");
+    const m=$("#l1-msg");m.textContent=closed?(I>1?"⚡ Huge flow — hot wire!":I>0.2?"Circuit CLOSED — flowing!":" Trickle — high resistance"): "⛔ OPEN — electrons frozen";
+    x.clearRect(0,0,c.width,c.height);
+    x.strokeStyle="#24315e";x.lineWidth=14;x.strokeRect(30,30,c.width-60,c.height-60);
+    x.strokeStyle=I>1?"#ffd23f":"#38f0ff";x.lineWidth=3;x.setLineDash([12,14]);x.lineDashOffset=-t/ Math.max(30,300-I*180);x.strokeRect(30,30,c.width-60,c.height-60);x.setLineDash([]);
+    // battery + bulb
+    x.fillStyle="#0b1020";x.fillRect(c.width/2-30,14,60,26);x.strokeStyle="#ffd23f";x.strokeRect(c.width/2-30,14,60,26);x.fillStyle="#ffd23f";x.font="12px monospace";x.fillText(v.toFixed(1)+"V",c.width/2-14,32);
+    x.beginPath();x.arc(c.width/2,c.height-30,18,0,7);x.fillStyle=I>0.3?"#ffd23f":"#1a2340";x.fill();x.strokeStyle="#ffd23f";x.stroke();
+    const speed=closed?0.0004+I*0.0012:0;
+    parts.forEach((p,i)=>{p.p=(p.p+speed*(1+i%3*0.15))%1;const per=p.p*4,seg=Math.floor(per),f=per-seg;let px,py;const x0=30,x1=c.width-30,y0=30,y1=c.height-30;
+      if(seg===0){px=x0+(x1-x0)*f;py=y0;}else if(seg===1){px=x1;py=y0+(y1-y0)*f;}else if(seg===2){px=x1-(x1-x0)*f;py=y1;}else{px=x0;py=y1-(y1-y0)*f;}
+      x.beginPath();x.arc(px,py,5,0,7);x.fillStyle=["#38f0ff","#ff5da2","#7cff6b"][i%3];x.fill();});
+  };
+  cancels.push(animLoop(draw));
+}
+/* L2 */
+function initL2(){
+  const V=$("#l2-v"),R=$("#l2-r");if(!V)return;
+  const upd=()=>{
+    const v=+V.value,r=+R.value,I=v/r,P=v*I;
+    $("#l2-v-val").textContent=v;$("#l2-r-val").textContent=r;
+    $("#l2-i").textContent=(I>=1?I.toFixed(2)+" A":(I*1000).toFixed(0)+" mA");
+    $("#l2-p").textContent=P.toFixed(2)+" W";
+    const b=$("#l2-bulb"),w=$("#l2-wire");
+    const bright=Math.min(1,I/0.05);
+    b.classList.toggle("lit",I>0.005);
+    b.style.opacity=0.35+bright*0.65;
+    w.style.animationDuration=(1.2-bright)+ "s";
+    w.style.opacity=I>0.002?1:0.15;
+    const vd=$("#l2-verdict");
+    vd.textContent=I<0.001?"💤 No current":I<=0.03?"✅ LED happy":I<=0.1?"⚠️ Bright — check watts!":"💥 POP — LED dead (too much current!)";
+  };
+  V.oninput=upd;R.oninput=upd;upd();
+}
+/* L3 */
+function initL3(){
+  const t=$("#l3-topo"),s=$("#l3-sw");if(!t)return;
+  let parallel=true,closed=true;
+  const upd=()=>{
+    t.textContent="Topology: "+(parallel?"PARALLEL":"SERIES");t.className="toggle "+(parallel?"on":"off");
+    s.textContent="Switch: "+(closed?"CLOSED":"OPEN");s.className="toggle "+(closed?"on":"off");
+    const b1=$("#l3-b1"),b2=$("#l3-b2");
+    const on=closed;
+    b1.classList.toggle("lit",on);b2.classList.toggle("lit",on);
+    if(!on){b1.style.opacity=.4;b2.style.opacity=.4;$("#l3-v").textContent="0V";$("#l3-i").textContent="0 mA";$("#l3-msg").textContent="⛔ Open switch — dark.";return;}
+    if(parallel){b1.style.opacity=1;b2.style.opacity=1;$("#l3-v").textContent="9.0V";$("#l3-i").textContent="40 mA";$("#l3-msg").textContent="Parallel: full brightness, drains 2× faster!";}
+    else{b1.style.opacity=.65;b2.style.opacity=.65;$("#l3-v").textContent="4.5V";$("#l3-i").textContent="20 mA";$("#l3-msg").textContent="Series: voltage split — dimmer, sips battery.";}
+  };
+  t.onclick=()=>{parallel=!parallel;beep(parallel?600:400,.08);upd();};
+  s.onclick=()=>{closed=!closed;beep(closed?700:250,.08);upd();};
+  upd();
+}
+/* L4 */
+const L4INFO={
+  res:{h:"🦓 Resistor 220Ω",t:"Drops voltage & limits current. Bands: red-red-brown-gold. No polarity. Slider = resistance: higher → less current.",f:v=>`Current limited to ${(20*(1-v/130)).toFixed(0)}mA`},
+  cap:{h:"🪣 Capacitor 1000µF",t:"Bucket for charge. Slider = charge level. Fill it (DC blocked when full!), drain it to light the LED briefly.",f:v=>v<100?`Charging… ${v}% full — current flows`:`FULL — blocks DC, ready to dump!`},
+  diode:{h:"🦈 Diode 1N4148",t:"One-way valve. Slider = forward voltage: below ~0.7V nothing passes; above it, floodgates open. Reverse = blocked.",f:v=>v<35?`Blocked (only ${(v/20).toFixed(1)}V < 0.7V threshold)`:`Conducting! 0.7V dropped, rest flows ➡️`},
+  led:{h:"💡 Red LED 2V/20mA",t:"Diode that glows. Slider = current. Too little = dark, ~20mA = perfect glow, way more = 💥. Long leg to +!",f:v=>v<10?"Dark — not enough current":v<75?`Glowing nicely at ${(v/3.5).toFixed(0)}mA ✨`:"💥 TOO MUCH — LED sacrificed!"},
+  trans:{h:"🚰 Transistor 2N2222 (NPN)",t:"Faucet: tiny base current controls big collector flow. Slider = base signal. Past halfway the lamp slams ON.",f:v=>v<50?`Base ${(v/100).toFixed(2)}V — valve closed, lamp OFF`:`Base open — collector current ×100! Lamp ON 💡`}
+};
+function initL4(){
+  const g=$("#l4-grid"),s=$("#l4-slider");if(!g)return;
+  let cur="res";
+  const upd=()=>{
+    const v=+s.value;$("#l4-sval").textContent=v+"%";
+    $("#l4-read").textContent=L4INFO[cur].f(v);beep(250+v*4,.04);
+  };
+  g.onclick=e=>{const c=e.target.closest(".comp");if(!c)return;cur=c.dataset.c;$$(".comp",g).forEach(x=>x.classList.toggle("active",x===c));const i=L4INFO[cur];$("#l4-info").innerHTML=`<h4>${i.h}</h4><p>${i.t}</p>`;upd();beep(500,.07);};
+  s.oninput=upd;upd();
+}
+/* L5 */
+function initL5(){
+  const A=$("#l5-a"),B=$("#l5-b"),G=$("#l5-gate");if(!A)return;
+  let a=0,b=0;
+  const MEANS={AND:"AND: 1 only if A=1 AND B=1",OR:"OR: 1 if either input is 1",XOR:"XOR: 1 if inputs differ",NAND:"NAND: opposite of AND",NOR:"NOR: opposite of OR","NOT A":"NOT: flips A (ignores B)"};
+  const calc=()=>{const g=G.value;if(g==="AND")return a&b;if(g==="OR")return a|b;if(g==="XOR")return a^b;if(g==="NAND")return (a&b)^1;if(g==="NOR")return (a|b)^1;return a^1;};
+  const upd=()=>{
+    A.textContent="Input A: "+a;A.className="toggle "+(a?"on":"off");
+    B.textContent="Input B: "+b;B.className="toggle "+(b?"on":"off");
+    const q=calc();$("#l5-q").textContent=q;$("#l5-led").classList.toggle("on",!!q);
+    $("#l5-mean").textContent=MEANS[G.value];
+    const rows=[[0,0],[0,1],[1,0],[1,1]].map(([x,y])=>{let qq;const g=G.value;if(g==="AND")qq=x&y;else if(g==="OR")qq=x|y;else if(g==="XOR")qq=x^y;else if(g==="NAND")qq=(x&y)^1;else if(g==="NOR")qq=(x|y)^1;else qq=x^1;const cur=(x===a&&y===b);return `<tr style="${cur?"background:#ffd23f33":""}"><td>${x}</td><td>${y}</td><td>${qq}</td></tr>`;}).join("");
+    $("#l5-truth").innerHTML="<tr><th>A</th><th>B</th><th>Q</th></tr>"+rows;
+  };
+  A.onclick=()=>{a^=1;beep(a?700:350,.07);upd();};
+  B.onclick=()=>{b^=1;beep(b?700:350,.07);upd();};
+  G.onchange=()=>{beep(500,.07);upd();};
+  upd();
+}
+/* L6 scope */
+function initL6(){
+  const c=$("#scope");if(!c)return;const x=c.getContext("2d");
+  const F=$("#l6-f"),Am=$("#l6-a"),M=$("#l6-mode");
+  let ac=true;
+  M.onclick=()=>{ac=!ac;M.textContent="Mode: "+(ac?"AC sine":"DC flat");M.className="toggle "+(ac?"on":"off");beep(ac?600:300,.1);};
+  const draw=t=>{
+    const f=+F.value,a=+Am.value;
+    $("#l6-f-val").textContent=f;$("#l6-a-val").textContent=a;
+    $("#l6-read").textContent=ac?`AC ${a}V peak · ${f} Hz (slowed 1000×)`:`DC flat ${a}V — no wiggle`;
+    x.clearRect(0,0,c.width,c.height);
+    x.strokeStyle="#1c2750";for(let gx=0;gx<c.width;gx+=32){x.beginPath();x.moveTo(gx,0);x.lineTo(gx,c.height);x.stroke();}for(let gy=0;gy<c.height;gy+=24){x.beginPath();x.moveTo(0,gy);x.lineTo(c.width,gy);x.stroke();}
+    x.strokeStyle="#ff5d5d";x.setLineDash([6,6]);x.beginPath();x.moveTo(0,c.height/2);x.lineTo(c.width,c.height/2);x.stroke();x.setLineDash([]);
+    x.strokeStyle="#38f0ff";x.lineWidth=3;x.shadowColor="#38f0ff";x.shadowBlur=10;x.beginPath();
+    for(let px=0;px<c.width;px+=2){let v;if(ac)v=Math.sin(px/40*f+t/300)*a;else v=a*0.9;const py=c.height/2-(v/12)*(c.height/2-12);px===0?x.moveTo(px,py):x.lineTo(px,py);}
+    x.stroke();x.shadowBlur=0;x.lineWidth=1;
+  };
+  cancels.push(animLoop(draw));
+}
+/* L7 mission */
+function initL7(){
+  const box=$("#l7-parts");if(!box)return;
+  const OK=["BATTERY","SWITCH","RESISTOR","LED"];let seq=[];
+  const upd=(spark)=>{
+    $("#l7-seq").textContent=seq.length?seq.join(" → "):"(empty)";
+    const b=$("#l7-bulb");
+    if(seq.length===4){
+      const good=OK.every((p,i)=>seq[i]===p);
+      if(good){b.classList.add("lit");$("#l7-status").textContent="🌙 LIGHT! Perfect loop — village saved! +quiz to graduate.";fanfare();confetti();}
+      else{b.classList.remove("lit");$("#l7-status").textContent="💥 SPARK! Wrong order/part — electrons riot. Clear & retry.";if(spark)sad();}
+    }else{b.classList.remove("lit");$("#l7-status").textContent=`Pick 4 parts in order… (${seq.length}/4)`;}
+    $$("#l7-parts .toggle").forEach(btn=>btn.classList.toggle("on",seq.includes(btn.dataset.p)));
+  };
+  box.onclick=e=>{const btn=e.target.closest("[data-p]");if(!btn||seq.length>=4)return;seq.push(btn.dataset.p);beep(400+seq.length*120,.08);upd(true);};
+  $("#l7-clear").onclick=()=>{seq=[];upd(false);};
+  upd(false);
+}
+
+/* ---------- GLOBAL EVENTS ---------- */
+function bindGlobal(){
+  document.addEventListener("click",e=>{
+    const g=e.target.closest("[data-goto]");
+    if(g){
+      const need=g.dataset.needs;
+      if(need&&!state.done.includes(need)){toast("👾 Defeat this level's boss first!");sad();return;}
+      goto(g.dataset.goto);return;
+    }
+    const q=e.target.closest("[data-quiz]");
+    if(q){grade(q.dataset.quiz);return;}
+  });
+  $("#btn-continue").onclick=()=>{
+    if(state.done.length===LEVELS.length){goto("victory");return;}
+    const next=LEVELS.find((l,i)=>unlocked(i)&&!state.done.includes(l.id))||LEVELS[0];
+    goto(next.id);
+  };
+  $("#btn-reset").onclick=()=>{if(confirm("Reset all XP and locks?")){state={xp:0,done:[],current:null,sound:state.sound};save();renderHUD();renderMap();renderVictoryCheck();goto("intro");toast("↺ Fresh electron born.");}};
+  $("#btn-demo").onclick=()=>{LEVELS.forEach(l=>{if(!state.done.includes(l.id))state.done.push(l.id);});state.xp=totalXP();save();renderHUD();renderMap();renderVictoryCheck();confetti();toast("🔓 Demo: all levels unlocked.");};
+  $("#btn-play-again").onclick=()=>{$("#btn-reset").click();};
+  $("#btn-sound").onclick=()=>{state.sound=!state.sound;save();renderHUD();toast(state.sound?"🔊 Sound on":"🔇 Sound off");};
+  $("#btn-export").onclick=()=>{const s=JSON.stringify(state);(navigator.clipboard?navigator.clipboard.writeText(s):Promise.reject()).then(()=>toast("📋 Progress copied!")).catch(()=>toast("Progress: "+s));};
+}
+
+/* ---------- BOOT ---------- */
+renderLevels();renderHUD();renderMap();bindGlobal();initLabs();
+goto(state.current||"intro");
+document.addEventListener("visibilitychange",()=>{if(document.hidden)cancels.forEach(c=>c());else{initLabs();}});
+})();
+
+</script>
+</body>
+</html>
