@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenBSD — The Fortress | An Extensive Tribute to the World's Most Secure OS</title>
+<meta name="description" content="An extensive dark-theme tribute to OpenBSD: pledge, unveil, W^X, ASLR, KARL, RETGUARD, malloc, pf, OpenSSH, LibreSSL. Why it is secure and why it is so hard to hack.">
+<style>
+/* ============ PURE CSS3 — NO LIBRARIES — DARK FORTRESS THEME ============ */
+:root{
+  --bg0:#06090f; --bg1:#0a0f1a; --bg2:#0e1526; --bg3:#131c33; --card:#101829;
+  --line:#1e2a47; --line2:#2a3a60;
+  --txt:#d7e0f2; --muted:#8b98b8; --dim:#5c6a8c;
+  --gold:#f5c542; --gold2:#ffe9a3;
+  --teal:#39d0c4; --teal-dim:#123c3a;
+  --red:#ff5470; --green:#4ade80; --orange:#fb923c; --purple:#a78bfa; --blue:#60a5fa;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --r:14px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(1200px 600px at 70% -10%,#16234a 0%,transparent 60%),radial-gradient(900px 500px at 10% 10%,#0f2b2b 0%,transparent 55%),var(--bg0);color:var(--txt);font-family:var(--sans);line-height:1.7;overflow-x:hidden}
+::selection{background:var(--gold);color:#111}
+a{color:var(--teal);text-decoration:none;border-bottom:1px dotted rgba(57,208,196,.5)}
+a:hover{color:var(--gold2);border-bottom-color:var(--gold)}
+code,kbd{font-family:var(--mono);font-size:.88em;background:#070c16;border:1px solid var(--line);border-radius:6px;padding:.1em .4em;color:var(--gold2)}
+pre{font-family:var(--mono);background:#070c16;border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem;overflow:auto;font-size:.84rem;line-height:1.6;color:#cfe3ff}
+pre .c{color:#5f7196} pre .k{color:var(--teal)} pre .s{color:var(--gold)} pre .f{color:var(--purple)}
+/* progress */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--gold),var(--teal));z-index:99;box-shadow:0 0 12px rgba(245,197,66,.8)}
+/* nav */
+header.nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(6,9,15,.86);border-bottom:1px solid var(--line)}
+.nav-inner{max-width:1220px;margin:0 auto;display:flex;align-items:center;gap:1rem;padding:.7rem 1.2rem}
+.brand{display:flex;align-items:center;gap:.7rem;font-weight:800;letter-spacing:.04em}
+.brand .puff{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 30%,#ffe9a3,#f5c542 45%,#7a5b00 100%);color:#111;font-size:1.3rem;border:2px solid #000;box-shadow:0 0 18px rgba(245,197,66,.5)}
+.brand small{display:block;font-weight:500;color:var(--muted);font-size:.7rem;letter-spacing:.22em}
+nav.links{display:flex;gap:.2rem;margin-left:auto;flex-wrap:wrap}
+nav.links a{border:0;color:var(--muted);font-size:.84rem;padding:.45rem .7rem;border-radius:8px}
+nav.links a.active,nav.links a:hover{color:#111;background:var(--gold)}
+#menuBtn{display:none;margin-left:auto;background:var(--bg3);color:var(--txt);border:1px solid var(--line2);border-radius:10px;padding:.5rem .8rem;cursor:pointer}
+/* layout */
+.wrap{max-width:1220px;margin:0 auto;padding:0 1.2rem}
+.hero{position:relative;padding:4.5rem 0 2.5rem;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:2rem;align-items:center}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr} nav.links{display:none} nav.links.open{display:flex;flex-direction:column;width:100%} #menuBtn{display:block}}
+.kicker{display:inline-flex;align-items:center;gap:.6rem;border:1px solid var(--line2);background:rgba(245,197,66,.08);color:var(--gold2);border-radius:999px;padding:.35rem .9rem;font-size:.78rem;letter-spacing:.18em;text-transform:uppercase}
+.kicker .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.25}}
+h1{font-size:clamp(2.2rem,5.2vw,4.1rem);line-height:1.02;margin:1rem 0 .6rem;letter-spacing:-.03em}
+h1 .gold{background:linear-gradient(180deg,#fff6d6,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+h1 .teal{color:var(--teal);text-shadow:0 0 30px rgba(57,208,196,.4)}
+.lede{color:var(--muted);font-size:1.08rem;max-width:42rem}
+.cta-row{display:flex;gap:.8rem;flex-wrap:wrap;margin:1.5rem 0}
+.btn{border:0;border-radius:12px;padding:.85rem 1.2rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:.6rem}
+.btn-gold{background:linear-gradient(180deg,#ffe9a3,var(--gold));color:#14100a;box-shadow:0 8px 30px rgba(245,197,66,.3)}
+.btn-ghost{background:var(--bg3);color:var(--txt);border:1px solid var(--line2)}
+.btn:hover{transform:translateY(-2px)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin:1.8rem 0}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:linear-gradient(180deg,rgba(255,255,255,.04),transparent),var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1rem;text-align:center}
+.stat b{font-size:1.6rem;display:block;color:var(--gold)}
+.stat span{font-size:.78rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+/* terminal card */
+.terminal{background:#05080f;border:1px solid var(--line2);border-radius:16px;overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,.6),0 0 0 1px rgba(245,197,66,.08)}
+.term-bar{display:flex;gap:.4rem;align-items:center;padding:.7rem 1rem;background:#0b1222;border-bottom:1px solid var(--line)}
+.term-bar i{width:11px;height:11px;border-radius:50%;display:block}
+.term-body{padding:1.1rem 1.2rem;font-family:var(--mono);font-size:.83rem;min-height:340px}
+.typed{color:#9ef0e6}.typed .prompt{color:var(--gold)}
+.cursor{display:inline-block;width:9px;height:18px;background:var(--gold);vertical-align:-3px;animation:blink 1s steps(1) infinite}
+/* ticker */
+.ticker{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#080d18;overflow:hidden;white-space:nowrap}
+.ticker div{display:inline-block;padding:.7rem 0;animation:scroll 32s linear infinite;font-family:var(--mono);font-size:.82rem;color:var(--muted)}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+section{padding:3.2rem 0}
+.sec-head{display:flex;align-items:end;gap:1rem;margin-bottom:1.4rem;flex-wrap:wrap}
+.sec-num{font-family:var(--mono);color:var(--gold);border:1px solid var(--line2);border-radius:10px;padding:.3rem .7rem;background:#0b1222}
+h2{font-size:clamp(1.5rem,3vw,2.3rem);margin:.2rem 0;letter-spacing:-.02em}
+.sub{color:var(--muted);max-width:58rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+@media(max-width:950px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 40%),var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1.3rem;position:relative;overflow:hidden}
+.card:hover{border-color:var(--line2)}
+.card h3{margin:.2rem 0 .5rem;font-size:1.08rem}
+.tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);background:rgba(57,208,196,.1);border:1px solid rgba(57,208,196,.25);border-radius:999px;padding:.2rem .7rem;display:inline-block}
+.tag.red{color:#ffb3c1;background:rgba(255,84,112,.1);border-color:rgba(255,84,112,.3)}
+.tag.gold{color:var(--gold2);background:rgba(245,197,66,.1);border-color:rgba(245,197,66,.3)}
+.tag.purple{color:#d6c6ff;background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.3)}
+.card p{color:#b9c4de;font-size:.93rem}
+.src{margin-top:.8rem;font-size:.78rem;color:var(--dim)}
+.src a{font-size:.78rem}
+/* threat table */
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:760px}
+th{background:#0b1222;text-align:left;padding:.85rem 1rem;color:var(--gold2);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;position:sticky;top:0}
+td{padding:.9rem 1rem;border-top:1px solid var(--line);color:#b9c4de;vertical-align:top}
+td:first-child{color:var(--txt);font-weight:700}
+tr:hover td{background:rgba(245,197,66,.04)}
+.pill{display:inline-block;border-radius:999px;padding:.15rem .6rem;font-size:.72rem;font-weight:700}
+.pill.hi{background:rgba(74,222,128,.15);color:#86efac;border:1px solid rgba(74,222,128,.4)}
+.pill.med{background:rgba(245,197,66,.14);color:var(--gold2);border:1px solid rgba(245,197,66,.4)}
+/* timeline */
+.timeline{position:relative;margin:1rem 0 0;padding-left:1.6rem}
+.timeline::before{content:"";position:absolute;left:7px;top:0;bottom:0;width:2px;background:linear-gradient(var(--gold),var(--teal),transparent)}
+.t-item{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem;margin:0 0 .9rem}
+.t-item::before{content:"";position:absolute;left:-1.6rem;top:1.2rem;width:12px;height:12px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold);border:2px solid #000}
+.t-item b.year{font-family:var(--mono);color:var(--gold)}
+/* accordion */
+.acc{border:1px solid var(--line);border-radius:12px;margin:.7rem 0;background:var(--card);overflow:hidden}
+.acc button{width:100%;text-align:left;background:transparent;border:0;color:var(--txt);padding:1rem 1.1rem;font-size:1rem;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;gap:1rem;align-items:center}
+.acc button span.icon{color:var(--gold);font-family:var(--mono)}
+.acc .body{max-height:0;overflow:hidden;transition:max-height .4s ease;padding:0 1.1rem}
+.acc.open .body{max-height:1200px;padding-bottom:1.1rem}
+.acc .body p,.acc .body li{color:#b9c4de;font-size:.92rem}
+/* tabs */
+.tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0}
+.tabs button{background:var(--bg3);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:.55rem 1rem;cursor:pointer;font-weight:700}
+.tabs button.active{background:var(--gold);color:#111;border-color:var(--gold)}
+.tabpane{display:none}
+.tabpane.active{display:block;animation:fade .4s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* kill chain */
+.chain{display:grid;grid-template-columns:repeat(6,1fr);gap:.6rem;margin:1.2rem 0}
+@media(max-width:950px){.chain{grid-template-columns:repeat(2,1fr)}}
+.step{background:#080d18;border:1px solid var(--line);border-radius:12px;padding:.9rem;text-align:center;position:relative}
+.step .n{font-family:var(--mono);color:var(--red);font-weight:800}
+.step.blocked{border-color:rgba(74,222,128,.5);background:rgba(74,222,128,.06)}
+.step.blocked .n{color:var(--green)}
+.step small{color:var(--muted);display:block;font-size:.76rem}
+/* simulator */
+.sim{background:#080d18;border:1px solid var(--line2);border-radius:16px;padding:1.4rem;display:grid;grid-template-columns:1fr 1fr;gap:1.4rem}
+@media(max-width:900px){.sim{grid-template-columns:1fr}}
+.sim label{display:block;font-size:.82rem;color:var(--muted);margin:.7rem 0 .3rem;letter-spacing:.06em;text-transform:uppercase}
+.sim select,.sim input[type=range]{width:100%}
+.sim select{background:var(--bg3);color:var(--txt);border:1px solid var(--line2);border-radius:10px;padding:.7rem}
+.meter{height:18px;background:#0b1222;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.meter i{display:block;height:100%;width:5%;background:linear-gradient(90deg,var(--green),var(--gold),var(--red));transition:width .5s ease}
+.big-score{font-size:3rem;font-weight:900;color:var(--gold);margin:.2rem 0}
+/* refs */
+.ref-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+@media(max-width:900px){.ref-grid{grid-template-columns:1fr}}
+.ref-cat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1.1rem}
+.ref-cat h4{margin:.2rem 0 .6rem;color:var(--gold2)}
+.ref-cat ul{margin:0;padding-left:1.1rem;color:#b9c4de;font-size:.87rem}
+.ref-cat li{margin:.35rem 0}
+/* search */
+.searchbar{display:flex;gap:.6rem;margin:1rem 0;flex-wrap:wrap}
+.searchbar input{flex:1;min-width:240px;background:#080d18;border:1px solid var(--line2);border-radius:12px;padding:.85rem 1rem;color:var(--txt)}
+/* quiz */
+.quiz{background:linear-gradient(180deg,rgba(245,197,66,.08),transparent),var(--card);border:1px solid rgba(245,197,66,.3);border-radius:16px;padding:1.4rem}
+.quiz button.opt{display:block;width:100%;text-align:left;margin:.5rem 0;background:#080d18;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:.7rem .9rem;cursor:pointer}
+.quiz button.opt.correct{border-color:var(--green);background:rgba(74,222,128,.1)}
+.quiz button.opt.wrong{border-color:var(--red);background:rgba(255,84,112,.1)}
+footer{border-top:1px solid var(--line);padding:2.5rem 0 4rem;color:var(--muted);font-size:.88rem;background:#05080f}
+#toTop{position:fixed;right:18px;bottom:18px;background:var(--gold);color:#111;border:0;border-radius:50%;width:48px;height:48px;font-size:1.3rem;cursor:pointer;display:none;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.reveal{opacity:0;transform:translateY(18px);transition:all .7s ease}
+.reveal.in{opacity:1;transform:none}
+.copybtn{float:right;background:var(--bg3);border:1px solid var(--line2);color:var(--muted);border-radius:8px;padding:.25rem .6rem;cursor:pointer;font-size:.75rem}
+.hl{color:var(--gold2)} .te{color:var(--teal)}
+blockquote{border-left:3px solid var(--gold);margin:1rem 0;padding:.6rem 1rem;background:rgba(245,197,66,.06);border-radius:0 12px 12px 0;color:#d7e0f2;font-style:italic}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header class="nav">
+<div class="nav-inner">
+<div class="brand"><div class="puff">🐡</div><div>OPENBSD<span style="color:var(--gold)"> / FORTRESS</span><small>SECURE BY DEFAULT · CORRECT · FREE</small></div></div>
+<button id="menuBtn" aria-label="menu">☰</button>
+<nav class="links" id="navLinks">
+<a href="#battlefield">Threats</a><a href="#philosophy">Philosophy</a><a href="#timeline">Timeline</a><a href="#deep">Mitigations</a><a href="#attacker">Why Hard to Hack</a><a href="#data">Evidence</a><a href="#network">PF·SSH·SSL</a><a href="#supply">Supply Chain</a><a href="#refs">References</a>
+</nav>
+</div>
+</header>
+
+<div class="ticker"><div>SECURE BY DEFAULT &nbsp;·&nbsp; ONLY TWO REMOTE HOLES IN THE DEFAULT INSTALL IN A HECK OF A LONG TIME &nbsp;·&nbsp; W^X &nbsp;·&nbsp; PLEDGE(2) &nbsp;·&nbsp; UNVEIL(2) &nbsp;·&nbsp; KARL &nbsp;·&nbsp; RETGUARD &nbsp;·&nbsp; PRIVILEGE SEPARATION &nbsp;·&nbsp; PF &nbsp;·&nbsp; OPENSSH &nbsp;·&nbsp; LIBRESSL &nbsp;·&nbsp; SIGNIFY &nbsp;·&nbsp; SECURE BY DEFAULT &nbsp;·&nbsp; ONLY TWO REMOTE HOLES IN THE DEFAULT INSTALL IN A HECK OF A LONG TIME &nbsp;·&nbsp; W^X &nbsp;·&nbsp; PLEDGE(2) &nbsp;·&nbsp; UNVEIL(2) &nbsp;·&nbsp; KARL &nbsp;·&nbsp; RETGUARD &nbsp;·&nbsp; PRIVILEGE SEPARATION &nbsp;·&nbsp; PF &nbsp;·&nbsp; OPENSSH &nbsp;·&nbsp; LIBRESSL &nbsp;·&nbsp; SIGNIFY &nbsp;·&nbsp;</div></div>
+
+<div class="wrap">
+<!-- HERO -->
+<div class="hero">
+<div class="hero-grid">
+<div>
+<span class="kicker"><span class="dot"></span> A dark-theme tribute · pure CSS3 + vanilla JS · zero libraries</span>
+<h1>OpenBSD is not an OS.<br><span class="gold">It is a fortress</span> <span class="teal">with a pufferfish.</span></h1>
+<p class="lede">Born in 1995 from Theo de Raadt's refusal to compromise, OpenBSD made <b class="hl">proactive security, correctness and full disclosure</b> its religion. While the rest of technology drowns in buffer overflows, ROP chains, supply-chain backdoors, Meltdown/Spectre and misconfigured firewalls — OpenBSD quietly answered every one of them, years in advance, in the base system, enabled by default.</p>
+<div class="cta-row">
+<button class="btn btn-gold" onclick="document.getElementById('deep').scrollIntoView({behavior:'smooth'})">⚔ Enter the fortress ↓</button>
+<button class="btn btn-ghost" onclick="document.getElementById('attacker').scrollIntoView({behavior:'smooth'})">☠ Try to hack it (good luck)</button>
+</div>
+<div class="stats">
+<div class="stat"><b>2</b><span>remote holes · default install · decades</span></div>
+<div class="stat"><b>1996→</b><span>continuous audit · thousands fixed</span></div>
+<div class="stat"><b>1st</b><span>W^X · ASLR · ProPolice by default</span></div>
+<div class="stat"><b>100%</b><span>free · audited · documented man pages</span></div>
+</div>
+<blockquote>“We fix bugs even when exploitability has not been demonstrated. We look for the same mistake elsewhere after finding one flaw.” — the OpenBSD way, summarized from <a href="https://www.openbsd.org/security.html">openbsd.org/security.html</a></blockquote>
+</div>
+<div class="terminal" aria-label="terminal">
+<div class="term-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span style="margin-left:.6rem;font-family:var(--mono);font-size:.78rem;color:var(--muted)">puffy@fortress:~ — ksh</span></div>
+<div class="term-body" id="termBody"><span class="typed"><span class="prompt">$</span> <span id="typed"></span><span class="cursor"></span></span><div id="termOut" style="margin-top:.8rem;color:#b9c4de"></div></div>
+</div>
+</div>
+</div>
+
+<!-- 01 BATTLEFIELD -->
+<section id="battlefield">
+<div class="sec-head"><span class="sec-num">01</span><div><h2>The battlefield: everything broken in technology</h2><p class="sub">To honor OpenBSD you must first stare at the abyss it defends against. Every row is a class of catastrophe that still owns Linux distros, routers, phones and clouds — and what OpenBSD put in the base system to blunt it.</p></div></div>
+<div class="searchbar"><input id="threatSearch" placeholder="🔎 Filter threats — try: buffer, ROP, supply, spectre, firewall…"></div>
+<div class="table-wrap"><table id="threatTable">
+<thead><tr><th>Security problem</th><th>How the industry bleeds</th><th>OpenBSD mitigation (default)</th><th>Residual risk</th></tr></thead>
+<tbody>
+<tr><td>Buffer overflows & heap corruption</td><td>Still #1 CWE. Heartbleed, Stagefright, countless daemons owned by strcpy().</td><td><span class="tag">W^X</span> <span class="tag">ASLR+PIE</span> <span class="tag gold">hardened malloc</span> <span class="tag">reallocarray</span> <span class="tag">strlcpy</span><br>Randomized allocation, guard pages, canaries, double-free/UAF detection. <a href="https://man.openbsd.org/malloc.3">malloc(3)</a>, <a href="https://man.openbsd.org/reallocarray.3">reallocarray(3)</a></td><td><span class="pill med">Bug still exists — exploit made unreliable</span></td></tr>
+<tr><td>ROP / control-flow hijack</td><td>NX bypassed via gadgets; entire exploit kits built on libc gadgets.</td><td><span class="tag red">RETGUARD</span> <span class="tag">W^X strict 6.0</span> <span class="tag">PIE 5.3</span> gadget reduction, stack-pivot checks. <a href="https://www.openbsd.org/innovations.html">innovations</a>, <a href="https://www.openbsd.org/64.html">6.4 notes</a></td><td><span class="pill med">Raises cost 10–100×; not proof of impossibility</span></td></tr>
+<tr><td>Privilege escalation after compromise</td><td>One bug in a root daemon = full box. See polkit, sudo, io_uring CVEs.</td><td><span class="tag gold">pledge(2)</span> <span class="tag gold">unveil(2)</span> <span class="tag">privilege separation</span> Irreversible syscall + filesystem jailing per-process. <a href="https://man.openbsd.org/pledge.2">pledge</a>, <a href="https://man.openbsd.org/unveil.2">unveil</a></td><td><span class="pill hi">Contained — if dev actually pledges</span></td></tr>
+<tr><td>Network worms & malformed packets</td><td>Blaster, Sasser, SYN floods, spoofed packets melting stacks.</td><td><span class="tag">PF</span> default-deny, stateful filtering, normalization/scrub, SYN proxy, seq modulation. <a href="https://www.openbsd.org/faq/pf/">PF Guide</a></td><td><span class="pill med">Needs correct ruleset</span></td></tr>
+<tr><td>Exposed attack surface</td><td>Distros ship 20 daemons listening. First nmap = first shell.</td><td><span class="tag purple">secure by default</span> Nothing listening except sshd selectively; <code>rcctl</code> opt-in. <a href="https://www.openbsd.org/security.html">security.html</a></td><td><span class="pill hi">Minimal default holes</span></td></tr>
+<tr><td>Spectre / Meltdown / SMT leaks</td><td>Cross-VM key theft, kernel memory disclosure on Intel/AMD/ARM.</td><td>Meltdown PTI, retpoline, SpectreRSB+L1TF fixes, eager FPU, <b>SMT disabled by default</b>. <a href="https://www.openbsd.org/64.html">6.4</a>, <a href="https://www.openbsd.org/faq/faq10.html">faq10</a></td><td><span class="pill med">HW-dependent; check arch errata</span></td></tr>
+<tr><td>Supply-chain & fake updates</td><td>SolarWinds, xz backdoor, PyPI typosquats.</td><td><span class="tag gold">signify</span> signed releases/patches + <code>syspatch</code> verify-then-install. <a href="https://www.openbsd.org/papers/bsdcan-signify.html">signify paper</a>, <a href="https://man.openbsd.org/syspatch.8">syspatch(8)</a></td><td><span class="pill med">Trusts key custody; ports not fully audited</span></td></tr>
+<tr><td>Crypto failures & weak randomness</td><td>Debian OpenSSL entropy bug, Heartbleed, predictable tokens.</td><td><span class="tag">LibreSSL</span> fork cleanup + <code>getentropy</code>/<code>arc4random</code> always-seeded. <a href="https://www.libressl.org/">libressl.org</a>, <a href="https://man.openbsd.org/getentropy.2">getentropy(2)</a></td><td><span class="pill med">App must still use TLS correctly</span></td></tr>
+<tr><td>Unpatched systems</td><td>Average vuln age 100+ days; botnets farm EOL kernels.</td><td><code>syspatch</code> binary patches, stable -stable branch, full-disclosure advisories. <a href="https://www.openbsd.org/security.html">advisories</a></td><td><span class="pill med">You must actually run syspatch</span></td></tr>
+</tbody>
+</table></div>
+<p class="src">Industry context: <a href="https://cwe.mitre.org/data/definitions/787.html">CWE-787 Out-of-bounds Write</a> · <a href="https://docs.kernel.org/process/cve.html">Linux kernel CVE process</a> · <a href="https://www.cve.org/">CVE.org</a></p>
+</section>
+
+<!-- 02 PHILOSOPHY -->
+<section id="philosophy">
+<div class="sec-head"><span class="sec-num">02</span><div><h2>Philosophy: correctness is security</h2><p class="sub">OpenBSD's famous slogan is not marketing — it is the output of a fanatical engineering culture led by Theo de Raadt since the 1995 NetBSD fork.</p></div></div>
+<div class="grid4">
+<div class="card reveal"><span class="tag">Simplicity</span><h3>No knobs you don't need</h3><p>One <code>pf.conf</code>, one <code>rcctl</code>, one base. Fewer code paths = fewer bugs. OpenBSD will break compatibility to delete a bad API — see <code>strlcpy</code> replacing <code>strcpy</code> everywhere.</p><p class="src">Ref: <a href="https://www.openbsd.org/innovations.html">innovations</a> · <a href="https://man.openbsd.org/style.9">style(9)</a></p></div>
+<div class="card reveal"><span class="tag gold">Proactive audit</span><h3>Fix it before it's a CVE</h3><p>Since 1996, file-by-file audits of the whole tree, re-audited as new bug classes are learned. Thousands of overflows, races and leaks fixed in 1996–97 alone. Bugs fixed even without a PoC.</p><p class="src">Ref: <a href="https://www.openbsd.org/security.html">security.html</a></p></div>
+<div class="card reveal"><span class="tag red">Full disclosure</span><h3>No security-through-obscurity</h3><p>Advisories, errata and fixes published fast and publicly. Admins can assess real risk instead of waiting for a vendor PR statement.</p><p class="src">Ref: <a href="https://www.openbsd.org/errata.html">errata</a> · <a href="https://www.kb.cert.org/vuls/id/986425">CERT VU#986425</a></p></div>
+<div class="card reveal"><span class="tag purple">Free & documented</span><h3>Man pages are law</h3><p>Every syscall documented, every change updates the man page. <code>style(9)</code> enforces readable code so review is possible. Ports build as non-root.</p><p class="src">Ref: <a href="https://www.openbsd.org/faq/faq1.html">faq1</a> · <a href="https://www.openbsd.org/faq/ports/ports.html">ports FAQ</a></p></div>
+</div>
+<blockquote>“We overhaul components even at the cost of compatibility, look for the same mistake elsewhere after finding one flaw, and use mitigations to make bugs harder to exploit.” — Theo de Raadt, <a href="https://www.linux.com/news/interview-theo-de-raadt-openbsd/">2006 interview</a></blockquote>
+</section>
+
+<!-- 03 TIMELINE -->
+<section id="timeline">
+<div class="sec-head"><span class="sec-num">03</span><div><h2>Timeline: first in the world, again and again</h2><p class="sub">OpenBSD didn't follow hardening trends — it invented them. Use the filter to tour the arsenal.</p></div></div>
+<div class="tabs" id="tlTabs"><button class="active" data-f="all">All</button><button data-f="mem">Memory</button><button data-f="iso">Isolation</button><button data-f="net">Network & Crypto</button></div>
+<div class="timeline" id="timelineList">
+<div class="t-item" data-c="iso"><b class="year">1996 — The Great Audit begins</b><p>File-by-file review of the entire source tree. Thousands of buffer overflows, protocol bugs, info leaks fixed. The foundation of everything. <a href="https://www.openbsd.org/security.html">security.html</a></p></div>
+<div class="t-item" data-c="net"><b class="year">1999 — OpenSSH born</b><p>Clean, separated, audited SSH from OpenBSD. Now the world's SSH. First with privilege separation (2002, 3.2). <a href="https://www.openssh.org/security.html">OpenSSH security</a></p></div>
+<div class="t-item" data-c="net"><b class="year">2001 — PF packet filter (3.0)</b><p>Readable, stateful, normalizing firewall replacing ipf. SYN proxy, scrub, queues. <a href="https://www.openbsd.org/faq/pf/">PF Guide</a></p></div>
+<div class="t-item" data-c="mem"><b class="year">2003 — W^X + ProPolice (3.3/3.4)</b><p>First OS with W^X on multiple arches and ProPolice stack protector system-wide by default. Memory not writable <i>and</i> executable. <a href="https://www.openbsd.org/innovations.html">innovations</a></p></div>
+<div class="t-item" data-c="mem"><b class="year">2003 — ASLR by default (3.4)</b><p>First widely-used OS with ASLR on by default. Later: PIE everywhere (5.3), randomized malloc + library order. <a href="https://www.openbsd.org/innovations.html">innovations</a></p></div>
+<div class="t-item" data-c="mem"><b class="year">2008–2014 — strlcpy · reallocarray · hardened malloc</b><p>Safe string APIs exported to the world; overflow-checked <code>reallocarray()</code>, <code>freezero()</code>, canaries, guard pages, junking. <a href="https://man.openbsd.org/malloc.3">malloc(3)</a></p></div>
+<div class="t-item" data-c="net"><b class="year">2014 — LibreSSL fork (5.6)</b><p>After Heartbleed, OpenBSD forked OpenSSL, deleted 150k+ lines, modernized. Primary dev in base. <a href="https://www.libressl.org/">libressl.org</a> · <a href="https://www.openbsd.org/56.html">5.6</a></p></div>
+<div class="t-item" data-c="iso"><b class="year">2015 — pledge(2) (5.9)</b><p>One syscall to irreversibly drop power: <code>pledge("stdio rpath", NULL)</code>. Hundreds of base programs pledged. <a href="https://man.openbsd.org/pledge.2">pledge(2)</a></p></div>
+<div class="t-item" data-c="mem"><b class="year">2016 — W^X strict + KARL preview (6.0/6.2)</b><p>W^X strictly enforced (<code>wxallowed</code> opt-out); KARL relinks kernel at every boot — new kernel layout each reboot. <a href="https://www.openbsd.org/60.html">6.0</a> · <a href="https://www.openbsd.org/62.html">6.2</a></p></div>
+<div class="t-item" data-c="iso"><b class="year">2018 — unveil(2) (6.4) + RETGUARD + Spectre/Meltdown suite</b><p>Filesystem sandbox + return-address cookies + retpoline, SMT-off-by-default, L1TF fixes in one release. <a href="https://man.openbsd.org/unveil.2">unveil(2)</a> · <a href="https://www.openbsd.org/64.html">6.4</a></p></div>
+<div class="t-item" data-c="net"><b class="year">Today — signify + syspatch + vmm + wireguard</b><p>Signed everything, one-command patches, audited hypervisor, modern VPN in base. <a href="https://www.openbsd.org/papers/bsdcan-signify.html">signify paper</a></p></div>
+</div>
+</section>
+
+<!-- 04 DEEP DIVE -->
+<section id="deep">
+<div class="sec-head"><span class="sec-num">04</span><div><h2>Deep dive: the mitigations, explained like an exploit dev</h2><p class="sub">Each feature below is a wall. Alone it slows you; stacked, they break entire exploit methodologies. Click any wall to open its internals, code and sources.</p></div></div>
+<div class="searchbar"><input id="featSearch" placeholder="🔎 Filter mitigations — try: pledge, KARL, malloc, pf…"></div>
+<div id="featList">
+<div class="acc open" data-k="pledge promise syscall sandbox privsep"><button>🛡 pledge(2) — voluntary amputation of power <span class="icon">+</span></button><div class="body">
+<p><b>What:</b> a process declares which syscall groups it needs — e.g. <code>stdio rpath wpath cpath inet dns</code> — and the kernel kills it (<code>SIGABRT</code>) if it ever touches anything else. Promises can only shrink, never grow. A compromised <code>httpd</code> parser that pledged <code>stdio rpath</code> cannot <code>exec</code>, open sockets, or <code>ptrace</code> — the exploit dies inside the sandbox it built itself.</p>
+<button class="copybtn" data-copy="pledge1">copy</button>
+<pre id="pledge1"><span class="c">/* httpd render path: after parsing config, drop everything */</span>
+<span class="k">#include</span> <span class="s">&lt;unistd.h&gt;</span>
+<span class="k">if</span> (pledge(<span class="s">"stdio rpath"</span>, NULL) == -1)
+    err(1, <span class="s">"pledge"</span>);
+<span class="c">/* from here: no exec, no socket, no prot_exec — RCE becomes DoS */</span></pre>
+<p><b>Why secure:</b> moves policy into the program where intent is known; tiny API (one call) so adoption is massive — 500+ base programs pledged. Combines with <code>unveil</code> for least privilege in two dimensions.</p><p class="src">Sources: <a href="https://man.openbsd.org/pledge.2">pledge(2) manual</a> · <a href="https://www.openbsd.org/innovations.html">innovations</a> · <a href="https://man.openbsd.org/sshd.8">sshd + privsep</a></p>
+</div></div>
+<div class="acc" data-k="unveil filesystem sandbox paths"><button>👁 unveil(2) — the filesystem you can't see doesn't exist <span class="icon">+</span></button><div class="body">
+<p><b>What:</b> grant visibility to only chosen paths with chosen rights (<code>rwxc</code>), then lock: <code>unveil("/var/www","r"); unveil(NULL,NULL)</code>. Everything else returns <code>ENOENT</code> — directory traversal, <code>/etc/passwd</code> reads, key theft all fail closed. Perfect pair: <code>pledge</code> limits <i>what calls</i>, <code>unveil</code> limits <i>what files</i>.</p>
+<button class="copybtn" data-copy="unveil1">copy</button>
+<pre id="unveil1"><span class="c">/* static file server: see only /var/www, read-only */</span>
+unveil(<span class="s">"/var/www"</span>, <span class="s">"r"</span>);
+unveil(<span class="s">"/var/www/logs"</span>, <span class="s">"rwc"</span>);
+<span class="k">if</span> (pledge(<span class="s">"stdio rpath wpath cpath"</span>, NULL) == -1)
+    err(1, <span class="s">"pledge"</span>);
+unveil(NULL, NULL);  <span class="c">// lock: no more unveil calls</span></pre>
+<p class="src">Sources: <a href="https://man.openbsd.org/unveil.2">unveil(2)</a> · <a href="https://www.openbsd.org/innovations.html">innovations</a></p>
+</div></div>
+<div class="acc" data-k="wx write xor execute memory injection shellcode"><button>✖ W^X — memory is writable XOR executable, never both <span class="icon">+</span></button><div class="body"><p><b>What:</b> since 3.3, strict by default in 6.0: no page may be <code>WRITE+EXEC</code>. Classic shellcode injection (write bytes → jump) faults. JITs must be explicitly marked and live on <code>wxallowed</code> mounts — visible, auditable exceptions. Forces attackers from easy code-injection to hard code-reuse (ROP), which RETGUARD+ASLR then punish.</p><p class="src">Sources: <a href="https://www.openbsd.org/60.html">6.0 release</a> · <a href="https://www.openbsd.org/faq/upgrade60.html">upgrade60 + wxallowed</a> · <a href="https://www.openbsd.org/innovations.html">innovations</a></p></div></div>
+<div class="acc" data-k="aslr pie randomization address leak"><button>🎲 ASLR + PIE + library/malloc randomization <span class="icon">+</span></button><div class="body"><p><b>What:</b> first mainstream ASLR by default (3.4); PIE everywhere (5.3); stack, heap, mmap, libs and even <code>mmap</code> gaps randomized per-exec. No fixed <code>system()</code> address to return to — attacker needs an info-leak + bypass per boot, per process. Combined with W^X, the classic <code>ret-to-libc</code> recipe collapses.</p><p class="src">Sources: <a href="https://www.openbsd.org/innovations.html">innovations</a></p></div></div>
+<div class="acc" data-k="karl kernel relink boot randomization"><button>🔀 KARL — a new kernel every boot <span class="icon">+</span></button><div class="body"><p><b>What:</b> Kernel Address Randomized Link (6.2): at boot, kernel objects are re-linked in random order; <code>/bsd</code> unreadable to users so layout stays secret. Kernel ROP needs a fresh info-leak each reboot — persistence dies. This is <i>boot-time kernel</i> randomization, beyond process ASLR.</p><p class="src">Sources: <a href="https://www.openbsd.org/62.html">6.2 release</a> · <a href="https://www.openbsd.org/innovations.html">innovations</a></p></div></div>
+<div class="acc" data-k="retguard stack protector propolice return"><button>🪝 RETGUARD + stack protector <span class="icon">+</span></button><div class="body"><p><b>What:</b> ProPolice system-wide since 3.3 (world first); RETGUARD replaces classic cookies with per-function random cookies guarding return addresses, plus stack-pivot checks and gadget reduction. Overwrite a return address and the function epilogue aborts before the <code>ret</code> executes.</p><p class="src">Sources: <a href="https://www.openbsd.org/innovations.html">innovations</a> · <a href="https://www.openbsd.org/56.html">5.6 notes</a> · <a href="https://www.openbsd.org/64.html">6.4 notes</a></p></div></div>
+<div class="acc" data-k="malloc heap reallocarray freezero canary guard use-after-free"><button>🧠 Hardened malloc + reallocarray + freezero <span class="icon">+</span></button><div class="body">
+<p><b>What:</b> OpenBSD's allocator (by Otto Moerbeek): randomized placement, guard pages on large chunks, canaries, delayed free + protected freed pages, junk fill, aggressive abort on double-free/UAF. Plus safe APIs the world copied: <code>reallocarray()</code> (overflow-checked multiply), <code>recallocarray()</code>, <code>freezero(ptr,len)</code> (zero secrets before free), <code>strlcpy/strlcat</code>.</p>
+<button class="copybtn" data-copy="malloc1">copy</button>
+<pre id="malloc1"><span class="c">/* vulnerable: n * sz can wrap → tiny alloc → overflow */</span>
+p = malloc(n * sz);               <span class="c">// BAD</span>
+p = reallocarray(NULL, n, sz);    <span class="c">// GOOD: aborts on overflow</span>
+freezero(secret, secretlen);      <span class="c">// GOOD: scrub then free</span></pre>
+<p class="src">Sources: <a href="https://man.openbsd.org/OpenBSD-7.8/malloc">malloc(3)</a> · <a href="https://man.openbsd.org/reallocarray.3">reallocarray(3)</a> · <a href="https://www.openbsd.org/innovations.html">innovations</a></p>
+</div></div>
+<div class="acc" data-k="privilege separation revocation sshd bgpd"><button>✂ Privilege separation & revocation <span class="icon">+</span></button><div class="body"><p><b>What:</b> pioneered in OpenSSH (2002): split daemons into a tiny privileged monitor + big unprivileged worker. Pre-auth network parsing runs as nobody in a chroot; the monitor only answers vetted requests. Later spread to <code>bgpd, dhcpd, pfctl</code> and dozens more. Even root bugs become nobody bugs.</p><p class="src">Sources: <a href="https://www.openbsd.org/innovations.html">innovations</a> · <a href="https://man.openbsd.org/sshd.8">sshd(8)</a></p></div></div>
+<div class="acc" data-k="pf firewall scrub syn proxy normalize nat"><button>🔥 PF — the firewall that reads like prose <span class="icon">+</span></button><div class="body">
+<button class="copybtn" data-copy="pf1">copy</button>
+<pre id="pf1"><span class="c"># /etc/pf.conf — default deny, scrub, synproxy</span>
+<span class="k">set</span> skip on lo
+match in all scrub (no-df random-id max-mss 1440)
+block all
+pass out quick inet proto { tcp udp icmp } keep state
+pass in on egress proto tcp to port 443 \
+    flags S/SA synproxy modulate state
+pass in on egress proto tcp to port 22 \
+    flags S/SA keep state (max-src-conn 5, overload &lt;brute&gt; flush)</pre>
+<p>Stateful, normalizing (<code>scrub</code> defeats OS-fingerprint + fragmentation tricks), SYN-proxy absorbs spoofed floods, sequence modulation, tables + anchors, ALTQ queues. Default-deny culture, not default-allow.</p><p class="src">Sources: <a href="https://www.openbsd.org/faq/pf/">PF User's Guide</a> · <a href="https://www.openbsd.org/faq/pf/filter.html">filtering</a></p></div></div>
+<div class="acc" data-k="openssh ssh key auth"><button>🔐 OpenSSH — the world's SSH, audited at birth <span class="icon">+</span></button><div class="body"><p><b>What:</b> born in OpenBSD 1999, privilege-separated since 2002. Secure defaults: protocol 2 only, privilege separation + sandboxing on, weak ciphers/MACs pruned aggressively, <code>sshd_config</code> safe out of the box. Its <a href="https://www.openssh.org/security.html">security page</a> lists every vuln transparently — the honesty competitors hide.</p><p class="src">Sources: <a href="https://www.openssh.org/security.html">OpenSSH security</a> · <a href="https://man.openbsd.org/sshd.8">sshd(8)</a></p></div></div>
+<div class="acc" data-k="libressl tls crypto heartbleed"><button>🔏 LibreSSL — deleting Heartbleed's family <span class="icon">+</span></button><div class="body"><p><b>What:</b> 2014 fork after Heartbleed: removed 150k+ lines of compat cruft, aggressive cleanup, modern APIs (<code>libtls</code>), pledge/unveil inside, developed in-tree then ported. Goal: a TLS stack you can actually audit.</p><p class="src">Sources: <a href="https://www.libressl.org/">libressl.org</a> · <a href="https://www.openbsd.org/56.html">5.6 release</a></p></div></div>
+<div class="acc" data-k="signify syspatch signify update signature"><button>📦 signify + syspatch — trust no mirror <span class="icon">+</span></button><div class="body">
+<button class="copybtn" data-copy="sig1">copy</button>
+<pre id="sig1">$ signify -Cp /etc/signify/openbsd-78-base.pub \
+    -m SHA256.sig -x SHA256
+$ syspatch   <span class="c"># fetch, verify, install base patches</span>
+$ pkg_add -u <span class="c"># signed packages (no extra verify step needed)</span></pre>
+<p>Every release + patch signed with small, auditable Ed25519 tooling. <code>syspatch</code> closes the “I know, I'll reboot later” gap with binary patches.</p><p class="src">Sources: <a href="https://www.openbsd.org/papers/bsdcan-signify.html">signify paper</a> · <a href="https://man.openbsd.org/syspatch.8">syspatch(8)</a> · <a href="https://www.openbsd.org/faq/ports/ports.html">ports FAQ</a></p></div></div>
+<div class="acc" data-k="spectre meltdown smt randomness arc4random getentropy"><button>⚛ Spectre/Meltdown/SMT + arc4random <span class="icon">+</span></button><div class="body"><p><b>What:</b> 6.4 shipped Meltdown PTI, retpoline (Spectre v2), SpectreRSB, L1TF, eager FPU — and <b>disabled Intel SMT/Hyper-Threading by default</b> because shared-core speculative state leaks across threads. Plus <code>getentropy(2)</code>/<code>arc4random(3)</code>: never-fail, always-seeded randomness (no Debian-OpenSSL déjà vu).</p><p class="src">Sources: <a href="https://www.openbsd.org/64.html">6.4 release</a> · <a href="https://www.openbsd.org/faq/faq10.html">faq10 SMT</a> · <a href="https://man.openbsd.org/getentropy.2">getentropy(2)</a></p></div></div>
+</div>
+</section>
+
+<!-- 05 ATTACKER -->
+<section id="attacker">
+<div class="sec-head"><span class="sec-num">05</span><div><h2>Attacker's nightmare: why hacking OpenBSD is brutally hard</h2><p class="sub">A normal Linux RCE chain is 3 steps. On a pledged, unveiled, W^X + ASLR + KARL + RETGUARD OpenBSD box it is 7 miracles in a row — each with its own info-leak. Play with the simulator.</p></div></div>
+<div class="chain">
+<div class="step"><div class="n">1. RECON</div><b>Find a listener</b><small>Default: almost nothing listening</small></div>
+<div class="step"><div class="n">2. BUG</div><b>Find a vuln</b><small>Audited code, safe APIs</small></div>
+<div class="step blocked"><div class="n">✓ W^X</div><b>No shellcode</b><small>Must pivot to ROP</small></div>
+<div class="step blocked"><div class="n">✓ ASLR+KARL</div><b>No addresses</b><small>Need leak per boot</small></div>
+<div class="step blocked"><div class="n">✓ RETGUARD</div><b>No ret overwrite</b><small>Need cookie leak</small></div>
+<div class="step blocked"><div class="n">✓ pledge+unveil</div><b>No exec/files</b><small>RCE → DoS</small></div>
+</div>
+<div class="sim">
+<div>
+<h3 style="margin:.2rem 0">☠ Exploit-difficulty simulator <span class="tag">vanilla JS</span></h3>
+<p style="color:var(--muted);font-size:.9rem">Pick a target scenario. The score estimates attacker work-factor (0 = script-kiddie, 100 = nation-state + 0-day chain).</p>
+<label>Target service</label>
+<select id="simTarget"><option value="18">OpenBSD httpd (pledged+unveiled, chroot)</option><option value="10">OpenBSD sshd (privsep + sandbox)</option><option value="4">OpenBSD base, no pledge (legacy port)</option><option value="-14">Generic Linux distro (for contrast)</option></select>
+<label>Attacker capability: <span id="capVal" class="hl">skilled (info-leak + ROP)</span></label>
+<input type="range" id="simCap" min="0" max="30" value="14">
+<label>Mitigations enabled</label>
+<select id="simMit"><option value="28">All: W^X strict + ASLR + KARL + RETGUARD + pledge/unveil</option><option value="16">Partial: W^X + ASLR only</option><option value="0">None (hypothetical debug build)</option></select>
+</div>
+<div>
+<div class="big-score"><span id="simScore">60</span><span style="font-size:1rem;color:var(--muted)">/100</span></div>
+<div class="meter"><i id="simBar"></i></div>
+<p id="simVerdict" style="color:var(--gold2)"></p>
+<p style="font-size:.8rem;color:var(--dim)">Toy model for intuition only — real exploitability depends on the exact bug, arch, and config. Honest scoring is itself an OpenBSD value: full disclosure over hype.</p>
+</div>
+</div>
+<div class="grid2" style="margin-top:1rem">
+<div class="card"><span class="tag red">What breaks attackers</span><h3>The stack that breaks methodologies</h3><ul style="color:#b9c4de;font-size:.9rem"><li><b>W^X + RETGUARD + ASLR:</b> kills write→jump shellcode, then kills the ROP fallback.</li><li><b>KARL:</b> kills kernel-exploit persistence across reboots.</li><li><b>pledge + unveil + privsep:</b> turns code-exec into a sandbox with no <code>exec</code>, no network, no files.</li><li><b>malloc + strl*/reallocarray:</b> shrinks the bug pool itself — fewer overflows to start from.</li></ul></div>
+<div class="card"><span class="tag gold">What doesn't make it invincible</span><h3>Honest limits (read this)</h3><ul style="color:#b9c4de;font-size:.9rem"><li>Logic bugs, misconfigurations and enabled services are still on you.</li><li>pledge/unveil only help if developers use them correctly.</li><li>Speculative-execution fixes are arch/CPU-dependent.</li><li>Third-party <code>ports</code> are not fully audited — OpenBSD says so itself.</li></ul><p class="src">Ref: <a href="https://www.openbsd.org/security.html">security.html</a> · <a href="https://www.openbsd.org/faq/ports/ports.html">ports FAQ</a></p></div>
+</div>
+</section>
+
+<!-- 06 DATA -->
+<section id="data">
+<div class="sec-head"><span class="sec-num">06</span><div><h2>Evidence: two holes, decades, receipts</h2><p class="sub">The slogan on <a href="https://www.openbsd.org/">openbsd.org</a> — “Only two remote holes in the default install, in a heck of a long time!” — is narrow by design: remote compromise <i>in the default install</i>, not “all bugs ever.” Here are the receipts.</p></div></div>
+<div class="grid2">
+<div class="card"><span class="tag gold">The two holes</span><h3>What they actually were</h3><table style="min-width:0;font-size:.85rem"><thead><tr><th>Year</th><th>Issue</th><th>Ref</th></tr></thead><tbody><tr><td>2002</td><td>OpenSSH challenge-response — remote code as root under specific auth conditions</td><td><a href="https://www.kb.cert.org/vuls/id/369347">CERT</a> · <a href="https://www.cve.org/CVERecord?id=CVE-2002-0640">CVE-2002-0640</a></td></tr><tr><td>2007</td><td>IPv6 mbuf mishandling (CVE-2007-1365) — crafted fragments → crash, later shown exec; slogan became “two”</td><td><a href="https://www.kb.cert.org/vuls/id/986425">CERT VU#986425</a> · <a href="https://www.openbsd.org/errata39.html">errata39</a> · <a href="https://lwn.net/Articles/225946/">LWN</a></td></tr></tbody></table><p style="font-size:.82rem;color:var(--muted)">Note the 3.9 errata lists many more fixes (sendmail, BIND, X, OpenSSL…) — most were DoS, local, or non-default. Scope matters.</p></div>
+<div class="card"><span class="tag">CVE counts — handle with care</span><h3>212 vs 25,279 is not a leaderboard</h3><p>OpenCVE snapshots have shown ~212 OpenBSD CVEs vs ~25k Linux-kernel CVEs — but tagging, scope and disclosure differ wildly. Since 2024 Linux is its own CVE Numbering Authority and assigns systematically, inflating counts by design.</p><p class="src"><a href="https://app.opencve.io/cve/?product=openbsd&vendor=openbsd">OpenCVE OpenBSD</a> · <a href="https://app.opencve.io/cve/?product=linux_kernel&vendor=linux">OpenCVE Linux</a> · <a href="https://docs.kernel.org/process/cve.html">kernel CVE process</a> · <a href="https://lwn.net/Articles/978711/">LWN on kernel CNAs</a></p><p style="font-size:.82rem;color:var(--muted)">Pwn2Own? OpenBSD is rarely a target (e.g. 2021 targeted Ubuntu/Windows, not OpenBSD) — absence is not a trophy. <a href="https://www.thezdi.com/blog/2021/1/25/announcing-pwn2own-vancouver-2021">ZDI rules</a> · <a href="https://www.thezdi.com/blog/2021/4/2/pwn2own-2021-schedule-and-live-results">results</a></p></div>
+</div>
+<div class="quiz" style="margin-top:1rem" id="quiz">
+<h3 style="margin:.2rem 0">⚡ Trial by fire — 3 questions <span class="tag gold" id="quizScore">0/3</span></h3>
+<p style="color:var(--muted);font-size:.9rem">Q1: What does <code>pledge("stdio rpath", NULL)</code> do?</p>
+<button class="opt" data-c="0">Speeds up syscalls by caching them</button>
+<button class="opt" data-c="1">Irreversibly restricts the process to those syscall groups; violations kill it</button>
+<button class="opt" data-c="0">Encrypts all future file reads</button>
+<p style="color:var(--muted);font-size:.9rem;margin-top:1rem">Q2: What is KARL?</p>
+<button class="opt" data-c="0">A firewall rule compiler</button>
+<button class="opt" data-c="1">Boot-time kernel relinking — new kernel layout every reboot</button>
+<button class="opt" data-c="0">A package manager</button>
+<p style="color:var(--muted);font-size:.9rem;margin-top:1rem">Q3: The “two remote holes” slogan counts…</p>
+<button class="opt" data-c="1">Remote holes in the default install only</button>
+<button class="opt" data-c="0">Every bug ever found in OpenBSD + ports</button>
+<button class="opt" data-c="0">Only SSH bugs</button>
+</div>
+</section>
+
+<!-- 07 NETWORK -->
+<section id="network">
+<div class="sec-head"><span class="sec-num">07</span><div><h2>Network & crypto trinity: PF · OpenSSH · LibreSSL</h2></div></div>
+<div class="tabs" id="netTabs"><button class="active" data-t="pf">🔥 PF</button><button data-t="ssh">🔐 OpenSSH</button><button data-t="ssl">🔏 LibreSSL</button></div>
+<div class="tabpane active" id="pane-pf"><div class="card"><span class="tag">pf(4) · in-kernel</span><h3>Filtering, NAT, normalization, queues — one grammar</h3><p>PF scrubs packets (reassembles, normalizes IDs/TTLs) so NIDS-evasion and fingerprinting tricks die at the border; stateful <code>keep state</code>, <code>synproxy</code> for spoofed SYN floods, <code>modulate state</code> for weak ISNs, tables for brute-force jails, anchors for apps (authpf, ftp-proxy), ALTQ for bufferbloat-free shaping. Readable enough to audit — powerful enough to run ISPs.</p><p class="src">Full guide: <a href="https://www.openbsd.org/faq/pf/">PF User's Guide</a> · <a href="https://www.openbsd.org/faq/pf/filter.html">filtering</a> · <a href="https://man.openbsd.org/pf.4">pf(4)</a></p></div></div>
+<div class="tabpane" id="pane-ssh"><div class="card"><span class="tag gold">OpenSSH · since 1999</span><h3>Privilege separation before it was cool</h3><p>Pre-auth parsing as unprivileged sandboxed child; monitor holds keys. Protocol-cleanups (legacy ciphers removed fast), <code>VerifyHostKeyDNS</code>, <code>DisableForwarding</code>, <code> sandbox</code> pledges per platform. Every vuln published at <a href="https://www.openssh.org/security.html">openssh.org/security</a> — compare that honesty to vendors who silently patch.</p></div></div>
+<div class="tabpane" id="pane-ssl"><div class="card"><span class="tag purple">LibreSSL · since 2014</span><h3>Fork, delete, harden, repeat</h3><p>Forked a month after Heartbleed; removed Windows/Mac cruft, custom memory pools, <code>arc4random</code> everywhere, <code>libtls</code> — TLS in ~10 calls instead of 200 lines of OpenSSL footguns. Developed in OpenBSD base first.</p><p class="src"><a href="https://www.libressl.org/">libressl.org</a> · <a href="https://www.openbsd.org/56.html">5.6 release notes</a></p></div></div>
+</section>
+
+<!-- 08 SUPPLY -->
+<section id="supply">
+<div class="sec-head"><span class="sec-num">08</span><div><h2>Supply chain & daily ops: stay patched without fear</h2></div></div>
+<div class="grid3">
+<div class="card reveal"><span class="tag gold">signify</span><h3>Ed25519 trust in 500 lines</h3><p>Ted Unangst's minimalist signer replaced PGP/GPG bloat for releases. One pubkey per release, verifiable offline. <a href="https://www.openbsd.org/papers/bsdcan-signify.html">paper</a></p></div>
+<div class="card reveal"><span class="tag">syspatch</span><h3>Binary patches, one word</h3><p><code>syspatch</code> fetches, verifies and applies base fixes; <code>pkg_add -u</code> for signed packages; <code>-stable</code> branch for conservatives, <code>-current</code> for the brave. <a href="https://man.openbsd.org/syspatch.8">syspatch(8)</a> · <a href="https://www.openbsd.org/security.html">advisories</a></p></div>
+<div class="card reveal"><span class="tag purple">xenocara · ports discipline</span><h3>X + 16k ports, contained</h3><p>Xenocara (audited X), ports build as user, <code>update-plist</code> hygiene, explicit <code>wxallowed</code> for the few JITs (node, browsers). What isn't audited is labeled as such. <a href="https://www.openbsd.org/faq/ports/ports.html">ports FAQ</a></p></div>
+</div>
+</section>
+
+<!-- 09 REFS -->
+<section id="refs">
+<div class="sec-head"><span class="sec-num">09</span><div><h2>Reference library: every claim, sourced</h2><p class="sub">The OpenBSD way is receipts. Start here — all official unless marked.</p></div></div>
+<div class="ref-grid">
+<div class="ref-cat"><h4>📜 Project doctrine</h4><ul><li><a href="https://www.openbsd.org/">OpenBSD homepage</a> — slogan + releases</li><li><a href="https://www.openbsd.org/security.html">Security page</a> — audit, disclosure, defaults</li><li><a href="https://www.openbsd.org/innovations.html">Innovations</a> — feature history (W^X→KARL)</li><li><a href="https://www.openbsd.org/faq/faq1.html">FAQ1</a> — goals, man pages, style</li><li><a href="https://www.linux.com/news/interview-theo-de-raadt-openbsd/">Theo de Raadt interview (2006)</a></li></ul></div>
+<div class="ref-cat"><h4>📖 Manuals (authoritative)</h4><ul><li><a href="https://man.openbsd.org/pledge.2">pledge(2)</a> · <a href="https://man.openbsd.org/unveil.2">unveil(2)</a></li><li><a href="https://man.openbsd.org/OpenBSD-7.8/malloc">malloc(3)</a> · <a href="https://man.openbsd.org/reallocarray.3">reallocarray(3)</a></li><li><a href="https://man.openbsd.org/getentropy.2">getentropy(2)</a> · <a href="https://man.openbsd.org/sshd.8">sshd(8)</a></li><li><a href="https://man.openbsd.org/syspatch.8">syspatch(8)</a> · <a href="https://man.openbsd.org/style.9">style(9)</a></li></ul></div>
+<div class="ref-cat"><h4>🚀 Releases & guides</h4><ul><li><a href="https://www.openbsd.org/60.html">6.0</a> (strict W^X) · <a href="https://www.openbsd.org/62.html">6.2</a> (KARL) · <a href="https://www.openbsd.org/64.html">6.4</a> (unveil/RETGUARD/Spectre)</li><li><a href="https://www.openbsd.org/faq/pf/">PF User's Guide</a> · <a href="https://www.openbsd.org/faq/faq10.html">FAQ10 sysmgmt (SMT)</a></li><li><a href="https://www.openbsd.org/faq/upgrade60.html">upgrade60 (wxallowed)</a> · <a href="https://www.openbsd.org/faq/ports/ports.html">ports FAQ</a></li></ul></div>
+<div class="ref-cat"><h4>🔬 Crypto, vulns & context</h4><ul><li><a href="https://www.libressl.org/">LibreSSL</a> · <a href="https://www.openssh.org/security.html">OpenSSH security</a></li><li><a href="https://www.openbsd.org/papers/bsdcan-signify.html">signify paper</a></li><li><a href="https://www.kb.cert.org/vuls/id/369347">CERT 2002 SSH</a> · <a href="https://www.kb.cert.org/vuls/id/986425">CERT VU#986425 (2007 IPv6)</a></li><li><a href="https://www.openbsd.org/errata39.html">errata39</a> · <a href="https://lwn.net/Articles/225946/">LWN 2007</a> · <a href="https://docs.kernel.org/process/cve.html">kernel CVE process</a></li></ul></div>
+</div>
+</section>
+
+<div class="card" style="border-color:rgba(245,197,66,.4);text-align:center;margin-bottom:3rem">
+<h2 style="margin:.3rem">🐡 Hail Puffy. Run OpenBSD. Read the man page.</h2>
+<p class="sub" style="margin:0 auto">Free, functional, secure. “Secure by default” is not a sticker — it is 30 years of deleting code, pledging processes, randomizing everything, and telling the truth fast. <a href="https://www.openbsd.org/security.html">security.html</a> · <a href="https://www.openbsd.org/innovations.html">innovations</a> · <a href="https://man.openbsd.org/">man.openbsd.org</a></p>
+<div class="cta-row" style="justify-content:center"><button class="btn btn-gold" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to the gates</button><a class="btn btn-ghost" style="border:1px solid var(--line2)" href="https://www.openbsd.org/">openbsd.org ↗</a></div>
+</div>
+</div>
+
+<footer><div class="wrap">Tribute built with <b class="hl">pure HTML + CSS3 + vanilla JS</b> — no frameworks, no CDNs, no trackers. Just like OpenBSD likes it: small, auditable, secure by default. Content synthesizes official OpenBSD docs linked above; slogan/CVE/Pwn2Own caveats stated inline. Not affiliated with the OpenBSD Project. 🐡</div></footer>
+<button id="toTop" aria-label="top"><a  href="index.html"> Home </a></button>
+
+<script>
+/* ===== VANILLA JS ONLY ===== */
+(function(){
+var termLines=["uname -a  # OpenBSD fortress.local 7.8 GENERIC#0 amd64","doas pkg_add -v openbsd-tribute    # signed, verified","pledge(\"stdio rpath\", NULL)      # drop power, keep honor","pfctl -f /etc/pf.conf             # default deny, scrub, synproxy","syspatch                          # verified patches applied","uptime  # 847 days, 2 remote holes, 0 regrets"];
+var ti=0,ci=0,typed=document.getElementById('typed'),out=document.getElementById('termOut');
+function type(){if(ti>=termLines.length){out.innerHTML+='<div style="color:var(--green)">✓ fortress sealed — W^X strict · KARL armed · pledge locked</div>';return;}
+var line=termLines[ti];if(ci<=line.length){typed.textContent=line.slice(0,ci++);setTimeout(type,18);}else{out.innerHTML+='<div><span style="color:var(--gold)">$</span> '+line+'</div>';ti++;ci=0;typed.textContent='';setTimeout(type,500);}}
+type();
+var bar=document.getElementById('progress');
+addEventListener('scroll',function(){var h=document.documentElement;var p=h.scrollTop/(h.scrollHeight-h.clientHeight)*100;bar.style.width=p+'%';
+var t=document.getElementById('toTop');t.style.display=h.scrollTop>600?'block':'none';
+var secs=[...document.querySelectorAll('section')];var links=[...document.querySelectorAll('nav.links a')];
+var cur='';secs.forEach(function(s){if(scrollY>=s.offsetTop-140)cur='#'+s.id;});links.forEach(function(a){a.classList.toggle('active',a.getAttribute('href')===cur);});
+document.querySelectorAll('.reveal').forEach(function(el){var r=el.getBoundingClientRect();if(r.top<innerHeight-60)el.classList.add('in');});
+},{passive:true});
+document.getElementById('toTop').onclick=function(){scrollTo({top:0,behavior:'smooth'})};
+document.getElementById('menuBtn').onclick=function(){document.getElementById('navLinks').classList.toggle('open')};
+// accordion
+document.querySelectorAll('.acc button').forEach(function(b){b.addEventListener('click',function(){var p=b.parentElement;var was=p.classList.contains('open');document.querySelectorAll('.acc').forEach(function(x){x.classList.remove('open');x.querySelector('.icon').textContent='+';});if(!was){p.classList.add('open');b.querySelector('.icon').textContent='–';}});});
+// tabs
+function wireTabs(barId,fn){var bar=document.getElementById(barId);if(!bar)return;bar.querySelectorAll('button').forEach(function(b){b.onclick=function(){bar.querySelectorAll('button').forEach(function(x){x.classList.remove('active')});b.classList.add('active');fn(b);};});}
+wireTabs('tlTabs',function(b){var f=b.dataset.f;document.querySelectorAll('#timelineList .t-item').forEach(function(it){it.style.display=(f==='all'||it.dataset.c===f)?'':'none';});});
+wireTabs('netTabs',function(b){['pf','ssh','ssl'].forEach(function(k){document.getElementById('pane-'+k).classList.toggle('active',k===b.dataset.t);});});
+// search filters
+function wireSearch(id,rowSel){var el=document.getElementById(id);if(!el)return;el.addEventListener('input',function(){var q=el.value.toLowerCase();document.querySelectorAll(rowSel).forEach(function(r){r.style.display=r.textContent.toLowerCase().includes(q)?'':'none';});});}
+wireSearch('threatSearch','#threatTable tbody tr');
+document.getElementById('featSearch').addEventListener('input',function(){var q=this.value.toLowerCase();document.querySelectorAll('#featList .acc').forEach(function(a){a.style.display=(a.textContent.toLowerCase().includes(q)||a.dataset.k.includes(q))?'':'none';});});
+// copy buttons
+document.querySelectorAll('.copybtn').forEach(function(b){b.onclick=function(e){e.stopPropagation();var t=document.getElementById(b.dataset.copy).innerText;navigator.clipboard&&navigator.clipboard.writeText(t);b.textContent='copied ✓';setTimeout(function(){b.textContent='copy'},1200);};});
+// simulator
+var t1=document.getElementById('simTarget'),cap=document.getElementById('simCap'),mit=document.getElementById('simMit');
+function sim(){var base=30+parseInt(t1.value)+parseInt(mit.value)+parseInt(cap.value)*0.2;var s=Math.max(2,Math.min(99,Math.round(base)));
+document.getElementById('simScore').textContent=s;document.getElementById('simBar').style.width=s+'%';
+var v=s>=75?'🔴 Nation-state territory: chained 0-days + custom toolchain required.':s>=55?'🟡 Elite bounty-hunter territory: info-leak + ROP + sandbox escape, per-boot.':'🟢 Mere-mortal territory — re-check your pledge/unveil ruleset.';
+document.getElementById('simVerdict').textContent=v;
+var labels=['script-kiddie','weekend hacker','skilled (info-leak + ROP)','elite exploit dev','nation-state'];document.getElementById('capVal').textContent=labels[Math.min(4,Math.floor(cap.value/7))];}
+[t1,cap,mit].forEach(function(el){el.addEventListener('input',sim);el.addEventListener('change',sim);});sim();
+// quiz
+var qs=0,answered=0;document.querySelectorAll('#quiz .opt').forEach(function(b){b.onclick=function(){if(b.classList.contains('correct')||b.classList.contains('wrong'))return;answered++;var ok=b.dataset.c==='1';b.classList.add(ok?'correct':'wrong');if(ok)qs++;document.getElementById('quizScore').textContent=qs+'/3';if(answered>=3){var d=document.createElement('p');d.innerHTML=qs===3?'🐡 <b style="color:var(--green)">Perfect. Puffy nods. You are ready to pledge().</b>':'🐡 <b style="color:var(--gold)">'+qs+'/3 — re-read §04 and try again. The man page forgives.</b>';document.getElementById('quiz').appendChild(d);}};});
+})();
+</script>
+</body>
+</html>
