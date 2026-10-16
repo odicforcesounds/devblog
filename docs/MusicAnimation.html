@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Labyrinth of Harmonic Resonance: Acoustic & Notation Maze</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        /* Custom Glassmorphism & Neon Glows */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+        }
+        .glass-panel-active {
+            background: rgba(30, 41, 59, 0.95);
+            border-color: rgba(56, 189, 248, 0.6);
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.35);
+        }
+        .neon-glow-cyan {
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+        }
+        .neon-glow-purple {
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.3);
+        }
+        .neon-glow-gold {
+            box-shadow: 0 0 35px rgba(234, 179, 8, 0.4);
+        }
+
+        /* Pulse and Wave Animations */
+        @keyframes pulseRing {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 0.2; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .animate-pulse-ring {
+            animation: pulseRing 3s infinite ease-in-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+        ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.6); }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950">
+
+    <!-- Background Ambient Grids & Orbs -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div class="absolute -top-40 -left-40 w-[30rem] h-[30rem] bg-cyan-600/10 rounded-full blur-[120px]"></div>
+        <div class="absolute top-1/2 -right-40 w-[30rem] h-[30rem] bg-purple-600/10 rounded-full blur-[120px]"></div>
+        <div class="absolute -bottom-40 left-1/3 w-[30rem] h-[30rem] bg-indigo-600/10 rounded-full blur-[120px]"></div>
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b12_1px,transparent_1px),linear-gradient(to_bottom,#1e293b12_1px,transparent_1px)] bg-[size:3.5rem_3.5rem]"></div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="relative z-20 border-b border-slate-800/80 bg-slate-900/70 backdrop-blur-md px-4 sm:px-8 py-4">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 flex items-center justify-center neon-glow-cyan">
+                    <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-orbitron font-black text-xl sm:text-2xl tracking-wider bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-400 bg-clip-text text-transparent">
+                        HARMONIC LABYRINTH
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium">Acoustic Physics & Notation Neural Network</p>
+                </div>
+            </div>
+
+            <!-- Game Stats / Header Bar -->
+            <div class="flex items-center gap-3 sm:gap-6 flex-wrap justify-center">
+                <div class="glass-panel px-4 py-2 rounded-xl text-center">
+                    <span class="block text-[10px] font-orbitron text-slate-400 uppercase tracking-widest">Resonance Key</span>
+                    <span id="target-count" class="text-cyan-400 font-orbitron font-bold text-sm">0 / 3 Found</span>
+                </div>
+                <div class="glass-panel px-4 py-2 rounded-xl text-center">
+                    <span class="block text-[10px] font-orbitron text-slate-400 uppercase tracking-widest">Node Depth</span>
+                    <span id="steps-count" class="text-purple-400 font-orbitron font-bold text-sm">0 Steps</span>
+                </div>
+                <button id="audio-toggle-btn" onclick="toggleAudio()" class="px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-500/40 text-cyan-300 font-orbitron text-xs font-semibold transition-all flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                    <span id="audio-status">Audio: OFF</span>
+                </button>
+                <button onclick="initGame()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-slate-100 font-orbitron text-xs font-bold transition-all shadow-lg neon-glow-purple">
+                    New Labyrinth
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="relative z-10 flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left Column: Terminal & Active Node Inspector (4 Cols) -->
+        <section class="lg:col-span-4 flex flex-col gap-6">
+            
+            <!-- Objective Briefing Card -->
+            <div class="glass-panel p-5 rounded-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 font-orbitron font-bold text-sm">01</div>
+                    <h2 class="font-orbitron font-bold text-base text-cyan-300">Acoustic Objective</h2>
+                </div>
+                <p id="puzzle-clue" class="text-sm text-slate-300 leading-relaxed mb-4">
+                    Traverse the labyrinth nodes to uncover the 3 acoustic frequency signatures that match the harmonic resonance key for this session.
+                </p>
+                <div id="target-chips" class="flex flex-wrap gap-2">
+                    <!-- Dynamic Target Chips -->
+                </div>
+            </div>
+
+            <!-- Active Node Inspector -->
+            <div class="glass-panel p-6 rounded-2xl relative overflow-hidden flex-1 flex flex-col justify-between min-h-[380px]">
+                <div class="absolute bottom-0 right-0 w-40 h-40 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <span id="node-category-badge" class="px-3 py-1 rounded-full text-[10px] font-orbitron uppercase tracking-wider bg-slate-800 text-cyan-400 border border-cyan-500/30">
+                            Select a Node
+                        </span>
+                        <span id="node-freq-badge" class="font-orbitron text-xs text-purple-300">-- Hz</span>
+                    </div>
+
+                    <h3 id="node-title" class="font-orbitron font-black text-xl text-slate-100 mb-2">
+                        Welcome to the Labyrinth
+                    </h3>
+                    
+                    <p id="node-description" class="text-sm text-slate-300 leading-relaxed mb-6">
+                        Click any glowing node in the network map to examine its sheet music notation, symbolic meaning, and the physical acoustic reaction it produces in reality.
+                    </p>
+
+                    <!-- Technical Details Accordion / Sections -->
+                    <div class="space-y-3 mb-6">
+                        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                            <span class="block text-[10px] font-orbitron text-cyan-400 uppercase tracking-widest mb-1">Paper Notation & Meaning</span>
+                            <p id="node-notation" class="text-xs text-slate-200">--</p>
+                        </div>
+                        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                            <span class="block text-[10px] font-orbitron text-purple-400 uppercase tracking-widest mb-1">Physical Acoustic Reaction</span>
+                            <p id="node-physics" class="text-xs text-slate-200">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button for Target Discovery -->
+                <div id="node-action-container">
+                    <button id="claim-target-btn" onclick="claimCurrentNode()" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-orbitron font-bold text-xs tracking-wider transition-all shadow-lg neon-glow-cyan disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        SELECT NODE TO INSPECT
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right Column: Interactive Labyrinth Network Canvas & Visualizer (8 Cols) -->
+        <section class="lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- Network Map Box -->
+            <div class="glass-panel p-4 sm:p-6 rounded-2xl relative flex flex-col h-[520px] overflow-hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></div>
+                        <h2 class="font-orbitron font-bold text-sm sm:text-base text-slate-200">Neural Acoustic Labyrinth (32 Nodes)</h2>
+                    </div>
+                    <div class="text-xs text-slate-400 font-medium">Click connected glowing nodes to travel</div>
+                </div>
+
+                <!-- Canvas / SVG Labyrinth Workspace -->
+                <div id="labyrinth-container" class="relative flex-1 bg-slate-950/60 rounded-xl border border-slate-800/80 overflow-hidden cursor-crosshair">
+                    <svg id="labyrinth-svg" class="absolute inset-0 w-full h-full pointer-events-none z-0">
+                        <!-- Connection lines rendered via JS -->
+                    </svg>
+                    <div id="labyrinth-nodes-layer" class="absolute inset-0 z-10">
+                        <!-- Nodes rendered via JS -->
+                    </div>
+                </div>
+
+                <!-- Live Audio Visualizer Bar -->
+                <div class="mt-4 flex items-center justify-between bg-slate-900/70 px-4 py-2.5 rounded-xl border border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-orbitron text-slate-400 uppercase tracking-widest">Waveform Output</span>
+                        <div class="flex items-center gap-1 h-4">
+                            <span class="w-1 bg-cyan-400 h-full animate-pulse rounded-full"></span>
+                            <span class="w-1 bg-cyan-400 h-2/3 animate-pulse rounded-full" style="animation-delay: 150ms;"></span>
+                            <span class="w-1 bg-cyan-400 h-4/5 animate-pulse rounded-full" style="animation-delay: 300ms;"></span>
+                            <span class="w-1 bg-cyan-400 h-1/2 animate-pulse rounded-full" style="animation-delay: 450ms;"></span>
+                        </div>
+                    </div>
+                    <span id="current-location-text" class="text-xs font-orbitron text-cyan-300">Current Position: Root Node</span>
+                </div>
+            </div>
+
+            <!-- Discovered Nodes Ledger (Accordion / Grid) -->
+            <div class="glass-panel p-5 rounded-2xl">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-orbitron font-bold text-sm text-slate-300">Discovered Acoustic Ledger</h3>
+                    <span id="ledger-count" class="text-xs font-orbitron text-cyan-400">0 / 32 Explored</span>
+                </div>
+                <div id="ledger-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2 max-h-36 overflow-y-auto pr-1">
+                    <!-- Ledger Chips -->
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-slate-800/80 bg-slate-900/60 backdrop-blur-md px-4 py-4 mt-8">
+        <div class="max-w-7xl mx-auto text-center text-xs text-slate-500 font-medium">
+           <a href="index.html">Learning</a>
+        </div>
+    </footer>
+
+    <!-- Victory Modal (Hidden by default) -->
+    <div id="victory-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel-active p-8 rounded-3xl max-w-md w-full text-center relative neon-glow-gold">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 mx-auto flex items-center justify-center mb-4 neon-glow-gold">
+                <svg class="w-8 h-8 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h2 class="font-orbitron font-black text-2xl text-amber-300 mb-2">HARMONIC RESONANCE ACHIEVED!</h2>
+            <p id="victory-message" class="text-sm text-slate-300 mb-6">
+                You successfully navigated the labyrinth and uncovered all 3 target frequency nodes! The acoustic standing wave is now in full equilibrium.
+            </p>
+            <button onclick="initGame()" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-orbitron font-bold text-xs tracking-wider transition-all shadow-lg neon-glow-gold">
+                PLAY NEW LABYRINTH
+            </button>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 glass-panel px-5 py-3 rounded-xl border border-cyan-500/50 flex items-center gap-3 shadow-2xl">
+        <div class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></div>
+        <span id="toast-text" class="text-xs font-orbitron text-cyan-200">Notification message</span>
+    </div>
+
+    <!-- JavaScript Game Logic -->
+    <script>
+        // 32 Rich Technical Notes & Acoustic Physics Nodes
+        const ALL_NODES = [
+            { id: 1, name: "Sub-Bass 20Hz", category: "acoustics", freq: 20, notation: "Pedal note / Infra-sound zone below standard staff", physics: "Direct chest cavity resonance; tactile vibration felt through skeletal structure.", desc: "The threshold of human hearing where sound waves transition into pure physical kinetic pressure." },
+            { id: 2, name: "Deep Bass 60Hz", category: "acoustics", freq: 60, notation: "Low B1 / C2 region on Grand Staff pedal ledger lines", physics: "Floorboard resonance and acoustic coupling with room modes.", desc: "Provides the heavyweight structural foundation for electronic and orchestral music alike." },
+            { id: 3, name: "Fundamental A2", category: "acoustics", freq: 110, notation: "Open A-string on cello or bass guitar; ledger line below Bass Clef", physics: "Strong acoustic wave propagation through denser air mediums.", desc: "The foundational pitch anchoring many stringed and brass harmonic structures." },
+            { id: 4, name: "Baritone Vocal 130Hz", category: "acoustics", freq: 130, notation: "Mid Bass Clef (C3 to E3 range)", physics: "Vocal fold thickness and chest register harmonic production.", desc: "Resonates powerfully within the human pharynx, creating rich vocal warmth." },
+            { id: 5, name: "Concert Pitch A4", category: "acoustics", freq: 440, notation: "Space above Treble Clef staff (A4)", physics: "Universal standard tuning frequency established by ISO 16.", desc: "The universal acoustic reference pitch used worldwide by orchestras to tune instruments." },
+            { id: 6, name: "Soprano High C", category: "acoustics", freq: 1046.5, notation: "Ledger line above Treble Clef staff (C6)", physics: "High-pressure air velocity through vocal tract; glass resonance threshold.", desc: "Pierces through dense orchestral arrangements with shimmering brilliance." },
+            { id: 7, name: "Ultrasonic Air Wave", category: "acoustics", freq: 15000, notation: "Beyond standard notation; high harmonics register", physics: "Rapid air molecule compression inaudible to older human ears.", desc: "High-frequency acoustic energy utilized by bats and acoustic imaging sensors." },
+            { id: 8, name: "Treble Clef (G-Clef)", category: "notation", freq: 392, notation: "Ornate spiral wrapping around the 2nd line (G4)", physics: "Optimized for high-frequency instrument harmonics (violin, flute, right hand piano).", desc: "The principal clef for higher registers, guiding the eye across upper melodic lines." },
+            { id: 9, name: "Bass Clef (F-Clef)", category: "notation", freq: 146.8, notation: "Two dots bracketing the 4th line (F3)", physics: "Optimized for lower acoustic wavelengths and heavy bass resonance.", desc: "Anchors the low-end harmonic framework in orchestral and keyboard scores." },
+            { id: 10, name: "Alto Clef (C-Clef)", category: "notation", freq: 261.6, notation: "C-center pointing directly to the 3rd middle line (C4)", physics: "Balanced median frequency range matching the human viola timbre.", desc: "Specialized clef maintaining the middle voice range without excessive ledger lines." },
+            { id: 11, name: "Grand Staff", category: "notation", freq: 220, notation: "Treble and Bass staves joined by a vertical brace and bracket", physics: "Simultaneous dual-frequency range processing in the auditory cortex.", desc: "The ultimate score framework allowing pianists to read across wide acoustic spectrums." },
+            { id: 12, name: "Semibreve (Whole Note)", category: "notation", freq: 130.8, notation: "Open elliptical notehead with no stem (4 beats)", physics: "Sustained acoustic energy decay over extended time periods.", desc: "The longest common note value in modern metric notation, representing stable duration." },
+            { id: 13, name: "Minim (Half Note)", category: "notation", freq: 164.8, notation: "Open elliptical notehead attached to a vertical stem (2 beats)", physics: "Balanced duration allowing natural room reverberation tail.", desc: "Half the duration of a semibreve, anchoring moderate rhythmic flow." },
+            { id: 14, name: "Crotchet (Quarter Note)", category: "notation", freq: 196, notation: "Filled black notehead with a vertical stem (1 beat)", physics: "Standard rhythmic pulse matching human resting heartbeat tempo.", desc: "The foundational pulse unit in standard 4/4 time signatures." },
+            { id: 15, name: "Quaver (Eighth Note)", category: "notation", freq: 246.9, notation: "Filled notehead with stem and single flag (1/2 beat)", physics: "Rapid acoustic articulation for brisk syncopated passages.", desc: "Subdivides the beat into swift, energetic rhythmic fragments." },
+            { id: 16, name: "Semiquaver (Sixteenth)", category: "notation", freq: 293.7, notation: "Filled notehead with stem and double flag (1/4 beat)", physics: "High-speed transient acoustic bursts.", desc: "Creates intricate ornamental runs and lightning-fast rhythmic subdivisions." },
+            { id: 17, name: "Staccato Articulation", category: "notation", freq: 523.2, notation: "Small dot placed directly above or below the notehead", physics: "Sharp acoustic envelope with immediate dampening (fast attack and decay).", desc: "Instructs the performer to detach notes crisply, creating punchy acoustic stabs." },
+            { id: 18, name: "Legato Articulation", category: "notation", freq: 329.6, notation: "Curved slur line connecting different pitches", physics: "Continuous smooth acoustic transition without silence between frequencies.", desc: "Blends notes seamlessly together like a flowing vocal line." },
+            { id: 19, name: "Fermata Hold", category: "notation", freq: 110, notation: "Semicircle with a dot underneath ('bird's eye')", physics: "Indefinite sustained acoustic resonance held at conductor discretion.", desc: "Suspends strict metronomic time to let a chord resonate infinitely." },
+            { id: 20, name: "Crescendo Hairpin", category: "notation", freq: 349.2, notation: "Expanding horizontal open wedge (<)", physics: "Gradual amplitude increase (dB SPL) expanding room sound energy.", desc: "Builds acoustic tension by progressively amplifying sound intensity." },
+            { id: 21, name: "Decrescendo Hairpin", category: "notation", freq: 220, notation: "Contracting horizontal wedge (>)", physics: "Gradual amplitude decay fading into the ambient room noise floor.", desc: "Resolves acoustic energy by gently lowering sound pressure levels." },
+            { id: 22, name: "Sharp Accidental (#)", category: "notation", freq: 466.2, notation: "Hash grid symbol (#) placed before a note", physics: "Raises fundamental frequency by exactly one semitone (multiplier 1.05946).", desc: "Shifts pitch upward, creating brighter, more tense harmonic color." },
+            { id: 23, name: "Flat Accidental (b)", category: "notation", freq: 415.3, notation: "Curved lowercase 'b' symbol before note", physics: "Lowers fundamental frequency by one semitone.", desc: "Shifts pitch downward, imparting darker, more melancholic acoustic qualities." },
+            { id: 24, name: "Natural Accidental (♮)", category: "notation", freq: 440, notation: "Square-like grid cancellation symbol (♮)", physics: "Resets pitch back to diatonic baseline, neutralizing previous sharps/flats.", desc: "Clears previous chromatic alterations to restore pitch purity." },
+            { id: 25, name: "Harmonic Overtones", category: "acoustics", freq: 880, notation: "Integer multiple frequencies sounding above fundamental", physics: "Complex timbral waveform composition defining instrument individuality.", desc: "The hidden acoustic spectrum giving guitars, pianos, and voices their unique timbre." },
+            { id: 26, name: "Standing Wave Node", category: "acoustics", freq: 174.6, notation: "Null points in room acoustic mapping", physics: "Zero-amplitude destructive interference zones in enclosed spaces.", desc: "Areas in a room where specific frequencies cancel out entirely due to wave reflection." },
+            { id: 27, name: "Doppler Frequency Shift", category: "acoustics", freq: 587.3, notation: "Pitch bending trajectory indicator", physics: "Frequency compression (approaching) and expansion (receding) relative to observer.", desc: "The physical acoustic distortion heard when a sound source moves past at high speed." },
+            { id: 28, name: "Cochlea Fluid Resonance", category: "acoustics", freq: 1318.5, notation: "Neural basilar membrane tonotopic map", physics: "Frequency-dependent mechanical vibration of hair cells in inner ear fluid.", desc: "The biological mechanism translating physical sound waves into nerve impulses." },
+            { id: 29, name: "Decibel Sound Pressure", category: "acoustics", freq: 659.3, notation: "Dynamic marking indicators (ppp to fff)", physics: "Logarithmic ratio scale measuring acoustic pressure fluctuations in Pascals.", desc: "Quantifies human perceived loudness from gentle whispers to jet engines." },
+            { id: 30, name: "Polyrhythm Matrix", category: "notation", freq: 370, notation: "Cross-rhythm notation (e.g., 3 against 2)", physics: "Complex psychological phase interference patterns in rhythmic perception.", desc: "Superimposes conflicting rhythmic pulses to create hypnotic acoustic tension." },
+            { id: 31, name: "Resonance Frequency", category: "acoustics", freq: 245, notation: "Sympathetic vibration resonance mark", physics: "Maximum amplitude oscillation when driving frequency matches natural frequency.", desc: "The exact frequency where objects vibrate most efficiently and sympathetically." },
+            { id: 32, name: "Acoustic Beat Frequency", category: "acoustics", freq: 4.5, notation: "Interference pulsation notation", physics: "Amplitude modulation resulting from two slightly misaligned frequencies playing together.", desc: "The rhythmic pulsing sound heard when two close frequencies interfere with each other." }
+        ];
+
+        // Game State Variables
+        let audioCtx = null;
+        let isAudioEnabled = false;
+        let currentNode = null;
+        let targetNodes = [];
+        let discoveredNodes = new Set();
+        let stepsCount = 0;
+        let nodeGraph = {}; // Adjacency list: nodeId -> [neighborIds]
+        let nodePositions = {}; // nodeId -> {x, y}
+
+        // Initialize Audio Context on first interaction
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleAudio() {
+            initAudio();
+            isAudioEnabled = !isAudioEnabled;
+            const btn = document.getElementById('audio-toggle-btn');
+            const status = document.getElementById('audio-status');
+            if (isAudioEnabled) {
+                btn.className = "px-4 py-2 rounded-xl bg-cyan-500/30 hover:bg-cyan-500/45 border border-cyan-500 text-cyan-200 font-orbitron text-xs font-semibold transition-all flex items-center gap-2 neon-glow-cyan";
+                status.textContent = "Audio: ON";
+                showToast("Acoustic Audio Synthesizer Enabled");
+            } else {
+                btn.className = "px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-500/40 text-cyan-300 font-orbitron text-xs font-semibold transition-all flex items-center gap-2";
+                status.textContent = "Audio: OFF";
+                showToast("Acoustic Audio Synthesizer Muted");
+            }
+        }
+
+        function playNodeTone(freq) {
+            if (!isAudioEnabled || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                
+                // Smooth volume envelope (no clicking)
+                gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.15, audioCtx.currentTime + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.8);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.8);
+            } catch(e) {
+                console.error("Audio playback error:", e);
+            }
+        }
+
+        // Initialize and randomize labyrinth every game
+        function initGame() {
+            stepsCount = 0;
+            discoveredNodes.clear();
+            
+            // 1. Randomly pick 3 target nodes for the session's Harmonic Resonance Key
+            const shuffledAll = [...ALL_NODES].sort(() => Math.random() - 0.5);
+            targetNodes = shuffledAll.slice(0, 3).map(n => n.id);
+
+            // 2. Build random network graph (each node connects to 3-5 random neighbors)
+            nodeGraph = {};
+            ALL_NODES.forEach(node => {
+                nodeGraph[node.id] = [];
+            });
+
+            // Ensure full connectivity by chaining all nodes first
+            for (let i = 0; i < ALL_NODES.length - 1; i++) {
+                const id1 = ALL_NODES[i].id;
+                const id2 = ALL_NODES[i+1].id;
+                nodeGraph[id1].push(id2);
+                nodeGraph[id2].push(id1);
+            }
+
+            // Add extra random connections for labyrinth complexity
+            ALL_NODES.forEach(node => {
+                const extraLinksCount = Math.floor(Math.random() * 3) + 2; // 2 to 4 extra links
+                for (let i = 0; i < extraLinksCount; i++) {
+                    const randomNeighbor = ALL_NODES[Math.floor(Math.random() * ALL_NODES.length)];
+                    if (randomNeighbor.id !== node.id && !nodeGraph[node.id].includes(randomNeighbor.id)) {
+                        nodeGraph[node.id].push(randomNeighbor.id);
+                        nodeGraph[randomNeighbor.id].push(node.id);
+                    }
+                }
+            });
+
+            // 3. Calculate spatial coordinates for nodes in a gorgeous layout inside the canvas container
+            nodePositions = {};
+            const containerWidth = document.getElementById('labyrinth-container').clientWidth || 700;
+            const containerHeight = document.getElementById('labyrinth-container').clientHeight || 460;
+            const centerX = containerWidth / 2;
+            const centerY = containerHeight / 2;
+            const radiusX = containerWidth * 0.38;
+            const radiusY = containerHeight * 0.38;
+
+            ALL_NODES.forEach((node, index) => {
+                // Use a spiral / clustered distribution forlabyrinth feel
+                const angle = (index / ALL_NODES.length) * 2 * Math.PI;
+                // Add slight pseudo-random jitter so it's organic
+                const jitterR = 0.75 + (Math.sin(index * 99) * 0.25);
+                const x = centerX + Math.cos(angle) * radiusX * jitterR;
+                const y = centerY + Math.sin(angle) * radiusY * jitterR;
+                nodePositions[node.id] = { x: Math.max(40, Math.min(containerWidth - 40, x)), y: Math.max(40, Math.min(containerHeight - 40, y)) };
+            });
+
+            // 4. Set starting node randomly
+            const startNodeObj = shuffledAll[shuffledAll.length - 1];
+            selectNode(startNodeObj.id);
+
+            renderLabyrinthMap();
+            renderLedger();
+            updateUI();
+
+            // Hide victory modal if open
+            document.getElementById('victory-modal').classList.add('hidden');
+            showToast("New Labyrinth Generated Successfully");
+        }
+
+        // Render SVG connections and HTML nodes
+        function renderLabyrinthMap() {
+            const svg = document.getElementById('labyrinth-svg');
+            const nodesLayer = document.getElementById('labyrinth-nodes-layer');
+            
+            svg.innerHTML = '';
+            nodesLayer.innerHTML = '';
+
+            const drawnLines = new Set();
+
+            // 1. Render Connection Lines
+            Object.keys(nodeGraph).forEach(idStr => {
+                const id = parseInt(idStr);
+                const pos1 = nodePositions[id];
+                nodeGraph[id].forEach(neighborId => {
+                    const lineKey = [Math.min(id, neighborId), Math.max(id, neighborId)].join('-');
+                    if (!drawnLines.has(lineKey)) {
+                        drawnLines.add(lineKey);
+                        const pos2 = nodePositions[neighborId];
+                        
+                        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                        line.setAttribute("x1", pos1.x);
+                        line.setAttribute("y1", pos1.y);
+                        line.setAttribute("x2", pos2.x);
+                        line.setAttribute("y2", pos2.y);
+                        line.setAttribute("stroke", "rgba(56, 189, 248, 0.15)");
+                        line.setAttribute("stroke-width", "1.5");
+                        line.setAttribute("id", `line-${lineKey}`);
+                        svg.appendChild(line);
+                    }
+                });
+            });
+
+            // 2. Render Node Elements
+            ALL_NODES.forEach(node => {
+                const pos = nodePositions[node.id];
+                const isCurrent = currentNode && currentNode.id === node.id;
+                const isTarget = targetNodes.includes(node.id);
+                const isDiscovered = discoveredNodes.has(node.id);
+                const isConnectedToCurrent = currentNode && nodeGraph[currentNode.id] && nodeGraph[currentNode.id].includes(node.id);
+
+                const btn = document.createElement('button');
+                btn.className = `absolute transform -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-300 flex items-center justify-center font-orbitron text-xs group ${
+                    isCurrent 
+                        ? 'w-10 h-10 bg-cyan-400 text-slate-950 font-black neon-glow-cyan z-30 scale-110 ring-4 ring-cyan-400/40' 
+                        : isConnectedToCurrent
+                            ? 'w-8 h-8 bg-slate-900 text-cyan-300 border-2 border-cyan-400/80 hover:bg-cyan-500/20 z-20 neon-glow-cyan'
+                            : isDiscovered
+                                ? 'w-7 h-7 bg-purple-950/80 text-purple-300 border border-purple-500/50 z-10'
+                                : 'w-6 h-6 bg-slate-900/90 text-slate-400 border border-slate-700/80 hover:border-slate-500 z-10'
+                }`;
+                
+                btn.style.left = `${pos.x}px`;
+                btn.style.top = `${pos.y}px`;
+                btn.innerHTML = `<span>${node.id}</span>`;
+                
+                // Tooltip title
+                btn.title = `${node.name} (${node.freq} Hz)`;
+
+                btn.onclick = () => {
+                    if (isCurrent || isConnectedToCurrent || isDiscovered || isTarget) {
+                        selectNode(node.id);
+                    } else {
+                        // Can travel if connected or if player wants to inspect
+                        selectNode(node.id);
+                    }
+                };
+
+                nodesLayer.appendChild(btn);
+            });
+        }
+
+        // Select and inspect a node
+        function selectNode(nodeId) {
+            currentNode = ALL_NODES.find(n => n.id === nodeId);
+            if (!currentNode) return;
+
+            if (!discoveredNodes.has(currentNode.id)) {
+                discoveredNodes.add(currentNode.id);
+                stepsCount++;
+            }
+
+            playNodeTone(currentNode.freq);
+
+            // Update Inspector UI
+            document.getElementById('node-category-badge').textContent = currentNode.category.toUpperCase() + ` • ${currentNode.freq} Hz`;
+            document.getElementById('node-freq-badge').textContent = `${currentNode.freq} Hz`;
+            document.getElementById('node-title').textContent = currentNode.name;
+            document.getElementById('node-description').textContent = currentNode.desc;
+            document.getElementById('node-notation').textContent = currentNode.notation;
+            document.getElementById('node-physics').textContent = currentNode.physics;
+            document.getElementById('current-location-text').textContent = `Current Position: #${currentNode.id} ${currentNode.name}`;
+
+            const actionContainer = document.getElementById('node-action-container');
+            const isTargetNode = targetNodes.includes(currentNode.id);
+            const isAlreadyClaimed = targetNodesFound().includes(currentNode.id);
+
+            if (isTargetNode) {
+                if (isAlreadyClaimed) {
+                    actionContainer.innerHTML = `
+                        <div class="w-full py-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-orbitron font-bold text-xs text-center">
+                            ✓ RESONANCE KEY NODE SECURED
+                        </div>
+                    `;
+                } else {
+                    actionContainer.innerHTML = `
+                        <button onclick="claimCurrentNode()" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-orbitron font-bold text-xs tracking-wider transition-all shadow-lg neon-glow-gold animate-pulse">
+                            ★ RESONANCE FREQUENCY MATCH FOUND! CLAIM KEY
+                        </button>
+                    `;
+                }
+            } else {
+                actionContainer.innerHTML = `
+                    <div class="w-full py-3 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 font-orbitron text-xs text-center">
+                        Standard Labyrinth Node (Not a Key Target)
+                    </div>
+                `;
+            }
+
+            renderLabyrinthMap();
+            renderLedger();
+            updateUI();
+        }
+
+        // Claim target node function
+        function claimCurrentNode() {
+            if (!currentNode) return;
+            if (targetNodes.includes(currentNode.id)) {
+                showToast(`Resonance Key Fragment #${currentNode.id} (${currentNode.name}) Synchronized!`);
+                renderLabyrinthMap();
+                updateUI();
+
+                // Check victory condition
+                if (checkVictory()) {
+                    triggerVictory();
+                }
+            }
+        }
+
+        function targetNodesFound() {
+            // Returns count or list of target nodes that have been visited/claimed
+            return targetNodes.filter(id => discoveredNodes.has(id));
+        }
+
+        function checkVictory() {
+            return targetNodes.every(id => discoveredNodes.has(id));
+        }
+
+        function triggerVictory() {
+            const foundCount = targetNodes.filter(id => discoveredNodes.has(id)).length;
+            document.getElementById('victory-message').textContent = `Magnificent! You successfully navigated the labyrinth in ${stepsCount} steps and aligned all ${foundCount} acoustic frequency keys.`;
+            document.getElementById('victory-modal').classList.remove('hidden');
+        }
+
+        function updateUI() {
+            const foundCount = targetNodes.filter(id => discoveredNodes.has(id)).length;
+            document.getElementById('target-count').textContent = `${foundCount} / 3 Found`;
+            document.getElementById('steps-count').textContent = `${stepsCount} Steps`;
+            document.getElementById('ledger-count').textContent = `${discoveredNodes.size} / 32 Explored`;
+
+            // Render target chips
+            const chipsContainer = document.getElementById('target-chips');
+            chipsContainer.innerHTML = '';
+            targetNodes.forEach((targetId, index) => {
+                const targetObj = ALL_NODES.find(n => n.id === targetId);
+                const isFound = discoveredNodes.has(targetId);
+                const chip = document.createElement('div');
+                chip.className = `px-3 py-1.5 rounded-xl border text-xs font-orbitron flex items-center gap-2 ${
+                    isFound 
+                        ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 neon-glow-gold' 
+                        : 'bg-slate-900/80 border-slate-800 text-slate-400'
+                }`;
+                chip.innerHTML = `<span>Key #${index + 1}:</span> <span class="font-bold">${isFound ? targetObj.name : '???? (' + targetObj.freq + ' Hz)'}</span>`;
+                chipsContainer.appendChild(chip);
+            });
+        }
+
+        // Render Ledger Grid at the bottom
+        function renderLedger() {
+            const ledgerGrid = document.getElementById('ledger-grid');
+            ledgerGrid.innerHTML = '';
+            ALL_NODES.forEach(node => {
+                const isDiscovered = discoveredNodes.has(node.id);
+                const isCurrent = currentNode && currentNode.id === node.id;
+                const isTarget = targetNodes.includes(node.id);
+
+                const item = document.createElement('button');
+                item.className = `p-2 rounded-xl text-left border transition-all flex flex-col justify-between ${
+                    isCurrent 
+                        ? 'bg-cyan-500/30 border-cyan-400 text-cyan-200' 
+                        : isDiscovered 
+                            ? 'bg-purple-950/40 border-purple-500/40 text-purple-200 hover:bg-purple-900/50' 
+                            : 'bg-slate-900/50 border-slate-800/80 text-slate-600 hover:text-slate-400'
+                }`;
+                item.innerHTML = `
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-orbitron font-bold text-[10px]">#${node.id}</span>
+                        ${isTarget && isDiscovered ? '<span class="text-amber-400 text-[10px]">★</span>' : ''}
+                    </div>
+                    <span class="text-[11px] font-medium truncate block">${node.name.split(' ')[0]}</span>
+                `;
+                item.onclick = () => selectNode(node.id);
+                ledgerGrid.appendChild(item);
+            });
+        }
+
+        // Toast notification helper
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toast-text');
+            toastText.textContent = text;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Window resize handler to reposition labyrinth map
+        window.onresize = () => {
+            if (ALL_NODES.length > 0) {
+                // Recalculate coordinates
+                const containerWidth = document.getElementById('labyrinth-container').clientWidth || 700;
+                const containerHeight = document.getElementById('labyrinth-container').clientHeight || 460;
+                const centerX = containerWidth / 2;
+                const centerY = containerHeight / 2;
+                const radiusX = containerWidth * 0.38;
+                const radiusY = containerHeight * 0.38;
+
+                ALL_NODES.forEach((node, index) => {
+                    const angle = (index / ALL_NODES.length) * 2 * Math.PI;
+                    const jitterR = 0.75 + (Math.sin(index * 99) * 0.25);
+                    const x = centerX + Math.cos(angle) * radiusX * jitterR;
+                    const y = centerY + Math.sin(angle) * radiusY * jitterR;
+                    nodePositions[node.id] = { x: Math.max(40, Math.min(containerWidth - 40, x)), y: Math.max(40, Math.min(containerHeight - 40, y)) };
+                });
+                renderLabyrinthMap();
+            }
+        };
+
+        // Start game on load
+        window.onload = () => {
+            initGame();
+        };
+    </script>
+</body>
+</html>
