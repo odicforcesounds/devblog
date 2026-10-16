@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEOPOL COMMAND — Zero to Hero Strategy Campaign</title>
+<meta name="description" content="A game-like interactive academy of geopolitical military strategy. Pure vanilla JS + CSS.">
+<style>:root{
+  --bg:#070d14; --bg2:#0b1622; --panel:#0e1c2c; --panel2:#122639;
+  --line:#1e3a52; --line2:#2b5474;
+  --txt:#d7e8f5; --dim:#8ba8bd; --faint:#56707f;
+  --green:#35e0a1; --amber:#ffc857; --red:#ff5d5d; --cyan:#38e1ff; --violet:#b388ff;
+  --mono:"Courier New",ui-monospace,Menlo,Consolas,monospace;
+  --sans:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(1200px 600px at 70% -10%, #14324a 0%, transparent 60%),
+    radial-gradient(900px 500px at 0% 100%, #0e2a3a 0%, transparent 55%),
+    var(--bg);
+  color:var(--txt); font-family:var(--sans); min-height:100vh;
+}
+.scanlines{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.14;
+  background:repeating-linear-gradient(0deg, transparent 0 2px, #000 2px 3px);}
+.hud{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:14px 20px;border-bottom:2px solid var(--line);
+  background:linear-gradient(180deg,#0d1a27,#081220);position:sticky;top:0;z-index:20;
+}
+.logo{font-family:var(--mono);font-weight:900;letter-spacing:2px;font-size:22px}
+.logo-cross{color:var(--green);margin-right:8px}
+.logo-accent{color:var(--cyan)}
+.logo-sub{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--dim);margin-top:4px}
+.hud-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.hud-stat label{display:block;font-size:10px;letter-spacing:2px;color:var(--faint);font-family:var(--mono)}
+.hud-stat strong{font-family:var(--mono);color:var(--amber);font-size:15px}
+.hud-xpbar{width:150px;height:10px;border:1px solid var(--line2);background:#050c13;border-radius:99px;overflow:hidden}
+.hud-xpbar div{height:100%;width:0%;background:linear-gradient(90deg,var(--green),var(--cyan));transition:width .6s ease}
+.ghost-btn{background:transparent;border:1px solid var(--line2);color:var(--dim);font-family:var(--mono);
+  font-size:11px;padding:6px 10px;border-radius:6px;cursor:pointer;letter-spacing:1px}
+.ghost-btn:hover{color:#fff;border-color:var(--cyan)}
+.layout{display:grid;grid-template-columns:330px 1fr;gap:18px;padding:18px;max-width:1300px;margin:0 auto}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.campaign{background:linear-gradient(180deg,var(--panel),#0a1521);border:1px solid var(--line);border-radius:14px;padding:14px;height:fit-content}
+.campaign-head h2{font-family:var(--mono);font-size:14px;letter-spacing:2px;margin:4px 0;color:var(--cyan)}
+.campaign-head p{color:var(--dim);font-size:13px;margin:0 0 10px}
+.progress-wrap{position:relative;height:18px;background:#050c13;border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-bottom:12px}
+#campaign-progress{height:100%;width:0;background:linear-gradient(90deg,#1a7a5a,var(--green));transition:width .5s}
+#campaign-progress-txt{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--mono);font-size:11px;color:#eafff5}
+.level-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.level-item{border:1px solid var(--line);border-radius:10px;padding:10px 11px;display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;cursor:pointer;background:#0a1725;transition:transform .15s,border-color .15s}
+.level-item:hover{transform:translateX(3px)}
+.level-item.active{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan) inset}
+.level-item.locked{opacity:.5;cursor:not-allowed;filter:grayscale(.6)}
+.level-item.done{border-color:#1f6f52}
+.lvl-num{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-family:var(--mono);font-weight:800;background:#071019;border:1px solid var(--line2)}
+.level-item.done .lvl-num{background:#0d3a2a;color:var(--green);border-color:var(--green)}
+.lvl-name{font-weight:700;font-size:13.5px}
+.lvl-desc{font-size:12px;color:var(--dim);margin-top:2px}
+.lvl-state{font-size:16px}
+.doctrine-box{margin-top:12px;border:1px dashed var(--line2);border-radius:10px;padding:10px 12px;background:#081320}
+.doctrine-box h3{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--amber);margin:0 0 6px}
+.doctrine-box p,.doctrine-box li{font-size:12.5px;color:var(--dim)}
+.doctrine-box ul{margin:6px 0 0;padding-left:18px}
+.mission-card{background:linear-gradient(180deg,#0f2032,#0a1624);border:1px solid var(--line2);border-radius:16px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.mission-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--green)}
+#m-title{margin:6px 0 4px;font-size:clamp(22px,3vw,32px);letter-spacing:.5px}
+.mission-sub{color:var(--dim);margin:0;max-width:70ch}
+.mission-badges{display:flex;gap:8px}
+.xp-badge{font-family:var(--mono);background:#12351f;border:1px solid var(--green);color:var(--green);padding:6px 10px;border-radius:99px;font-size:12px}
+.status-badge{font-family:var(--mono);background:#2a230f;border:1px solid var(--amber);color:var(--amber);padding:6px 10px;border-radius:99px;font-size:12px}
+.tabs{display:flex;gap:8px;margin:16px 0 12px;flex-wrap:wrap}
+.tab{flex:1;min-width:140px;background:#081420;border:1px solid var(--line);color:var(--dim);padding:10px;border-radius:10px;cursor:pointer;font-family:var(--mono);font-size:12px;letter-spacing:1px}
+.tab.active{background:linear-gradient(180deg,#173a52,#0f2436);color:#fff;border-color:var(--cyan)}
+.pane{display:none;animation:fadein .3s ease}
+.pane.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.pane h3{color:var(--cyan);font-family:var(--mono);letter-spacing:1px;font-size:14px}
+.pane p,.pane li{line-height:1.6;font-size:14.5px;color:#cfe2f0}
+.pane ul{padding-left:20px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:12px 0}
+.mini-card{background:#081625;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.mini-card b{color:var(--amber)}
+.mini-card code{font-family:var(--mono);color:var(--cyan);font-size:12px}
+.callout{border-left:3px solid var(--green);background:#0a1f18;padding:10px 12px;border-radius:0 10px 10px 0;margin:12px 0}
+.callout.warn{border-color:var(--amber);background:#221b0e}
+.callout.danger{border-color:var(--red);background:#241014}
+/* demo stage */
+.demo-stage{background:#040a11;border:1px solid var(--line);border-radius:12px;min-height:300px;padding:14px;position:relative;overflow:hidden}
+.demo-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.demo-controls button,.demo-controls input[type=range]{accent-color:var(--green)}
+.chip-btn{background:#0d2233;border:1px solid var(--line2);color:var(--txt);border-radius:99px;padding:8px 12px;cursor:pointer;font-size:13px}
+.chip-btn.active,.chip-btn:hover{border-color:var(--cyan);color:#fff;box-shadow:0 0 12px rgba(56,225,255,.35)}
+.demo-note{color:var(--dim);font-size:13px;min-height:22px;font-family:var(--mono)}
+/* map schematic */
+.schem-map{position:relative;height:300px;background:
+  radial-gradient(ellipse at 50% 55%, #12395a 0%, #0a1f33 55%, #050d16 100%);
+  border-radius:10px;overflow:hidden;border:1px solid var(--line2)}
+.land{position:absolute;border:1px solid rgba(255,255,255,.25);border-radius:12px;display:grid;place-items:center;
+  font-family:var(--mono);font-size:11px;letter-spacing:1px;text-align:center;padding:6px}
+.heartland{left:34%;top:28%;width:32%;height:38%;background:repeating-linear-gradient(45deg,#7a2b2b 0 10px,#5e1f1f 10px 20px);color:#ffd9d9;animation:pulse-red 2s infinite}
+.rimland{left:22%;top:16%;width:56%;height:64%;border:2px dashed var(--amber);color:var(--amber);border-radius:22px;background:transparent;pointer-events:none}
+.sea{position:absolute;font-family:var(--mono);font-size:10px;color:var(--cyan);opacity:.9}
+.choke{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan);animation:blink 1.2s infinite}
+.choke::after{content:attr(data-name);position:absolute;top:16px;left:-20px;white-space:nowrap;font-size:10px;font-family:var(--mono);color:#fff;background:#000a;padding:2px 6px;border-radius:6px}
+@keyframes blink{0%,100%{transform:scale(1)}50%{transform:scale(1.6)}}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(255,93,93,.6)}50%{box-shadow:0 0 30px 6px rgba(255,93,93,.4)}}
+/* generic battle */
+.battlefield{position:relative;height:280px;background:linear-gradient(180deg,#0a1a12,#060f0a);border-radius:10px;overflow:hidden;border:1px solid #234d33}
+.unit{position:absolute;width:44px;height:30px;border-radius:6px;display:grid;place-items:center;font-size:16px;transition:left 1s linear, top 1s linear}
+.unit.blue{background:#123a5e;border:1px solid var(--cyan)}
+.unit.red{background:#4a1515;border:1px solid var(--red)}
+.supply-line{position:absolute;height:3px;background:repeating-linear-gradient(90deg,var(--amber) 0 8px,transparent 8px 14px);animation:dashmove 1s linear infinite}
+@keyframes dashmove{to{background-position:14px 0}}
+.a2-bubble{position:absolute;border:2px solid var(--red);border-radius:50%;background:rgba(255,93,93,.12);display:grid;place-items:center;color:#ffb0b0;font-family:var(--mono);font-size:11px;animation:bubblepulse 2.5s infinite}
+@keyframes bubblepulse{0%,100%{box-shadow:0 0 0 0 rgba(255,93,93,.5)}50%{box-shadow:0 0 40px 10px rgba(255,93,93,.25)}}
+.ship{position:absolute;font-size:22px;transition:left 1.6s linear}
+.radar{position:absolute;inset:0;background:repeating-radial-gradient(circle at 70% 40%, transparent 0 30px, rgba(56,225,255,.12) 30px 31px);pointer-events:none}
+.sweep{position:absolute;left:70%;top:40%;width:140px;height:2px;background:linear-gradient(90deg,var(--cyan),transparent);transform-origin:left center;animation:sweep 3s linear infinite}
+@keyframes sweep{to{transform:rotate(360deg)}}
+/* interact */
+#interact-stage .lab{background:#050d16;border:1px solid var(--line);border-radius:12px;padding:14px}
+.slider-row{display:grid;grid-template-columns:140px 1fr 60px;gap:10px;align-items:center;margin:10px 0;font-size:14px}
+.slider-row input{width:100%}
+.meter{height:16px;background:#050c13;border:1px solid var(--line);border-radius:99px;overflow:hidden;margin:10px 0}
+.meter>div{height:100%;width:50%;background:linear-gradient(90deg,var(--green),var(--amber),var(--red));transition:width .4s}
+.pillar-row{display:flex;gap:12px;margin:12px 0;flex-wrap:wrap}
+.pillar{flex:1;min-width:120px;background:#0d2233;border:1px solid var(--line2);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:all .3s}
+.pillar small{display:block;color:var(--dim);margin-top:6px}
+.pillar.broken{background:#2a1111;border-color:var(--red);transform:rotate(-3deg) scale(.97);opacity:.7}
+.ladder{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+.rung{padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:#0a1725;cursor:pointer;font-family:var(--mono);font-size:13px}
+.rung.active{background:#3a2a0e;border-color:var(--amber);color:var(--amber)}
+.quiz-q{background:#081625;border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
+.quiz-q h4{margin:0 0 8px;font-size:14.5px}
+.quiz-q label{display:block;background:#0b1e30;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:6px 0;cursor:pointer;font-size:14px}
+.quiz-q label:hover{border-color:var(--cyan)}
+.quiz-q input{margin-right:8px;accent-color:var(--green)}
+.quiz-q.correct{outline:2px solid var(--green)}
+.quiz-q.wrong{outline:2px solid var(--red)}
+.quiz-actions{margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.quiz-feedback{font-family:var(--mono);font-size:13px}
+.btn{background:#0d2233;border:1px solid var(--line2);color:var(--txt);padding:10px 16px;border-radius:10px;cursor:pointer;font-family:var(--mono);letter-spacing:1px;font-size:13px}
+.btn.primary{background:linear-gradient(180deg,#0f5b3f,#0a3a29);border-color:var(--green);color:#eafff5;font-weight:800}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:hover:not(:disabled){filter:brightness(1.2)}
+.mission-nav{display:flex;justify-content:space-between;margin-top:14px;gap:10px;flex-wrap:wrap}
+.footnote{color:var(--faint);font-size:12px;margin-top:12px;line-height:1.5}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#0d2233;border:1px solid var(--cyan);color:#fff;padding:10px 18px;border-radius:99px;font-family:var(--mono);opacity:0;transition:all .3s;z-index:99}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.victory{position:fixed;inset:0;background:rgba(0,0,0,.75);display:grid;place-items:center;z-index:100;padding:18px}
+.victory.hidden{display:none}
+.victory-card{background:linear-gradient(180deg,#10263a,#080f18);border:2px solid var(--amber);border-radius:16px;padding:24px;max-width:640px;width:100%;text-align:center}
+.cert{border:1px dashed var(--amber);border-radius:10px;padding:14px;margin:14px 0;font-family:var(--mono);font-size:13px;background:#0d1520}
+.victory-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.theorist-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:12px 0}
+.theorist{background:#0a1725;border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;min-height:130px;perspective:600px}
+.theorist .front{font-weight:800}
+.theorist .back{display:none;color:var(--dim);font-size:13px;margin-top:6px}
+.theorist.flip .back{display:block}
+.theorist.flip{border-color:var(--amber)}
+table.doctrine{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.5px}
+table.doctrine th,table.doctrine td{border:1px solid var(--line);padding:8px;text-align:left}
+table.doctrine th{background:#0d2233;font-family:var(--mono);font-size:12px;color:var(--cyan)}
+@media print{.hud,.campaign,.tabs,.mission-nav,.quiz-actions,.footnote{display:none!important}.victory{position:static;background:#fff}.victory-card{border-color:#000;color:#000}}
+</style>
+</head>
+<body>
+<div class="scanlines" aria-hidden="true"></div>
+<header class="hud">
+  <div class="hud-left">
+    <div class="logo"><span class="logo-cross">✛</span> GEOPOL<span class="logo-accent">COMMAND</span></div>
+    <div class="logo-sub">GEOPOLITICAL MILITARY STRATEGY ACADEMY • ZERO → HERO</div>
+  </div>
+  <div class="hud-right">
+    <div class="hud-stat"><label>RANK</label><strong id="hud-rank">Civilian</strong></div>
+    <div class="hud-stat"><label>XP</label><strong id="hud-xp">0</strong></div>
+    <div class="hud-xpbar"><div id="hud-xpfill"></div></div>
+    <div class="hud-stat"><label>CLEARANCE</label><strong id="hud-level">LV 0/8</strong></div>
+    <button id="btn-reset" class="ghost-btn" title="Reset progress">RESET</button>
+    <button id="btn-sound" class="ghost-btn" title="Toggle blips">SOUND: ON</button>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- LEFT: campaign map -->
+  <aside class="campaign" aria-label="Campaign map">
+    <div class="campaign-head">
+      <h2>◈ CAMPAIGN MAP</h2>
+      <p>Complete each operation in order. Pass the quiz to unlock the next.</p>
+      <div class="progress-wrap"><div id="campaign-progress"></div><span id="campaign-progress-txt">0%</span></div>
+    </div>
+    <ol id="level-list" class="level-list"></ol>
+    <div class="doctrine-box">
+      <h3>FIELD DOCTRINE</h3>
+      <p><em>Strategy = Ends + Ways + Means.</em> Every level gives you a briefing, a live animated demo, hands-on interaction, then a validation quiz.</p>
+      <ul>
+        <li>🟢 cleared &nbsp; 🟡 open &nbsp; 🔒 locked</li>
+        <li>Progress saves in this browser.</li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- RIGHT: mission screen -->
+  <section class="mission" aria-live="polite">
+    <div id="mission-card" class="mission-card">
+      <div class="mission-top">
+        <div>
+          <div id="m-kicker" class="kicker">OPERATION 0 • BOOT CAMP</div>
+          <h1 id="m-title">What is Geopolitics?</h1>
+          <p id="m-sub" class="mission-sub"></p>
+        </div>
+        <div class="mission-badges">
+          <span id="m-xp-badge" class="xp-badge">+100 XP</span>
+          <span id="m-status-badge" class="status-badge">OPEN</span>
+        </div>
+      </div>
+
+      <nav class="tabs" role="tablist" aria-label="Mission phases">
+        <button class="tab active" data-tab="briefing" role="tab">1. BRIEFING</button>
+        <button class="tab" data-tab="demo" role="tab">2. LIVE DEMO</button>
+        <button class="tab" data-tab="interact" role="tab">3. TAKE COMMAND</button>
+        <button class="tab" data-tab="quiz" role="tab">4. VALIDATION</button>
+      </nav>
+
+      <div class="tabpanes">
+        <article id="pane-briefing" class="pane active"></article>
+        <article id="pane-demo" class="pane">
+          <div id="demo-stage" class="demo-stage"></div>
+          <div class="demo-controls" id="demo-controls"></div>
+          <p class="demo-note" id="demo-note"></p>
+        </article>
+        <article id="pane-interact" class="pane">
+          <div id="interact-stage"></div>
+        </article>
+        <article id="pane-quiz" class="pane">
+          <div id="quiz-stage"></div>
+          <div class="quiz-actions">
+            <button id="btn-check-quiz" class="btn primary">SUBMIT FOR VALIDATION ▸</button>
+            <span id="quiz-feedback" class="quiz-feedback"></span>
+          </div>
+        </article>
+      </div>
+
+      <div class="mission-nav">
+        <button id="btn-prev" class="btn">◂ PREV OP</button>
+        <button id="btn-next" class="btn primary">NEXT OP ▸</button>
+      </div>
+    </div>
+
+    <footer class="footnote">
+      Concepts simplified for learning; not military advice. Theorists: Sun Tzu, Clausewitz, Jomini, Mahan, Mackinder, Spykman, Corbett, Douhet, Liddell Hart, Schelling.
+	<a href="index.html" class="btn"> Home </a>
+    </footer>
+  </section>
+</main>
+
+<div id="toast" class="toast" role="status"></div>
+<div id="victory" class="victory hidden" role="dialog" aria-modal="true">
+  <div class="victory-card">
+    <div class="kicker">★ CAMPAIGN COMPLETE ★</div>
+    <h2 id="victory-title">GRAND STRATEGIST</h2>
+    <p id="victory-text"></p>
+    <div id="victory-cert" class="cert"></div>
+    <div class="victory-actions">
+      <button id="btn-cert" class="btn">PRINT / SAVE CERTIFICATE</button>
+      <button id="btn-close-victory" class="btn primary">RETURN TO COMMAND ▸</button>
+    </div>
+  </div>
+</div>
+
+<script>/* GEOPOL COMMAND — vanilla JS game engine, no dependencies */
+const LEVELS = [
+{
+  code:"OP-00 • BOOT CAMP", title:"What Is Geopolitics?",
+  sub:"Why mountains, straits and wheat fields decide wars before the first shot.",
+  xp:100,
+  briefing:`
+  <h3>📜 COMMAND BRIEFING</h3>
+  <p><b>Geopolitics</b> = how <b>geography</b> shapes <b>politics</b> and <b>military strategy</b>. Rulers don't fight on a blank chessboard — they fight on a map full of mountains, seas, rivers, deserts, resources and people.</p>
+  <div class="card-grid">
+    <div class="mini-card"><b>🌊 Mahan (1890)</b><br>Who rules the <code>sea lanes</code> rules trade, and trade rules the world. Navies + ports + canals = power.</div>
+    <div class="mini-card"><b>🗺️ Mackinder (1904)</b><br>Who rules the <code>Heartland</code> (Eurasian core) rules the World-Island, and who rules that rules the world.</div>
+    <div class="mini-card"><b>⭕ Spykman (1942)</b><br>No — who rules the <code>Rimland</code> (coastal ring around Heartland) rules Eurasia. That's why the US allied with rim states.</div>
+    <div class="mini-card"><b>📦 Modern add-ons</b><br><code>Chokepoints</code> (Hormuz, Malacca, Panama, Suez), food, energy, chips, cables, demographics.</div>
+  </div>
+  <div class="callout">🎯 <b>Core loop to memorize:</b> Geography → Resources & access → Interests → Strategy → Military posture. Every later level is just this loop in uniform.</div>
+  <p><b>Zero-to-Hero path:</b> This campaign forces order. Finish briefing → watch demo → take command → pass validation (2 of 3 correct) to unlock the next operation.</p>`,
+  demoNote:"WATCH: Heartland pulses red. The dashed Rimland ring is where most wars and alliances happen. Cyan dots = chokepoints where a tiny force can strangle a giant.",
+  renderDemo(stage, controls){
+    stage.innerHTML = `<div class="schem-map">
+      <div class="rimland land">RIMLAND<br><small>Europe • Middle East • S.Asia • E.Asia</small></div>
+      <div class="heartland land">HEARTLAND<br><small>hard to invade,<br>hard to leave</small></div>
+      <div class="sea" style="left:8%;top:12%">ARCTIC</div>
+      <div class="sea" style="left:6%;top:60%">ATLANTIC</div>
+      <div class="sea" style="right:6%;top:60%">PACIFIC</div>
+      <div class="sea" style="left:44%;bottom:6%">INDIAN OCEAN</div>
+      <div class="choke" data-name="HORMUZ" style="left:60%;top:62%"></div>
+      <div class="choke" data-name="MALACCA" style="left:74%;top:68%"></div>
+      <div class="choke" data-name="SUEZ" style="left:54%;top:56%"></div>
+      <div class="choke" data-name="PANAMA" style="left:22%;top:58%"></div>
+    </div>`;
+    controls.innerHTML = `<button class="chip-btn active" data-v="all">Show all</button>
+      <button class="chip-btn" data-v="heart">Highlight Heartland</button>
+      <button class="chip-btn" data-v="rim">Highlight Rimland</button>
+      <button class="chip-btn" data-v="choke">Blink chokepoints</button>`;
+    controls.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+      controls.querySelectorAll("button").forEach(x=>x.classList.remove("active")); b.classList.add("active");
+      const v=b.dataset.v, h=stage.querySelector(".heartland"), r=stage.querySelector(".rimland");
+      h.style.opacity = (v==="rim")? .25:1; r.style.opacity=(v==="heart")?.25:1;
+      stage.querySelectorAll(".choke").forEach(c=>c.style.display=(v==="heart")?"none":"block");
+      blip();
+    });
+  },
+  renderInteract(el){
+    el.innerHTML = `<div class="lab"><h3>🎮 TAKE COMMAND: Where would you build a base?</h3>
+    <p>Click a zone. The staff scores your pick like a real geopolitician.</p>
+    <div class="pillar-row">
+      <div class="pillar" data-s="20">🏔️<br>Deep Heartland<small>Safe but far from trade</small></div>
+      <div class="pillar" data-s="100">⚓<br>Rimland + Chokepoint<small>Near trade, allies, crises</small></div>
+      <div class="pillar" data-s="45">🏝️<br>Remote island<small>Safe, but supply nightmare</small></div>
+    </div>
+    <div class="meter"><div id="base-score" style="width:5%"></div></div>
+    <p id="base-out" style="font-family:var(--mono)">AWAITING ORDERS…</p></div>`;
+    el.querySelectorAll(".pillar").forEach(p=>p.onclick=()=>{
+      el.querySelectorAll(".pillar").forEach(x=>x.style.borderColor="");
+      p.style.borderColor="var(--green)";
+      el.querySelector("#base-score").style.width=p.dataset.s+"%";
+      el.querySelector("#base-out").textContent = p.dataset.s==100
+        ? "★ STAFF APPROVES: Rimland + chokepoint = influence over trade + allies. Spykman smiles."
+        : "STAFF NOTE: Safe, but power must reach trade and allies. Think Rimland, not hiding.";
+      blip(); addXP(5);
+    });
+  },
+  quiz:[
+    {q:"What does geopolitics study?", options:["How geography shapes political & military power","How to win chess tournaments","Only the history of treaties"], answer:0, explain:"Geography → access → power."},
+    {q:"Mackinder's Heartland is…", options:["The core of Eurasia, hard to conquer, rich in resources","Any island nation","The capital city of a country"], answer:0, explain:"Control the core = leverage over the World-Island."},
+    {q:"Why do chokepoints (Hormuz, Malacca) matter so much?", options:["A small force there can block huge trade/energy flows","They have nice beaches","They are always neutral"], answer:0, explain:"Narrow straits = maximum leverage per ship."}
+  ]
+},
+{
+  code:"OP-01 • POWER", title:"Power: DIME + Hard, Soft, Smart",
+  sub:"Countries don't just have armies — they have levers. Learn to pull all four.",
+  xp:120,
+  briefing:`
+  <h3>📜 COMMAND BRIEFING</h3>
+  <p>National power = <b>DIME</b>: <b>D</b>iplomatic + <b>I</b>nformational + <b>M</b>ilitary + <b>E</b>conomic. Tanks without money, friends, or story are just expensive targets.</p>
+  <table class="doctrine"><tr><th>Lever</th><th>Example</th><th>Military link</th></tr>
+  <tr><td><b>D</b>iplomatic</td><td>Alliances, UN votes, basing rights</td><td>Where you may legally fight from</td></tr>
+  <tr><td><b>I</b>nformational</td><td>Media, narrative, cyber-influence</td><td>Morale + legitimacy = half the battle</td></tr>
+  <tr><td><b>M</b>ilitary</td><td>Army, navy, air, nukes</td><td>Deterrence + warfighting</td></tr>
+  <tr><td><b>E</b>conomic</td><td>Sanctions, trade, chips, energy</td><td>Funds war; can coerce without firing</td></tr></table>
+  <div class="card-grid">
+    <div class="mini-card"><b>🥋 Hard power</b><br>Coerce: <code>bombs, blockade, sanctions</code>.</div>
+    <div class="mini-card"><b>🧲 Soft power</b><br>Attract: <code>culture, aid, values</code>. Others want what you want.</div>
+    <div class="mini-card"><b>♟️ Smart power</b><br>Mix both. Nye's rule: <code>hard + soft, timed right</code>.</div>
+    <div class="mini-card"><b>⚖️ Sharp power</b><br>Authoritarian manipulation disguised as soft power.</div>
+  </div>`,
+  demoNote:"DRAG the levers. Watch TOTAL POWER move. Zero military + max economy still deters differently than the reverse.",
+  renderDemo(stage, controls){
+    stage.innerHTML = `<div class="lab" style="background:#050d16;border-radius:10px;padding:14px">
+      <div class="slider-row"><span>🤝 Diplomatic</span><input id="d-d" type="range" min="0" max="100" value="60"><b id="v-d">60</b></div>
+      <div class="slider-row"><span>📡 Informational</span><input id="d-i" type="range" min="0" max="100" value="50"><b id="v-i">50</b></div>
+      <div class="slider-row"><span>🎖️ Military</span><input id="d-m" type="range" min="0" max="100" value="70"><b id="v-m">70</b></div>
+      <div class="slider-row"><span>💰 Economic</span><input id="d-e" type="range" min="0" max="100" value="65"><b id="v-e">65</b></div>
+      <div class="meter"><div id="d-total" style="width:61%"></div></div>
+      <p id="d-out" style="font-family:var(--mono)">TOTAL POWER: 61 — BALANCED MIDDLE POWER</p></div>`;
+    controls.innerHTML = `<button class="chip-btn" data-p="usa">🇺🇸 Superpower preset</button>
+      <button class="chip-btn" data-p="city">🏙️ Rich city-state preset</button>
+      <button class="chip-btn" data-p="rogue">☢️ Militarized isolated preset</button>`;
+    const upd=()=>{
+      const g=id=>+stage.querySelector(id).value;
+      const d=g("#d-d"),i=g("#d-i"),m=g("#d-m"),e=g("#d-e");
+      stage.querySelector("#v-d").textContent=d;stage.querySelector("#v-i").textContent=i;
+      stage.querySelector("#v-m").textContent=m;stage.querySelector("#v-e").textContent=e;
+      const t=Math.round((d+i+m+e)/4);
+      stage.querySelector("#d-total").style.width=t+"%";
+      let label=t>80?"SUPERPOWER":t>60?"GREAT POWER":t>40?"MIDDLE POWER":"VULNERABLE ACTOR";
+      if(m<20&&e>80)label+=" — rich but coercible (needs allies!)";
+      if(m>85&&(d+i)<50)label+=" — feared but isolated";
+      stage.querySelector("#d-out").textContent=`TOTAL POWER: ${t} — ${label}`;
+    };
+    stage.querySelectorAll("input").forEach(r=>r.oninput=upd); upd();
+    controls.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+      const p={usa:[80,75,95,90],city:[70,60,15,95],rogue:[10,40,85,25]}[b.dataset.p];
+      ["#d-d","#d-i","#d-m","#d-e"].forEach((id,k)=>stage.querySelector(id).value=p[k]); upd(); blip();
+    });
+  },
+  renderInteract(el){
+    el.innerHTML=`<div class="lab"><h3>🎮 TAKE COMMAND: Sanction or Strike?</h3>
+    <p>A rival seizes a reef. Choose a DIME response. Each has cost vs. escalation:</p>
+    <div class="pillar-row">
+      <div class="pillar" data-r="D: protest + rally allies. Cost: low. Esc: +1">🤝<br>DIPLOMATIC<small>UN + alliance patrols</small></div>
+      <div class="pillar" data-r="E: freeze assets + chip ban. Cost: medium. Esc: +2">💰<br>ECONOMIC<small>Sanctions bite in months</small></div>
+      <div class="pillar" data-r="M: sink the garrison. Cost: high. Esc: +5 — war risk!">🎖️<br>MILITARY<small>Fast, decisive, dangerous</small></div>
+    </div><p id="dime-out" style="font-family:var(--mono)">AWAITING ORDERS… (Smart power = D+E first, M as threat behind them)</p></div>`;
+    el.querySelectorAll(".pillar").forEach(p=>p.onclick=()=>{el.querySelector("#dime-out").textContent="ORDER LOGGED → "+p.dataset.r;blip();addXP(5);});
+  },
+  quiz:[
+    {q:"DIME stands for…",options:["Diplomatic, Informational, Military, Economic","Divisions, Infantry, Marines, Engineers","Debt, Inflation, Markets, Exports"],answer:0,explain:"The four levers of national power."},
+    {q:"Soft power works by…",options:["Attraction — others want what you want","Bombing","Printing money"],answer:0,explain:"Culture, values, aid attract."},
+    {q:"Smart power is…",options:["Combining hard + soft power at the right time","Only using spies","Only using nukes"],answer:0,explain:"Nye: hard muscle + soft attraction, timed well."}
+  ]
+},
+{
+  code:"OP-02 • GRAND STRATEGY", title:"Grand Strategy: Ends, Ways & Means",
+  sub:"The strategy triangle that kills 90% of bad war plans — plus levels of war.",
+  xp:140,
+  briefing:`
+  <h3>📜 COMMAND BRIEFING</h3>
+  <p><b>Grand strategy</b> coordinates <i>all</i> DIME levers for long-term national goals. <b>Military strategy</b> is the military slice of it.</p>
+  <div class="callout">🔺 <b>Ends – Ways – Means:</b> <b>Ends</b> = what you want. <b>Ways</b> = how you'll do it. <b>Means</b> = what you have. If Means &lt; Ends, change the Ends or get more Means. Otherwise you lose slowly.</div>
+  <table class="doctrine"><tr><th>Level of war</th><th>Question</th><th>Example</th></tr>
+  <tr><td><b>Strategic</b></td><td>Why fight? What end-state?</td><td>Force rival out of region</td></tr>
+  <tr><td><b>Operational</b></td><td>Which campaigns, in what order?</td><td>Blockade strait, then island-hop</td></tr>
+  <tr><td><b>Tactical</b></td><td>Win this battle?</td><td>Take hill 412 by dawn</td></tr></table>
+  <p>Failure pattern: brilliant tactics, broken strategy. Winning every battle while losing the war (see: attrition without an end-state).</p>`,
+  demoNote:"Try to demand VICTORY with tiny MEANS — the triangle turns red. Balance it to green before attacking.",
+  renderDemo(stage, controls){
+    stage.innerHTML=`<div class="lab" style="background:#050d16;border-radius:10px;padding:14px">
+      <div class="slider-row"><span>🎯 ENDS (ambition)</span><input id="g-e" type="range" min="0" max="100" value="85"><b id="gv-e">85</b></div>
+      <div class="slider-row"><span>🛤️ WAYS (skill/plan)</span><input id="g-w" type="range" min="0" max="100" value="50"><b id="gv-w">50</b></div>
+      <div class="slider-row"><span>🛠️ MEANS (resources)</span><input id="g-m" type="range" min="0" max="100" value="40"><b id="gv-m">40</b></div>
+      <div class="meter"><div id="g-risk" style="width:70%"></div></div>
+      <p id="g-out" style="font-family:var(--mono)"></p></div>`;
+    controls.innerHTML=`<button class="chip-btn" data-s="blitz">⚡ Blitz plan (high ways)</button><button class="chip-btn" data-s="modest">🕊️ Modest ends</button>`;
+    const upd=()=>{
+      const e=+stage.querySelector("#g-e").value,w=+stage.querySelector("#g-w").value,m=+stage.querySelector("#g-m").value;
+      stage.querySelector("#gv-e").textContent=e;stage.querySelector("#gv-w").textContent=w;stage.querySelector("#gv-m").textContent=m;
+      const risk=Math.max(0,Math.min(100, e - (w+m)/2 + 30));
+      stage.querySelector("#g-risk").style.width=risk+"%";
+      stage.querySelector("#g-out").textContent = risk>65?`RISK ${Math.round(risk)}% — STRATEGY GAP! Lower ENDS or raise MEANS/WAYS.` : risk>35?`RISK ${Math.round(risk)}% — RISKY BUT WORKABLE.`:`RISK ${Math.round(risk)}% — BALANCED. GREEN LIGHT.`;
+      stage.querySelector("#g-out").style.color=risk>65?"var(--red)":risk>35?"var(--amber)":"var(--green)";
+    };
+    stage.querySelectorAll("input").forEach(r=>r.oninput=upd);upd();
+    controls.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+      if(b.dataset.s==="blitz"){stage.querySelector("#g-w").value=90;stage.querySelector("#g-m").value=55;}
+      else{stage.querySelector("#g-e").value=40;stage.querySelector("#g-w").value=60;stage.querySelector("#g-m").value=60;}
+      upd();blip();
+    });
+  },
+  renderInteract(el){
+    el.innerHTML=`<div class="lab"><h3>🎮 TAKE COMMAND: Write the order</h3>
+    <p>Match each order to its level of war. Click a level, then see if HQ agrees.</p>
+    <div class="pillar-row">
+      <div class="pillar" data-ok="1">🏛️ STRATEGIC<small>“Secure energy independence by 2030”</small></div>
+      <div class="pillar" data-ok="1">🗺️ OPERATIONAL<small>“Campaign: blockade → land → negotiate”</small></div>
+      <div class="pillar" data-ok="1">🔫 TACTICAL<small>“3rd platoon takes the bridge”</small></div>
+    </div><p style="font-family:var(--mono)" id="lvl-out">All three are CORRECT — strategy nests like dolls: tactical wins serve operational campaigns serve strategic ends.</p></div>`;
+    el.querySelectorAll(".pillar").forEach(p=>p.onclick=()=>{el.querySelector("#lvl-out").textContent="✔ HQ CONFIRMS: "+p.querySelector("small").textContent;blip();addXP(5);});
+  },
+  quiz:[
+    {q:"Ends–Ways–Means means…",options:["Goals, methods, resources must balance","End the war by any means","Three kinds of tanks"],answer:0,explain:"Strategy = balance the triangle."},
+    {q:"The operational level connects…",options:["Tactical battles to strategic goals","Two countries' capitals","Soldiers to cooks"],answer:0,explain:"Campaigns sequence battles toward the end-state."},
+    {q:"Classic failure?",options:["Winning battles but losing the war (no workable strategy)","Having too much fuel","Too many maps"],answer:0,explain:"Tactics can't fix a broken strategy."}
+  ]
+},
+{
+  code:"OP-03 • CLAUSEWITZ", title:"Center of Gravity, Fog & Friction",
+  sub:"Hit what actually holds the enemy up — in fog, while everything breaks.",
+  xp:150,
+  briefing:`
+  <h3>📜 COMMAND BRIEFING — CLAUSEWITZ</h3>
+  <p><b>Center of Gravity (CoG)</b>: the source of power that holds everything up. An alliance, a capital, a navy, public will, an energy grid. Hit the CoG, not the camouflage.</p>
+  <div class="card-grid">
+    <div class="mini-card"><b>🌫️ Fog of war</b><br>You never see the full map. <code>Intel + recon</code> thin the fog, never remove it.</div>
+    <div class="mini-card"><b>⚙️ Friction</b><br>Everything breaks: weather, fear, breakdowns. <code>Simple plans + reserves</code> survive friction.</div>
+    <div class="mini-card"><b>🔥 Culminating point</b><br>Every attack weakens as it advances. Know when to <code>stop & defend</code>.</div>
+    <div class="mini-card"><b>📐 9 Principles</b><br><code>Objective, Offensive, Mass, Maneuver, Surprise, Security, Unity, Simplicity, Economy</code>.</div>
+  </div>
+  <div class="callout warn">⚠️ Wrong-CoG trap: bombing cities to break will often hardens it. The CoG is analytical, not emotional — find what the enemy <i>needs to function</i>.</div>`,
+  demoNote:"CLICK pillars to knock them out. Knock the TRUE CoG (★) and the enemy power bar collapses. Hit decoys and almost nothing happens.",
+  renderDemo(stage, controls){
+    stage.innerHTML=`<div class="lab" style="background:#050d16;border-radius:10px;padding:14px">
+      <div class="meter"><div id="cog-hp" style="width:100%"></div></div>
+      <p id="cog-out" style="font-family:var(--mono)">ENEMY POWER 100% — FIND THE ★ CoG</p>
+      <div class="pillar-row" id="cog-row"></div></div>`;
+    let hp=100;
+    const defs=[["🏭","ENERGY GRID ★",55,true],["📻","STATE TV",8,false],["🪖","FRONT-LINE TRENCH",10,false],["🌾","WHEAT FIELDS",6,false],["⚓","SUPPLY PORT ★",45,true]];
+    const row=stage.querySelector("#cog-row");
+    defs.forEach(d=>{
+      const div=document.createElement("div");div.className="pillar";div.innerHTML=`${d[0]}<br>${d[1]}<small>click to strike</small>`;
+      div.onclick=()=>{
+        if(div.classList.contains("broken"))return;
+        div.classList.add("broken");hp=Math.max(0,hp-d[2]);blip();
+        stage.querySelector("#cog-hp").style.width=hp+"%";
+        stage.querySelector("#cog-out").textContent=`ENEMY POWER ${hp}% — ${d[3]?"DIRECT HIT ON CoG!":"Decoy. Little effect. Think systems, not symbols."}`;
+        if(hp<=15)stage.querySelector("#cog-out").textContent+=` ☠ COLLAPSE — CoGs destroyed.`;
+      };
+      row.appendChild(div);
+    });
+    controls.innerHTML=`<button class="chip-btn" id="cog-reset">↺ Reset enemy</button>`;
+    controls.querySelector("#cog-reset").onclick=()=>{hp=100;stage.querySelector("#cog-hp").style.width="100%";row.querySelectorAll(".pillar").forEach(p=>p.classList.remove("broken"));stage.querySelector("#cog-out").textContent="ENEMY POWER 100% — FIND THE ★ CoG";};
+  },
+  renderInteract(el){
+    el.innerHTML=`<div class="lab"><h3>🎮 TAKE COMMAND: Fog order</h3>
+    <p>Your scout reports “tanks in the valley… maybe 10, maybe 40, maybe decoys.” What doctrine says?</p>
+    <div class="pillar-row">
+      <div class="pillar" data-t="❌ Charge everything in — friction + fog = ambush. Clausewitz weeps.">⚔️ All-out attack now</div>
+      <div class="pillar" data-t="✔ Recon + probe + keep reserve. Simple plan survives fog & friction.">🔭 Recon, probe, reserve</div>
+      <div class="pillar" data-t="❌ Waiting forever is also a decision — the enemy acts while you watch.">💤 Wait for perfect intel</div>
+    </div><p id="fog-out" style="font-family:var(--mono)">AWAITING ORDERS…</p></div>`;
+    el.querySelectorAll(".pillar").forEach(p=>p.onclick=()=>{el.querySelector("#fog-out").textContent=p.dataset.t;blip();addXP(5);});
+  },
+  quiz:[
+    {q:"A Center of Gravity is…",options:["The key source of power holding the enemy system up","The middle of the map","The heaviest tank"],answer:0,explain:"Hit what the enemy needs to function."},
+    {q:"Fog of war means…",options:["You always act with incomplete information","War only happens in fog","Radios don't work"],answer:0,explain:"Intel reduces fog, never removes it."},
+    {q:"Friction is best survived by…",options:["Simple plans + reserves","More complicated orders","Longer speeches"],answer:0,explain:"Complexity breaks first."}
+  ]
+},
+{
+  code:"OP-04 • THE MASTERS", title:"The Masters: Sun Tzu → Schelling",
+  sub:"2,500 years of strategy in one war room. Flip the cards.",
+  xp:150,
+  briefing:`
+  <h3>📜 COMMAND BRIEFING</h3>
+  <p>Every modern staff college teaches the same ghosts. Know their one-line orders:</p>
+  <table class="doctrine"><tr><th>Master</th><th>Core order</th><th>Use when</th></tr>
+  <tr><td><b>Sun Tzu</b> (−5th c.)</td><td>Win without fighting; deception, know enemy + self</td><td>You are weaker — out-think</td></tr>
+  <tr><td><b>Clausewitz</b> (1832)</td><td>War = politics by other means; CoG, fog, friction</td><td>Planning any war</td></tr>
+  <tr><td><b>Jomini</b> (1838)</td><td>Mass at the decisive point + interior lines</td><td>Staff planning, logistics</td></tr>
+  <tr><td><b>Mahan / Corbett</b></td><td>Sea control enables everything; don't seek battle for its own sake</td><td>Maritime strategy</td></tr>
+  <tr><td><b>Douhet</b></td><td>Airpower can strike the heart directly</td><td>Air campaigns (debated!)</td></tr>
+  <tr><td><b>Liddell Hart</b></td><td>Indirect approach — hit where they aren't</td><td>Avoiding frontal slaughter</td></tr>
+  <tr><td><b>Schelling</b></td><td>Deterrence = bargaining with threats; escalation control</td><td>Nuclear / gray-zone age</td></tr></table>`,
+  demoNote:"FLIP each card. Then use the buttons to sort them by era or by idea.",
+  renderDemo(stage, controls){
+    const cards=[["☯️ SUN TZU","Supreme art: subdue enemy without fighting. All warfare is deception. Know enemy, know self.","~500 BC — maneuver & spies"],["📖 CLAUSEWITZ","War is politics continued. Find CoG. Expect fog & friction. Defense is stronger.","1832 — nature of war"],["📐 JOMINI","Concentrate mass at decisive point. Interior lines. Logistics first.","1838 — staff science"],["⚓ MAHAN","Sea power = fleet + bases + trade. Control communications at sea.","1890 — navalism"],["🌊 CORBETT","Command of the sea is control of communications, not sinking every ship.","1911 — limited war at sea"],["✈️ DOUHET","Bombers will shatter civilian morale; command of the air decides.","1921 — airpower (controversial)"],["🔀 LIDDELL HART","Indirect approach: dislocation before destruction. Avoid the frontal push.","1929 — maneuver"],["☢️ SCHELLING","Threats bargain. Deterrence, Brinkmanship, escalation ladders.","1960s — nuclear bargaining"]];
+    stage.innerHTML=`<div class="theorist-grid" id="th-grid"></div>`;
+    const g=stage.querySelector("#th-grid");
+    cards.forEach(c=>{
+      const d=document.createElement("div");d.className="theorist";
+      d.innerHTML=`<div class="front">${c[0]}<br>${c[1].split(".")[0]}</div><div class="back">${c[1]}<br><br><i>${c[2]}</i></div>`;
+      d.onclick=()=>{d.classList.toggle("flip");blip();};g.appendChild(d);
+    });
+    controls.innerHTML=`<button class="chip-btn" id="th-all">Flip all</button><button class="chip-btn" id="th-hide">Hide all</button>`;
+    controls.querySelector("#th-all").onclick=()=>g.querySelectorAll(".theorist").forEach(t=>t.classList.add("flip"));
+    controls.querySelector("#th-hide").onclick=()=>g.querySelectorAll(".theorist").forEach(t=>t.classList.remove("flip"));
+  },
+  renderInteract(el){
+    el.innerHTML=`<div class="lab"><h3>🎮 TAKE COMMAND: Who said it?</h3>
+    <p id="who-q" style="font-size:17px"></p><div class="pillar-row" id="who-row"></div><p id="who-out" style="font-family:var(--mono)">SCORE: <span id="who-score">0</span>/3</p></div>`;
+    const rounds=[
+      {q:"“All warfare is based on deception.”",a:"Sun Tzu",opts:["Sun Tzu","Douhet","Jomini"]},
+      {q:"“War is the continuation of politics by other means.”",a:"Clausewitz",opts:["Mahan","Clausewitz","Schelling"]},
+      {q:"“Hit where the enemy is not — the indirect approach.”",a:"Liddell Hart",opts:["Liddell Hart","Douhet","Mackinder"]}
+    ];
+    let i=0,score=0;
+    const show=()=>{
+      if(i>=rounds.length){el.querySelector("#who-q").textContent="War college complete.";return;}
+      el.querySelector("#who-q").textContent=`${i+1}. ${rounds[i].q}`;
+      const row=el.querySelector("#who-row");row.innerHTML="";
+      rounds[i].opts.forEach(o=>{
+        const d=document.createElement("div");d.className="pillar";d.textContent=o;
+        d.onclick=()=>{
+          if(o===rounds[i].a){score++;el.querySelector("#who-score").textContent=score;el.querySelector("#who-out").firstChild.textContent="✔ CORRECT — ";addXP(8);}
+          else el.querySelector("#who-out").firstChild.textContent=`❌ It was ${rounds[i].a} — `;
+          i++;setTimeout(show,700);blip();
+        };row.appendChild(d);
+      });
+    };show();
+  },
+  quiz:[
+    {q:"“Win without fighting” is…",options:["Sun Tzu","Douhet","Mahan"],answer:0,explain:"Supreme excellence = break resistance without battle."},
+    {q:"Concentrate mass at the decisive point is most…",options:["Jomini","Sun Tzu","Schelling"],answer:0,explain:"Jomini's staff science of concentration."},
+    {q:"Deterrence as bargaining / escalation control is…",options:["Schelling","Clausewitz","Corbett"],answer:0,explain:"Schelling: threats that leave something to chance."}
+  ]
+},
+{
+  code:"OP-05 • LAND WAR", title:"Land Power: Maneuver vs Attrition",
+  sub:"Blitz, Deep Battle, and why occupying people is harder than beating armies.",
+  xp:170,
+  briefing:`
+  <h3>📜 COMMAND BRIEFING</h3>
+  <div class="card-grid">
+    <div class="mini-card"><b>💥 Attrition</b><br>Grind them down: <code>WWI, artillery, Lanchester math</code>. Works if you have more stuff. Horrific cost.</div>
+    <div class="mini-card"><b>⚡ Maneuver / Blitz</b><br>Speed + radios + tanks punch through, encircle, collapse HQ. <code>OODA loop faster than enemy</code>.</div>
+    <div class="mini-card"><b>🌊 Deep Battle (USSR)</b><br>Multiple breakthroughs in depth, reserves exploit. <code>Shock army, not single spearhead</code>.</div>
+    <div class="mini-card"><b>🏘️ COIN (counterinsurgency)</b><br>Vs guerrillas: <code>protect population, legitimacy, intel</code>. Kill-capture alone backfires.</div>
+  </div>
+  <div class="callout danger">🧮 <b>Lanchester's square law (simplified):</b> aimed-fire power ≈ numbers² × quality. Doubling troops QUADRUPLES power — that's why concentration and flanking (hitting fractions) matter so much.</div>
+  <p><b>OODA:</b> Observe → Orient → Decide → Act. Whoever cycles faster dislocates the enemy. Maneuver warfare is OODA made physical.</p>`,
+  demoNote:"PRESS RUN: blue tries maneuver (fast flankers). Red sits in attrition line. Watch encirclement collapse red morale. Toggle doctrines.",
+  renderDemo(stage, controls){
+    stage.innerHTML=`<div class="battlefield" id="bf">
+      <div class="supply-line" id="sup-r" style="left:60%;top:60%;width:30%"></div>
+      <div class="unit red" style="left:62%;top:30%">🪖</div><div class="unit red" style="left:68%;top:45%">🪖</div>
+      <div class="unit red" style="left:62%;top:60%">🪖</div><div class="unit red" style="left:70%;top:70%">🏰</div>
+      <div class="unit blue" id="b1" style="left:8%;top:30%">🚛</div><div class="unit blue" id="b2" style="left:8%;top:60%">🚛</div>
+      <div class="unit blue" id="b3" style="left:4%;top:45%">⚔️</div>
+      <p id="bf-out" style="position:absolute;bottom:6px;left:10px;font-family:var(--mono);font-size:12px;color:#fff;margin:0">BLUE: maneuver plan loaded…</p></div>`;
+    controls.innerHTML=`<button class="chip-btn" id="bf-run">▶ RUN BATTLE</button><button class="chip-btn" id="bf-reset">↺ Reset</button>`;
+    const pos={b1:["8%","30%"],b2:["8%","60%"],b3:["4%","45%"]};
+    const reset=()=>{["b1","b2","b3"].forEach(id=>{const e=stage.querySelector("#"+id);e.style.left=pos[id][0];e.style.top=pos[id][1];e.textContent=id==="b3"?"⚔️":"🚛";});stage.querySelector("#sup-r").style.background="";stage.querySelector("#bf-out").textContent="BLUE: maneuver plan loaded…";};
+    controls.querySelector("#bf-reset").onclick=reset;
+    controls.querySelector("#bf-run").onclick=()=>{
+      reset();blip();
+      const s=stage.querySelector.bind(stage);
+      s("#bf-out").textContent="BLUE: fixing frontally, flanking north & south… (OODA faster)";
+      setTimeout(()=>{s("#b1").style.left="55%";s("#b1").style.top="12%";s("#b2").style.left="55%";s("#b2").style.top="82%";s("#b3").style.left="40%";s("#b3").style.top="45%";},400);
+      setTimeout(()=>{s("#b1").style.left="82%";s("#b1").style.top="40%";s("#b2").style.left="84%";s("#b2").style.top="62%";s("#sup-r").style.background="var(--red)";s("#bf-out").textContent="ENCIRCLEMENT! Red supply cut — attrition line starves. Maneuver wins by position, not pushing.";s("#b1").textContent="🔥";s("#b2").textContent="🔥";addXP(5);},1600);
+    };
+  },
+  renderInteract(el){
+    el.innerHTML=`<div class="lab"><h3>🎮 TAKE COMMAND: COIN dilemma</h3>
+    <p>Insurgents hide in a town. Intel is weak. Choose:</p>
+    <div class="pillar-row">
+      <div class="pillar" data-t="❌ Heavy bombardment kills 5 fighters + 40 civilians → 200 new recruits. You lost.">💣 Flatten the district</div>
+      <div class="pillar" data-t="✔ Clear-hold-build: secure, services, local allies, intel grows. Slow. Wins.">🏘️ Clear–Hold–Build</div>
+      <div class="pillar" data-t="⚠️ Capture raids alone: works only with good intel + held ground afterwards.">🔫 Night raids only</div>
+    </div><p id="coin-out" style="font-family:var(--mono)">AWAITING ORDERS… (COIN = competition for the population)</p></div>`;
+    el.querySelectorAll(".pillar").forEach(p=>p.onclick=()=>{el.querySelector("#coin-out").textContent=p.dataset.t;blip();addXP(5);});
+  },
+  quiz:[
+    {q:"Maneuver warfare wins mainly by…",options:["Position, speed & dislocation (collapse command)","Having more trenches","Louder artillery"],answer:0,explain:"Bypass strength, collapse the system."},
+    {q:"Lanchester's square law implies…",options:["Concentration + flanking multiply power hugely","Numbers don't matter","Defense is impossible"],answer:0,explain:"Power scales with numbers² in aimed fire."},
+    {q:"COIN succeeds when you…",options:["Protect the population & build legitimacy + intel","Bomb more","Avoid all contact"],answer:0,explain:"Population is the prize."}
+  ]
+},
+{
+  code:"OP-06 • SEA POWER", title:"Sea Power: Chokepoints & A2/AD",
+  sub:"90% of trade sails. Whoever controls the narrows taxes the world.",
+  xp:170,
+  briefing:`
+  <h3>📜 COMMAND BRIEFING</h3>
+  <p><b>Sea control</b> = use the sea for your trade + landings. <b>Sea denial</b> = stop the enemy using it (subs, mines, missiles — cheaper!). <b>Power projection</b> = carriers & marines reaching ashore.</p>
+  <div class="card-grid">
+    <div class="mini-card"><b>🗝️ Chokepoints</b><br><code>Hormuz, Malacca, Bab el-Mandeb, Suez, Panama, Taiwan Strait</code>. Block one → global prices spike.</div>
+    <div class="mini-card"><b>🚫 A2/AD bubble</b><br>Anti-Access/Area-Denial: <code>long missiles + sensors</code> push carriers hundreds of km out.</div>
+    <div class="mini-card"><b>⛽ Blockade</b><br>Slow strangulation, legal + economic weapon. <code>Needs legitimacy + staying power</code>.</div>
+    <div class="mini-card"><b>🚢 SLOCs</b><br>Sea Lines of Communication. <code>Protect your own, threaten theirs</code> — Corbett's whole game.</div>
+  </div>`,
+  demoNote:"TOGGLE the blockade and the A2/AD bubble. Watch trade ships stop, then reroute at huge cost. That is sea denial without a single fleet battle.",
+  renderDemo(stage, controls){
+    stage.innerHTML=`<div class="battlefield" id="sea" style="background:linear-gradient(180deg,#062033,#04101c)">
+      <div class="radar"></div><div class="sweep"></div>
+      <div class="a2-bubble" id="a2" style="left:52%;top:8%;width:220px;height:220px;display:none">A2/AD<br>MISSILE BUBBLE</div>
+      <div class="ship" id="s1" style="left:4%;top:30%">🚢</div>
+      <div class="ship" id="s2" style="left:4%;top:55%">🛢️</div>
+      <div class="ship" id="s3" style="left:4%;top:75%">📦</div>
+      <div style="position:absolute;left:46%;top:0;bottom:0;width:8%;background:repeating-linear-gradient(0deg,#3a2c10 0 12px,#241c0a 12px 24px);opacity:.9;border-left:2px solid var(--amber);border-right:2px solid var(--amber)"></div>
+      <div style="position:absolute;left:44%;top:6px;font-family:var(--mono);font-size:11px;color:var(--amber)">▲ STRAIT ▲</div>
+      <p id="sea-out" style="position:absolute;bottom:6px;left:10px;font-family:var(--mono);font-size:12px;color:#fff;margin:0">TRADE FLOWING: 3 ships/hour • energy price INDEX 100</p></div>`;
+    controls.innerHTML=`<button class="chip-btn" id="sea-block">🚫 Toggle blockade</button><button class="chip-btn" id="sea-a2">⭕ Toggle A2/AD bubble</button><button class="chip-btn" id="sea-run">▶ Sail ships</button>`;
+    let blocked=false, timer=null;
+    const sail=()=>{
+      ["s1","s2","s3"].forEach((id,k)=>{
+        const s=stage.querySelector("#"+id);
+        s.style.left="4%";
+        setTimeout(()=>{ s.style.left = blocked ? "34%" : "90%"; }, 100+k*500);
+      });
+      stage.querySelector("#sea-out").textContent = blocked
+        ? "⛔ BLOCKADE: ships pile up before strait • INDEX 240 — factories idle, inflation bites."
+        : "TRADE FLOWING: 3 ships/hour • energy price INDEX 100";
+      stage.querySelector("#sea-out").style.color = blocked?"var(--red)":"#fff";
+    };
+    controls.querySelector("#sea-run").onclick=()=>{sail();blip();};
+    controls.querySelector("#sea-block").onclick=(e)=>{blocked=!blocked;e.target.classList.toggle("active",blocked);sail();blip();};
+    controls.querySelector("#sea-a2").onclick=(e)=>{
+      const b=stage.querySelector("#a2");const on=b.style.display==="none";
+      b.style.display=on?"grid":"none";e.target.classList.toggle("active",on);blip();
+      if(on)stage.querySelector("#sea-out").textContent+="  | A2/AD ON: carriers must stand off 1,500km.";
+    };
+    timer=setInterval(()=>{ if(!document.body.contains(stage))clearInterval(timer); },2000);
+  },
+  renderInteract(el){
+    el.innerHTML=`<div class="lab"><h3>🎮 TAKE COMMAND: Protect the SLOC</h3>
+    <p>You have 1 escort group. Two convoys: <b>oil (vital)</b> vs <b>phones (profitable)</b>. Enemy subs hunt one lane.</p>
+    <div class="pillar-row">
+      <div class="pillar" data-t="✔ Correct: protect the vital flow first; reroute the rest, convoy + air cover. Corbett nods.">🛢️ Escort the OIL convoy</div>
+      <div class="pillar" data-t="❌ Profitable ≠ vital. Nation stops without energy; phones can wait.">📱 Escort the PHONES convoy</div>
+      <div class="pillar" data-t="❌ Splitting escorts = defeat in detail. Mass at the decisive point (Jomini!).">↔️ Split escorts 50/50</div>
+    </div><p id="sloc-out" style="font-family:var(--mono)">AWAITING ORDERS…</p></div>`;
+    el.querySelectorAll(".pillar").forEach(p=>p.onclick=()=>{el.querySelector("#sloc-out").textContent=p.dataset.t;blip();addXP(5);});
+  },
+  quiz:[
+    {q:"Sea denial is…",options:["Preventing enemy use of the sea (subs/mines/missiles), cheaper than control","Owning every wave","Only about pirates"],answer:0,explain:"Deny without needing to control."},
+    {q:"An A2/AD bubble does what?",options:["Pushes enemy fleets/aircraft far out with missiles + sensors","Cleans pollution","Blocks the internet"],answer:0,explain:"Long-range fires keep carriers at arm's length."},
+    {q:"Why blockade instead of invade?",options:["Strangle economy/pressure with lower cost & risk","It's faster always","It needs no navy"],answer:0,explain:"Slow coercion — needs legitimacy + endurance."}
+  ]
+},
+{
+  code:"OP-07 • NEW DOMAINS", title:"Air, Space, Cyber, Nukes & Hybrid War",
+  sub:"Deterrence, gray zones, and wars that never declare themselves.",
+  xp:180,
+  briefing:`
+  <h3>📜 COMMAND BRIEFING</h3>
+  <div class="card-grid">
+    <div class="mini-card"><b>✈️ Airpower</b><br><code>Control of the air → strike + recon + lift</code>. Douhet dreamed it wins alone; reality: it enables joint force.</div>
+    <div class="mini-card"><b>🛰️ Space</b><br>GPS, sats, intel. <code>Who blinds sats blinds armies</code>. Congested + contested now.</div>
+    <div class="mini-card"><b>💻 Cyber</b><br>Sabotage grids, steal plans, confuse. <code>Fast, deniable, reversible-ish</code> — perfect gray-zone tool.</div>
+    <div class="mini-card"><b>☢️ Nuclear deterrence</b><br><code>MAD: assured retaliation</code> stops great-power war. Needs <code>survivable triad + credible signaling</code>.</div>
+  </div>
+  <div class="callout">🌫️ <b>Hybrid / Gray-zone war:</b> stay <i>below</i> the war threshold — militias without flags, cyberattacks, lawfare, economic coercion, disinfo. Win without triggering retaliation. Answer: <code>expose + attribute + impose costs + resilience</code>.</div>
+  <p><b>Escalation ladder (Schelling):</b> each rung up is harder to climb down. Strategy = signal clearly, leave the enemy a golden bridge, keep something to chance — but controlled.</p>`,
+  demoNote:"CLIMB the ladder rung by rung. Watch the RISK meter. Press DE-ESCALATE to see how off-ramps lower risk — the core skill of deterrence.",
+  renderDemo(stage, controls){
+    const rungs=["1 — Disinfo & probes","2 — Cyber sabotage","3 — Proxy militia (no flags)","4 — Blockade / no-fly zone","5 — Limited strikes","6 — Full conventional war","7 — Tactical nuclear use","8 — Strategic exchange ☠"];
+    stage.innerHTML=`<div class="lab" style="background:#050d16;border-radius:10px;padding:14px"><div class="ladder" id="lad"></div>
+    <div class="meter"><div id="esc-risk" style="width:5%"></div></div><p id="esc-out" style="font-family:var(--mono)">RISK 5% — PEACE. Click rungs or use buttons.</p></div>`;
+    const lad=stage.querySelector("#lad");
+    rungs.forEach((r,i)=>{
+      const d=document.createElement("div");d.className="rung";d.textContent=r;
+      d._i=i;d.onclick=()=>set(i);lad.appendChild(d);
+    });
+    let cur=-1;
+    function set(i){
+      cur=i;
+      if(i<0){lad.querySelectorAll(".rung").forEach(x=>x.classList.remove("active"));stage.querySelector("#esc-risk").style.width="5%";stage.querySelector("#esc-out").textContent="RISK 5% — PEACE. Off-ramp worked: hotline + concessions + verification.";stage.querySelector("#esc-out").style.color="var(--green)";blip();return;}
+      lad.querySelectorAll(".rung").forEach(x=>x.classList.toggle("active",x._i<=i));
+      const risk=Math.round(((i+1)/rungs.length)*100);
+      stage.querySelector("#esc-risk").style.width=Math.max(5,risk)+"%";
+      stage.querySelector("#esc-out").textContent=`RISK ${Math.max(5,risk)}% — ${i>=6?"☠ NUCLEAR THRESHOLD CROSSED — deterrence FAILED.":i>=3?"⚠️ WAR THRESHOLD — off-ramps shrinking!":"🌫️ GRAY ZONE — deniable, hard to punish."}`;
+      stage.querySelector("#esc-out").style.color=i>=6?"var(--red)":i>=3?"var(--amber)":"var(--green)";
+      blip();
+    }
+    controls.innerHTML=`<button class="chip-btn" id="esc-up">▲ Escalate</button><button class="chip-btn" id="esc-down">▼ De-escalate / off-ramp</button><button class="chip-btn" id="esc-reset">↺ Peace</button>`;
+    controls.querySelector("#esc-up").onclick=()=>set(Math.min(rungs.length-1,cur+1));
+    controls.querySelector("#esc-down").onclick=()=>set(Math.max(-1,cur-1));
+    controls.querySelector("#esc-reset").onclick=()=>set(-1);
+  },
+  renderInteract(el){
+    el.innerHTML=`<div class="lab"><h3>🎮 TAKE COMMAND: Gray-zone attack incoming</h3>
+    <p>Unmarked boats harass your rigs + a blackout hits one island + fake videos flood feeds. No one declares war. Respond:</p>
+    <div class="pillar-row">
+      <div class="pillar" data-t="❌ Full invasion = you escalate alone, lose legitimacy, play into their trap.">⚔️ Invade immediately</div>
+      <div class="pillar" data-t="✔ Textbook: expose with evidence + harden grids + coast-guard presence + allied sanctions. Impose costs below threshold.">🛡️ Expose + harden + allied costs</div>
+      <div class="pillar" data-t="❌ Doing nothing teaches them it works. Gray-zone wins by unanswered repetition.">😴 Ignore it</div>
+    </div><p id="hyb-out" style="font-family:var(--mono)">AWAITING ORDERS…</p></div>`;
+    el.querySelectorAll(".pillar").forEach(p=>p.onclick=()=>{el.querySelector("#hyb-out").textContent=p.dataset.t;blip();addXP(5);});
+  },
+  quiz:[
+    {q:"Deterrence works when…",options:["Enemy believes cost > gain AND threat is credible","You own more tanks only","You stay silent"],answer:0,explain:"Capability × credibility × communication."},
+    {q:"Gray-zone tactics stay…",options:["Below open-war threshold, deniable","Only in deserts","Always nuclear"],answer:0,explain:"Win without triggering full retaliation."},
+    {q:"Best answer to hybrid attack?",options:["Expose + resilience + allied costs","Immediate full invasion","Do nothing"],answer:0,explain:"Raise their cost, deny success, keep legitimacy."}
+  ]
+},
+{
+  code:"OP-08 • FINAL", title:"Final Exam: Command the Crisis",
+  sub:"All domains, all levers. Earn the title GRAND STRATEGIST.",
+  xp:250,
+  briefing:`
+  <h3>📜 FINAL OPERATION ORDER</h3>
+  <p><b>Situation:</b> Rival “Ocean Dragon” claims the Coral Strait (your oil + chips lifeline), builds an A2/AD bubble over it, floods your feeds with deepfakes, and parks 60 ships “on exercise.” Ally <i>Port Verde</i> offers bases — if you commit to defend them.</p>
+  <div class="callout">🎖️ <b>Your staff test:</b> Apply <b>DIME</b>, <b>Ends-Ways-Means</b>, <b>CoG</b>, <b>sea denial vs control</b>, <b>escalation control</b>. There is no perfect move — only balanced strategy with an off-ramp.</div>
+  <p>Recommended doctrine answer: <b>D+I+E first</b> (expose claims, rally allies, chip/energy leverage), <b>M as shield</b> (convoy + subs + dispersed air, stay outside bubble core), demand de-escalation hotline. Strike only vital CoGs (sensors, supply) if deterrence fails — then offer golden bridge.</p>`,
+  demoNote:"This is the full war room. Toggle each instrument, then read the STAFF VERDICT — it scores your whole-of-strategy mix.",
+  renderDemo(stage, controls){
+    const tools=[["🤝 Rally allies (D)","d"],["📡 Expose deepfakes (I)","i"],["💰 Chip + energy leverage (E)","e"],["🚢 Convoy + subs outside bubble (M-shield)","m"],["🎯 Strike bubble sensors (M-sword)","s"],["☎️ Open hotline + off-ramp","h"]];
+    stage.innerHTML=`<div class="lab" style="background:#050d16;border-radius:10px;padding:14px">
+      <div class="pillar-row" id="fin-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"></div>
+      <div class="meter"><div id="fin-score" style="width:10%"></div></div>
+      <p id="fin-out" style="font-family:var(--mono)">STAFF VERDICT: activate instruments…</p></div>`;
+    const row=stage.querySelector("#fin-row");const active=new Set();
+    tools.forEach(t=>{
+      const d=document.createElement("div");d.className="pillar";d.innerHTML=t[0];
+      d.onclick=()=>{
+        if(active.has(t[1])){active.delete(t[1]);d.style.borderColor="";}
+        else{active.add(t[1]);d.style.borderColor="var(--green)";}
+        const hasShield=active.has("m"),hasSword=active.has("s"),hasHot=active.has("h");
+        const whole=(active.has("d")?1:0)+(active.has("i")?1:0)+(active.has("e")?1:0);
+        let score=10+whole*18+(hasShield?20:0)+(hasHot?15:0)-(hasSword&&!hasShield?15:0)-(hasSword&&!hasHot?10:0);
+        score=Math.max(5,Math.min(100,score));
+        stage.querySelector("#fin-score").style.width=score+"%";
+        let v;
+        if(whole>=3&&hasShield&&hasHot&&!hasSword)v=`${score}% ★ EXEMPLARY: whole-of-DIME + shield + off-ramp. Deterrence holds, war avoided. HERO.`;
+        else if(whole>=2&&hasShield&&hasHot)v=`${score}% ✔ SOUND: balanced + de-escalation path. Minor gaps only.`;
+        else if(hasSword&&!hasShield&&!hasHot)v=`${score}% ❌ RECKLESS: sword without shield or bridge = escalation you don't control.`;
+        else v=`${score}% … add DIME breadth + shield + hotline. Pure military or pure talk fails alone.`;
+        stage.querySelector("#fin-out").textContent="STAFF VERDICT: "+v;blip();
+      };row.appendChild(d);
+    });
+    controls.innerHTML=`<span style="font-family:var(--mono);font-size:12px;color:var(--dim)">TIP: try D+I+E + shield + hotline = the textbook answer. Then try sword-only and watch the verdict.</span>`;
+  },
+  renderInteract(el){
+    el.innerHTML=`<div class="lab"><h3>🎮 TAKE COMMAND: Your 30-second order</h3>
+    <p>Pick the order you'd actually sign:</p>
+    <div class="pillar-row">
+      <div class="pillar" data-t="HERO-LEVEL: allies + truth + economic leverage + shielded fleet + hotline. You control escalation AND leave a bridge. +20 XP">A — “Expose, rally Verde, convoy outside bubble, chip leverage, hotline open.”</div>
+      <div class="pillar" data-t="GAMBLE: might decapitate the bubble — or start a war with no friends and no bridge. Staff rejects as first move.">B — “Preemptive strike on all bubble sites tonight.”</div>
+      <div class="pillar" data-t="SURRENDER BY DELAY: strait becomes theirs slice by slice. Deterrence dies quietly.">C — “Do nothing, hope exercises end.”</div>
+    </div><p id="final-out" style="font-family:var(--mono)">AWAITING YOUR SIGNATURE…</p></div>`;
+    el.querySelectorAll(".pillar").forEach(p=>p.onclick=()=>{el.querySelector("#final-out").textContent=p.dataset.t;blip();if(p.dataset.t.startsWith("HERO"))addXP(20);else addXP(3);});
+  },
+  quiz:[
+    {q:"Best FIRST move in the Coral Strait crisis?",options:["DIME-wide pressure + shielded fleet + hotline","Immediate full strike on the bubble","Concede the strait"],answer:0,explain:"Coerce + protect + communicate, control escalation."},
+    {q:"The enemy CoG here is most likely…",options:["Bubble sensors + supply + political will to sustain it","Every single ship","The weather"],answer:0,explain:"System enablers, not individual hulls."},
+    {q:"The 'golden bridge' means…",options:["Leave the enemy a face-saving off-ramp to de-escalate","Build a real bridge","Retreat always"],answer:0,explain:"Schelling: make peace cheaper than war."},
+    {q:"Sea control for YOU means…",options:["Your oil/chips sail safely; rival can't use strait against you","Sinking everything","Owning the beaches"],answer:0,explain:"Use for you, deny hostile use."}
+  ]
+}
+];
+
+/* ---------- state ---------- */
+const SAVE_KEY="geopol-command-save-v1";
+let state={xp:0,cleared:[],current:0,answers:{}};
+try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));if(s&&typeof s.xp==="number")state=s;}catch(e){}
+function save(){localStorage.setItem(SAVE_KEY,JSON.stringify(state));}
+function addXP(n){state.xp+=n;save();renderHUD();}
+function rankFor(xp){return xp>=900?"GRAND STRATEGIST":xp>=700?"STRATEGIST":xp>=500?"OPERATIONAL COMMANDER":xp>=350?"TACTICIAN":xp>=200?"CADET":xp>=80?"RECRUIT":"CIVILIAN";}
+function isUnlocked(i){return i===0||state.cleared.includes(i-1);}
+function isCleared(i){return state.cleared.includes(i);}
+
+/* ---------- audio blips (WebAudio, no files) ---------- */
+let soundOn=true;
+function blip(f=660){if(!soundOn)return;try{
+  const ctx=blip.ctx||(blip.ctx=new (window.AudioContext||window.webkitAudioContext)());
+  const o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=f;
+  g.gain.value=0.04;o.connect(g);g.connect(ctx.destination);o.start();g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+0.12);o.stop(ctx.currentTime+0.13);
+}catch(e){}}
+document.getElementById("btn-sound").onclick=(e)=>{soundOn=!soundOn;e.target.textContent="SOUND: "+(soundOn?"ON":"OFF");};
+
+/* ---------- HUD + map ---------- */
+function renderHUD(){
+  document.getElementById("hud-xp").textContent=state.xp;
+  document.getElementById("hud-rank").textContent=rankFor(state.xp);
+  const pct=Math.min(100,Math.round(state.xp/1000*100));
+  document.getElementById("hud-xpfill").style.width=pct+"%";
+  document.getElementById("hud-level").textContent=`LV ${state.cleared.length}/${LEVELS.length}`;
+  const cp=Math.round(state.cleared.length/LEVELS.length*100);
+  document.getElementById("campaign-progress").style.width=cp+"%";
+  document.getElementById("campaign-progress-txt").textContent=cp+"% CLEARED • "+state.xp+" XP";
+}
+function renderMap(){
+  const ol=document.getElementById("level-list");ol.innerHTML="";
+  LEVELS.forEach((L,i)=>{
+    const li=document.createElement("li");
+    const locked=!isUnlocked(i),done=isCleared(i);
+    li.className="level-item"+(i===state.current?" active":"")+(locked?" locked":"")+(done?" done":"");
+    li.innerHTML=`<div class="lvl-num">${done?"✔":locked?"🔒":i}</div>
+      <div><div class="lvl-name">${L.title}</div><div class="lvl-desc">${L.code} • +${L.xp} XP</div></div>
+      <div class="lvl-state">${done?"🟢":locked?"🔒":"🟡"}</div>`;
+    li.onclick=()=>{ if(locked){toast("🔒 Clear the previous operation first, Commander.");return;} state.current=i;save();renderAll();blip(520); };
+    ol.appendChild(li);
+  });
+}
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2200);}
+
+/* ---------- mission ---------- */
+let selected={};
+function renderMission(){
+  const L=LEVELS[state.current];
+  document.getElementById("m-kicker").textContent=L.code;
+  document.getElementById("m-title").textContent=(state.current)+". "+L.title;
+  document.getElementById("m-sub").textContent=L.sub;
+  document.getElementById("m-xp-badge").textContent="+"+L.xp+" XP";
+  const st=document.getElementById("m-status-badge");
+  st.textContent=isCleared(state.current)?"✔ CLEARED":isUnlocked(state.current)?"🟡 OPEN":"🔒 LOCKED";
+  document.getElementById("pane-briefing").innerHTML=L.briefing;
+  // demo
+  const stage=document.getElementById("demo-stage"),ctrl=document.getElementById("demo-controls");
+  document.getElementById("demo-note").textContent="◉ "+L.demoNote;
+  stage.innerHTML="";ctrl.innerHTML="";L.renderDemo(stage,ctrl);
+  // interact
+  const inter=document.getElementById("interact-stage");inter.innerHTML="";L.renderInteract(inter);
+  // quiz
+  renderQuiz();
+  document.getElementById("btn-prev").disabled=state.current===0;
+  document.getElementById("btn-next").disabled=state.current===LEVELS.length-1;
+}
+function renderQuiz(){
+  const L=LEVELS[state.current],box=document.getElementById("quiz-stage");box.innerHTML="";
+  selected={};
+  L.quiz.forEach((q,qi)=>{
+    const d=document.createElement("div");d.className="quiz-q";d.id="q"+qi;
+    d.innerHTML=`<h4>Q${qi+1}. ${q.q}</h4>`+q.options.map((o,oi)=>`<label><input type="radio" name="q${qi}" value="${oi}"> ${o}</label>`).join("")+`<div class="q-explain" style="display:none;color:var(--dim);font-size:13px;margin-top:6px"></div>`;
+    d.querySelectorAll("input").forEach(r=>r.onchange=()=>{selected[qi]=+r.value;blip(740);});
+    box.appendChild(d);
+  });
+  const fb=document.getElementById("quiz-feedback");
+  fb.textContent=isCleared(state.current)?"✔ Already validated. Resubmit to improve.":"Need "+Math.ceil(L.quiz.length*2/3)+" of "+L.quiz.length+" correct to advance.";
+  fb.style.color="var(--dim)";
+}
+document.getElementById("btn-check-quiz").onclick=()=>{
+  const L=LEVELS[state.current];let good=0;
+  L.quiz.forEach((q,qi)=>{
+    const d=document.getElementById("q"+qi),ex=d.querySelector(".q-explain");
+    d.classList.remove("correct","wrong");
+    if(selected[qi]===q.answer){good++;d.classList.add("correct");ex.style.display="block";ex.textContent="✔ "+q.explain;}
+    else{d.classList.add("wrong");ex.style.display="block";ex.textContent="❌ Correct: "+q.options[q.answer]+" — "+q.explain;}
+  });
+  const need=Math.ceil(L.quiz.length*2/3),fb=document.getElementById("quiz-feedback");
+  if(good>=need){
+    const first=!isCleared(state.current);
+    if(first){state.cleared.push(state.current);addXP(L.xp);}
+    else addXP(10);
+    save();fb.textContent=`✔ VALIDATED ${good}/${L.quiz.length} — ${first?`+${L.xp} XP! Next operation unlocked.`:"review bonus +10 XP."}`;fb.style.color="var(--green)";
+    toast(first?"✔ Operation cleared! Next unlocked.":"✔ Still sharp, Commander.");
+    fanfare();
+    if(state.cleared.length===LEVELS.length)setTimeout(showVictory,900);
+  }else{
+    fb.textContent=`✘ ${good}/${L.quiz.length} — need ${need}. Review briefing + demo, soldier.`;fb.style.color="var(--red)";blip(180);
+  }
+  renderHUD();renderMap();renderMissionStatusOnly();
+};
+function renderMissionStatusOnly(){
+  const st=document.getElementById("m-status-badge");
+  st.textContent=isCleared(state.current)?"✔ CLEARED":"🟡 OPEN";
+}
+function fanfare(){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>blip(f),i*110));}
+
+/* ---------- tabs + nav ---------- */
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");
+  document.querySelectorAll(".pane").forEach(p=>p.classList.remove("active"));
+  document.getElementById("pane-"+t.dataset.tab).classList.add("active");blip(600);
+});
+document.getElementById("btn-prev").onclick=()=>{if(state.current>0){state.current--;save();renderAll();blip();}};
+document.getElementById("btn-next").onclick=()=>{
+  if(state.current>=LEVELS.length-1)return;
+  if(!isCleared(state.current)){toast("⚠️ Validate this operation (quiz) to unlock the next.");document.querySelector('[data-tab="quiz"]').click();return;}
+  state.current++;save();renderAll();blip();
+};
+document.getElementById("btn-reset").onclick=()=>{if(confirm("Reset all campaign progress?")){state={xp:0,cleared:[],current:0,answers:{}};save();renderAll();toast("Campaign reset. Fresh recruit!");}};
+
+/* ---------- victory ---------- */
+function showVictory(){
+  const v=document.getElementById("victory");v.classList.remove("hidden");
+  document.getElementById("victory-text").textContent=`You cleared all ${LEVELS.length} operations with ${state.xp} XP — rank: ${rankFor(state.xp)}. You can explain DIME, Ends-Ways-Means, CoG, maneuver vs attrition, sea denial, deterrence and gray-zone war with live examples.`;
+  document.getElementById("victory-cert").innerHTML=`🏅 CERTIFICATE OF STRATEGY — awarded to <b>${rankFor(state.xp)}</b><br>GEOPOL COMMAND ACADEMY • ${new Date().toLocaleDateString()} • ${state.xp} XP • signed: Sun Tzu, Clausewitz & Schelling (in spirit)`;
+}
+document.getElementById("btn-close-victory").onclick=()=>document.getElementById("victory").classList.add("hidden");
+document.getElementById("btn-cert").onclick=()=>window.print();
+
+function renderAll(){renderHUD();renderMap();renderMission();}
+renderAll();
+</script>
+</body>
+</html>
