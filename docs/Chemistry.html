@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChemQuest — From Zero to Hero | Vanilla Chemistry Adventure</title>
+<meta name="description" content="ChemQuest: a gamified chemistry journey from atoms to organic & nuclear. 100% vanilla JS + CSS3, zero external resources.">
+<style>
+/* ChemQuest — pure CSS3 game theme. No external resources. */
+:root{
+  --bg:#0b1026; --bg2:#141b3d; --card:#1b2450; --card2:#222c60;
+  --ink:#eef1ff; --mut:#aab3d8; --line:rgba(255,255,255,.12);
+  --acc:#38e1c6; --acc2:#a78bfa; --gold:#ffcf4d; --pink:#ff6ea9; --good:#3ddc84; --bad:#ff5d6c;
+  --r:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background:radial-gradient(1200px 800px at 20% -10%, #2b3a8f 0%, transparent 60%),
+             radial-gradient(1000px 700px at 110% 10%, #5b2a86 0%, transparent 55%),
+             radial-gradient(900px 900px at 50% 120%, #0e4d5c 0%, transparent 55%),
+             linear-gradient(180deg,var(--bg),#070a1c);
+  color:var(--ink); min-height:100vh;
+}
+/* floating orbs */
+#bg-orbs{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+#bg-orbs i{position:absolute;border-radius:50%;filter:blur(2px);opacity:.5;animation:drift 14s ease-in-out infinite alternate}
+#bg-orbs i:nth-child(1){width:90px;height:90px;left:6%;top:18%;background:radial-gradient(circle at 30% 30%,#7ef0ff,#2563eb);animation-delay:0s}
+#bg-orbs i:nth-child(2){width:46px;height:46px;left:82%;top:12%;background:radial-gradient(circle at 30% 30%,#ffd166,#f43f5e);animation-delay:-3s}
+#bg-orbs i:nth-child(3){width:130px;height:130px;left:70%;top:70%;background:radial-gradient(circle at 30% 30%,#c4b5fd,#6d28d9);animation-delay:-6s}
+#bg-orbs i:nth-child(4){width:34px;height:34px;left:20%;top:78%;background:radial-gradient(circle at 30% 30%,#a7f3d0,#059669);animation-delay:-2s}
+#bg-orbs i:nth-child(5){width:60px;height:60px;left:45%;top:45%;background:radial-gradient(circle at 30% 30%,#fecaca,#f59e0b);opacity:.25;animation-delay:-9s}
+@keyframes drift{from{transform:translateY(-18px) translateX(-10px) scale(1)}to{transform:translateY(22px) translateX(16px) scale(1.08)}}
+
+/* HUD */
+#hud{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:10px 16px;background:rgba(10,14,35,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.hud-left{display:flex;align-items:center;gap:12px}
+#logo{font-size:22px;font-weight:900;letter-spacing:.3px;display:flex;gap:8px;align-items:center}
+#logo b{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+#rank-badge{background:linear-gradient(180deg,#2a356e,#1a2150);border:1px solid var(--line);padding:6px 12px;border-radius:999px;font-weight:800;font-size:13px;white-space:nowrap}
+.hud-mid{flex:1;min-width:220px}
+#xp-bar{position:relative;height:26px;background:#0a0f2b;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+#xp-fill{height:100%;width:0%;background:linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6);transition:width .8s cubic-bezier(.2,.9,.2,1)}
+#xp-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;text-shadow:0 1px 4px #000}
+.hud-right{display:flex;align-items:center;gap:10px}
+#hearts{font-size:18px;letter-spacing:1px}
+#streak{background:#2a1430;border:1px solid #ff9a3d55;padding:5px 10px;border-radius:999px;font-weight:800;font-size:13px}
+
+.btn{border:0;cursor:pointer;color:#0b1026;font-weight:900;border-radius:12px;padding:10px 16px;
+  background:linear-gradient(180deg,#5ef2d6,#22c3a6);box-shadow:0 6px 0 #0f766e, 0 10px 24px rgba(0,0,0,.4);transition:transform .08s, box-shadow .08s, filter .2s}
+.btn:hover{filter:brightness(1.06)} .btn:active{transform:translateY(4px);box-shadow:0 2px 0 #0f766e}
+.btn.big{font-size:16px;padding:13px 22px;border-radius:14px}
+.btn.small{font-size:13px;padding:7px 12px;border-radius:10px}
+.btn.ghost{background:#232c63;color:var(--ink);box-shadow:0 6px 0 #12173a, 0 10px 24px rgba(0,0,0,.35);border:1px solid var(--line)}
+.btn.gold{background:linear-gradient(180deg,#ffe89a,#f5a623);box-shadow:0 6px 0 #9a5b00,0 10px 24px rgba(0,0,0,.4)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.4)}
+
+#app{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:22px 16px 60px}
+.screen{display:none;animation:pop .35s ease}
+.screen.active{display:block}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
+
+.hero-bubble{display:flex;gap:18px;background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
+  border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.hero-bubble .prof{font-size:64px;animation:bob 2.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+.hero-bubble h1{margin:0 0 8px;font-size:clamp(26px,4.5vw,44px);line-height:1.05}
+.grad{background:linear-gradient(90deg,#5ef2d6,#60a5fa);-webkit-background-clip:text;background-clip:text;color:transparent}
+.grad2{background:linear-gradient(90deg,#fbbf24,#fb7185,#c084fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-bubble p{color:#d6dbf5;line-height:1.6}
+.hero-stats{display:flex;gap:12px;margin:14px 0}
+.hero-stats div{background:#0d1332;border:1px solid var(--line);border-radius:14px;padding:10px 18px;text-align:center;min-width:100px}
+.hero-stats b{display:block;font-size:22px;color:var(--gold)} .hero-stats span{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:1px}
+.hero-cta{display:flex;gap:10px;flex-wrap:wrap}
+.tiny{font-size:12px;color:var(--mut)}
+
+.map-title{margin:26px 4px 12px}
+.level-map{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.lvl-card{position:relative;text-align:left;color:var(--ink);background:linear-gradient(180deg,var(--card2),var(--card));
+  border:1px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer;overflow:hidden;transition:transform .15s}
+.lvl-card:not(.locked):hover{transform:translateY(-3px) scale(1.01)}
+.lvl-card.locked{opacity:.55;cursor:not-allowed;filter:grayscale(.6)}
+.lvl-card.done{border-color:#3ddc8455}
+.lvl-card .lvl-top{display:flex;align-items:center;gap:12px}
+.lvl-ico{font-size:38px;width:62px;height:62px;display:flex;align-items:center;justify-content:center;background:#0d1332;border-radius:16px;border:1px solid var(--line);flex-shrink:0}
+.lvl-card h3{margin:0;font-size:17px} .lvl-card p{margin:4px 0 10px;color:var(--mut);font-size:13px;line-height:1.45;min-height:36px}
+.lvl-meta{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800}
+.stars{color:var(--gold);letter-spacing:2px;text-shadow:0 0 12px #ffcf4d88}
+.lvl-num{position:absolute;top:10px;right:12px;font-size:12px;color:var(--mut);font-weight:900}
+.lvl-path{height:8px;background:#0a0f2b;border-radius:99px;overflow:hidden;margin-top:10px;border:1px solid var(--line)}
+.lvl-path i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.boss-card{border:2px dashed #f59e0b88;background:linear-gradient(180deg,#3a2a12,#1c1430)}
+.legend{display:flex;gap:14px;color:var(--mut);font-size:13px;margin:12px 4px;flex-wrap:wrap}
+.howto{background:#0d1332;border:1px solid var(--line);border-radius:var(--r);padding:16px 20px;margin-top:10px;line-height:1.6}
+.hidden{display:none!important}
+
+/* LEVEL */
+#level-head{display:flex;gap:14px;align-items:center;background:linear-gradient(180deg,rgba(255,255,255,.08),transparent);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin:12px 0}
+#level-icon{font-size:46px}
+#level-kicker{font-size:12px;letter-spacing:2px;color:var(--acc);font-weight:900}
+#level-title{margin:2px 0;font-size:24px} #level-sub{margin:0;color:var(--mut)}
+#level-stars{margin-left:auto;font-size:22px;color:var(--gold)}
+.tabs{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.tab{flex:1;min-width:140px;padding:12px;border-radius:12px;border:1px solid var(--line);background:#141b45;color:var(--ink);font-weight:900;cursor:pointer}
+.tab.active{background:linear-gradient(180deg,#38e1c6,#2563eb);color:#06121a;border-color:transparent}
+.tabpanel{display:none;background:rgba(13,19,50,.9);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.tabpanel.active{display:block;animation:pop .3s}
+
+/* lesson typography */
+.lesson h3{color:var(--acc);margin-top:22px} .lesson h3:first-child{margin-top:0}
+.lesson p,.lesson li{line-height:1.7;color:#dde3ff}
+.lesson code{background:#0a0f2b;padding:2px 7px;border-radius:7px;border:1px solid var(--line);color:#7ef0ff;font-weight:700}
+.lesson table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+.lesson th,.lesson td{border:1px solid var(--line);padding:8px 10px;text-align:left}
+.lesson th{background:#232c63}
+.formula{background:linear-gradient(180deg,#0e2a3a,#0d1332);border:1px solid #38e1c655;border-radius:14px;padding:14px;text-align:center;font-size:20px;font-weight:900;margin:12px 0;letter-spacing:.5px}
+.analogy{border-left:4px solid var(--gold);background:#fff3c422;padding:10px 14px;border-radius:0 12px 12px 0;margin:12px 0}
+.keygrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:12px 0}
+.key{background:#0a0f2b;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px}
+.key b{color:var(--gold)}
+
+/* LAB */
+.lab-card{background:#0a0f2b;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.lab-card h4{margin:0 0 6px;font-size:16px} .lab-card p.hint{color:var(--mut);font-size:13px;margin:0 0 12px;line-height:1.5}
+.stage{position:relative;background:radial-gradient(600px 300px at 50% 0%,#1d2a6b, #0a0f2b);border:1px solid var(--line);border-radius:14px;min-height:220px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:18px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.controls label{font-size:13px;color:var(--mut);font-weight:800}
+input[type=range]{accent-color:var(--acc);width:160px}
+select,.txt{background:#141b45;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-weight:700}
+.readout{background:#06121a;border:1px dashed #38e1c688;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:14px;line-height:1.6}
+.readout b{color:var(--acc)}
+
+/* atom / orbits CSS3 animation */
+.atom{position:relative;width:230px;height:230px}
+.nucleus{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:74px;height:74px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,#ffe89a,#f43f5e 60%,#7c0d2b);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;text-align:center;box-shadow:0 0 30px #f43f5e99;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.07)}}
+.orbit{position:absolute;inset:0;border:1px dashed #ffffff44;border-radius:50%;animation:spin linear infinite}
+.orbit.o1{inset:8px;animation-duration:4s} .orbit.o2{inset:-22px;animation-duration:7s} .orbit.o3{inset:-52px;animation-duration:11s}
+@keyframes spin{to{transform:rotate(360deg)}}
+.elec{position:absolute;top:-9px;left:50%;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#38bdf8);box-shadow:0 0 12px #38bdf8}
+
+/* periodic mini */
+.ptable{display:grid;grid-template-columns:repeat(18,1fr);gap:3px;margin-top:10px}
+.el{aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;font-weight:900;cursor:pointer;border:1px solid rgba(255,255,255,.15);min-height:30px}
+.el small{font-size:7px;font-weight:700;opacity:.85}
+.el:hover{transform:scale(1.25);z-index:2}
+.cat-alkali{background:#ef4444}.cat-alkaline{background:#f59e0b}.cat-transition{background:#8b5cf6}.cat-post{background:#22c55e}.cat-metalloid{background:#14b8a6}.cat-nonmetal{background:#38bdf8}.cat-halogen{background:#eab308}.cat-noble{background:#ec4899}.cat-lanth{background:#a855f7}.cat-actin{background:#f472b6}.cat-unknown{background:#334155}
+
+/* bond anim */
+.bond-stage{gap:30px}
+.atom-chip{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:28px;transition:transform .6s}
+.chip-na{background:radial-gradient(circle at 30% 30%,#fde68a,#f59e0b)} .chip-cl{background:radial-gradient(circle at 30% 30%,#bbf7d0,#22c55e)}
+.chip-h{background:radial-gradient(circle at 30% 30%,#e0f2fe,#0ea5e9)} .chip-o{background:radial-gradient(circle at 30% 30%,#fecaca,#ef4444)}
+.e-dot{width:12px;height:12px;border-radius:50%;background:#ffea00;box-shadow:0 0 8px #ffea00;display:inline-block;margin:2px}
+.bonded{outline:3px solid var(--good);box-shadow:0 0 24px var(--good)}
+
+/* beakers / ph */
+.beaker{width:90px;height:150px;border:3px solid #ffffff66;border-top:0;border-radius:0 0 22px 22px;position:relative;overflow:hidden;background:#ffffff11}
+.beaker .liquid{position:absolute;bottom:0;left:0;right:0;transition:height .5s, background .5s}
+.bub{position:absolute;bottom:6px;border-radius:50%;background:#ffffff88;animation:rise 2s infinite ease-in}
+@keyframes rise{from{transform:translateY(0);opacity:1}to{transform:translateY(-110px);opacity:0}}
+.ph-scale{display:flex;height:26px;border-radius:99px;overflow:hidden;margin:12px 0;border:1px solid var(--line)}
+.ph-scale i{flex:1}
+
+/* quiz */
+.q{border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0;background:#0d1332}
+.q h4{margin:0 0 10px} .q .opts{display:grid;gap:8px}
+.opt{text-align:left;background:#1a2150;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:700;transition:all .15s}
+.opt:hover{border-color:var(--acc)} .opt.picked{background:#2b3a8f;border-color:var(--acc)}
+.opt.right{background:#0f3d2a;border-color:var(--good)} .opt.wrong{background:#441520;border-color:var(--bad)}
+.q .why{font-size:13px;color:var(--mut);margin-top:8px;line-height:1.5}
+.quiz-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.progress-dots{display:flex;gap:6px} .progress-dots i{width:12px;height:12px;border-radius:50%;background:#2a356e} .progress-dots i.ok{background:var(--good)} .progress-dots i.no{background:var(--bad)} .progress-dots i.cur{outline:2px solid var(--gold)}
+
+/* boss / cert */
+.cert{background:linear-gradient(180deg,#fffdf3,#ffe9a8);color:#231a02;border-radius:20px;padding:28px;text-align:center;border:6px double #b45309}
+.cert h2{margin:0;font-size:30px} .cert .seal{font-size:64px}
+#confetti-host{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.conf{position:absolute;top:-20px;width:10px;height:16px;opacity:.95;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+/* modal / toast */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+#modal-card{background:linear-gradient(180deg,#232c63,#141b45);border:1px solid var(--line);border-radius:22px;padding:26px;max-width:440px;width:100%;text-align:center;animation:pop .3s}
+#modal-emoji{font-size:56px} #modal-stars{font-size:30px;color:var(--gold);margin:8px 0}
+.modal-btns{display:flex;gap:10px;justify-content:center;margin-top:12px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0d1332;border:1px solid var(--acc);color:var(--ink);padding:12px 18px;border-radius:12px;z-index:70;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+
+footer{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;max-width:1080px;margin:0 auto;padding:14px 16px 30px;color:var(--mut);font-size:12px;position:relative;z-index:1}
+canvas.sim{width:100%;height:240px;border-radius:12px;background:#050822;border:1px solid var(--line)}
+.balance-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;font-size:22px;font-weight:900;margin:10px 0}
+.balance-row input{width:56px;text-align:center;font-size:18px;font-weight:900;border-radius:10px;border:2px solid var(--line);background:#141b45;color:var(--gold);padding:6px}
+.mol-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.mol-grid .key input{width:100%;margin-top:6px}
+@media(max-width:640px){.hero-bubble{flex-direction:column}.hud-mid{order:3;flex-basis:100%}#level-head{flex-direction:column;text-align:center}#level-stars{margin:0}}
+
+</style>
+</head>
+<body>
+<div id="bg-orbs" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+<header id="hud">
+  <div class="hud-left">
+    <div id="logo" title="ChemQuest">⚗️<span>Chem<b>Quest</b></span></div>
+    <div id="rank-badge" title="Your hero rank">🥚 Atom Egg</div>
+  </div>
+  <div class="hud-mid">
+    <div id="xp-wrap" title="Experience points">
+      <div id="xp-bar"><div id="xp-fill"></div><span id="xp-text">0 XP</span></div>
+      <div id="level-path-mini"></div>
+    </div>
+  </div>
+  <div class="hud-right">
+    <div id="hearts" title="Lives">❤️❤️❤️</div>
+    <div id="streak" title="Streak">🔥 0</div>
+    <button id="btn-map" class="btn small">🗺 Map</button>
+    <button id="btn-reset" class="btn small ghost" title="Reset progress">↺</button>
+  </div>
+</header>
+
+<main id="app">
+  <!-- SCREEN: MAP -->
+  <section id="screen-map" class="screen active">
+    <div class="hero-intro">
+      <div class="hero-bubble">
+        <div class="prof">👩‍🔬</div>
+        <div>
+          <h1>From <span class="grad">Zero</span> to <span class="grad2">Chemistry Hero</span></h1>
+          <p>Welcome, apprentice! Chemistry is the science of <b>matter</b> and its transformations.
+          You start as an <b>Atom Egg</b>. Conquer <b>8 realms</b>, run the animated labs, beat each quiz with ≥70% to unlock the next realm, and become a <b>Chemistry Legend</b>.</p>
+          <div class="hero-stats">
+            <div><b id="stat-xp">0</b><span>XP</span></div>
+            <div><b id="stat-stars">0/24</b><span>Stars</span></div>
+            <div><b id="stat-done">0/8</b><span>Realms</span></div>
+          </div>
+          <div class="hero-cta">
+            <button id="btn-start" class="btn big">▶ Start Adventure</button>
+            <button id="btn-how" class="btn big ghost">How to play?</button>
+          </div>
+          <p class="tiny">100% vanilla JS + CSS3 • No libraries • No external files • Works offline • Progress saved locally</p>
+        </div>
+      </div>
+    </div>
+    <h2 class="map-title">🗺 World Map — The 8 Realms of Matter</h2>
+    <div id="level-map" class="level-map"></div>
+    <div class="legend">
+      <span>🔒 locked</span><span>🟡 open</span><span>✅ completed</span><span>⭐ quiz stars (max 3/level)</span>
+    </div>
+    <div id="howto" class="howto hidden">
+      <h3>📜 How to play</h3>
+      <ol>
+        <li>Click an <b>unlocked realm</b> to enter it.</li>
+        <li><b>Read</b> the comic lesson, then <b>play</b> with the animated lab (drag, click, slide!).</li>
+        <li>Take the <b>Gate Quiz</b> — you need <b>≥70%</b> to unlock the next realm. Wrong answers cost a ❤️ (refills on retry).</li>
+        <li>Earn <b>XP + ⭐</b>. Finish all 8 to face the <b>FINAL BOSS</b> and earn the Hero certificate.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- SCREEN: LEVEL -->
+  <section id="screen-level" class="screen">
+    <button id="btn-back" class="btn small ghost">← Map</button>
+    <div id="level-head">
+      <div id="level-icon">⚛️</div>
+      <div>
+        <div id="level-kicker">REALM 1 / 8</div>
+        <h2 id="level-title">Title</h2>
+        <p id="level-sub">Subtitle</p>
+      </div>
+      <div id="level-stars">☆☆☆</div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-tab="learn">📖 1. Learn</button>
+      <button class="tab" data-tab="lab">🧪 2. Lab</button>
+      <button class="tab" data-tab="quiz">⚔️ 3. Gate Quiz</button>
+    </div>
+    <div id="tab-learn" class="tabpanel active"></div>
+    <div id="tab-lab" class="tabpanel">
+      <div id="lab-host"></div>
+    </div>
+    <div id="tab-quiz" class="tabpanel">
+      <div id="quiz-host"></div>
+    </div>
+  </section>
+
+  <!-- SCREEN: BOSS / CERT -->
+  <section id="screen-boss" class="screen">
+    <button class="btn small ghost" data-goto="map">← Map</button>
+    <div id="boss-host"></div>
+  </section>
+</main>
+
+<footer>
+  <span><a href="index.html" class="btn">⚛️ Go Home</a></span>
+  <span id="foot-progress"></span>
+</footer>
+
+<div id="toast" class="hidden"></div>
+<div id="confetti-host" aria-hidden="true"></div>
+
+<!-- Level-up modal -->
+<div id="modal" class="hidden">
+  <div id="modal-card">
+    <div id="modal-emoji">🎉</div>
+    <h2 id="modal-title">Realm Cleared!</h2>
+    <p id="modal-text"></p>
+    <div id="modal-stars">★★★</div>
+    <div class="modal-btns">
+      <button id="modal-replay" class="btn ghost">Replay</button>
+      <button id="modal-next" class="btn big">Next Realm →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ChemQuest — pure vanilla JS. No external resources. */
+"use strict";
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const AV = 6.022e23;
+
+/* ---------------- DATA ---------------- */
+const ELEMENTS = {1:"Hydrogen",2:"Helium",3:"Lithium",4:"Beryllium",5:"Boron",6:"Carbon",7:"Nitrogen",8:"Oxygen",9:"Fluorine",10:"Neon",11:"Sodium",12:"Magnesium",13:"Aluminium",14:"Silicon",15:"Phosphorus",16:"Sulfur",17:"Chlorine",18:"Argon",19:"Potassium",20:"Calcium"};
+const PT = [
+ // [num,sym,name,cat] cat: alkali,alkaline,transition,post,metalloid,nonmetal,halogen,noble,lanth,actin
+ [1,"H","Hydrogen","nonmetal"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[2,"He","Helium","noble"],
+ [3,"Li","Lithium","alkali"],[4,"Be","Beryllium","alkaline"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[5,"B","Boron","metalloid"],[6,"C","Carbon","nonmetal"],[7,"N","Nitrogen","nonmetal"],[8,"O","Oxygen","nonmetal"],[9,"F","Fluorine","halogen"],[10,"Ne","Neon","noble"],
+ [11,"Na","Sodium","alkali"],[12,"Mg","Magnesium","alkaline"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[0,"","", "unknown"],[13,"Al","Aluminium","post"],[14,"Si","Silicon","metalloid"],[15,"P","Phosphorus","nonmetal"],[16,"S","Sulfur","nonmetal"],[17,"Cl","Chlorine","halogen"],[18,"Ar","Argon","noble"],
+ [19,"K","Potassium","alkali"],[20,"Ca","Calcium","alkaline"],[21,"Sc","Scandium","transition"],[22,"Ti","Titanium","transition"],[23,"V","Vanadium","transition"],[24,"Cr","Chromium","transition"],[25,"Mn","Manganese","transition"],[26,"Fe","Iron","transition"],[27,"Co","Cobalt","transition"],[28,"Ni","Nickel","transition"],[29,"Cu","Copper","transition"],[30,"Zn","Zinc","transition"],[31,"Ga","Gallium","post"],[32,"Ge","Germanium","metalloid"],[33,"As","Arsenic","metalloid"],[34,"Se","Selenium","nonmetal"],[35,"Br","Bromine","halogen"],[36,"Kr","Krypton","noble"],
+];
+const EN = {H:2.20,He:0,Li:0.98,Be:1.57,B:2.04,C:2.55,N:3.04,O:3.44,F:3.98,Ne:0,Na:0.93,Mg:1.31,Al:1.61,Si:1.90,P:2.19,S:2.58,Cl:3.16,Ar:0,K:0.82,Ca:1.00,Fe:1.83,Cu:1.90,Zn:1.65,Br:2.96};
+
+const LEVELS = [
+{ id:0, icon:"🧊", title:"Realm 1 — What Is Matter?", sub:"Atoms, molecules, states & the microscope that sees them all.",
+  lesson:`
+  <div class="lesson">
+  <h3>🎬 The big idea in 30 seconds</h3>
+  <p>Everything you can touch, taste or breathe is <b>matter</b> — anything with <b>mass</b> and <b>volume</b>. Chemistry asks: <i>what is matter made of, and how does it change?</i></p>
+  <div class="formula">Matter → Pure substances <i>or</i> Mixtures → Atoms → Subatomic particles</div>
+  <h3>1. Atom: the LEGO brick</h3>
+  <p>An <b>atom</b> is the smallest unit that keeps an element's identity. A <b>molecule</b> is 2+ atoms joined (e.g. <code>H₂O</code>). Think of atoms as LEGO bricks: ~118 types (elements), infinite builds.</p>
+  <div class="analogy">🍇 <b>Analogy:</b> If an atom were a blueberry, an apple would be the Earth. Atoms are ~0.1 nm — a million stacked = thickness of paper.</div>
+  <h3>2. Pure substances vs mixtures</h3>
+  <table><tr><th>Type</th><th>Example</th><th>Separable by physics?</th></tr>
+  <tr><td><b>Element</b> (one atom type)</td><td>O₂, Fe, Au</td><td>No</td></tr>
+  <tr><td><b>Compound</b> (fixed ratio)</td><td>H₂O, CO₂, NaCl</td><td>Only chemically</td></tr>
+  <tr><td><b>Homogeneous mixture</b></td><td>Air, salt water</td><td>Yes (evaporate, filter)</td></tr>
+  <tr><td><b>Heterogeneous mixture</b></td><td>Salad, sand+iron</td><td>Yes (pick, magnet)</td></tr></table>
+  <h3>3. Three states (and a 4th!)</h3>
+  <div class="keygrid">
+    <div class="key"><b>🧊 Solid</b><br>Fixed shape. Particles vibrate in place. Ice.</div>
+    <div class="key"><b>💧 Liquid</b><br>Takes container shape. Particles slide. Water.</div>
+    <div class="key"><b>💨 Gas</b><br>Fills container. Particles fly free. Steam.</div>
+    <div class="key"><b>⚡ Plasma</b><br>Ionized gas. Lightning, sun, neon signs.</div>
+  </div>
+  <p>Heat = particle motion. Add heat → <code>solid → liquid → gas</code> (melting, boiling). Remove heat → reverse (freezing, condensing).</p>
+  <h3>4. Physical vs chemical change</h3>
+  <p><b>Physical:</b> shape/state changes, identity stays (crushing ice). <b>Chemical:</b> new substance forms — color change, gas, precipitate, heat/light (burning wood, rusting). <b>Go play in the Lab →</b> drag the temperature slider and watch particles!</p>
+  </div>`,
+  quiz:[
+    {q:"Which statement BEST defines matter?",opts:["Anything with mass and volume","Only things you can see","Only liquids and solids","Energy like light and heat"],a:0,why:"Matter = mass + volume. Light/heat are energy, not matter."},
+    {q:"Salt dissolved in water is…",opts:["An element","A compound","A homogeneous mixture","A heterogeneous mixture"],a:2,why:"Uniform throughout → homogeneous mixture. Separable by evaporation (physical)."},
+    {q:"Melting ice is a…",opts:["Chemical change — new substance forms","Physical change — H₂O stays H₂O","Nuclear change","No change at all"],a:1,why:"State changed, identity didn't. Still H₂O."},
+    {q:"Which is a sign of a CHEMICAL change?",opts:["Ice cracking","Sugar dissolving quietly","Wood burning to ash + smoke","Water boiling"],a:2,why:"Burning makes brand-new substances (CO₂, ash). The others are physical."},
+  ]},
+{ id:1, icon:"⚛️", title:"Realm 2 — Inside the Atom", sub:"Protons, neutrons, electrons, isotopes & electron shells.",
+  lesson:`
+  <div class="lesson">
+  <h3>🎬 The big idea</h3>
+  <p>Atoms are mostly <b>empty space</b>: a dense <b>nucleus</b> (protons + neutrons) with <b>electrons</b> whizzing in shells around it.</p>
+  <div class="formula">Atomic number Z = protons &nbsp;•&nbsp; Mass number A = p + n &nbsp;•&nbsp; Neutral atom: e⁻ = p⁺</div>
+  <table><tr><th>Particle</th><th>Charge</th><th>Mass (amu)</th><th>Where</th></tr>
+  <tr><td><b>Proton p⁺</b></td><td>+1</td><td>1</td><td>Nucleus — defines the element</td></tr>
+  <tr><td><b>Neutron n⁰</b></td><td>0</td><td>1</td><td>Nucleus — glues it together</td></tr>
+  <tr><td><b>Electron e⁻</b></td><td>−1</td><td>~0 (1/1836)</td><td>Shells — does the chemistry</td></tr></table>
+  <div class="analogy">🏟️ <b>Analogy:</b> Nucleus = pea at center of a stadium; electrons = gnats buzzing in the stands. That's how empty atoms are!</div>
+  <h3>Isotopes: same element, different weight</h3>
+  <p>Same protons, different neutrons. <code>¹²C</code> (6p+6n, 99%) vs <code>¹⁴C</code> (6p+8n, radioactive, used for dating). Atomic mass on the table is the <b>weighted average</b>.</p>
+  <h3>Ions: charged atoms</h3>
+  <p>Lose e⁻ → <b>cation +</b> (Na → Na⁺). Gain e⁻ → <b>anion −</b> (Cl → Cl⁻). The charge = protons − electrons.</p>
+  <h3>Electrons live in shells: 2, 8, 8…</h3>
+  <p>Shell capacities: <code>2n²</code> → shell 1 holds 2, shell 2 holds 8, shell 3 holds 8 (for first 20 elements). <b>Valence electrons</b> (outer shell) control bonding. 8 in the outer shell = <b>octet</b> = happy & stable (like noble gases).</p>
+  <p>🧪 <b>Lab →</b> Build atoms with the sliders: find Hydrogen? Helium? Make an ion or an isotope and watch stability!</p>
+  </div>`,
+  quiz:[
+    {q:"An atom has 6 protons, 6 neutrons, 6 electrons. What is it?",opts:["¹²C carbon, neutral","¹⁴C carbon, ion","Oxygen","Boron"],a:0,why:"Z=6 → carbon. A=12. e=p → neutral."},
+    {q:"¹⁴C vs ¹²C differ in…",opts:["Protons","Electrons","Neutrons","Charge"],a:2,why:"Isotopes: same Z, different neutrons (8 vs 6)."},
+    {q:"Na loses 1 electron. It becomes…",opts:["Na⁻ anion","Na⁺ cation","Neon atom","An isotope"],a:1,why:"Fewer electrons → positive → cation Na⁺ (now isoelectronic with Ne)."},
+    {q:"Why do noble gases barely react?",opts:["They have no electrons","Full outer shell (octet)","Huge atoms","They are all gases"],a:1,why:"Full valence shell = lowest energy. No need to gain/lose/share."},
+  ]},
+{ id:2, icon:"🧩", title:"Realm 3 — The Periodic Table", sub:"Groups, periods, metals vs nonmetals & trends you can predict.",
+  lesson:`
+  <div class="lesson">
+  <h3>🎬 The big idea</h3>
+  <p>Mendeleev ordered elements by <b>atomic number</b> so that elements with similar behavior line up in <b>columns (groups)</b>. It's a cheat-sheet for all chemistry.</p>
+  <div class="keygrid">
+    <div class="key"><b>⬇️ Group (column)</b><br>Same valence e⁻ → similar chemistry. Group 1: 1 valence e⁻, explosive metals.</div>
+    <div class="key"><b>➡️ Period (row)</b><br>Same number of shells. Period 3 = 3 shells.</div>
+    <div class="key"><b>🔩 Metals (left)</b><br>Shiny, conduct, lose e⁻. ~80% of table.</div>
+    <div class="key"><b>🎈 Nonmetals (right)</b><br>Dull, insulators, gain/share e⁻. H, C, N, O, halogens…</div>
+  </div>
+  <h3>Key families (memorize these!)</h3>
+  <table><tr><th>Family</th><th>Group</th><th>Valence</th><th>Vibe</th></tr>
+  <tr><td>Alkali metals</td><td>1</td><td>1</td><td>Soft, violently reactive (Na, K)</td></tr>
+  <tr><td>Alkaline earth</td><td>2</td><td>2</td><td>Reactive but calmer (Mg, Ca)</td></tr>
+  <tr><td>Halogens</td><td>17</td><td>7</td><td>Desperate for 1 e⁻ (F, Cl, Br)</td></tr>
+  <tr><td>Noble gases</td><td>18</td><td>8</td><td>Chill, inert (He, Ne, Ar)</td></tr></table>
+  <h3>Trends (why the table is magic)</h3>
+  <p>Across a period (→): protons pull harder → atoms <b>shrink</b>, ionization energy <b>rises</b>. Down a group (↓): more shells → atoms <b>grow</b>, outer e⁻ held <b>loosely</b> → reactivity of metals rises. Electronegativity <b>peaks at Fluorine</b> (top-right).</p>
+  <div class="analogy">🗺️ <b>Analogy:</b> Groups are like language families — same grammar (valence), different accents (size). Learn one, predict them all.</div>
+  </div>`,
+  quiz:[
+    {q:"Elements in the same GROUP share…",opts:["Same atomic mass","Same valence electrons & behavior","Same shells","Same state"],a:1,why:"Group = column = same outer electrons → similar chemistry."},
+    {q:"Which is a halogen?",opts:["Sodium (Na)","Iron (Fe)","Chlorine (Cl)","Neon (Ne)"],a:2,why:"Group 17 = halogens: F, Cl, Br, I."},
+    {q:"Most metallic character is found…",opts:["Top-right (F)","Bottom-left (Fr/Cs)","Top-left (H)","Middle (Fe)"],a:1,why:"Metals dominate left; size grows down → easiest to lose electrons bottom-left."},
+    {q:"Atomic radius across period 2 (Li → Ne)…",opts:["Increases","Decreases","Stays same","Becomes zero"],a:1,why:"More protons, same shell → stronger pull → smaller."},
+  ]},
+{ id:3, icon:"🔗", title:"Realm 4 — Chemical Bonds", sub:"Ionic vs covalent vs metallic — why atoms stick together.",
+  lesson:`
+  <div class="lesson">
+  <h3>🎬 The big idea</h3>
+  <p>Atoms bond to reach <b>lower energy</b> — usually a full outer shell (<b>octet rule</b>). How they get there defines the bond.</p>
+  <div class="formula">ΔEN &lt; 0.5 → nonpolar covalent &nbsp;•&nbsp; 0.5–1.7 → polar covalent &nbsp;•&nbsp; &gt; 1.7 → ionic</div>
+  <div class="keygrid">
+    <div class="key"><b>⚡ Ionic</b><br>e⁻ TRANSFER. Metal + nonmetal. Na⁺ + Cl⁻ → lattice. Conducts when molten. High mp. Ex: NaCl.</div>
+    <div class="key"><b>🤝 Covalent</b><br>e⁻ SHARING. Nonmetal + nonmetal. H₂, O₂, H₂O. Low mp, soft. Polar if unequal sharing.</div>
+    <div class="key"><b>🔩 Metallic</b><br>e⁻ SEA. Metal cations in delocalized electrons → conduct, bend, shine.</div>
+  </div>
+  <h3>Dot structures make it click</h3>
+  <p>Lewis dots show valence e⁻. <code>Na• + •Cl•• → [Na]⁺ [:Cl:]⁻</code> (transfer). <code>H• + •H → H:H</code> (shared pair). Double (<code>O=O</code>) and triple (<code>N≡N</code>) bonds share 4/6 e⁻.</p>
+  <div class="analogy">🎁 <b>Analogy:</b> Ionic = giving a gift forever. Covalent = sharing a blanket (polar = hogging it). Metallic = public pool everyone swims in.</div>
+  <h3>Shape matters: VSEPR in 10 seconds</h3>
+  <p>Electron pairs repel → shapes: 2 pairs = <b>linear</b> (CO₂), 3 = <b>trigonal</b>, 4 = <b>tetrahedral</b> (CH₄, 109.5°). Lone pairs squeeze angles (H₂O is <b>bent</b>, 104.5° — why water is polar!).</p>
+  </div>`,
+  quiz:[
+    {q:"NaCl is held by…",opts:["Covalent sharing","Ionic transfer + lattice","Metallic sea","Hydrogen bonds only"],a:1,why:"Metal + nonmetal, ΔEN≈2.2 → electron transfer → ion lattice."},
+    {q:"H₂O's bonds are…",opts:["Ionic","Nonpolar covalent","Polar covalent (O hogs e⁻)","Metallic"],a:2,why:"O (3.44) vs H (2.20), ΔEN≈1.2 → polar sharing. Bent shape → net dipole."},
+    {q:"Why do metals conduct electricity?",opts:["They have no electrons","Delocalized electron sea moves freely","They are magnetic","Ions vibrate"],a:1,why:"Metallic bonding = mobile electrons carry charge/heat."},
+    {q:"Which pair forms a NONPOLAR covalent bond?",opts:["H–F","O–H","H–H","Na–Cl"],a:2,why:"Identical atoms → ΔEN=0 → perfectly equal sharing."},
+  ]},
+{ id:4, icon:"💥", title:"Realm 5 — Reactions & Equations", sub:"Balancing, 5 reaction types & conservation of mass.",
+  lesson:`
+  <div class="lesson">
+  <h3>🎬 The big idea</h3>
+  <p>A chemical reaction <b>rearranges atoms</b>. Atoms are never created/destroyed (<b>Lavoisier's conservation of mass</b>) — so equations must be <b>balanced</b>.</p>
+  <div class="formula">2H₂ + O₂ → 2H₂O &nbsp;&nbsp; (4 H and 2 O on BOTH sides ✓)</div>
+  <h3>How to balance (the game method)</h3>
+  <p>1) Count each atom both sides. 2) Tweak <b>coefficients</b> (big numbers in front) — NEVER subscripts. 3) Start with metals, then nonmetals, save H and O for last. 4) Recount!</p>
+  <h3>The 5 reaction archetypes</h3>
+  <table><tr><th>Type</th><th>Pattern</th><th>Example</th></tr>
+  <tr><td><b>Synthesis</b></td><td>A + B → AB</td><td>2H₂ + O₂ → 2H₂O</td></tr>
+  <tr><td><b>Decomposition</b></td><td>AB → A + B</td><td>2H₂O₂ → 2H₂O + O₂</td></tr>
+  <tr><td><b>Single replacement</b></td><td>A + BC → AC + B</td><td>Zn + 2HCl → ZnCl₂ + H₂</td></tr>
+  <tr><td><b>Double replacement</b></td><td>AB + CD → AD + CB</td><td>AgNO₃ + NaCl → AgCl + NaNO₃</td></tr>
+  <tr><td><b>Combustion</b></td><td>CₓHᵧ + O₂ → CO₂ + H₂O</td><td>CH₄ + 2O₂ → CO₂ + 2H₂O</td></tr></table>
+  <div class="analogy">🧑‍🍳 <b>Analogy:</b> Balancing = recipe scaling. You can't conjure eggs — if cake needs 2 eggs per cake, 2 cakes need 4 eggs. Coefficients are your multipliers.</div>
+  </div>`,
+  quiz:[
+    {q:"Balance: __H₂ + __O₂ → __H₂O. Correct coefficients?",opts:["1,1,1","2,1,2","1,2,1","3,2,3"],a:1,why:"2,1,2 gives 4H + 2O each side."},
+    {q:"Zn + 2HCl → ZnCl₂ + H₂ is…",opts:["Synthesis","Decomposition","Single replacement","Double replacement"],a:2,why:"Zn kicks out H: A + BC → AC + B."},
+    {q:"Why must equations balance?",opts:["Looks prettier","Conservation of mass — atoms can't appear/vanish","Lawyer requirement","To use up oxygen"],a:1,why:"Lavoisier: same atoms in = same atoms out."},
+    {q:"CH₄ + 2O₂ → CO₂ + 2H₂O is…",opts:["Combustion","Decomposition","Double replacement","Neutralization only"],a:0,why:"Hydrocarbon + O₂ → CO₂ + H₂O = combustion signature."},
+  ]},
+{ id:5, icon:"⚖️", title:"Realm 6 — The Mole & Stoichiometry", sub:"Avogadro's number, molar mass & predicting yields.",
+  lesson:`
+  <div class="lesson">
+  <h3>🎬 The big idea</h3>
+  <p>Atoms are too tiny to count — so chemists weigh them by the <b>mole</b>: <code>1 mol = 6.022×10²³ particles</code> (<b>Avogadro's number</b>), exactly 12 g of ¹²C.</p>
+  <div class="formula">moles = mass ÷ molar mass &nbsp;•&nbsp; particles = moles × 6.022×10²³ &nbsp;•&nbsp; M = mol ÷ L</div>
+  <h3>Molar mass = recipe weight</h3>
+  <p>Add atomic masses: H₂O = 2(1.008) + 16.00 = <b>18.02 g/mol</b>. So 18 g water ≈ 1 mol ≈ 6×10²³ molecules. One number links the <b>micro world</b> (atoms) to the <b>macro world</b> (grams you weigh).</p>
+  <h3>Stoichiometry: reaction math</h3>
+  <p>Balanced equation = mole ratio. <code>2H₂ + O₂ → 2H₂O</code> means 2 mol H₂ needs 1 mol O₂. Steps: grams → moles → mole ratio → grams of product. The reactant that runs out first = <b>limiting reactant</b>.</p>
+  <div class="analogy">🥪 <b>Analogy:</b> 2 bread + 1 cheese → 1 sandwich. With 10 bread + 3 cheese you make only 3 sandwiches — cheese limits you. Same with reactants!</div>
+  <h3>Concentration: molarity</h3>
+  <p><code>M = mol / L</code>. 1 M NaCl = 1 mol (58.44 g) per liter. Dilution: <code>M₁V₁ = M₂V₂</code>.</p>
+  </div>`,
+  quiz:[
+    {q:"1 mole of carbon atoms contains…",opts:["12 atoms","6.022×10²³ atoms","18 atoms","1 gram"],a:1,why:"Definition: 1 mol = Avogadro's number of particles."},
+    {q:"Molar mass of H₂O?",opts:["16 g/mol","18 g/mol","2 g/mol","34 g/mol"],a:1,why:"2×1 + 16 = 18 g/mol."},
+    {q:"36 g of H₂O is how many moles?",opts:["1 mol","2 mol","3 mol","0.5 mol"],a:1,why:"36 ÷ 18 = 2 mol."},
+    {q:"2H₂+O₂→2H₂O. 4 mol H₂ needs…",opts:["4 mol O₂","2 mol O₂","1 mol O₂","8 mol O₂"],a:1,why:"Ratio H₂:O₂ = 2:1 → 4 needs 2."},
+  ]},
+{ id:6, icon:"🌡️", title:"Realm 7 — Gases, Energy, Acids & Bases", sub:"Gas laws, thermo, solutions & the pH scale.",
+  lesson:`
+  <div class="lesson">
+  <h3>🎬 The big idea</h3>
+  <p>Heat, pressure and concentration push reactions around. Master three tools: <b>gas laws</b>, <b>energy</b>, and <b>pH</b>.</p>
+  <h3>🎈 Gases: PV = nRT</h3>
+  <p><b>Boyle:</b> P↑ → V↓ (squeeze a balloon). <b>Charles:</b> T↑ → V↑ (hot balloon expands). Combined: <code>PV=nRT</code>, R=0.0821 L·atm/(mol·K). Always use <b>Kelvin</b>!</p>
+  <h3>🔥 Energy: exo vs endo</h3>
+  <p><b>Exothermic</b> releases heat (combustion, ΔH&lt;0, feels hot). <b>Endothermic</b> absorbs heat (melting ice, photosynthesis, ΔH&gt;0, feels cold). Catalysts <b>lower activation energy</b> without being consumed.</p>
+  <h3>💧 Acids vs Bases (pH 0–14)</h3>
+  <table><tr><th></th><th>Acid</th><th>Base</th></tr>
+  <tr><td>pH</td><td>&lt; 7 (lemon ~2, stomach ~1.5)</td><td>&gt; 7 (soap ~10, bleach ~13)</td></tr>
+  <tr><td>Taste/feel</td><td>Sour</td><td>Bitter + slippery</td></tr>
+  <tr><td>Ions</td><td>Donates H⁺ (Arrhenius) / proton donor</td><td>Donates OH⁻ / proton acceptor</td></tr>
+  <tr><td>Litmus</td><td>Red</td><td>Blue</td></tr></table>
+  <p><b>Neutralization:</b> <code>H⁺ + OH⁻ → H₂O</code>. Strong acid + strong base → neutral salt + water. Each pH step = <b>10×</b> acidity (pH 2 is 100× pH 4!).</p>
+  <div class="analogy">⚖️ <b>Analogy:</b> pH is a tug-of-war between H⁺ and OH⁻. Pure water 7 = perfect tie.</div>
+  </div>`,
+  quiz:[
+    {q:"Squeeze a sealed syringe (T constant). Volume halves → pressure…",opts:["Halves","Doubles","Stays same","Zeroes"],a:1,why:"Boyle's law: P×V = const → half V = double P."},
+    {q:"Burning wood is…",opts:["Endothermic (absorbs heat)","Exothermic (releases heat)","No energy change","Nuclear"],a:1,why:"Combustion releases heat/light: ΔH < 0."},
+    {q:"pH 3 vs pH 5: pH 3 is…",opts:["2× more acidic","20× more acidic","100× more acidic","Less acidic"],a:2,why:"Each pH unit = 10×. Two units = 10×10 = 100×."},
+    {q:"HCl + NaOH → NaCl + H₂O is…",opts:["Combustion","Neutralization","Decomposition","Redox only"],a:1,why:"Acid + base → salt + water. Classic neutralization."},
+  ]},
+{ id:7, icon:"🧬", title:"Realm 8 — Organic & Nuclear", sub:"Carbon's empire, hydrocarbons, radioactivity & the Final Boss.",
+  lesson:`
+  <div class="lesson">
+  <h3>🎬 The big idea</h3>
+  <p><b>Carbon</b> bonds to itself endlessly (4 bonds each) → millions of organic molecules = life itself. Meanwhile <b>nuclei</b> can split/fuse, releasing a million times more energy than chemistry.</p>
+  <h3>🧬 Organic in one table</h3>
+  <table><tr><th>Family</th><th>Bonds</th><th>Suffix</th><th>Example</th></tr>
+  <tr><td><b>Alkane</b></td><td>single only</td><td>-ane</td><td>CH₄ methane, C₂H₆ ethane</td></tr>
+  <tr><td><b>Alkene</b></td><td>one C=C</td><td>-ene</td><td>C₂H₄ ethene</td></tr>
+  <tr><td><b>Alkyne</b></td><td>one C≡C</td><td>-yne</td><td>C₂H₂ ethyne (acetylene)</td></tr>
+  <tr><td><b>Alcohol</b></td><td>-OH group</td><td>-ol</td><td>C₂H₅OH ethanol</td></tr>
+  <tr><td><b>Acid</b></td><td>-COOH</td><td>-oic acid</td><td>CH₃COOH vinegar</td></tr></table>
+  <p>Alkanes follow <code>CₙH₂ₙ₊₂</code>. Functional groups = personality: -OH makes things soluble & drinkable/burnable; -COOH makes them sour.</p>
+  <h3>☢️ Nuclear: E = mc²</h3>
+  <p><b>Fission:</b> heavy nucleus splits (U-235 → lighter + neutrons + huge energy; nuclear plants, atomic bombs). <b>Fusion:</b> light nuclei merge (H → He in the sun). <b>Half-life:</b> time for half a sample to decay (¹⁴C ≈ 5730 yrs). Unlike chemistry, nuclear changes the <b>element itself</b>.</p>
+  <div class="formula">Types: α (He nucleus, paper stops) • β (electron, aluminium stops) • γ (light, lead needed)</div>
+  <div class="analogy">🔥 <b>Analogy:</b> Chemistry = rearranging LEGO sets. Nuclear = smashing the bricks themselves — vastly more energy per brick.</div>
+  <p>🏆 <b>Beat this Gate Quiz to unlock the FINAL BOSS</b> — 6 mixed hero questions + your printable certificate!</p>
+  </div>`,
+  quiz:[
+    {q:"C₃H₈ is…",opts:["An alkene","An alkane (propane)","An alcohol","An acid"],a:1,why:"C₃H₈ fits CₙH₂ₙ₊₂ → alkane, propane."},
+    {q:"Which contains a C=C double bond?",opts:["Ethane","Ethene","Ethanol","Methane"],a:1,why:"-ene = one double bond. Ethene C₂H₄."},
+    {q:"Half-life means…",opts:["Half the atoms evaporate","Time for half the nuclei to decay","Half the mass freezes","Full decay time"],a:1,why:"Probabilistic decay: after 1 half-life, ½ remains; after 2, ¼…"},
+    {q:"The Sun's energy comes from…",opts:["Chemical combustion","Nuclear fusion of H → He","Fission of uranium","Burning helium gas"],a:1,why:"Extreme heat/pressure fuses hydrogen into helium, mass → energy."},
+  ]},
+];
+
+const BOSS_QUIZ = [
+  {q:"How many electrons in a neutral ¹⁶O atom (Z=8)?",opts:["8","16","6","10"],a:0,why:"Neutral → e = p = Z = 8."},
+  {q:"Mg (EN 1.31) + O (EN 3.44). Bond type?",opts:["Nonpolar covalent","Polar covalent","Ionic","Metallic"],a:2,why:"ΔEN = 2.13 > 1.7 → ionic."},
+  {q:"Balance C₃H₈ + O₂ → CO₂ + H₂O. O₂ coefficient?",opts:["3","4","5","7"],a:2,why:"C₃H₈+5O₂→3CO₂+4H₂O."},
+  {q:"How many particles in 0.5 mol NaCl?",opts:["3.011×10²³","6.022×10²³","1.2×10²⁴","12"],a:0,why:"0.5 × 6.022e23 = 3.011e23."},
+  {q:"A solution with pH 11 is…",opts:["Strong acid","Neutral","Basic","Pure water"],a:2,why:"pH > 7 = basic."},
+  {q:"U-235 splitting into lighter nuclei is…",opts:["Fusion","Fission","Combustion","Neutralization"],a:1,why:"Heavy → lighter = fission."},
+];
+
+const RANKS = [[0,"🥚 Atom Egg"],[100,"🦠 Molecule Sprout"],[300,"⚗️ Flask Apprentice"],[600,"🔬 Reaction Ranger"],[1000,"⚡ Bond Master"],[1500,"🧬 Carbon Commander"],[2100,"🏆 Chemistry Legend"]];
+
+/* ---------------- STATE ---------------- */
+let S = {xp:0, stars:{}, done:{}, streak:0, hearts:3, name:""};
+try{ const raw = localStorage.getItem("chemquest_v1"); if(raw) S = Object.assign(S, JSON.parse(raw)); }catch(e){}
+function save(){ try{ localStorage.setItem("chemquest_v1", JSON.stringify(S)); }catch(e){} }
+function rank(){ let r=RANKS[0][1]; for(const [t,n] of RANKS) if(S.xp>=t) r=n; return r; }
+function totalStars(){ return Object.values(S.stars).reduce((a,b)=>a+b,0); }
+function doneCount(){ return Object.keys(S.done).length; }
+function unlocked(i){ if(i===0) return true; return !!S.done[i-1]; }
+
+/* ---------------- UI helpers ---------------- */
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.remove("hidden"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.add("hidden"),2600); }
+function confetti(n=80){ const h=$("#confetti-host"); const colors=["#38e1c6","#ffcf4d","#ff6ea9","#a78bfa","#3ddc84","#60a5fa"];
+  for(let i=0;i<n;i++){ const c=document.createElement("div"); c.className="conf"; c.style.left=Math.random()*100+"vw";
+    c.style.background=colors[i%colors.length]; c.style.animationDuration=(2+Math.random()*2.5)+"s"; c.style.transform=`rotate(${Math.random()*360}deg)`;
+    c.style.width=(6+Math.random()*8)+"px"; h.appendChild(c); setTimeout(()=>c.remove(),4500); } }
+function show(id){ $$(".screen").forEach(s=>s.classList.remove("active")); $(id).classList.add("active"); window.scrollTo({top:0,behavior:"smooth"}); }
+function updateHUD(){
+  $("#xp-fill").style.width = Math.min(100, S.xp/2100*100)+"%";
+  $("#xp-text").textContent = S.xp+" XP • "+rank();
+  $("#rank-badge").textContent = rank();
+  $("#hearts").textContent = "❤️".repeat(S.hearts)+"🤍".repeat(Math.max(0,3-S.hearts));
+  $("#streak").textContent = "🔥 "+S.streak;
+  $("#stat-xp").textContent = S.xp;
+  $("#stat-stars").textContent = totalStars()+"/24";
+  $("#stat-done").textContent = doneCount()+"/8";
+  $("#foot-progress").textContent = doneCount()+"/8 realms • "+totalStars()+"⭐ • "+S.xp+" XP";
+}
+
+/* ---------------- MAP ---------------- */
+function renderMap(){
+  const m=$("#level-map"); m.innerHTML="";
+  LEVELS.forEach((L,i)=>{
+    const un=unlocked(i), done=!!S.done[i], st=S.stars[i]||0;
+    const b=document.createElement("button");
+    b.className="lvl-card"+(!un?" locked":"")+(done?" done":"");
+    b.innerHTML=`<div class="lvl-num">LVL ${i+1}</div>
+      <div class="lvl-top"><div class="lvl-ico">${!un?"🔒":L.icon}</div>
+      <div><h3>${!un?"??? Locked":L.title}</h3><p>${!un?("Clear Realm "+i+" to unlock."):L.sub}</p></div></div>
+      <div class="lvl-meta"><span class="stars">${"★".repeat(st)}${"☆".repeat(3-st)}</span><span>${done?"✅ DONE":(!un?"🔒 LOCKED":"🟡 OPEN")}</span></div>
+      <div class="lvl-path"><i style="width:${done?100:(un?35:0)}%"></i></div>`;
+    if(un) b.onclick=()=>openLevel(i);
+    else b.onclick=()=>toast("🔒 Clear the previous realm first, hero!");
+    m.appendChild(b);
+  });
+  // boss card
+  const all = doneCount()>=8;
+  const boss=document.createElement("button");
+  boss.className="lvl-card boss-card"+(all?"":" locked");
+  const bs = S.stars.boss||0;
+  boss.innerHTML=`<div class="lvl-num">FINAL</div><div class="lvl-top"><div class="lvl-ico">${all?"👹":"🔒"}</div>
+    <div><h3>${all?"Final Boss — Hero Trial":"Final Boss (locked)"}</h3><p>${all?"6 mixed questions. Win your certificate!":"Clear all 8 realms to face the Boss."}</p></div></div>
+    <div class="lvl-meta"><span class="stars">${"★".repeat(bs)}${"☆".repeat(Math.max(0,3-bs))}</span><span>${all?"⚔️ FIGHT":"🔒"}</span></div>`;
+  boss.onclick=()=>{ if(all) openBoss(); else toast("🔒 Conquer all 8 realms first!"); };
+  m.appendChild(boss);
+  updateHUD();
+}
+
+/* ---------------- LEVEL ---------------- */
+let cur=0, tab="learn";
+function openLevel(i){
+  cur=i; tab="learn";
+  const L=LEVELS[i];
+  $("#level-kicker").textContent=`REALM ${i+1} / 8`;
+  $("#level-title").textContent=L.title;
+  $("#level-sub").textContent=L.sub;
+  $("#level-icon").textContent=L.icon;
+  const st=S.stars[i]||0;
+  $("#level-stars").textContent="★".repeat(st)+"☆".repeat(3-st);
+  $$(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab==="learn"));
+  $$(".tabpanel").forEach(p=>p.classList.remove("active"));
+  $("#tab-learn").classList.add("active");
+  $("#tab-learn").innerHTML=L.lesson + `<div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn" onclick="goTab('lab')">Next: run the Lab 🧪 →</button></div>`;
+  renderLab(i);
+  renderQuiz(i);
+  show("#screen-level");
+}
+window.goTab=function(t){
+  $$(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===t));
+  $$(".tabpanel").forEach(p=>p.classList.remove("active"));
+  $("#tab-"+t).classList.add("active");
+};
+$$(".tab").forEach(b=>b.onclick=()=>goTab(b.dataset.tab));
+
+/* ---------------- LABS ---------------- */
+function renderLab(i){
+  const host=$("#lab-host");
+  if(i===0) host.innerHTML = labStates();
+  if(i===1) host.innerHTML = labAtom();
+  if(i===2) host.innerHTML = labPT();
+  if(i===3) host.innerHTML = labBond();
+  if(i===4) host.innerHTML = labBalance();
+  if(i===5) host.innerHTML = labMole();
+  if(i===6) host.innerHTML = labGasPh();
+  if(i===7) host.innerHTML = labOrganic();
+  bindLab(i);
+}
+
+/* Lab 1: states of matter particle sim */
+function labStates(){ return `<div class="lab-card"><h4>🧊 Lab 1 — Melt, Boil & Freeze Matter</h4>
+  <p class="hint">Drag <b>temperature</b>. Watch H₂O particles: locked in ice → sliding in water → flying in steam. Same molecules, different energy!</p>
+  <div class="stage"><canvas id="cv-states" class="sim" width="640" height="240"></canvas></div>
+  <div class="controls"><label>🌡️ Temp: <b id="t-val">-10°C — SOLID</b></label>
+  <input type="range" id="t-slider" min="-30" max="130" value="-10" style="flex:1"></div>
+  <div class="readout" id="t-read">Kinetic energy low → particles <b>vibrate in a lattice</b>. Physical change only.</div></div>`; }
+
+/* Lab 2: atom builder */
+function labAtom(){ return `<div class="lab-card"><h4>⚛️ Lab 2 — Atom Builder</h4>
+  <p class="hint">Add protons / neutrons / electrons. The nucleus shows p⁺+n⁰, orbits fill 2-8-8. Discover elements, ions & isotopes!</p>
+  <div class="stage" style="gap:26px;flex-wrap:wrap">
+    <div class="atom" id="atom-vis"><div class="nucleus" id="nuc">?</div></div>
+    <div style="min-width:230px"><div class="controls"><label>Protons p⁺: <b id="v-p">1</b></label><input type="range" id="s-p" min="1" max="12" value="1"></div>
+    <div class="controls"><label>Neutrons n⁰: <b id="v-n">0</b></label><input type="range" id="s-n" min="0" max="14" value="0"></div>
+    <div class="controls"><label>Electrons e⁻: <b id="v-e">1</b></label><input type="range" id="s-e" min="0" max="12" value="1"></div>
+    <div class="readout" id="atom-read"></div></div>
+  </div></div>`; }
+
+/* Lab 3: periodic table */
+function labPT(){ return `<div class="lab-card"><h4>🧩 Lab 3 — Clickable Periodic Table (first 36 elements)</h4>
+  <p class="hint">Click any element to inspect its group, shells & personality. Notice columns = families!</p>
+  <div class="ptable" id="pt-grid"></div>
+  <div class="readout" id="pt-read">👆 Click an element tile…</div></div>`; }
+
+/* Lab 4: bonding */
+function labBond(){ return `<div class="lab-card"><h4>🔗 Lab 4 — Bond-o-Matic</h4>
+  <p class="hint">Pick two elements. The machine computes ΔEN and animates <b>transfer</b> (ionic) vs <b>sharing</b> (covalent).</p>
+  <div class="controls"><label>Atom A</label><select id="b-a">${Object.keys(EN).map(k=>`<option ${k==="Na"?"selected":""}>${k}</option>`).join("")}</select>
+  <label>Atom B</label><select id="b-b">${Object.keys(EN).map(k=>`<option ${k==="Cl"?"selected":""}>${k}</option>`).join("")}</select>
+  <button class="btn small" id="b-go">⚗️ Form bond!</button></div>
+  <div class="stage bond-stage" id="b-stage"><div style="color:var(--mut)">Choose atoms & press Form bond…</div></div>
+  <div class="readout" id="b-read"></div></div>`; }
+
+/* Lab 5: balancing */
+function labBalance(){ return `<div class="lab-card"><h4>💥 Lab 5 — Balance the Equation</h4>
+  <p class="hint">Use + / − to set coefficients for <b>H₂ + O₂ → H₂O</b>. Atom counters must match both sides!</p>
+  <div class="balance-row"><input id="c1" value="1" readonly><span>H₂ +</span><input id="c2" value="1" readonly><span>O₂ →</span><input id="c3" value="1" readonly><span>H₂O</span></div>
+  <div class="controls" style="justify-content:center">
+    <button class="btn small" data-c="c1" data-d="-1">H₂ −</button><button class="btn small" data-c="c1" data-d="1">H₂ +</button>
+    <button class="btn small" data-c="c2" data-d="-1">O₂ −</button><button class="btn small" data-c="c2" data-d="1">O₂ +</button>
+    <button class="btn small" data-c="c3" data-d="-1">H₂O −</button><button class="btn small" data-c="c3" data-d="1">H₂O +</button>
+  </div>
+  <div class="readout" id="bal-read"></div>
+  <div style="margin-top:12px" class="controls"><label>Reaction type quiz:</label><select id="rx-sel"><option value="">— classify: Zn + 2HCl → ZnCl₂ + H₂ —</option><option>Synthesis</option><option>Decomposition</option><option>Single replacement</option><option>Double replacement</option><option>Combustion</option></select>
+  <button class="btn small gold" id="rx-check">Check</button></div>
+  <div class="readout" id="rx-read">Pick a type and check yourself.</div></div>`; }
+
+/* Lab 6: mole */
+function labMole(){ return `<div class="lab-card"><h4>⚖️ Lab 6 — Mole Converter & Sandwich Stoichiometry</h4>
+  <p class="hint">Convert grams ↔ moles ↔ particles for water. Then solve the sandwich (limiting reactant) problem.</p>
+  <div class="mol-grid">
+    <div class="key"><b>Grams of H₂O</b><input class="txt" id="m-g" type="number" value="36"><button class="btn small" id="m-g2m" style="margin-top:8px">→ moles & particles</button></div>
+    <div class="key"><b>Moles of H₂O</b><input class="txt" id="m-m" type="number" value="2"><button class="btn small" id="m-m2g" style="margin-top:8px">→ grams & particles</button></div>
+    <div class="key"><b>🥪 Bread / Cheese</b><input class="txt" id="m-b" type="number" value="10"><input class="txt" id="m-c" type="number" value="3" style="margin-top:6px"><button class="btn small gold" id="m-sand" style="margin-top:8px">Make sandwiches!</button></div>
+  </div>
+  <div class="readout" id="m-read">1 mol H₂O = <b>18.02 g</b> = <b>6.022×10²³</b> molecules. Try 36 g!</div></div>`; }
+
+/* Lab 7: gas + pH */
+function labGasPh(){ return `<div class="lab-card"><h4>🎈 Lab 7a — Gas Squeezer (Boyle + Charles)</h4>
+  <p class="hint">Change pressure & temperature. Volume obeys <b>V ∝ T/P</b>. Balloon grows/shrinks live!</p>
+  <div class="stage"><div id="balloon" style="font-size:90px;transition:transform .3s">🎈</div></div>
+  <div class="controls"><label>Pressure <b id="g-pv">1.0 atm</b></label><input type="range" id="g-p" min="5" max="30" value="10">
+  <label>Temp <b id="g-tv">298 K</b></label><input type="range" id="g-t" min="200" max="500" value="298"></div>
+  <div class="readout" id="g-read"></div></div>
+  <div class="lab-card"><h4>🧪 Lab 7b — pH Mixer</h4>
+  <p class="hint">Slide pH 0→14. The beaker liquid + description update. Remember: each step = 10× acidity!</p>
+  <div class="stage"><div class="beaker"><div class="liquid" id="ph-liq" style="height:50%;background:#7CFC00"></div><div class="bub" style="left:20px;width:8px;height:8px"></div><div class="bub" style="left:50px;width:12px;height:12px;animation-delay:.7s"></div></div>
+  <div style="margin-left:18px"><div style="font-size:44px" id="ph-emoji">😐</div><div id="ph-name" style="font-weight:900">Neutral — pure water</div></div></div>
+  <div class="ph-scale">${["#ff1a1a","#ff4d00","#ff8c00","#ffb700","#ffe600","#d4f000","#7CFC00","#3ae374","#2bcbba","#25ccf7","#3d6bff","#5f27cd","#8e44ad","#4b0082","#2c003e"].map(c=>`<i style="background:${c}"></i>`).join("")}</div>
+  <div class="controls"><label>pH: <b id="ph-val">7.0</b></label><input type="range" id="ph-s" min="0" max="14" step="0.5" value="7" style="flex:1"></div>
+  <div class="readout" id="ph-read"></div></div>`; }
+
+/* Lab 8: organic + half-life */
+function labOrganic(){ return `<div class="lab-card"><h4>🧬 Lab 8a — Hydrocarbon Namer</h4>
+  <p class="hint">Add carbons: watch the alkane name + formula (CₙH₂ₙ₊₂). Toggle bond type for -ene / -yne.</p>
+  <div class="controls"><label>Carbons: <b id="o-cv">1</b></label><input type="range" id="o-c" min="1" max="8" value="1">
+  <select id="o-t"><option value="ane">Alkane (single)</option><option value="ene">Alkene (C=C)</option><option value="yne">Alkyne (C≡C)</option></select></div>
+  <div class="formula" id="o-read" style="font-size:26px">CH₄ — methane</div>
+  <div class="stage" id="o-vis" style="font-size:30px;min-height:120px"></div></div>
+  <div class="lab-card"><h4>☢️ Lab 8b — Half-Life Decay</h4>
+  <p class="hint">Start with 1000 radioactive atoms. Each half-life, ~half decay. Press “1 half-life” repeatedly!</p>
+  <div class="controls"><button class="btn" id="h-step">⏳ Advance 1 half-life</button><button class="btn ghost" id="h-reset">Reset</button></div>
+  <div class="readout" id="h-read">1000 atoms remain. Half-lives passed: 0.</div>
+  <div class="lvl-path" style="height:16px"><i id="h-bar" style="width:100%"></i></div></div>`; }
+
+function bindLab(i){
+  if(i===0){
+    const cv=$("#cv-states"), ctx=cv.getContext("2d");
+    const parts=Array.from({length:60},()=>({x:Math.random()*640,y:Math.random()*240,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2}));
+    const sl=$("#t-slider");
+    function frame(){
+      const T=+sl.value;
+      const speed = T<0?0.4 : T<100?1.6 : 4.2;
+      const col = T<0?"#9adcff":T<100?"#38bdf8":"#fb7185";
+      ctx.clearRect(0,0,640,240);
+      // lattice snap when solid
+      parts.forEach((p,idx)=>{
+        if(T<0){ const gx=(idx%10)*60+20, gy=Math.floor(idx/10)*38+20; p.x+=(gx-p.x)*0.08; p.y+=(gy-p.y)*0.08; }
+        else{ p.x+=p.vx*speed; p.y+=p.vy*speed; if(p.x<0||p.x>640)p.vx*=-1; if(p.y<0||p.y>240)p.vy*=-1; }
+        ctx.beginPath(); ctx.arc(p.x,p.y,T<0?7:6,0,7); ctx.fillStyle=col; ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x-2,p.y-2,2,0,7); ctx.fillStyle="#ffffffaa"; ctx.fill();
+      });
+      requestAnimationFrame(frame);
+    }
+    function upd(){
+      const T=+sl.value; const st=T<0?"SOLID 🧊":T<100?"LIQUID 💧":"GAS 💨";
+      $("#t-val").textContent=`${T}°C — ${st}`;
+      $("#t-read").innerHTML = T<0?`Below 0°C → <b>vibrate in lattice</b>. Add heat to melt!`
+        : T<100?`0–100°C → particles <b>slide past each other</b>. Boil at 100°C!`
+        :`Above 100°C → particles <b>fly free</b>. Cool to condense!`;
+    }
+    sl.oninput=upd; upd(); frame();
+  }
+  if(i===1){
+    const upd=()=>{
+      const p=+$("#s-p").value, n=+$("#s-n").value, e=+$("#s-e").value;
+      $("#v-p").textContent=p; $("#v-n").textContent=n; $("#v-e").textContent=e;
+      const name=ELEMENTS[p]||("Element-"+p);
+      const A=p+n, charge=p-e;
+      const ion = charge===0?"neutral atom":charge>0?`cation +${charge}`:`anion ${charge}`;
+      const iso = (p===6&&A===14)?" — 📻 Carbon-14 (radioactive!)":(n!==Math.round(p*1))&&p>2?" — isotope variant":"";
+      $("#nuc").textContent=`${p}p ${n}n`;
+      $("#atom-read").innerHTML=`<b>${name}-${A}</b> • ${ion}${iso}<br>Z=${p} (defines element) • A=${A} • charge=${charge>=0?"+":""}${charge}<br>${charge===0&&e===p?(e===2||e===10?"🌟 Full shell — noble-gas happy!":"Keep filling shells: 2, 8, 8…"):"⚡ Ions attract opposites — that's bonding fuel!"}`;
+      // orbits
+      const vis=$("#atom-vis"); vis.querySelectorAll(".orbit").forEach(o=>o.remove());
+      const shells=[Math.min(e,2),Math.min(Math.max(e-2,0),8),Math.max(e-10,0)];
+      const cls=["o1","o2","o3"];
+      shells.forEach((c,si)=>{ if(c<=0)return; const o=document.createElement("div"); o.className="orbit "+cls[si];
+        for(let k=0;k<c;k++){ const d=document.createElement("div"); d.className="elec"; d.style.transform=`rotate(${k*(360/c)}deg) translateY(-${si===0?107:si===1?137:0}px)`; d.style.transformOrigin="50% 0"; o.appendChild(d);} vis.appendChild(o); });
+    };
+    ["s-p","s-n","s-e"].forEach(id=>$("#"+id).oninput=upd); upd();
+  }
+  if(i===2){
+    const g=$("#pt-grid"); g.innerHTML="";
+    PT.forEach(([num,sym,name,cat])=>{
+      const d=document.createElement("div");
+      d.className="el cat-"+cat;
+      if(!num){ d.style.visibility="hidden"; return; }
+      d.innerHTML=`<small>${num}</small>${sym}`;
+      d.title=name;
+      d.onclick=()=>{
+        const grp = num<=2?"period 1":num<=10?"period 2":num<=18?"period 3":"period 4";
+        const val = {H:1,He:8,Li:1,Be:2,B:3,C:4,N:5,O:6,F:7,Ne:8,Na:1,Mg:2,Al:3,Si:4,P:5,S:6,Cl:7,Ar:8,K:1,Ca:2}[sym]||"?";
+        $("#pt-read").innerHTML=`<b>${name} (${sym}-${num})</b> • ${cat} • ${grp} • ~${val} valence e⁻<br>${cat==="alkali"?"🔥 Explosive metal — loses 1 e⁻!":cat==="halogen"?"😤 Hungry for 1 e⁻ — forms salts!":cat==="noble"?"😎 Full shell — won't react.":cat==="transition"?"🔩 Hard metal, colorful ions, great catalyst.":"Click siblings in its column — same valence, same vibe!"}`;
+      };
+      g.appendChild(d);
+    });
+  }
+  if(i===3){
+    const go=()=>{
+      const a=$("#b-a").value, b=$("#b-b").value;
+      const d=Math.abs((EN[a]||0)-(EN[b]||0)).toFixed(2);
+      const type = d<0.5?"Nonpolar covalent 🤝 (equal sharing)":d<=1.7?"Polar covalent ⚡ (unequal sharing)":"Ionic ⚡ (electron transfer!)";
+      $("#b-read").innerHTML=`<b>${a} (${EN[a]}) + ${b} (${EN[b]})</b> → ΔEN = <b>${d}</b> → <b>${type}</b>`;
+      const st=$("#b-stage");
+      const ionic = d>1.7;
+      st.innerHTML=`<div class="atom-chip ${a==="Na"?"chip-na":a==="Cl"?"chip-cl":a==="H"?"chip-h":"chip-o"}" id="ca">${a}<span>${ionic?'<span class="e-dot"></span>'.repeat(1):'<span class="e-dot"></span>'.repeat(2)}</span></div>
+        <div style="font-size:34px">${ionic?"➡️":"🤝"}</div>
+        <div class="atom-chip ${b==="Na"?"chip-na":b==="Cl"?"chip-cl":b==="H"?"chip-h":"chip-o"}" id="cb">${b}<span>${'<span class="e-dot"></span>'.repeat(3)}</span></div>`;
+      setTimeout(()=>{ const ca=$("#ca"),cb=$("#cb"); if(!ca)return;
+        ca.style.transform=ionic?"translateX(26px)":"scale(1.1)"; cb.style.transform=ionic?"translateX(-26px)":"scale(1.1)";
+        ca.classList.add("bonded"); cb.classList.add("bonded");
+        $("#b-read").innerHTML+= ionic?`<br>✨ <b>${a} gave an electron to ${b}!</b> Now Na⁺ + Cl⁻ attract in a crystal lattice.`:`<br>✨ <b>Sharing!</b> Nuclei both tug the electron pair — ${d<0.5?"perfectly equal.":"unequally (polar)."}`;
+      },450);
+    };
+    $("#b-go").onclick=go; go();
+  }
+  if(i===4){
+    const upd=()=>{
+      const c1=+$("#c1").value,c2=+$("#c2").value,c3=+$("#c3").value;
+      const Hl=c1*2,Hr=c3*2,Ol=c2*2,Or=c3*1;
+      const ok = Hl===Hr&&Ol===Or;
+      $("#bal-read").innerHTML=`Left: <b>${Hl} H</b>, <b>${Ol} O</b> &nbsp;|&nbsp; Right: <b>${Hr} H</b>, <b>${Or} O</b> → ${ok?"✅ <b>BALANCED! Mass conserved. +50 XP wisdom.</b>":"❌ Not yet — H: "+Hl+" vs "+Hr+", O: "+Ol+" vs "+Or+". Hint: try 2, 1, 2."}`;
+      $("#bal-read").style.borderColor=ok?"var(--good)":"";
+    };
+    $$("#tab-lab [data-c]").forEach(b=>b.onclick=()=>{ const el=$("#"+b.dataset.c); el.value=Math.max(1,Math.min(6,+el.value + +b.dataset.d)); upd(); });
+    upd();
+    $("#rx-check").onclick=()=>{ $("#rx-read").innerHTML = $("#rx-sel").value==="Single replacement"?"✅ <b>Correct!</b> Zn replaces H: A + BC → AC + B.":"❌ Nope — Zn kicks H out alone. That's <b>single replacement</b>."; };
+  }
+  if(i===5){
+    $("#m-g2m").onclick=()=>{ const g=+$("#m-g").value||0, m=g/18.02; $("#m-read").innerHTML=`<b>${g} g H₂O</b> ÷ 18.02 = <b>${m.toFixed(3)} mol</b> = <b>${(m*AV).toExponential(3)}</b> molecules.`; };
+    $("#m-m2g").onclick=()=>{ const m=+$("#m-m").value||0; $("#m-read").innerHTML=`<b>${m} mol H₂O</b> = <b>${(m*18.02).toFixed(2)} g</b> = <b>${(m*AV).toExponential(3)}</b> molecules.`; };
+    $("#m-sand").onclick=()=>{ const b=+$("#m-b").value||0, c=+$("#m-c").value||0; const s=Math.min(Math.floor(b/2),c); const lim = Math.floor(b/2)<c?"🍞 bread limits you!":"🧀 cheese limits you!";
+      $("#m-read").innerHTML=`2🍞+1🧀→1🥪. With ${b} bread + ${c} cheese → <b>${s} sandwiches</b>. ${lim} (limiting reactant!)`; };
+  }
+  if(i===6){
+    const gu=()=>{ const p=+$("#g-p").value/10, t=+$("#g-t").value; const v=(t/298/ p); $("#g-pv").textContent=p.toFixed(1)+" atm"; $("#g-tv").textContent=t+" K";
+      $("#balloon").style.transform=`scale(${0.6+v*0.5})`; $("#g-read").innerHTML=`P=<b>${p.toFixed(1)} atm</b>, T=<b>${t} K</b> → V is <b>${v.toFixed(2)}×</b> original. <b>Boyle:</b> ↑P shrinks • <b>Charles:</b> ↑T expands.`; };
+    $("#g-p").oninput=gu; $("#g-t").oninput=gu; gu();
+    const pu=()=>{ const ph=+$("#ph-s").value; $("#ph-val").textContent=ph.toFixed(1);
+      const names=[[1,"🔴 Strong acid — battery acid / stomach HCl","😖"],[3,"🟠 Acid — lemon juice, vinegar","😝"],[6,"🟡 Weak acid — rain, milk","🙂"],[7.5,"🟢 Neutral — pure water","😐"],[9,"🔵 Weak base — soap, baking soda","😌"],[12,"🟣 Base — bleach precursor","😬"],[15,"⚫ Strong base — drain cleaner","☠️"]];
+      const [ ,n,e]=names.find(([m])=>ph<m);
+      $("#ph-name").textContent=n; $("#ph-emoji").textContent=e;
+      const hue = 0+ph*10; $("#ph-liq").style.background=`hsl(${hue},90%,${ph<7?55:60}%)`; $("#ph-liq").style.height=(20+ph*4)+"%";
+      $("#ph-read").innerHTML=`pH <b>${ph}</b> → [H⁺] = 10<sup>-${ph}</sup> M. ${ph<7?`Acidic — <b>${Math.pow(10,7-ph).toExponential(0)}×</b> more H⁺ than neutral.`:""}${ph===7?"Perfect H⁺/OH⁻ tie.":ph>7?` Basic — slippery, bitter, OH⁻ rich.`:""}`; };
+    $("#ph-s").oninput=pu; pu();
+  }
+  if(i===7){
+    const names=["methane","ethane","propane","butane","pentane","hexane","heptane","octane"];
+    const ou=()=>{ const c=+$("#o-c").value, t=$("#o-t").value; $("#o-cv").textContent=c;
+      let f = t==="ane"?`C${c}H${2*c+2}`:t==="ene"?`C${c}H${2*c}`:`C${c}H${2*c-2}`;
+      if(c===1&&t!=="ane") f="needs C≥2 for double/triple!";
+      const nm = c===1&&t==="ane"?"methane":(names[c-1]||"")+(t==="ane"?"":t==="ene"?" (alkene!)":" (alkyne!)");
+      $("#o-read").textContent=`${f.replace("C1H","CH")} — ${nm}`;
+      $("#o-vis").textContent = "●".repeat(0)+"⚫".repeat(Math.min(c,8))+"  "+"—".repeat(t==="ane"?c-1:c-2)+(t==="ene"?"═":t==="yne"?"≡":"");
+    };
+    $("#o-c").oninput=ou; $("#o-t").onchange=ou; ou();
+    let atoms=1000, hl=0;
+    $("#h-step").onclick=()=>{ atoms=Math.round(atoms/2); hl++; $("#h-read").innerHTML=`<b>${atoms} atoms</b> remain after <b>${hl}</b> half-liv${hl===1?"e":"es"}. ${atoms<60?"☢️ Nearly all decayed — element changed!":"Half of the rest decays next round."}`; $("#h-bar").style.width=(atoms/10)+"%"; };
+    $("#h-reset").onclick=()=>{ atoms=1000;hl=0;$("#h-read").textContent="1000 atoms remain. Half-lives passed: 0."; $("#h-bar").style.width="100%"; };
+  }
+}
+
+/* ---------------- QUIZ ---------------- */
+let qIdx=0, qScore=0, qLock=false;
+function renderQuiz(i){
+  qIdx=0; qScore=0; S.hearts=3; updateHUD();
+  showQ(i);
+}
+function showQ(i){
+  const L=LEVELS[i], Q=L.quiz[qIdx], host=$("#quiz-host");
+  if(!Q){ finishQuiz(i, L.quiz.length); return; }
+  host.innerHTML=`<div class="quiz-top"><b>⚔️ Gate Quiz — ${qIdx+1}/${L.quiz.length}</b>
+    <div class="progress-dots">${L.quiz.map((_,k)=>`<i class="${k<qIdx?"ok":""}${k===qIdx?"cur":""}"></i>`).join("")}</div>
+    <span style="margin-left:auto;color:var(--mut);font-size:13px">Need ≥70% to unlock next realm</span></div>
+    <div class="q"><h4>Q${qIdx+1}. ${Q.q}</h4><div class="opts">${Q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${"ABCD"[k]}. ${o}</button>`).join("")}</div>
+    <div class="why" id="q-why">Choose an answer, hero…</div>
+    <div style="margin-top:10px;display:flex;gap:8px"><button class="btn small" id="q-next" disabled>Next →</button></div></div>`;
+  qLock=false;
+  host.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    if(qLock) return; qLock=true;
+    const k=+b.dataset.k, ok=k===Q.a;
+    host.querySelectorAll(".opt").forEach(x=>{ if(+x.dataset.k===Q.a) x.classList.add("right"); });
+    if(ok){ b.classList.add("right"); qScore++; S.streak++; $("#q-why").innerHTML="✅ <b>Correct!</b> "+Q.why; }
+    else{ b.classList.add("wrong"); S.streak=0; S.hearts=Math.max(0,S.hearts-1); $("#q-why").innerHTML="❌ <b>Not quite.</b> "+Q.why; }
+    updateHUD(); save();
+    const nx=$("#q-next"); nx.disabled=false; nx.onclick=()=>{ qIdx++; showQ(i); };
+  });
+}
+function finishQuiz(i,total){
+  const pct=Math.round(qScore/total*100), pass=pct>=70;
+  const stars = pct>=90?3:pct>=70?2:pct>=40?1:0;
+  const host=$("#quiz-host");
+  if(pass){
+    const first=!S.done[i];
+    S.done[i]=true; S.stars[i]=Math.max(S.stars[i]||0,stars);
+    const xpGain=100+stars*25+(first?50:0); S.xp+=xpGain; save(); updateHUD(); renderMap(); confetti(120);
+    $("#level-stars").textContent="★".repeat(S.stars[i])+"☆".repeat(3-S.stars[i]);
+  } else { S.xp+=qScore*10; save(); updateHUD(); }
+  host.innerHTML=`<div class="q" style="text-align:center"><div style="font-size:56px">${pass?"🏆":"💪"}</div>
+    <h3>${pass?"Realm Cleared!":"Not yet, hero…"}</h3>
+    <p>Score: <b>${qScore}/${total} (${pct}%)</b> • ${"★".repeat(stars)}${"☆".repeat(3-stars)}</p>
+    <p style="color:var(--mut)">${pass?"The next realm glows on your map. Onward!":`You need ≥70% to advance. Review 📖 Learn + 🧪 Lab, then retry — hearts refill!`}</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn ghost" id="q-re">↺ Retry quiz</button>
+      ${pass?(i<7?`<button class="btn" id="q-next-lvl">Next Realm →</button>`:`<button class="btn gold" id="q-boss">⚔️ Face Final Boss!</button>`):`<button class="btn" id="q-lab">Back to Lab 🧪</button>`}
+    </div></div>`;
+  $("#q-re").onclick=()=>renderQuiz(i);
+  if(pass&&i<7&&$("#q-next-lvl")) $("#q-next-lvl").onclick=()=>openLevel(i+1);
+  if(pass&&i===7&&$("#q-boss")) $("#q-boss").onclick=()=>openBoss();
+  if(!pass&&$("#q-lab")) $("#q-lab").onclick=()=>goTab("lab");
+  if(pass) showModal(i,stars,pct);
+}
+function showModal(i,stars,pct){
+  $("#modal-emoji").textContent=i===7?"👑":"🎉";
+  $("#modal-title").textContent=i===7?"All Realms Cleared!":"Realm "+(i+1)+" Cleared!";
+  $("#modal-text").textContent=`You scored ${pct}% and earned ${stars} star${stars===1?"":"s"}. XP flows through you…`;
+  $("#modal-stars").textContent="★".repeat(stars)+"☆".repeat(3-stars);
+  $("#modal").classList.remove("hidden");
+  $("#modal-next").textContent=i===7?"⚔️ Face Final Boss!":"Next Realm →";
+  $("#modal-next").onclick=()=>{ $("#modal").classList.add("hidden"); if(i<7) openLevel(i+1); else openBoss(); };
+  $("#modal-replay").onclick=()=>{ $("#modal").classList.add("hidden"); };
+}
+$("#modal").addEventListener("click",e=>{ if(e.target.id==="modal") $("#modal").classList.add("hidden"); });
+
+/* ---------------- BOSS ---------------- */
+let bIdx=0,bScore=0;
+function openBoss(){
+  bIdx=0;bScore=0; show("#screen-boss"); showBoss();
+}
+function showBoss(){
+  const Q=BOSS_QUIZ[bIdx], host=$("#boss-host");
+  if(!Q){
+    const pct=Math.round(bScore/BOSS_QUIZ.length*100), win=pct>=70;
+    if(win){ S.stars.boss=3; S.xp+=300; if(!S.done.boss){S.xp+=200;} S.done.boss=true; save(); confetti(200); }
+    else { S.xp+=bScore*10; save(); }
+    updateHUD(); renderMap();
+    host.innerHTML=`<div class="q" style="text-align:center"><div style="font-size:60px">${win?"👑":"💪"}</div>
+      <h2>${win?"VICTORY! You are a Chemistry Legend!":"The Boss endures…"}</h2>
+      <p>Final score: <b>${bScore}/${BOSS_QUIZ.length} (${pct}%)</b></p>
+      ${win?`<div class="cert"><div class="seal">🏅⚗️🏅</div><h2>Certificate of Chemistry Heroism</h2>
+        <p>This certifies that</p><h2 id="cert-name">${S.name?S.name:"________"}</h2>
+        <p>conquered all 8 Realms of Matter + the Final Boss<br><b>${S.xp} XP • ${totalStars()}⭐ • ${rank()}</b><br><span style="font-size:12px">ChemQuest Academy • 100% vanilla JS/CSS • ${new Date().toLocaleDateString()}</span></p></div>
+        <div class="controls" style="justify-content:center;margin-top:12px"><input class="txt" id="hero-name" placeholder="Write your hero name…" value="${S.name||""}"><button class="btn small gold" id="save-name">✒️ Sign certificate</button><button class="btn small" onclick="window.print()">🖨️ Print</button></div>`
+      :`<p style="color:var(--mut)">Score ≥70% to earn the certificate. Review the realms and retry!</p><button class="btn" id="b-re">↺ Retry Boss</button> <button class="btn ghost" data-goto="map">Map</button>`}
+    </div>`;
+    if(win){ $("#save-name").onclick=()=>{ S.name=$("#hero-name").value.slice(0,30); save(); $("#cert-name").textContent=S.name||"________"; toast("✒️ Certificate signed, Legend "+(S.name||"")+"!"); }; }
+    const br=$("#b-re"); if(br) br.onclick=openBoss;
+    host.querySelectorAll('[data-goto="map"]').forEach(b=>b.onclick=()=>{show("#screen-map");renderMap();});
+    return;
+  }
+  host.innerHTML=`<h2>👹 Final Boss — Hero Trial (${bIdx+1}/${BOSS_QUIZ.length})</h2>
+    <p style="color:var(--mut)">Mixed questions from all 8 realms. No mercy. ≥70% wins the certificate.</p>
+    <div class="q"><h4>Q${bIdx+1}. ${Q.q}</h4><div class="opts">${Q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${"ABCD"[k]}. ${o}</button>`).join("")}</div>
+    <div class="why" id="b-why"></div></div>`;
+  let lock=false;
+  host.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    if(lock)return; lock=true;
+    const k=+b.dataset.k, ok=k===Q.a;
+    host.querySelectorAll(".opt").forEach(x=>{ if(+x.dataset.k===Q.a)x.classList.add("right"); });
+    if(ok){b.classList.add("right");bScore++;$("#b-why").innerHTML="✅ "+Q.why;}
+    else{b.classList.add("wrong");$("#b-why").innerHTML="❌ "+Q.why;}
+    setTimeout(()=>{bIdx++;showBoss();},1100);
+  });
+}
+
+/* ---------------- NAV ---------------- */
+$("#btn-back").onclick=()=>{ show("#screen-map"); renderMap(); };
+$("#btn-map").onclick=()=>{ show("#screen-map"); renderMap(); };
+$("#btn-start").onclick=()=>{ const i=Math.min(doneCount(),7); openLevel(unlocked(i)?i:0); };
+$("#btn-how").onclick=()=>$("#howto").classList.toggle("hidden");
+$("#btn-reset").onclick=()=>{ if(confirm("Reset all ChemQuest progress?")){ S={xp:0,stars:{},done:{},streak:0,hearts:3,name:""}; save(); renderMap(); toast("↺ Fresh start, apprentice!"); } };
+document.querySelectorAll('[data-goto="map"]').forEach(b=>b.onclick=()=>{show("#screen-map");renderMap();});
+
+/* init */
+renderMap();
+
+</script>
+</body>
+</html>
