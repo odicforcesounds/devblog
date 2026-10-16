@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHYSICA — From Zero to Hero | A Physics Adventure Game</title>
+<meta name="description" content="Learn all of physics from zero to hero in a game. 8 worlds, animated labs, missions. 100% vanilla JS + CSS3, zero external resources.">
+<style>
+/* PHYSICA — pure CSS3, zero frameworks, zero external assets */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#070b1e;--bg1:#0c1330;--panel:#121b42;--panel2:#1a2560;
+  --line:#2b3a8f;--txt:#eef2ff;--mut:#a7b3e6;
+  --acc:#5df2c8;--acc2:#7c7cff;--gold:#ffd35e;--pink:#ff6fa5;--red:#ff5d5d;
+  --r:18px;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--txt);min-height:100vh;overflow-x:hidden;
+  background:
+    radial-gradient(1100px 600px at 15% -5%, #2431a0 0%, transparent 60%),
+    radial-gradient(900px 500px at 95% 10%, #5b1e7a 0%, transparent 55%),
+    radial-gradient(800px 600px at 50% 110%, #0b4d5c 0%, transparent 60%),
+    linear-gradient(var(--bg0),var(--bg1));
+}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.9;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 22%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 68% 8%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 82% 34%, #9df 50%, transparent 51%),
+    radial-gradient(1px 1px at 33% 66%, #fff 50%, transparent 51%),
+    radial-gradient(1.4px 1.4px at 91% 72%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 5% 78%, #fff 50%, transparent 51%),
+    radial-gradient(1.6px 1.6px at 47% 12%, #ffe9a8 50%, transparent 51%),
+    radial-gradient(1px 1px at 58% 88%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 24% 44%, #fff 50%, transparent 51%),
+    radial-gradient(1.2px 1.2px at 76% 55%, #c9fff0 50%, transparent 51%);
+  animation:twinkle 3.4s ease-in-out infinite alternate;
+}
+@keyframes twinkle{from{opacity:.55}to{opacity:1}}
+#app{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:14px 16px 60px}
+
+/* HUD */
+#hud{position:sticky;top:10px;z-index:20;display:flex;align-items:center;gap:14px;
+  background:rgba(10,15,40,.82);backdrop-filter:blur(10px);
+  border:1px solid var(--line);border-radius:16px;padding:10px 14px;
+  box-shadow:0 10px 40px rgba(0,0,0,.45)}
+.hud-left{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+.logo{font-weight:900;letter-spacing:2px;font-size:20px}
+.logo-atom{color:var(--acc);display:inline-block;animation:spin 6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logo-sub{font-size:11px;color:var(--gold);letter-spacing:3px;font-weight:700}
+.hud-center{flex:1}
+.xp-top{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);font-weight:700;margin-bottom:6px}
+#hud-rank{color:var(--acc)}
+.xp-bar{height:12px;background:#080d26;border:1px solid var(--line);border-radius:99px;overflow:hidden;position:relative}
+#xp-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--acc2),var(--pink));
+  box-shadow:0 0 14px #5df2c8aa;transition:width .8s cubic-bezier(.2,.9,.2,1)}
+#xp-ghost{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+  transform:translateX(-100%);animation:sheen 3s infinite}
+@keyframes sheen{60%{transform:translateX(100%)}100%{transform:translateX(100%)}}
+.hud-right{display:flex;align-items:center;gap:8px}
+.stat{background:#0a1030;border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-weight:800;font-size:14px}
+.ghost-btn{background:#0a1030;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:6px 10px;cursor:pointer;font-size:15px}
+.ghost-btn:hover{border-color:var(--acc)}
+.btn{border:0;border-radius:12px;padding:11px 18px;font-weight:800;cursor:pointer;color:#071022;font-size:15px;
+  background:linear-gradient(180deg,#fff,#cdd6ff);transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(90deg,var(--acc),#6ee7ff);box-shadow:0 6px 22px rgba(93,242,200,.35)}
+.btn.secondary{background:#1c2660;color:var(--txt);border:1px solid var(--line)}
+.btn.big{font-size:17px;padding:14px 22px}
+.btn.small{padding:8px 12px;font-size:14px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Screens */
+.screen{display:none;animation:fadeUp .35s ease}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.hero{text-align:center;padding:34px 12px 10px}
+.hero-badge{display:inline-block;font-size:11px;letter-spacing:1.5px;font-weight:800;color:#071022;
+  background:linear-gradient(90deg,var(--gold),#ff9d5c);padding:7px 14px;border-radius:99px;margin-bottom:14px;
+  animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.hero h1{font-size:clamp(30px,5vw,56px);line-height:1.05;letter-spacing:-1px}
+.grad{background:linear-gradient(90deg,var(--acc),#8ab6ff,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-sub{color:var(--mut);max-width:720px;margin:14px auto 18px;font-size:17px;line-height:1.6}
+.hero-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.how-box{max-width:640px;margin:16px auto 0;text-align:left;background:#0c1338;border:1px solid var(--line);
+  border-radius:14px;padding:14px 16px;display:grid;gap:8px;font-size:14px;color:#dfe6ff}
+.how-box.hidden{display:none}
+.tiny{color:var(--mut);font-size:12px}
+
+.map-head{display:flex;justify-content:space-between;align-items:center;margin:26px 4px 12px}
+.map-head h2{font-size:22px}
+.map-legend{font-size:13px;color:var(--mut);display:flex;gap:8px;align-items:center}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-left:10px}
+.dot.done{background:var(--acc);box-shadow:0 0 10px var(--acc)}
+.dot.open{background:var(--gold);box-shadow:0 0 10px var(--gold)}
+.dot.locked{background:#3a467f}
+
+/* World cards */
+.world-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.world{position:relative;text-align:left;border-radius:var(--r);padding:16px;cursor:pointer;overflow:hidden;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);color:var(--txt);
+  transition:transform .15s,box-shadow .15s,border-color .15s;min-height:190px;display:flex;flex-direction:column;gap:8px}
+.world:hover:not(:disabled){transform:translateY(-3px);border-color:var(--acc);box-shadow:0 14px 34px rgba(0,0,0,.5)}
+.world:disabled{cursor:not-allowed;opacity:.75}
+.world .w-top{display:flex;justify-content:space-between;align-items:center}
+.w-num{font-size:11px;font-weight:900;letter-spacing:2px;color:var(--gold)}
+.w-state{font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;background:#0a1030;border:1px solid var(--line)}
+.world.done .w-state{background:rgba(93,242,200,.15);border-color:var(--acc);color:var(--acc)}
+.world.open .w-state{background:rgba(255,211,94,.15);border-color:var(--gold);color:var(--gold)}
+.world h3{font-size:19px;line-height:1.2}
+.world p{font-size:13.5px;color:var(--mut);line-height:1.5;flex:1}
+.w-ico{font-size:38px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5));animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-5px) rotate(2deg)}}
+.w-progress{height:8px;background:#080d26;border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.w-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.w-skills{display:flex;flex-wrap:wrap;gap:6px}
+.w-skills span{font-size:11px;background:#0a1030;border:1px solid var(--line);padding:3px 8px;border-radius:99px;color:#cdd6ff}
+.world.locked::after{content:"🔒 UNLOCK PREVIOUS WORLD";position:absolute;inset:auto 0 0 0;padding:8px;text-align:center;
+  font-size:11px;font-weight:900;letter-spacing:1px;background:rgba(0,0,0,.55);color:#fff}
+.world.done{border-color:var(--acc)}
+.world.open{border-color:var(--gold)}
+
+/* Runes */
+.formula-wall{margin-top:26px;background:#0c1338;border:1px solid var(--line);border-radius:16px;padding:18px}
+.formula-wall h2{margin-bottom:12px}
+.runes{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.rune{background:#080d26;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;transition:transform .15s}
+.rune:hover{transform:scale(1.05);border-color:var(--gold)}
+.rune code{display:block;color:var(--gold);font-weight:900;font-size:15px}
+.rune span{font-size:12px;color:var(--mut)}
+.foot{margin-top:18px;color:var(--mut);font-size:13px;text-align:center}
+
+/* Level screen */
+.level-top{display:flex;align-items:center;gap:14px;margin:16px 0}
+.level-crumb{flex:1}
+.level-crumb span{font-size:12px;letter-spacing:2px;font-weight:900;color:var(--acc)}
+.level-crumb h2{font-size:28px}
+.lv-badge{font-size:30px;background:#0c1338;border:1px solid var(--line);border-radius:14px;padding:8px 14px}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tab{flex:1;min-width:140px;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0c1338;color:var(--mut);
+  font-weight:900;cursor:pointer;font-size:14px}
+.tab.active{background:linear-gradient(90deg,#1d2a7a,#2a1d6e);color:#fff;border-color:var(--acc);box-shadow:0 0 18px rgba(93,242,200,.25)}
+.tabpane{display:none}
+.tabpane.active{display:block;animation:fadeUp .3s ease}
+
+/* Learn cards */
+.learn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:820px){.learn-grid{grid-template-columns:1fr}.lab-layout{grid-template-columns:1fr!important}}
+.concept{background:linear-gradient(180deg,#141d55,#0f1640);border:1px solid var(--line);border-radius:16px;padding:16px;position:relative;overflow:hidden}
+.concept::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(var(--acc),var(--acc2))}
+.concept h3{font-size:17px;margin-bottom:8px}
+.concept p{font-size:14.5px;line-height:1.65;color:#d9e0ff}
+.concept .f{margin-top:10px;background:#080d26;border:1px dashed var(--gold);border-radius:10px;padding:8px 10px;font-size:14px}
+.concept .f b{color:var(--gold)}
+.concept .ex{margin-top:8px;font-size:13px;color:var(--acc);background:rgba(93,242,200,.08);border-radius:10px;padding:8px 10px}
+.analogy{grid-column:1/-1;background:linear-gradient(90deg,#2a1450,#122a5a);border:1px solid var(--pink);border-radius:16px;padding:16px}
+.analogy h3{color:var(--pink)}
+.analogy p{color:#f0e6ff;line-height:1.6;font-size:14.5px}
+.demo-strip{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.demo{flex:1;min-width:150px;background:#080d26;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.css-demo{height:64px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:#0a1030;border-radius:8px;margin-bottom:8px}
+/* CSS-only animated demos */
+.rolling-ball{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,var(--acc) 40%,#0a6);animation:roll 2.2s ease-in-out infinite alternate}
+@keyframes roll{from{transform:translateX(-46px)}to{transform:translateX(46px) rotate(360deg)}}
+.pendulum{width:2px;height:52px;background:#fff;transform-origin:top center;animation:swing 1.6s ease-in-out infinite alternate;position:relative}
+.pendulum::after{content:"";position:absolute;bottom:-10px;left:-10px;width:22px;height:22px;border-radius:50%;background:var(--gold)}
+@keyframes swing{from{transform:rotate(28deg)}to{transform:rotate(-28deg)}}
+.wave-css{width:90%;height:20px;background:repeating-radial-gradient(circle at 10px 10px, var(--acc) 0 2px, transparent 3px 12px);animation:waveMove 1.2s linear infinite}
+@keyframes waveMove{to{background-position:24px 0}}
+.orbit-css{width:58px;height:58px;border:1px dashed var(--acc2);border-radius:50%;position:relative;animation:spin 4s linear infinite}
+.orbit-css::after{content:"";position:absolute;top:-6px;left:50%;width:12px;height:12px;border-radius:50%;background:var(--gold)}
+.fall-ball{width:18px;height:18px;border-radius:50%;background:var(--pink);animation:fall 1.4s ease-in infinite alternate}
+@keyframes fall{from{transform:translateY(-20px)}to{transform:translateY(20px)}}
+.magnet{font-size:30px;animation:magnetPulse 1.2s ease-in-out infinite}
+@keyframes magnetPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2) rotate(-6deg)}}
+
+/* Lab */
+.lab-layout{display:grid;grid-template-columns:1.6fr .9fr;gap:12px}
+.lab-stage{background:#080d26;border:1px solid var(--line);border-radius:16px;padding:12px;overflow:hidden}
+.lab-stage-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:900}
+.lab-hint{font-size:12px;color:var(--mut);font-weight:600}
+#lab-canvas{width:100%;height:auto;background:radial-gradient(600px 300px at 50% 0%,#16205c,#080d26);border-radius:12px;border:1px solid #22307a;display:block}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:10px}
+.readout .ro{background:#0f1640;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.readout .ro b{display:block;font-size:17px;color:var(--acc)}
+.readout .ro span{font-size:11px;color:var(--mut);letter-spacing:.5px}
+.lab-controls{background:#0f1640;border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.lab-controls h3{font-size:16px}
+.slider{background:#080d26;border:1px solid var(--line);border-radius:12px;padding:10px}
+.slider label{display:flex;justify-content:space-between;font-size:13px;font-weight:800;margin-bottom:6px}
+.slider label output{color:var(--gold)}
+.slider input{width:100%;accent-color:var(--acc);height:28px;cursor:pointer}
+.slider .u{font-size:11px;color:var(--mut);margin-top:2px}
+.lab-btns{display:flex;gap:8px;flex-wrap:wrap}
+.lab-btns button{flex:1;min-width:100px;padding:10px;border-radius:10px;border:1px solid var(--line);background:#1a2560;color:#fff;font-weight:800;cursor:pointer}
+.lab-btns button:hover{border-color:var(--acc)}
+.lab-btns button.danger{background:#5a1630;border-color:var(--pink)}
+.lab-note{font-size:13px;line-height:1.6;color:#cdd6ff;background:rgba(124,124,255,.1);border-radius:10px;padding:10px}
+
+/* Mission */
+.mission-head{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#0f1640;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.mini-bar{height:10px;background:#080d26;border-radius:99px;border:1px solid var(--line);overflow:hidden;margin-top:6px;min-width:140px}
+#q-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--pink));transition:width .3s}
+.q-card{background:#0f1640;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.q-card.correct{border-color:var(--acc);box-shadow:0 0 0 2px rgba(93,242,200,.3)}
+.q-card.wrong{border-color:var(--red);box-shadow:0 0 0 2px rgba(255,93,93,.3)}
+.q-card h4{font-size:15px;margin-bottom:10px;line-height:1.5}
+.q-opts{display:grid;gap:8px}
+.q-opt{text-align:left;background:#080d26;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px 12px;cursor:pointer;font-size:14px}
+.q-opt:hover{border-color:var(--acc)}
+.q-opt.sel{background:#1d2a7a;border-color:var(--acc)}
+.q-explain{display:none;margin-top:10px;font-size:13px;line-height:1.6;background:#080d26;border-radius:10px;padding:10px;color:var(--acc)}
+.q-card.graded .q-explain{display:block}
+.mission-actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:6px}
+#mission-result{font-weight:900}
+
+/* Modal + toast */
+.modal{position:fixed;inset:0;background:rgba(3,6,20,.75);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.hidden{display:none}
+.modal-card{background:linear-gradient(180deg,#1a2560,#0e1440);border:1px solid var(--gold);border-radius:20px;padding:28px;text-align:center;max-width:440px;width:100%;animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-emoji{font-size:56px;animation:bob 1.6s infinite}
+.modal-card h2{margin:10px 0 8px}
+.modal-card p{color:var(--mut);line-height:1.6;font-size:14px}
+.modal-xp{font-size:28px;font-weight:900;color:var(--gold);margin:12px 0}
+.modal-btns{display:flex;gap:10px;justify-content:center}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(100px);background:#0e1440;border:1px solid var(--acc);
+  padding:12px 18px;border-radius:99px;font-weight:800;z-index:60;transition:transform .3s;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+@media(max-width:640px){
+  #hud{flex-wrap:wrap}.hud-center{order:3;flex-basis:100%}
+  .mission-head{flex-direction:column;align-items:stretch}
+}
+
+</style>
+</head>
+<body>
+<div id="stars" aria-hidden="true"></div>
+<div id="app">
+
+  <!-- TOP HUD -->
+  <header id="hud">
+    <div class="hud-left">
+      <div class="logo"><span class="logo-atom">◉</span> PHYSICA</div>
+      <div class="logo-sub">ZERO → HERO</div>
+    </div>
+    <div class="hud-center">
+      <div class="xp-wrap">
+        <div class="xp-top"><span id="hud-rank">Rank: Novice</span><span id="hud-xp-text">0 XP</span></div>
+        <div class="xp-bar"><div id="xp-fill"></div><div id="xp-ghost"></div></div>
+      </div>
+    </div>
+    <div class="hud-right">
+      <div class="stat" title="Levels cleared"><span class="stat-ico">🏆</span><span id="stat-levels">0/8</span></div>
+      <div class="stat" title="Streak"><span class="stat-ico">🔥</span><span id="stat-streak">0</span></div>
+      <button id="btn-reset" class="ghost-btn" title="Reset all progress">↺</button>
+      <button id="btn-sound" class="ghost-btn" title="Toggle bleeps">♪</button>
+    </div>
+  </header>
+
+  <!-- WORLD MAP SCREEN -->
+  <main id="screen-map" class="screen active">
+    <section class="hero">
+      <div class="hero-badge">100% VANILLA JS + CSS3 • NO EXTERNAL RESOURCES • OFFLINE READY</div>
+      <h1>How does the <span class="grad">universe</span> work?</h1>
+      <p class="hero-sub">You are a cadet physicist. Travel through <b>8 worlds</b>, run animated experiments,
+      and pass each <b>MISSION</b> to unlock the next. Fail a mission and the portal stays shut. Beat all 8 to become a <b>Physics Hero</b>.</p>
+      <div class="hero-actions">
+        <button id="btn-continue" class="btn primary big">▶ Continue adventure</button>
+        <button id="btn-how" class="btn secondary">How to play</button>
+      </div>
+      <div id="how-box" class="how-box hidden">
+        <div><b>1. LEARN</b> — read the briefing. Every formula is explained in plain words.</div>
+        <div><b>2. LAB</b> — drag sliders, fire cannons, heat atoms. Physics happens live.</div>
+        <div><b>3. MISSION</b> — answer 4–5 questions. Score ≥70% to unlock the next world.</div>
+        <div class="tiny">Progress saves in this browser (localStorage). No account, no downloads.</div>
+      </div>
+    </section>
+
+    <section class="map-head">
+      <h2>🗺 World map</h2>
+      <div class="map-legend"><span class="dot done"></span>cleared <span class="dot open"></span>open <span class="dot locked"></span>locked</div>
+    </section>
+    <div id="world-grid" class="world-grid"></div>
+
+    <section class="formula-wall">
+      <h2>⚡ The 12 runes you will master</h2>
+      <div class="runes">
+        <div class="rune"><code>v = d/t</code><span>speed</span></div>
+        <div class="rune"><code>a = Δv/t</code><span>acceleration</span></div>
+        <div class="rune"><code>F = m·a</code><span>Newton II</span></div>
+        <div class="rune"><code>W = F·d</code><span>work</span></div>
+        <div class="rune"><code>KE = ½mv²</code><span>kinetic</span></div>
+        <div class="rune"><code>PE = mgh</code><span>potential</span></div>
+        <div class="rune"><code>p = m·v</code><span>momentum</span></div>
+        <div class="rune"><code>P = F/A</code><span>pressure</span></div>
+        <div class="rune"><code>Q = m·c·ΔT</code><span>heat</span></div>
+        <div class="rune"><code>v = f·λ</code><span>waves</span></div>
+        <div class="rune"><code>V = I·R</code><span>Ohm</span></div>
+        <div class="rune"><code>E = mc²</code><span>Einstein</span></div>
+      </div>
+    </section>
+    <footer class="foot">Built with pure HTML + CSS3 + vanilla JS. Every animation below is hand-computed — no libraries, no images, no network. — Good luck, cadet.</footer>
+  </main>
+
+  <!-- LEVEL SCREEN -->
+  <main id="screen-level" class="screen">
+    <div class="level-top">
+      <button id="btn-back" class="btn secondary small">← Map</button>
+      <div class="level-crumb"><span id="lv-kicker">WORLD 1</span><h2 id="lv-title">Motion</h2></div>
+      <div id="lv-badge" class="lv-badge">🔒</div>
+    </div>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="learn">📖 1 · LEARN</button>
+      <button class="tab" data-tab="lab">🧪 2 · LAB</button>
+      <button class="tab" data-tab="mission">🎯 3 · MISSION</button>
+    </nav>
+
+    <section id="tab-learn" class="tabpane active"></section>
+    <section id="tab-lab" class="tabpane">
+      <div class="lab-layout">
+        <div class="lab-stage">
+          <div class="lab-stage-head"><span id="lab-name">Lab</span><span id="lab-hint" class="lab-hint"></span></div>
+          <canvas id="lab-canvas" width="860" height="380"></canvas>
+          <div id="lab-readout" class="readout"></div>
+        </div>
+        <div class="lab-controls">
+          <h3>🎛 Control deck</h3>
+          <div id="lab-sliders"></div>
+          <div id="lab-buttons" class="lab-btns"></div>
+          <div class="lab-note" id="lab-note"></div>
+        </div>
+      </div>
+    </section>
+    <section id="tab-mission" class="tabpane">
+      <div class="mission-head">
+        <div><h3 id="mission-title">Mission</h3><p id="mission-sub"></p></div>
+        <div class="mission-score"><div id="q-progress">Q 0/0</div><div class="mini-bar"><div id="q-fill"></div></div></div>
+      </div>
+      <div id="quiz-box"></div>
+      <div class="mission-actions">
+        <button id="btn-submit" class="btn primary big">Launch answers ▸</button>
+        <div id="mission-result"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- WIN MODAL -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <div id="modal-emoji" class="modal-emoji">🏆</div>
+      <h2 id="modal-title">World cleared!</h2>
+      <p id="modal-text"></p>
+      <div id="modal-xp" class="modal-xp">+100 XP</div>
+      <div class="modal-btns">
+        <button id="modal-next" class="btn primary">Next world ▸</button>
+        <button id="modal-map" class="btn secondary">Map</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+</div>
+<script>
+/* PHYSICA game engine — 100% vanilla JS, no libraries */
+(function(){
+"use strict";
+var $ = function(s){return document.querySelector(s);};
+var $$ = function(s){return Array.prototype.slice.call(document.querySelectorAll(s));};
+
+/* ---------- SOUND (WebAudio bleeps, no files) ---------- */
+var soundOn = true, AC=null;
+function beep(f,d,type){ if(!soundOn) return; try{
+  AC = AC || new (window.AudioContext||window.webkitAudioContext)();
+  var o=AC.createOscillator(), g=AC.createGain();
+  o.type=type||"square"; o.frequency.value=f||440;
+  g.gain.value=0.06; o.connect(g); g.connect(AC.destination);
+  o.start(); g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime+(d||0.12));
+  o.stop(AC.currentTime+(d||0.12));
+}catch(e){} }
+function fanfare(){ [523,659,784,1046].forEach(function(f,i){ setTimeout(function(){beep(f,.18,"square");}, i*130); }); }
+
+/* ---------- CURRICULUM ---------- */
+var LEVELS = [
+{ id:"motion", num:1, icon:"🏃", title:"Motion: The Language of Change",
+  sub:"Distance • Speed • Velocity • Acceleration • Graphs",
+  skills:["v=d/t","a=Δv/t","graphs"],
+  briefing:[
+    {t:"1. Where are you? Position & distance", b:"Physics starts by saying WHERE something is. Position (x, in metres) is measured from an origin. Distance is the total path walked. Displacement is the straight-line change: final − start, with direction. Walk 100 m east then 60 m west: distance = 160 m, displacement = 40 m east.", f:"displacement Δx = x₂ − x₁  (m)", ex:"💡 Everyday: your phone GPS logs distance, but navigation cares about displacement — the shortcut."},
+    {t:"2. How fast? Speed vs velocity", b:"Speed is distance ÷ time (always positive). Velocity is displacement ÷ time — it has direction. A car at 50 km/h north has velocity −50 km/h if south is positive. That sign matters: it tells the universe which way you go.", f:"v = Δx / Δt  •  speed = distance / time", ex:"💡 Runner: 100 m in 12 s → v = 8.3 m/s. Same speed around a track = changing velocity (direction turns!)."},
+    {t:"3. Speeding up: acceleration", b:"Acceleration is how fast velocity changes. Press the gas: +2 m/s² means you gain 2 m/s every second. Brake or turn and you accelerate too (negative or sideways). Free-fall on Earth: everything accelerates down at g = 9.8 m/s², feathers and hammers alike (without air).", f:"a = (v − v₀) / t  •  v = v₀ + a·t", ex:"💡 Car 0→27 m/s (0–100 km/h) in 9 s → a ≈ 3 m/s². You feel pushed back — that's inertia."},
+    {t:"4. Reading motion graphs", b:"Position-time graph: SLOPE = velocity. Steeper = faster. Flat = stopped. Velocity-time graph: SLOPE = acceleration, AREA under curve = displacement. A curve bending upward on x–t means speeding up.", f:"slope(x–t)=v  •  slope(v–t)=a  •  area(v–t)=Δx", ex:"💡 Try the LAB: set velocity and watch the x–t line draw itself."}
+  ],
+  analogy:"🎮 GAME ANALOGY: Motion is the mini-map. Position is your character's coordinates, velocity is your joystick tilt, acceleration is how hard you push the joystick. Master this and every later world (forces, energy, orbits) is just 'motion + a cause'.",
+  lab:{ name:"Lab 1 · Highway Runner", hint:"drag velocity — watch position & trail", note:"The dot leaves a trail: spacing between ghosts = speed. The scrolling graph at the bottom IS the x–t graph from your briefing — its slope equals your velocity slider.",
+    sliders:[{key:"v",label:"Velocity",min:-120,max:220,step:5,val:90,unit:" m/s"},{key:"trail",label:"Ghost trail",min:0,max:30,step:1,val:14,unit:" ghosts"}],
+    buttons:[{label:"⏸ Pause",act:"pause"},{label:"↺ Reset x",act:"reset"}] },
+  quiz:[
+    {q:"You walk 100 m east then 60 m west. Displacement?",opts:["160 m east","40 m east","40 m west","60 m"],correct:1,explain:"Displacement = final − start = +100 − 60 = 40 m east. Distance (160 m) is longer."},
+    {q:"A car rounds a curve at constant 60 km/h. Is it accelerating?",opts:["No — speed is constant","Yes — direction changes, so velocity changes","Only if it brakes","Only uphill"],correct:1,explain:"Velocity includes direction. Turning = changing velocity = acceleration toward the curve centre."},
+    {q:"x–t graph is a steep straight line. That means…",opts:["Stopped","Constant high velocity","Accelerating","Going backward in time"],correct:1,explain:"Slope of x–t = velocity. Straight = constant, steep = large."},
+    {q:"0 to 20 m/s in 5 s. Acceleration?",opts:["100 m/s²","15 m/s²","4 m/s²","20 m/s²"],correct:2,explain:"a = Δv/t = 20/5 = 4 m/s²."},
+    {q:"Area under a v–t graph gives…",opts:["Acceleration","Force","Displacement","Energy"],correct:2,explain:"Area = v × t = (m/s)(s) = m. It stacks small displacements into the total."}
+  ]},
+{ id:"forces", num:2, icon:"🧲", title:"Forces & Newton: Why Things Move",
+  sub:"F=ma • 3 Laws • Friction • Gravity • Free-body diagrams",
+  skills:["F=m·a","friction","g=9.8"],
+  briefing:[
+    {t:"1. Newton's 1st: inertia", b:"Objects keep doing what they're doing unless pushed. A puck glides on ice because almost no force stops it. You lurch forward when a bus brakes because YOUR body wants to keep moving. Inertia is mass resisting change.", f:"ΣF = 0  →  v = constant (rest or uniform motion)", ex:"💡 Seatbelts fight inertia: your body keeps flying at 50 km/h while the car stops."},
+    {t:"2. Newton's 2nd: F = m·a", b:"The workhorse of the universe. Double the force → double the acceleration. Double the mass → half the acceleration. 1 newton = push 1 kg at 1 m/s². Every rocket, car crash and football kick is this equation.", f:"F = m · a  (N = kg·m/s²)", ex:"💡 Push a 2 kg box with 10 N → a = 5 m/s². Same push on a 10 kg box → only 1 m/s²."},
+    {t:"3. Newton's 3rd: action–reaction", b:"Every push pushes back. Rocket pushes gas down, gas pushes rocket up. You push Earth walking; Earth pushes you forward. Pairs act on DIFFERENT objects, so they never cancel.", f:"F(A on B) = −F(B on A)", ex:"💡 Balloon rocket in LAB spirit: air rushes one way, balloon flies the other."},
+    {t:"4. Friction & gravity", b:"Friction opposes sliding (μ·N). Static holds you still; kinetic drags once moving — that's why pushing a couch is hardest at the start. Gravity near Earth: F = m·g, g = 9.8 m/s² down. Weight is a force (N), mass is stuff (kg) — you weigh less on the Moon but your mass never changes.", f:"f = μ·N  •  Weight = m·g", ex:"💡 Ice μ≈0.05 (slippery), rubber on road μ≈0.9 (grippy). ABS brakes keep tires in static friction — stronger!"}
+  ],
+  analogy:"🎮 GAME ANALOGY: Forces are the controls. Mass is your character's weight class (heavy = tank, slow to turn). Friction is the terrain (ice level vs mud level). Free-body diagrams are the HUD arrows showing every push on you.",
+  lab:{ name:"Lab 2 · Crate Pusher", hint:"push the crate — feel F=ma + friction", note:"Green arrow = your push, red = friction, yellow = net force. Toggle ice/asphalt to feel μ. Heavy crate barely moves: that's inertia (m in F=ma).",
+    sliders:[{key:"F",label:"Push force",min:0,max:600,step:10,val:260,unit:" N"},{key:"m",label:"Mass",min:5,max:200,step:5,val:40,unit:" kg"},{key:"mu",label:"Friction μ (0=ice, 1=rubber)",min:0,max:1,step:0.05,val:0.3,unit:""}],
+    buttons:[{label:"🧊 Ice",act:"ice"},{label:"🛣 Asphalt",act:"road"},{label:"↺ Reset",act:"reset"}] },
+  quiz:[
+    {q:"A 2 kg object accelerates at 5 m/s². Net force?",opts:["2.5 N","7 N","10 N","3 N"],correct:2,explain:"F = m·a = 2 × 5 = 10 N."},
+    {q:"You push a wall. The wall…",opts:["Pushes nothing back","Pushes you back equally","Pushes you back double","Absorbs force forever"],correct:1,explain:"Newton III: pairs are equal and opposite, on different objects."},
+    {q:"Why is starting to push a couch harder than keeping it moving?",opts:["Gravity increases","Static friction > kinetic friction","Mass grows","Air pressure"],correct:1,explain:"Static μ exceeds kinetic μ. Once it slips, friction drops."},
+    {q:"Your mass is 60 kg. Your weight on Earth?",opts:["60 N","≈588 N","9.8 kg","6000 N"],correct:1,explain:"W = m·g = 60 × 9.8 ≈ 588 N. Mass (kg) ≠ weight (N)."},
+    {q:"No net force on a moving puck means it will…",opts:["Stop immediately","Keep constant velocity","Accelerate","Fall upward"],correct:1,explain:"Newton I: ΣF=0 → no change in velocity (inertia)."}
+  ]},
+{ id:"energy", num:3, icon:"⚡", title:"Energy, Work & Momentum",
+  sub:"KE • PE • Conservation • Power • Collisions",
+  skills:["KE=½mv²","PE=mgh","p=mv"],
+  briefing:[
+    {t:"1. Work: force that moves something", b:"Pushing a wall all day = zero work in physics (nothing moved!). Work = force × distance moved ALONG the force. Lift a 10 kg bag 2 m: W ≈ 196 J. Joules also measure heat, food and electricity — one currency for everything.", f:"W = F · d · cos θ  (J)", ex:"💡 Carrying a bag horizontally: you do ~zero work (force up, motion sideways). Your muscles disagree — biology is inefficient!"},
+    {t:"2. Kinetic & potential: the two wallets", b:"Moving things carry kinetic energy KE = ½mv² — speed counts SQUARED, so 2× speed = 4× energy (why crashes escalate). Stored energy is potential: lifted PE = mgh, stretched spring PE = ½kx². Drop a ball: PE → KE, total stays constant.", f:"KE = ½mv²  •  PE = m·g·h", ex:"💡 1000 kg car at 20 m/s: KE = 200,000 J — enough to launch ~2000 apples 10 m up."},
+    {t:"3. Conservation: energy never dies", b:"Energy only changes wallets (PE↔KE↔heat↔light). A pendulum trades height for speed forever — slowly losing some to air as heat. The universe's books always balance; perpetual-motion machines always cheat somewhere.", f:"E(total) = KE + PE + heat + … = constant", ex:"💡 Roller coaster: chain lift stores PE, the first drop converts it to thrilling KE. No motor needed downhill!"},
+    {t:"4. Momentum & power", b:"Momentum p = m·v is 'oomph' — a truck at 10 m/s out-oomphs a bullet's speed with sheer mass. In collisions total p is conserved: that's why guns recoil and pool balls pass motion along. Power is how FAST you spend energy.", f:"p = m·v  •  P = W/t  (watts)", ex:"💡 60 W bulb for 1 hour = 216,000 J. A sprinter outputs ~1000 W for seconds; a horse ~746 W = 1 horsepower."}
+  ],
+  analogy:"🎮 GAME ANALOGY: Energy is mana. PE is stored mana potions (height, springs), KE is active spell damage. Work is casting (spending mana to move things). Momentum is knockback — heavy enemies shove harder. Conservation = mana never vanishes, only changes form.",
+  lab:{ name:"Lab 3 · Cannon of Conservation", hint:"aim & fire — watch PE↔KE live", note:"Fire the cannon: yellow bar = KE, blue = PE, red = total (constant until impact heats the ground). Steeper angles trade speed for height. Double the speed → 4× the range-energy.",
+    sliders:[{key:"ang",label:"Angle",min:10,max:80,step:1,val:55,unit:"°"},{key:"spd",label:"Muzzle speed",min:40,max:220,step:5,val:140,unit:" m/s"},{key:"g",label:"Gravity",min:1,max:25,step:0.5,val:9.8,unit:" m/s²"}],
+    buttons:[{label:"🔥 FIRE",act:"fire"},{label:"↺ Clear",act:"reset"}] },
+  quiz:[
+    {q:"2× speed means kinetic energy becomes…",opts:["2×","3×","4×","unchanged"],correct:2,explain:"KE ∝ v². 2² = 4. This is why highway crashes are so violent."},
+    {q:"1 kg book lifted 2 m gains PE ≈ ?",opts:["2 J","10 J","20 J","200 J"],correct:2,explain:"PE = mgh = 1×9.8×2 ≈ 19.6 J ≈ 20 J."},
+    {q:"In an isolated collision, what is conserved?",opts:["Only kinetic energy","Total momentum","Only speed","Mass alone"],correct:1,explain:"Total momentum is always conserved; KE only in elastic collisions."},
+    {q:"Power of 100 J of work in 2 s?",opts:["200 W","50 W","102 W","25 W"],correct:1,explain:"P = W/t = 100/2 = 50 W."},
+    {q:"Pendulum at its highest point has…",opts:["max KE, min PE","max PE, min KE","max of both","zero energy"],correct:1,explain:"Stopped at top (KE≈0), highest (PE max). At bottom it's reversed."}
+  ]},
+{ id:"gravity", num:4, icon:"🪐", title:"Rotation, Gravity & Fluids",
+  sub:"Torque • Orbits • Pressure • Buoyancy",
+  skills:["τ=rF","F=GmM/r²","P=F/A"],
+  briefing:[
+    {t:"1. Spin: torque & angular momentum", b:"Torque twists things: τ = r·F (longer wrench = easier bolt). Spinning objects keep angular momentum L = I·ω — ice skaters spin faster pulling arms in (smaller I, bigger ω). That's why planets keep spinning for billions of years.", f:"τ = r × F  •  L = I·ω = constant (no torque)", ex:"💡 Door: push near the hinge (small r) = hard. Push at the handle (big r) = easy. Same force, more torque."},
+    {t:"2. Gravity & orbits", b:"Newton: every mass pulls every other mass, weakening with distance². Einstein's upgrade: mass curves spacetime and planets surf the curve. Orbit = falling toward Earth but missing, forever — the ISS falls 24/7 yet never lands because it moves sideways at 7.6 km/s.", f:"F = G·m·M / r²  •  v(orbit) = √(GM/r)", ex:"💡 Moon is falling toward Earth right now — sideways fast enough to keep missing. Throw a ball at 8 km/s and it never lands."},
+    {t:"3. Pressure: force spread out", b:"Same force, smaller area = bigger pressure. A needle (tiny A) pierces; a snowshoe (big A) floats. Air presses ~101,000 Pa on every m² of you — 10 tonnes per square metre — and you don't notice because inside pushes back.", f:"P = F / A  (Pa = N/m²)", ex:"💡 Knife vs spoon: same push, knife's tiny edge = huge pressure = cuts."},
+    {t:"4. Fluids: buoyancy & Bernoulli", b:"Archimedes: water pushes up with the weight of displaced water — float if you're lighter than the water you shove aside (ships!), sink if heavier. Bernoulli: fast fluid = low pressure — wings lift, curveballs curve, shower curtains creep inward.", f:"Buoyancy = ρ·V·g  •  fast flow → low pressure", ex:"💡 Steel ship floats: hollow hull displaces thousands of tonnes of water. A steel nail can't."}
+  ],
+  analogy:"🎮 GAME ANALOGY: Torque is a steering wheel — grab the rim (big r), not the hub. Orbits are the ultimate drift: fall + sideways speed = eternal slide. Pressure is damage-per-pixel: focus force (spear) vs spread it (shield).",
+  lab:{ name:"Lab 4 · Orbital Sandbox", hint:"tune sideways speed — find the orbit", note:"Satellite launches sideways. Too slow → crashes (red). Just right (~√(GM/r)) → stable ellipse (green). Too fast → escapes forever (blue). Raise gravity (heavier planet) and required speed rises.",
+    sliders:[{key:"vv",label:"Launch speed",min:20,max:220,step:2,val:118,unit:""},{key:"grav",label:"Planet gravity GM",min:20000,max:160000,step:5000,val:80000,unit:""},{key:"r",label:"Launch altitude",min:110,max:180,step:5,val:140,unit:""}],
+    buttons:[{label:"🚀 Launch",act:"fire"},{label:"↺ Clear trails",act:"reset"}] },
+  quiz:[
+    {q:"Why does a door open easier pushing at the handle?",opts:["More force appears","Longer lever arm → more torque","Less friction","Gravity helps"],correct:1,explain:"τ = r·F. Bigger r from hinge = bigger twist for the same push."},
+    {q:"Skater pulls arms in and spins faster because…",opts:["Torque increases","Angular momentum is conserved, I shrinks so ω grows","Gravity drops","Friction vanishes"],correct:1,explain:"L = I·ω constant → smaller I means larger ω."},
+    {q:"An orbit is best described as…",opts:["Floating with no gravity","Continuous falling while moving sideways fast","Powered flight","Magnetic levitation"],correct:1,explain:"ISS is in free-fall; its sideways velocity keeps it missing Earth."},
+    {q:"Steel ship floats but steel nail sinks because…",opts:["Ship is lighter","Ship displaces more water → bigger buoyant force","Nails hate water","Ships use engines"],correct:1,explain:"Buoyancy = weight of displaced water. Hollow hull displaces enormously."},
+    {q:"Fast air over a wing creates lift because…",opts:["Bernoulli: fast flow = lower pressure above","Air gets heavier","Wings repel gravity","Engines push down"],correct:0,explain:"Pressure difference (low above, high below) pushes the wing up."}
+  ]},
+{ id:"thermo", num:5, icon:"🔥", title:"Heat & Thermodynamics",
+  sub:"Temperature • Heat flow • Laws • Engines",
+  skills:["Q=mcΔT","0 K","entropy ↑"],
+  briefing:[
+    {t:"1. Temperature = microscopic chaos", b:"Hotter = atoms jiggling faster. Temperature measures average kinetic energy per particle. Absolute zero (0 K = −273.15 °C) is the full stop — jiggling can't go below zero. A cold spoon in tea heats because fast tea molecules batter slow spoon molecules.", f:"KE(avg) ∝ T (kelvin)  •  0 K = −273.15 °C", ex:"💡 Even ice at 0 °C has jiggling molecules (~ 500 m/s for air at room temp). Nothing is truly still until 0 K."},
+    {t:"2. Heat moves three ways", b:"Conduction (touch: pan handle), convection (flow: boiling water loops, weather), radiation (light: Sun through vacuum, campfire on your face). Insulation blocks all three: thermos = vacuum (no conduction/convection) + shiny walls (reflects radiation).", f:"Q = m·c·ΔT  (c = specific heat)", ex:"💡 Water c = 4186 J/kg·K — huge. Oceans store summer heat and release it in winter: coastal climate control."},
+    {t:"3. Phase changes hide energy", b:"Melting ice at 0 °C absorbs 334,000 J/kg WITHOUT warming — energy breaks bonds, not speeds molecules (latent heat). That's why melting ice keeps drinks at 0 °C until the last cube dies, and why steam burns brutally (it dumps latent heat condensing on skin).", f:"Q(latent) = m·L  (L fusion 334 kJ/kg, vapor 2260 kJ/kg)", ex:"💡 1 kg of steam condensing on you releases 2.26 MJ — like ½ kg of TNT in heat alone."},
+    {t:"4. The laws: you can't win", b:"Zeroth: temperatures equalise (thermometers work). First: energy conserved — heat + work balance (ΔU = Q − W). Second: entropy (disorder) always rises — heat flows hot→cold, never reverse alone; perfect engines impossible. Third: 0 K unreachable. The universe slides toward lukewarm uniform soup.", f:"ΔU = Q − W  •  η(max) = 1 − T(cold)/T(hot)", ex:"💡 Car engine ~25% efficient; a power plant ~60% max. The rest becomes waste heat — physics tax."}
+  ],
+  analogy:"🎮 GAME ANALOGY: Temperature is enemy agitation — cold enemies doze, hot ones swarm. Heat flow is an aura that spreads to calm neighbours. Entropy is the game's difficulty that only rises: tidy rooms decay, never self-clean.",
+  lab:{ name:"Lab 5 · Atom Heater", hint:"heat the box — melt it, boil it", note:"Slider = temperature. Watch 60 atoms: blue-slow (solid, vibrating), green-medium (liquid, sliding), red-fast (gas, flying). Counters show the phase mix. This is the kinetic theory of matter, live.",
+    sliders:[{key:"T",label:"Temperature",min:-50,max:600,step:5,val:20,unit:" °C"}],
+    buttons:[{label:"🧊 Freeze",act:"ice"},{label:"♨ Boil",act:"boil"},{label:"🌡 Room",act:"room"}] },
+  quiz:[
+    {q:"Temperature measures…",opts:["Total heat content","Average kinetic energy per particle","How much water is present","Pressure"],correct:1,explain:"T ∝ average KE per molecule. A spark is hot but has little total heat."},
+    {q:"Heat from the Sun reaches Earth by…",opts:["Conduction","Convection","Radiation","Teleportation"],correct:2,explain:"Vacuum blocks conduction/convection. Only electromagnetic radiation crosses space."},
+    {q:"Ice water stays at 0 °C while ice melts because…",opts:["Thermometer is broken","Energy goes into breaking bonds (latent heat), not warming","Cold escapes","Water refuses heat"],correct:1,explain:"Latent heat of fusion: 334 kJ/kg with zero temperature change."},
+    {q:"The 2nd law says…",opts:["Energy is created in engines","Entropy of isolated systems never decreases","0 K is easy","Heat flows cold→hot alone"],correct:1,explain:"Disorder rises; heat flows hot→cold spontaneously. Order needs work."},
+    {q:"Heating 1 kg water by 10 °C needs ≈ ?",opts:["418 J","4,186 J","41,860 J","418,600 J"],correct:2,explain:"Q = mcΔT = 1 × 4186 × 10 ≈ 41,860 J."}
+  ]},
+{ id:"waves", num:6, icon:"🌊", title:"Waves, Sound & Light",
+  sub:"Frequency • Interference • Doppler • Optics",
+  skills:["v=fλ","colours","lenses"],
+  briefing:[
+    {t:"1. Anatomy of a wave", b:"Waves carry ENERGY, not stuff: water bobs in place as the ripple passes. Wavelength λ (crest spacing), frequency f (waves per second, Hz), amplitude (height = energy/loudness/brightness). Speed v = f·λ — pluck a string tighter (faster v) and pitch rises.", f:"v = f · λ  •  T = 1/f", ex:"💡 Red light λ≈650 nm, f≈460 THz. Radio λ≈3 m, f≈100 MHz. Same speed (c), wildly different scales."},
+    {t:"2. Sound: air drumming", b:"Sound = longitudinal pressure waves: air bunches (compressions) and stretches (rarefactions) 20–20,000 times/sec. Bigger amplitude = louder (dB), higher f = higher pitch. It needs a medium — no air, no sound (space battles would be silent!). Speed ≈ 343 m/s in air, ~1500 in water.", f:"pitch ↔ frequency  •  loudness ↔ amplitude²", ex:"💡 Doppler: ambulance pitch drops passing you — waves stretched behind, squeezed ahead. Same trick measures speeding galaxies."},
+    {t:"3. Light: the electromagnetic wave", b:"Light needs NO medium — oscillating E and B fields sustain each other through vacuum at c = 300,000 km/s, the universe's speed limit. Spectrum: radio→microwave→infrared→visible→UV→X→gamma, all the same beast, different λ. Photon energy E = h·f: blue photons punch harder than red.", f:"c = 300,000 km/s  •  E = h·f", ex:"💡 Why sky is blue: air scatters short blue waves far more than red (Rayleigh). Sunsets are red — blue got scattered away en route."},
+    {t:"4. Interference, diffraction & lenses", b:"Waves add: crest+crest = bright/loud (constructive), crest+trough = silence/dark (destructive) — noise-cancelling headphones weaponise this. Lenses bend light (refraction): convex converges to a focus (magnifier, eye), concave spreads. Mirrors reflect: flat = true, curved = funhouse.", f:"constructive: path diff = nλ  •  1/f(lens) = 1/do + 1/di", ex:"💡 Double-slit: single photons build interference stripes — each particle waves through BOTH slits. Quantum weirdness starts here."}
+  ],
+  analogy:"🎮 GAME ANALOGY: Waves are combo attacks. Frequency = attack speed, amplitude = damage, interference = teaming up (double damage) or cancelling (shield). Lenses are aim-assist that bends your light-beam projectiles to a focus point.",
+  lab:{ name:"Lab 6 · Wave Shaper", hint:"tune frequency & amplitude — feel v=fλ", note:"Top: the string. Bottom: live spectrum bar + readout of λ = v/f. Crank frequency: waves crowd (λ shrinks). Crank amplitude: taller = more energy. Toggle sound/light to change medium speed.",
+    sliders:[{key:"fr",label:"Frequency f",min:1,max:12,step:0.5,val:4,unit:" Hz"},{key:"am",label:"Amplitude",min:5,max:70,step:2,val:34,unit:" px"}],
+    buttons:[{label:"🔊 Sound mode",act:"sound"},{label:"💡 Light mode",act:"light"},{label:"⏸ Freeze",act:"pause"}] },
+  quiz:[
+    {q:"Wave speed 340 m/s, frequency 170 Hz. Wavelength?",opts:["2 m","0.5 m","57,800 m","510 m"],correct:0,explain:"λ = v/f = 340/170 = 2 m (a deep human voice)."},
+    {q:"Higher amplitude means…",opts:["Higher pitch","More energy / louder / brighter","Faster speed","Shorter wavelength"],correct:1,explain:"Amplitude² ∝ energy. Frequency sets pitch/colour, not amplitude."},
+    {q:"Ambulance pitch drops as it passes because…",opts:["Driver slows the siren","Doppler: waves stretched behind → lower f","Air absorbs sound","Your ears tire"],correct:1,explain:"Relative motion stretches λ behind (lower f) and squeezes ahead (higher f)."},
+    {q:"Why is the sky blue?",opts:["Ocean reflection","Air scatters short blue wavelengths most","Sun is blue","Dust paints it"],correct:1,explain:"Rayleigh scattering ∝ 1/λ⁴ — blue scatters ~5× more than red."},
+    {q:"Noise-cancelling headphones work by…",opts:["Blocking ears fully","Destructive interference: anti-wave cancels noise","Playing louder music","Absorbing all air"],correct:1,explain:"Mic + speaker emit the inverted wave; crest meets trough = silence."}
+  ]},
+{ id:"em", num:7, icon:"🔌", title:"Electricity & Magnetism",
+  sub:"Charge • Circuits • Ohm • Motors • Induction",
+  skills:["V=IR","P=VI","F=qvB"],
+  briefing:[
+    {t:"1. Charge: the electric currency", b:"Two charges: + (proton) and − (electron). Likes repel, opposites attract with Coulomb's force ∝ q₁q₂/r². Electrons flow in metals; ions flow in batteries and nerves. Current I = charge per second (amperes). 1 A = 6.24 billion-billion electrons/sec!", f:"I = Q / t  (A = C/s)  •  F = k·q₁q₂/r²", ex:"💡 Static shock: ~3000 V from a doorknob, but tiny charge — startles, doesn't kill. It's current through the heart that kills."},
+    {t:"2. Voltage, current, resistance", b:"Voltage (V) = push per charge, like water pressure. Current (I) = flow rate. Resistance (R) = narrow pipe. Ohm's law V = I·R rules simple circuits: more push or less resistance = more flow. Power delivered P = V·I heats bulbs, charges phones, melts fuses.", f:"V = I·R  •  P = V·I = I²R", ex:"💡 Phone charger 5 V × 2 A = 10 W. Kettle 230 V × 10 A = 2300 W — that's why kettles need thick wire."},
+    {t:"3. Circuits: series vs parallel", b:"Series: one road — same current everywhere, voltages split, one break kills all (cheap fairy lights). Parallel: many roads — same voltage everywhere, currents split, one branch dies, rest live (house wiring). Short circuit = near-zero R → giant I → fire.", f:"Series: Rtot = R₁+R₂  •  Parallel: 1/Rtot = 1/R₁+1/R₂", ex:"💡 Car headlights in parallel: one burns out, the other stays on. Old Christmas strings in series: one dies, all die."},
+    {t:"4. Magnetism & induction: the grand unification", b:"Moving charge makes magnetism (compass near a wire twitches — Ørsted). Changing magnetism makes electricity (move a magnet in a coil → current — Faraday). Together: motors (electric→spin) and generators (spin→electric). Light itself is this dance, self-propagating.", f:"ℰ = −dΦ/dt (Faraday)  •  F = q·v·B", ex:"💡 Wind turbine = giant generator: wind spins coil in magnets → grid current. Phone wireless charging = induction across millimeters."}
+  ],
+  analogy:"🎮 GAME ANALOGY: Voltage = quest urgency (pressure), current = hero party marching, resistance = dungeon narrowness (goblins slow you). Series = single-file corridor (one trap stops all); parallel = multiple doors (one blocked, others open). Magnets are the plot twist: moving heroes spawn shields and vice versa.",
+  lab:{ name:"Lab 7 · Circuit Bench", hint:"raise volts, lower ohms — light the bulb", note:"Dots = electrons (speed ∝ current I = V/R). Bulb glow ∝ power P = V·I. Try 0 resistance: SHORT CIRCUIT — fuse blows! Copper (low R) vs nichrome (high R heater).",
+    sliders:[{key:"V",label:"Battery voltage",min:0,max:24,step:0.5,val:9,unit:" V"},{key:"R",label:"Resistance",min:1,max:48,step:1,val:12,unit:" Ω"}],
+    buttons:[{label:"💡 Copper wire",act:"copper"},{label:"🔥 Heater wire",act:"heater"},{label:"⚠ Short!",act:"short"}] },
+  quiz:[
+    {q:"9 V across 3 Ω gives current…",opts:["27 A","6 A","3 A","12 A"],correct:2,explain:"I = V/R = 9/3 = 3 A."},
+    {q:"Bulb at 12 V draws 2 A. Power?",opts:["6 W","24 W","10 W","14 W"],correct:1,explain:"P = V·I = 12 × 2 = 24 W."},
+    {q:"One bulb dies and ALL go out. They are…",opts:["In parallel","In series","Shorted","Wireless"],correct:1,explain:"Series = single path. Parallel branches survive alone."},
+    {q:"A compass near a live wire deflects because…",opts:["Heat","Moving charges create magnetic fields","Wind","Gravity"],correct:1,explain:"Ørsted 1820: current → circular B-field around wire."},
+    {q:"A generator works by…",opts:["Static charge","Electromagnetic induction: changing flux → EMF","Chemical magic","Friction only"],correct:1,explain:"Faraday: spin a coil in magnets, flux changes, current flows."}
+  ]},
+{ id:"modern", num:8, icon:"🚀", title:"Modern Physics: Einstein → Quantum Boss",
+  sub:"Relativity • Quanta • Atoms • Nuclear • Cosmos",
+  skills:["E=mc²","time dilation","half-life"],
+  briefing:[
+    {t:"1. Relativity: fast clocks lie (truthfully)", b:"Two postulates: physics is same everywhere, light speed c is same for everyone. Consequence: moving clocks tick slower (time dilation), moving rulers shrink, simultaneity breaks. GPS satellites tick 38 μs/day fast (combined SR+GR) — uncorrected, your position would drift 10 km/day!", f:"Δt = Δt₀/√(1−v²/c²)  •  E = m·c²", ex:"💡 Muons (2.2 μs life) reach Earth's surface from 10 km up: at 0.998c their clock runs 16× slow — time travel, verified daily."},
+    {t:"2. Quanta: energy comes in packets", b:"Light arrives as photons E = h·f. Atoms absorb/emit only exact colours (spectra = atomic fingerprints — how we know stars' chemistry). Photoelectric: dim blue light ejects electrons, bright red can't — brightness ≠ punch, frequency does. Solar panels live on this.", f:"E = h·f  •  ΔE(atom) = h·f(photon)", ex:"💡 Neon signs: excited electrons fall between levels, each drop = one colour photon. That's why each gas glows its own hue."},
+    {t:"3. Quantum weirdness: probability rules", b:"Electrons are waves of possibility (ψ): double-slit with single electrons still builds interference — each goes both ways. Heisenberg: can't know position AND momentum perfectly (Δx·Δp ≥ ħ/2) — measuring disturbs. Entanglement links fates instantly across distance (no signalling, still spooky).", f:"λ(de Broglie) = h/p  •  Δx·Δp ≥ ħ/2", ex:"💡 Transistors + lasers + MRI all REQUIRE quantum mechanics. Your phone is a quantum device."},
+    {t:"4. Nucleus & cosmos: E=mc² everywhere", b:"Fission splits heavy nuclei (power plants, E=Δm·c²), fusion merges light ones (Sun: 600M tonnes H → He/sec, losing 4M tonnes as pure energy). Half-life clocks decay (carbon dating). Expanding universe + dark matter/energy: 95% of cosmos is unknown — the final boss is still unbeaten.", f:"E = Δm·c²  •  N = N₀·(½)^(t/T½)", ex:"💡 Banana: radioactive (potassium-40). You are radioactive (carbon-14). Dose matters, not the scary word."}
+  ],
+  analogy:"🎮 FINAL BOSS BRIEFING: Newton ruled slow, big things. Einstein rules fast & heavy (boss phase 1: time bends). Quantum rules tiny things (boss phase 2: certainty dies). Beat both meters in the LAB, then face the 5-question Boss Rush. Win = HERO rank.",
+  lab:{ name:"Lab 8 · Boss Arena: Light Clock + Decay", hint:"push to near light-speed, watch time freeze", note:"TOP: light clock — photon bounces; moving clock ticks slower (blue shift = time frozen at c). BOTTOM: 100 radioactive atoms — each tick some decay (orange). Half-life ≈ 4 ticks regardless of[start] — randomness with a strict average.",
+    sliders:[{key:"beta",label:"Ship speed v/c",min:0,max:0.99,step:0.01,val:0.6,unit:" c"}],
+    buttons:[{label:"⏱ Reset clock",act:"reset"},{label:"☢ Reset atoms",act:"atoms"},{label:"▶▶ +10 ticks decay",act:"tick10"}] },
+  quiz:[
+    {q:"Astronaut flies at 0.866c. Earth sees her clock…",opts:["Run 2× slow (dilation γ=2)","Run 2× fast","Stop fully","Unaffected"],correct:0,explain:"γ = 1/√(1−0.866²) = 2. Moving clocks run slow — confirmed by muons & GPS."},
+    {q:"Bright red light can't eject electrons but dim blue can. Why?",opts:["Red is lazy","Photon energy depends on frequency, not brightness","Blue is hotter air","Red is reflected"],correct:1,explain:"E = h·f. Blue photons individually punch over the work function; red never do, however many."},
+    {q:"Single electrons through double slits build…",opts:["Two dots","Interference stripes — each electron interferes with itself","Nothing","A mirror image"],correct:1,explain:"Matter waves pass both slits; |ψ|² lands as stripes. Quantum superposition, demonstrated."},
+    {q:"C-14 half-life 5730 y. 100 g → 25 g after…",opts:["5730 y","11,460 y","2865 y","22,920 y"],correct:1,explain:"100→50 (1 half-life) →25 (2 half-lives) = 2 × 5730 = 11,460 y."},
+    {q:"Sun shines by…",opts:["Burning coal","Nuclear fusion: H→He, lost mass → energy","Fission of uranium","Batteries"],correct:1,explain:"4 H → He + energy via E=mc². ~4 million tonnes of mass become sunlight every second."}
+  ]}
+];
+
+/* ---------- STATE ---------- */
+var store = { unlocked:0, cleared:{}, xp:0, streak:0, best:{} };
+try{ var s = JSON.parse(localStorage.getItem("physica-save-v1")||"null"); if(s) store=s; }catch(e){}
+function save(){ try{ localStorage.setItem("physica-save-v1", JSON.stringify(store)); }catch(e){} }
+function totalXP(){ return store.xp; }
+function rankFor(xp){
+  if(xp>=1400) return "★★★ Physics Hero";
+  if(xp>=1100) return "★★ Quantum Knight";
+  if(xp>=800) return "★ Relativity Ranger";
+  if(xp>=550) return "Electromancer";
+  if(xp>=350) return "Wave Rider";
+  if(xp>=200) return "Energy Adept";
+  if(xp>=80) return "Force Apprentice";
+  return "Novice";
+}
+
+/* ---------- MAP ---------- */
+var curLevel = 0, curTab = "learn";
+function toast(msg){ var t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove("show");},2400); }
+function updateHUD(){
+  $("#hud-xp-text").textContent = store.xp+" XP";
+  $("#hud-rank").textContent = "Rank: "+rankFor(store.xp);
+  var pct = Math.min(100, store.xp/1400*100);
+  $("#xp-fill").style.width = pct+"%";
+  var n=0; LEVELS.forEach(function(L,i){ if(store.cleared[i]) n++; });
+  $("#stat-levels").textContent = n+"/8";
+  $("#stat-streak").textContent = store.streak;
+}
+function renderMap(){
+  var g=$("#world-grid"); g.innerHTML="";
+  LEVELS.forEach(function(L,i){
+    var locked = i>store.unlocked;
+    var done = !!store.cleared[i];
+    var b=document.createElement("button");
+    b.className="world "+(done?"done":(locked?"locked":"open"));
+    b.disabled=locked;
+    var pct = done?100:(locked?0:(store.best[i]!=null?store.best[i]:5));
+    b.innerHTML='<div class="w-top"><span class="w-num">WORLD '+L.num+'</span><span class="w-state">'+(done?"✔ CLEARED":(locked?"🔒 LOCKED":"● OPEN"))+'</span></div>'+
+      '<div class="w-ico">'+L.icon+'</div><h3>'+L.title+'</h3><p>'+L.sub+'</p>'+
+      '<div class="w-skills">'+L.skills.map(function(s){return "<span>"+s+"</span>";}).join("")+'</div>'+
+      '<div class="w-progress"><i style="width:'+pct+'%"></i></div>';
+    b.addEventListener("click", function(){ openLevel(i); beep(660,.08); });
+    g.appendChild(b);
+  });
+  updateHUD();
+}
+
+/* ---------- LEVEL ---------- */
+function openLevel(i){
+  curLevel=i; curTab="learn";
+  $$(".tab").forEach(function(t){ t.classList.toggle("active", t.dataset.tab==="learn"); });
+  $$(".tabpane").forEach(function(p){ p.classList.remove("active"); });
+  $("#tab-learn").classList.add("active");
+  $("#screen-map").classList.remove("active");
+  $("#screen-level").classList.add("active");
+  var L=LEVELS[i];
+  $("#lv-kicker").textContent="WORLD "+L.num+" OF 8";
+  $("#lv-title").textContent=L.icon+" "+L.title;
+  $("#lv-badge").textContent = store.cleared[i]?"🏆":(i<=store.unlocked?"▶":"🔒");
+  renderLearn(); setupLab(); renderQuiz();
+  window.scrollTo(0,0);
+}
+function renderLearn(){
+  var L=LEVELS[curLevel], box=$("#tab-learn");
+  var html='<div class="learn-grid">';
+  L.briefing.forEach(function(c){
+    html+='<article class="concept"><h3>'+c.t+'</h3><p>'+c.b+'</p><div class="f">📌 <b>'+c.f+'</b></div><div class="ex">'+c.ex+'</div></article>';
+  });
+  html+='<div class="analogy"><h3>'+L.analogy.split(":")[0]+'</h3><p>'+L.analogy+'</p><div class="demo-strip">'+demoFor(L.id)+'</div></div>';
+  html+='</div><div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" id="go-lab">To the LAB 🧪 ▸</button><button class="btn secondary" id="go-mission">Skip to MISSION 🎯</button></div>';
+  box.innerHTML=html;
+  $("#go-lab").addEventListener("click",function(){switchTab("lab");});
+  $("#go-mission").addEventListener("click",function(){switchTab("mission");});
+}
+function demoFor(id){
+  var d={
+    motion:'<div class="demo"><div class="css-demo"><div class="rolling-ball"></div></div><small>v = d/t — spacing = speed</small></div><div class="demo"><div class="css-demo"><div class="fall-ball"></div></div><small>free-fall a = 9.8 m/s²</small></div>',
+    forces:'<div class="demo"><div class="css-demo"><div class="magnet">🧲</div></div><small>F = m·a — push me</small></div><div class="demo"><div class="css-demo"><div class="pendulum"></div></div><small>inertia keeps swinging</small></div>',
+    energy:'<div class="demo"><div class="css-demo"><div class="pendulum"></div></div><small>PE ⇄ KE forever</small></div><div class="demo"><div class="css-demo"><div class="rolling-ball"></div></div><small>KE = ½mv²</small></div>',
+    gravity:'<div class="demo"><div class="css-demo"><div class="orbit-css"></div></div><small>orbit = falling + missing</small></div><div class="demo"><div class="css-demo"><div class="fall-ball"></div></div><small>weight = m·g</small></div>',
+    thermo:'<div class="demo"><div class="css-demo"><div class="magnet">🔥</div></div><small>hot = fast jiggle</small></div><div class="demo"><div class="css-demo"><div class="wave-css"></div></div><small>heat spreads hot→cold</small></div>',
+    waves:'<div class="demo"><div class="css-demo"><div class="wave-css"></div></div><small>v = f·λ</small></div><div class="demo"><div class="css-demo"><div class="orbit-css"></div></div><small>interference adds up</small></div>',
+    em:'<div class="demo"><div class="css-demo"><div class="magnet">🧲</div></div><small>current ⇄ magnet</small></div><div class="demo"><div class="css-demo"><div class="rolling-ball"></div></div><small>electrons drift: I=Q/t</small></div>',
+    modern:'<div class="demo"><div class="css-demo"><div class="orbit-css"></div></div><small>orbits → orbitals</small></div><div class="demo"><div class="css-demo"><div class="magnet">🚀</div></div><small>c = limit, E=mc²</small></div>'
+  };
+  return d[id]||"";
+}
+function switchTab(name){
+  curTab=name;
+  $$(".tab").forEach(function(t){t.classList.toggle("active",t.dataset.tab===name);});
+  $$(".tabpane").forEach(function(p){p.classList.remove("active");});
+  $("#tab-"+name).classList.add("active");
+  beep(520,.06);
+}
+
+/* ---------- LAB ENGINE (canvas, vanilla) ---------- */
+var cv=$("#lab-canvas"), ctx=cv.getContext("2d");
+var params={}, sim={t:0,x:60,xv:0,crateX:80,crateV:0,shots:[],orbTrail:[],orb:null,atoms:null,phaseTick:0,wavePhase:0,frozen:false,paused:false,clockPhase:0,decay:[],decayTick:0,eFlow:0,fuseBlown:false};
+function setupLab(){
+  var L=LEVELS[curLevel];
+  $("#lab-name").textContent=L.lab.name;
+  $("#lab-hint").textContent=L.lab.hint;
+  $("#lab-note").textContent=L.lab.note;
+  params={}; L.lab.sliders.forEach(function(s){params[s.key]=s.val;});
+  var sw=$("#lab-sliders"); sw.innerHTML="";
+  L.lab.sliders.forEach(function(s){
+    var d=document.createElement("div"); d.className="slider";
+    d.innerHTML='<label>'+s.label+' <output>'+s.val+s.unit+'</output></label><input type="range" min="'+s.min+'" max="'+s.max+'" step="'+s.step+'" value="'+s.val+'"><div class="u">range '+s.min+' → '+s.max+s.unit+'</div>';
+    var inp=d.querySelector("input"), out=d.querySelector("output");
+    inp.addEventListener("input",function(){ params[s.key]=parseFloat(inp.value); out.textContent=inp.value+s.unit; beep(300+params[s.key],.03,"sine"); });
+    sw.appendChild(d);
+  });
+  var bw=$("#lab-buttons"); bw.innerHTML="";
+  L.lab.buttons.forEach(function(b){
+    var btn=document.createElement("button"); btn.textContent=b.label;
+    if(/Short|Clear|Reset/.test(b.label)) btn.classList.add("danger");
+    btn.addEventListener("click",function(){labAction(b.act); beep(700,.07);});
+    bw.appendChild(btn);
+  });
+  // reset sim bits
+  sim.t=0;sim.x=60;sim.crateX=80;sim.crateV=0;sim.shots=[];sim.orbTrail=[];sim.orb=null;sim.eFlow=0;sim.fuseBlown=false;sim.frozen=false;sim.paused=false;
+  if(curLevel===4) initAtoms();
+  if(curLevel===7){ initDecay(); sim.clockPhase=0; }
+}
+function labAction(a){
+  if(a==="pause"){sim.paused=!sim.paused; toast(sim.paused?"⏸ Paused":"▶ Running");}
+  else if(a==="reset"){sim.t=0;sim.x=60;sim.crateX=80;sim.crateV=0;sim.shots=[];sim.orbTrail=[];sim.orb=null;sim.clockPhase=0;sim.fuseBlown=false;toast("↺ Lab reset");}
+  else if(a==="fire"){ fireShot(); beep(180,.25,"sawtooth"); }
+  else if(a==="ice"){params.T=-30;syncSliders();} else if(a==="boil"){params.T=320;syncSliders();} else if(a==="room"){params.T=20;syncSliders();}
+  else if(a==="copper"){params.V=6;params.R=3;sim.fuseBlown=false;syncSliders();}
+  else if(a==="heater"){params.V=12;params.R=30;sim.fuseBlown=false;syncSliders();}
+  else if(a==="short"){params.V=24;params.R=1;syncSliders();}
+  else if(a==="sound"){params.fr=4;params.am=34;toast("🔊 Sound: slow waves in air (343 m/s scaled)");}
+  else if(a==="light"){params.fr=9;params.am=22;toast("💡 Light: fast tiny waves (c scaled)");}
+  else if(a==="ice2"){} else if(a==="road"){params.mu=0.85;syncSliders();}
+  else if(a==="atoms"){initDecay();toast("☢ Fresh sample: 100 atoms");}
+  else if(a==="tick10"){for(var k=0;k<10;k++)decayStep();}
+}
+function syncSliders(){
+  var L=LEVELS[curLevel];
+  var inputs=$("#lab-sliders").querySelectorAll("input"), outs=$("#lab-sliders").querySelectorAll("output");
+  L.lab.sliders.forEach(function(s,i){ if(params[s.key]!=null){inputs[i].value=params[s.key]; outs[i].textContent=params[s.key]+s.unit;} });
+}
+function initAtoms(){
+  sim.atoms=[]; for(var i=0;i<60;i++) sim.atoms.push({x:Math.random()*780+40,y:Math.random()*220+60,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2});
+}
+function initDecay(){ sim.decay=[]; for(var i=0;i<100;i++) sim.decay.push(0); sim.decayTick=0; }
+function decayStep(){ sim.decayTick++; for(var i=0;i<sim.decay.length;i++){ if(!sim.decay[i] && Math.random()<0.16) sim.decay[i]=sim.decayTick; } }
+function fireShot(){
+  if(curLevel===2){ sim.shots.push({x:90,y:300,vx:params.spd*Math.cos(params.ang*Math.PI/180)*0.9,vy:-params.spd*Math.sin(params.ang*Math.PI/180)*0.9,trail:[]}); }
+  else if(curLevel===3){ var r=params.r; sim.orb={x:430+r*1.4,y:190,vx:0,vy:-params.vv*0.55}; sim.orbTrail=[]; }
+}
+function W(){return cv.width;} function H(){return cv.height;}
+function grid(){ ctx.strokeStyle="rgba(120,140,255,.12)";ctx.lineWidth=1; for(var x=0;x<W();x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H());ctx.stroke();} for(var y=0;y<H();y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W(),y);ctx.stroke();} }
+
+var lastT=0;
+function loop(ts){
+  requestAnimationFrame(loop);
+  if($("#screen-level").classList.contains("active")===false) return;
+  if(curTab!=="lab") return;
+  if(sim.paused) return;
+  var dt=Math.min(0.05,(ts-lastT)/1000||0.016); lastT=ts; sim.t+=dt;
+  ctx.clearRect(0,0,W(),H()); grid();
+  var fn=[labMotion,labForces,labEnergy,labOrbit,labThermo,labWaves,labCircuit,labModern][curLevel];
+  if(fn) fn(dt);
+}
+requestAnimationFrame(loop);
+
+/* Lab 1 motion */
+function labMotion(){
+  var v=params.v, n=params.trail;
+  sim.x+=v*0.25; if(sim.x>W()-20)sim.x=20; if(sim.x<20)sim.x=W()-20;
+  // road
+  ctx.fillStyle="#101742";ctx.fillRect(20,120,W()-40,90);
+  ctx.strokeStyle="#5df2c8";ctx.lineWidth=3;ctx.setLineDash([14,10]);ctx.beginPath();ctx.moveTo(20,165);ctx.lineTo(W()-20,165);ctx.stroke();ctx.setLineDash([]);
+  // ghosts
+  for(var i=1;i<=n;i++){var gx=sim.x-i*(v*0.06+ (v<0?-2:2)); if(gx<20||gx>W()-20)continue; ctx.globalAlpha=Math.max(0,0.5-i*0.035);ctx.fillStyle="#7c7cff";ctx.beginPath();ctx.arc(gx,165,11,0,7);ctx.fill();}
+  ctx.globalAlpha=1;
+  // runner
+  ctx.fillStyle="#ffd35e";ctx.beginPath();ctx.arc(sim.x,150,15,0,7);ctx.fill();
+  ctx.fillStyle="#071022";ctx.font="bold 13px sans-serif";ctx.textAlign="center";ctx.fillText("YOU",sim.x,155);
+  ctx.fillStyle="#5df2c8";ctx.font="bold 13px sans-serif";ctx.fillText("v = "+v+" m/s  •  x = "+Math.round(sim.x-20)+" m",W()/2,105);
+  // x-t mini graph
+  ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillRect(20,230,W()-40,130);
+  ctx.strokeStyle="#ffd35e";ctx.lineWidth=2;ctx.beginPath();
+  for(var px=0;px<=W()-40;px+=4){var tt=(sim.t*40+px*0.4)%(W()-40);var xx=20+px;var yy=340-((v*0.15*px/60)%90+90)%90; if(v<0)yy=250+(((-v)*0.15*px/60)%90); ctx.lineTo(xx,yy);} ctx.stroke();
+  ctx.fillStyle="#a7b3e6";ctx.font="12px sans-serif";ctx.textAlign="left";ctx.fillText("position–time graph (slope = v)",30,248);
+  readout([["VELOCITY",v+" m/s"],["POSITION",Math.round(sim.x-20)+" m"],["TYPE",v===0?"at rest":(v>0?"→ forward":"← backward")]]);
+}
+/* Lab 2 forces */
+function labForces(dt){
+  var F=params.F,m=params.m,mu=params.mu;
+  var N=m*9.8, fr=mu*N; if(sim.crateV===0&&F<=fr) fr=F;
+  else fr=mu*N*(sim.crateV>=0?1:-1);
+  var net=F-fr, a=net/m;
+  sim.crateV+=a*dt*3; sim.crateX+=sim.crateV*dt*3;
+  if(sim.crateX>700){sim.crateX=700;sim.crateV=0;} if(sim.crateX<60){sim.crateX=60;if(sim.crateV<0)sim.crateV=0;}
+  ctx.fillStyle="#101742";ctx.fillRect(20,250,W()-40,60);
+  ctx.fillStyle=mu<0.15?"#bfe9ff":"#3a467f";ctx.font="13px sans-serif";ctx.textAlign="center";
+  ctx.fillText(mu<0.15?"🧊 ICE — almost no friction":"🛣 ASPHALT — grippy",W()/2,285);
+  var cx=sim.crateX;
+  ctx.fillStyle="#ffd35e";ctx.fillRect(cx,180,90,70);
+  ctx.fillStyle="#071022";ctx.font="bold 20px sans-serif";ctx.fillText(m+"kg",cx+45,220);
+  // arrows
+  arrow(cx,215,cx+F*0.35,215,"#5df2c8","push "+F+"N");
+  arrow(cx+90,235,cx+90-fr*0.35,235,"#ff5d5d","fric "+Math.round(fr)+"N");
+  if(Math.abs(net)>1) arrow(cx+45,180,cx+45+net*0.25,180,"#ffe9a8","net "+Math.round(net)+"N");
+  readout([["ACCEL",a.toFixed(2)+" m/s²"],["NET FORCE",Math.round(net)+" N"],["SPEED",Math.abs(sim.crateV).toFixed(1)+" m/s"]]);
+}
+function arrow(x1,y1,x2,y2,col,label){ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();var a=Math.atan2(y2-y1,x2-x1);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-10*Math.cos(a-0.4),y2-10*Math.sin(a-0.4));ctx.lineTo(x2-10*Math.cos(a+0.4),y2-10*Math.sin(a+0.4));ctx.fill();ctx.font="bold 11px sans-serif";ctx.textAlign="center";ctx.fillText(label,(x1+x2)/2,y1-10);}
+/* Lab 3 projectile */
+function labEnergy(dt){
+  ctx.fillStyle="#1a3a2a";ctx.fillRect(20,300,W()-40,60);
+  ctx.fillStyle="#071022";ctx.font="bold 26px sans-serif";ctx.fillText("🔥",70,290);
+  // cannon
+  var ang=params.ang*Math.PI/180;
+  ctx.save();ctx.translate(90,300);ctx.rotate(-ang);ctx.fillStyle="#5b647f";ctx.fillRect(0,-12,54,24);ctx.restore();
+  ctx.fillStyle="#ffd35e";ctx.beginPath();ctx.arc(90,300,18,0,7);ctx.fill();
+  for(var i=sim.shots.length-1;i>=0;i--){var s=sim.shots[i];
+    s.vy+=params.g*dt*3; s.x+=s.vx*dt*3; s.y+=s.vy*dt*3; s.trail.push({x:s.x,y:s.y});
+    if(s.y>305||s.x>W()-10){ // land
+      ctx.fillStyle="rgba(255,111,165,.5)";ctx.beginPath();ctx.arc(Math.min(s.x,W()-20),305,14,0,7);ctx.fill();
+      sim.shots.splice(i,1); beep(120,.15,"sawtooth"); continue;
+    }
+    ctx.strokeStyle="rgba(255,211,94,.5)";ctx.beginPath();s.trail.forEach(function(p,j){j?s.trail&&ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);});ctx.stroke();
+    ctx.fillStyle="#ff6fa5";ctx.beginPath();ctx.arc(s.x,s.y,9,0,7);ctx.fill();
+    var h=Math.max(0,(300-s.y)/10), vv=Math.hypot(s.vx,s.vy)/40;
+    var ke=0.5*vv*vv, pe=h*0.5, tot=ke+pe;
+    bars([["KE",ke,"#ffd35e"],["PE",pe,"#6ee7ff"],["TOT",tot,"#5df2c8"]],620,40);
+    readout([["RANGE",Math.round((s.x-90)/10)+" m"],["HEIGHT",h.toFixed(1)+" m"],["v",Math.round(vv*40)+" m/s"]]);
+    return;
+  }
+  ctx.fillStyle="#a7b3e6";ctx.font="14px sans-serif";ctx.textAlign="center";ctx.fillText("Press 🔥 FIRE — yellow trail = energy conserving flight (PE ⇄ KE)",W()/2,180);
+  readout([["ANGLE",params.ang+"°"],["SPEED",params.spd+" m/s"],["GRAVITY",params.g+" m/s²"]]);
+}
+function bars(list,x,y){list.forEach(function(b,i){var h=Math.min(120,b[1]*14);ctx.fillStyle="rgba(255,255,255,.08)";ctx.fillRect(x+i*60,y,40,130);ctx.fillStyle=b[2];ctx.fillRect(x+i*60,y+130-h,40,h);ctx.fillStyle="#fff";ctx.font="bold 11px sans-serif";ctx.textAlign="center";ctx.fillText(b[0],x+i*60+20,y+145);});}
+/* Lab 4 orbit */
+function labOrbit(dt){
+  var cx=430,cy=190;
+  ctx.fillStyle="#4a6bff";ctx.beginPath();ctx.arc(cx,cy,34,0,7);ctx.fill();
+  ctx.fillStyle="#9df";ctx.font="22px sans-serif";ctx.textAlign="center";ctx.fillText("◉",cx,198);
+  ctx.fillStyle="#a7b3e6";ctx.font="12px sans-serif";ctx.fillText("planet GM="+params.grav,cx,250);
+  if(sim.orb){
+    var o=sim.orb, dx=o.x-cx, dy=o.y-cy, r=Math.hypot(dx,dy);
+    var F=params.grav/(r*r)*60; var ax=-F*dx/r, ay=-F*dy/r;
+    o.vx+=ax*dt; o.vy+=ay*dt; o.x+=o.vx*dt*3; o.y+=o.vy*dt*3;
+    sim.orbTrail.push({x:o.x,y:o.y}); if(sim.orbTrail.length>400)sim.orbTrail.shift();
+    ctx.strokeStyle=r<46?"#ff5d5d":(r>560?"#6ee7ff":"#5df2c8");ctx.lineWidth=2;ctx.beginPath();
+    sim.orbTrail.forEach(function(p,j){j?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);});ctx.stroke();
+    ctx.fillStyle="#ffd35e";ctx.beginPath();ctx.arc(o.x,o.y,9,0,7);ctx.fill();
+    if(r<46){ctx.fillStyle="#ff5d5d";ctx.font="bold 18px sans-serif";ctx.textAlign="center";ctx.fillText("💥 CRASH — need more sideways speed!",W()/2,60);readout([["STATE","CRASHED"],["R",Math.round(r)],["TRY","raise speed"]]);return;}
+    if(r>560){ctx.fillStyle="#6ee7ff";ctx.font="bold 18px sans-serif";ctx.textAlign="center";ctx.fillText("🚀 ESCAPE — too fast, left the planet!",W()/2,60);readout([["STATE","ESCAPED"],["R",Math.round(r)],["TRY","lower speed"]]);return;}
+    var ideal=Math.sqrt(params.grav/r)*0.55;
+    ctx.fillStyle="#5df2c8";ctx.font="bold 15px sans-serif";ctx.textAlign="center";ctx.fillText("● STABLE ORBIT — falling & missing forever",W()/2,60);
+    readout([["RADIUS",Math.round(r)],["SPEED",Math.round(Math.hypot(o.vx,o.vy))],["IDEAL ≈",Math.round(ideal)]]);
+  } else {
+    ctx.strokeStyle="rgba(255,211,94,.6)";ctx.setLineDash([6,6]);ctx.beginPath();ctx.arc(cx,cy,params.r*1.4,0,7);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#ffd35e";ctx.beginPath();ctx.arc(cx+params.r*1.4,cy,9,0,7);ctx.fill();
+    ctx.fillStyle="#fff";ctx.font="14px sans-serif";ctx.textAlign="center";ctx.fillText("Press 🚀 LAUNCH to release the satellite sideways",W()/2,100);
+    readout([["ALTITUDE",params.r],["SET SPEED",params.vv],["GM",params.grav]]);
+  }
+}
+/* Lab 5 thermo */
+function labThermo(dt){
+  if(!sim.atoms)initAtoms();
+  var T=params.T, sp=Math.max(0.2,(T+60)/60);
+  var solid=0,liquid=0,gas=0;
+  sim.atoms.forEach(function(p){
+    p.vx+=(Math.random()-.5)*sp*0.3; p.vy+=(Math.random()-.5)*sp*0.3;
+    var max=sp*1.6; var v=Math.hypot(p.vx,p.vy)||1; if(v>max){p.vx*=max/v;p.vy*=max/v;}
+    p.x+=p.vx*dt*22; p.y+=p.vy*dt*22;
+    if(p.x<30||p.x>W()-30)p.vx*=-1; if(p.y<50||p.y>330)p.vy*=-1;
+    p.x=Math.max(30,Math.min(W()-30,p.x));p.y=Math.max(50,Math.min(330,p.y));
+  });
+  var col = T<0?"#6ee7ff":(T<100?"#5df2c8":"#ff6fa5");
+  var label = T<0?"🧊 SOLID — atoms vibrate in place":(T<100?"💧 LIQUID — atoms slide past":"♨ GAS — atoms fly free");
+  sim.atoms.forEach(function(p){
+    var v=Math.hypot(p.vx,p.vy);
+    if(v<2)solid++;else if(v<6)liquid++;else gas++;
+    ctx.fillStyle=v<2?"#6ee7ff":(v<6?"#5df2c8":"#ff6fa5");
+    ctx.beginPath();ctx.arc(p.x,p.y,T<0?7:6,0,7);ctx.fill();
+    if(T<0){ctx.strokeStyle="rgba(110,231,255,.3)";ctx.beginPath();ctx.moveTo(p.x-10,p.y);ctx.lineTo(p.x+10,p.y);ctx.stroke();}
+  });
+  ctx.fillStyle="#fff";ctx.font="bold 17px sans-serif";ctx.textAlign="center";ctx.fillText(label+"  •  "+T+" °C",W()/2,40);
+  ctx.fillStyle=col;ctx.fillRect(20,340,(T+50)/650*(W()-40),14);
+  readout([["SOLID",solid],["LIQUID",liquid],["GAS",gas],["AVG KE ∝",Math.round(T+273)+" K"]]);
+}
+/* Lab 6 waves */
+function labWaves(dt){
+  if(!sim.paused)sim.wavePhase+=dt*params.fr*2;
+  var midY=170;
+  ctx.strokeStyle="#2b3a8f";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(20,midY);ctx.lineTo(W()-20,midY);ctx.stroke();
+  ctx.strokeStyle="#5df2c8";ctx.lineWidth=4;ctx.beginPath();
+  for(var x=20;x<=W()-20;x+=4){
+    var env=Math.sin((x-20)/(W()-40)*Math.PI); // fixed ends
+    var y=midY+Math.sin((x-20)/60*params.fr+sim.wavePhase*3)*params.am*env;
+    x===20?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  var v=200, lam=(v/params.fr).toFixed(1);
+  // spectrum
+  for(var i=0;i<40;i++){var h=Math.max(4,60*Math.exp(-Math.pow(i-params.fr*2.4,2)/6)+Math.random()*4);ctx.fillStyle=i===Math.round(params.fr*2.4)?"#ffd35e":"#2b3a8f";ctx.fillRect(40+i*19,330-h,12,h);}
+  ctx.fillStyle="#fff";ctx.font="bold 14px sans-serif";ctx.textAlign="center";
+  ctx.fillText("f = "+params.fr+" Hz   amplitude = "+params.am+"   λ = v/f ≈ "+lam+" px   v = f·λ",W()/2,40);
+  readout([["FREQUENCY",params.fr+" Hz"],["λ ≈",lam+" px"],["ENERGY ∝","A² = "+(params.am*params.am)]]);
+}
+/* Lab 7 circuit */
+function labCircuit(dt){
+  var V=params.V,R=params.R;
+  if(R<=1&&V>6&&!sim.fuseBlown){sim.fuseBlown=true;beep(90,.4,"sawtooth");toast("💥 SHORT CIRCUIT! Fuse blown — raise R!");}
+  var I=sim.fuseBlown?0:V/R;
+  sim.eFlow+=I*dt*22;
+  // wire rect
+  ctx.strokeStyle="#3a467f";ctx.lineWidth=14;ctx.strokeRect(120,90,620,200);
+  ctx.strokeStyle="#0a1030";ctx.lineWidth=8;ctx.strokeRect(120,90,620,200);
+  // battery
+  ctx.fillStyle="#ffd35e";ctx.fillRect(90,150,40,80);ctx.fillStyle="#071022";ctx.font="bold 14px sans-serif";ctx.textAlign="center";ctx.fillText(V+"V",110,195);
+  // resistor
+  ctx.fillStyle=R>20?"#ff9d5c":"#8ab6ff";ctx.fillRect(400,78,90,34);ctx.fillStyle="#071022";ctx.font="bold 12px sans-serif";ctx.fillText(R+"Ω",445,100);
+  // bulb
+  var glow=sim.fuseBlown?0:Math.min(1,I*V/60);
+  var g=Math.round(glow*255);
+  ctx.fillStyle="rgb(255,"+Math.round(200+glow*55)+","+(100+Math.round(glow*100))+")";
+  ctx.shadowColor="#ffd35e";ctx.shadowBlur=glow*50;
+  ctx.beginPath();ctx.arc(430,290,30,0,7);ctx.fill();ctx.shadowBlur=0;
+  ctx.fillStyle="#071022";ctx.font="20px sans-serif";ctx.fillText(sim.fuseBlown?"💀":"💡",430,298);
+  // electrons
+  ctx.fillStyle="#5df2c8";
+  var per=26;
+  for(var i=0;i<per;i++){
+    var t=((sim.eFlow+i*(2680/per))%2680)/2680;
+    var p=wirePos(t); ctx.beginPath();ctx.arc(p.x,p.y,5,0,7);ctx.fill();
+  }
+  ctx.fillStyle="#fff";ctx.font="bold 15px sans-serif";ctx.textAlign="center";
+  ctx.fillText(sim.fuseBlown?"⚠ FUSE BLOWN — circuit open, I = 0":"I = V/R = "+I.toFixed(2)+" A   •   P = V·I = "+(I*V).toFixed(1)+" W",W()/2,40);
+  readout([["CURRENT",I.toFixed(2)+" A"],["POWER",(I*V).toFixed(1)+" W"],["BULB",sim.fuseBlown?"DEAD":(glow>0.6?"BLAZING":(glow>0.2?"GLOWING":"dim"))]]);
+}
+function wirePos(t){var x1=120,y1=90,x2=740,y2=290;var per=2*((x2-x1)+(y2-y1));var d=t*per;
+  var w=x2-x1,h=y2-y1;
+  if(d<w)return{x:x1+d,y:y1};d-=w;if(d<h)return{x:x2,y:y1+d};d-=h;if(d<w)return{x:x2-d,y:y2};d-=w;return{x:x1,y:y2-d};}
+/* Lab 8 modern */
+function labModern(dt){
+  var beta=params.beta, gamma=1/Math.sqrt(1-beta*beta);
+  // light clock panel
+  ctx.fillStyle="rgba(124,124,255,.08)";ctx.fillRect(20,30,W()-40,170);
+  ctx.fillStyle="#fff";ctx.font="bold 13px sans-serif";ctx.textAlign="left";ctx.fillText("⏱ LIGHT CLOCK — ship speed "+beta.toFixed(2)+"c  (γ = "+gamma.toFixed(2)+")",34,54);
+  var cx=W()/2, cy=130, shipX=beta*260;
+  ctx.strokeStyle="#5df2c8";ctx.lineWidth=3;ctx.strokeRect(cx-110+shipX*0.2,70,220,110);
+  ctx.fillStyle="#ffd35e";ctx.fillRect(cx-110+shipX*0.2,70,220,8);ctx.fillRect(cx-110+shipX*0.2,172,220,8);
+  sim.clockPhase+=dt*(1/gamma)*3;
+  var bx=cx+Math.sin(sim.clockPhase)*0, by=76+Math.abs((sim.clockPhase%2)/2)*90;
+  if(by>168)by=168-(by-168);
+  ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(bx,by,7,0,7);ctx.fill();
+  ctx.strokeStyle="rgba(255,255,255,.4)";ctx.beginPath();ctx.moveTo(cx-100,76);ctx.lineTo(bx,by);ctx.lineTo(cx+100,76);ctx.stroke();
+  ctx.fillStyle=beta>0.9?"#ff5d5d":"#5df2c8";ctx.font="bold 13px sans-serif";ctx.textAlign="center";
+  ctx.fillText(beta>0.9?"time nearly FROZEN aboard 🥶":"aboard: "+(1/gamma).toFixed(2)+" s pass per Earth second",cx,196);
+  // decay panel
+  ctx.fillStyle="rgba(255,111,165,.07)";ctx.fillRect(20,210,W()-40,150);
+  ctx.fillStyle="#fff";ctx.font="bold 13px sans-serif";ctx.textAlign="left";ctx.fillText("☢ DECAY — tick "+sim.decayTick+"  •  alive: "+sim.decay.filter(function(d){return !d;}).length+"/100  (half-life ≈ 4 ticks)",34,232);
+  sim.decay.forEach(function(d,i){var gx=40+(i%25)*32, gy=250+Math.floor(i/25)*24;
+    ctx.fillStyle=d?"#ff9d5c":"#5df2c8";ctx.beginPath();ctx.arc(gx,gy,9,0,7);ctx.fill();
+    if(d){ctx.fillStyle="#071022";ctx.font="9px sans-serif";ctx.textAlign="center";ctx.fillText("α",gx,gy+3);}});
+  if(sim.t%1<0.02&&Math.random()<0.02&&$("#tab-lab").classList.contains("active"))decayStep();
+  readout([["γ FACTOR",gamma.toFixed(2)+"×"],["SHIP CLOCK",(100/gamma).toFixed(0)+"% speed"],["ALIVE",sim.decay.filter(function(d){return !d;}).length+" atoms"]]);
+}
+function readout(items){
+  var r=$("#lab-readout");r.innerHTML=items.map(function(it){return '<div class="ro"><b>'+it[1]+'</b><span>'+it[0]+'</span></div>';}).join("");
+}
+
+/* ---------- QUIZ ---------- */
+var answers={};
+function renderQuiz(){
+  var L=LEVELS[curLevel]; answers={};
+  $("#mission-title").textContent="🎯 Mission "+L.num+": "+L.title;
+  $("#mission-sub").textContent="Score ≥ 70% to unlock the next world. +"+(100+L.num*20)+" XP on success. Streak bonus for first-try clears.";
+  $("#mission-result").textContent="";
+  var box=$("#quiz-box");box.innerHTML="";
+  L.quiz.forEach(function(q,qi){
+    var card=document.createElement("div");card.className="q-card";card.id="q"+qi;
+    var h='<h4>Q'+(qi+1)+'. '+q.q+'</h4><div class="q-opts">';
+    q.opts.forEach(function(o,oi){h+='<button class="q-opt" data-q="'+qi+'" data-o="'+oi+'"><b>'+String.fromCharCode(65+oi)+'.</b> '+o+'</button>';});
+    h+='</div><div class="q-explain">💡 '+q.explain+'</div>';
+    card.innerHTML=h;box.appendChild(card);
+  });
+  $$(".q-opt").forEach(function(btn){btn.addEventListener("click",function(){
+    var q=+btn.dataset.q; answers[q]=+btn.dataset.o;
+    $$('.q-opt[data-q="'+q+'"]').forEach(function(b){b.classList.toggle("sel",+b.dataset.o===answers[q]);});
+    beep(500+answers[q]*80,.06,"sine"); updateQProg();
+  });});
+  updateQProg();
+}
+function updateQProg(){
+  var L=LEVELS[curLevel], n=Object.keys(answers).length;
+  $("#q-progress").textContent="Q "+n+"/"+L.quiz.length+" answered";
+  $("#q-fill").style.width=(n/L.quiz.length*100)+"%";
+}
+$("#btn-submit").addEventListener("click",function(){
+  var L=LEVELS[curLevel];
+  if(Object.keys(answers).length<L.quiz.length){toast("⚠ Answer all questions first!");beep(200,.2,"sawtooth");return;}
+  var correct=0;
+  L.quiz.forEach(function(q,qi){
+    var card=$("#q"+qi);card.classList.add("graded");card.classList.remove("correct","wrong");
+    if(answers[qi]===q.correct){correct++;card.classList.add("correct");}
+    else card.classList.add("wrong");
+  });
+  var pct=Math.round(correct/L.quiz.length*100);
+  store.best[curLevel]=pct;
+  if(pct>=70){
+    var first=!store.cleared[curLevel];
+    var gain=100+L.num*20+(first?40:0)+(store.streak>=2?20:0);
+    store.xp+=gain; store.cleared[curLevel]=true; store.streak++;
+    store.unlocked=Math.max(store.unlocked,Math.min(7,curLevel+1));
+    save();updateHUD();renderMap();
+    fanfare();
+    showModal(first?"🏆":"✔",first?"World "+L.num+" cleared!":"Mission replayed: "+pct+"%",
+      (first?"Brilliant, cadet. <b>"+L.title+"</b> is yours. ":"Strong review. ")+"Score <b>"+correct+"/"+L.quiz.length+" ("+pct+"%)</b>. "+
+      (curLevel<7?"The portal to <b>"+LEVELS[curLevel+1].title+"</b> is now open.":"You have conquered ALL 8 worlds. HERO status achieved!"),
+      "+"+gain+" XP");
+    $("#mission-result").textContent="✅ PASSED "+pct+"% (+"+gain+" XP)";$("#mission-result").style.color="#5df2c8";
+  } else {
+    store.streak=0;save();updateHUD();beep(160,.4,"sawtooth");
+    $("#mission-result").textContent="❌ "+pct+"% — need 70%. Re-read LEARN, replay the LAB, retry!";$("#mission-result").style.color="#ff5d5d";
+    toast("❌ Mission failed ("+pct+"%). Streak reset. Try again!");
+  }
+  window.scrollTo(0,document.body.scrollHeight);
+});
+
+/* ---------- MODAL / NAV ---------- */
+function showModal(emoji,title,text,xp){
+  $("#modal-emoji").textContent=emoji;$("#modal-title").textContent=title;$("#modal-text").innerHTML=text;$("#modal-xp").textContent=xp;
+  $("#modal").classList.remove("hidden");
+  $("#modal-next").style.display=curLevel<7?"":"none";
+}
+$("#modal-map").addEventListener("click",function(){$("#modal").classList.add("hidden");goMap();});
+$("#modal-next").addEventListener("click",function(){$("#modal").classList.add("hidden");openLevel(Math.min(7,curLevel+1));});
+function goMap(){$("#screen-level").classList.remove("active");$("#screen-map").classList.add("active");renderMap();window.scrollTo(0,0);}
+$("#btn-back").addEventListener("click",goMap);
+$$(".tab").forEach(function(t){t.addEventListener("click",function(){switchTab(t.dataset.tab);});});
+$("#btn-continue").addEventListener("click",function(){openLevel(Math.min(7,store.unlocked));});
+$("#btn-how").addEventListener("click",function(){$("#how-box").classList.toggle("hidden");});
+$("#btn-reset").addEventListener("click",function(){if(confirm("Reset all PHYSICA progress?")){store={unlocked:0,cleared:{},xp:0,streak:0,best:{}};save();renderMap();toast("↺ Fresh cadet file created.");}});
+$("#btn-sound").addEventListener("click",function(){soundOn=!soundOn;$("#btn-sound").style.opacity=soundOn?1:.4;toast(soundOn?"♪ Sound on":"♪ Muted");});
+
+/* ---------- INIT ---------- */
+renderMap();
+})();
+
+</script>
+</body>
+</html>
