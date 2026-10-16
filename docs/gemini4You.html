@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Mastery & Architecture Guide</title>
+    <style>
+        /* CSS Custom Properties & Design Tokens */
+        :root {
+            --bg-obsidian: #070b14;
+            --bg-surface: #101726;
+            --bg-surface-hover: #182238;
+            --bg-input: #0b101d;
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glass-hover: rgba(0, 242, 254, 0.3);
+            --accent-cyan: #00f2fe;
+            --accent-blue: #38bdf8;
+            --accent-violet: #8b5cf6;
+            --accent-indigo: #6366f1;
+            --accent-emerald: #10b981;
+            --text-main: #cbd5e1;
+            --text-heading: #ffffff;
+            --text-muted: #94a3b8;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Reset & Base Styles */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-obsidian);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Selection */
+        ::selection {
+            background-color: var(--accent-cyan);
+            color: var(--bg-obsidian);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-obsidian);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1c273d;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-blue);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
+            color: var(--bg-obsidian);
+            padding: 0.9rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0, 242, 254, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition-smooth);
+            z-index: 2000;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Header */
+        header.site-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(7, 11, 20, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: var(--bg-obsidian);
+            font-size: 1.1rem;
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.35);
+        }
+
+        .brand-title {
+            font-weight: 800;
+            color: var(--text-heading);
+            font-size: 1.15rem;
+            letter-spacing: -0.01em;
+        }
+
+        .brand-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-surface);
+            padding: 0.35rem;
+            border-radius: 14px;
+            border: 1px solid var(--border-glass);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-heading);
+            background: var(--bg-surface-hover);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(139, 92, 246, 0.15));
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Tab Content Panes */
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: rgba(16, 23, 38, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+            transition: var(--transition-smooth);
+            margin-bottom: 2rem;
+        }
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Typography Helpers */
+        h1.section-title {
+            font-size: clamp(1.8rem, 3vw, 2.6rem);
+            font-weight: 800;
+            color: var(--text-heading);
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 50%, var(--accent-violet) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.section-desc {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            max-width: 85ch;
+            font-weight: 300;
+        }
+
+        h2.card-heading {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Grids */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Tier Cards */
+        .tier-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+        .tier-card.featured {
+            border-color: var(--accent-cyan);
+            background: linear-gradient(180deg, rgba(0, 242, 254, 0.05) 0%, rgba(16, 23, 38, 0.9) 100%);
+        }
+        .tier-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-blue);
+        }
+
+        .tier-badge {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            background: var(--bg-surface-hover);
+            color: var(--accent-cyan);
+            border: 1px solid var(--border-glass);
+        }
+
+        .tier-price {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin: 1rem 0;
+        }
+        .tier-price span {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+
+        .tier-features {
+            list-style: none;
+            margin: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+        }
+        .tier-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-main);
+        }
+        .tier-features li::before {
+            content: "✓";
+            color: var(--accent-emerald);
+            font-weight: bold;
+        }
+
+        /* Feature Deep Dive Cards */
+        .feature-item {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 1.75rem;
+            transition: var(--transition-smooth);
+        }
+        .feature-item:hover {
+            border-color: var(--accent-violet);
+            background: var(--bg-surface-hover);
+        }
+
+        /* Prompt Masterclass Steps */
+        .masterclass-step {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .masterclass-step:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .step-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: rgba(0, 242, 254, 0.1);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .code-snippet {
+            background: var(--bg-input);
+            border: 1px solid var(--border-glass);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #38bdf8;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        /* Interactive Prompt Builder Form */
+        .builder-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .builder-grid {
+                grid-template-columns: 1fr;
+            }
+            .site-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            .nav-tabs {
+                width: 100%;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-heading);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-glass);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            color: var(--text-heading);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: var(--transition-smooth);
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .preview-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-glass);
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-heading);
+        }
+
+        .preview-content {
+            background: var(--bg-input);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 1.25rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            flex-grow: 1;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 450px;
+            margin-bottom: 1.25rem;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            color: var(--bg-obsidian);
+            border: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .action-btn:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 5px 20px rgba(0, 242, 254, 0.4);
+        }
+
+        /* Footer */
+        footer.site-footer {
+            border-top: 1px solid var(--border-glass);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            background: var(--bg-surface);
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toastNotification">Prompt successfully copied to clipboard!</div>
+
+    <!-- Header & Navigation -->
+    <header class="site-header">
+        <div class="brand">
+            <div class="brand-logo">G</div>
+            <div>
+                <div class="brand-title">Gemini Mastery & Architecture</div>
+                <div class="brand-subtitle">Architectural Reference & Prompt Engineering Suite</div>
+            </div>
+        </div>
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('tiers', event)">Tier Matrix</button>
+            <button class="tab-btn" onclick="switchTab('features', event)">Feature Suite</button>
+            <button class="tab-btn" onclick="switchTab('masterclass', event)">Prompt Masterclass</button>
+            <button class="tab-btn" onclick="switchTab('builder', event)">Interactive Builder</button>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+
+        <!-- TAB 1: TIER BREAKDOWN MATRIX -->
+        <section id="tiers" class="tab-pane active">
+            <div class="glass-card">
+                <h1 class="section-title">Gemini <span class="gradient-text">Tier Architecture</span></h1>
+                <p class="section-desc">From exploratory free usage to enterprise-grade Ultra deployments, Gemini scales across distinct computational tiers tailored to latency requirements, context windows, and advanced agentic workflows.</p>
+
+                <div class="grid-3">
+                    <!-- Free Tier -->
+                    <div class="tier-card">
+                        <div>
+                            <span class="tier-badge">Entry</span>
+                            <h2 class="card-heading" style="font-size: 1.2rem; margin-top: 0.5rem;">Free Tier</h2>
+                            <div class="tier-price">$0 <span>/ forever</span></div>
+                            <p style="font-size: 0.9rem; color: var(--text-muted);">Ideal for personal exploration, quick queries, and basic creative assistance.</p>
+                            <ul class="tier-features">
+                                <li>Gemini Flash / Core models</li>
+                                <li>32K – 128K context window</li>
+                                <li>Standard generation quotas</li>
+                                <li>Basic web search grounding</li>
+                                <li>Standard code execution sandbox</li>
+                            </ul>
+                        </div>
+                        <div style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border-glass); padding-top: 1rem;">
+                            <strong>Quota:</strong> Standard rate limits apply during peak global hours.
+                        </div>
+                    </div>
+
+                    <!-- Plus / Advanced Tier -->
+                    <div class="tier-card featured">
+                        <span class="tier-badge" style="background: rgba(0, 242, 254, 0.15); color: var(--accent-cyan); border-color: rgba(0, 242, 254, 0.4);">Popular</span>
+                        <div>
+                            <h2 class="card-heading" style="font-size: 1.2rem; margin-top: 0.5rem;">Pro / Advanced</h2>
+                            <div class="tier-price">$19.99 <span>/ month</span></div>
+                            <p style="font-size: 0.9rem; color: var(--text-muted);">Empowered with flagship Pro reasoning models, massive context, and Workspace integration.</p>
+                            <ul class="tier-features">
+                                <li>Flagship Gemini Pro / Ultra models</li>
+                                <li>1M+ token context window</li>
+                                <li>Priority access during peak loads</li>
+                                <li>Google Workspace (Docs, Gmail, Drive)</li>
+                                <li>Advanced Data Analysis & Python Sandboxing</li>
+                                <li>Early access to Canvas & Gems</li>
+                            </ul>
+                        </div>
+                        <div style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--accent-cyan); border-top: 1px solid var(--border-glass); padding-top: 1rem;">
+                            <strong>Best for:</strong> Engineers, researchers, and professional creators.
+                        </div>
+                    </div>
+
+                    <!-- Ultra / Enterprise Tier -->
+                    <div class="tier-card">
+                        <div>
+                            <span class="tier-badge" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-violet); border-color: rgba(139, 92, 246, 0.4);">Enterprise</span>
+                            <h2 class="card-heading" style="font-size: 1.2rem; margin-top: 0.5rem;">Ultra / Enterprise</h2>
+                            <div class="tier-price">Custom <span>/ scale</span></div>
+                            <p style="font-size: 0.9rem; color: var(--text-muted);">Maximum throughput, custom fine-tuning pipelines, and strict compliance guarantees.</p>
+                            <ul class="tier-features">
+                                <li>Dedicated high-concurrency API endpoints</li>
+                                <li>Full multi-modal reasoning at scale</li>
+                                <li>Enterprise data governance & security</li>
+                                <li>Custom fine-tuning & RAG connectors</li>
+                                <li>Dedicated support & SLA uptime</li>
+                            </ul>
+                        </div>
+                        <div style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border-glass); padding-top: 1rem;">
+                            <strong>Compliance:</strong> SOC2 Type II, HIPAA ready options.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: FEATURE SUITE DEEP DIVE -->
+        <section id="features" class="tab-pane">
+            <div class="glass-card">
+                <h1 class="section-title">Gemini <span class="gradient-text">Feature Suite Deep Dive</span></h1>
+                <p class="section-desc">Explore the advanced architectural capabilities that set Gemini apart, from multi-step autonomous research agents to native 1M+ token context ingestion.</p>
+
+                <div class="grid-2">
+                    <div class="feature-item">
+                        <h2 class="card-heading"><span style="color: var(--accent-cyan);">🔬</span> Deep Research</h2>
+                        <p style="font-size: 0.95rem; color: var(--text-muted);">An autonomous multi-step agent that formulates research trajectories, queries multiple web sources recursively, cross-references conflicting facts, and synthesizes exhaustive, academic-grade reports with verifiable citations.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <h2 class="card-heading"><span style="color: var(--accent-violet);">🎙️</span> Gemini Live</h2>
+                        <p style="font-size: 0.95rem; color: var(--text-muted);">A real-time, ultra-low latency conversational audio engine supporting natural interruptions, dynamic tone modulation, and fluid brainstorming sessions without traditional turn-taking lag.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <h2 class="card-heading"><span style="color: var(--accent-blue);">📐</span> Canvas & Artifacts</h2>
+                        <p style="font-size: 0.95rem; color: var(--text-muted);">A split-pane collaborative environment that separates conversational chat from live-rendering code editors or document artifacts, enabling iterative inline editing and instant preview execution.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <h2 class="card-heading"><span style="color: var(--accent-emerald);">💎</span> Gems (Custom Personas)</h2>
+                        <p style="font-size: 0.95rem; color: var(--text-muted);">Persistent, specialized instructions and custom knowledge boundaries tailored to specific tasks—transforming Gemini into a dedicated code reviewer, legal assistant, or math tutor.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <h2 class="card-heading"><span style="color: var(--accent-cyan);">📚</span> 1M+ Token Context Window</h2>
+                        <p style="font-size: 0.95rem; color: var(--text-muted);">Unprecedented native context ingestion capacity that allows users to upload entire multi-hour video recordings, complete software repositories, or hundreds of financial PDF reports simultaneously for holistic analysis.</p>
+                    </div>
+
+                    <div class="feature-item">
+                        <h2 class="card-heading"><span style="color: var(--accent-violet);">⚡</span> Code Execution & Python Sandbox</h2>
+                        <p style="font-size: 0.95rem; color: var(--text-muted);">A secure underlying sandboxed execution environment where Gemini writes, tests, debugs, and runs Python code natively to compute exact mathematical solutions or render interactive data visualizations.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: PROMPT ENGINEERING MASTERCLASS -->
+        <section id="masterclass" class="tab-pane">
+            <div class="glass-card">
+                <h1 class="section-title">Prompt Engineering <span class="gradient-text">Masterclass</span></h1>
+                <p class="section-desc">To extract elite-level performance from Gemini models, your prompts must move beyond casual conversation into precise programmatic instructions. Follow these core architectural pillars.</p>
+
+                <!-- Step 1 -->
+                <div class="masterclass-step">
+                    <div class="step-number">01</div>
+                    <div>
+                        <h2 class="card-heading">Role & Persona Assignment</h2>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Define the exact operational persona, professional background, and authority level Gemini should embody. This primes the model's internal neural pathways for domain-specific vocabulary and reasoning depth.</p>
+                        <div class="code-snippet">Act as a Principal Systems Architect and Distributed Systems Expert with 15+ years of experience designing fault-tolerant cloud infrastructure.</div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="masterclass-step">
+                    <div class="step-number">02</div>
+                    <div>
+                        <h2 class="card-heading">Context & Objective Definition</h2>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Provide rigorous background constraints, operational parameters, and the ultimate objective so the model understands the boundaries of its task.</p>
+                        <div class="code-snippet">Context: We are migrating a legacy monolithic e-commerce backend handling 50k RPS to a microservices architecture on Kubernetes.
+Objective: Design a robust event-driven messaging strategy using Apache Kafka.</div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="masterclass-step">
+                    <div class="step-number">03</div>
+                    <div>
+                        <h2 class="card-heading">Task Decomposition (Chain of Thought)</h2>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Break complex multi-step problems into sequential milestones. Forcing step-by-step evaluation significantly reduces hallucination rates and sharpens logic.</p>
+                        <div class="code-snippet">Execute the analysis in 3 steps:
+1. Identify potential bottleneck areas in our legacy transaction pipeline.
+2. Outline the Kafka topic partitioning and consumer group strategy.
+3. Detail error handling and dead-letter queue (DLQ) mechanisms.</div>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="masterclass-step">
+                    <div class="step-number">04</div>
+                    <div>
+                        <h2 class="card-heading">Output Formatting & Constraints</h2>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Explicitly dictate formatting rules, prohibited actions, and style requirements (e.g., markdown tables, valid JSON schemas, complete runnable code without placeholders).</p>
+                        <div class="code-snippet">Constraints: Do not use placeholders or truncated code. Provide complete, well-commented code snippets. Format the summary in a Markdown comparison table.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: INTERACTIVE PROMPT BUILDER -->
+        <section id="builder" class="tab-pane">
+            <div class="glass-card">
+                <h1 class="section-title">Interactive <span class="gradient-text">Prompt Builder</span></h1>
+                <p class="section-desc">Construct a professional, high-performance prompt template by filling in the parameters below. The system automatically compiles your inputs into an optimized prompt structure ready for 1-click copying.</p>
+
+                <div class="builder-grid">
+                    <!-- Form Controls -->
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label" for="inputRole">1. Role / Persona</label>
+                            <input type="text" id="inputRole" class="form-input" placeholder="e.g., Senior Full-Stack React & Node.js Engineer" value="Senior Full-Stack React & Node.js Engineer">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="inputContext">2. Context & Background</label>
+                            <textarea id="inputContext" class="form-input form-textarea" placeholder="Describe the background situation...">We are building a real-time collaborative whiteboard application using React and WebSockets.</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="inputTask">3. Specific Task / Objective</label>
+                            <textarea id="inputTask" class="form-input form-textarea" placeholder="What exactly needs to be done?">Write a robust custom React hook 'useWebSocket' that handles automatic reconnection with exponential backoff and message queueing.</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="inputConstraints">4. Constraints & Rules</label>
+                            <textarea id="inputError" class="form-input form-textarea" placeholder="List constraints...">- No external state management libraries (pure React hooks only).
+- Complete, runnable code with comments.
+- Handle socket disconnection gracefully.</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="inputFormat">5. Output Format</label>
+                            <select id="inputFormat" class="form-select">
+                                <option value="Clean Markdown with Code Blocks">Clean Markdown with Code Blocks</option>
+                                <option value="JSON Schema / Structured Data">JSON Schema / Structured Data</option>
+                                <option value="Comprehensive Step-by-Step Report">Comprehensive Step-by-Step Report</option>
+                                <option value="Executive Summary & Technical Breakdown">Executive Summary & Technical Breakdown</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Live Preview & Copy -->
+                    <div style="display: flex; flex-direction: column;">
+                        <div class="preview-box">
+                            <div class="preview-header">
+                                <span>Compiled Prompt Template</span>
+                                <span style="font-size: 0.75rem; color: var(--accent-cyan);">Ready to Copy</span>
+                            </div>
+                            <div class="preview-content" id="previewOutput">
+Loading compiled prompt...
+                            </div>
+                            <button class="action-btn" onclick="copyPromptToClipboard()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                Copy Optimized Prompt
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>&copy; 2026 Gemini Mastery & Architecture Guide. Built with Pure CSS3 and Vanilla JavaScript. All rights reserved.</p>
+    </footer>
+
+    <!-- Vanilla JavaScript Application Logic -->
+    <script>
+        // 1. Tab Switching Logic
+        function switchTab(tabId, event) {
+            // Hide all panes
+            const panes = document.querySelectorAll('.tab-pane');
+            panes.forEach(pane => pane.classList.remove('active'));
+
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Show target pane
+            document.getElementById(tabId).classList.add('active');
+
+            // Activate clicked button
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+
+            // If builder tab, update compilation
+            if (tabId === 'builder') {
+                updatePromptBuilder();
+            }
+        }
+
+        // 2. Interactive Prompt Builder Logic
+        const inputRole = document.getElementById('inputRole');
+        const inputContext = document.getElementById('inputContext');
+        const inputTask = document.getElementById('inputTask');
+        const inputError = document.getElementById('inputError');
+        const inputFormat = document.getElementById('inputFormat');
+        const previewOutput = document.getElementById('previewOutput');
+
+        function updatePromptBuilder() {
+            const role = inputRole.value.trim() || 'Expert AI Assistant';
+            const context = inputContext.value.trim() || 'General context';
+            const task = inputTask.value.trim() || 'General task';
+            const constraints = inputError.value.trim() || 'None';
+            const format = inputFormat.value;
+
+            const compiledText = `[ROLE / PERSONA]
+Act as a ${role}.
+
+[CONTEXT & BACKGROUND]
+${context}
+
+[TASK OBJECTIVES]
+${task}
+
+[CONSTRAINTS & RULES]
+${constraints}
+
+[OUTPUT FORMAT]
+Please deliver the response formatted as: ${format}. Ensure clarity, accuracy, and completeness without placeholders.`;
+
+            previewOutput.textContent = compiledText;
+        }
+
+        // Attach listeners to builder inputs
+        [inputRole, inputContext, inputTask, inputError, inputFormat].forEach(element => {
+            element.addEventListener('input', updatePromptBuilder);
+            element.addEventListener('change', updatePromptBuilder);
+        });
+
+        // Initialize builder on load
+        updatePromptBuilder();
+
+        // 3. Copy to Clipboard with Custom Toast Notification (No alert())
+        function copyPromptToClipboard() {
+            const textToCopy = previewOutput.textContent;
+            
+            // Fallback compatible clipboard execution
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showToast();
+                }).catch(err => {
+                    fallbackCopyText(textToCopy);
+                });
+            } else {
+                fallbackCopyText(textToCopy);
+            }
+        }
+
+        function fallbackCopyText(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";  // Avoid scrolling to bottom
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast();
+                }
+            } catch (err) {
+                console.error('Fallback copy failed', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toastNotification');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
