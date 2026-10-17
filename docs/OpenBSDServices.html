@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenBSD Server Field Manual OB-77 — HTTPD · RELAYD · SMTPD · VMM</title>
+<style>
+/* ============ OB-77 TECHNICAL MANUAL THEME — pure CSS3, no external resources ============ */
+:root{
+  --paper:#f4f0e4; --paper2:#ebe5d3; --ink:#1a1a18; --ink-soft:#3d3a33;
+  --red:#a31f1f; --red-dark:#7a1414; --olive:#5a6234; --blue:#1f4e79;
+  --green:#2e6b30; --amber:#b7790f; --border:#2b2b28; --stamp:#a31f1f;
+  --mono:"Courier New",Courier,"Nimbus Mono PS",monospace;
+  --serif:Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:#2e2c26;
+  color:var(--ink); font-family:var(--serif); line-height:1.6;
+  background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 2px,transparent 2px 5px);
+}
+a{color:var(--blue)}
+.topbar{
+  position:sticky; top:0; z-index:50;
+  background:#141310; color:#f4f0e4; border-bottom:4px double #f4f0e4;
+  display:flex; align-items:center; gap:12px; padding:8px 14px; flex-wrap:wrap;
+  font-family:var(--mono);
+}
+.topbar .brand{font-weight:bold; letter-spacing:1px; font-size:14px}
+.topbar .brand small{display:block; font-weight:normal; font-size:11px; color:#c9c2ab; letter-spacing:2px}
+.topbar nav{display:flex; gap:8px; flex-wrap:wrap; font-size:12px}
+.topbar nav a{
+  color:#f4f0e4; text-decoration:none; border:1px solid #6b675c; padding:4px 9px;
+  background:#22201b; text-transform:uppercase; letter-spacing:1px;
+}
+.topbar nav a:hover,.topbar nav a.active{background:#f4f0e4; color:#141310}
+.home-link{
+  background:var(--red)!important; border-color:#fff!important; color:#fff!important;
+  font-weight:bold;
+}
+.progress-wrap{margin-left:auto; min-width:200px; flex:1; max-width:340px}
+.progress-label{font-size:11px; letter-spacing:1px; display:flex; justify-content:space-between}
+.progress{height:12px; border:1px solid #f4f0e4; background:#000; position:relative; overflow:hidden}
+.progress > i{display:block; height:100%; width:0%; background:repeating-linear-gradient(45deg,#7fb069 0 8px,#5a8f4b 8px 16px); transition:width .6s}
+.shell{max-width:1180px; margin:18px auto 60px; padding:0 14px; display:grid; grid-template-columns:250px 1fr; gap:18px}
+@media(max-width:900px){.shell{grid-template-columns:1fr}}
+.sidebar{
+  background:var(--paper); border:2px solid var(--border); box-shadow:6px 6px 0 rgba(0,0,0,.5);
+  align-self:start; position:sticky; top:70px; font-family:var(--mono); font-size:13px;
+}
+.sidebar h3{margin:0; padding:10px 12px; background:var(--ink); color:var(--paper); font-size:12px; letter-spacing:2px}
+.sidebar ol{margin:0; padding:10px 10px 10px 30px}
+.sidebar li{margin:5px 0}
+.sidebar a{color:var(--ink); text-decoration:none}
+.sidebar a:hover{text-decoration:underline}
+.sidebar .lock{color:var(--red)}
+.sidebar .done{color:var(--green); font-weight:bold}
+.manbtn{font-family:var(--mono); font-size:12px; border:2px solid var(--border); background:#fff; padding:6px 10px; cursor:pointer; box-shadow:3px 3px 0 var(--border); text-transform:uppercase; letter-spacing:1px}
+.manbtn:hover{transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--border)}
+.manbtn:active{transform:translate(2px,2px); box-shadow:1px 1px 0 var(--border)}
+.manbtn.primary{background:var(--ink); color:var(--paper)}
+.manbtn.danger{background:var(--red); color:#fff; border-color:var(--red-dark)}
+.manbtn.small{padding:3px 8px; font-size:11px}
+.page{
+  background:var(--paper); border:2px solid var(--border); box-shadow:8px 8px 0 rgba(0,0,0,.55);
+  padding:0; overflow:hidden;
+}
+.cover{
+  border-bottom:3px double var(--border); padding:34px 30px 26px; position:relative;
+  background:linear-gradient(var(--paper) 0, var(--paper2) 100%);
+}
+.classification{
+  display:flex; justify-content:space-between; font-family:var(--mono); font-size:12px;
+  letter-spacing:2px; color:var(--red); font-weight:bold; text-transform:uppercase;
+}
+.stamp{
+  position:absolute; right:22px; top:62px; border:3px solid var(--stamp); color:var(--stamp);
+  font-family:var(--mono); font-weight:bold; padding:6px 12px; transform:rotate(8deg);
+  letter-spacing:2px; font-size:13px; opacity:.85; border-radius:4px; pointer-events:none;
+  mask-image:none;
+}
+.cover h1{font-size:clamp(26px,4vw,44px); line-height:1.05; margin:14px 0 6px; font-family:var(--mono); text-transform:uppercase}
+.cover h1 span{color:var(--red)}
+.cover .sub{font-family:var(--mono); font-size:13px; color:var(--ink-soft)}
+.spec-table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12px; margin-top:16px}
+.spec-table td,.spec-table th{border:1px solid var(--border); padding:6px 8px; text-align:left}
+.spec-table th{background:var(--ink); color:var(--paper)}
+.toc-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin-top:16px}
+.toc-card{border:2px solid var(--border); background:#fffdf4; padding:12px; font-family:var(--mono); font-size:12.5px}
+.toc-card b{display:block; font-size:14px; margin-bottom:4px}
+.toc-card .bar{height:8px; background:#d8d1bc; border:1px solid var(--border); margin-top:8px}
+.toc-card .bar i{display:block; height:100%; width:0%; background:var(--olive)}
+.chapter{padding:26px 28px; border-top:2px solid var(--border)}
+.chapter:nth-of-type(even){background:#faf7ec}
+.ch-num{font-family:var(--mono); font-size:12px; letter-spacing:3px; color:#fff; background:var(--red); display:inline-block; padding:3px 10px; text-transform:uppercase}
+.chapter h2{font-family:var(--mono); text-transform:uppercase; font-size:24px; margin:10px 0 4px}
+.chapter .lede{font-style:italic; color:var(--ink-soft); max-width:70ch}
+.level{
+  border:2px solid var(--border); background:#fffdf4; margin:18px 0; position:relative;
+  box-shadow:4px 4px 0 rgba(0,0,0,.18);
+}
+.level-head{
+  display:flex; gap:10px; align-items:center; padding:10px 12px;
+  background:var(--ink); color:var(--paper); font-family:var(--mono);
+}
+.level-head .lvl{ background:var(--paper); color:var(--ink); font-weight:bold; padding:2px 9px; border:2px solid #000}
+.level-head h3{margin:0; font-size:15px; letter-spacing:1px; text-transform:uppercase}
+.level-head .state{margin-left:auto; font-size:11px; letter-spacing:2px; border:1px solid currentColor; padding:2px 8px}
+.level-body{padding:16px}
+.level.locked .level-body{filter:grayscale(1); user-select:none}
+.level.locked .level-body::after{
+  content:"🔒 CLASSIFIED — PASS THE PREVIOUS LEVEL QUIZ TO UNSEAL THIS SECTION";
+  display:block; font-family:var(--mono); font-size:12px; text-align:center; letter-spacing:1px;
+  border:2px dashed var(--red); color:var(--red); padding:10px; margin-top:10px; background:#fff;
+}
+.level.unsealed .state{color:#8fe38f}
+pre,code{font-family:var(--mono)}
+pre{
+  background:#141310; color:#e8e2cc; padding:14px; overflow:auto; font-size:12.5px;
+  border-left:6px solid var(--red); line-height:1.5; white-space:pre; position:relative;
+}
+pre .c{color:#8a8a7a} pre .k{color:#ff9d5c; font-weight:bold} pre .s{color:#9fe08f} pre .n{color:#7fc4ff}
+.callout{border:2px solid var(--border); padding:10px 12px; font-family:var(--mono); font-size:13px; background:#fff; margin:12px 0}
+.callout.warn{border-left:10px solid var(--red)} .callout.tip{border-left:10px solid var(--olive)} .callout.info{border-left:10px solid var(--blue)}
+table.manual{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12.5px; margin:12px 0}
+table.manual th{background:var(--ink); color:var(--paper); padding:7px; border:1px solid var(--border); text-align:left}
+table.manual td{border:1px solid var(--border); padding:7px; background:#fff}
+figure.sim{border:2px solid var(--border); background:#fff; margin:14px 0; padding:0}
+figure.sim figcaption{font-family:var(--mono); font-size:12px; background:var(--paper2); border-bottom:2px solid var(--border); padding:8px 10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+.sim-stage{padding:16px; background:
+  repeating-linear-gradient(0deg,transparent 0 27px,rgba(0,0,0,.06) 27px 28px),
+  #fdfbf1; min-height:120px; position:relative; overflow:hidden}
+.flow{display:flex; align-items:stretch; gap:0; flex-wrap:wrap}
+.node{
+  flex:1 1 120px; min-width:120px; border:2px solid var(--border); background:#fff; padding:10px;
+  font-family:var(--mono); font-size:12px; text-align:center; position:relative;
+}
+.node b{display:block; font-size:13px}
+.node small{color:#555}
+.node.active{background:#fff3b0; outline:3px solid var(--amber)}
+.node.dead{background:#f3c0c0; text-decoration:line-through}
+.wire{flex:0 0 44px; position:relative; align-self:center; height:4px; background:var(--border)}
+.wire::after{content:"▶"; position:absolute; right:-4px; top:-14px; font-size:14px}
+.packet{
+  position:absolute; width:22px; height:22px; border-radius:50%; background:var(--red);
+  border:2px solid #000; top:6px; left:0; z-index:5; box-shadow:1px 1px 0 #000;
+  display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff; font-family:var(--mono);
+}
+.sim-log{font-family:var(--mono); font-size:12px; background:#141310; color:#c8ffb0; padding:10px; min-height:90px; max-height:170px; overflow:auto; border-top:2px solid var(--border)}
+.sim-log .t{color:#8a8a7a}
+.controls{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+input[type=text],input[type=number],select{font-family:var(--mono); font-size:13px; padding:6px 8px; border:2px solid var(--border); background:#fff; max-width:100%}
+.quiz{border:2px dashed var(--border); background:#fff; padding:12px; margin-top:14px}
+.quiz h4{margin:0 0 6px; font-family:var(--mono); text-transform:uppercase; letter-spacing:1px; font-size:13px}
+.quiz .q{margin:12px 0; padding:10px; border:1px solid #c9c2ab; background:#faf7ec}
+.quiz .q p{margin:0 0 8px; font-weight:bold}
+.quiz label{display:block; font-family:var(--mono); font-size:13px; padding:5px 8px; border:1px solid transparent; cursor:pointer}
+.quiz label:hover{background:#fff; border-color:var(--border)}
+.quiz .verdict{font-family:var(--mono); font-size:13px; margin-top:8px; padding:8px; display:none}
+.quiz .verdict.pass{display:block; background:#dff0d8; border:2px solid var(--green)}
+.quiz .verdict.fail{display:block; background:#f8d7da; border:2px solid var(--red)}
+.seal{font-family:var(--mono); font-size:11px; letter-spacing:2px; padding:3px 8px; border:2px solid var(--green); color:var(--green); display:none}
+.seal.on{display:inline-block}
+.tabs{display:flex; gap:0; flex-wrap:wrap; border:2px solid var(--border); background:var(--ink)}
+.tabs button{flex:1; font-family:var(--mono); font-size:12px; padding:10px; background:transparent; color:var(--paper); border:0; border-right:1px solid #555; cursor:pointer; text-transform:uppercase; letter-spacing:1px}
+.tabs button.active{background:var(--red); color:#fff}
+.tabpane{display:none; border:2px solid var(--border); border-top:0; background:#fffdf4; padding:14px}
+.tabpane.active{display:block}
+.checklist{list-style:none; padding:0; font-family:var(--mono); font-size:13px}
+.checklist li{padding:6px 8px; border-bottom:1px dotted #999}
+.checklist input{margin-right:8px; transform:scale(1.3)}
+.kbd{font-family:var(--mono); background:#141310; color:#fff; padding:1px 6px; border-radius:3px; font-size:12px}
+.footer-man{padding:22px 28px; font-family:var(--mono); font-size:12px; background:var(--ink); color:var(--paper)}
+.diagram{font-family:var(--mono); font-size:12px; line-height:1.4; background:#fff; border:2px solid var(--border); padding:12px; overflow:auto; white-space:pre}
+@keyframes march{to{background-position:28px 0}}
+@keyframes blink{50%{opacity:.25}}
+@keyframes packetMove{from{left:2%} to{left:96%}}
+@keyframes healthPulse{0%,100%{transform:scale(1)} 50%{transform:scale(1.25)}}
+.pulsing{animation:healthPulse 1s infinite}
+@media print{.topbar,.sidebar,.controls,.sim-log{display:none} body{background:#fff} .shell{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="topbar" id="top">
+  <div class="brand">OB-77 FIELD MANUAL<small>OPENBSD · HTTPD · RELAYD · SMTPD · VMM</small></div>
+  <nav aria-label="Manual navigation">
+    <a class="home-link" href="index.html">⌂ Home</a>
+    <a href="#ch-httpd">HTTPD</a>
+    <a href="#ch-relayd">RELAYD</a>
+    <a href="#ch-smtpd">SMTPD</a>
+    <a href="#ch-vmm">VMM</a>
+    <a href="#ch-setup">Setup Lab</a>
+    <a href="#ch-exam">Final Exam</a>
+  </nav>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>CLEARANCE</span><span id="pct">0%</span></div>
+    <div class="progress"><i id="progressBar"></i></div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="sidebar">
+    <h3>▤ CONTENTS</h3>
+    <ol>
+      <li><a href="#cover">Cover &amp; standing orders</a></li>
+      <li><a href="#how">How to use this manual</a></li>
+      <li><a href="#ch-httpd">Ch.1 HTTPD <span class="lock" data-lock="httpd">🔒</span><span class="done" data-done="httpd" style="display:none">✔</span></a></li>
+      <li><a href="#ch-relayd">Ch.2 RELAYD <span class="lock" data-lock="relayd">🔒</span><span class="done" data-done="relayd" style="display:none">✔</span></a></li>
+      <li><a href="#ch-smtpd">Ch.3 SMTPD <span class="lock" data-lock="smtpd">🔒</span><span class="done" data-done="smtpd" style="display:none">✔</span></a></li>
+      <li><a href="#ch-vmm">Ch.4 VMM / VMD <span class="lock" data-lock="vmm">🔒</span><span class="done" data-done="vmm" style="display:none">✔</span></a></li>
+      <li><a href="#ch-setup">Ch.5 Build your server</a></li>
+      <li><a href="#ch-exam">Final exam &amp; discharge</a></li>
+    </ol>
+    <div style="padding:10px">
+      <button class="manbtn danger small" id="resetBtn" style="width:100%">Reset clearance</button>
+      <p style="font-size:11px;color:#555">Progress is stored only in this browser (<span class="kbd">localStorage</span>). No network. No cookies. No external resources.</p>
+    </div>
+  </aside>
+
+  <main class="page">
+    <!-- ================= COVER ================= -->
+    <section class="cover" id="cover">
+      <div class="classification"><span>Distribution: unlimited</span><span>Manual OB-77 · Rev 7.6</span></div>
+      <div class="stamp">APPROVED<br>FOR OPERATORS</div>
+      <h1>OpenBSD<br>Server Operator's<br><span>Field Manual</span></h1>
+      <p class="sub">HTTPD(8) · RELAYD(8) · SMTPD(8) · VMM(4) / VMD(8) / VMCTL(8) — architecture, packet flow, configuration, failure modes. With animated drills and sealed knowledge checks.</p>
+      <table class="spec-table">
+        <tr><th>Subject</th><th>Config</th><th>Privilege model</th><th>Default ports</th></tr>
+        <tr><td><b>httpd</b> — web server</td><td>/etc/httpd.conf, chroot /var/www</td><td>parent + prefork servers + logger, chroot, pledge</td><td>80, 443</td></tr>
+        <tr><td><b>relayd</b> — relay / load balancer</td><td>/etc/relayd.conf</td><td>privileged parent + relays, pf anchors</td><td>80, 443 (front), 8080… (back)</td></tr>
+        <tr><td><b>smtpd</b> — OpenSMTPD mail</td><td>/etc/smtpd.conf, /etc/mail/*</td><td>control, queue, scheduler, dispatcher, lookup…</td><td>25, 465, 587</td></tr>
+        <tr><td><b>vmd/vmm</b> — virtualization</td><td>/etc/vm.conf, fw vmm-bios</td><td>vmd daemon + /dev/vmm hypervisor, virtio</td><td>— (tap/bridge/veb)</td></tr>
+      </table>
+      <div class="toc-grid">
+        <div class="toc-card"><b>CH.1 HTTPD</b>servers, locations, TLS, fastcgi, chroot<div class="bar"><i data-modbar="httpd"></i></div></div>
+        <div class="toc-card"><b>CH.2 RELAYD</b>relays, tables, health checks, TLS accel.<div class="bar"><i data-modbar="relayd"></i></div></div>
+        <div class="toc-card"><b>CH.3 SMTPD</b>listeners, rules, actions, queue, filters<div class="bar"><i data-modbar="smtpd"></i></div></div>
+        <div class="toc-card"><b>CH.4 VMM</b>vmm, vmd, vmctl, virtio, switches<div class="bar"><i data-modbar="vmm"></i></div></div>
+      </div>
+      <div class="callout warn"><b>STANDING ORDER 1:</b> This manual is <b>sealed</b>. Each chapter has 4 levels. You must pass each level's drill (all questions correct) to unseal the next. The Setup Lab and Final Exam stay locked until all four daemons show ✔. <a href="index.html">Home</a> always returns here.</div>
+    </section>
+
+    <section class="chapter" id="how">
+      <span class="ch-num">PROLOGUE</span>
+      <h2>How to use this manual</h2>
+      <p class="lede">Read top to bottom. Run every animation. Break things on purpose with the buttons. Then prove you understood with the quiz. That is the whole pedagogy.</p>
+      <ol>
+        <li><b>Run the drill.</b> Each level has an animated figure with <span class="kbd">Step</span> / <span class="kbd">Auto-play</span> / <span class="kbd">Reset</span> and sometimes sabotage buttons (kill a backend, send a bad request). The event log narrates what the daemon really does.</li>
+        <li><b>Read the config.</b> Every level ends with a minimal real config you can type on OpenBSD. Syntax is checked against httpd.conf(5), relayd.conf(5), smtpd.conf(5), vm.conf(5) conventions.</li>
+        <li><b>Pass the quiz.</b> All answers must be correct. Wrong answers explain why. Passing unseals the next level and updates the top clearance bar.</li>
+        <li><b>Build.</b> Chapter 5 generates complete configs for your own machine from your inputs — still 100% local JavaScript.</li>
+      </ol>
+      <div class="callout tip"><b>OFFLINE GUARANTEE:</b> View-source this file. There is no &lt;link&gt;, no &lt;script src&gt;, no &lt;img&gt;, no @import, no fetch(). Everything is inline vanilla JS + CSS3.</div>
+    </section>
+
+    <!-- ================= CH 1 HTTPD ================= -->
+    <section class="chapter" id="ch-httpd">
+      <span class="ch-num">Chapter 1</span>
+      <h2>HTTPD — the austere web server <span class="seal" data-seal="httpd">★ CHAPTER CLEARED</span></h2>
+      <p class="lede">httpd(8) does one job: serve files fast, chrooted, with almost no knobs. No modules, no .htaccess, no reverse-proxy engine (that is relayd's job). If you want dynamic content you hand it to fastcgi (slowcgi, php-fpm). This chapter drills: processes → sockets/servers → locations → static/fastcgi/security.</p>
+
+      <div class="level" data-mod="httpd" data-lvl="1">
+        <div class="level-head"><span class="lvl">LVL 1</span><h3>1.1 Process model &amp; chroot drill</h3><span class="state">UNSEALED</span></div>
+        <div class="level-body">
+          <p>When you run <code>rcctl start httpd</code>, <b>one privileged parent</b> reads <code>/etc/httpd.conf</code>, binds port 80/443, then forks <b>prefork server workers</b> (default 3) plus a <b>logger</b>. Workers immediately <code>chroot("/var/www")</code> and drop to user <code>www</code> with tight <code>pledge()</code>. That means a bug in request parsing cannot see <code>/etc</code> at all — document roots like <code>/htdocs/site</code> are really <code>/var/www/htdocs/site</code>. The private key path is the exception: it is loaded <b>before</b> chroot from <code>/etc/ssl/private/</code>.</p>
+          <figure class="sim">
+            <figcaption>FIG 1-A · HTTPD STARTUP — <button class="manbtn small" data-sim="h1" data-act="step">Step ▸</button> <button class="manbtn small" data-sim="h1" data-act="play">Auto-play</button> <button class="manbtn small" data-sim="h1" data-act="reset">Reset</button></figcaption>
+            <div class="sim-stage" id="stage-h1"><div class="packet" id="pkt-h1" style="display:none">●</div>
+              <div class="flow" id="flow-h1">
+                <div class="node" data-n="0"><b>rcctl</b><small>start httpd</small></div><div class="wire"></div>
+                <div class="node" data-n="1"><b>parent (root)</b><small>parse conf, bind :80/:443</small></div><div class="wire"></div>
+                <div class="node" data-n="2"><b>servers ×3</b><small>chroot /var/www, user www</small></div><div class="wire"></div>
+                <div class="node" data-n="3"><b>logger</b><small>access + error log</small></div>
+              </div>
+            </div>
+            <div class="sim-log" id="log-h1">— press Step to boot httpd —</div>
+          </figure>
+<pre><span class="c"># /etc/httpd.conf — smallest speaking server</span>
+<span class="k">server</span> <span class="s">"www.example.com"</span> {
+  <span class="k">listen on</span> * <span class="k">port</span> 80
+  <span class="k">root</span> <span class="s">"/htdocs/example"</span>  <span class="c"># = /var/www/htdocs/example on disk</span>
+}
+<span class="c"># httpd -n  &&  rcctl enable httpd  &&  rcctl start httpd</span></pre>
+          <div class="quiz" data-quiz="h1" data-mod="httpd" data-lvl="1">
+            <h4>Drill 1-1 — pass to unseal Level 2</h4>
+            <div class="q" data-answer="b"><p>1. Where does root "/htdocs/example" live on disk by default?</p>
+              <label><input type="radio" name="h1q1" value="a"> a) /htdocs/example</label>
+              <label><input type="radio" name="h1q1" value="b"> b) /var/www/htdocs/example (chroot /var/www)</label>
+              <label><input type="radio" name="h1q1" value="c"> c) /home/www/htdocs/example</label></div>
+            <div class="q" data-answer="c"><p>2. How many request-serving workers does `prefork 3` mean?</p>
+              <label><input type="radio" name="h1q2" value="a"> a) 3 total processes</label>
+              <label><input type="radio" name="h1q2" value="b"> b) 3 loggers</label>
+              <label><input type="radio" name="h1q2" value="c"> c) 3 server workers + parent + logger</label></div>
+            <div class="q" data-answer="a"><p>3. When is the TLS private key loaded relative to chroot?</p>
+              <label><input type="radio" name="h1q3" value="a"> a) Before chroot, from /etc/ssl/private</label>
+              <label><input type="radio" name="h1q3" value="b"> b) After chroot, from /var/www/etc/ssl</label>
+              <label><input type="radio" name="h1q3" value="c"> c) Keys are not needed, TLS is in pf</label></div>
+            <button class="manbtn primary" data-check="h1">Validate knowledge</button>
+            <span class="seal" data-patch="h1">★ SEALED</span>
+            <div class="verdict" data-verdict="h1"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="level locked" data-mod="httpd" data-lvl="2">
+        <div class="level-head"><span class="lvl">LVL 2</span><h3>1.2 Servers, listen &amp; TLS (SNI)</h3><span class="state">SEALED</span></div>
+        <div class="level-body">
+          <p>Each <code>server "name"</code> is a virtual host. Matching order: <b>listen socket first, then Host header against name/alias globs</b>; unmatched Host falls back to the <b>first server on that socket</b>. <code>listen on * tls port 443</code> enables TLS; the <code>tls { certificate, key, protocols }</code> block defaults to TLSv1.2+1.3. Try the drill: send three Host headers and watch which server answers.</p>
+          <figure class="sim">
+            <figcaption>FIG 1-B · SNI ROUTER — Host: <input type="text" id="hostInput" value="example.com" size="18"> <button class="manbtn small" id="hostGo">Send request</button> <button class="manbtn small" data-sim="h2" data-act="reset">Reset</button></figcaption>
+            <div class="sim-stage"><div class="flow" id="flow-h2">
+              <div class="node" data-n="0"><b>Client</b><small id="hostEcho">Host: example.com</small></div><div class="wire"></div>
+              <div class="node" data-n="1"><b>*:443 TLS</b><small>SNI select</small></div><div class="wire"></div>
+              <div class="node" data-n="2"><b>server www.example.com</b><small>alias example.com</small></div><div class="wire"></div>
+              <div class="node" data-n="3"><b>server static.example.org</b><small>no match → fallback</small></div>
+            </div></div>
+            <div class="sim-log" id="log-h2">— type a Host and press Send — try: example.com, static.example.org, evil.com —</div>
+          </figure>
+<pre><span class="k">server</span> <span class="s">"www.example.com"</span> {
+  <span class="k">alias</span> <span class="s">"example.com"</span>
+  <span class="k">listen on</span> * <span class="k">port</span> 80
+  <span class="k">listen on</span> * <span class="k">tls port</span> 443
+  <span class="k">tls</span> { <span class="k">certificate</span> <span class="s">"/etc/ssl/example.fullchain.pem"</span>
+        <span class="k">key</span> <span class="s">"/etc/ssl/private/example.key"</span> }
+  <span class="k">root</span> <span class="s">"/htdocs/example"</span>
+  <span class="k">log style combined</span>
+}</pre>
+          <div class="quiz" data-quiz="h2" data-mod="httpd" data-lvl="2">
+            <h4>Drill 1-2</h4>
+            <div class="q" data-answer="b"><p>1. Request arrives on *:443 with Host: unknown.test. What happens?</p>
+              <label><input type="radio" name="h2q1" value="a"> a) Connection refused</label>
+              <label><input type="radio" name="h2q1" value="b"> b) Served by first server on that socket</label>
+              <label><input type="radio" name="h2q1" value="c"> c) relayd answers instead</label></div>
+            <div class="q" data-answer="a"><p>2. Which enables HTTPS?</p>
+              <label><input type="radio" name="h2q2" value="a"> a) listen on * tls port 443 + tls { certificate … key … }</label>
+              <label><input type="radio" name="h2q2" value="b"> b) listen on * port 443</label>
+              <label><input type="radio" name="h2q2" value="c"> c) tls enable yes</label></div>
+            <div class="q" data-answer="c"><p>3. alias matching uses…</p>
+              <label><input type="radio" name="h2q3" value="a"> a) Regular expressions only</label>
+              <label><input type="radio" name="h2q3" value="b"> b) Exact IP match</label>
+              <label><input type="radio" name="h2q3" value="c"> c) Shell-style globs, e.g. *.example.com</label></div>
+            <button class="manbtn primary" data-check="h2">Validate knowledge</button>
+            <span class="seal" data-patch="h2">★ SEALED</span><div class="verdict" data-verdict="h2"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="level locked" data-mod="httpd" data-lvl="3">
+        <div class="level-head"><span class="lvl">LVL 3</span><h3>1.3 Locations: first match wins</h3><span class="state">SEALED</span></div>
+        <div class="level-body">
+          <p>Inside a server, <code>location</code> blocks rewrite the rules per path. Patterns are shell globs; <code>location match</code> uses patterns with captures. <b>First matching location wins</b> — order matters. A location can set its own <code>root</code>, <code>directory index/no auto index</code>, <code>block</code>, or hand off to <code>fastcgi</code>. <code>found / not found</code> restrict to existing / missing files.</p>
+          <figure class="sim">
+            <figcaption>FIG 1-C · LOCATION MATCHER — path: <input type="text" id="pathInput" value="/blog/index.html" size="20"> <button class="manbtn small" id="pathGo">Route it</button></figcaption>
+            <div class="sim-stage"><div class="flow" id="flow-h3">
+              <div class="node" data-n="0"><b>GET path</b><small id="pathEcho">/blog/index.html</small></div><div class="wire"></div>
+              <div class="node" data-n="1"><b>loc "/blog/*"</b><small>root /htdocs/blog</small></div><div class="wire"></div>
+              <div class="node" data-n="2"><b>loc "*.php"</b><small>fastcgi</small></div><div class="wire"></div>
+              <div class="node" data-n="3"><b>loc "/*"</b><small>default root</small></div>
+            </div></div>
+            <div class="sim-log" id="log-h3">— try /blog/hi.html, /x.php, /secret, /blog/y.php (order matters!) —</div>
+          </figure>
+<pre><span class="k">location</span> <span class="s">"/blog/*"</span> { <span class="k">root</span> <span class="s">"/htdocs/blog"</span> }
+<span class="k">location</span> <span class="s">"*.php"</span> { <span class="k">fastcgi socket</span> <span class="s">"/run/php-fpm.sock"</span> }
+<span class="k">location</span> <span class="s">"/private/*"</span> { <span class="k">block return</span> 403 <span class="s">"forbidden"</span> }
+<span class="k">location</span> <span class="s">"/*"</span> { <span class="k">root</span> <span class="s">"/htdocs/example"</span> }</pre>
+          <div class="callout warn"><b>TRAP:</b> <code>/blog/y.php</code> hits <code>/blog/*</code> first and is served as a static file, never reaching fastcgi. Put specific patterns first.</div>
+          <div class="quiz" data-quiz="h3" data-mod="httpd" data-lvl="3">
+            <h4>Drill 1-3</h4>
+            <div class="q" data-answer="a"><p>1. Two locations match. Which applies?</p>
+              <label><input type="radio" name="h3q1" value="a"> a) The first matching location in the file</label>
+              <label><input type="radio" name="h3q1" value="b"> b) The longest match</label>
+              <label><input type="radio" name="h3q1" value="c"> c) The last matching location</label></div>
+            <div class="q" data-answer="b"><p>2. directory auto index default?</p>
+              <label><input type="radio" name="h3q2" value="a"> a) On, full listing</label>
+              <label><input type="radio" name="h3q2" value="b"> b) Off; directory index is index.html</label>
+              <label><input type="radio" name="h3q2" value="c"> c) Random</label></div>
+            <div class="q" data-answer="c"><p>3. block return 403 does what?</p>
+              <label><input type="radio" name="h3q3" value="a"> a) Rewrites the path silently</label>
+              <label><input type="radio" name="h3q3" value="b"> b) Proxies to relayd</label>
+              <label><input type="radio" name="h3q3" value="c"> c) Returns that status instead of a file</label></div>
+            <button class="manbtn primary" data-check="h3">Validate knowledge</button>
+            <span class="seal" data-patch="h3">★ SEALED</span><div class="verdict" data-verdict="h3"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="level locked" data-mod="httpd" data-lvl="4">
+        <div class="level-head"><span class="lvl">LVL 4</span><h3>1.4 Dynamic content, auth &amp; logging</h3><span class="state">SEALED</span></div>
+        <div class="level-body">
+          <p>httpd never runs code itself. <code>fastcgi socket "/run/slowcgi.sock"</code> (note: inside chroot, so host path <code>/var/www/run/…</code>) forwards to <b>slowcgi</b> (CGI wrapper) or <b>php-fpm</b>. Auth is HTTP Basic via an <code>htpasswd</code> file inside the chroot — always behind TLS. Logging: <code>log style combined</code> to <code>/var/www/logs/*</code> or syslog. MIME types come from the <code>types { include "/usr/share/misc/mime.types" }</code> section; unknown → <code>application/octet-stream</code>.</p>
+          <figure class="sim">
+            <figcaption>FIG 1-D · REQUEST LIFECYCLE — <button class="manbtn small" data-sim="h4" data-act="step">Step ▸</button> <button class="manbtn small" data-sim="h4" data-act="play">Auto-play</button> <button class="manbtn small" data-sim="h4" data-act="reset">Reset</button></figcaption>
+            <div class="sim-stage"><div class="packet" id="pkt-h4" style="display:none">GET</div>
+              <div class="flow" id="flow-h4">
+                <div class="node" data-n="0"><b>TCP+TLS</b><small>handshake</small></div><div class="wire"></div>
+                <div class="node" data-n="1"><b>parse</b><small>method, path, Host</small></div><div class="wire"></div>
+                <div class="node" data-n="2"><b>location</b><small>static? fastcgi? block?</small></div><div class="wire"></div>
+                <div class="node" data-n="3"><b>respond</b><small>200 / 403 / via socket</small></div>
+              </div></div>
+            <div class="sim-log" id="log-h4">— press Step to trace one GET —</div>
+          </figure>
+<pre><span class="k">location</span> <span class="s">"*.cgi"</span> { <span class="k">fastcgi socket</span> <span class="s">"/run/slowcgi.sock"</span> }
+<span class="k">location</span> <span class="s">"/secure/*"</span> {
+  <span class="k">authenticate</span> <span class="s">"Ops"</span> <span class="k">with</span> <span class="s">"/htpasswd"</span>
+  <span class="k">root</span> <span class="s">"/htdocs/secure"</span>
+}
+<span class="k">types</span> { <span class="k">include</span> <span class="s">"/usr/share/misc/mime.types"</span> }
+<span class="k">log access</span> <span class="s">"example-access.log"</span>  <span class="c"># → /var/www/logs/</span></pre>
+          <div class="quiz" data-quiz="h4" data-mod="httpd" data-lvl="4">
+            <h4>Drill 1-4 — clears Chapter 1</h4>
+            <div class="q" data-answer="b"><p>1. Who executes a .php script?</p>
+              <label><input type="radio" name="h4q1" value="a"> a) httpd itself</label>
+              <label><input type="radio" name="h4q1" value="b"> b) The fastcgi backend (php-fpm/slowcgi); httpd only proxies env vars</label>
+              <label><input type="radio" name="h4q1" value="c"> c) pf</label></div>
+            <div class="q" data-answer="a"><p>2. htpasswd path "/htpasswd" resolves to…</p>
+              <label><input type="radio" name="h4q2" value="a"> a) /var/www/htpasswd (inside chroot)</label>
+              <label><input type="radio" name="h4q2" value="b"> b) /htpasswd</label>
+              <label><input type="radio" name="h4q2" value="c"> c) /etc/htpasswd</label></div>
+            <div class="q" data-answer="c"><p>3. httpd does reverse-proxy load balancing?</p>
+              <label><input type="radio" name="h4q3" value="a"> a) Yes, with proxy_pass</label>
+              <label><input type="radio" name="h4q3" value="b"> b) Yes, with tables</label>
+              <label><input type="radio" name="h4q3" value="c"> c) No — use relayd(8) for that</label></div>
+            <button class="manbtn primary" data-check="h4">Validate knowledge</button>
+            <span class="seal" data-patch="h4">★ SEALED</span><div class="verdict" data-verdict="h4"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CH 2 RELAYD ================= -->
+    <section class="chapter" id="ch-relayd">
+      <span class="ch-num">Chapter 2</span>
+      <h2>RELAYD — relay, redirect &amp; load balancer <span class="seal" data-seal="relayd">★ CHAPTER CLEARED</span></h2>
+      <p class="lede">relayd(8) is the front door: it terminates TLS, inspects layer 7, health-checks backends in <code>table</code>s and forwards only to the living. Layer-3 <code>redirect</code> programs pf rdr-to; layer-7 <code>relay</code> proxies the connection. Same animated drill style as Chapter 1.</p>
+
+      <div class="level" data-mod="relayd" data-lvl="1">
+        <div class="level-head"><span class="lvl">LVL 1</span><h3>2.1 Relay vs redirect (L7 vs L3)</h3><span class="state">UNSEALED</span></div>
+        <div class="level-body">
+          <p><code>redirect</code> = packet-level NAT via pf (fast, blind). <code>relay</code> = accepts the client connection, applies <code>protocol</code> rules, opens a <b>second</b> connection to the backend (can see HTTP, add headers, do TLS). If you need <code>forward to &lt;app&gt; port 8080 check http "/" code 200</code>, you need a relay.</p>
+          <figure class="sim"><figcaption>FIG 2-A · TWO PATHS — <button class="manbtn small" data-sim="r1" data-act="step">Step ▸</button> <button class="manbtn small" data-sim="r1" data-act="play">Auto-play</button> <button class="manbtn small" data-sim="r1" data-act="reset">Reset</button></figcaption>
+            <div class="sim-stage"><div class="packet" id="pkt-r1" style="display:none">SYN</div>
+              <div class="flow" id="flow-r1">
+                <div class="node" data-n="0"><b>client</b><small>:53111</small></div><div class="wire"></div>
+                <div class="node" data-n="1"><b>relayd front</b><small>egress:80</small></div><div class="wire"></div>
+                <div class="node" data-n="2"><b>L7? / L3?</b><small>relay vs redirect</small></div><div class="wire"></div>
+                <div class="node" data-n="3"><b>backends</b><small>10.0.0.11, .12</small></div>
+              </div></div>
+            <div class="sim-log" id="log-r1">— press Step: watch relay split one connection into two —</div>
+          </figure>
+<pre><span class="c"># L3: pf programs rdr-to (no HTTP inspection)</span>
+<span class="k">redirect</span> <span class="s">"web"</span> { <span class="k">listen on</span> egress <span class="k">port</span> 80
+  <span class="k">forward to</span> &lt;webhosts&gt; <span class="k">port</span> 80 }
+<span class="c"># L7: full proxy (HTTP aware, health-checked)</span>
+<span class="k">relay</span> <span class="s">"web"</span> { <span class="k">listen on</span> egress <span class="k">port</span> 80
+  <span class="k">protocol</span> <span class="s">"http"</span>  <span class="k">forward to</span> &lt;app&gt; <span class="k">port</span> 8080
+  <span class="k">check http</span> <span class="s">"/"</span> <span class="k">code</span> 200 }</pre>
+          <div class="quiz" data-quiz="r1" data-mod="relayd" data-lvl="1">
+            <h4>Drill 2-1</h4>
+            <div class="q" data-answer="b"><p>1. relay vs redirect?</p>
+              <label><input type="radio" name="r1q1" value="a"> a) Same thing</label>
+              <label><input type="radio" name="r1q1" value="b"> b) redirect = L3 pf rdr; relay = L7 proxy with two connections</label>
+              <label><input type="radio" name="r1q1" value="c"> c) redirect is for mail</label></div>
+            <div class="q" data-answer="a"><p>2. Which can inspect HTTP and add headers?</p>
+              <label><input type="radio" name="r1q2" value="a"> a) relay with a protocol</label>
+              <label><input type="radio" name="r1q2" value="b"> b) redirect</label>
+              <label><input type="radio" name="r1q2" value="c"> c) Neither</label></div>
+            <div class="q" data-answer="c"><p>3. relayd health checks run against…</p>
+              <label><input type="radio" name="r1q3" value="a"> a) The client</label>
+              <label><input type="radio" name="r1q3" value="b"> b) pf</label>
+              <label><input type="radio" name="r1q3" value="c"> c) Each host in the table</label></div>
+            <button class="manbtn primary" data-check="r1">Validate knowledge</button>
+            <span class="seal" data-patch="r1">★ SEALED</span><div class="verdict" data-verdict="r1"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="level locked" data-mod="relayd" data-lvl="2">
+        <div class="level-head"><span class="lvl">LVL 2</span><h3>2.2 Tables &amp; health checks (failover drill)</h3><span class="state">SEALED</span></div>
+        <div class="level-body">
+          <p><code>table &lt;app&gt; { 10.0.0.11, 10.0.0.12 }</code> is the pool. <code>check http "/" code 200</code> (or <code>check tcp</code>, <code>check script</code>) marks hosts up/down; dead hosts get no traffic until they recover. Scheduling: round-robin by default, plus <code>least-states</code>, <code>random</code>, <code>hash</code>/<code>srchash</code> for stickiness.</p>
+          <figure class="sim"><figcaption>FIG 2-B · FAILOVER — <button class="manbtn small" id="rFail">☠ Kill 10.0.0.11</button> <button class="manbtn small" id="rHeal">✚ Heal all</button> <button class="manbtn small" data-sim="r2" data-act="step">Send 1 request ▸</button> <button class="manbtn small" data-sim="r2" data-act="reset">Reset</button></figcaption>
+            <div class="sim-stage"><div class="flow" id="flow-r2">
+              <div class="node" data-n="0"><b>client ×N</b><small id="rCount">req #0</small></div><div class="wire"></div>
+              <div class="node" data-n="1"><b>relay "site"</b><small>round-robin</small></div><div class="wire"></div>
+              <div class="node" data-n="2" id="rBack1"><b>10.0.0.11 ✓</b><small>200 OK</small></div><div class="wire"></div>
+              <div class="node" data-n="3" id="rBack2"><b>10.0.0.12 ✓</b><small>200 OK</small></div>
+            </div></div>
+            <div class="sim-log" id="log-r2">— send requests, then kill .11 and keep sending: traffic avoids the corpse —</div>
+          </figure>
+<pre><span class="k">table</span> &lt;app&gt; { 10.0.0.11, 10.0.0.12 }
+<span class="k">relay</span> <span class="s">"site"</span> {
+  <span class="k">listen on</span> egress <span class="k">port</span> 80
+  <span class="k">protocol</span> <span class="s">"http"</span>
+  <span class="k">forward to</span> &lt;app&gt; <span class="k">port</span> 8080 <span class="k">check http</span> <span class="s">"/"</span> <span class="k">code</span> 200
+}</pre>
+          <div class="quiz" data-quiz="r2" data-mod="relayd" data-lvl="2">
+            <h4>Drill 2-2</h4>
+            <div class="q" data-answer="a"><p>1. A host fails its check. Then?</p>
+              <label><input type="radio" name="r2q1" value="a"> a) Removed from rotation until checks pass again</label>
+              <label><input type="radio" name="r2q1" value="b"> b) relayd exits</label>
+              <label><input type="radio" name="r2q1" value="c"> c) Traffic doubles to it</label></div>
+            <div class="q" data-answer="b"><p>2. Sticky sessions need…</p>
+              <label><input type="radio" name="r2q2" value="a"> a) check tcp</label>
+              <label><input type="radio" name="r2q2" value="b"> b) hash / srchash scheduling</label>
+              <label><input type="radio" name="r2q2" value="c"> c) Two relayds</label></div>
+            <div class="q" data-answer="c"><p>3. Tables contain…</p>
+              <label><input type="radio" name="r2q3" value="a"> a) Firewall rules</label>
+              <label><input type="radio" name="r2q3" value="b"> b) TLS certificates</label>
+              <label><input type="radio" name="r2q3" value="c"> c) Backend hosts / addresses</label></div>
+            <button class="manbtn primary" data-check="r2">Validate knowledge</button>
+            <span class="seal" data-patch="r2">★ SEALED</span><div class="verdict" data-verdict="r2"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="level locked" data-mod="relayd" data-lvl="3">
+        <div class="level-head"><span class="lvl">LVL 3</span><h3>2.3 Protocols: filter, rewrite, TLS acceleration</h3><span class="state">SEALED</span></div>
+        <div class="level-body">
+          <p><code>protocol "http" { … }</code> is where L7 brains live: <code>match request header … forward to</code>, <code>block</code>, <code>header append/change/remove</code>, <code>return</code> redirects, TCP + TLS options. Classic pattern: relayd terminates public TLS with one cert, then speaks plain HTTP to backends on a trusted LAN — <b>TLS acceleration</b>.</p>
+<pre><span class="k">protocol</span> <span class="s">"http"</span> {
+  <span class="k">match request header</span> <span class="s">"Host"</span> <span class="k">value</span> <span class="s">"static.example.com"</span>
+    <span class="k">forward to</span> &lt;static&gt;
+  <span class="k">match url</span> <span class="s">"/api/*"</span> <span class="k">forward to</span> &lt;api&gt;
+  <span class="k">tcp</span> { <span class="k">nodelay</span>, <span class="k">sack</span>, <span class="k">socket buffer</span> 65536 }
+  <span class="k">tls</span> { <span class="k">ciphers</span> <span class="s">"HIGH:!aNULL"</span> }
+}
+<span class="k">relay</span> <span class="s">"tls-accel"</span> {
+  <span class="k">listen on</span> egress <span class="k">tls port</span> 443
+  <span class="k">tls</span> { <span class="k">certificate</span> <span class="s">"/etc/ssl/fullchain.pem"</span>
+        <span class="k">key</span> <span class="s">"/etc/ssl/private/key.pem"</span> }
+  <span class="k">protocol</span> <span class="s">"http"</span>  <span class="k">forward to</span> &lt;app&gt; <span class="k">port</span> 8080 <span class="k">check tcp</span>
+}</pre>
+          <figure class="sim"><figcaption>FIG 2-C · PROTOCOL MATCH — path: <input type="text" id="rPath" value="/api/users" size="16"> <button class="manbtn small" id="rPathGo">Classify</button></figcaption>
+            <div class="sim-log" id="log-r3">— try /api/users, /index.html with Host static.example.com, /admin —</div>
+            <div style="padding:10px;font-family:var(--mono);font-size:12px">Host: <input type="text" id="rHost" value="www.example.com" size="18"></div>
+          </figure>
+          <div class="quiz" data-quiz="r3" data-mod="relayd" data-lvl="3">
+            <h4>Drill 2-3</h4>
+            <div class="q" data-answer="b"><p>1. TLS acceleration means…</p>
+              <label><input type="radio" name="r3q1" value="a"> a) Backends do all crypto</label>
+              <label><input type="radio" name="r3q1" value="b"> b) relayd terminates public TLS, backends get plain HTTP on trusted net</label>
+              <label><input type="radio" name="r3q1" value="c"> c) No TLS anywhere</label></div>
+            <div class="q" data-answer="a"><p>2. Protocol rules can…</p>
+              <label><input type="radio" name="r3q2" value="a"> a) Match Host/URL/headers and route, block, or edit headers</label>
+              <label><input type="radio" name="r3q2" value="b"> b) Only change ports</label>
+              <label><input type="radio" name="r3q2" value="c"> c) Edit disk files</label></div>
+            <div class="q" data-answer="c"><p>3. httpd + relayd division of labour?</p>
+              <label><input type="radio" name="r3q3" value="a"> a) Both do proxying equally</label>
+              <label><input type="radio" name="r3q3" value="b"> b) relayd serves static files</label>
+              <label><input type="radio" name="r3q3" value="c"> c) httpd serves files/fastcgi; relayd relays, filters, balances</label></div>
+            <button class="manbtn primary" data-check="r3">Validate knowledge</button>
+            <span class="seal" data-patch="r3">★ SEALED</span><div class="verdict" data-verdict="r3"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="level locked" data-mod="relayd" data-lvl="4">
+        <div class="level-head"><span class="lvl">LVL 4</span><h3>2.4 relayd + pf + httpd stack</h3><span class="state">SEALED</span></div>
+        <div class="level-body">
+          <p>Production pattern: <b>pf → relayd(:80/:443) → httpd(s) / app backends</b>. pf passes only 80/443 and anchors relayd's tables; relayd health-checks; httpd serves static with chroot. <code>relayd -n</code> checks syntax; <code>rcctl enable relayd; rcctl start relayd</code>. Logs via syslog; <code>relayctl show summary/hosts</code> inspects state.</p>
+          <figure class="sim"><figcaption>FIG 2-D · FULL STACK — <button class="manbtn small" data-sim="r4" data-act="step">Step ▸</button> <button class="manbtn small" data-sim="r4" data-act="play">Auto-play</button> <button class="manbtn small" data-sim="r4" data-act="reset">Reset</button></figcaption>
+            <div class="sim-stage"><div class="packet" id="pkt-r4" style="display:none">GET</div>
+              <div class="flow" id="flow-r4">
+                <div class="node" data-n="0"><b>Internet</b><small>pf pass 80/443</small></div><div class="wire"></div>
+                <div class="node" data-n="1"><b>relayd</b><small>TLS + check</small></div><div class="wire"></div>
+                <div class="node" data-n="2"><b>httpd .11</b><small>static</small></div><div class="wire"></div>
+                <div class="node" data-n="3"><b>app .12</b><small>dynamic :8080</small></div>
+              </div></div>
+            <div class="sim-log" id="log-r4">— press Step to walk the stack —</div>
+          </figure>
+<pre><span class="c"># /etc/pf.conf fragment</span>
+<span class="k">pass in on</span> egress <span class="k">proto tcp to</span> (egress) <span class="k">port</span> { 80, 443 }
+<span class="c"># relayd.conf: front on egress, backs on 10.0.0.0/24</span></pre>
+          <div class="quiz" data-quiz="r4" data-mod="relayd" data-lvl="4">
+            <h4>Drill 2-4 — clears Chapter 2</h4>
+            <div class="q" data-answer="a"><p>1. relayctl show hosts tells you…</p>
+              <label><input type="radio" name="r4q1" value="a"> a) Per-backend up/down + check output</label>
+              <label><input type="radio" name="r4q1" value="b"> b) Mail queue length</label>
+              <label><input type="radio" name="r4q1" value="c"> c) VM memory</label></div>
+            <div class="q" data-answer="b"><p>2. Who enforces "only 80/443 reachable"?</p>
+              <label><input type="radio" name="r4q2" value="a"> a) httpd.conf</label>
+              <label><input type="radio" name="r4q2" value="b"> b) pf rules</label>
+              <label><input type="radio" name="r4q2" value="c"> c) mime.types</label></div>
+            <div class="q" data-answer="c"><p>3. Syntax check before reload?</p>
+              <label><input type="radio" name="r4q3" value="a"> a) rcctl start relayd</label>
+              <label><input type="radio" name="r4q3" value="b"> b) pfctl -sr</label>
+              <label><input type="radio" name="r4q3" value="c"> c) relayd -n</label></div>
+            <button class="manbtn primary" data-check="r4">Validate knowledge</button>
+            <span class="seal" data-patch="r4">★ SEALED</span><div class="verdict" data-verdict="r4"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CH 3 SMTPD ================= -->
+    <section class="chapter" id="ch-smtpd">
+      <span class="ch-num">Chapter 3</span>
+      <h2>SMTPD — OpenSMTPD mail <span class="seal" data-seal="smtpd">★ CHAPTER CLEARED</span></h2>
+      <p class="lede">smtpd(8) is a privilege-separated fleet (control, lookup, queue, scheduler, dispatcher, pony/exec, filters) driven by one readable file: <code>smtpd.conf</code> = <code>tables</code> + <code>actions</code> + <code>listeners</code> + <code>rules</code>. Same drill rhythm: envelope → rules → queue → delivery.</p>
+
+      <div class="level" data-mod="smtpd" data-lvl="1">
+        <div class="level-head"><span class="lvl">LVL 1</span><h3>3.1 Processes &amp; the envelope</h3><span class="state">UNSEALED</span></div>
+        <div class="level-body">
+          <p>SMTP talks in an <b>envelope</b> (<code>MAIL FROM</code> / <code>RCPT TO</code>) separate from the message headers. smtpd splits duties so no single process is both network-facing and queue-owning: <b>pony</b> speaks SMTP, <b>lookup</b> resolves tables/aliases, <b>queue</b> owns disk, <b>scheduler</b> plans retries, <b>dispatcher</b>/<b>mda/mta</b> deliver. Crash one, the mail survives.</p>
+          <figure class="sim"><figcaption>FIG 3-A · ENVELOPE WALK — <button class="manbtn small" data-sim="s1" data-act="step">Step ▸</button> <button class="manbtn small" data-sim="s1" data-act="play">Auto-play</button> <button class="manbtn small" data-sim="s1" data-act="reset">Reset</button></figcaption>
+            <div class="sim-stage"><div class="packet" id="pkt-s1" style="display:none">✉</div>
+              <div class="flow" id="flow-s1">
+                <div class="node" data-n="0"><b>client</b><small>EHLO, MAIL FROM</small></div><div class="wire"></div>
+                <div class="node" data-n="1"><b>pony</b><small>SMTP session</small></div><div class="wire"></div>
+                <div class="node" data-n="2"><b>lookup+rules</b><small>accept? reject?</small></div><div class="wire"></div>
+                <div class="node" data-n="3"><b>queue</b><small>fsync to disk</small></div>
+              </div></div>
+            <div class="sim-log" id="log-s1">— press Step to speak SMTP —</div>
+          </figure>
+<pre><span class="c">#最小 shape of smtpd.conf: tables → actions → listen → rules</span>
+<span class="k">table</span> aliases <span class="k">file</span>:/etc/mail/aliases
+<span class="k">action</span> <span class="s">"local"</span> <span class="k">mbox alias</span> &lt;aliases&gt;
+<span class="k">listen on</span> lo0
+<span class="k">match for local action</span> <span class="s">"local"</span></pre>
+          <div class="quiz" data-quiz="s1" data-mod="smtpd" data-lvl="1">
+            <h4>Drill 3-1</h4>
+            <div class="q" data-answer="b"><p>1. Envelope vs headers?</p>
+              <label><input type="radio" name="s1q1" value="a"> a) Same thing</label>
+              <label><input type="radio" name="s1q1" value="b"> b) Envelope (MAIL FROM/RCPT TO) routes; headers are content</label>
+              <label><input type="radio" name="s1q1" value="c"> c) Headers route; envelope is cosmetic</label></div>
+            <div class="q" data-answer="a"><p>2. Why so many processes?</p>
+              <label><input type="radio" name="s1q2" value="a"> a) Privilege separation: net-facing ≠ queue-owning</label>
+              <label><input type="radio" name="s1q2" value="b"> b) Speed only</label>
+              <label><input type="radio" name="s1q2" value="c"> c) One per user</label></div>
+            <div class="q" data-answer="c"><p>3. Queue owns…</p>
+              <label><input type="radio" name="s1q3" value="a"> a) TLS certs</label>
+              <label><input type="radio" name="s1q3" value="b"> b) pf rules</label>
+              <label><input type="radio" name="s1q3" value="c"> c) Durable on-disk mail + retries</label></div>
+            <button class="manbtn primary" data-check="s1">Validate knowledge</button>
+            <span class="seal" data-patch="s1">★ SEALED</span><div class="verdict" data-verdict="s1"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="level locked" data-mod="smtpd" data-lvl="2">
+        <div class="level-head"><span class="lvl">LVL 2</span><h3>3.2 Listeners, rules &amp; actions</h3><span class="state">SEALED</span></div>
+        <div class="level-body">
+          <p><code>listen on egress port 25 tls-require</code> (MX), <code>port 587 tls-require auth</code> (submission), <code>port 465 smtps</code> (implicit TLS). Rules are first-match-wins: <code>match [from …] [for …] [auth …] action "…"</code>. Actions: <code>mbox</code> (local spool), <code>maildir</code>, <code>relay</code> (send onward), <code>reject</code>. Order rules specific → general.</p>
+          <figure class="sim"><figcaption>FIG 3-B · RULE MATCHER — from: <input type="text" id="mFrom" value="you@gmail.com" size="14"> to: <input type="text" id="mTo" value="ops@example.com" size="14"> <button class="manbtn small" id="mGo">Route mail</button></figcaption>
+            <div class="sim-stage"><div class="flow" id="flow-s2">
+              <div class="node" data-n="0"><b>envelope</b><small id="mEcho">you→ops</small></div><div class="wire"></div>
+              <div class="node" data-n="1"><b>rule: local?</b><small>for local → mbox</small></div><div class="wire"></div>
+              <div class="node" data-n="2"><b>rule: auth relay?</b><small>auth → relay</small></div><div class="wire"></div>
+              <div class="node" data-n="3"><b>default</b><small>reject 550</small></div>
+            </div></div>
+            <div class="sim-log" id="log-s2">— try ops@example.com (local), friend@remote.test authed or not, spam —</div>
+            <div style="padding:8px;font-family:var(--mono);font-size:12px"><label><input type="checkbox" id="mAuth"> authenticated (AUTH LOGIN ok)</label></div>
+          </figure>
+<pre><span class="k">action</span> <span class="s">"local"</span> <span class="k">mbox alias</span> &lt;aliases&gt;
+<span class="k">action</span> <span class="s">"out"</span> <span class="k">relay</span>
+<span class="k">listen on</span> egress <span class="k">port</span> 25 <span class="k">tls-require</span>
+<span class="k">listen on</span> egress <span class="k">port</span> 587 <span class="k">tls-require auth</span>
+<span class="k">match for local action</span> <span class="s">"local"</span>
+<span class="k">match auth from any for any action</span> <span class="s">"out"</span>
+<span class="k">match from any for any action</span> <span class="s">"reject"</span>  <span class="c"># no open relay!</span></pre>
+          <div class="callout warn"><b>OPEN RELAY TEST:</b> unauthenticated mail <i>from</i> anywhere <i>for</i> anywhere must hit reject. If it relays, you are the spam cannon.</div>
+          <div class="quiz" data-quiz="s2" data-mod="smtpd" data-lvl="2">
+            <h4>Drill 3-2</h4>
+            <div class="q" data-answer="a"><p>1. Rule evaluation order?</p>
+              <label><input type="radio" name="s2q1" value="a"> a) First matching rule wins</label>
+              <label><input type="radio" name="s2q1" value="b"> b) Last matching rule wins</label>
+              <label><input type="radio" name="s2q1" value="c"> c) All actions run</label></div>
+            <div class="q" data-answer="b"><p>2. Port 587 is…</p>
+              <label><input type="radio" name="s2q2" value="a"> a) MX receiving</label>
+              <label><input type="radio" name="s2q2" value="b"> b) Authenticated submission (STARTTLS + AUTH)</label>
+              <label><input type="radio" name="s2q2" value="c"> c) DNS</label></div>
+            <div class="q" data-answer="c"><p>3. action "out" relay without auth restriction + open match = …</p>
+              <label><input type="radio" name="s2q3" value="a"> a) Fine</label>
+              <label><input type="radio" name="s2q3" value="b"> b) Faster mail</label>
+              <label><input type="radio" name="s2q3" value="c"> c) Open relay — spam disaster</label></div>
+            <button class="manbtn primary" data-check="s2">Validate knowledge</button>
+            <span class="seal" data-patch="s2">★ SEALED</span><div class="verdict" data-verdict="s2"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="level locked" data-mod="smtpd" data-lvl="3">
+        <div class="level-head"><span class="lvl">LVL 3</span><h3>3.3 Tables, aliases &amp; virtual domains</h3><span class="state">SEALED</span></div>
+        <div class="level-body">
+          <p><code>table</code>s map keys→values: <code>file:/etc/mail/aliases</code>, <code>file:/etc/mail/virtuals</code>, <code>file:/etc/mail/secrets</code>, or <code>db</code> (built with <code>makemap</code>). Aliases expand <code>ops: alice, bob</code>; virtuals map <code>sales@example.com → alice@example.com</code>. <code>newaliases</code> rebuilds the db after edits.</p>
+          <figure class="sim"><figcaption>FIG 3-C · ALIAS EXPANSION — input: <input type="text" id="aIn" value="ops@example.com" size="18"> <button class="manbtn small" id="aGo">Expand</button></figcaption>
+            <div class="sim-log" id="log-s3">— try ops@example.com, sales@example.com, alice@example.com, ghost@example.com —</div>
+          </figure>
+<pre><span class="c"># /etc/mail/aliases</span>
+ops: alice, bob
+<span class="c"># /etc/mail/virtuals</span>
+sales@example.com  alice@example.com
+@example.com       catchall@example.com
+<span class="c"># smtpd.conf</span>
+<span class="k">table</span> aliases <span class="k">file</span>:/etc/mail/aliases
+<span class="k">table</span> virtuals <span class="k">file</span>:/etc/mail/virtuals
+<span class="k">action</span> <span class="s">"local"</span> <span class="k">mbox alias</span> &lt;aliases&gt; <span class="k">virtual</span> &lt;virtuals&gt;</pre>
+          <div class="quiz" data-quiz="s3" data-mod="smtpd" data-lvl="3">
+            <h4>Drill 3-3</h4>
+            <div class="q" data-answer="b"><p>1. After editing aliases you must run…</p>
+              <label><input type="radio" name="s3q1" value="a"> a) relayd -n</label>
+              <label><input type="radio" name="s3q1" value="b"> b) newaliases (rebuild db)</label>
+              <label><input type="radio" name="s3q1" value="c"> c) vmctl start</label></div>
+            <div class="q" data-answer="a"><p>2. Virtuals map…</p>
+              <label><input type="radio" name="s3q2" value="a"> a) One address/domain to another (hosting many domains)</label>
+              <label><input type="radio" name="s3q2" value="b"> b) IPs to MACs</label>
+              <label><input type="radio" name="s3q2" value="c"> c) Ports to backends</label></div>
+            <div class="q" data-answer="c"><p>3. secrets table holds…</p>
+              <label><input type="radio" name="s3q3" value="a"> a) Public web files</label>
+              <label><input type="radio" name="s3q3" value="b"> b) VM disks</label>
+              <label><input type="radio" name="s3q3" value="c"> c) Credentials for AUTH / relay (user:password)</label></div>
+            <button class="manbtn primary" data-check="s3">Validate knowledge</button>
+            <span class="seal" data-patch="s3">★ SEALED</span><div class="verdict" data-verdict="s3"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="level locked" data-mod="smtpd" data-lvl="4">
+        <div class="level-head"><span class="lvl">LVL 4</span><h3>3.4 Queue, filters, TLS &amp; anti-spam posture</h3><span class="state">SEALED</span></div>
+        <div class="level-body">
+          <p>Accepted mail is <b>fsync'd to /var/spool/smtpd</b>, then the scheduler retries with backoff (<code>smtpctl show queue</code>, <code>smtpctl remove …</code>). <code>filter</code>s (rspamd, spamd via <code>filter-rspamd</code>, <code>proc-exec</code>) can reject/tag before queueing. Harden: <code>tls-require</code> on listeners, valid rDNS + SPF + DKIM (via rspamd/dkim) + DMARC, and <code>spamd</code> greylisting in pf for port 25.</p>
+          <figure class="sim"><figcaption>FIG 3-D · QUEUE &amp; RETRY — <button class="manbtn small" data-sim="s4" data-act="step">Step ▸</button> <button class="manbtn small" data-sim="s4" data-act="play">Auto-play</button> <button class="manbtn small" data-sim="s4" data-act="reset">Reset</button></figcaption>
+            <div class="sim-stage"><div class="packet" id="pkt-s4" style="display:none">✉</div>
+              <div class="flow" id="flow-s4">
+                <div class="node" data-n="0"><b>filter</b><small>rspamd/spamd</small></div><div class="wire"></div>
+                <div class="node" data-n="1"><b>queue</b><small>fsync disk</small></div><div class="wire"></div>
+                <div class="node" data-n="2"><b>scheduler</b><small>retry 4xx/backoff</small></div><div class="wire"></div>
+                <div class="node" data-n="3"><b>mta/mda</b><small>relay / mbox</small></div>
+              </div></div>
+            <div class="sim-log" id="log-s4">— press Step: watch a 4xx defer become a retry, not a loss —</div>
+          </figure>
+<pre><span class="k">filter</span> <span class="s">"rspamd"</span> <span class="k">proc-exec</span> <span class="s">"/usr/local/bin/filter-rspamd"</span>
+<span class="k">listen on</span> egress <span class="k">port</span> 25 <span class="k">tls-require filter</span> <span class="s">"rspamd"</span>
+<span class="k">action</span> <span class="s">"out"</span> <span class="k">relay</span>
+<span class="c"># smtpctl show queue | smtpctl log briefing</span></pre>
+          <div class="quiz" data-quiz="s4" data-mod="smtpd" data-lvl="4">
+            <h4>Drill 3-4 — clears Chapter 3</h4>
+            <div class="q" data-answer="a"><p>1. Remote says 4xx (temporary failure). smtpd…</p>
+              <label><input type="radio" name="s4q1" value="a"> a) Keeps it queued, retries with backoff</label>
+              <label><input type="radio" name="s4q1" value="b"> b) Deletes it</label>
+              <label><input type="radio" name="s4q1" value="c"> c) Bounces instantly</label></div>
+            <div class="q" data-answer="b"><p>2. 5xx means…</p>
+              <label><input type="radio" name="s4q2" value="a"> a) Retry forever</label>
+              <label><input type="radio" name="s4q2" value="b"> b) Permanent failure → bounce, no retry</label>
+              <label><input type="radio" name="s4q2" value="c"> c) Greylist</label></div>
+            <div class="q" data-answer="c"><p>3. Best inbound pre-filter on OpenBSD?</p>
+              <label><input type="radio" name="s4q3" value="a"> a) mime.types</label>
+              <label><input type="radio" name="s4q3" value="b"> b) vm.conf</label>
+              <label><input type="radio" name="s4q3" value="c"> c) spamd greylisting + rspamd filter</label></div>
+            <button class="manbtn primary" data-check="s4">Validate knowledge</button>
+            <span class="seal" data-patch="s4">★ SEALED</span><div class="verdict" data-verdict="s4"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CH 4 VMM ================= -->
+    <section class="chapter" id="ch-vmm">
+      <span class="ch-num">Chapter 4</span>
+      <h2>VMM / VMD — virtual machines <span class="seal" data-seal="vmm">★ CHAPTER CLEARED</span></h2>
+      <p class="lede">One hypervisor (<code>vmm(4)</code> in the kernel, <code>/dev/vmm</code>), one daemon (<code>vmd(8)</code>), one tool (<code>vmctl(8)</code>), one file (<code>/etc/vm.conf</code>). Guests need hardware VMX/EPT or SVM/RVI, serial console, and virtio drivers. No graphics, no passthrough, no live migration — by design, small and auditable.</p>
+
+      <div class="level" data-mod="vmm" data-lvl="1">
+        <div class="level-head"><span class="lvl">LVL 1</span><h3>4.1 vmm · vmd · vmctl: who does what</h3><span class="state">UNSEALED</span></div>
+        <div class="level-body">
+          <p><code>vmm</code> runs in the kernel using CPU virtualization; a guest <b>VM exit</b> returns to userspace. <code>vmd</code> owns VM processes, emulates virtio devices in split helper processes (pledged/unveiled), drives VCPUs through <code>/dev/vmm</code>. <code>vmctl</code> talks to vmd's socket: <code>create, start -c, console, stop, pause, status</code>. Firmware <code>/etc/firmware/vmm-bios</code> comes from <code>fw_update</code>.</p>
+          <figure class="sim"><figcaption>FIG 4-A · BOOT CHAIN — <button class="manbtn small" data-sim="v1" data-act="step">Step ▸</button> <button class="manbtn small" data-sim="v1" data-act="play">Auto-play</button> <button class="manbtn small" data-sim="v1" data-act="reset">Reset</button></figcaption>
+            <div class="sim-stage"><div class="packet" id="pkt-v1" style="display:none">⏻</div>
+              <div class="flow" id="flow-v1">
+                <div class="node" data-n="0"><b>vmctl</b><small>start -c guest</small></div><div class="wire"></div>
+                <div class="node" data-n="1"><b>vmd</b><small>fork VM proc</small></div><div class="wire"></div>
+                <div class="node" data-n="2"><b>vmm</b><small>/dev/vmm run VCPU</small></div><div class="wire"></div>
+                <div class="node" data-n="3"><b>guest</b><small>BIOS → kernel → console</small></div>
+              </div></div>
+            <div class="sim-log" id="log-v1">— press Step to boot a VM —</div>
+          </figure>
+<pre><span class="c"># dmesg | egrep '(VMX/EPT|SVM/RVI)'  — must match, else no vmm</span>
+doas fw_update
+doas rcctl enable vmd; doas rcctl start vmd
+doas vmctl create -s 40G /var/vm/guest.qcow2
+doas vmctl start -c -L -r install.iso -d guest.qcow2 guest
+<span class="c"># ~~. or ~. to escape console</span></pre>
+          <div class="quiz" data-quiz="v1" data-mod="vmm" data-lvl="1">
+            <h4>Drill 4-1</h4>
+            <div class="q" data-answer="b"><p>1. Which component runs in the kernel?</p>
+              <label><input type="radio" name="v1q1" value="a"> a) vmctl</label>
+              <label><input type="radio" name="v1q1" value="b"> b) vmm(4) via /dev/vmm</label>
+              <label><input type="radio" name="v1q1" value="c"> c) vmm-bios</label></div>
+            <div class="q" data-answer="a"><p>2. Primary guest console is…</p>
+              <label><input type="radio" name="v1q2" value="a"> a) Serial (vmctl console), no graphics</label>
+              <label><input type="radio" name="v1q2" value="b"> b) HDMI</label>
+              <label><input type="radio" name="v1q2" value="c"> c) VNC by default</label></div>
+            <div class="q" data-answer="c"><p>3. CPU requirement?</p>
+              <label><input type="radio" name="v1q3" value="a"> a) Any 486</label>
+              <label><input type="radio" name="v1q3" value="b"> b) Only ARM</label>
+              <label><input type="radio" name="v1q3" value="c"> c) VMX/EPT (Intel) or SVM/RVI (AMD) + nested paging</label></div>
+            <button class="manbtn primary" data-check="v1">Validate knowledge</button>
+            <span class="seal" data-patch="v1">★ SEALED</span><div class="verdict" data-verdict="v1"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="level locked" data-mod="vmm" data-lvl="2">
+        <div class="level-head"><span class="lvl">LVL 2</span><h3>4.2 CPU, memory, disks (raw vs qcow2)</h3><span class="state">SEALED</span></div>
+        <div class="level-body">
+          <p><code>memory 2G</code> (rounded to MB, capped by vmd's datasize), <code>cpus 1</code> (safe; SMP unsupported). <code>disk "/var/vm/g.qcow2"</code>: <b>raw</b> = flat preallocated, <b>qcow2</b> = sparse + backing files (<code>vmctl create -b base.qcow2 child.qcow2</code> for golden-image clones). Backing files are <b>not</b> snapshots — shut down cleanly before host-side copies.</p>
+          <figure class="sim"><figcaption>FIG 4-B · DISK LAB — base 40G sparse: <button class="manbtn small" id="qcowGo">Write 2G to child</button> <button class="manbtn small" id="qcowReset">Reset</button></figcaption>
+            <div class="sim-stage">
+              <div style="font-family:var(--mono);font-size:12px">base.qcow2 (read-only golden, 40G virtual) <div style="height:14px;border:2px solid var(--border);background:#fff"><i id="qcowBase" style="display:block;height:100%;width:30%;background:#999"></i></div>
+              child.qcow2 (your delta) <div style="height:14px;border:2px solid var(--border);background:#fff"><i id="qcowChild" style="display:block;height:100%;width:2%;background:var(--red)"></i></div>
+              <span id="qcowTxt">child uses ~0.1G of 40G virtual — sparse wins</span></div>
+            </div>
+            <div class="sim-log" id="log-v2">— each write grows only the child delta —</div>
+          </figure>
+<pre><span class="k">vm</span> <span class="s">"guest"</span> {
+  <span class="k">memory</span> 2G
+  <span class="k">cpus</span> 1
+  <span class="k">disk</span> <span class="s">"/var/vm/guest.qcow2"</span>
+  <span class="k">cdrom</span> <span class="s">"/var/vm/install.iso"</span>  <span class="c"># vioscsi CD-ROM</span>
+}</pre>
+          <div class="quiz" data-quiz="v2" data-mod="vmm" data-lvl="2">
+            <h4>Drill 4-2</h4>
+            <div class="q" data-answer="a"><p>1. qcow2 with backing file gives you…</p>
+              <label><input type="radio" name="v2q1" value="a"> a) Cheap clones sharing a read-only base, deltas in child</label>
+              <label><input type="radio" name="v2q1" value="b"> b) Live snapshots</label>
+              <label><input type="radio" name="v2q1" value="c"> c) Faster CPU</label></div>
+            <div class="q" data-answer="b"><p>2. Safe backup method?</p>
+              <label><input type="radio" name="v2q2" value="a"> a) cp a running qcow2</label>
+              <label><input type="radio" name="v2q2" value="b"> b) Clean shutdown, then copy image (or in-guest backup)</label>
+              <label><input type="radio" name="v2q2" value="c"> c) Screenshot</label></div>
+            <div class="q" data-answer="c"><p>3. memory 2G is limited by…</p>
+              <label><input type="radio" name="v2q3" value="a"> a) mime.types</label>
+              <label><input type="radio" name="v2q3" value="b"> b) pf</label>
+              <label><input type="radio" name="v2q3" value="c"> c) Host RAM + vmd datasize limit</label></div>
+            <button class="manbtn primary" data-check="v2">Validate knowledge</button>
+            <span class="seal" data-patch="v2">★ SEALED</span><div class="verdict" data-verdict="v2"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="level locked" data-mod="vmm" data-lvl="3">
+        <div class="level-head"><span class="lvl">LVL 3</span><h3>4.3 Networking: tap, local, switches (veb/bridge)</h3><span class="state">SEALED</span></div>
+        <div class="level-body">
+          <p>Guest sees <code>vio(4)</code>; host sees a <code>tap(4)</code>. <code>local interface</code> auto-numbers from <code>100.64.0.0/10</code> with DHCP — but <b>no Internet until you add NAT + forwarding</b>. A <code>switch "lab" { interface veb0 }</code> bridges taps to a <code>veb/bridge</code>; put host IP on a <code>vport</code>. Ethernet bridging works; Wi-Fi bridging does not.</p>
+          <figure class="sim"><figcaption>FIG 4-C · NETWORK MODES — <button class="manbtn small" data-sim="v3" data-act="step">Step ▸</button> <button class="manbtn small" data-sim="v3" data-act="play">Auto-play</button> <button class="manbtn small" data-sim="v3" data-act="reset">Reset</button></figcaption>
+            <div class="sim-stage"><div class="packet" id="pkt-v3" style="display:none">IP</div>
+              <div class="flow" id="flow-v3">
+                <div class="node" data-n="0"><b>guest vio0</b><small>10.0.0.5 / 100.64.x</small></div><div class="wire"></div>
+                <div class="node" data-n="1"><b>host tap</b><small>inspect here</small></div><div class="wire"></div>
+                <div class="node" data-n="2"><b>veb0/vport</b><small>switch + gw</small></div><div class="wire"></div>
+                <div class="node" data-n="3"><b>egress NAT</b><small>pf nat-to</small></div>
+              </div></div>
+            <div class="sim-log" id="log-v3">— press Step: follow one ping to the Internet —</div>
+          </figure>
+<pre><span class="k">switch</span> <span class="s">"lab"</span> { <span class="k">interface</span> veb0 }
+<span class="k">vm</span> <span class="s">"guest"</span> {
+  <span class="k">memory</span> 2G
+  <span class="k">disk</span> <span class="s">"/var/vm/guest.qcow2"</span>
+  <span class="k">interface</span> { <span class="k">switch</span> <span class="s">"lab"</span> }
+  <span class="k">owner</span> vmadmin
+}
+<span class="c"># pf: match out on egress from vport0:network to any nat-to (egress)</span></pre>
+          <div class="quiz" data-quiz="v3" data-mod="vmm" data-lvl="3">
+            <h4>Drill 4-3</h4>
+            <div class="q" data-answer="b"><p>1. local interface gives Internet by itself?</p>
+              <label><input type="radio" name="v3q1" value="a"> a) Yes</label>
+              <label><input type="radio" name="v3q1" value="b"> b) No — needs forwarding + pf nat-to egress</label>
+              <label><input type="radio" name="v3q1" value="c"> c) Only over Wi-Fi</label></div>
+            <div class="q" data-answer="a"><p>2. Host side of guest vio0 is…</p>
+              <label><input type="radio" name="v3q2" value="a"> a) A tap interface you can tcpdump/pf on</label>
+              <label><input type="radio" name="v3q2" value="b"> b) /dev/vmm</label>
+              <label><input type="radio" name="v3q2" value="c"> c) mime.types</label></div>
+            <div class="q" data-answer="c"><p>3. Bridging a physical LAN works with…</p>
+              <label><input type="radio" name="v3q3" value="a"> a) Wi-Fi</label>
+              <label><input type="radio" name="v3q3" value="b"> b) USB serial</label>
+              <label><input type="radio" name="v3q3" value="c"> c) Ethernet via veb + vport</label></div>
+            <button class="manbtn primary" data-check="v3">Validate knowledge</button>
+            <span class="seal" data-patch="v3">★ SEALED</span><div class="verdict" data-verdict="v3"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="level locked" data-mod="vmm" data-lvl="4">
+        <div class="level-head"><span class="lvl">LVL 4</span><h3>4.4 Virtio, isolation &amp; ops</h3><span class="state">SEALED</span></div>
+        <div class="level-body">
+          <p>Guests use paravirtual <b>virtio</b>: <code>vio</code> (net), block storage, <code>vioscsi</code> (CD-ROM), <code>vmmci</code> (host shutdown/reboot requests), console, entropy. vmd splits device emulation into helper processes under <code>pledge/unveil</code>, assigns <code>owner</code> per VM for socket access, supports <code>pause/resume</code> and memory dump/restore — but <b>no live migration, no passthrough, no graphics</b>.</p>
+          <div class="diagram">vmctl ─unix socket─▶ vmd ─ioctl /dev/vmm─▶ vmm(4) ─VMX/SVM─▶ guest
+                          │   ├── vio-net helper ── tap ── veb/bridge
+                          │   ├── blk helper ── qcow2/raw
+                          │   └── vioscsi ── install.iso
+                          └── vmmci: host "vmctl stop" == graceful guest shutdown</div>
+<pre>doas vmctl status
+doas vmctl console guest     <span class="c"># serial; exit with ~.</span>
+doas vmctl pause guest; doas vmctl resume guest
+doas vmctl stop guest        <span class="c"># via vmmci if guest supports it</span>
+doas vmd -n                  <span class="c"># check vm.conf like httpd -n</span></pre>
+          <div class="quiz" data-quiz="v4" data-mod="vmm" data-lvl="4">
+            <h4>Drill 4-4 — clears Chapter 4</h4>
+            <div class="q" data-answer="a"><p>1. Graceful stop uses…</p>
+              <label><input type="radio" name="v4q1" value="a"> a) vmmci — guest receives shutdown request</label>
+              <label><input type="radio" name="v4q1" value="b"> b) pf</label>
+              <label><input type="radio" name="v4q1" value="c"> c) Pulling power is preferred</label></div>
+            <div class="q" data-answer="b"><p>2. Which is NOT supported?</p>
+              <label><input type="radio" name="v4q2" value="a"> a) Serial console</label>
+              <label><input type="radio" name="v4q2" value="b"> b) Live migration + GPU passthrough</label>
+              <label><input type="radio" name="v4q2" value="c"> c) qcow2 disks</label></div>
+            <div class="q" data-answer="c"><p>3. Per-VM owner controls…</p>
+              <label><input type="radio" name="v4q3" value="a"> a) CPU brand</label>
+              <label><input type="radio" name="v4q3" value="b"> b) TLS certs</label>
+              <label><input type="radio" name="v4q3" value="c"> c) Who may manage that VM via the control socket</label></div>
+            <button class="manbtn primary" data-check="v4">Validate knowledge</button>
+            <span class="seal" data-patch="v4">★ SEALED</span><div class="verdict" data-verdict="v4"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CH 5 SETUP LAB ================= -->
+    <section class="chapter" id="ch-setup">
+      <span class="ch-num">Chapter 5 · PRACTICAL</span>
+      <h2>Build your own server <span class="seal" id="setupSeal">★ OPEN TO CLEARED OPERATORS</span></h2>
+      <p class="lede">Fill the blanks, tick the boxes, copy the files. Everything generates locally. Complete order: pf → httpd → relayd (optional front) → smtpd → vmd. Requires all four chapters cleared — or <button class="manbtn small" id="unlockAll">override seal (training mode)</button>.</p>
+      <div id="setupLock" class="callout warn"><b>SEALED:</b> clear HTTPD + RELAYD + SMTPD + VMM first. Your clearance: <b id="setupPct">0/4 chapters</b>.</div>
+      <div id="setupBody" style="display:none">
+        <div class="tabs" role="tablist">
+          <button class="active" data-tab="t-pf">0 · pf</button>
+          <button data-tab="t-http">1 · httpd</button>
+          <button data-tab="t-relay">2 · relayd</button>
+          <button data-tab="t-smtp">3 · smtpd</button>
+          <button data-tab="t-vm">4 · vmd</button>
+          <button data-tab="t-ops">5 · ops</button>
+        </div>
+        <div class="tabpane active" id="t-pf">
+          <h3 style="font-family:var(--mono)">STEP 0 — pf: only 22/80/443/25/587 in</h3>
+          <ul class="checklist">
+            <li><label><input type="checkbox" class="setup-check"> /etc/pf.conf edited, tested with <span class="kbd">pfctl -nf /etc/pf.conf</span></label></li>
+            <li><label><input type="checkbox" class="setup-check"> <span class="kbd">rcctl enable pf; rcctl start pf</span> (or reload with pfctl -f)</label></li>
+            <li><label><input type="checkbox" class="setup-check"> NAT rule added if VMs need egress</label></li>
+          </ul>
+<pre id="pfOut">ext="vio0"  <span class="c"># change to your egress interface</span>
+<span class="k">set skip on</span> lo0
+<span class="k">block in all</span>
+<span class="k">pass out all keep state</span>
+<span class="k">pass in on</span> $ext <span class="k">proto tcp to</span> (self) <span class="k">port</span> { 22, 80, 443, 25, 587 }
+<span class="c"># VMs out:</span>
+<span class="k">match out on</span> egress <span class="k">from</span> 100.64.0.0/10 <span class="k">to any nat-to</span> (egress)
+<span class="k">match out on</span> egress <span class="k">from</span> vport0:network <span class="k">to any nat-to</span> (egress)</pre>
+        </div>
+        <div class="tabpane" id="t-http">
+          <h3 style="font-family:var(--mono)">STEP 1 — httpd: static + TLS</h3>
+          Domain: <input type="text" id="gDomain" value="example.com" size="18"> ACME? httpd has <span class="kbd">acme-client</span> integration; certs land in /etc/ssl.
+          <ul class="checklist">
+            <li><label><input type="checkbox" class="setup-check"> mkdir -p /var/www/htdocs/<span class="gDom">example.com</span>; index.html placed</label></li>
+            <li><label><input type="checkbox" class="setup-check"> acme-client.conf done; <span class="kbd">acme-client -v example.com</span> ok</label></li>
+            <li><label><input type="checkbox" class="setup-check"> <span class="kbd">httpd -n && rcctl enable httpd && rcctl start httpd</span></label></li>
+          </ul>
+<pre id="httpOut"></pre>
+          <button class="manbtn small" id="copyHttp">Copy httpd.conf</button>
+        </div>
+        <div class="tabpane" id="t-relay">
+          <h3 style="font-family:var(--mono)">STEP 2 — relayd front (optional, recommended for 2+ backends)</h3>
+          <ul class="checklist">
+            <li><label><input type="checkbox" class="setup-check"> Backends answer on :8080 with <span class="kbd">200</span> on <span class="kbd">/</span></label></li>
+            <li><label><input type="checkbox" class="setup-check"> <span class="kbd">relayd -n && rcctl enable relayd && rcctl start relayd</span></label></li>
+            <li><label><input type="checkbox" class="setup-check"> <span class="kbd">relayctl show summary; relayctl show hosts</span> all up</label></li>
+          </ul>
+<pre id="relayOut"></pre>
+          <button class="manbtn small" id="copyRelay">Copy relayd.conf</button>
+        </div>
+        <div class="tabpane" id="t-smtp">
+          <h3 style="font-family:var(--mono)">STEP 3 — smtpd: receive + submit, never an open relay</h3>
+          Mail domain: <input type="text" id="gMail" value="example.com" size="16"> Relay host (blank = direct MX): <input type="text" id="gSmarthost" value="" size="16" placeholder="(none)">
+          <ul class="checklist">
+            <li><label><input type="checkbox" class="setup-check"> DNS: A + PTR + MX + SPF + DKIM + DMARC published</label></li>
+            <li><label><input type="checkbox" class="setup-check"> /etc/mail/aliases + virtuals written; <span class="kbd">newaliases</span> run</label></li>
+            <li><label><input type="checkbox" class="setup-check"> <span class="kbd">smtpd -n && rcctl enable smtpd && rcctl start smtpd</span>; tested 25/587 with TLS</label></li>
+          </ul>
+<pre id="smtpOut"></pre>
+          <button class="manbtn small" id="copySmtp">Copy smtpd.conf</button>
+        </div>
+        <div class="tabpane" id="t-vm">
+          <h3 style="font-family:var(--mono)">STEP 4 — vmd: one guest on a private switch</h3>
+          <ul class="checklist">
+            <li><label><input type="checkbox" class="setup-check"> <span class="kbd">dmesg | grep -E 'VMX|SVM'</span> shows virtualization; <span class="kbd">fw_update</span> installed vmm-bios</label></li>
+            <li><label><input type="checkbox" class="setup-check"> veb0 + vport0 hostnames created and up after reboot</label></li>
+            <li><label><input type="checkbox" class="setup-check"> <span class="kbd">vmd -n && rcctl enable vmd && rcctl start vmd; vmctl start -c guest</span></label></li>
+          </ul>
+<pre id="vmOut"></pre>
+          <button class="manbtn small" id="copyVm">Copy vm.conf</button>
+        </div>
+        <div class="tabpane" id="t-ops">
+          <h3 style="font-family:var(--mono)">STEP 5 — ops: verify like an auditor</h3>
+<pre>httpd -n; relayd -n; smtpd -n; vmd -n
+rcctl check httpd; rcctl check relayd; rcctl check smtpd; rcctl check vmd
+ Pf:      pfctl -sr | grep -E '80|443|25|587'
+ Web:     curl -v http://127.0.0.1/ ; curl -vk https://127.0.0.1/
+ Relay:   relayctl show summary; relayctl show hosts
+ Mail:    smtpctl show queue; echo test | sendmail -v you@<span class="gDom">example.com</span>
+ VMs:     vmctl status; vmctl console guest   <span class="c"># ~. to exit</span>
+ Logs:    tail -F /var/www/logs/access.log /var/log/maillog /var/log/messages</pre>
+          <ul class="checklist">
+            <li><label><input type="checkbox" class="setup-check"> Open-relay test from outside FAILS (550) on port 25 without AUTH</label></li>
+            <li><label><input type="checkbox" class="setup-check"> Killing one relayd backend keeps the site up</label></li>
+            <li><label><input type="checkbox" class="setup-check"> Reboot survives: all services enabled, veb/switch reattaches</label></li>
+          </ul>
+          <p>Setup progress: <b id="setupCount">0/14</b> <button class="manbtn small" id="printBtn">Print manual</button></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FINAL EXAM ================= -->
+    <section class="chapter" id="ch-exam">
+      <span class="ch-num">FINAL</span>
+      <h2>Discharge exam <span class="seal" id="examSeal">★ NOT YET EARNED</span></h2>
+      <p class="lede">8 questions, one per core concept, drawn from all chapters. 7/8 to discharge. The exam unlocks when all four chapters are cleared.</p>
+      <div id="examLock" class="callout warn"><b>SEALED.</b> Clear all chapters first (or use training-mode override in Ch.5).</div>
+      <div id="examBody" style="display:none">
+        <div class="quiz" data-quiz="final" data-mod="final" data-lvl="1">
+          <div class="q" data-answer="b"><p>1. httpd chroot means…</p>
+            <label><input type="radio" name="f1" value="a"> a) Config lives in /var/www</label>
+            <label><input type="radio" name="f1" value="b"> b) Workers see /var/www as /; roots/htpasswd resolve inside</label>
+            <label><input type="radio" name="f1" value="c"> c) TLS keys must be under /var/www</label></div>
+          <div class="q" data-answer="a"><p>2. First-match-wins applies to…</p>
+            <label><input type="radio" name="f2" value="a"> a) httpd locations AND smtpd rules</label>
+            <label><input type="radio" name="f2" value="b"> b) Only pf</label>
+            <label><input type="radio" name="f2" value="c"> c) Only vm.conf</label></div>
+          <div class="q" data-answer="c"><p>3. relayd L7 relay differs from redirect because it…</p>
+            <label><input type="radio" name="f3" value="a"> a) Is faster at L3</label>
+            <label><input type="radio" name="f3" value="b"> b) Serves static files</label>
+            <label><input type="radio" name="f3" value="c"> c) Terminates the client connection and opens a new backend one (inspecting L7)</label></div>
+          <div class="q" data-answer="a"><p>4. A relayd table host fails checks. Result?</p>
+            <label><input type="radio" name="f4" value="a"> a) Bypassed until healthy</label>
+            <label><input type="radio" name="f4" value="b"> b) Gets double traffic</label>
+            <label><input type="radio" name="f4" value="c"> c) Daemon stops</label></div>
+          <div class="q" data-answer="b"><p>5. Port 587 requires…</p>
+            <label><input type="radio" name="f5" value="a"> a) Nothing</label>
+            <label><input type="radio" name="f5" value="b"> b) STARTTLS + AUTH before relaying</label>
+            <label><input type="radio" name="f5" value="c"> c) A VM</label></div>
+          <div class="q" data-answer="c"><p>6. 4xx vs 5xx from a remote MX?</p>
+            <label><input type="radio" name="f6" value="a"> a) Both delete the mail</label>
+            <label><input type="radio" name="f6" value="b"> b) Both retry forever</label>
+            <label><input type="radio" name="f6" value="c"> c) 4xx = queue + retry; 5xx = bounce</label></div>
+          <div class="q" data-answer="a"><p>7. vmd guest networking: guest vio0 appears on host as…</p>
+            <label><input type="radio" name="f7" value="a"> a) A tap enslaved to a switch; NAT via pf for egress</label>
+            <label><input type="radio" name="f7" value="b"> b) /dev/vmm directly</label>
+            <label><input type="radio" name="f7" value="c"> c) An httpd location</label></div>
+          <div class="q" data-answer="b"><p>8. qcow2 backing files are…</p>
+            <label><input type="radio" name="f8" value="a"> a) Live snapshots</label>
+            <label><input type="radio" name="f8" value="b"> b) Golden-image clones (deltas in child); not crash-consistent snapshots</label>
+            <label><input type="radio" name="f8" value="c"> c) TLS certificates</label></div>
+          <button class="manbtn primary" data-check="final">Submit for discharge</button>
+          <div class="verdict" data-verdict="final"></div>
+          <div id="cert" style="display:none;border:3px double var(--border);padding:16px;background:#fff;font-family:var(--mono);margin-top:12px"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer-man">
+      OB-77 · OPENBSD SERVER OPERATOR'S MANUAL · <a href="index.html" style="color:#fff">⌂ Home (index.html)</a> · single file · vanilla JS + CSS3 · zero external resources · progress in localStorage only · configs: /etc/httpd.conf /etc/relayd.conf /etc/smtpd.conf /etc/vm.conf /etc/pf.conf · daemons: httpd relayd smtpd vmd · tools: httpd -n, relayd -n, smtpd -n, vmd -n, relayctl, smtpctl, vmctl
+    </footer>
+  </main>
+</div>
+
+<script>
+"use strict";
+/* Pure vanilla JS. No network. No libraries. */
+var LSKEY="ob77_clearance_v1";
+var state={passed:{},override:false};
+try{var raw=localStorage.getItem(LSKEY); if(raw){state=JSON.parse(raw);}}catch(e){}
+function save(){try{localStorage.setItem(LSKEY,JSON.stringify(state));}catch(e){}}
+function log(id,msg){var el=document.getElementById(id); if(!el)return; var t=new Date().toTimeString().slice(0,8);
+  el.innerHTML+="<div><span class='t'>["+t+"]</span> "+msg+"</div>"; el.scrollTop=el.scrollHeight;}
+function clearLog(id,msg){var el=document.getElementById(id); if(el)el.innerHTML=msg||"";}
+function setNodes(flowId,idx){var f=document.getElementById(flowId); if(!f)return;
+  var ns=f.querySelectorAll(".node"); for(var i=0;i<ns.length;i++){ns[i].classList.toggle("active",i===idx);}}
+function movePacket(pktId,stageId,frac){var p=document.getElementById(pktId),s=document.getElementById(stageId);
+  if(!p||!s)return; p.style.display="flex"; var w=s.clientWidth-30; p.style.left=(6+frac*(w-10))+"px";}
+function hidePacket(p){var e=document.getElementById(p); if(e)e.style.display="none";}
+
+/* Generic stepper scripts */
+var SCRIPTS={
+ h1:[["Booting: parent reads /etc/httpd.conf as root",0,0.05],["httpd -n OK. Binding *:80 (parent only)",1,0.3],["prefork: 3 servers chroot /var/www, user www + pledge",2,0.55],["logger online: /var/www/logs/access.log",3,0.8]],
+ h4:[["SYN → TLS handshake on *:443",0,0.05],["Parse: GET path + Host header",1,0.3],["Match server by SNI, then FIRST matching location",2,0.55],["static file / fastcgi socket / block+status",3,0.8]],
+ r1:[["client SYN → egress :80",0,0.05],["relayd accepts (L7) OR pf rdr (L3)",1,0.3],["L7: apply protocol rules; L3: NAT blind",2,0.55],["open backend conn → 10.0.0.11/:8080",3,0.8]],
+ r4:[["pf: pass in 80/443 only",0,0.05],["relayd: TLS terminate + health-checked pick",1,0.3],["httpd .11 serves static (chrooted)",2,0.55],["app .12 serves dynamic :8080",3,0.8]],
+ s1:[["EHLO + MAIL FROM:<a> RCPT TO:<b>",0,0.05],["pony holds session; lookup checks tables",1,0.3],["rule match → accept / reject 550",2,0.55],["accepted → fsync /var/spool/smtpd",3,0.8]],
+ s4:[["filter verdict: pass/tag/reject (rspamd/spamd)",0,0.05],["queued + fsync — crash-safe",1,0.3],["scheduler: 4xx→backoff retry; 5xx→bounce",2,0.55],["mta relays / mda appends mbox",3,0.8]],
+ v1:[["vmctl → vmd socket: start guest",0,0.05],["vmd forks VM proc, loads vmm-bios",1,0.3],["vmm runs VCPU (VMX/SVM); exits to vmd",2,0.55],["guest kernel → serial console ready",3,0.8]],
+ v3:[["guest vio0 → host tap",0,0.05],["tap → veb switch / local 100.64/10 gateway",1,0.3],["host routes; pf nat-to (egress)",2,0.55],["reply path reverses tap→vio",3,0.8]]
+};
+var stepPos={};
+var timers={};
+function simStep(key){
+  var sc=SCRIPTS[key]; if(!sc)return;
+  var i=stepPos[key]||0; if(i>=sc.length){return;}
+  var flow="flow-"+key, pkt="pkt-"+key, stage="stage-"+key, lg="log-"+key;
+  // stage id: our stages are stage-h1 etc; map key
+  var stageMap={h1:"stage-h1",h4:"stage-h1",r1:"stage-h1",r4:"stage-h1",s1:"stage-h1",s4:"stage-h1",v1:"stage-h1",v3:"stage-h1"};
+  // Actually each figure's .sim-stage is parent of flow; find generically:
+  var flowEl=document.getElementById(flowMap(key));
+  var stEl=flowEl?flowEl.closest(".sim-stage"):null;
+  setNodes(flowMap(key),sc[i][1]);
+  if(stEl)movePacket(pktMap(key),null,sc[i][2],flowEl,stEl);
+  log(logMap(key),sc[i][0]);
+  stepPos[key]=i+1;
+  if(stepPos[key]>=sc.length)log(logMap(key),"<b>— drill complete. Reset to replay —</b>");
+}
+function flowMap(k){return "flow-"+k;} function logMap(k){return "log-"+k;} function pktMap(k){return "pkt-"+k;}
+function movePacket(pktId,a,frac,flowEl,stEl){var p=document.getElementById(pktId);
+  if(!p||!stEl)return; p.style.display="flex";
+  var fr=stEl.getBoundingClientRect(), fl=flowEl.getBoundingClientRect();
+  p.style.top="4px"; p.style.left=(8+frac*(fr.width-40))+"px";}
+function simReset(key){stepPos[key]=0; hidePacket(pktMap(key)); setNodes(flowMap(key),-1);
+  clearLog(logMap(key),"— reset. Press Step —");
+  if(timers[key]){clearInterval(timers[key]);timers[key]=null;}}
+function simPlay(key){ if(timers[key])return; simStep(key);
+  timers[key]=setInterval(function(){ var sc=SCRIPTS[key]; var i=stepPos[key]||0;
+    if(i>=sc.length){clearInterval(timers[key]);timers[key]=null;return;} simStep(key);},1100);}
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-sim]"); if(!b)return;
+  var k=b.getAttribute("data-sim"), act=b.getAttribute("data-act");
+  if(act==="step")simStep(k); else if(act==="play")simPlay(k); else simReset(k);
+});
+
+/* HTTPD SNI drill */
+document.getElementById("hostGo").addEventListener("click",function(){
+  var h=(document.getElementById("hostInput").value||"").trim().toLowerCase()||"(empty)";
+  document.getElementById("hostEcho").textContent="Host: "+h;
+  var f=document.getElementById("flow-h2"), ns=f.querySelectorAll(".node");
+  ns.forEach(function(n){n.classList.remove("active");});
+  ns[0].classList.add("active"); ns[1].classList.add("active");
+  var msg;
+  if(h==="www.example.com"||h==="example.com"){ns[2].classList.add("active");msg="SNI match → <b>server www.example.com</b> (alias hit). 200 from /htdocs/example.";}
+  else if(h==="static.example.org"){ns[3].classList.add("active");msg="Exact match → <b>server static.example.org</b>. 200.";}
+  else{ns[2].classList.add("active");msg="No name match → <b>fallback: first server on *:443</b> answers (SNI default). Your evil.com does NOT reach another config.";}
+  log("log-h2","GET / Host:"+h+" — "+msg);
+});
+/* HTTPD location drill */
+function routePath(){
+  var p=(document.getElementById("pathInput").value||"").trim()||"/";
+  document.getElementById("pathEcho").textContent=p;
+  var f=document.getElementById("flow-h3"), ns=f.querySelectorAll(".node");
+  ns.forEach(function(n){n.classList.remove("active");});
+  ns[0].classList.add("active");
+  var msg;
+  var isBlog=/^\/blog\//.test(p), isPhp=/\.php(\?|$)/.test(p);
+  if(isBlog){ns[1].classList.add("active");msg="<b>location \"/blog/*\" wins (first)</b> → static /htdocs/blog"+(isPhp?" — ⚠ .php NEVER reaches fastcgi (trap!)":"");}
+  else if(isPhp){ns[2].classList.add("active");msg="<b>location \"*.php\" wins</b> → fastcgi /run/php-fpm.sock";}
+  else{ns[3].classList.add("active");msg="<b>location \"/*\" default</b> → static /htdocs/example";}
+  if(/^\/private\//.test(p))msg+=" — but /private/* block would 403 if placed earlier (order!)";
+  log("log-h3","GET "+p+" — "+msg);
+}
+document.getElementById("pathGo").addEventListener("click",routePath);
+
+/* RELAYD failover drill */
+var rState={dead:false,n:0,rr:0};
+function rRender(msg){var b1=document.getElementById("rBack1"),b2=document.getElementById("rBack2");
+  b1.className="node"+(rState.dead?" dead":""); b2.className="node";
+  b1.innerHTML=rState.dead?"<b>10.0.0.11 ✗</b><small>check FAIL</small>":"<b>10.0.0.11 ✓</b><small>200 OK</small>";
+  if(msg)log("log-r2",msg);}
+document.getElementById("rFail").addEventListener("click",function(){rState.dead=true;rRender("☠ health check: <b>.11 fails / code != 200 → removed from rotation</b>.");});
+document.getElementById("rHeal").addEventListener("click",function(){rState.dead=false;rRender("✚ .11 healthy again → back in rotation.");});
+document.querySelector('[data-sim="r2"]').addEventListener("click",function(e){
+  if(e.target.getAttribute("data-act")!=="step")return;
+  rState.n++; var pick;
+  if(!rState.dead){pick=(rState.rr++%2===0)?".11":".12";} else pick=".12";
+  document.getElementById("rCount").textContent="req #"+rState.n;
+  rRender("req #"+rState.n+" → <b>10.0.0."+(pick===".11"?"11":"12")+"</b> "+(rState.dead?"(failover: only .12 eligible)":"(round-robin)"));
+});
+/* RELAYD protocol classify */
+document.getElementById("rPathGo").addEventListener("click",function(){
+  var path=(document.getElementById("rPath").value||"/").trim()||"/";
+  var host=(document.getElementById("rHost").value||"").trim().toLowerCase();
+  var dest=/^\/api\//.test(path)?"&lt;api&gt; :8081":(host==="static.example.com"?"&lt;static&gt; :8080":"&lt;app&gt; :8080");
+  var extra=/^\/admin/.test(path)?" — policy: <b>block 403</b> (no auth path exposed)":"";
+  log("log-r3","match: Host="+host+" URL="+path+" → forward to <b>"+dest+"</b>"+extra);
+});
+/* SMTPD rule drill */
+document.getElementById("mGo").addEventListener("click",function(){
+  var from=(document.getElementById("mFrom").value||"").trim(), to=(document.getElementById("mTo").value||"").trim();
+  var auth=document.getElementById("mAuth").checked;
+  document.getElementById("mEcho").textContent=from+"→"+to;
+  var f=document.getElementById("flow-s2"),ns=f.querySelectorAll(".node");ns.forEach(function(n){n.classList.remove("active");});ns[0].classList.add("active");
+  var isLocal=/@example\.com$/i.test(to);
+  var msg;
+  if(isLocal){ns[1].classList.add("active");msg="Rule 1 <b>for local → action mbox</b>. Delivered to /var/mail/alice. No AUTH needed for inbound MX.";}
+  else if(auth){ns[2].classList.add("active");msg="Not local, but <b>AUTH ok → action relay</b>. Scheduler delivers to remote MX with retries.";}
+  else{ns[3].classList.add("active");msg="<b>REJECT 550</b>: relaying denied. (Without this you are an open relay.)";}
+  log("log-s2","MAIL FROM:&lt;"+from+"&gt; RCPT TO:&lt;"+to+"&gt; auth="+(auth?"yes":"no")+" — "+msg);
+});
+/* SMTPD alias drill */
+var ALIASES={"ops@example.com":["alice@example.com","bob@example.com"],"sales@example.com":["alice@example.com"],"alice@example.com":["alice (mbox /var/mail/alice)"],"catchall@example.com":["catchall (mbox)"]};
+document.getElementById("aGo").addEventListener("click",function(){
+  var k=(document.getElementById("aIn").value||"").trim().toLowerCase();
+  var v=ALIASES[k];
+  if(v)log("log-s3","expand <b>"+k+"</b> → "+v.join(", ")+" <span class='t'>(virtuals first, then aliases file)</span>");
+  else if(/@example\.com$/.test(k))log("log-s3","<b>"+k+"</b> → catchall@example.com <span class='t'>(@example.com → catchall rule)</span>");
+  else log("log-s3","<b>"+k+"</b> → no local match → would need relay rule (or 550).");
+});
+/* VMM qcow drill */
+var qUsed=2;
+document.getElementById("qcowGo").addEventListener("click",function(){
+  qUsed=Math.min(96,qUsed+14);
+  document.getElementById("qcowChild").style.width=qUsed+"%";
+  document.getElementById("qcowTxt").textContent="child uses ~"+(qUsed/2.4).toFixed(1)+"G of 40G virtual — base untouched, sparse wins";
+  log("log-v2","guest writes 2G → only <b>child delta grows</b> ("+qUsed+"%). Base stays read-only. Many clones share one base.");
+});
+document.getElementById("qcowReset").addEventListener("click",function(){qUsed=2;
+  document.getElementById("qcowChild").style.width="2%";
+  document.getElementById("qcowTxt").textContent="child uses ~0.1G of 40G virtual — sparse wins";clearLog("log-v2","— reset —");});
+
+/* ============ QUIZ ENGINE + SEALED LEVELS ============ */
+var MODULES={httpd:["h1","h2","h3","h4"],relayd:["r1","r2","r3","r4"],smtpd:["s1","s2","s3","s4"],vmm:["v1","v2","v3","v4"]};
+function quizScore(key){var quiz=document.querySelector('[data-quiz="'+key+'"]'); if(!quiz)return 0;
+  var qs=quiz.querySelectorAll(".q"),ok=0;
+  qs.forEach(function(q){var ans=q.getAttribute("data-answer");
+    var sel=q.querySelector("input[type=radio]:checked");
+    var labels=q.querySelectorAll("label");labels.forEach(function(l){l.style.background="";l.style.borderColor="";});
+    if(sel){var lab=sel.closest("label");
+      if(sel.value===ans){ok++;lab.style.background="#dff0d8";lab.style.borderColor="green";}
+      else{lab.style.background="#f8d7da";lab.style.borderColor="red";
+        var right=q.querySelector('input[value="'+ans+'"]');
+        if(right)right.closest("label").style.borderColor="green";}}
+  });return {ok:ok,total:qs.length};}
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-check]"); if(!b)return;
+  var key=b.getAttribute("data-check");
+  if(key==="final")return gradeFinal();
+  var r=quizScore(key), v=document.querySelector('[data-verdict="'+key+'"]');
+  var quiz=document.querySelector('[data-quiz="'+key+'"]');
+  var mod=quiz.getAttribute("data-mod"), lvl=parseInt(quiz.getAttribute("data-lvl"),10);
+  if(r.ok===r.total){v.className="verdict pass";v.textContent="✔ "+r.ok+"/"+r.total+" — SEALED. Level "+lvl+" cleared.";
+    var patch=document.querySelector('[data-patch="'+key+'"]'); if(patch)patch.classList.add("on");
+    state.passed[key]=true; save(); refreshSeals();
+    var seq=MODULES[mod]; var idx=seq.indexOf(key);
+    if(idx>=0&&idx<seq.length-1){var nk=seq[idx+1];
+      v.textContent+=" Next level unsealed — scroll down.";
+      var nl=document.querySelector('[data-quiz="'+nk+'"]');
+      if(nl){var lv=nl.closest(".level"); if(lv){lv.classList.remove("locked");lv.classList.add("unsealed");
+        var st=lv.querySelector(".state"); if(st)st.textContent="UNSEALED"; lv.scrollIntoView({behavior:"smooth",block:"start"});}}}
+    else{v.textContent+=" ★ CHAPTER "+mod.toUpperCase()+" CLEARED.";}
+  }else{v.className="verdict fail";v.textContent="✗ "+r.ok+"/"+r.total+" — all "+r.total+" must be correct. Green-bordered answers show the right choice; re-run the animation and retry.";}
+});
+function modCleared(m){return MODULES[m].every(function(k){return !!state.passed[k];});}
+function refreshSeals(){
+  Object.keys(MODULES).forEach(function(m){
+    var seq=MODULES[m];
+    seq.forEach(function(k,i){
+      var quiz=document.querySelector('[data-quiz="'+k+'"]'); if(!quiz)return;
+      var lv=quiz.closest(".level");
+      var unlocked=(i===0)||!!state.passed[seq[i-1]]||state.override;
+      if(state.passed[k]){var p=document.querySelector('[data-patch="'+k+'"]'); if(p)p.classList.add("on");}
+      if(unlocked){lv.classList.remove("locked");var st=lv.querySelector(".state"); if(st&&!state.passed[k])st.textContent="UNSEALED";}
+      else{lv.classList.add("locked");var st2=lv.querySelector(".state"); if(st2)st2.textContent="SEALED";}
+    });
+    var seal=document.querySelector('[data-seal="'+m+'"]'); if(seal)seal.style.display=modCleared(m)?"inline-block":"none";
+    var lock=document.querySelector('[data-lock="'+m+'"]'); if(lock)lock.style.display=modCleared(m)?"none":"inline";
+    var done=document.querySelector('[data-done="'+m+'"]'); if(done)done.style.display=modCleared(m)?"inline":"none";
+    var bar=document.querySelector('[data-modbar="'+m+'"]');
+    if(bar){var n=seq.filter(function(k){return state.passed[k];}).length;bar.style.width=(n/seq.length*100)+"%";}
+  });
+  var total=16, got=Object.keys(state.passed).filter(function(k){return state.passed[k]&&k!=="final";}).length;
+  var pct=Math.round(got/total*100);
+  document.getElementById("progressBar").style.width=pct+"%";
+  document.getElementById("pct").textContent=pct+"% ("+got+"/"+total+" drills)";
+  var ch=["httpd","relayd","smtpd","vmm"].filter(modCleared).length;
+  document.getElementById("setupPct").textContent=ch+"/4 chapters";
+  var ready=(ch===4)||state.override;
+  document.getElementById("setupBody").style.display=ready?"block":"none";
+  document.getElementById("setupLock").style.display=ready?"none":"block";
+  document.getElementById("setupSeal").style.display=ready?"inline-block":"none";
+  document.getElementById("examBody").style.display=ready?"block":"none";
+  document.getElementById("examLock").style.display=ready?"none":"block";
+  if(ready)renderConfigs();
+}
+document.getElementById("resetBtn").addEventListener("click",function(){
+  if(!confirm("Reset all seals and progress?"))return;
+  state={passed:{},override:false};save();refreshSeals();
+  document.querySelectorAll(".verdict").forEach(function(v){v.className="verdict";v.textContent="";});
+  document.querySelectorAll(".seal[data-patch]").forEach(function(s){s.classList.remove("on");});
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+document.getElementById("unlockAll").addEventListener("click",function(){state.override=true;save();refreshSeals();});
+
+/* Final exam */
+function gradeFinal(){
+  var r=quizScore("final"), v=document.querySelector('[data-verdict="final"]');
+  if(r.ok>=7){v.className="verdict pass";
+    v.textContent="✔ "+r.ok+"/"+r.total+" — DISCHARGED WITH HONORS.";
+    state.passed.final=true;save();
+    var c=document.getElementById("cert");c.style.display="block";
+    var pct=Math.round(r.ok/r.total*100);
+    c.innerHTML="<b>★ CERTIFICATE OF CLEARANCE — OB-77 ★</b><br>Bearer has demonstrated operator-level knowledge of OpenBSD httpd, relayd, smtpd and vmm.<br>Score: "+r.ok+"/"+r.total+" ("+pct+"%) · "+new Date().toISOString().slice(0,10)+"<br>Rank: "+(r.ok===8?"MASTER OPERATOR":"SENIOR OPERATOR")+" · <a href=\"index.html\">⌂ Home</a>";
+    document.getElementById("examSeal").textContent="★ DISCHARGED — "+r.ok+"/8 ★";document.getElementById("examSeal").style.display="inline-block";
+    refreshSealsKeepCert();
+  }else{v.className="verdict fail";v.textContent="✗ "+r.ok+"/"+r.total+" — need 7/8. Review the red-marked drills and re-attack.";}
+}
+function refreshSealsKeepCert(){var c=document.getElementById("cert");var h=c.innerHTML,s=c.style.display;refreshSeals();c.innerHTML=h;c.style.display=s;
+  if(state.passed.final){document.getElementById("examSeal").style.display="inline-block";}}
+
+/* ============ SETUP LAB GENERATORS ============ */
+function esc(s){return String(s).replace(/[^A-Za-z0-9.\-_]/g,"");}
+function renderConfigs(){
+  var d=esc(document.getElementById("gDomain").value||"example.com")||"example.com";
+  var md=esc(document.getElementById("gMail").value||d)||d;
+  var sm=(document.getElementById("gSmarthost").value||"").trim();
+  document.querySelectorAll(".gDom").forEach(function(e){e.textContent=d;});
+  document.getElementById("httpOut").textContent=
+'types {\n    include "/usr/share/misc/mime.types"\n}\n\nserver "www.'+d+'" {\n    alias "'+d+'"\n    listen on * port 80\n    listen on * tls port 443\n    root "/htdocs/'+d+'"\n    directory index "index.html"\n    directory no auto index\n    tls {\n        certificate "/etc/ssl/'+d+'.fullchain.pem"\n        key "/etc/ssl/private/'+d+'.key"\n    }\n    location "/.well-known/acme-challenge/*" {\n        root "/acme"\n        request strip 1\n    }\n    log style combined\n    log access "'+d+'-access.log"\n    log error "'+d+'-error.log"\n}';
+  document.getElementById("relayOut").textContent=
+'table <app> { 10.0.0.11, 10.0.0.12 }\ntable <static> { 10.0.0.11 }\n\nprotocol "http" {\n    match request header "Host" value "static.'+d+'" forward to <static>\n    match url "/api/*" forward to <app>\n    tcp { nodelay, sack }\n}\n\nrelay "web" {\n    listen on egress port 80\n    protocol "http"\n    forward to <app> port 8080 check http "/" code 200\n}\n\nrelay "tls-accel" {\n    listen on egress tls port 443\n    tls { certificate "/etc/ssl/'+d+'.fullchain.pem"\n          key "/etc/ssl/private/'+d+'.key" }\n    protocol "http"\n    forward to <app> port 8080 check http "/" code 200\n}';
+  var relayAction = sm ? 'relay via "'+sm+'"' : 'relay';
+  document.getElementById("smtpOut").textContent=
+'table aliases file:/etc/mail/aliases\ntable virtuals file:/etc/mail/virtuals\ntable secrets file:/etc/mail/secrets\n\nfilter "rspamd" proc-exec "/usr/local/bin/filter-rspamd"\n\naction "local" mbox alias <aliases> virtual <virtuals>\naction "out" '+relayAction+'\n\nlisten on lo0\nlisten on egress port 25 tls-require filter "rspamd"\nlisten on egress port 587 tls-require auth filter "rspamd"\n\nmatch for local action "local"\nmatch auth from any for any action "out"\nmatch from any for any action "reject"   # never an open relay\n\n# /etc/mail/aliases:\n#   ops: alice\n# /etc/mail/virtuals:\n#   postmaster@'+md+'  ops@'+md+'\n# then: newaliases';
+  document.getElementById("vmOut").textContent=
+'switch "lab" {\n    interface veb0\n}\n\nvm "web1" {\n    memory 2G\n    cpus 1\n    disk "/var/vm/web1.qcow2"\n    interface { switch "lab" }\n    owner root\n}\n\nvm "mail1" {\n    memory 1G\n    cpus 1\n    disk "/var/vm/mail1.qcow2"\n    local interface\n    owner root\n}\n\n# host:\n#   echo \'inet 10.0.0.1 255.255.255.0\' > /etc/hostname.vport0\n#   echo -e \'add vport0\\nup\' > /etc/hostname.veb0\n#   vmctl create -s 40G /var/vm/web1.qcow2\n#   vmd -n && rcctl enable vmd && rcctl start vmd';
+}
+["gDomain","gMail","gSmarthost"].forEach(function(id){document.getElementById(id).addEventListener("input",renderConfigs);});
+function copyPre(id){var t=document.getElementById(id).textContent;
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){alert("Copied "+id);});}
+  else{var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");alert("Copied "+id);}catch(e){}document.body.removeChild(ta);}}
+document.getElementById("copyHttp").addEventListener("click",function(){copyPre("httpOut");});
+document.getElementById("copyRelay").addEventListener("click",function(){copyPre("relayOut");});
+document.getElementById("copySmtp").addEventListener("click",function(){copyPre("smtpOut");});
+document.getElementById("copyVm").addEventListener("click",function(){copyPre("vmOut");});
+
+/* tabs */
+document.querySelectorAll("[data-tab]").forEach(function(b){b.addEventListener("click",function(){
+  document.querySelectorAll("[data-tab]").forEach(function(x){x.classList.remove("active");});
+  document.querySelectorAll(".tabpane").forEach(function(p){p.classList.remove("active");});
+  b.classList.add("active");document.getElementById(b.getAttribute("data-tab")).classList.add("active");});});
+/* setup checklist counter */
+function countSetup(){var all=document.querySelectorAll(".setup-check");var n=0;all.forEach(function(c){if(c.checked)n++;});
+  document.getElementById("setupCount").textContent=n+"/"+all.length;
+  if(n===all.length&&all.length>0)document.getElementById("setupCount").textContent+=" — MACHINE READY ★";}
+document.addEventListener("change",function(e){if(e.target.classList&&e.target.classList.contains("setup-check"))countSetup();});
+document.getElementById("printBtn").addEventListener("click",function(){window.print();});
+/* active nav */
+var navLinks=document.querySelectorAll(".topbar nav a[href^='#']");
+window.addEventListener("scroll",function(){
+  var ids=["ch-httpd","ch-relayd","ch-smtpd","ch-vmm","ch-setup","ch-exam"];var cur=null;
+  ids.forEach(function(id){var el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<140)cur=id;});
+  navLinks.forEach(function(a){a.classList.toggle("active",a.getAttribute("href")==="#"+cur);});
+});
+refreshSeals();countSetup();renderConfigs();
+</script>
+</body>
+</html>
