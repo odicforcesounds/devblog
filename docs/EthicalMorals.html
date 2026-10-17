@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ME-OMNIBUS v1.0 — Morality & Ethics Technical Manual | Home</title>
+<meta name="description" content="A technical manual for Morality and Ethics: how they work, how to produce them, and how to build peaceful, useful societies. Interactive levels, animated labs, real political comparisons.">
+<style>
+/* ============ RESET + TOKENS ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#f7f3ea;
+  --paper2:#fffdf6;
+  --ink:#1a1e2b;
+  --muted:#5a6272;
+  --line:#d8d0bd;
+  --blue:#1d4ed8;
+  --blue-d:#123a9e;
+  --teal:#0e7a6b;
+  --amber:#b45309;
+  --red:#b91c1c;
+  --green:#15803d;
+  --violet:#6d28d9;
+  --card:#ffffff;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --serif:Georgia,"Times New Roman",Times,serif;
+  --radius:14px;
+  --shadow:0 10px 30px rgba(26,30,43,.10);
+}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.65;font-size:16.5px}
+a{color:var(--blue)}
+::selection{background:#fde68a}
+/* blueprint grid bg */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
+ background-image:linear-gradient(rgba(29,78,216,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(29,78,216,.05) 1px,transparent 1px);
+ background-size:28px 28px;z-index:0}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+/* ============ TOP BAR (manual header) ============ */
+.topbar{background:#11152a;color:#eef2ff;position:sticky;top:0;z-index:50;border-bottom:3px solid #f59e0b}
+.topbar-inner{display:flex;align-items:center;gap:14px;padding:10px 20px;max-width:1180px;margin:0 auto;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px;letter-spacing:.06em}
+.brand-badge{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#f59e0b,#ef4444,#6366f1);display:grid;place-items:center;font-weight:900;color:#fff;border:2px solid #fff}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.nav a{color:#e0e7ff;text-decoration:none;font-family:var(--mono);font-size:12.5px;padding:7px 10px;border:1px solid rgba(255,255,255,.25);border-radius:999px}
+.nav a:hover,.nav a.active{background:#f59e0b;color:#111;border-color:#f59e0b}
+.nav a.home{background:#fff;color:#111;font-weight:800}
+/* ============ HERO ============ */
+.hero{background:linear-gradient(180deg,#11152a 0%,#1e2a5a 60%,#1d4ed8 100%);color:#fff;padding:44px 0 34px;position:relative;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.25fr .85fr;gap:26px;align-items:center}
+@media(max-width:860px){.hero-grid{grid-template-columns:1fr}}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:#fcd34d;text-transform:uppercase}
+.hero h1{font-family:var(--serif);font-size:clamp(32px,5vw,56px);line-height:1.05;margin:10px 0 12px}
+.hero h1 em{font-style:italic;color:#fde68a}
+.lead{font-size:18px;color:#e0e7ff;max-width:62ch}
+.hero-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.btn{display:inline-block;padding:12px 18px;border-radius:999px;text-decoration:none;font-weight:800;border:2px solid transparent;cursor:pointer;font-size:15px}
+.btn-primary{background:#f59e0b;color:#111}
+.btn-primary:hover{background:#fbbf24}
+.btn-ghost{border-color:#fff;color:#fff}
+.btn-ghost:hover{background:rgba(255,255,255,.15)}
+.spec-sheet{background:var(--paper2);color:var(--ink);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);font-family:var(--mono);font-size:13px}
+.spec-sheet h3{font-size:12px;letter-spacing:.14em;color:var(--muted);margin-bottom:10px}
+.spec-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.spec-row:last-child{border:none}
+.stamp{display:inline-block;background:var(--red);color:#fff;font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:4px;transform:rotate(-3deg);letter-spacing:.1em;margin-top:10px}
+/* progress */
+.progress-wrap{background:#0b0f22;color:#fff;padding:14px 0;border-top:1px solid rgba(255,255,255,.15)}
+.progress-bar{height:12px;background:rgba(255,255,255,.2);border-radius:999px;overflow:hidden}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#22c55e);transition:width .6s ease}
+.progress-meta{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;margin-top:6px;color:#cbd5e1}
+/* ============ MANUAL BODY ============ */
+.manual{background:var(--paper2);border:1px solid var(--line);border-radius:18px;margin:26px auto;box-shadow:var(--shadow);overflow:hidden}
+.manual-head{padding:22px 28px;border-bottom:2px solid var(--ink);display:flex;gap:16px;align-items:center;flex-wrap:wrap;background:repeating-linear-gradient(-45deg,#fffdf6 0 14px,#faf5e8 14px 28px)}
+.manual-head h2{font-family:var(--mono);font-size:15px;letter-spacing:.12em}
+.toc{padding:22px 28px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(max-width:700px){.toc{grid-template-columns:1fr}}
+.toc a{display:block;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--ink)}
+.toc a:hover{border-color:var(--blue);box-shadow:var(--shadow)}
+.toc strong{font-family:var(--mono);font-size:12px;color:var(--blue);display:block}
+section.level{padding:30px 28px;border-top:8px solid var(--ink);position:relative}
+section.level:nth-of-type(odd){background:#fff}
+.level-num{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:#fff;background:var(--ink);display:inline-block;padding:5px 12px;border-radius:999px;margin-bottom:10px}
+.level h2{font-family:var(--serif);font-size:30px;margin:6px 0 8px;line-height:1.2}
+.level h3{font-size:20px;margin:22px 0 8px;color:var(--blue-d)}
+.level h4{font-size:17px;margin:16px 0 6px}
+.level p{margin:10px 0;max-width:75ch}
+.level ul,.level ol{margin:10px 0 10px 22px;max-width:75ch}
+.callout{border-left:6px solid var(--blue);background:#eff6ff;padding:14px 16px;border-radius:0 12px 12px 0;margin:16px 0}
+.callout.warn{border-color:var(--amber);background:#fffbeb}
+.callout.danger{border-color:var(--red);background:#fef2f2}
+.callout.good{border-color:var(--green);background:#f0fdf4}
+.callout b.head{font-family:var(--mono);font-size:12px;letter-spacing:.1em;display:block;margin-bottom:4px}
+table.spec{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px;background:#fff}
+table.spec th,table.spec td{border:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}
+table.spec th{background:#11152a;color:#fff;font-family:var(--mono);font-size:12px;letter-spacing:.06em}
+table.spec tr:nth-child(even) td{background:#fafaf0}
+.tag{font-family:var(--mono);font-size:11px;background:#eef2ff;border:1px solid #c7d2fe;padding:2px 8px;border-radius:999px;display:inline-block;margin:2px}
+/* locked */
+.locked{position:relative}
+.lock-overlay{background:#11152a;color:#fff;border-radius:12px;padding:26px;text-align:center;margin:16px 0}
+.lock-overlay h3{color:#fcd34d}
+.level.locked .level-body{filter:blur(2px);pointer-events:none;user-select:none;max-height:220px;overflow:hidden;opacity:.6}
+/* ============ ANIMATED LABS ============ */
+.lab{background:linear-gradient(180deg,#f8fafc,#eef2ff);border:2px dashed var(--blue);border-radius:var(--radius);padding:18px;margin:18px 0}
+.lab h4{font-family:var(--mono);letter-spacing:.08em;font-size:13px;color:var(--blue-d)}
+.stage{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:12px;position:relative;overflow:hidden;min-height:180px}
+/* trolley */
+.track{position:relative;height:120px;background:repeating-linear-gradient(90deg,#e5e7eb 0 18px,#d1d5db 18px 20px);border-radius:10px;margin:14px 0;overflow:hidden}
+.rail{position:absolute;left:0;right:0;top:52px;height:8px;background:#374151}
+.trolley{position:absolute;top:18px;left:10px;font-size:44px;transition:left 2.2s linear}
+.person{position:absolute;top:70px;font-size:26px}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+.impact{animation:shake .4s 3}
+/* commons pasture */
+.pasture{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.cow{font-size:30px;transition:transform .4s,opacity .4s}
+.pasture.degraded{background:#fef3c7;border-radius:10px}
+/* veil */
+.veil-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.veil-card{background:#11152a;color:#fff;border-radius:10px;padding:14px;text-align:center;font-size:14px;min-height:110px;display:grid;place-items:center}
+.veil-card.reveal{background:#fff;color:var(--ink);border:2px solid var(--violet)}
+button.mini{font-family:var(--mono);font-size:13px;padding:9px 14px;border-radius:999px;border:2px solid var(--ink);background:#fff;cursor:pointer;font-weight:700}
+button.mini:hover{background:var(--ink);color:#fff}
+button.mini.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+button.mini.primary:hover{background:var(--blue-d)}
+/* spectrum */
+.spectrum{height:22px;border-radius:999px;background:linear-gradient(90deg,#b91c1c,#f59e0b,#22c55e,#1d4ed8,#6d28d9);margin:12px 0;position:relative}
+.spectrum-dot{position:absolute;top:-10px;font-size:22px;transform:translateX(-50%);transition:left .5s}
+/* matrix */
+.matrix{display:grid;grid-template-columns:120px 1fr 1fr;gap:6px;max-width:560px;margin:12px 0;font-size:14px}
+.matrix div{padding:10px;border-radius:8px;background:#fff;border:1px solid var(--line);text-align:center}
+.matrix .hd{background:#11152a;color:#fff;font-weight:800}
+.matrix .pick{cursor:pointer}
+.matrix .pick:hover{border-color:var(--blue);box-shadow:var(--shadow)}
+/* quiz */
+.quiz{background:#0f172a;color:#e2e8f0;border-radius:12px;padding:18px;margin:18px 0}
+.quiz h4{color:#fcd34d;font-family:var(--mono);letter-spacing:.08em}
+.quiz .q{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:12px;margin:10px 0}
+.quiz label{display:block;padding:7px 10px;border-radius:8px;cursor:pointer;margin:4px 0;background:rgba(255,255,255,.04)}
+.quiz label:hover{background:rgba(255,255,255,.12)}
+.quiz .result{font-family:var(--mono);font-size:13px;margin-top:8px}
+/* cards grid */
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:800px){.grid2,.grid3{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.card h5{font-size:16px;margin-bottom:6px}
+.card p{font-size:14.5px;color:#334155}
+.emoji-big{font-size:34px}
+/* marquee animation pure CSS */
+.marquee{overflow:hidden;white-space:nowrap;background:#11152a;color:#fde68a;font-family:var(--mono);font-size:13px;padding:9px 0;border-y:1px solid #000}
+.marquee span{display:inline-block;padding-left:100%;animation:scroll 22s linear infinite}
+@keyframes scroll{to{transform:translateX(-100%)}}
+/* compass */
+.compass-wrap{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+input[type=range]{width:220px;accent-color:var(--violet)}
+footer{background:#0b0f22;color:#cbd5e1;padding:30px 0;margin-top:30px}
+footer a{color:#fcd34d}
+.badge-pass{background:#22c55e;color:#06240f;font-family:var(--mono);font-size:12px;padding:4px 10px;border-radius:999px;font-weight:800}
+.badge-lock{background:#475569;color:#fff;font-family:var(--mono);font-size:12px;padding:4px 10px;border-radius:999px}
+.float-nav{position:fixed;right:14px;bottom:14px;z-index:60;display:flex;flex-direction:column;gap:8px}
+.float-nav a{background:#11152a;color:#fff;text-decoration:none;font-family:var(--mono);font-size:12px;padding:9px 12px;border-radius:999px;border:1px solid #f59e0b}
+.print-note{font-family:var(--mono);font-size:12px;color:var(--muted)}
+@media print{.topbar,.float-nav,.progress-wrap,.quiz button{display:none}section.level{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><div class="brand-badge">MΣ</div><span>ME-OMNIBUS v1.0 · MORALITY &amp; ETHICS TECHNICAL MANUAL</span></div>
+    <nav class="nav" aria-label="Main">
+      <a class="home" href="index.html">⌂ Home</a>
+      <a href="#level-1">L1</a>
+      <a href="#level-2">L2</a>
+      <a href="#level-3">L3</a>
+      <a href="#level-4">L4</a>
+      <a href="#level-5">L5</a>
+      <a href="#level-6">L6</a>
+      <a href="#sources">Sources</a>
+    </nav>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="kicker">Promotional Technical Edition · Single-file · No external resources · Vanilla JS + CSS3 only</div>
+      <h1>Morality &amp; Ethics: <em>How They Work,</em> How to Build Them, How to Use Them for Peace</h1>
+      <p class="lead">This is not a sermon. It is a <strong>technical manual</strong> — with parts, diagrams, animated labs, failure modes, maintenance procedures, and acceptance tests. Read it like an engineer. You cannot skip levels: each level unlocks only after you <strong>prove</strong> you understood the previous one.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#start">▶ Start at Level 1</a>
+        <a class="btn btn-ghost" href="index.html">⌂ Home (index.html)</a>
+        <a class="btn btn-ghost" href="#level-5">Compare Real Parties ↓</a>
+      </div>
+      <p style="margin-top:12px;font-family:var(--mono);font-size:12px;color:#cbd5e1">Revision A · 2026-10-17 · Author: Open Knowledge Collective · License: CC-BY-SA — share, remix, teach.</p>
+    </div>
+    <aside class="spec-sheet" aria-label="Manual spec">
+      <h3>DOCUMENT CONTROL — FORM ME-01</h3>
+      <div class="spec-row"><span>Doc ID</span><strong>ME-OMNIBUS-1.0</strong></div>
+      <div class="spec-row"><span>Classification</span><strong>Public · Educational</strong></div>
+      <div class="spec-row"><span>Prerequisites</span><strong>None. Curiosity required.</strong></div>
+      <div class="spec-row"><span>Time to complete</span><strong>~90 min + labs</strong></div>
+      <div class="spec-row"><span>Pass mark</span><strong>≥ 60% per level</strong></div>
+      <div class="spec-row"><span>Stack</span><strong>1× index.html, 0 deps</strong></div>
+      <div class="stamp">APPROVED FOR CURIOUS HUMANS</div>
+    </aside>
+  </div>
+</header>
+
+<div class="progress-wrap">
+  <div class="wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-meta"><span id="progressText">CLEARANCE: LEVEL 1 / 6</span><span><a href="index.html" style="color:#fcd34d">⌂ Home</a> · <button class="mini" id="resetBtn" style="border-color:#f59e0b;color:#fcd34d;background:transparent;padding:4px 10px">Reset progress</button></span></div>
+  </div>
+</div>
+
+<div class="marquee" aria-hidden="true"><span>MORALITY = lived customs &nbsp;·&nbsp; ETHICS = reflective system &nbsp;·&nbsp; LAW = enforced minimum &nbsp;·&nbsp; POLITICS = ethics at scale &nbsp;·&nbsp; PEACE = maintainable equilibrium &nbsp;·&nbsp; TEST YOUR KNOWLEDGE TO UNLOCK EACH LEVEL &nbsp;·&nbsp;</span></div>
+
+<main class="wrap manual" id="start">
+  <div class="manual-head">
+    <h2>📖 TABLE OF CONTENTS — READ IN ORDER. NO SKIPPING.</h2>
+    <span class="badge-pass" id="tocStatus">INTERLOCK ACTIVE</span>
+  </div>
+  <nav class="toc">
+    <a href="#level-1"><strong>LEVEL 1 · FOUNDATIONS</strong>Morality vs Ethics vs Law · Metaethics · Moral grammar</a>
+    <a href="#level-2"><strong>LEVEL 2 · NORMATIVE ENGINES</strong>Deontology, Consequentialism, Virtue, Care, Justice — animated</a>
+    <a href="#level-3"><strong>LEVEL 3 · HUMAN LAB</strong>Kohlberg, Haidt, biases, Trolley, Prisoner's Dilemma, Commons</a>
+    <a href="#level-4"><strong>LEVEL 4 · PRODUCTION MANUAL</strong>How to PRODUCE ethics: personal, team, company, AI</a>
+    <a href="#level-5"><strong>LEVEL 5 · POLITICS AT SCALE ★</strong>Real parties &amp; countries compared: USA, UK, Germany, France, India, Brazil…</a>
+    <a href="#level-6"><strong>LEVEL 6 · PEACE BLUEPRINT</strong>New ideas for peaceful, useful societies + failure catalogue</a>
+  </nav>
+
+<!-- ================= LEVEL 1 ================= -->
+<section class="level" id="level-1" data-level="1">
+  <span class="level-num">LEVEL 1 · CLEARANCE: PUBLIC</span>
+  <h2>1. Foundations: What Are We Actually Talking About?</h2>
+  <p><strong>Promotional thesis:</strong> every peaceful, useful society runs on the same hidden machinery — shared expectations that let strangers cooperate without fear. This manual reverse-engineers that machinery so you can repair it and build more of it.</p>
+  <div class="level-body">
+  <div class="callout"><b class="head">⚙ SPEC 1.1 — CORE DEFINITIONS</b>
+    <ul>
+      <li><strong>Morality</strong> (Latin <em>mores</em> = customs): the lived, often unwritten rules a group actually follows — what feels right/wrong, praise/blame-worthy. Example: queuing, not cheating on a partner, caring for elders.</li>
+      <li><strong>Ethics</strong> (Greek <em>ethos</em> = character/habit): the <em>reflective, systematic</em> study and design of those rules. Ethics asks: are our morals justified? Can we do better?</li>
+      <li><strong>Law:</strong> the enforceable minimum. Not everything immoral is illegal (lying to a friend), not everything illegal is immoral (jaywalking on an empty road).</li>
+      <li><strong>Politics:</strong> ethics at population scale — who gets what, who decides, and what happens when we disagree.</li>
+    </ul>
+  </div>
+  <h3>1.2 The three branches (memorize this table)</h3>
+  <table class="spec">
+    <tr><th>Branch</th><th>Question</th><th>Example</th><th>Animated intuition</th></tr>
+    <tr><td><strong>Metaethics</strong></td><td>What does “good” even <em>mean</em>? Is it real?</td><td>“Stealing is wrong” — fact like “water boils at 100°C”, or expression like “Boo, stealing!”?</td><td>Think of a thermometer vs. a megaphone.</td></tr>
+    <tr><td><strong>Normative ethics</strong></td><td>How <em>should</em> we act?</td><td>Rules vs. consequences vs. character.</td><td>Three different engines (Level 2).</td></tr>
+    <tr><td><strong>Applied ethics</strong></td><td>What about this <em>specific</em> case?</td><td>Bioethics, AI ethics, climate, war, business.</td><td>Case lab (Levels 3–5).</td></tr>
+  </table>
+  <h3>1.3 Metaethics in 5 minutes</h3>
+  <div class="grid3">
+    <div class="card"><div class="emoji-big">🧲</div><h5>Moral realism</h5><p>Moral truths exist independently of opinion (Plato, Kant, Parfit). Torturing children for fun is wrong even if a culture applauds it.</p></div>
+    <div class="card"><div class="emoji-big">📣</div><h5>Expressivism / Emotivism</h5><p>Moral sentences express attitudes, not facts (Hume, Ayer, Stevenson). “Murder is wrong” ≈ “Boo murder!” + “Do not do it.”</p></div>
+    <div class="card"><div class="emoji-big">🏗</div><h5>Constructivism</h5><p>Morality is what rational agents <em>would</em> agree to under fair conditions (Rawls, Korsgaard). Built, not found.</p></div>
+  </div>
+  <p>Related: <strong>cognitivism vs non-cognitivism</strong> (can moral claims be true/false?), <strong>relativism vs universalism</strong> (one morality or many?), <strong>error theory</strong> (Mackie: all moral claims are false because they presuppose spooky properties).</p>
+  <div class="callout warn"><b class="head">⚠ COMMON MISREAD</b>Relativism (“it’s true for them”) is a description of <em>disagreement</em>, not a solution to it. Engineers still need a decision procedure when cultures collide — see Level 4.</div>
+  <h3>1.4 Animated example — The Three Judges</h3>
+  <div class="lab"><h4>LAB 1-A · SAME ACT, THREE VERDICTS — PRESS EACH BUTTON</h4>
+    <p style="font-size:14px">Act: <strong>Amina copies a rich company's software to teach poor kids for free.</strong></p>
+    <div class="grid3" style="margin-top:10px">
+      <div class="card"><h5>👨‍👩‍👧 Morality says…</h5><p id="lab1a-moral" style="min-height:60px">“In her village, sharing is honourable; piracy is normal.”</p><button class="mini" data-lab1a="moral">Ask the village</button></div>
+      <div class="card"><h5>📜 Ethics says…</h5><p id="lab1a-ethic" style="min-height:60px">Press to run analysis…</p><button class="mini" data-lab1a="ethic">Run analysis</button></div>
+      <div class="card"><h5>⚖ Law says…</h5><p id="lab1a-law" style="min-height:60px">Press to check statute…</p><button class="mini" data-lab1a="law">Check statute</button></div>
+    </div>
+  </div>
+  </div><!-- /level-body -->
+  <div class="quiz" data-quiz="1" data-pass="60">
+    <h4>🔓 ACCEPTANCE TEST — LEVEL 1 (answer to unlock Level 2)</h4>
+    <div class="q" data-answer="b"><p><strong>Q1.</strong> Best distinction?</p><label><input type="radio" name="q1l1" value="a"> a) Morality is law, ethics is religion</label><label><input type="radio" name="q1l1" value="b"> b) Morality = lived customs; Ethics = reflective system that evaluates them</label><label><input type="radio" name="q1l1" value="c"> c) They are synonyms, no difference</label></div>
+    <div class="q" data-answer="c"><p><strong>Q2.</strong> Which is a metaethical question?</p><label><input type="radio" name="q1l1b" value="a"> a) Should euthanasia be legal?</label><label><input type="radio" name="q1l1b" value="b"> b) Should I maximise happiness?</label><label><input type="radio" name="q1l1b" value="c"> c) Does “good” refer to a real property or express an attitude?</label></div>
+    <div class="q" data-answer="a"><p><strong>Q3.</strong> “Not everything illegal is immoral” — best example?</p><label><input type="radio" name="q1l1c" value="a"> a) Jaywalking on an empty street at 3am</label><label><input type="radio" name="q1l1c" value="b"> b) Torturing a child for fun</label><label><input type="radio" name="q1l1c" value="c"> c) Stealing medicine to save a life always legal</label></div>
+    <button class="mini primary" data-check>Check &amp; Unlock →</button>
+    <span class="result" data-result></span>
+  </div>
+</section>
+
+<!-- ================= LEVEL 2 ================= -->
+<section class="level locked" id="level-2" data-level="2">
+  <span class="level-num">LEVEL 2 · CLEARANCE: OPERATOR</span>
+  <h2>2. Normative Engines — Five Ways to Decide Right</h2>
+  <p>Think of normative theories as <strong>engines</strong>: same fuel (a dilemma), different combustion. A good engineer knows all five and when each overheats.</p>
+  <div class="level-body">
+  <div class="grid2">
+    <div class="card"><div class="emoji-big">📏</div><h5>1. Deontology — Follow the rule</h5><p><strong>Kant (1785):</strong> act only on maxims you could will as universal law. Never treat persons as <em>mere</em> means. Duties (do not lie, do not kill) bind even if breaking them would help. <span class="tag">Categorical Imperative</span> <span class="tag">Rights</span></p><p><em>Strength:</em> protects minorities. <em>Fails when:</em> rules collide (lie to save a life?).</p></div>
+    <div class="card"><div class="emoji-big">⚖</div><h5>2. Consequentialism — Weigh the outcome</h5><p><strong>Bentham / Mill / Singer:</strong> right = best consequences. Classical <strong>utilitarianism</strong>: maximise total happiness (or preferences). Used in cost-benefit, triage, effective altruism. <span class="tag">Utility</span> <span class="tag">QALY</span></p><p><em>Strength:</em> impartial arithmetic. <em>Fails when:</em> it sacrifices one innocent for the many.</p></div>
+    <div class="card"><div class="emoji-big">🌳</div><h5>3. Virtue ethics — Be the person</h5><p><strong>Aristotle:</strong> cultivate excellences — courage, temperance, justice, wisdom — until good action flows from character. Ask “What would the virtuous person do?” <span class="tag">Eudaimonia</span> <span class="tag">Habit</span></p><p><em>Strength:</em> handles everyday life. <em>Fails when:</em> you need a split-second rule.</p></div>
+    <div class="card"><div class="emoji-big">🤲</div><h5>4. Care &amp; Relational ethics</h5><p><strong>Gilligan, Noddings:</strong> morality grows from concrete relationships and vulnerability, not abstract rules. Attend, respond, repair. Central to nursing, teaching, parenting. <span class="tag">Responsibility</span></p></div>
+    <div class="card"><div class="emoji-big">⚖️</div><h5>5. Justice as fairness</h5><p><strong>Rawls (1971):</strong> design society from behind a <strong>veil of ignorance</strong> — not knowing if you’ll be rich/poor, man/woman, majority/minority. You’d pick equal liberties + inequalities only if they help the worst-off (difference principle). Try the simulator below.</p></div>
+    <div class="card"><div class="emoji-big">🕊</div><h5>Hybrid: principlism</h5><p>Real hospitals use four mid-level principles: <strong>autonomy, beneficence, non-maleficence, justice</strong> (Beauchamp &amp; Childress). No single engine — a dashboard. This is how production ethics actually works.</p></div>
+  </div>
+  <h3>2.1 Animated lab — Veil of Ignorance lottery</h3>
+  <div class="lab"><h4>LAB 2-A · YOU ARE ABOUT TO BE BORN. YOU DON'T KNOW WHERE.</h4>
+    <p style="font-size:14px">Press <em>Random birth</em>. Then ask: which rules would you have wanted <em>before</em> knowing your slot? That is Rawls' test.</p>
+    <div class="veil-cards" id="veilCards"><div class="veil-card">❓<br>Unborn</div><div class="veil-card">❓<br>Unborn</div><div class="veil-card">❓<br>Unborn</div></div>
+    <button class="mini primary" id="veilBtn">🎲 Random birth</button>
+    <p id="veilOut" style="font-size:14px;margin-top:8px"></p>
+  </div>
+  <h3>2.2 Quick selector</h3>
+  <table class="spec"><tr><th>If you hear…</th><th>Engine</th><th>Test question</th></tr>
+  <tr><td>“But that violates her rights!”</td><td>Deontology</td><td>Could everyone do this without contradiction?</td></tr>
+  <tr><td>“But it saves five lives!”</td><td>Consequentialism</td><td>Which option maximises well-being?</td></tr>
+  <tr><td>“A decent person wouldn’t…”</td><td>Virtue</td><td>What character does this express?</td></tr>
+  <tr><td>“Who is vulnerable here?”</td><td>Care</td><td>Have I listened and repaired?</td></tr>
+  <tr><td>“Would I accept this not knowing who I’ll be?”</td><td>Justice</td><td>Does it help the worst-off?</td></tr></table>
+  </div>
+  <div class="quiz" data-quiz="2" data-pass="60">
+    <h4>🔓 ACCEPTANCE TEST — LEVEL 2</h4>
+    <div class="q" data-answer="a"><p><strong>Q1.</strong> Kant's core idea?</p><label><input type="radio" name="q1l2" value="a"> a) Act only on universalizable maxims; never use persons as mere means</label><label><input type="radio" name="q1l2" value="b"> b) Maximise total happiness whatever the means</label><label><input type="radio" name="q1l2" value="c"> c) Follow your culture whatever it says</label></div>
+    <div class="q" data-answer="b"><p><strong>Q2.</strong> Utilitarianism judges by…</p><label><input type="radio" name="q1l2b" value="a"> a) The agent's motives alone</label><label><input type="radio" name="q1l2b" value="b"> b) Consequences — best overall outcome</label><label><input type="radio" name="q1l2b" value="c"> c) Divine command</label></div>
+    <div class="q" data-answer="c"><p><strong>Q3.</strong> Veil of ignorance asks you to…</p><label><input type="radio" name="q1l2c" value="a"> a) Ignore all facts</label><label><input type="radio" name="q1l2c" value="b"> b) Favour your own group</label><label><input type="radio" name="q1l2c" value="c"> c) Choose rules without knowing your position, protecting the worst-off</label></div>
+    <button class="mini primary" data-check>Check &amp; Unlock →</button> <span class="result" data-result></span>
+  </div>
+</section>
+
+<!-- ================= LEVEL 3 ================= -->
+<section class="level locked" id="level-3" data-level="3">
+  <span class="level-num">LEVEL 3 · CLEARANCE: LAB TECH</span>
+  <h2>3. The Human Lab — Why Good People Do Bad Things (and How to Fix It)</h2>
+  <div class="level-body">
+  <h3>3.1 Kohlberg's 3 levels (how moral reasoning grows)</h3>
+  <table class="spec"><tr><th>Level</th><th>Logic</th><th>Example</th></tr>
+  <tr><td><strong>Pre-conventional</strong> (child)</td><td>Avoid punishment / get reward</td><td>“Don’t steal or you’ll be grounded.”</td></tr>
+  <tr><td><strong>Conventional</strong> (most adults)</td><td>Be a good group member; uphold law</td><td>“Good citizens don’t cheat.”</td></tr>
+  <tr><td><strong>Post-conventional</strong></td><td>Principled: justice, rights, revisable rules</td><td>“This law is unjust; civil disobedience is warranted.” (MLK, Gandhi)</td></tr></table>
+  <h3>3.2 Haidt's Moral Foundations (why left &amp; right feel different)</h3>
+  <p>Psychologist Jonathan Haidt shows liberals weight <strong>care + fairness</strong> most; conservatives weight those <em>plus</em> <strong>loyalty, authority, sanctity</strong>. Same facts, different taste buds. If you want to persuade across tribes, speak to <em>their</em> foundations — crucial for Level 5.</p>
+  <h3>3.3 LAB 3-A · Trolley problem (animated, you pull the lever)</h3>
+  <div class="lab"><h4>INTERACTIVE TROLLEY — CLASSIC vs FOOTBRIDGE</h4>
+    <p style="font-size:14px">A runaway trolley will kill <strong>5 workers</strong> unless you divert it to kill <strong>1 worker</strong>. Most people pull the lever — but refuse to <em>push</em> one man off a bridge for the same arithmetic. Why? (Deontology vs consequentialism in your brain.)</p>
+    <div class="stage">
+      <div class="track"><div class="rail"></div><div class="trolley" id="trolley">🚃</div>
+      <div class="person" style="left:62%">👷</div><div class="person" style="left:70%">👷</div><div class="person" style="left:78%">👷</div><div class="person" style="left:86%">👷</div><div class="person" style="left:93%">👷</div>
+      <div class="person" id="singleVictim" style="left:62%;top:8px;display:none">👷</div>
+      </div>
+      <p id="trolleyOut" style="font-size:14px">Trolley idle. 5 on main track, 1 on side track.</p>
+      <button class="mini primary" id="pullBtn">🔀 Pull lever (divert)</button>
+      <button class="mini" id="resetTrolley">Reset</button>
+    </div>
+  </div>
+  <h3>3.4 LAB 3-B · Prisoner's Dilemma — play against the machine</h3>
+  <div class="lab"><h4>WHY COOPERATION IS HARD — AND HOW IT EVOLVES</h4>
+    <p style="font-size:14px">You and a partner are interrogated separately. <strong>Cooperate</strong> = stay silent. <strong>Defect</strong> = betray. Machine plays Tit-for-Tat. Score: mutual cooperation 3/3, mutual defection 1/1, sucker 0 / tempter 5.</p>
+    <div class="matrix"><div class="hd"></div><div class="hd">Machine Cooperates</div><div class="hd">Machine Defects</div><div class="hd">You Cooperate</div><div class="pick" data-you="C" data-m="C">3 , 3 🤝</div><div class="pick" data-you="C" data-m="D">0 , 5 😢</div><div class="hd">You Defect</div><div class="pick" data-you="D" data-m="C">5 , 0 😈</div><div class="pick" data-you="D" data-m="D">1 , 1 💥</div></div>
+    <button class="mini primary" id="coopBtn">🤝 Cooperate</button> <button class="mini" id="defectBtn">🗡 Defect</button> <button class="mini" id="pdReset">Reset</button>
+    <p id="pdOut" style="font-family:var(--mono);font-size:13px;margin-top:8px">Round 1 — Your score: 0 · Machine: 0</p>
+  </div>
+  <h3>3.5 LAB 3-C · Tragedy of the Commons</h3>
+  <div class="lab"><h4>SHARED PASTURE — ADD COWS UNTIL IT COLLAPSES</h4>
+    <div class="pasture" id="pasture"><span class="cow">🐄</span><span class="cow">🐄</span></div>
+    <p id="commonsOut" style="font-size:14px">Grass: lush (100%). Each extra cow +milk, −grass. Beyond 6 cows, collapse.</p>
+    <button class="mini primary" id="addCow">+ Add cow</button> <button class="mini" id="regulateBtn">📜 Add rule (quota + fine)</button> <button class="mini" id="commonsReset">Restore</button>
+  </div>
+  <div class="callout danger"><b class="head">☠ FAILURE MODE CATALOGUE (preview)</b>Diffusion of responsibility (“someone else will act”), Milgram obedience, Stanford-prison roles, confirmation bias, motivated reasoning, scope neglect. Countermeasure: pre-commitment, checklists, dissent channels — see Level 4.</div>
+  </div>
+  <div class="quiz" data-quiz="3" data-pass="60">
+    <h4>🔓 ACCEPTANCE TEST — LEVEL 3</h4>
+    <div class="q" data-answer="b"><p><strong>Q1.</strong> Why do most pull the lever but refuse to push the man?</p><label><input type="radio" name="q1l3" value="a"> a) They can't do maths</label><label><input type="radio" name="q1l3" value="b"> b) Impersonal harm feels consequentialist; personal harm triggers deontological constraint</label><label><input type="radio" name="q1l3" value="c"> c) They like levers</label></div>
+    <div class="q" data-answer="a"><p><strong>Q2.</strong> Tit-for-Tat succeeds because it is…</p><label><input type="radio" name="q1l3b" value="a"> a) Nice, retaliatory, forgiving, clear — cooperation becomes rational over repeats</label><label><input type="radio" name="q1l3b" value="b"> b) Always defecting</label><label><input type="radio" name="q1l3b" value="c"> c) Random</label></div>
+    <div class="q" data-answer="c"><p><strong>Q3.</strong> Tragedy of the Commons is solved by…</p><label><input type="radio" name="q1l3c" value="a"> a) Hoping harder</label><label><input type="radio" name="q1l3c" value="b"> b) Adding unlimited cows</label><label><input type="radio" name="q1l3c" value="c"> c) Institutions: quotas, pricing, monitoring, Ostrom's commons governance</label></div>
+    <button class="mini primary" data-check>Check &amp; Unlock →</button> <span class="result" data-result></span>
+  </div>
+</section>
+
+<!-- ================= LEVEL 4 ================= -->
+<section class="level locked" id="level-4" data-level="4">
+  <span class="level-num">LEVEL 4 · CLEARANCE: BUILDER</span>
+  <h2>4. Production Manual — How to <em>Produce</em> Ethics (Not Just Admire It)</h2>
+  <p>Ethics is manufactured like anything reliable: <strong>design → test → deploy → monitor → repair</strong>. Here is the assembly line for a person, a team, a company, and an AI.</p>
+  <div class="level-body">
+  <h3>4.1 Personal rig (daily maintenance)</h3>
+  <ol><li><strong>Values inventory (30 min, once):</strong> list 5 non-negotiables + 5 aspirations. Example: honesty, care for parents, craft, fairness, ecological restraint.</li>
+  <li><strong>Pre-commitments:</strong> “If offer involves lying to a customer, I decline automatically.” Removes willpower from the hot moment.</li>
+  <li><strong>Evening review (3 min):</strong> What did I do today that my ideal self would endorse? One repair tomorrow.</li>
+  <li><strong>Friction design:</strong> make good easy (fruit visible, donations automatic), bad hard (delete gambling app, 24h rule for angry emails).</li></ol>
+  <h3>4.2 Team / company OS (copy-paste template)</h3>
+  <table class="spec"><tr><th>Part</th><th>Spec</th><th>Example</th></tr>
+  <tr><td>Code of ethics</td><td>1 page, verbs not vibes, with examples + edge cases</td><td>“We never sell user data. ‘Anonymised’ bundles count as selling.”</td></tr>
+  <tr><td>Decision log</td><td>Who decided, options, trade-off, reviewer</td><td>Prevents “nobody decided” disasters.</td></tr>
+  <tr><td>Red team / dissent slot</td><td>One person paid to argue the other side</td><td>Pixar “Braintrust”, aviation CRM.</td></tr>
+  <tr><td>Whistle channel</td><td>Anonymous, external trustee, anti-retaliation</td><td>See EU Whistleblower Directive.</td></tr>
+  <tr><td>Ethics debt sprint</td><td>Quarterly fix of accumulated compromises</td><td>Like tech debt, but moral.</td></tr></table>
+  <h3>4.3 AI &amp; product checklist (applied ethics in code)</h3>
+  <div class="callout"><b class="head">✓ PRE-SHIP CHECKLIST — FORM ME-04</b>
+  <ol><li>Who is harmed if we are wrong? Can they appeal to a human in &lt;48h?</li><li>What does the dataset over/under-represent? Test worst-off group first.</li><li>Can the user say no, understand why, and leave with their data?</li><li>What does misuse at scale look like? Rate-limit, watermark, audit trail?</li><li>Who signed off? Name + date. No anonymous launches.</li></ol></div>
+  <h3>4.4 LAB 4-A · Compass calibrator</h3>
+  <div class="lab"><h4>WHERE DO YOU LEAN? MOVE THE SLIDERS, SEE YOUR PROFILE</h4>
+    <div class="compass-wrap">
+      <div><label style="font-size:13px">Rules vs Outcomes <span id="v1">50</span></label><br><input type="range" id="r1" min="0" max="100" value="50"></div>
+      <div><label style="font-size:13px">Self vs Others <span id="v2">50</span></label><br><input type="range" id="r2" min="0" max="100" value="50"></div>
+      <div><label style="font-size:13px">Tradition vs Change <span id="v3">50</span></label><br><input type="range" id="r3" min="0" max="100" value="50"></div>
+    </div>
+    <div class="spectrum"><div class="spectrum-dot" id="compassDot" style="left:50%">📍</div></div>
+    <p id="compassOut" style="font-size:14px">Balanced pragmatist — borrow from all engines.</p>
+  </div>
+  </div>
+  <div class="quiz" data-quiz="4" data-pass="60">
+    <h4>🔓 ACCEPTANCE TEST — LEVEL 4</h4>
+    <div class="q" data-answer="b"><p><strong>Q1.</strong> Best “production” habit?</p><label><input type="radio" name="q1l4" value="a"> a) Keep values vague so nobody disagrees</label><label><input type="radio" name="q1l4" value="b"> b) Pre-commitments + decision logs + dissent channel + regular repair</label><label><input type="radio" name="q1l4" value="c"> c) Only think about ethics after scandal</label></div>
+    <div class="q" data-answer="a"><p><strong>Q2.</strong> A good AI pre-ship check includes…</p><label><input type="radio" name="q1l4b" value="a"> a) Worst-off testing, appeal path, misuse modelling, named sign-off</label><label><input type="radio" name="q1l4b" value="b"> b) “Move fast, apologise later”</label><label><input type="radio" name="q1l4b" value="c"> c) Hiding the model card</label></div>
+    <button class="mini primary" data-check>Check &amp; Unlock →</button> <span class="result" data-result></span>
+  </div>
+</section>
+
+<!-- ================= LEVEL 5 ================= -->
+<section class="level locked" id="level-5" data-level="5">
+  <span class="level-num">LEVEL 5 · CLEARANCE: ANALYST ★ REAL POLITICS</span>
+  <h2>5. Politics at Scale — What Parties Actually Differ On (Real Countries, Real Examples)</h2>
+  <p><strong>Promotional note:</strong> if Levels 1–4 are the physics, politics is the engineering project where everyone argues about the bridge while standing on it. Below is a field guide — simplified but <em>real</em> — so you can locate any party on two axes: <strong>economics (state ↔ market)</strong> and <strong>culture/authority (libertarian ↔ authoritarian)</strong>.</p>
+  <div class="level-body">
+  <h3>5.1 The families (with de-qualities honestly labelled)</h3>
+  <table class="spec">
+    <tr><th>Family</th><th>Core ethical claim</th><th>Typical policies</th><th>Strength (quality) / Failure (de-quality)</th></tr>
+    <tr><td><strong>Conservatives / Christian-democrats</strong></td><td>Order + tradition enable freedom</td><td>Low taxes, family policy, strong police, cautious immigration</td><td>✅ Stability / ❌ When bad: nostalgia blocks reform; cronyism (e.g., UK “Partygate” 2022 undermined rule-following credibility)</td></tr>
+    <tr><td><strong>Liberals / Centrists</strong></td><td>Individual rights + markets + institutions</td><td>Civil liberties, free trade, EU/NATO, technocracy</td><td>✅ Pluralism / ❌ When bad: technocratic distance; market naivety (e.g., 2008 crisis under light-touch regulation)</td></tr>
+    <tr><td><strong>Social democrats / Labour</strong></td><td>Freedom requires security: decommodify basics</td><td>Universal health, unions, progressive tax, green investment</td><td>✅ Shared safety net / ❌ When bad: bureaucracy, deficit drift if badly managed</td></tr>
+    <tr><td><strong>Greens</strong></td><td>Intergenerational justice; planet as stakeholder</td><td>Carbon price, renewables, biodiversity, participatory democracy</td><td>✅ Long-term thinking / ❌ When bad: moralising tone that alienates workers (e.g., French “gilets jaunes” backlash to fuel tax 2018)</td></tr>
+    <tr><td><strong>Nationalist-populists / Far right</strong></td><td>“The pure people vs corrupt elite”; nation first</td><td>Closed borders, protectionism, law-and-order, culture wars</td><td>✅ Channels neglected grievance / ❌ When bad: scapegoating, disinformation, democratic erosion (e.g., US Jan 6 2021; Brazil Jan 8 2023)</td></tr>
+    <tr><td><strong>Radical left / Communists</strong></td><td>Capital itself is the problem; common ownership</td><td>Nationalisation, rent caps, anti-imperialism</td><td>✅ Inequality spotlight / ❌ When bad: authoritarian drift, economic miscalculation (e.g., Venezuela’s collapse after 2013 oil + price-control spiral)</td></tr>
+    <tr><td><strong>Libertarians</strong></td><td>Non-aggression; minimal state</td><td>Flat tax, deregulation, drug legalisation, crypto</td><td>✅ Anti-paternalism / ❌ When bad: ignores commons + power asymmetry (e.g., unregulated crypto scams 2022)</td></tr>
+  </table>
+  <h3>5.2 Country dossiers — locate the real parties</h3>
+  <div class="grid2">
+    <div class="card"><h5>🇺🇸 USA — Democrats vs Republicans</h5><p><strong>Democrats</strong> (centre-left liberal): Obamacare expansion, climate funds (Inflation Reduction Act 2022), abortion rights. <strong>Republicans</strong> (conservative, increasingly populist under Trump): tax cuts (TCJA 2017), gun rights, immigration restriction, 2024 platform of tariffs + deportations. <em>Ethical split:</em> care/fairness vs loyalty/authority/liberty (Haidt). De-quality to watch both sides: legislative gridlock + gerrymandering + money in politics (Citizens United 2010).</p></div>
+    <div class="card"><h5>🇬🇧 UK — Labour vs Conservatives (+ LibDems, Reform, Greens, SNP)</h5><p><strong>Labour</strong> (Starmer, 2024 landslide): NHS rescue, workers’ rights, green prosperity plan (trimmed). <strong>Tories</strong> (2010–2024): austerity, Brexit (2016/2020), “levelling up” (under-delivered). <em>Lesson:</em> Brexit as consequentialism failure — promised £350m/week for NHS, delivered trade friction (OBR: −4% long-run productivity).</p></div>
+    <div class="card"><h5>🇩🇪 Germany — CDU/CSU · SPD · Greens · FDP · AfD · Linke</h5><p>Proportional system forces coalitions (“traffic light” SPD+Greens+FDP 2021–2024 collapsed over debt brake). <strong>AfD</strong> (far right, monitored by domestic intelligence in several states) shows de-quality: protest channeled into anti-immigrant framing. <em>Quality:</em> federalism + Constitutional Court as ethics hardware.</p></div>
+    <div class="card"><h5>🇫🇷 France — Renaissance (centre) · RN (far right) · LFI (radical left) · LR · Greens</h5><p>Two-round system + 2024 snap election → hung parliament. <strong>RN</strong> (Le Pen/Bardella): immigration + purchasing power. <strong>LFI</strong> (Mélenchon): retirement at 60, disobey EU budget rules. Macron’s pension reform (49.3, 2023, age 62→64) = case study in procedure vs legitimacy.</p></div>
+    <div class="card"><h5>🇮🇳 India — BJP vs Congress (+ AAP, regional)</h5><p><strong>BJP</strong> (Modi, Hindu-nationalist, developmentalist): growth + welfare delivery (toilets, UPI) paired with majoritarian de-quality (press-freedom decline, RSF rank ~159/180 in 2024; 2019 citizenship law protests). <strong>Congress</strong> (secular, dynastic): rights + redistribution but organisational decay. Lesson: delivery without pluralism is brittle.</p></div>
+    <div class="card"><h5>🇧🇷 Brazil — PT (left) vs PL (Bolsonarist right)</h5><p><strong>PT</strong> (Lula): Bolsa Família lifted ~20m from extreme poverty (2003–2014) — quality; Mensalão/Petrobras scandals — de-quality (corruption). <strong>Bolsonaro/PL</strong>: anti-corruption + evangelical + agribusiness; Amazon deforestation +27% 2019–2021; Jan 8 2023 coup attempt = democratic de-quality textbook case.</p></div>
+    <div class="card"><h5>🇿🇦 South Africa — ANC · DA · EFF · MK</h5><p><strong>ANC</strong> (liberation → dominance → 2024 loss of majority, now unity government): Mandela quality vs Zuma-era “state capture” de-quality (Zondo Commission). <strong>DA</strong> (liberal, good municipal audit) vs <strong>EFF</strong> (red berets, expropriation without compensation). Lesson: without alternation, ethics debt compounds.</p></div>
+    <div class="card"><h5>🇯🇵 Japan — LDP (dominant conservative) vs CDP/JCP/Ishin</h5><p><strong>LDP</strong> (almost continuous rule since 1955): stability + bureaucracy quality; faction slush-fund scandal 2023–24 de-quality. Shows conservative failure mode: longevity → opacity. Opposition fragmented = accountability gap.</p></div>
+  </div>
+  <div class="callout warn"><b class="head">⚠ HOW TO READ ANY MANIFESTO IN 10 MINUTES (FIELD PROCEDURE)</b>
+  <ol><li>Who pays, who benefits, who decides? (follow the money + power)</li><li>What is the theory of change — rules, incentives, or character? (Level 2 engines)</li><li>What happens to the worst-off + the unborn + the outsider? (veil test)</li><li>What check limits <em>them</em> when they are wrong? (courts, press, alternation)</li><li>What did they do last time they had power? (revealed preference &gt; promise)</li></ol></div>
+  <h3>5.3 Known platforms to verify everything (don’t trust this page alone)</h3>
+  <p>Cross-check claims on: <a href="https://en.wikipedia.org/wiki/List_of_political_parties_by_country" target="_blank" rel="noopener">Wikipedia — parties by country</a> · <a href="https://plato.stanford.edu/" target="_blank" rel="noopener">Stanford Encyclopedia of Philosophy</a> · <a href="https://www.idea.int/" target="_blank" rel="noopener">IDEA — electoral integrity data</a> · <a href="https://www.v-dem.net/" target="_blank" rel="noopener">V-Dem democracy scores</a> · <a href="https://rsf.org/en/index" target="_blank" rel="noopener">RSF Press Freedom Index</a> · <a href="https://www.transparency.org/en/cpi/" target="_blank" rel="noopener">Transparency Intl. Corruption Index</a> · <a href="https://www.politicalcompass.org/" target="_blank" rel="noopener">Political Compass test</a> · <a href="https://www.8values.is/" target="_blank" rel="noopener">8values test</a>. Parties’ own sites: <a href="https://democrats.org" target="_blank" rel="noopener">democrats.org</a>, <a href="https://gop.com" target="_blank" rel="noopener">gop.com</a>, <a href="https://labour.org.uk" target="_blank" rel="noopener">labour.org.uk</a>, <a href="https://conservatives.com" target="_blank" rel="noopener">conservatives.com</a>, <a href="https://www.spd.de" target="_blank" rel="noopener">spd.de</a>, <a href="https://www.cdu.de" target="_blank" rel="noopener">cdu.de</a>.</p>
+  </div>
+  <div class="quiz" data-quiz="5" data-pass="60">
+    <h4>🔓 ACCEPTANCE TEST — LEVEL 5</h4>
+    <div class="q" data-answer="b"><p><strong>Q1.</strong> Proportional systems (Germany) vs majoritarian (UK/USA) mainly differ in…</p><label><input type="radio" name="q1l5" value="a"> a) Weather</label><label><input type="radio" name="q1l5" value="b"> b) Forcing coalitions &amp; small-party representation vs stable single-party winners with wasted votes</label><label><input type="radio" name="q1l5" value="c"> c) Nothing</label></div>
+    <div class="q" data-answer="a"><p><strong>Q2.</strong> “De-quality” example of democratic erosion?</p><label><input type="radio" name="q1l5b" value="a"> a) Jan 6 2021 (US) / Jan 8 2023 (Brazil) — rejecting election results + political violence</label><label><input type="radio" name="q1l5b" value="b"> b) Expanding voting hours</label><label><input type="radio" name="q1l5b" value="c"> c) Publishing a manifesto</label></div>
+    <div class="q" data-answer="c"><p><strong>Q3.</strong> 10-minute manifesto check must include…</p><label><input type="radio" name="q1l5c" value="a"> a) Font choice</label><label><input type="radio" name="q1l5c" value="b"> b) Candidate's favourite food</label><label><input type="radio" name="q1l5c" value="c"> c) Who pays/benefits, veil test, what limits them, track record</label></div>
+    <button class="mini primary" data-check>Check &amp; Unlock →</button> <span class="result" data-result></span>
+  </div>
+</section>
+
+<!-- ================= LEVEL 6 ================= -->
+<section class="level locked" id="level-6" data-level="6">
+  <span class="level-num">LEVEL 6 · CLEARANCE: ARCHITECT</span>
+  <h2>6. Blueprint for Peaceful, Useful Societies + Catalogue of Bad Decisions</h2>
+  <div class="level-body">
+  <h3>6.1 Seven new (but buildable) ideas</h3>
+  <ol>
+    <li><strong>Ethics maintenance week:</strong> like fire drills — annual school/workplace week where everyone runs a trolley, a commons game, and a budget veil exercise. Peace is a skill, not a mood.</li>
+    <li><strong>Citizens’ assemblies by lot:</strong> 100 random citizens, paid, briefed by experts, decide one thorny issue (Ireland did this for abortion 2018; France for climate 2020). Beats rage-algorithms.</li>
+    <li><strong>Commons trusts:</strong> atmosphere, aquifers, attention — managed by Ostrom-style trusts with caps + dividends (Alaska Permanent Fund pays oil dividends; extend to carbon).</li>
+    <li><strong>Democracy hardware:</strong> independent courts, public media funding, proportional top-up seats, anti-gerrymandering commissions, 18-year-old candidacy.</li>
+    <li><strong>Usefulness score for policy:</strong> every law ships with QALYs + carbon + worst-off impact on page 1 — like nutrition labels.</li>
+    <li><strong>Repair funds:</strong> truth-and-reconciliation + compensation (South Africa TRC, Canada settlements, German Wiedergutmachung) — peace without repair is amnesia.</li>
+    <li><strong>AI mediators, human deciders:</strong> use models to summarise, translate, find win-wins (e.g., Polis deliberation platform used in Taiwan vTaiwan), but final vote stays human and public.</li>
+  </ol>
+  <h3>6.2 Bad decisions — the de-qualities catalogue (learn, don’t sneer)</h3>
+  <table class="spec"><tr><th>Bad decision</th><th>De-quality (vice)</th><th>Real cost</th><th>Ethical fix</th></tr>
+  <tr><td>Iraq War 2003 (false WMD premise)</td><td>Deception + hubris</td><td>~200k+ deaths, regional destabilisation (Iraq Body Count; Chilcot Report)</td><td>Pre-mortem, intel dissent channel, parliamentary vote with evidence bar</td></tr>
+  <tr><td>Austerity overdose / corruption (multiple)</td><td>Cruelty-by-spreadsheet / Greed</td><td>UK food-bank surge; Brazil Petrobras R$6bn+ graft</td><td>Distributional audit + transparent procurement (Open Contracting)</td></tr>
+  <tr><td>Climate delay</td><td>Cowardice + free-riding</td><td>1.5°C overshoot risks (IPCC AR6)</td><td>Carbon price + commons trust + border adjustment</td></tr>
+  <tr><td>Disinformation for votes</td><td>Dishonesty</td><td>Capitol / Planalto riots; vaccine deaths</td><td>Platform transparency (EU DSA), media literacy, fast courts</td></tr>
+  <tr><td>Deforestation land-grab</td><td>Short-sightedness</td><td>Amazon tipping risk (INPE data)</td><td>Tenure for indigenous stewards + satellite enforcement</td></tr></table>
+  <div class="callout good"><b class="head">🌱 PROMOTIONAL CLOSE — WHY THIS MANUAL EXISTS</b>Morality tells you what your grandmother feared. Ethics tells you what your grandchildren will need. The gap between them is your job. Share this file — it works offline, in classrooms, in prisons, in parliaments. Print it. Argue with it. Improve it. Peace is not the absence of disagreement; it is disagreement with guardrails, repair kits, and homework. Start tonight: run one lab with one other person.</div>
+  <h3>6.3 Final exam (graduation)</h3>
+  </div>
+  <div class="quiz" data-quiz="6" data-pass="60">
+    <h4>🎓 FINAL EXAM — LEVEL 6 (pass to earn certificate)</h4>
+    <div class="q" data-answer="a"><p><strong>Q1.</strong> Peaceful societies need…</p><label><input type="radio" name="q1l6" value="a"> a) Guardrails + repair + citizen competence (assemblies, trusts, checks, literacy)</label><label><input type="radio" name="q1l6" value="b"> b) One strong leader who never errs</label><label><input type="radio" name="q1l6" value="c"> c) Banning disagreement</label></div>
+    <div class="q" data-answer="b"><p><strong>Q2.</strong> A “de-quality” is…</p><label><input type="radio" name="q1l6b" value="a"> a) A compliment</label><label><input type="radio" name="q1l6b" value="b"> b) A vice/failure mode of a decision or system to name and fix</label><label><input type="radio" name="q1l6b" value="c"> c) A font size</label></div>
+    <div class="q" data-answer="c"><p><strong>Q3.</strong> Best use of AI in democracy per this manual?</p><label><input type="radio" name="q1l6c" value="a"> a) Let AI vote for us</label><label><input type="radio" name="q1l6c" value="b"> b) Generate propaganda</label><label><input type="radio" name="q1l6c" value="c"> c) Summarise + translate + find consensus (e.g., Polis); humans decide publicly</label></div>
+    <button class="mini primary" data-check>Grade final →</button> <span class="result" data-result></span>
+    <div id="cert" style="display:none;margin-top:12px;background:#fff;color:#111;border-radius:10px;padding:16px;text-align:center">
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:.15em">CERTIFICATE OF COMPLETION</div>
+      <div style="font-family:var(--serif);font-size:24px;margin:6px 0">Ethics Operator · Peace Architect</div>
+      <p style="font-size:14px">Holder completed ME-OMNIBUS v1.0, Levels 1–6, and pledges: <em>protect the worst-off, repair what I break, verify before sharing.</em></p>
+      <p style="font-family:var(--mono);font-size:12px" id="certCode"></p>
+      <p><a href="index.html">⌂ Back to Home</a> · <button class="mini" onclick="window.print()">🖨 Print manual</button></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SOURCES ================= -->
+<section class="level" id="sources" data-level="0">
+  <span class="level-num">APPENDIX A · EXTERNAL REFERENCES</span>
+  <h2>Sources, Further Reading &amp; Platforms</h2>
+  <p class="print-note">All links are plain HTTPS — no scripts, no trackers, no external CSS/JS. Page works fully offline except these references.</p>
+  <div class="grid2">
+    <div class="card"><h5>📚 Foundations</h5><p><a href="https://plato.stanford.edu/entries/ethics-virtue/" target="_blank" rel="noopener">SEP: Virtue Ethics</a><br><a href="https://plato.stanford.edu/entries/kant-moral/" target="_blank" rel="noopener">SEP: Kant's Moral Philosophy</a><br><a href="https://plato.stanford.edu/entries/consequentialism/" target="_blank" rel="noopener">SEP: Consequentialism</a><br><a href="https://plato.stanford.edu/entries/rawls/" target="_blank" rel="noopener">SEP: John Rawls</a><br><a href="https://plato.stanford.edu/entries/metaethics/" target="_blank" rel="noopener">SEP: Metaethics</a></p></div>
+    <div class="card"><h5>🧪 Psychology &amp; games</h5><p><a href="https://plato.stanford.edu/entries/prisoner-dilemma/" target="_blank" rel="noopener">SEP: Prisoner's Dilemma</a><br><a href="https://plato.stanford.edu/entries/trolley-problem/" target="_blank" rel="noopener">Trolley literature overview</a><br><a href="https://moralfoundations.org/" target="_blank" rel="noopener">Moral Foundations Theory (Haidt)</a><br><a href="https://www.econlib.org/library/Enc/CommonsTragedy.html" target="_blank" rel="noopener">Tragedy of the Commons</a> · <a href="https://www.ostromworkshop.indiana.edu/" target="_blank" rel="noopener">Ostrom Workshop</a></p></div>
+    <div class="card"><h5>🏛 Politics data (verify parties!)</h5><p><a href="https://www.v-dem.net/" target="_blank" rel="noopener">V-Dem Democracy Report</a><br><a href="https://www.idea.int/" target="_blank" rel="noopener">International IDEA</a><br><a href="https://rsf.org/en/index" target="_blank" rel="noopener">RSF Press Freedom</a><br><a href="https://www.transparency.org/en/cpi/" target="_blank" rel="noopener">Corruption Perceptions Index</a><br><a href="https://en.wikipedia.org/wiki/List_of_political_parties_by_country" target="_blank" rel="noopener">Wikipedia: parties by country</a></p></div>
+    <div class="card"><h5>🛠 Build &amp; teach</h5><p><a href="https://www.coursera.org/learn/moralities-of-everyday-life" target="_blank" rel="noopener">Coursera: Moralities of Everyday Life (Yale)</a><br><a href="https://www.edx.org/learn/ethics" target="_blank" rel="noopener">edX: Ethics courses</a><br><a href="https://pol.is/home" target="_blank" rel="noopener">Polis deliberation platform</a><br><a href="https://www.effectivealtruism.org/" target="_blank" rel="noopener">Effective Altruism</a><br><a href="https://www.ipcc.ch/" target="_blank" rel="noopener">IPCC climate reports</a></p></div>
+  </div>
+  <h3>Glossary (tear-out card)</h3>
+  <p><span class="tag">Deontology</span> <span class="tag">Utilitarianism</span> <span class="tag">Virtue</span> <span class="tag">Veil of ignorance</span> <span class="tag">De-quality = vice/failure mode</span> <span class="tag">Commons</span> <span class="tag">QALY</span> <span class="tag">V-Dem</span> <span class="tag">Polis</span></p>
+  <p><a href="index.html">⌂ Home (index.html)</a> · <a href="#level-1">Restart manual ↑</a></p>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>ME-OMNIBUS v1.0</strong> · Single HTML file · Vanilla JS + CSS3 · Zero external assets · <a href="index.html">⌂ Home</a></p>
+    <p style="font-size:13px">Educational, promotional article. Political summaries are simplifications — always check primary manifestos and independent data (V-Dem, IDEA, RSF, Transparency Intl.). Bad decisions are labelled by their <em>de-qualities</em> (vices) so readers learn failure modes, not hatred. CC-BY-SA: copy, translate, teach.</p>
+  </div>
+</footer>
+<div class="float-nav"><a href="index.html">⌂ Home</a><a href="#start">↑ Top</a></div>
+
+<script>
+(function(){
+"use strict";
+var KEY="me-omnibus-pass-v1";
+function getPass(){try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){return[]}}
+function setPass(a){try{localStorage.setItem(KEY,JSON.stringify(a))}catch(e){}}
+function passed(n){return getPass().indexOf(n)>-1}
+function mark(n){var a=getPass();if(a.indexOf(n)<0){a.push(n);setPass(a);}applyLocks();}
+function applyLocks(){
+  var maxAllowed=1;
+  for(var i=1;i<=6;i++){ if(passed(i)) maxAllowed=Math.max(maxAllowed,i+1); }
+  document.querySelectorAll("section.level[data-level]").forEach(function(sec){
+    var lv=parseInt(sec.dataset.level,10);
+    if(lv===0) return;
+    if(lv<=maxAllowed){sec.classList.remove("locked");
+      var ov=sec.querySelector(".lock-overlay"); if(ov) ov.remove();
+      if(!sec.querySelector(".lock-overlay") && lv>1 && !sec.querySelector(".unlocked-note")){
+        var d=document.createElement("div");d.className="unlocked-note";
+        d.innerHTML='<span class="badge-pass">✓ UNLOCKED</span>';
+        sec.insertBefore(d,sec.children[1]);
+      }
+    } else {
+      sec.classList.add("locked");
+      if(!sec.querySelector(".lock-overlay")){
+        var o=document.createElement("div");o.className="lock-overlay";
+        o.innerHTML="<h3>🔒 LEVEL "+lv+" LOCKED</h3><p>Complete Level "+(lv-1)+" acceptance test (≥60%) to unlock. <a style='color:#fcd34d' href='#level-"+(lv-1)+"'>Go to Level "+(lv-1)+"</a> · <a style='color:#fcd34d' href='index.html'>⌂ Home</a></p>";
+        var body=sec.querySelector(".level-body");
+        sec.insertBefore(o,body);
+      }
+    }
+  });
+  var fill=document.getElementById("progressFill"),txt=document.getElementById("progressText");
+  var n=getPass().length,pct=Math.round(n/6*100);
+  if(fill) fill.style.width=pct+"%";
+  if(txt) txt.textContent="CLEARANCE: LEVEL "+Math.min(maxAllowed,6)+" / 6 · PASSED "+n+"/6";
+}
+document.querySelectorAll(".quiz").forEach(function(qz){
+  var btn=qz.querySelector("[data-check]"),res=qz.querySelector("[data-result]");
+  btn.addEventListener("click",function(){
+    var qs=qz.querySelectorAll(".q"),correct=0;
+    qs.forEach(function(q){
+      var ans=q.dataset.answer;
+      var sel=q.querySelector("input:checked");
+      q.querySelectorAll("label").forEach(function(l){l.style.outline="";l.style.background=""});
+      if(sel){
+        if(sel.value===ans){correct++;sel.closest("label").style.outline="2px solid #22c55e";}
+        else{sel.closest("label").style.outline="2px solid #ef4444";
+          var right=q.querySelector('input[value="'+ans+'"]');
+          if(right) right.closest("label").style.outline="2px solid #22c55e";}
+      }
+    });
+    var pct=Math.round(correct/qs.length*100);
+    var need=parseInt(qz.dataset.pass||"60",10);
+    var qnum=parseInt(qz.dataset.quiz,10);
+    if(pct>=need){res.textContent="✓ "+correct+"/"+qs.length+" ("+pct+"%) — PASSED. Next level unlocked.";
+      res.style.color="#4ade80";mark(qnum);
+      if(qnum===6){var c=document.getElementById("cert");if(c)c.style.display="block";
+        var cc=document.getElementById("certCode");if(cc)cc.textContent="CODE ME-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,8).toUpperCase()+" · index.html";
+        c.scrollIntoView({behavior:"smooth",block:"center"});}
+      else{var nxt=document.getElementById("level-"+(qnum+1));if(nxt)nxt.scrollIntoView({behavior:"smooth"});}
+    }else{res.textContent="✗ "+correct+"/"+qs.length+" ("+pct+"%) — need ≥"+need+"%. Re-read and retry.";
+      res.style.color="#fca5a5";}
+  });
+});
+var rb=document.getElementById("resetBtn");
+if(rb)rb.addEventListener("click",function(){try{localStorage.removeItem(KEY)}catch(e){}applyLocks();location.hash="#level-1";});
+/* LAB 1-A */
+document.querySelectorAll("[data-lab1a]").forEach(function(b){b.addEventListener("click",function(){
+  var k=b.dataset.lab1a;
+  if(k==="moral")document.getElementById("lab1a-moral").textContent="Village: honourable sharing. Elders praise Amina; company lawyers disagree. → Morality varies; ethics must adjudicate.";
+  if(k==="ethic")document.getElementById("lab1a-ethic").textContent="Ethics: Deontology — theft violates duty? Consequentialism — 50 kids educated outweighs profit loss? Virtue — generous but unfair to creators? → Verdict depends on engine. Try open licensing!";
+  if(k==="law")document.getElementById("lab1a-law").textContent="Law (most places): unauthorised copying = infringement, even for good ends. Defences narrow. → Law is the floor, not the ceiling.";
+});});
+/* Veil */
+var births=["Born: rural Malawi, family income $800/yr","Born: heiress in Zurich, trust fund","Born: Dalit girl, Bihar, India","Born: boy in Oslo, strong welfare state","Born: refugee camp, stateless","Born: middle-class São Paulo, public school","Born: wheelchair user, Tokyo","Born: farmer's son, Iowa"];
+document.getElementById("veilBtn").addEventListener("click",function(){
+  var cards=document.querySelectorAll("#veilCards .veil-card");
+  cards.forEach(function(c){c.classList.remove("reveal");c.innerHTML="🎲<br>Shuffling…";});
+  setTimeout(function(){
+    var picks=[];for(var i=0;i<3;i++)picks.push(births[Math.floor(Math.random()*births.length)]);
+    cards.forEach(function(c,i){c.classList.add("reveal");c.textContent=picks[i];});
+    document.getElementById("veilOut").textContent="Now choose: flat tax or progressive? Private health only or universal floor? You might be any of these three. Most choosers behind the veil pick a floor + fair chances. That's the difference principle in action.";
+  },600);
+});
+/* Trolley */
+var t=document.getElementById("trolley"),tout=document.getElementById("trolleyOut");
+document.getElementById("pullBtn").addEventListener("click",function(){
+  t.style.left="78%";t.classList.add("impact");
+  setTimeout(function(){tout.textContent="You diverted: 1 died, 5 lived. Utilitarian: correct. Kantian worry: did you use the 1 as mere means? 78% of readers feel uneasy — that unease IS the engine clash.";},900);
+});
+document.getElementById("resetTrolley").addEventListener("click",function(){t.style.left="10px";t.classList.remove("impact");tout.textContent="Trolley idle. 5 on main track, 1 on side track.";});
+/* PD */
+var round=1,ys=0,ms=0,lastM="C";
+function pdRender(msg){document.getElementById("pdOut").textContent="Round "+round+" — Your score: "+ys+" · Machine: "+ms+(msg?" · "+msg:"");}
+document.getElementById("coopBtn").addEventListener("click",function(){play("C")});
+document.getElementById("defectBtn").addEventListener("click",function(){play("D")});
+document.getElementById("pdReset").addEventListener("click",function(){round=1;ys=0;ms=0;lastM="C";pdRender("reset. Machine starts nice.");});
+function play(you){
+  var m=lastM; // tit for tat: copy your last move; first C
+  var dy=0,dm=0,msg="";
+  if(you==="C"&&m==="C"){dy=3;dm=3;msg="Mutual cooperation 🤝";}
+  else if(you==="C"&&m==="D"){dy=0;dm=5;msg="You were exploited 😢";}
+  else if(you==="D"&&m==="C"){dy=5;dm=0;msg="You exploited 😈";}
+  else{dy=1;dm=1;msg="Mutual defection 💥";}
+  ys+=dy;ms+=dm;lastM=you;round++;pdRender(msg+" (you "+you+", machine "+m+")");
+}
+pdRender("Machine starts nice. Try always-defect vs always-cooperate for 5 rounds.");
+/* Commons */
+var cows=2,regulated=false;
+function commonsRender(){
+  var pct=Math.max(0,100-(cows-2)*18);
+  var out=document.getElementById("commonsOut"),p=document.getElementById("pasture");
+  p.classList.toggle("degraded",cows>6);
+  out.textContent=cows>8?"COLLAPSE ☠ Grass: "+pct+"%. Milk stops. Everyone loses. This is climate, fisheries, antibiotics. Add a rule!":
+    "Cows: "+cows+" · Grass: "+pct+"%"+(regulated?" · ✅ Quota active (max 5, fine enforced) — stable!":" · No rule yet.");
+}
+document.getElementById("addCow").addEventListener("click",function(){
+  if(regulated&&cows>=5){commonsRender();document.getElementById("commonsOut").textContent+=" Quota blocks a 6th cow — rule works.";return;}
+  if(cows>=10)return;
+  cows++;var s=document.createElement("span");s.className="cow";s.textContent="🐄";document.getElementById("pasture").appendChild(s);commonsRender();
+});
+document.getElementById("regulateBtn").addEventListener("click",function(){regulated=true;commonsRender();});
+document.getElementById("commonsReset").addEventListener("click",function(){cows=2;regulated=false;document.getElementById("pasture").innerHTML='<span class="cow">🐄</span><span class="cow">🐄</span>';commonsRender();});
+/* Compass */
+function compass(){
+  var a=+document.getElementById("r1").value,b=+document.getElementById("r2").value,c=+document.getElementById("r3").value;
+  document.getElementById("v1").textContent=a;document.getElementById("v2").textContent=b;document.getElementById("v3").textContent=c;
+  var x=Math.round((a+c)/2);document.getElementById("compassDot").style.left=x+"%";
+  var t2=a<35?"Rule-keeper (deontology)":a>65?"Outcome-maximiser (consequentialism)":"Balanced pragmatist";
+  var orient=c<35?"tradition-anchored":(c>65?"change-open":"balanced old/new");
+  document.getElementById("compassOut").textContent=t2+" · "+(b<35?"self-reliant":b>65?"other-centred":"reciprocal")+" · "+orient;
+}
+["r1","r2","r3"].forEach(function(id){document.getElementById(id).addEventListener("input",compass)});
+compass();
+applyLocks();
+})();
+</script>
+</body>
+</html>
