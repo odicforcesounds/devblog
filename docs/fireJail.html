@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firejail Technical Manual — Zero to Paranoid Hero | index.html</title>
+<meta name="description" content="A paranoid, interactive technical manual for Firejail. Namespaces, seccomp, filesystem contexts, network, X11, profiles. Zero to Hero.">
+<style>
+/* ============ FIREJAIL TECHNICAL MANUAL — pure vanilla CSS3, zero externals ============ */
+:root{
+  --paper:#f4f1e8; --paper2:#ebe6d6; --ink:#1a1d21; --ink-soft:#3a3f45;
+  --red:#c0392b; --amber:#b7791f; --green:#1e8449; --blue:#1f618d;
+  --mono:"Courier New",Courier,Menlo,Consolas,monospace;
+  --serif:Georgia,"Times New Roman",serif;
+  --sans:Verdana,Geneva,Tahoma,sans-serif;
+  --stamp:#c0392b;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#2b2e33;color:var(--ink);font-family:var(--sans);line-height:1.65}
+a{color:var(--blue)}
+/* top classified bar */
+.classbar{background:#111;color:#eee;font-family:var(--mono);font-size:12px;letter-spacing:2px;text-align:center;padding:6px 10px;text-transform:uppercase}
+.classbar b{color:#ff6b6b}
+/* header = book cover bar */
+header.masthead{background:linear-gradient(180deg,#1a1d21,#2c3138);color:#f4f1e8;padding:22px 22px 16px;border-bottom:6px double var(--red)}
+.mast-inner{max-width:1180px;margin:0 auto;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.badge{width:86px;height:86px;flex:0 0 86px;border:3px solid #f4f1e8;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-weight:bold;font-size:13px;text-align:center;line-height:1.1;background:radial-gradient(circle at 35% 30%,#e74c3c,#7b241c);box-shadow:0 0 0 4px #1a1d21,0 0 0 6px #f4f1e8}
+.mast-inner h1{font-family:var(--serif);margin:0;font-size:clamp(22px,3.4vw,38px);letter-spacing:.5px}
+.mast-inner h1 .fj{color:#ff8a75}
+.subtitle{font-family:var(--mono);font-size:13px;color:#d5cfbe;margin-top:6px}
+nav.homebar{max-width:1180px;margin:12px auto 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+nav.homebar a.homebtn{display:inline-block;background:var(--paper);color:#111;font-family:var(--mono);font-weight:bold;text-decoration:none;border:2px solid #111;padding:8px 16px;box-shadow:3px 3px 0 #000}
+nav.homebar a.homebtn:hover{background:#ffe9a8}
+.progress-wrap{flex:1;min-width:220px;background:#00000055;border:1px solid #777;border-radius:20px;padding:4px}
+.progress{height:14px;border-radius:12px;background:linear-gradient(90deg,var(--green),#7dcea0);width:0%;transition:width .6s ease}
+.progresstext{font-family:var(--mono);font-size:12px;color:#ffe9a8;margin-left:8px}
+/* layout */
+.shell{max-width:1180px;margin:16px auto 60px;display:grid;grid-template-columns:290px 1fr;gap:16px;padding:0 14px}
+@media(max-width:900px){.shell{grid-template-columns:1fr}}
+/* sidebar TOC */
+aside.toc{background:var(--paper);border:2px solid #111;box-shadow:5px 5px 0 #000;position:sticky;top:12px;align-self:start;max-height:calc(100vh - 24px);overflow:auto}
+.toc h2{font-family:var(--mono);font-size:13px;letter-spacing:2px;background:#111;color:#ffe9a8;margin:0;padding:10px 12px;position:sticky;top:0}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{border-bottom:1px dashed #999}
+.toc li a{display:flex;gap:8px;align-items:center;padding:10px 12px;text-decoration:none;color:var(--ink);font-size:13.5px}
+.toc li a .lvl{font-family:var(--mono);font-weight:bold;background:#111;color:#fff;border-radius:4px;padding:1px 7px;font-size:12px;flex:0 0 auto}
+.toc li.locked a{color:#999;cursor:not-allowed;background:repeating-linear-gradient(45deg,#f4f1e8,#f4f1e8 10px,#e8e2cf 10px,#e8e2cf 20px)}
+.toc li.done a .lvl{background:var(--green)}
+.toc li.current a{background:#ffe9a8}
+.toc .lock{margin-left:auto;font-size:14px}
+.toc .reset{width:100%;border:0;background:#111;color:#fff;font-family:var(--mono);padding:10px;cursor:pointer;letter-spacing:1px}
+.toc .reset:hover{background:var(--red)}
+/* manual pages */
+main{display:flex;flex-direction:column;gap:18px}
+section.chapter{background:var(--paper);border:2px solid #111;box-shadow:5px 5px 0 #000;overflow:hidden}
+.ch-head{background:var(--paper2);border-bottom:2px solid #111;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.ch-num{font-family:var(--mono);background:var(--red);color:#fff;font-weight:bold;padding:6px 12px;border:2px solid #111;box-shadow:2px 2px 0 #111;white-space:nowrap}
+.ch-head h2{font-family:var(--serif);margin:0;font-size:clamp(19px,2.4vw,27px)}
+.ch-head .clearance{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;color:#fff;background:#111;padding:3px 8px;display:inline-block;margin-top:6px}
+.ch-body{padding:20px 22px}
+.ch-body h3{font-family:var(--serif);border-left:6px solid var(--red);padding-left:10px;margin-top:28px}
+.ch-body h4{font-family:var(--mono);font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-top:22px}
+p{color:var(--ink-soft)} p strong, li strong{color:var(--ink)}
+code,kbd{font-family:var(--mono);background:#111;color:#7dffa8;padding:1px 6px;border-radius:4px;font-size:.88em}
+pre{background:#101214;color:#d6ffd9;border:2px solid #111;border-left:8px solid var(--red);padding:14px;overflow:auto;font-family:var(--mono);font-size:13px;line-height:1.5;border-radius:2px}
+pre .c{color:#8a9a8a} pre .k{color:#ffd76b} pre .v{color:#7dd3ff} pre .bad{color:#ff8a8a} pre .good{color:#7dffa8}
+.callout{border:2px solid #111;padding:12px 14px;margin:14px 0;font-size:14px;background:#fff}
+.callout.warn{background:#fdebd0;border-left:10px solid var(--amber)}
+.callout.danger{background:#fadbd8;border-left:10px solid var(--red)}
+.callout.good{background:#d5f5e3;border-left:10px solid var(--green)}
+.callout.blue{background:#d6eaf8;border-left:10px solid var(--blue)}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px;background:#fff}
+th,td{border:1px solid #111;padding:8px;text-align:left;vertical-align:top}
+th{background:#111;color:#ffe9a8;font-family:var(--mono);font-size:12px;letter-spacing:1px}
+ul.tight li,ol.tight li{margin-bottom:6px}
+/* animated diagrams */
+.lab{border:2px dashed #111;background:#fff;padding:14px;margin:16px 0;position:relative}
+.lab::before{content:attr(data-title);position:absolute;top:-13px;left:12px;background:#111;color:#ffe9a8;font-family:var(--mono);font-size:11px;letter-spacing:1.5px;padding:2px 10px}
+.btn{font-family:var(--mono);font-weight:bold;background:#111;color:#fff;border:2px solid #111;padding:9px 16px;cursor:pointer;box-shadow:3px 3px 0 #888;margin:4px 6px 4px 0}
+.btn:hover{background:var(--red);box-shadow:3px 3px 0 #111}
+.btn.ghost{background:#fff;color:#111}
+.btn.green{background:var(--green)} .btn.blue{background:var(--blue)} .btn.amber{background:var(--amber)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+/* onion namespaces */
+.onion{display:flex;flex-direction:column;align-items:center;gap:0;margin:14px 0}
+.ring{width:100%;max-width:520px;text-align:center;font-family:var(--mono);font-size:12.5px;padding:9px;border:2px solid #111;margin:-1px 0;position:relative;transition:transform .3s, box-shadow .3s}
+.ring:nth-child(1){background:#fadbd8} .ring:nth-child(2){background:#fdebd0}
+.ring:nth-child(3){background:#fef9e7} .ring:nth-child(4){background:#d5f5e3}
+.ring:nth-child(5){background:#d6eaf8} .ring:nth-child(6){background:#e8daef}
+.ring:nth-child(7){background:#111;color:#7dffa8;border-color:#111}
+.ring.active{transform:scale(1.04);box-shadow:0 0 0 3px var(--red), 0 6px 18px #0005;z-index:2}
+.ns-controls{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.ns-controls button{font-family:var(--mono);font-size:12px;border:2px solid #111;background:#fff;padding:6px 10px;cursor:pointer}
+.ns-controls button.on{background:#111;color:#7dffa8}
+.ns-view{font-family:var(--mono);font-size:13px;background:#101214;color:#d6ffd9;padding:12px;margin-top:10px;min-height:88px;border:2px solid #111;white-space:pre-wrap}
+/* syscall rain */
+.rainbox{position:relative;height:230px;background:#0b0e11;border:2px solid #111;overflow:hidden;margin:10px 0}
+.syscall{position:absolute;top:-30px;font-family:var(--mono);font-size:12px;padding:3px 8px;border-radius:4px;border:1px solid #000;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(280px)}}
+.syscall.blocked{background:#c0392b;color:#fff}
+.syscall.allowed{background:#1e8449;color:#fff}
+.filterbar{height:14px;background:repeating-linear-gradient(90deg,#c0392b 0 14px,#111 14px 18px);border:2px solid #111;margin:6px 0}
+.legend{font-family:var(--mono);font-size:12px;display:flex;gap:14px;flex-wrap:wrap}
+/* terminal */
+.term{background:#0b0e11;border:2px solid #111;border-radius:6px;overflow:hidden;margin:12px 0}
+.term-bar{background:#222;color:#bbb;font-family:var(--mono);font-size:12px;padding:6px 10px;display:flex;gap:8px;align-items:center}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block} .r{background:#ff5f57}.y{background:#febc2e}.g{background:#28c840}
+.term-body{padding:12px;font-family:var(--mono);font-size:13px;color:#d6ffd9;min-height:170px;max-height:320px;overflow:auto;white-space:pre-wrap}
+.term-input{display:flex;border-top:1px solid #333}
+.term-input span{color:#7dffa8;font-family:var(--mono);padding:10px 0 10px 12px}
+.term-input input{flex:1;background:transparent;border:0;color:#fff;font-family:var(--mono);font-size:13px;padding:10px;outline:none}
+/* file explorer */
+.fexplorer{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.fexplorer{grid-template-columns:1fr}}
+.ftree{background:#0f1410;border:2px solid #111;padding:10px;font-family:var(--mono);font-size:13px;color:#d6ffd9}
+.fnode{padding:5px 8px;cursor:pointer;border:1px solid transparent;margin:2px 0}
+.fnode:hover{background:#1e8449}
+.fnode.sel{background:#1e8449;border-color:#7dffa8}
+.fdetail{background:#fff;border:2px solid #111;padding:12px;font-size:13px}
+.ctxgrid{display:grid;grid-template-columns:110px 1fr;gap:6px;font-family:var(--mono);font-size:12px;margin:8px 0}
+.ctxgrid dt{background:#111;color:#ffe9a8;padding:4px 6px} .ctxgrid dd{margin:0;background:#f4f1e8;border:1px solid #999;padding:4px 6px}
+.sees{font-family:var(--mono);font-size:12px;padding:8px;border:2px solid #111;margin-top:8px}
+.sees.no{background:#fadbd8} .sees.yes{background:#d5f5e3} .sees.ro{background:#fef9e7}
+/* net animation */
+.netstage{display:grid;grid-template-columns:1fr 90px 1fr;gap:8px;align-items:center;text-align:center;margin:10px 0}
+.hostbox{border:2px solid #111;padding:10px;background:#d6eaf8;font-family:var(--mono);font-size:12px}
+.jailbox{border:2px solid #111;padding:10px;background:#d5f5e3;font-family:var(--mono);font-size:12px}
+.wire{background:#111;height:6px;position:relative;overflow:visible}
+.packet{position:absolute;top:-7px;left:0;width:20px;height:20px;border-radius:50%;background:var(--red);border:2px solid #fff;animation:slide 2.2s linear infinite}
+.packet.ok{background:var(--green)}
+@keyframes slide{to{left:calc(100% - 20px)}}
+.packet.blocked-p{animation:slideBlock 2.2s linear infinite}
+@keyframes slideBlock{0%{left:0;background:var(--red)}45%{left:45%;background:var(--red)}50%{left:45%;transform:scale(1.6);background:#111}100%{left:45%;opacity:0}}
+.firewall{font-family:var(--mono);font-size:11px;background:#111;color:#ffd76b;padding:4px;margin-top:6px}
+/* X11 demo */
+.xdemo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.xdemo{grid-template-columns:1fr}}
+.xscreen{border:3px solid #111;background:#0b0e11;color:#7dffa8;font-family:var(--mono);font-size:12.5px;padding:12px;min-height:150px;position:relative;overflow:hidden}
+.xscreen.evil{border-color:var(--red)}
+.keystroke{display:inline-block;background:#222;border:1px solid #555;padding:1px 6px;margin:1px;border-radius:3px;animation:pop .3s ease}
+@keyframes pop{from{transform:scale(1.6);background:var(--red);color:#fff}}
+.snoop{color:#ff8a8a;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+/* quiz */
+.quiz{border:2px solid #111;background:#fffdf4;padding:14px;margin:16px 0}
+.quiz h4{margin:0 0 8px;font-family:var(--mono);letter-spacing:1px}
+.q{margin:12px 0;padding:10px;border:1px dashed #999}
+.q p{margin:0 0 8px;color:#111;font-weight:bold}
+.q label{display:block;background:#f4f1e8;border:1px solid #999;padding:7px 9px;margin:5px 0;cursor:pointer;font-size:14px}
+.q label:hover{border-color:#111;background:#ffe9a8}
+.q label.correct{background:#d5f5e3;border-color:var(--green)}
+.q label.wrong{background:#fadbd8;border-color:var(--red)}
+.quiz .result{font-family:var(--mono);font-weight:bold;margin-top:8px}
+.stamp{display:none;text-align:center;font-family:var(--mono);font-weight:bold;color:var(--stamp);border:4px double var(--stamp);padding:10px;margin:12px 0;transform:rotate(-3deg);font-size:18px;letter-spacing:3px;background:#ffffffaa}
+.stamp.show{display:block;animation:stampIn .4s ease}
+@keyframes stampIn{from{transform:rotate(-3deg) scale(2);opacity:0}}
+.locked-chapter{filter:grayscale(.4)}
+.gate{border:2px solid #111;background:#111;color:#ffe9a8;font-family:var(--mono);padding:12px;text-align:center;font-size:13px}
+/* profile builder */
+.builder{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:800px){.builder{grid-template-columns:1fr}}
+.toggles label{display:flex;gap:8px;align-items:flex-start;background:#fff;border:1px solid #999;padding:8px;margin:6px 0;cursor:pointer;font-size:13px}
+.toggles input{margin-top:4px;transform:scale(1.25)}
+.toggles small{display:block;color:#555}
+/* footer sources */
+footer.sources{background:#111;color:#d5cfbe;padding:22px;font-size:13px;border-top:6px double var(--red)}
+footer.sources a{color:#ffd76b}
+.seal{max-width:1180px;margin:0 auto}
+.print-note{font-family:var(--mono);font-size:12px;color:#8a9a8a}
+.top-link{position:fixed;right:14px;bottom:14px;background:#111;color:#ffe9a8;font-family:var(--mono);text-decoration:none;border:2px solid #ffe9a8;padding:8px 12px;font-size:12px;z-index:50}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="classbar">FIELD TECHNICAL MANUAL &nbsp;•&nbsp; <b>FIREJAIL // ZERO → PARANOID HERO</b> &nbsp;•&nbsp; READ IN ORDER — EACH LEVEL LOCKS THE NEXT</div>
+
+<header class="masthead">
+  <div class="mast-inner">
+    <div class="badge">FJ<br>☠<br>0.9.x</div>
+    <div style="flex:1;min-width:260px">
+      <h1><span class="fj">Firejail</span> — The Paranoid Operator's Manual</h1>
+      <div class="subtitle">SUID sandbox • namespaces • seccomp-bpf • netfilter • D-Bus • X11 • profiles • file contexts &nbsp;|&nbsp; single-file edition, no externals, vanilla JS+CSS3 only</div>
+    </div>
+  </div>
+  <nav class="homebar" aria-label="Home and progress">
+    <a class="homebtn" href="index.html">⌂ HOME → index.html</a>
+    <a class="homebtn" href="#lvl0" style="background:#ffe9a8">▶ START AT LEVEL 0</a>
+    <div class="progress-wrap"><div class="progress" id="progressBar"></div></div>
+    <span class="progresstext" id="progressText">CLEARANCE 0/8 • RECRUIT</span>
+  </nav>
+</header>
+
+<div class="shell">
+<aside class="toc" aria-label="Table of contents">
+  <h2>☰ CONTENTS / CLEARANCE</h2>
+  <ol id="tocList">
+    <li data-ch="lvl0"><a href="#lvl0"><span class="lvl">L0</span> Ignition: first jail <span class="lock">🔓</span></a></li>
+    <li data-ch="lvl1"><a href="#lvl1"><span class="lvl">L1</span> Namespaces: the 6 walls <span class="lock">🔒</span></a></li>
+    <li data-ch="lvl2"><a href="#lvl2"><span class="lvl">L2</span> Files &amp; contexts <span class="lock">🔒</span></a></li>
+    <li data-ch="lvl3"><a href="#lvl3"><span class="lvl">L3</span> Syscalls, caps &amp; no-new-privs <span class="lock">🔒</span></a></li>
+    <li data-ch="lvl4"><a href="#lvl4"><span class="lvl">L4</span> Network namespaces <span class="lock">🔒</span></a></li>
+    <li data-ch="lvl5"><a href="#lvl5"><span class="lvl">L5</span> X11, D-Bus &amp; IPC <span class="lock">🔒</span></a></li>
+    <li data-ch="lvl6"><a href="#lvl6"><span class="lvl">L6</span> Profiles like a maintainer <span class="lock">🔒</span></a></li>
+    <li data-ch="lvl7"><a href="#lvl7"><span class="lvl">L7</span> HERO: paranoid workstation <span class="lock">🔒</span></a></li>
+    <li data-ch="src"><a href="#src"><span class="lvl">§</span> Sources &amp; man pages <span class="lock">📖</span></a></li>
+  </ol>
+  <button class="reset" id="resetBtn">⟲ RESET CLEARANCE (wipe progress)</button>
+  <div style="padding:10px;font-family:var(--mono);font-size:11px;color:#555">Progress is stored in your browser (localStorage). You cannot skip: each quiz unlocks the next level. This is deliberate.</div>
+</aside>
+
+<main>
+<!-- ================= L0 ================= -->
+<section class="chapter" id="lvl0">
+  <div class="ch-head"><span class="ch-num">LEVEL 0</span><div><h2>Ignition — your first jail in 60 seconds</h2><span class="clearance">CLEARANCE: RECRUIT • NO PRIVILEGES ASSUMED</span></div></div>
+  <div class="ch-body">
+    <h3>0.1 What Firejail actually is</h3>
+    <p><strong>Firejail is a SUID sandbox launcher for Linux.</strong> It runs as root for a few milliseconds — just long enough to build a cage from kernel primitives — then <em>drops privilege</em> and executes your program as you. The cage is not emulation: it is the <strong>Linux kernel itself</strong> (namespaces, seccomp-bpf, capabilities, raqm, AppArmor/Landlock hooks) told to lie to one process tree.</p>
+    <div class="callout blue">🧠 <strong>Mental model:</strong> Firejail = <code>mount namespace</code> (fake filesystem) + <code>PID/UTS/IPC namespaces</code> (fake identity) + optional <code>net/user namespaces</code> + <code>seccomp-bpf</code> (forbidden syscalls) + <code>capabilities + no_new_privs</code> (no escalation) + <code>profile</code> (which rules apply). Lose any layer and you are weaker — that is why this manual is paranoid at <em>every</em> level.</div>
+    <h4>Install &amp; first run</h4>
+<pre><span class="c"># Debian / Ubuntu / Mint</span>
+sudo apt install firejail firetools <span class="c"># firetools = optional Qt GUI</span>
+firejail --version
+
+<span class="c"># The hello-world of sandboxing:</span>
+firejail firefox
+firejail --private vlc
+firejail --net=none --private evince secret.pdf
+
+<span class="c"># Who is jailed right now?</span>
+firemon --list --tree
+firemon --seccomp --caps --netstats</pre>
+    <div class="callout warn">⚠️ <strong>SUID warning (read twice):</strong> <code>firejail</code> is installed setuid-root. On a true multi-user shell server, any SUID binary widens attack surface. Upstream advises thinking hard before deploying it there. On a single-user laptop/desktop — the target of this manual — the trade-off is overwhelmingly worth it.</div>
+    <h4>Try it: fake terminal (type <code>help</code>)</h4>
+    <div class="lab" data-title="◉ LIVE SIM — L0 TERMINAL">
+      <div class="term"><div class="term-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span> operator@paranoid: ~ — firejail sim</div>
+      <div class="term-body" id="term0">Type `help` and press Enter. Try: firejail firefox | firejail --net=none vlc | firemon --list | firecfg --list
+</div>
+      <div class="term-input"><span>$&nbsp;</span><input id="termIn0" placeholder="type a firejail command…" autocomplete="off"></div>
+      </div>
+      <div class="legend"><span>💡 This terminal is simulated with vanilla JS — no backend. It teaches syntax before you touch a real shell.</span></div>
+    </div>
+    <h3>0.2 Benefits — why bother?</h3>
+    <table><tr><th>Threat</th><th>Without Firejail</th><th>With Firejail (this manual)</th></tr>
+    <tr><td>Malicious PDF / font exploit</td><td>Reads <code>~/.ssh</code>, <code>~/.gnupg</code>, wallets</td><td><code>private-tmp + whitelist ~/Docs + net none</code> → sees almost nothing</td></tr>
+    <tr><td>Browser 0-day</td><td>Full home + webcam + D-Bus + network</td><td><code>seccomp + noroot + dbus-user none + x11 + netfilter</code> → contained</td></tr>
+    <tr><td>Proprietary app phones home</td><td>Unrestricted egress</td><td><code>net none</code> or filtered bridge + <code>protocol unix,inet</code></td></tr>
+    <tr><td>Ransomware-ish writer</td><td>Encrypts all of <code>~</code></td><td><code>read-only ~ + whitelist ~/Share</code> → nowhere to write</td></tr></table>
+    <div class="quiz" data-quiz="lvl0"><h4>■ L0 CHECKPOINT — pass 2/3 to unlock L1</h4>
+      <div class="q" data-answer="1"><p>1. What does the firejail binary use its SUID-root moment for?</p><label><input type="radio" name="l0q1" value="0"> To run your app as root forever</label><label><input type="radio" name="l0q1" value="1"> To build namespaces/mounts/filters, then drop to your UID</label><label><input type="radio" name="l0q1" value="0"> To install packages automatically</label></div>
+      <div class="q" data-answer="0"><p>2. Which command lists/jailed processes?</p><label><input type="radio" name="l0q2" value="0"> firemon --list</label><label><input type="radio" name="l0q2" value="1"> firejail --uninstall</label><label><input type="radio" name="l0q2" value="2"> chmod 777 ~</label></div>
+      <div class="q" data-answer="2"><p>3. Paranoid-first PDF viewing looks like…</p><label><input type="radio" name="l0q3" value="0"> evince secret.pdf as root</label><label><input type="radio" name="l0q3" value="1"> disabling your firewall</label><label><input type="radio" name="l0q3" value="2"> firejail --net=none --private evince secret.pdf</label></div>
+      <button class="btn green" data-grade>GRADE &amp; UNLOCK L1 ▸</button><span class="result"></span>
+      <div class="stamp">★ L0 CLEARED ★</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= L1 ================= -->
+<section class="chapter locked-chapter" id="lvl1">
+  <div class="ch-head"><span class="ch-num">LEVEL 1</span><div><h2>The six walls — Linux namespaces</h2><span class="clearance">CLEARANCE: WATCHER • PREREQ: L0</span></div></div>
+  <div class="gate" data-gate>🔒 SEALED — clear Level 0 to break this seal.</div>
+  <div class="ch-body">
+    <p>A <strong>namespace</strong> gives a process a <em>private view</em> of one kernel resource. Same kernel, different lies. Firejail's default sandbox always takes <strong>mount + PID + UTS</strong>; you add <strong>net, IPC, user</strong> for paranoia.</p>
+    <div class="lab" data-title="◉ ANIMATED — ONION OF LIES (click layers)">
+      <div class="onion" id="onion">
+        <div class="ring" data-ns="mnt">🧱 MNT — private filesystem table (always on)</div>
+        <div class="ring" data-ns="pid">👁 PID — jailed app is PID 1, cannot see host processes</div>
+        <div class="ring" data-ns="uts">🏷 UTS — fake hostname (no fingerprinting your box)</div>
+        <div class="ring" data-ns="ipc">📡 IPC — no shared memory / semaphores with host</div>
+        <div class="ring" data-ns="net">🌐 NET — private network stack (--net=none / --net=eth0)</div>
+        <div class="ring" data-ns="user">🧤 USER — map you to nobody, fake root (--noroot)</div>
+        <div class="ring">🔥 YOUR APP (thinks it owns the machine)</div>
+      </div>
+      <div class="ns-controls" id="nsControls">
+        <button data-ns="mnt" class="on">mnt ✓</button><button data-ns="pid" class="on">pid ✓</button><button data-ns="uts" class="on">uts ✓</button>
+        <button data-ns="ipc">ipc ✕</button><button data-ns="net">net ✕</button><button data-ns="user">user ✕</button>
+      </div>
+      <div class="ns-view" id="nsView">Click a layer…</div>
+      <div style="margin-top:8px"><button class="btn blue" id="paranoidNs">☠ ENABLE FULL PARANOIA (all six)</button></div>
+    </div>
+<pre><span class="c"># See the lies yourself</span>
+firejail --noprofile --ipc --net=none --private bash
+ps aux          <span class="c"># only jail processes!</span>
+hostname; ip a  <span class="c"># fake/lo-only world</span>
+ls /proc/1/exe  <span class="c"># your shell, not systemd</span>
+exit</pre>
+    <div class="callout danger">☠ <strong>Paranoid rule:</strong> always add <code>ipc-namespace</code>, <code>net none</code> (or filtered <code>net</code>), and <code>noroot</code> unless the app provably needs otherwise. Defaults are sane; paranoia is six walls, not three.</div>
+    <div class="quiz" data-quiz="lvl1"><h4>■ L1 CHECKPOINT — pass 2/3</h4>
+      <div class="q" data-answer="1"><p>1. Which namespaces are on by default?</p><label><input type="radio" name="l1q1" value="0"> net + user + ipc</label><label><input type="radio" name="l1q1" value="1"> mount + PID + UTS</label><label><input type="radio" name="l1q1" value="2"> only seccomp</label></div>
+      <div class="q" data-answer="0"><p>2. Inside a PID namespace, the jailed shell sees…</p><label><input type="radio" name="l1q2" value="0"> itself as PID 1, host processes hidden</label><label><input type="radio" name="l1q2" value="1"> all host processes as usual</label><label><input type="radio" name="l1q2" value="2"> no processes at all</label></div>
+      <div class="q" data-answer="2"><p>3. <code>--noroot</code> does what?</p><label><input type="radio" name="l1q3" value="0"> disables firejail</label><label><input type="radio" name="l1q3" value="1"> gives the app real root</label><label><input type="radio" name="l1q3" value="2"> user-namespace with no root inside the jail</label></div>
+      <button class="btn green" data-grade>GRADE &amp; UNLOCK L2 ▸</button><span class="result"></span><div class="stamp">★ L1 CLEARED ★</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= L2 ================= -->
+<section class="chapter locked-chapter" id="lvl2">
+  <div class="ch-head"><span class="ch-num">LEVEL 2</span><div><h2>Files &amp; contexts — what "visible" really means</h2><span class="clearance">CLEARANCE: ARCHIVIST • PREREQ: L1</span></div></div>
+  <div class="gate" data-gate>🔒 SEALED — clear Level 1 first.</div>
+  <div class="ch-body">
+    <h3>2.1 Four layers of "file context" — do not confuse them</h3>
+    <p>A file's <strong>context</strong> is every answer to <em>"who may do what with it, and who decides?"</em> A paranoid operator reads all four:</p>
+    <table><tr><th>#</th><th>Context layer</th><th>Decided by</th><th>Example</th><th>Firejail changes it?</th></tr>
+    <tr><td>1</td><td><strong>DAC</strong> — classic Unix owner/group/mode + ACLs</td><td>filesystem bits</td><td><code>-rw------- alice alice ~/.ssh/id_rsa</code></td><td>No — but jail can <em>hide</em> the file entirely</td></tr>
+    <tr><td>2</td><td><strong>xattr / MAC label</strong> — SELinux context, AppArmor attachment</td><td>kernel policy</td><td><code>unconfined_u:object_r:user_home_t:s0</code>, <code>ls -Z</code></td><td>No — labels still enforced <em>inside</em> the jail</td></tr>
+    <tr><td>3</td><td><strong>Firejail view</strong> — blacklist / whitelist / read-only / private</td><td>profile</td><td><code>blacklist ~/.ssh</code>, <code>whitelist ~/Docs</code></td><td><strong>Yes — this is the whole level</strong></td></tr>
+    <tr><td>4</td><td><strong>Landlock / sandbox extras</strong> — unprivileged per-process FS rules</td><td>profile + kernel</td><td><code>landlock.enforce + landlock.fs.read /tmp</code></td><td>Yes (experimental, additive)</td></tr></table>
+    <div class="callout warn">⚠️ <strong>Key truth:</strong> <code>blacklist</code> ≠ SELinux relabeling. Firejail shapes the <em>view</em>; SELinux/AppArmor still judge every surviving access. They stack. Check both: <code>ls -l</code> <em>and</em> <code>ls -Z</code>.</div>
+    <h4>SELinux context anatomy (real example)</h4>
+<pre>$ ls -Z ~/Docs/secret.pdf
+<span class="good">unconfined_u:object_r:user_home_t:s0</span> ~/Docs/secret.pdf
+  <span class="v">│            │           │          └─ level (MLS: s0 = lowest)</span>
+  <span class="v">│            │           └─ type (policy rules target THIS)</span>
+  <span class="v">│            └─ role (which roles may touch it)</span>
+  <span class="v">└─ SELinux user (not your login name!)</span>
+<span class="c"># Change it persistently via policy, never bare chcon on production:</span>
+semanage fcontext -a -t user_home_t "$HOME/Docs(/.*)?"
+restorecon -Rv ~/Docs</pre>
+    <h3>2.2 Firejail's file directives — the complete arsenal</h3>
+    <table><tr><th>Directive</th><th>Jailed app sees…</th><th>Writes survive?</th><th>Use when</th></tr>
+    <tr><td><code>blacklist PATH</code></td><td>Path exists but <strong>access denied</strong> (logged with <code>tracelog</code>)</td><td>—</td><td>SSH keys, wallets, <code>~/.gnupg</code>, history</td></tr>
+    <tr><td><code>read-only PATH</code></td><td>Visible, <strong>readable, unwritable</strong></td><td>—</td><td>System dirs, project checkouts</td></tr>
+    <tr><td><code>noexec PATH</code></td><td>Remounted <code>noexec,nodev,nosuid</code></td><td>—</td><td><code>/tmp</code>, shared drops</td></tr>
+    <tr><td><code>whitelist PATH</code></td><td><strong>Only</strong> this survives under that top dir; rest is empty tmpfs</td><td><strong>Yes</strong></td><td>"App may see exactly ~/Docs and nothing else"</td></tr>
+    <tr><td><code>private</code></td><td>Empty fake <code>$HOME</code> (tmpfs)</td><td>No</td><td>Maximum amnesia</td></tr>
+    <tr><td><code>private DIR</code></td><td>DIR <em>becomes</em> home</td><td>Yes</td><td>Dedicated persistent persona</td></tr>
+    <tr><td><code>private-home f1,f2</code></td><td>Fresh home + <em>copies</em> of listed items</td><td>No</td><td>"Needs its config, not my life"</td></tr>
+    <tr><td><code>private-tmp</code> / <code>private-dev</code> / <code>private-cache</code></td><td>Isolated <code>/tmp</code>, minimal <code>/dev</code>, throwaway cache</td><td>No</td><td>Almost always</td></tr></table>
+    <div class="lab" data-title="◉ ANIMATED + CLICKABLE — FILE CONTEXT EXPLORER">
+      <p style="margin-top:2px">Click a file. Read its <strong>four contexts</strong>, then see what a paranoid jail (<code>whitelist ~/Docs/report.pdf + blacklist ~/.ssh + private-tmp</code>) leaves visible.</p>
+      <div class="fexplorer">
+        <div class="ftree" id="ftree"></div>
+        <div class="fdetail" id="fdetail"><em>Select a file…</em></div>
+      </div>
+      <div style="margin-top:10px">
+        <button class="btn" id="toggleJailView">👁 TOGGLE: host view ⇄ jailed view</button>
+        <span class="legend"><span>🟩 visible+rw</span><span>🟨 read-only</span><span>🟥 denied/hidden</span></span>
+      </div>
+    </div>
+<pre><span class="c"># Paranoid document-viewer pattern (copy/paste starter)</span>
+<span class="k">whitelist</span> ${HOME}/Docs
+<span class="k">read-only</span> ${HOME}/Docs
+<span class="k">blacklist</span> ${HOME}/.ssh
+<span class="k">blacklist</span> ${HOME}/.gnupg
+<span class="k">blacklist</span> ${HOME}/.bash_history
+<span class="k">private-tmp</span>
+<span class="k">private-dev</span>
+<span class="k">noexec</span> /tmp</pre>
+    <div class="quiz" data-quiz="lvl2"><h4>■ L2 CHECKPOINT — pass 3/4</h4>
+      <div class="q" data-answer="1"><p>1. <code>whitelist ~/Docs</code> vs <code>private-home Docs</code>?</p><label><input type="radio" name="l2q1" value="0"> identical</label><label><input type="radio" name="l2q1" value="1"> whitelist persists writes to real ~/Docs; private-home works on a throwaway copy</label><label><input type="radio" name="l2q1" value="2"> whitelist deletes your files</label></div>
+      <div class="q" data-answer="0"><p>2. <code>blacklist</code> vs <code>read-only</code>?</p><label><input type="radio" name="l2q2" value="0"> blacklist denies all access; read-only still allows reads</label><label><input type="radio" name="l2q2" value="1"> they are aliases</label><label><input type="radio" name="l2q2" value="2"> read-only hides the file</label></div>
+      <div class="q" data-answer="2"><p>3. <code>unconfined_u:object_r:user_home_t:s0</code> — the <code>user_home_t</code> piece is…</p><label><input type="radio" name="l2q3" value="0"> your username</label><label><input type="radio" name="l2q3" value="1"> a firejail profile name</label><label><input type="radio" name="l2q3" value="2"> the SELinux type that policy rules match on</label></div>
+      <div class="q" data-answer="1"><p>4. Does a Firejail whitelist grant SELinux permission by itself?</p><label><input type="radio" name="l2q4" value="0"> yes, it relabels files</label><label><input type="radio" name="l2q4" value="1"> no — SELinux policy still applies inside the jail</label></div>
+      <button class="btn green" data-grade>GRADE &amp; UNLOCK L3 ▸</button><span class="result"></span><div class="stamp">★ L2 CLEARED ★</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= L3 ================= -->
+<section class="chapter locked-chapter" id="lvl3">
+  <div class="ch-head"><span class="ch-num">LEVEL 3</span><div><h2>Syscalls, capabilities &amp; no-new-privs</h2><span class="clearance">CLEARANCE: WARDEN • PREREQ: L2</span></div></div>
+  <div class="gate" data-gate>🔒 SEALED — clear Level 2 first.</div>
+  <div class="ch-body">
+    <p>Namespaces hide things. <strong>seccomp-bpf hides <em>abilities</em>.</strong> Every exploit finally begs the kernel via a <em>syscall</em> (<code>open, execve, ptrace, mount, socket, keyctl…</code>). Firejail installs a BPF filter that kills the process if it touches a forbidden one — for the app <em>and all its children</em>.</p>
+    <div class="lab" data-title="◉ ANIMATED — SYSCALL RAIN vs THE FILTER">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn red" id="rainDefault" style="background:var(--red)">▶ DROP DEFAULT BLACKLIST (~300 blocked)</button>
+        <button class="btn blue" id="rainStrict">▶ DROP PARANOID (seccomp + memory-deny-write-execute)</button>
+        <button class="btn ghost" id="rainStop">■ stop</button>
+      </div>
+      <div class="filterbar" title="the BPF filter"></div>
+      <div style="font-family:var(--mono);font-size:11px">▲ syscalls fall from the app &nbsp;&nbsp; ▬ BPF filter &nbsp;&nbsp; ▼ survivors reach the kernel</div>
+      <div class="rainbox" id="rainBox"></div>
+      <div class="legend"><span>🟥 blocked → process killed</span><span>🟩 allowed → reaches kernel</span><span id="rainStats">stats: —</span></div>
+    </div>
+<pre><span class="c"># The paranoid stack (add AFTER reading the shipped profile!)</span>
+<span class="k">seccomp</span>                          <span class="c"># default blacklist (~300 dangerous calls)</span>
+<span class="k">seccomp.block-secondary</span>          <span class="c"># kill 32-bit compat ABI abuse</span>
+<span class="k">memory-deny-write-execute</span>        <span class="c"># no W+X mappings: breaks JIT shellcode</span>
+<span class="k">restrict-namespaces</span>              <span class="c"># app may not create new namespaces</span>
+<span class="k">protocol</span> unix,inet,inet6          <span class="c"># no bluetooth, raw packet, etc.</span>
+<span class="k">caps.drop</span> all
+<span class="k">nonewprivs</span>
+<span class="k">noroot</span>
+<span class="c"># scalpel instead of hammer, when you know the app:</span>
+<span class="c"># seccomp.keep read,write,open,openat,close,fstat,mmap,brk,exit_group</span></pre>
+    <div class="callout danger">☠ <strong>Paranoid order of operations:</strong> <code>seccomp</code> first, then <code>caps.drop all</code>, then <code>nonewprivs + noroot</code>. Capabilities without <code>nonewprivs</code> still let a setuid helper re-escalate. Verify with <code>firemon --seccomp --caps</code>.</div>
+    <div class="quiz" data-quiz="lvl3"><h4>■ L3 CHECKPOINT — pass 2/3</h4>
+      <div class="q" data-answer="0"><p>1. seccomp-bpf filters…</p><label><input type="radio" name="l3q1" value="0"> which syscalls the jailed tree may invoke (inherited by children)</label><label><input type="radio" name="l3q1" value="1"> which websites you may visit</label><label><input type="radio" name="l3q1" value="2"> your desktop wallpaper</label></div>
+      <div class="q" data-answer="1"><p>2. <code>nonewprivs</code> means…</p><label><input type="radio" name="l3q2" value="0"> run everything as root</label><label><input type="radio" name="l3q2" value="1"> setuid/file-cap execs gain no new privilege (NO_NEW_PRIVS)</label><label><input type="radio" name="l3q2" value="2"> disable passwords</label></div>
+      <div class="q" data-answer="2"><p>3. <code>memory-deny-write-execute</code> hurts which attacker technique most?</p><label><input type="radio" name="l3q3" value="0"> phishing emails</label><label><input type="radio" name="l3q3" value="1"> weak passwords</label><label><input type="radio" name="l3q3" value="2"> JIT-spray / writing then executing shellcode pages</label></div>
+      <button class="btn green" data-grade>GRADE &amp; UNLOCK L4 ▸</button><span class="result"></span><div class="stamp">★ L3 CLEARED ★</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= L4 ================= -->
+<section class="chapter locked-chapter" id="lvl4">
+  <div class="ch-head"><span class="ch-num">LEVEL 4</span><div><h2>Network namespaces — unplug or filter the jail</h2><span class="clearance">CLEARANCE: SIGNAL • PREREQ: L3</span></div></div>
+  <div class="gate" data-gate>🔒 SEALED — clear Level 3 first.</div>
+  <div class="ch-body">
+    <p>A fresh <strong>network namespace</strong> is a machine with the cables pulled: only <code>lo</code>. From there you choose: stay dark (<code>net none</code> — strongest), or re-attach through a filtered virtual cable (<code>--net=eth0</code> + <code>--netfilter=</code>).</p>
+    <div class="lab" data-title="◉ ANIMATED — PACKET LAB">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" data-netmode="open">🌍 no jail (open LAN)</button>
+        <button class="btn amber" data-netmode="none">🕳 net none (dark)</button>
+        <button class="btn blue" data-netmode="filtered">🧱 net + netfilter (no LAN, web only)</button>
+      </div>
+      <div class="netstage">
+        <div class="jailbox">🔥 JAILED APP<br><small id="netAppLabel">firefox</small></div>
+        <div class="wire" id="netWire"><div class="packet" id="netPacket"></div></div>
+        <div class="hostbox">🌐 TARGET<br><small id="netTarget">192.168.1.5 (your LAN)</small></div>
+      </div>
+      <div class="firewall" id="netFw">policy: —</div>
+      <div class="ns-view" id="netLog">Pick a mode. Packets animate; the log explains the verdict.</div>
+    </div>
+<pre><span class="c"># Dark (media players, PDF, office):</span>
+firejail --net=none evince secret.pdf
+
+<span class="c"># Filtered browser (profile snippet):</span>
+<span class="k">net</span> eth0
+<span class="k">netfilter</span> /etc/firejail/nolocal.net
+<span class="k">dns</span> 9.9.9.9
+<span class="k">protocol</span> unix,inet,inet6
+<span class="c"># nolocal.net drops 192.168/16, 10/8, 172.16/12, 127/8 egress</span>
+<span class="c"># → internet works, printer/router snooping dies</span></pre>
+    <div class="callout warn">⚠️ A net namespace alone is <strong>not</strong> a firewall. Pair every <code>net eth0</code> with a <code>netfilter</code> file, or stay <code>net none</code>. Check with <code>firemon --netstats</code> and <code>ip a</code> inside.</div>
+    <div class="quiz" data-quiz="lvl4"><h4>■ L4 CHECKPOINT — pass 2/3</h4>
+      <div class="q" data-answer="2"><p>1. Strongest network for an offline PDF reader?</p><label><input type="radio" name="l4q1" value="0"> bridge to eth0 unfiltered</label><label><input type="radio" name="l4q1" value="1"> host network</label><label><input type="radio" name="l4q1" value="2"> net none</label></div>
+      <div class="q" data-answer="0"><p>2. What does <code>--netfilter=FILE</code> do?</p><label><input type="radio" name="l4q2" value="0"> installs iptables/nft rules inside the jail's net namespace</label><label><input type="radio" name="l4q2" value="1"> speeds up wifi</label><label><input type="radio" name="l4q2" value="2"> disables seccomp</label></div>
+      <div class="q" data-answer="1"><p>3. Why block LAN egress for a browser?</p><label><input type="radio" name="l4q3" value="0"> to save ink</label><label><input type="radio" name="l4q3" value="1"> so a compromised renderer can't pivot to router/IoT/admin panels</label><label><input type="radio" name="l4q3" value="2"> browsers never use LAN</label></div>
+      <button class="btn green" data-grade>GRADE &amp; UNLOCK L5 ▸</button><span class="result"></span><div class="stamp">★ L4 CLEARED ★</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= L5 ================= -->
+<section class="chapter locked-chapter" id="lvl5">
+  <div class="ch-head"><span class="ch-num">LEVEL 5</span><div><h2>X11, D-Bus &amp; IPC — the desktop betrays you</h2><span class="clearance">CLEARANCE: GHOST • PREREQ: L4</span></div></div>
+  <div class="gate" data-gate>🔒 SEALED — clear Level 4 first.</div>
+  <div class="ch-body">
+    <p>Your filesystem can be perfect and still lose: on classic <strong>X11</strong>, any client can keylog any other. On <strong>D-Bus</strong>, any app can chat with secrets services. Paranoia means a second X server + a D-Bus muzzle.</p>
+    <div class="lab" data-title="◉ ANIMATED — X11 KEYLOGGER DEMO">
+      <div style="margin-bottom:8px"><button class="btn" id="x11shared">▶ shared :0 (vulnerable)</button><button class="btn blue" id="x11xephyr">▶ firejail --x11=xephyr (isolated)</button></div>
+      <div class="xdemo">
+        <div class="xscreen" id="xVictim">💻 victim window — type happens here…<br><br><div id="xKeys"></div></div>
+        <div class="xscreen evil" id="xAttacker">☠ attacker window (jailed evil app)<br><br><div id="xSnoop"></div></div>
+      </div>
+      <div class="ns-view" id="xLog">Press a mode button, then watch keystrokes leak (or not).</div>
+    </div>
+<pre><span class="c"># Current Firejail X11 path uses Xephyr (Xpra support removed upstream)</span>
+firejail --x11=xephyr firefox
+
+<span class="c"># D-Bus muzzle (profile): needs xdg-dbus-proxy for filtering</span>
+<span class="k">dbus-user</span> none
+<span class="k">dbus-system</span> none
+<span class="c"># …or surgical:</span>
+<span class="c"># dbus-user.filter / dbus-user.talk org.freedesktop.Notifications</span>
+
+<span class="c"># Shared-memory / signals between jailed + host:</span>
+<span class="k">ipc-namespace</span></pre>
+    <div class="callout danger">☠ <strong>X11 law:</strong> hiding <code>/tmp/.X11-unix</code> alone is insufficient (abstract sockets survive). You need <code>--x11</code> <em>plus</em> a net namespace / <code>protocol</code> without raw unix tricks. Verify with <code>firemon --x11</code>.</div>
+    <div class="quiz" data-quiz="lvl5"><h4>■ L5 CHECKPOINT — pass 2/3</h4>
+      <div class="q" data-answer="0"><p>1. Why is shared X11 dangerous?</p><label><input type="radio" name="l5q1" value="0"> any X client can sniff input / screen of others</label><label><input type="radio" name="l5q1" value="1"> it uses too much RAM</label><label><input type="radio" name="l5q1" value="2"> it disables networking</label></div>
+      <div class="q" data-answer="1"><p>2. D-Bus filtering needs…</p><label><input type="radio" name="l5q2" value="0"> nothing</label><label><input type="radio" name="l5q2" value="1"> xdg-dbus-proxy, plus blocking abstract sockets (net ns / protocol) for full effect</label><label><input type="radio" name="l5q2" value="2"> a second GPU</label></div>
+      <div class="q" data-answer="2"><p>3. <code>ipc-namespace</code> cuts…</p><label><input type="radio" name="l5q3" value="0"> wifi</label><label><input type="radio" name="l5q3" value="1"> printing only</label><label><input type="radio" name="l5q3" value="2"> SysV SHM / semaphores / signals shared with the host</label></div>
+      <button class="btn green" data-grade>GRADE &amp; UNLOCK L6 ▸</button><span class="result"></span><div class="stamp">★ L5 CLEARED ★</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= L6 ================= -->
+<section class="chapter locked-chapter" id="lvl6">
+  <div class="ch-head"><span class="ch-num">LEVEL 6</span><div><h2>Profiles like a maintainer</h2><span class="clearance">CLEARANCE: AUTHOR • PREREQ: L5</span></div></div>
+  <div class="gate" data-gate>🔒 SEALED — clear Level 5 first.</div>
+  <div class="ch-body">
+    <p>Profiles are plain text. <strong>System:</strong> <code>/etc/firejail/*.profile</code>. <strong>Yours wins:</strong> <code>~/.config/firejail/app.profile</code>. <strong>Persistent sysadmin tweaks:</strong> <code>*.local</code>. Always <code>include</code>, never fork-and-forget.</p>
+<pre><span class="c"># ~/.config/firejail/vlc.profile — sound, no spy</span>
+<span class="k">include</span> /etc/firejail/vlc.profile
+<span class="k">net</span> none
+<span class="k">private-tmp</span>
+<span class="k">private-dev</span>         <span class="c"># keep sound working? test; add nosound only if you must mute</span>
+<span class="k">caps.drop</span> all
+<span class="k">nonewprivs</span>
+<span class="k">noroot</span>
+
+<span class="c"># Audacity with its OWN persistent home (create ~/myaudio first)</span>
+<span class="c"># ~/.config/firejail/audacity.profile</span>
+<span class="k">include</span> /etc/firejail/audacity.profile
+<span class="k">private</span> ~/myaudio
+<span class="k">net</span> none</pre>
+<pre><span class="c"># Lifecycle commands</span>
+sudo firecfg              <span class="c"># symlink supported apps via /usr/local/bin</span>
+firecfg --list; sudo firecfg --clean
+firejail --build=/tmp/vlc.profile vlc   <span class="c"># GENERATOR: relaxed run → starter whitelist. Review + tighten!</span>
+firemon --list --tree --seccomp --caps --apparmor --netstats --x11
+<span class="c"># jailcheck (root) reports visible dirs / net status — a heuristic, not proof</span></pre>
+    <div class="lab" data-title="◉ INTERACTIVE — PROFILE FORGE (paranoid template generator)">
+      <div class="builder">
+        <div class="toggles" id="forgeToggles">
+          <label><input type="checkbox" data-line="caps.drop all" checked><span><strong>caps.drop all</strong><small>strip all Linux capabilities</small></span></label>
+          <label><input type="checkbox" data-line="nonewprivs" checked><span><strong>nonewprivs</strong><small>NO_NEW_PRIVS on exec</small></span></label>
+          <label><input type="checkbox" data-line="noroot" checked><span><strong>noroot</strong><small>user-ns without root</small></span></label>
+          <label><input type="checkbox" data-line="seccomp" checked><span><strong>seccomp</strong><small>default ~300-call blacklist</small></span></label>
+          <label><input type="checkbox" data-line="seccomp.block-secondary" checked><span><strong>seccomp.block-secondary</strong><small>kill 32-bit ABI</small></span></label>
+          <label><input type="checkbox" data-line="memory-deny-write-execute" checked><span><strong>memory-deny-write-execute</strong><small>no W+X pages</small></span></label>
+          <label><input type="checkbox" data-line="restrict-namespaces" checked><span><strong>restrict-namespaces</strong><small>app can't unshare further</small></span></label>
+          <label><input type="checkbox" data-line="private-tmp" checked><span><strong>private-tmp</strong><small>isolated /tmp</small></span></label>
+          <label><input type="checkbox" data-line="private-dev" checked><span><strong>private-dev</strong><small>minimal /dev</small></span></label>
+          <label><input type="checkbox" data-line="private-cache" checked><span><strong>private-cache</strong><small>throwaway ~/.cache</small></span></label>
+          <label><input type="checkbox" data-line="net none" checked><span><strong>net none</strong><small>dark network (uncheck for browsers)</small></span></label>
+          <label><input type="checkbox" data-line="dbus-user none"><span><strong>dbus-user none</strong><small>mute session bus</small></span></label>
+          <label><input type="checkbox" data-line="dbus-system none"><span><strong>dbus-system none</strong><small>mute system bus</small></span></label>
+          <label><input type="checkbox" data-line="apparmor"><span><strong>apparmor</strong><small>stack default AppArmor profile</small></span></label>
+          <label><input type="checkbox" data-line="tracelog"><span><strong>tracelog</strong><small>log blacklist violations</small></span></label>
+        </div>
+        <div><pre id="forgeOut" style="min-height:320px"></pre><button class="btn blue" id="forgeCopy">⧉ COPY PROFILE</button></div>
+      </div>
+    </div>
+    <div class="quiz" data-quiz="lvl6"><h4>■ L6 CHECKPOINT — pass 2/3</h4>
+      <div class="q" data-answer="1"><p>1. Your override for <code>vlc</code> goes in…</p><label><input type="radio" name="l6q1" value="0"> /etc/passwd</label><label><input type="radio" name="l6q1" value="1"> ~/.config/firejail/vlc.profile (with include of system profile)</label><label><input type="radio" name="l6q1" value="2"> /tmp, deleted daily</label></div>
+      <div class="q" data-answer="0"><p>2. <code>firejail --build=FILE APP</code> output is…</p><label><input type="radio" name="l6q2" value="0"> a relaxed-run starter whitelist you must review + tighten + test</label><label><input type="radio" name="l6q2" value="1"> a finished proof of confinement</label><label><input type="radio" name="l6q2" value="2"> a virus scan</label></div>
+      <div class="q" data-answer="2"><p>3. <code>sudo firecfg</code> does what?</p><label><input type="radio" name="l6q3" value="0"> removes firejail</label><label><input type="radio" name="l6q3" value="1"> updates the kernel</label><label><input type="radio" name="l6q3" value="2"> symlinks supported apps through /usr/local/bin so launchers jail automatically</label></div>
+      <button class="btn green" data-grade>GRADE &amp; UNLOCK L7 ▸</button><span class="result"></span><div class="stamp">★ L6 CLEARED ★</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= L7 ================= -->
+<section class="chapter locked-chapter" id="lvl7">
+  <div class="ch-head"><span class="ch-num">LEVEL 7 ★ HERO</span><div><h2>Paranoid workstation — the full lockdown</h2><span class="clearance">CLEARANCE: PARANOID HERO • PREREQ: L6</span></div></div>
+  <div class="gate" data-gate>🔒 SEALED — clear Level 6 to earn the hero rite.</div>
+  <div class="ch-body">
+    <p>You survived six seals. Now assemble the <strong>whole doctrine</strong>: every layer on, every excuse off. Below is the hero's daily-driver template — adapt paths, then <em>test what breaks</em>.</p>
+<pre id="heroProfile"><span class="c"># ~/.config/firejail/firefox-paranoid.profile — HERO TEMPLATE</span>
+<span class="k">include</span> /etc/firejail/firefox.profile
+<span class="c"># --- identity: six walls ---</span>
+<span class="k">ipc-namespace</span>
+<span class="k">noroot</span>
+<span class="k">nonewprivs</span>
+<span class="c"># --- filesystem view ---</span>
+<span class="k">whitelist</span> ${HOME}/Downloads
+<span class="k">whitelist</span> ${HOME}/Docs
+<span class="k">read-only</span> ${HOME}/Docs
+<span class="k">blacklist</span> ${HOME}/.ssh
+<span class="k">blacklist</span> ${HOME}/.gnupg
+<span class="k">blacklist</span> ${HOME}/.config/transmission
+<span class="k">private-tmp</span>
+<span class="k">private-dev</span>
+<span class="k">private-cache</span>
+<span class="k">noexec</span> /tmp
+<span class="k">tracelog</span>
+<span class="c"># --- abilities ---</span>
+<span class="k">caps.drop</span> all
+<span class="k">seccomp</span>
+<span class="k">seccomp.block-secondary</span>
+<span class="k">memory-deny-write-execute</span>
+<span class="k">restrict-namespaces</span>
+<span class="k">protocol</span> unix,inet,inet6
+<span class="c"># --- desktop exfiltration ---</span>
+<span class="k">x11</span> xephyr
+<span class="k">dbus-user</span> none
+<span class="k">dbus-system</span> none
+<span class="c"># --- network: filtered bridge ---</span>
+<span class="k">net</span> eth0
+<span class="k">netfilter</span> /etc/firejail/nolocal.net
+<span class="k">dns</span> 9.9.9.9
+<span class="k">apparmor</span>
+<span class="c"># experimental, kernel ≥5.13:</span>
+<span class="c"># landlock.enforce</span>
+<span class="c"># landlock.fs.read /usr,/etc</span></pre>
+    <div class="lab" data-title="◉ HERO RITE — PRE-FLIGHT CHECKLIST (all boxes required)">
+      <div id="heroChecklist">
+        <label style="display:block;margin:6px 0"><input type="checkbox"> I read the shipped profile before overriding (<code>cat /etc/firejail/app.profile</code>)</label>
+        <label style="display:block;margin:6px 0"><input type="checkbox"> Offline apps get <code>net none</code>; browsers get <code>net + netfilter</code>, never bare bridge</label>
+        <label style="display:block;margin:6px 0"><input type="checkbox"> <code>~/.ssh + ~/.gnupg</code> blacklisted; uploads flow through an explicit <code>whitelist</code></label>
+        <label style="display:block;margin:6px 0"><input type="checkbox"> <code>seccomp + caps.drop all + nonewprivs + noroot</code> verified via <code>firemon</code></label>
+        <label style="display:block;margin:6px 0"><input type="checkbox"> X11 via <code>--x11</code>, D-Bus muted/filtered, <code>ipc-namespace</code> on</label>
+        <label style="display:block;margin:6px 0"><input type="checkbox"> Tested: app still opens/saves/plays/prints; violations watched with <code>tracelog</code></label>
+      </div>
+      <button class="btn green" id="heroBtn" disabled>★ CLAIM HERO STATUS ★</button>
+      <div class="stamp" id="heroStamp">★ PARANOID HERO ★<br><span style="font-size:12px;letter-spacing:1px">namespaces • seccomp • files • net • x11 • profiles — MASTERED</span></div>
+    </div>
+    <div class="quiz" data-quiz="lvl7"><h4>■ FINAL TRIAL — pass 3/4 to graduate</h4>
+      <div class="q" data-answer="0"><p>1. A jailed browser must reach the web but not your router. You choose…</p><label><input type="radio" name="l7q1" value="0"> net eth0 + netfilter dropping RFC1918/loopback + hardened profile</label><label><input type="radio" name="l7q1" value="1"> --noprofile --net=eth0 as root</label><label><input type="radio" name="l7q1" value="2"> disable the firewall</label></div>
+      <div class="q" data-answer="1"><p>2. Proprietary editor needs ~/Docs only, must not see keys, needs no net. Minimal set?</p><label><input type="radio" name="l7q2" value="0"> defaults only</label><label><input type="radio" name="l7q2" value="1"> whitelist ~/Docs + blacklist ~/.ssh,~/.gnupg + net none + private-tmp/dev + seccomp/caps/nonewprivs/noroot</label><label><input type="radio" name="l7q2" value="2"> chmod 777 ~/Docs</label></div>
+      <div class="q" data-answer="2"><p>3. App breaks under <code>seccomp.keep</code> allowlist. Paranoid move?</p><label><input type="radio" name="l7q3" value="0"> abandon sandboxing</label><label><input type="radio" name="l7q3" value="1"> run as root</label><label><input type="radio" name="l7q3" value="2"> fall back to default seccomp blacklist, strace the missing call, re-add minimally, retest</label></div>
+      <div class="q" data-answer="0"><p>4. Confinement "proof" is…</p><label><input type="radio" name="l7q4" value="0"> layered testing: try to read ~/.ssh, reach LAN, ptrace, escape — plus firemon/jailcheck as heuristics</label><label><input type="radio" name="l7q4" value="1"> the app icon looks jailed</label><label><input type="radio" name="l7q4" value="2"> one green log line</label></div>
+      <button class="btn green" data-grade>GRADUATE ▸</button><span class="result"></span><div class="stamp">★ MANUAL COMPLETE ★</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SOURCES ================= -->
+<section class="chapter" id="src">
+  <div class="ch-head"><span class="ch-num">§</span><div><h2>Sources, man pages &amp; where to go deeper</h2><span class="clearance">CLEARANCE: OPEN • ALWAYS AVAILABLE</span></div></div>
+  <div class="ch-body">
+    <p>Single-file doctrine ends here; upstream truth lives on. Verify every directive against <strong>your installed version's</strong> man pages — Firejail evolves (e.g. Xpra removal, Landlock flags).</p>
+    <ul class="tight">
+      <li><code>man firejail</code> — <a href="https://man7.org/linux/man-pages/man1/firejail.1.html">firejail(1) online</a></li>
+      <li><code>man firejail-profile</code> — <a href="https://manpages.debian.org/unstable/firejail/firejail-profile.5.en.html">firejail-profile(5) online</a></li>
+      <li><code>man firemon</code> / <code>man firecfg</code> — <a href="https://manpages.debian.org/unstable/firejail/firemon.1.en.html">firemon(1)</a> · <a href="https://man7.org/linux/man-pages/man1/firecfg.1.html">firecfg(1)</a></li>
+      <li>Project repo &amp; version notes — <a href="https://github.com/netblue30/firejail">github.com/netblue30/firejail</a></li>
+      <li>Guides: <a href="https://firejail.wordpress.com/documentation-2/basic-usage/">basic usage</a> · <a href="https://firejail.wordpress.com/documentation-2/building-custom-profiles/">custom profiles</a> · <a href="https://firejail.wordpress.com/documentation-2/seccomp-guide/">seccomp</a> · <a href="https://firejail.wordpress.com/documentation-2/firefox-guide/">firefox/netfilter</a> · <a href="https://firejail.wordpress.com/documentation-2/x11-guide/">X11</a> · <a href="https://firejail.wordpress.com/features-3/">features/jailcheck</a></li>
+      <li>SELinux contexts — <a href="https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/7/html/selinux_users_and_administrators_guide/sect-security-enhanced_linux-working_with_selinux-selinux_contexts_labeling_files">RHEL labeling guide</a> · syscalls — <a href="https://man7.org/linux/man-pages/man2/pivot_root.2.html">pivot_root(2)</a></li>
+    </ul>
+    <div class="callout good">🏠 <strong>Done?</strong> <a href="index.html"><strong>⌂ HOME → index.html</strong></a> (this file <em>is</em> index.html — save it as such; the link stays valid offline). Print it, jail everything, stay paranoid.</div>
+  </div>
+</section>
+</main>
+</div>
+
+<footer class="sources"><div class="seal">
+  <strong>FIREJAIL PARANOID MANUAL</strong> — single HTML file • vanilla JS + CSS3 • zero external resources (no CDN/fonts/trackers). Save as <code>index.html</code>.<br>
+  <span class="print-note">Accuracy note: directives verified against firejail-profile(5) for 0.9.80-era + upstream repo notes. X11/Xpra, --audit, and Landlock flags vary by release — always `man firejail-profile` locally. SUID caution applies on multi-user hosts.</span>
+</div></footer>
+<a class="top-link" href="index.html">⌂ HOME</a>
+
+<script>
+/* ================= vanilla JS — progression, labs, quizzes ================= */
+(function(){
+"use strict";
+var ORDER=["lvl0","lvl1","lvl2","lvl3","lvl4","lvl5","lvl6","lvl7"];
+var RANKS=["RECRUIT","WATCHER","ARCHIVIST","WARDEN","SIGNAL","GHOST","AUTHOR","PARANOID HERO"];
+var store={get:function(){try{return JSON.parse(localStorage.getItem("fj_clearance")||"[]")}catch(e){return[]}},set:function(v){try{localStorage.setItem("fj_clearance",JSON.stringify(v))}catch(e){}}};
+var cleared=store.get();
+
+function refresh(){
+  var n=cleared.length;
+  document.getElementById("progressBar").style.width=(n/8*100)+"%";
+  document.getElementById("progressText").textContent="CLEARANCE "+n+"/8 • "+(RANKS[Math.min(n,7)]);
+  var items=document.querySelectorAll("#tocList li");
+  items.forEach(function(li){
+    var id=li.getAttribute("data-ch");
+    var lock=li.querySelector(".lock");
+    if(id==="src"){li.classList.remove("locked");return;}
+    var idx=ORDER.indexOf(id);
+    var unlocked=idx===0||cleared.indexOf(ORDER[idx-1])!==-1;
+    var done=cleared.indexOf(id)!==-1;
+    li.classList.toggle("locked",!unlocked);
+    li.classList.toggle("done",done);
+    if(lock)lock.textContent=done?"✅":(unlocked?"🔓":"🔒");
+  });
+  ORDER.forEach(function(id,i){
+    var sec=document.getElementById(id);if(!sec)return;
+    var unlocked=i===0||cleared.indexOf(ORDER[i-1])!==-1;
+    var gate=sec.querySelector("[data-gate]");
+    sec.classList.toggle("locked-chapter",!unlocked);
+    if(gate)gate.style.display=unlocked?"none":"block";
+    if(!unlocked)sec.querySelectorAll(".quiz input,.quiz button,.lab button,.lab input").forEach(function(el){el.disabled=true;});
+    else sec.querySelectorAll(".quiz input,.quiz button,.lab button,.lab input").forEach(function(el){el.disabled=false;});
+  });
+  var hb=document.getElementById("heroBtn");if(hb)hb.disabled=!document.querySelectorAll("#heroChecklist input:checked").length||document.querySelectorAll("#heroChecklist input:checked").length<6;
+}
+function unlock(id){
+  if(cleared.indexOf(id)===-1){cleared.push(id);store.set(cleared);}
+  refresh();
+}
+document.getElementById("resetBtn").onclick=function(){cleared=[];store.set(cleared);document.querySelectorAll(".stamp").forEach(function(s){s.classList.remove("show")});document.querySelectorAll(".quiz .result").forEach(function(r){r.textContent=""});refresh();window.location.hash="#lvl0";};
+
+/* ---------- quizzes ---------- */
+document.querySelectorAll(".quiz").forEach(function(qz){
+  var id=qz.getAttribute("data-quiz");
+  var btn=qz.querySelector("[data-grade]");
+  // restore stamp
+  if(cleared.indexOf(id)!==-1)qz.querySelector(".stamp").classList.add("show");
+  btn.onclick=function(){
+    var qs=qz.querySelectorAll(".q"),pass=0,need=qs.length>3?3:2;
+    if(id==="lvl7")need=3;
+    qs.forEach(function(q){
+      var ans=q.getAttribute("data-answer");
+      var sel=q.querySelector("input:checked");
+      q.querySelectorAll("label").forEach(function(l){l.classList.remove("correct","wrong")});
+      if(sel&&sel.value===ans){pass++;sel.closest("label").classList.add("correct");}
+      else if(sel){sel.closest("label").classList.add("wrong");var right=q.querySelector('input[value="'+ans+'"]');if(right)right.closest("label").classList.add("correct");}
+    });
+    var res=qz.querySelector(".result");
+    if(pass>=need){res.textContent="✅ "+pass+"/"+qs.length+" — SEAL BROKEN. Next level unlocked.";res.style.color="green";qz.querySelector(".stamp").classList.add("show");unlock(id);
+      var ni=ORDER.indexOf(id)+1;
+      if(ORDER[ni])setTimeout(function(){document.getElementById(ORDER[ni]).scrollIntoView({behavior:"smooth"})},700);
+    }else{res.textContent="❌ "+pass+"/"+qs.length+" — need "+need+". Re-read the level and retry.";res.style.color="red";}
+  };
+});
+
+/* ---------- L0 fake terminal ---------- */
+var t0=document.getElementById("term0"),i0=document.getElementById("termIn0");
+function tout(s){t0.textContent+=s+"\n";t0.scrollTop=t0.scrollHeight;}
+i0.addEventListener("keydown",function(e){
+  if(e.key!=="Enter")return;
+  var c=i0.value.trim();tout("$ "+c);i0.value="";
+  c=c.toLowerCase();
+  if(c==="help")tout("commands: firejail firefox | firejail --private vlc | firejail --net=none evince secret.pdf | firemon --list | firecfg --list | clear");
+  else if(c==="clear")t0.textContent="";
+  else if(c.indexOf("firejail firefox")===0)tout("✓ jail started (pid 4321): mount+pid+uts ns, /home ro, seccomp on.\n  Hint: try firemon --list");
+  else if(c.indexOf("firejail --private")===0)tout("✓ private HOME (tmpfs). Everything you save vanishes at exit. Amnesia achieved.");
+  else if(c.indexOf("firejail --net=none")===0||c.indexOf("--net=none")>=0)tout("✓ network namespace = empty. `ip a` shows only lo. Phone-home impossible.");
+  else if(c.indexOf("firemon")===0)tout("4321:user:firejail firefox\n4325:user:/usr/lib/firefox/firefox\nseccomp: enabled | caps: dropped | net: 192.168.1.10 (or none)");
+  else if(c.indexOf("firecfg")===0)tout("/usr/local/bin/firefox → /usr/bin/firejail (symlinked, auto-jailed)");
+  else if(c.indexOf("sudo")===0)tout("sim: no sudo here — but on your box: sudo firecfg  (then firecfg --list)");
+  else if(c===""){}
+  else tout("sim: `"+c+"` not in demo. Try `help`.");
+});
+
+/* ---------- L1 onion ---------- */
+var NSINFO={
+  mnt:["mnt","MOUNT ns: jail gets its own mount table. /home masked, whitelist bind-mounted, /tmp replaced. Host mounts invisible."],
+  pid:["pid","PID ns: jailed init is PID 1. `ps aux` shows only the jail. Host processes unseeable AND unsignalable."],
+  uts:["uts","UTS ns: fake hostname/domain. App can't fingerprint your machine name."],
+  ipc:["ipc","IPC ns (--ipc): SysV shm/sem + POSIX mqueue isolated. No snooping host clipboards via shm. Paranoid: ON."],
+  net:["net","NET ns (--net=none / --net=eth0): private stack. none = only lo. eth0 = veth pair + optional netfilter. Paranoid: ON."],
+  user:["user","USER ns (--noroot / --private-user): UID map with no root inside. Even UID-0 exploit finds an empty holster."]};
+var onState={mnt:true,pid:true,uts:true,net:false,ipc:false,user:false};
+var nsView=document.getElementById("nsView");
+function drawOnion(){
+  document.querySelectorAll("#onion .ring[data-ns]").forEach(function(r){
+    r.classList.toggle("active",!!onState[r.getAttribute("data-ns")]);
+    r.style.opacity=onState[r.getAttribute("data-ns")]?"1":".38";
+  });
+  document.querySelectorAll("#nsControls button").forEach(function(b){
+    var k=b.getAttribute("data-ns");b.classList.toggle("on",!!onState[k]);b.textContent=k+(onState[k]?" ✓":" ✕");
+  });
+  var on=Object.keys(onState).filter(function(k){return onState[k]});
+  nsView.textContent="active walls ["+on.length+"/6]: "+on.join(" + ")+"\n$ firejail"+(onState.ipc?" --ipc":"")+(onState.net?" --net=none":"")+(onState.user?" --noroot":"")+" app";
+}
+document.querySelectorAll("#nsControls button").forEach(function(b){b.onclick=function(){var k=b.getAttribute("data-ns");onState[k]=!onState[k];var r=document.querySelector('#onion .ring[data-ns="'+k+'"]');nsView.textContent="["+NSINFO[k][0]+"] "+NSINFO[k][1];drawOnion();};});
+document.querySelectorAll("#onion .ring[data-ns]").forEach(function(r){r.onclick=function(){var k=r.getAttribute("data-ns");nsView.textContent="["+NSINFO[k][0]+"] "+NSINFO[k][1];};});
+document.getElementById("paranoidNs").onclick=function(){onState={mnt:true,pid:true,uts:true,net:true,ipc:true,user:true};drawOnion();nsView.textContent="☠ FULL PARANOIA: all six walls up.\n$ firejail --ipc --net=none --noroot app";};
+drawOnion();
+
+/* ---------- L2 file explorer ---------- */
+var FILES=[
+ {p:"~/.ssh/id_rsa",dac:"-rw------- alice alice",sel:"unconfined_u:object_r:ssh_home_t:s0",fj:"⛔ blacklisted",see:"no",note:"Private key. DAC already 600 + ssh_home_t type — but ANY reader with your UID still passes DAC+MAC. Firejail blacklist removes it from the view entirely."},
+ {p:"~/.gnupg/secring.gpg",dac:"-rw------- alice alice",sel:"unconfined_u:object_r:gpg_secret_t:s0",fj:"⛔ blacklisted",see:"no",note:"Decryption identity. Same lesson: MAC labels don't stop your own apps — hiding does."},
+ {p:"~/.bash_history",dac:"-rw------- alice alice",sel:"unconfined_u:object_r:home_runtime_t:s0",fj:"⛔ blacklisted",see:"no",note:"Tokens and secrets leak via history. Blacklist it in every networked profile."},
+ {p:"~/Docs/report.pdf",dac:"-rw-r--r-- alice alice",sel:"unconfined_u:object_r:user_home_t:s0",fj:"✅ whitelisted (read-only)",see:"ro",note:"The ONE thing the viewer needs. Whitelist persists real writes; read-only still allows reads. SELinux user_home_t still enforced inside."},
+ {p:"~/Docs/",dac:"drwxr-xr-x alice alice",sel:"unconfined_u:object_r:user_home_t:s0",fj:"✅ whitelisted dir",see:"yes",note:"Whitelisting ~/Docs bind-mounts exactly this; sibling ~/Wallet stays invisible."},
+ {p:"~/Wallet/seed.txt",dac:"-rw------- alice alice",sel:"unconfined_u:object_r:user_home_t:s0",fj:"🫥 hidden by whitelist (not bind-mounted)",see:"no",note:"Not blacklisted — simply never mounted. Strongest hiding: absence, not denial."},
+ {p:"/tmp/.X11-unix/X0",dac:"srwxrwxrwx root root",sel:"system_u:object_r:xserver_tmp_t:s0",fj:"⚠️ masked by private-tmp (+ needs x11/net rules)",see:"no",note:"X socket. private-tmp replaces /tmp — but abstract X sockets need --x11 + net/protocol too (Level 5)."},
+ {p:"/dev/sda",dac:"brw-rw---- root disk",sel:"system_u:object_r:fixed_disk_device_t:s0",fj:"🫥 gone under private-dev",see:"no",note:"Raw disk node. private-dev builds a minimal /dev: null, zero, urandom, snd (if needed). No webcam/mic/disk."}];
+var jailed=false,selFile=0;
+var ftree=document.getElementById("ftree"),fdet=document.getElementById("fdetail");
+function drawTree(){
+  ftree.innerHTML="";
+  FILES.forEach(function(f,i){
+    var d=document.createElement("div");d.className="fnode"+(i===selFile?" sel":"");
+    var icon=f.see==="no"?"⛔":(f.see==="ro"?"🟨":"🟩");
+    d.textContent=(jailed?icon+" ":"📄 ")+f.p; 
+    d.onclick=function(){selFile=i;drawTree();drawDetail();};
+    ftree.appendChild(d);
+  });
+  var h=document.createElement("div");h.style.cssText="margin-top:8px;font-size:11px;color:#8a9a8a";
+  h.textContent=jailed?"— JAILED VIEW (whitelist ~/Docs + blacklist ~/.ssh + private-tmp/dev) —":"— HOST VIEW (everything your UID can reach) —";
+  ftree.appendChild(h);
+}
+function drawDetail(){
+  var f=FILES[selFile];
+  var verdict=!jailed?"<div class='sees ro'>HOST: visible per DAC/MAC (you own it).</div>":
+    f.see==="no"?"<div class='sees no'>JAILED: ❌ DENIED / NOT MOUNTED — open() fails, tracelog logs it.</div>":
+    f.see==="ro"?"<div class='sees ro'>JAILED: 🟨 READ-ONLY — reads OK, writes get EROFS.</div>":
+    "<div class='sees yes'>JAILED: ✅ VISIBLE — explicitly whitelisted.</div>";
+  fdet.innerHTML="<strong style='font-family:var(--mono)'>"+f.p+"</strong><dl class='ctxgrid'>"+
+   "<dt>DAC</dt><dd>"+f.dac+"</dd><dt>SELinux</dt><dd>"+f.sel+"</dd><dt>Firejail</dt><dd>"+f.fj+"</dd></dl><p>"+f.note+"</p>"+verdict;
+}
+document.getElementById("toggleJailView").onclick=function(){jailed=!jailed;drawTree();drawDetail();};
+drawTree();drawDetail();
+
+/* ---------- L3 syscall rain ---------- */
+var rainTimer=null,rainStats={b:0,a:0};
+var DANGEROUS=["ptrace","mount","umount2","kexec_load","open_by_handle_at","init_module","finit_module","keyctl","add_key","request_key","bpf","perf_event_open","userfaultfd","clone3","unshare","setns","mount_setattr","process_vm_writev","reboot","swapon","swapoff"];
+var COMMON=["read","write","openat","close","fstat","mmap","mprotect","brk","rt_sigreturn","exit_group","futex","epoll_wait","getdents64","lseek","clock_gettime"];
+var rainBox=document.getElementById("rainBox"),rainStatsEl=document.getElementById("rainStats");
+function dropRain(strict){
+  stopRain();rainBox.innerHTML="";rainStats={b:0,a:0};
+  rainTimer=setInterval(function(){
+    var el=document.createElement("div");el.className="syscall";
+    var pool=Math.random()< (strict?0.55:0.4)?DANGEROUS:COMMON;
+    var name=pool[Math.floor(Math.random()*pool.length)];
+    var blocked=DANGEROUS.indexOf(name)!==-1||(strict&&name==="mprotect");
+    el.textContent=name+(blocked?" ✕":" ✓");
+    el.classList.add(blocked?"blocked":"allowed");
+    el.style.left=(Math.random()*88)+"%";
+    el.style.animationDuration=(1.4+Math.random()*1.6)+"s";
+    rainBox.appendChild(el);
+    if(blocked)rainStats.b++;else rainStats.a++;
+    rainStatsEl.textContent="stats: blocked "+rainStats.b+" • allowed "+rainStats.a;
+    setTimeout(function(){el.remove()},3400);
+    if(rainBox.children.length>40)rainBox.removeChild(rainBox.firstChild);
+  },260);
+  rainBox.innerHTML="<div style='position:absolute;bottom:6px;width:100%;text-align:center;font-family:var(--mono);font-size:11px;color:#8a9a8a'>KERNEL — survivors arrive here</div>";
+}
+function stopRain(){if(rainTimer)clearInterval(rainTimer);rainTimer=null;}
+document.getElementById("rainDefault").onclick=function(){dropRain(false)};
+document.getElementById("rainStrict").onclick=function(){dropRain(true)};
+document.getElementById("rainStop").onclick=function(){stopRain()};
+
+/* ---------- L4 net lab ---------- */
+var netPacket=document.getElementById("netPacket"),netFw=document.getElementById("netFw"),netLog=document.getElementById("netLog");
+document.querySelectorAll("[data-netmode]").forEach(function(b){
+  b.onclick=function(){
+    var m=b.getAttribute("data-netmode");
+    netPacket.className="packet";
+    if(m==="open"){netPacket.classList.add("ok");netFw.textContent="policy: none — host stack shared. LAN reachable.";
+      netLog.textContent="$ firejail --noprofile app\n→ packet to 192.168.1.5 … DELIVERED. Router admin, printers, IoT all reachable. ☠️";document.getElementById("netTarget").textContent="192.168.1.5 (LAN — reachable!)";}
+    else if(m==="none"){netPacket.classList.add("blocked-p");netFw.textContent="policy: net none — namespace holds only lo.";
+      netLog.textContent="$ firejail --net=none app\n$ ip a  →  lo only\n→ packet dies at the namespace edge. No exfil, no LAN pivot. ✅ STRONGEST.";document.getElementById("netTarget").textContent="192.168.1.5 (LAN — unreachable)";}
+    else{netPacket.classList.add("ok");netFw.textContent="policy: nolocal.net — DROP 10/8,172.16/12,192.168/16,127/8 egress; ALLOW web+DNS 9.9.9.9";
+      netLog.textContent="$ firejail --net=eth0 --netfilter=nolocal.net firefox\n→ LAN packet DROPPED by netfilter (counter++). Internet still flows. ✅ BROWSER PATTERN.";document.getElementById("netTarget").textContent="192.168.1.5 (LAN — DROPPED) / 1.1.1.1 (web — ok)";}
+  };
+});
+
+/* ---------- L5 X11 demo ---------- */
+var xKeys=document.getElementById("xKeys"),xSnoop=document.getElementById("xSnoop"),xLog=document.getElementById("xLog"),xTimer=null;
+var SECRET="s3cr3t-password!";
+function xType(isolated){
+  if(xTimer)clearInterval(xTimer);xKeys.innerHTML="";xSnoop.innerHTML="";
+  var i=0;
+  xLog.textContent=isolated?"$ firejail --x11=xephyr evil-app\n→ nested Xephyr server. Keystrokes stay in the outer :0. Attacker sees static. ✅":"$ firejail evil-app   (shared :0, no --x11)\n→ X11 lets ANY client read ANY input. Watch the attacker window… ☠️";
+  xTimer=setInterval(function(){
+    if(i>=SECRET.length){clearInterval(xTimer);return;}
+    var ch=SECRET[i];
+    var a=document.createElement("span");a.className="keystroke";a.textContent=ch;xKeys.appendChild(a);
+    var s=document.createElement("span");s.className="keystroke"+(isolated?"":" snoop");s.textContent=isolated?"•":ch;xSnoop.appendChild(s);
+    i++;
+  },320);
+}
+document.getElementById("x11shared").onclick=function(){xType(false)};
+document.getElementById("x11xephyr").onclick=function(){xType(true)};
+
+/* ---------- L6 forge ---------- */
+var APP="myapp";
+function forge(){
+  var lines=["# ~/.config/firejail/"+APP+".profile — generated by PROFILE FORGE (review + test!)","include /etc/firejail/"+APP+".profile",""];
+  document.querySelectorAll("#forgeToggles input").forEach(function(c){if(c.checked)lines.push(c.getAttribute("data-line"));});
+  lines.push("blacklist ${HOME}/.ssh","blacklist ${HOME}/.gnupg","private-tmp","# TODO: add whitelist ${HOME}/Docs + test save/open/print");
+  document.getElementById("forgeOut").textContent=lines.join("\n");
+}
+document.querySelectorAll("#forgeToggles input").forEach(function(c){c.onchange=forge});
+document.getElementById("forgeCopy").onclick=function(){
+  var t=document.getElementById("forgeOut").textContent;
+  if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){alert("Profile copied — paste into ~/.config/firejail/"+APP+".profile")});
+  else alert("Copy manually from the preview.");
+};
+forge();
+
+/* ---------- L7 hero checklist ---------- */
+var boxes=document.querySelectorAll("#heroChecklist input");
+boxes.forEach(function(b){b.onchange=refresh});
+document.getElementById("heroBtn").onclick=function(){
+  document.getElementById("heroStamp").classList.add("show");
+  document.getElementById("heroBtn").textContent="★ HERO CONFIRMED ★";
+};
+
+refresh();
+})();
+</script>
+</body>
+</html>
