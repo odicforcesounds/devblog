@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANARK-01 — Technical Manual: How Anarchism Works | Home</title>
+<meta name="description" content="A promotional technical manual explaining anarchism: theory, production, decision-making, real examples, peaceful societies. Interactive levels.">
+<style>
+/* ============ ANARK-01 MANUAL SYSTEM — pure CSS3, no external resources ============ */
+:root{
+  --paper:#f6f1e7; --paper2:#efe7d3; --ink:#1a1a18; --muted:#5b564a;
+  --red:#c1272d; --black:#111; --accent:#0f6b4d; --gold:#b78a1f;
+  --blue:#1d4e89; --card:#fffdf7; --line:#1a1a18; --ok:#0f6b4d; --bad:#c1272d;
+  --mono:"Courier New",Courier,monospace; --sans:Verdana,Geneva,Tahoma,sans-serif;
+  --serif:Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#2b2a26;color:var(--ink);font-family:var(--serif);line-height:1.65}
+a{color:var(--blue)}
+.top-strap{background:var(--black);color:#fff;font-family:var(--mono);font-size:12px;letter-spacing:.08em;padding:8px 16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.top-strap span.badge{background:var(--red);padding:2px 8px;font-weight:bold}
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.sidebar{position:static!important;height:auto!important}}
+.sidebar{background:var(--paper2);border-right:3px solid var(--line);padding:0;position:sticky;top:0;height:100vh;overflow:auto}
+.side-head{background:var(--ink);color:var(--paper);padding:18px;font-family:var(--mono)}
+.side-head h2{margin:0;font-size:18px;letter-spacing:.06em}
+.side-head p{margin:6px 0 0;font-size:12px;opacity:.85}
+.nav-sec{padding:14px 16px;border-bottom:1px dashed #999}
+.nav-sec h3{font-family:var(--mono);font-size:12px;letter-spacing:.12em;margin:0 0 8px;color:var(--muted)}
+.nav-sec a{display:block;text-decoration:none;color:var(--ink);font-family:var(--mono);font-size:13px;padding:7px 9px;border:1px solid transparent;border-radius:4px;margin:3px 0}
+.nav-sec a:hover{background:#fff;border-color:var(--line)}
+.nav-sec a.locked{opacity:.45;cursor:not-allowed}
+.nav-sec a.locked::after{content:" 🔒";font-size:12px}
+.nav-sec a.unlocked::after{content:" ✓";color:var(--ok);font-weight:bold}
+.nav-sec a.active{background:var(--ink);color:#fff}
+.progress-wrap{padding:14px 16px;background:#fffdf7;border-bottom:2px solid var(--line)}
+.progress-label{font-family:var(--mono);font-size:12px;display:flex;justify-content:space-between}
+.progress{height:14px;border:2px solid var(--line);background:#fff;margin-top:6px;position:relative;overflow:hidden}
+.progress > div{height:100%;width:0;background:repeating-linear-gradient(45deg,var(--accent),var(--accent) 8px,#0d5a41 8px,#0d5a41 16px);transition:width .6s ease}
+.main{background:var(--paper);padding:0}
+.cover{border-bottom:4px double var(--line);padding:38px 36px 28px;background:
+  radial-gradient(circle at 85% 20%, rgba(193,39,45,.12) 0 120px, transparent 121px),
+  radial-gradient(circle at 10% 90%, rgba(15,107,77,.12) 0 140px, transparent 141px),var(--paper)}
+.stamp-row{display:flex;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;margin-bottom:14px}
+.stamp{border:2px solid var(--red);color:var(--red);padding:4px 10px;transform:rotate(-2deg);font-weight:bold;letter-spacing:.1em}
+.stamp.black{border-color:var(--ink);color:var(--ink);transform:rotate(1.5deg)}
+.cover h1{font-family:var(--mono);font-size:clamp(28px,5vw,52px);line-height:1.05;margin:8px 0;text-transform:uppercase}
+.cover h1 span{color:var(--red)}
+.cover .sub{font-size:19px;max-width:720px}
+.meta-table{font-family:var(--mono);font-size:13px;border:2px solid var(--line);background:var(--card);margin:20px 0;width:100%;border-collapse:collapse}
+.meta-table td,.meta-table th{border:1px solid var(--line);padding:8px 10px;text-align:left}
+.meta-table th{background:var(--ink);color:#fff;width:220px}
+.home-bar{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.btn{font-family:var(--mono);font-weight:bold;text-decoration:none;display:inline-block;border:2px solid var(--line);padding:10px 16px;background:#fff;color:var(--ink);box-shadow:4px 4px 0 var(--line);transition:transform .15s,box-shadow .15s;cursor:pointer;font-size:14px}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--line)}
+.btn.primary{background:var(--red);color:#fff;border-color:#7a171b;box-shadow:4px 4px 0 #7a171b}
+.btn.green{background:var(--accent);color:#fff;border-color:#083d2c;box-shadow:4px 4px 0 #083d2c}
+.btn.small{padding:6px 10px;font-size:12px;box-shadow:2px 2px 0 var(--line)}
+.chapter{padding:30px 36px;border-bottom:3px solid var(--line)}
+@media(max-width:600px){.chapter{padding:22px 18px}.cover{padding:26px 18px}}
+.chapter.locked-ch{opacity:.55;filter:grayscale(.2)}
+.chapter h2{font-family:var(--mono);font-size:clamp(20px,3vw,30px);text-transform:uppercase;border-left:10px solid var(--red);padding-left:12px;margin:0 0 6px}
+.chapter h2 .lvl{display:inline-block;background:var(--ink);color:#fff;font-size:14px;padding:2px 8px;vertical-align:middle;margin-right:8px}
+.chapter h3{font-family:var(--mono);color:var(--accent);margin:26px 0 8px;font-size:18px}
+.chapter h4{font-family:var(--mono);margin:18px 0 6px}
+.kicker{font-family:var(--mono);color:var(--red);font-weight:bold;letter-spacing:.12em;font-size:12px;text-transform:uppercase}
+.callout{border:2px solid var(--line);background:var(--card);padding:14px 16px;margin:16px 0;position:relative}
+.callout.equiv{border-left:10px solid var(--red);background:#fff0f0}
+.callout.good{border-left:10px solid var(--accent);background:#ecf6f0}
+.callout.info{border-left:10px solid var(--blue);background:#eef3fa}
+.callout .tag{font-family:var(--mono);font-size:11px;font-weight:bold;letter-spacing:.1em;display:inline-block;padding:2px 8px;margin-bottom:8px;background:var(--ink);color:#fff}
+.callout.equiv .tag{background:var(--red)}
+.callout.good .tag{background:var(--accent)}
+.callout.info .tag{background:var(--blue)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:750px){.two-col{grid-template-columns:1fr}}
+.figure{border:2px solid var(--line);background:#fff;padding:14px;margin:14px 0}
+.figure figcaption{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:8px;border-top:1px dashed #999;padding-top:8px}
+table.compare{width:100%;border-collapse:collapse;font-size:14px;background:#fff;margin:14px 0}
+table.compare th,table.compare td{border:1px solid var(--line);padding:9px 8px;vertical-align:top;text-align:left}
+table.compare th{background:var(--ink);color:#fff;font-family:var(--mono);font-size:12px}
+table.compare tr:nth-child(even) td{background:#faf6ec}
+.pill{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);margin:2px}
+.pill.an{background:#0f6b4d;color:#fff}.pill.auth{background:#c1272d;color:#fff}.pill.lib{background:#1d4e89;color:#fff}.pill.mix{background:#b78a1f;color:#fff}
+/* ===== ANIMATIONS (pure CSS3) ===== */
+.anim-stage{border:2px dashed var(--line);background:#fff;padding:16px;min-height:220px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;overflow:hidden;position:relative}
+.hierarchy{display:flex;flex-direction:column;align-items:center;gap:8px;animation:fadeIn 1s ease}
+.hierarchy .boss{background:var(--red);color:#fff;font-family:var(--mono);padding:8px 22px;border:2px solid #000}
+.hierarchy .mid{display:flex;gap:10px}
+.hierarchy .mid div{background:var(--gold);border:2px solid #000;font-family:var(--mono);padding:6px 12px;font-size:12px}
+.hierarchy .base{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.hierarchy .base div{background:#ddd;border:2px solid #000;font-family:var(--mono);padding:5px 8px;font-size:11px;animation:shakeDown 2.5s infinite}
+.hierarchy .arrow{font-size:20px;line-height:1;animation:drop 1.2s infinite}
+@keyframes drop{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(6px);opacity:.5}}
+@keyframes shakeDown{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+.mesh{display:grid;grid-template-columns:repeat(4,54px);gap:14px;justify-content:center;position:relative}
+.mesh i{width:54px;height:54px;border-radius:50%;border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;font-style:normal;font-family:var(--mono);font-weight:bold;background:var(--paper);position:relative;z-index:2;animation:pulse 2.4s infinite}
+.mesh i:nth-child(odd){background:#d7efe3}
+.mesh i:nth-child(3n){animation-delay:.4s}.mesh i:nth-child(2n){animation-delay:.8s}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(15,107,77,.5)}50%{box-shadow:0 0 0 10px rgba(15,107,77,0)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;font-family:var(--mono);font-size:12px}
+.flow .step{background:var(--ink);color:#fff;padding:8px 10px;border-radius:6px;animation:stepGlow 3s infinite}
+.flow .step:nth-child(3){animation-delay:.5s}.flow .step:nth-child(5){animation-delay:1s}.flow .step:nth-child(7){animation-delay:1.5s}.flow .step:nth-child(9){animation-delay:2s}
+.flow .arr{font-size:20px;animation:drop 1s infinite}
+@keyframes stepGlow{0%,100%{background:#111}50%{background:var(--accent)}}
+.pool{display:flex;gap:6px;align-items:end;height:120px;border-bottom:3px solid var(--line);padding:0 10px}
+.pool div{flex:1;background:var(--accent);border:2px solid #083d2c;border-bottom:none;animation:fillUp 3s ease-in-out infinite alternate;text-align:center;font-family:var(--mono);font-size:11px;color:#fff;padding-top:6px}
+.pool div:nth-child(2){animation-delay:.3s;background:var(--blue)}.pool div:nth-child(3){animation-delay:.6s;background:var(--gold)}.pool div:nth-child(4){animation-delay:.9s;background:var(--red)}
+@keyframes fillUp{from{height:30%}to{height:95%}}
+.fed{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.fed .node{border:2px solid var(--line);background:#fff;padding:10px;width:150px;text-align:center;font-family:var(--mono);font-size:12px;position:relative}
+.fed .node::after{content:"⇄";position:absolute;right:-16px;top:40%;font-size:18px}
+.fed .node:last-child::after{content:""}
+.fed .node b{display:block;background:var(--ink);color:#fff;padding:3px;margin-bottom:6px}
+.fed .node .dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--accent);animation:pulse 1.8s infinite}
+.marquee{overflow:hidden;white-space:nowrap;border-top:2px solid var(--line);border-bottom:2px solid var(--line);background:var(--ink);color:#fff;font-family:var(--mono);font-size:13px;padding:8px 0}
+.marquee span{display:inline-block;padding-left:100%;animation:scrollX 22s linear infinite}
+@keyframes scrollX{to{transform:translateX(-100%)}}
+.spin-badge{width:120px;height:120px;border-radius:50%;border:3px dashed var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:bold;font-size:12px;text-align:center;animation:spin 14s linear infinite;background:#fff}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* simulators */
+.sim{border:2px solid var(--line);background:#fff;padding:14px;margin:12px 0}
+.sim h4{margin:0 0 8px;font-family:var(--mono)}
+.sim button{font-family:var(--mono);border:2px solid var(--line);background:#fff;padding:8px 12px;cursor:pointer;margin:4px;box-shadow:2px 2px 0 var(--line)}
+.sim button:active{transform:translate(2px,2px);box-shadow:none}
+.sim .out{font-family:var(--mono);font-size:13px;background:#111;color:#7dffb0;padding:10px;margin-top:10px;min-height:60px;white-space:pre-wrap}
+input[type=range]{width:100%}
+/* quiz */
+.quiz{border:3px solid var(--line);background:var(--card);padding:16px;margin:18px 0}
+.quiz h4{font-family:var(--mono);margin:0 0 10px;background:var(--ink);color:#fff;padding:8px 10px}
+.quiz label{display:block;border:1px solid #999;background:#fff;padding:8px 10px;margin:6px 0;cursor:pointer;font-size:15px}
+.quiz label:hover{border-color:var(--line);background:#fff8df}
+.quiz button{margin-top:10px}
+.quiz .result{font-family:var(--mono);font-weight:bold;margin-top:10px;padding:8px;display:none}
+.quiz .result.pass{display:block;background:#d7efe3;border:2px solid var(--ok)}
+.quiz .result.fail{display:block;background:#fbdfe0;border:2px solid var(--bad)}
+footer{background:var(--ink);color:#ddd;padding:28px 36px;font-family:var(--mono);font-size:13px}
+footer a{color:#ffd97a}
+.ref-list{font-size:14px}
+.ref-list li{margin-bottom:8px}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:14px 0}
+.toc-grid a{border:2px solid var(--line);background:#fff;padding:10px;text-decoration:none;color:var(--ink);font-family:var(--mono);font-size:13px}
+.toc-grid a:hover{background:var(--ink);color:#fff}
+.cert{border:4px double var(--gold);background:#fffdf0;padding:20px;text-align:center;display:none;margin:16px 0}
+.cert.show{display:block;animation:fadeIn .8s ease}
+.cert h3{font-family:var(--mono);color:var(--gold);letter-spacing:.1em}
+@media print{.sidebar,.home-bar,.quiz button,.sim button,.top-strap{display:none}.layout{display:block}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="top-strap"><span><span class="badge">ANARK-01</span> &nbsp; TECHNICAL MANUAL • PEACEFUL SOCIETIES • REV 2026.10 • VANILLA HTML/CSS/JS — NO EXTERNAL RESOURCES</span><span>PROGRESS: <span id="strapProgress">0%</span> • <a href="index.html" style="color:#ffd97a">⌂ HOME (index.html)</a></span></div>
+<div class="layout">
+<nav class="sidebar" aria-label="Manual index">
+<div class="side-head"><h2>☰ ANARK-01 MANUAL</h2><p>How Anarchism Works — from zero to federation. You must validate each level to unlock the next.</p></div>
+<div class="progress-wrap"><div class="progress-label"><span>MANUAL COMPLETION</span><span id="sideProgress">0%</span></div><div class="progress"><div id="progressBar"></div></div>
+<div style="font-family:var(--mono);font-size:12px;margin-top:8px"><a href="index.html">⌂ Home → index.html</a> • <button class="btn small" onclick="resetProgress()">reset</button></div></div>
+<div class="nav-sec"><h3>— START HERE</h3>
+<a href="index.html" class="active">⌂ Home (index.html)</a>
+<a href="#level-0" data-level="0">L0 — Is This For You?</a>
+<a href="#level-1" data-level="1">L1 — Core Concepts</a>
+<a href="#level-2" data-level="2">L2 — How To Produce</a>
+<a href="#level-3" data-level="3">L3 — How To Decide</a>
+<a href="#level-4" data-level="4">L4 — Parties Compared</a>
+<a href="#level-5" data-level="5">L5 — Real Countries</a>
+<a href="#level-6" data-level="6">L6 — Build Peaceful Society</a>
+</div>
+<div class="nav-sec"><h3>— REFERENCES</h3>
+<a href="#platforms">Anarchist Platforms</a>
+<a href="#sources">External Sources</a>
+<a href="#glossary">Glossary</a>
+<a href="#exam">Final Exam + Certificate</a>
+</div>
+<div class="nav-sec"><h3>— MANUAL RULE</h3><p style="font-family:var(--mono);font-size:12px">Bad decisions are judged by <b>what is done</b>, not by flag or slogan. <b>Any actor — anarchist, liberal, socialist, conservative, nationalist — that uses domination, censorship, war, exploitation or hierarchy is equal to all others who use them.</b> No exceptions.</p></div>
+</nav>
+<main class="main">
+<!-- COVER / HOME -->
+<header class="cover" id="home">
+<div class="stamp-row"><span class="stamp">PROMOTIONAL • PEACEFUL • PRACTICAL</span><span class="stamp black">FIELD MANUAL ANARK-01</span><span class="stamp black">LEVELS 0–6 + EXAM</span></div>
+<h1>How <span>Anarchism</span> Works: A Technical Manual for Useful, Peaceful Societies</h1>
+<p class="sub">Not chaos. Not utopia. <b>A set of buildable techniques</b> — mutual aid, free association, federation, consensus, commons — tested in real places, from Spain 1936 to Rojava today. This page teaches you like an engineer: concepts → animated demos → production plans → country comparisons → labs → validation quizzes.</p>
+<table class="meta-table"><tr><th>DOCUMENT</th><td>ANARK-01 • Single-file edition • Pure vanilla JavaScript + CSS3, zero external CSS/JS/fonts/images</td></tr>
+<tr><th>HOME LINK (required)</th><td><a href="index.html"><b>⌂ Home → index.html</b></a> (this file IS index.html — save it as <code>index.html</code> and the link works locally and on any server)</td></tr>
+<tr><th>HOW TO USE</th><td>1) Read level in order. 2) Play the animated example. 3) Try the simulator. 4) Pass the quiz (2/3) to unlock next level. Progress saves in this browser.</td></tr>
+<tr><th>PROMISE</th><td>By Level 6 you can design a neighbourhood assembly, a worker cooperative, and a federated supply network — on paper, today.</td></tr></table>
+<div class="home-bar"><a class="btn primary" href="#level-0">▶ Start Level 0</a><a class="btn" href="index.html">⌂ Home (index.html)</a><a class="btn green" href="#exam">★ Jump to Final Exam</a></div>
+<div class="toc-grid">
+<a href="#level-0"><b>L0</b> — Is this for you? Myths vs reality</a>
+<a href="#level-1"><b>L1</b> — No rulers, not no rules</a>
+<a href="#level-2"><b>L2</b> — How to produce without bosses</a>
+<a href="#level-3"><b>L3</b> — Decide without rulers</a>
+<a href="#level-4"><b>L4</b> — All parties compared</a>
+<a href="#level-5"><b>L5</b> — Real country cases</a>
+<a href="#level-6"><b>L6</b> — Build your peaceful commune</a>
+</div>
+<div class="marquee"><span>★ MUTUAL AID ★ FREE ASSOCIATION ★ DIRECT DEMOCRACY ★ FEDERATION ★ COMMONS ★ NO BOSSES ★ NO BORDERS AS CAGES ★ PEACE IS A SKILL ★ MUTUAL AID ★ FREE ASSOCIATION ★ DIRECT DEMOCRACY ★&nbsp;</span></div>
+</header>
+
+<!-- LEVEL 0 -->
+<section class="chapter" id="level-0" data-chapter="0">
+<p class="kicker">Level 0 — Orientation • No prerequisites</p>
+<h2><span class="lvl">L0</span> Is This Manual For You?</h2>
+<p><b>Short answer: if you want useful work, peace, and freedom together — yes.</b> Anarchism is the political tradition that says: <i>nobody should rule anyone else, and we can still run complex societies</i> — through voluntary cooperation. The word comes from Greek <i>an-arkhia</i> = “without a ruler”, not “without order”.</p>
+<div class="two-col">
+<div class="callout good"><span class="tag">WHAT ANARCHISM IS</span><ul><li><b>A design method:</b> replace command hierarchies with horizontal networks.</li><li><b>An economy:</b> commons + cooperatives + mutual aid instead of boss-owned firms or state-owned monopolies.</li><li><b>A peace strategy:</b> no armies of conquest, no police as rulers — community safety, mediation, restorative justice.</li></ul></div>
+<div class="callout equiv"><span class="tag">WHAT IT IS NOT</span><ul><li>Not “everyone does whatever they want”. Freedom stops where domination starts.</li><li>Not chaos: Spanish collectives ran trains, hospitals and farms in 1936–39 with elected, recallable delegates.</li><li>Not pacifism-at-all-costs for all currents: most anarchists defend <i>self-defence</i> but oppose war, conscription and invasion.</li></ul></div>
+</div>
+<figure class="figure"><figcaption>FIG 0.1 — Animated: hierarchy (orders flow down) vs mesh (agreements flow any direction). Watch the arrows.</figcaption>
+<div class="two-col"><div class="anim-stage"><b style="font-family:var(--mono)">HIERARCHY</b><div class="hierarchy"><div class="boss">★ CHIEF</div><div class="arrow">▼</div><div class="mid"><div>MANAGER</div><div>MANAGER</div></div><div class="arrow">▼</div><div class="base"><div>worker</div><div>worker</div><div>worker</div><div>worker</div></div></div><small style="font-family:var(--mono)">Information distorted, blame pushed down</small></div>
+<div class="anim-stage"><b style="font-family:var(--mono)">ANARCHIST MESH</b><div class="mesh"><i>A</i><i>B</i><i>C</i><i>D</i><i>E</i><i>F</i><i>G</i><i>H</i></div><small style="font-family:var(--mono)">Any node can propose; recallable delegates link groups</small></div></div></figure>
+<div class="callout info"><span class="tag">PROMOTIONAL NOTE — WHY TRY IT?</span> Because hierarchy wastes talent. In a cooperative, the person who does the job designs the job. Studies of worker cooperatives (Mondragón in Spain, Emilia-Romagna in Italy) show higher survival rates and pay equity. You get <b>usefulness + dignity + peace</b> — not one at the expense of the others.</div>
+<div class="quiz" data-quiz="0" data-need="2"><h4>🔧 L0 VALIDATION — answer 2/3 to unlock L1</h4>
+<div data-q="1"><p><b>1. “An-archy” literally means…</b></p><label><input type="radio" name="q0-1" value="0"> Without order or organisation</label><label><input type="radio" name="q0-1" value="1"> Without a ruler</label><label><input type="radio" name="q0-1" value="0"> Without technology</label></div>
+<div data-q="2"><p><b>2. Anarchism replaces hierarchy with…</b></p><label><input type="radio" name="q0-2" value="1"> Horizontal networks, assemblies and recallable delegates</label><label><input type="radio" name="q0-2" value="0"> A stronger president</label><label><input type="radio" name="q0-2" value="0"> No coordination at all</label></div>
+<div data-q="3"><p><b>3. Which is TRUE about Spanish collectives 1936?</b></p><label><input type="radio" name="q0-3" value="0"> They abolished all hospitals and trains</label><label><input type="radio" name="q0-3" value="1"> Workers ran transport, health and farms collectively</label><label><input type="radio" name="q0-3" value="0"> They were a capitalist corporation</label></div>
+<button class="btn small" onclick="gradeQuiz(0)">Validate L0</button><div class="result" id="res-0"></div></div>
+</section>
+
+<!-- LEVEL 1 -->
+<section class="chapter" id="level-1" data-chapter="1">
+<p class="kicker">Level 1 — Theory • Unlock by passing L0</p>
+<h2><span class="lvl">L1</span> No Rulers, Not No Rules: The 6 Core Concepts</h2>
+<p>Think of anarchism as an operating system with six kernel modules. Learn them once, you can read every later chapter.</p>
+<h3>1. Mutual aid (Kropotkin)</h3><p>Peter Kropotkin, observing Siberian animals and peasant communes, argued cooperation — not cut-throat competition — drives evolution (<i>Mutual Aid: A Factor of Evolution</i>, 1902). <b>Technical form:</b> pooled funds, tool libraries, community kitchens, strike support. Everyone contributes what they can, draws what they need in crisis.</p>
+<h3>2. Free association & voluntary federation</h3><p>Individuals → affinity groups → neighbourhood assemblies → federations of assemblies. Higher levels <b>cannot command</b> lower ones; they coordinate. Delegates carry a written mandate and can be recalled instantly. This is the opposite of a party that disciplines its base.</p>
+<h3>3. Direct action</h3><p>Solve the problem yourself instead of petitioning rulers: occupy empty housing to house people, create a free clinic, run a strike without union bosses. Direct action is not necessarily violent — most of it is constructive (build the alternative) and obstructive (block the harm).</p>
+<h3>4. Prefiguration</h3><p><b>Build the future in the present.</b> If you want a non-sexist, non-racist society, your assembly must be non-sexist and non-racist now: rotation of speaking, childcare at meetings, translation, veto against oppression.</p>
+<h3>5. Commons, not property-as-power</h3><p>Distinction: <i>personal possessions</i> (your home, toothbrush) are respected; <i>means of production</i> (land, factories, platforms) should not give one person power over another. Solutions: cooperatives, community land trusts, open-source licenses.</p>
+<h3>6. Anti-domination (intersectional)</h3><p>Class, state, patriarchy, racism, colonialism, ecocide are linked hierarchies. A factory takeover that keeps sexist shift rules has failed technically — it reproduced domination.</p>
+<figure class="figure"><figcaption>FIG 1.1 — Mutual-aid pool: everyone pours in, anyone in need draws. Animation loops.</figcaption><div class="anim-stage"><div class="pool" style="width:100%;max-width:520px"><div>YOU</div><div>NEIGHBOUR</div><div>CO-OP</div><div>COMMONS</div></div><small style="font-family:var(--mono)">Contribution varies • Access by need • Ledger is public</small></div></figure>
+<div class="callout equiv"><span class="tag">⚖ EQUIVALENCE PRINCIPLE — READ CAREFULLY</span><b>When this manual criticises a bad decision — censorship, one-party rule, secret police, colonial war, union-busting, austerity starvation, ecological dumping — that criticism applies equally to ALL who use them.</b> A prison camp run by “communists”, a torture programme run by “democrats”, and a pogrom run by “nationalists” are <b>equal as domination techniques</b>. We judge acts, not flags. No team gets a pass.</div>
+<div class="sim"><h4>🔬 LAB 1 — Equivalence tester</h4><p style="font-size:14px">Click a domination technique. The manual judges it identically whoever uses it.</p><button onclick="equiv('censorship')">Censorship</button><button onclick="equiv('secret police')">Secret police</button><button onclick="equiv('invasion')">Invasion / occupation</button><button onclick="equiv('union busting')">Union busting</button><div class="out" id="equivOut">> awaiting input…</div></div>
+<div class="quiz" data-quiz="1" data-need="2"><h4>🔧 L1 VALIDATION</h4>
+<div><p><b>1. Prefiguration means…</b></p><label><input type="radio" name="q1-1" value="1"> Practising the future society inside current organising</label><label><input type="radio" name="q1-1" value="0"> Waiting for revolution before changing behaviour</label><label><input type="radio" name="q1-1" value="0"> Following orders until freedom arrives</label></div>
+<div><p><b>2. A federation delegate is…</b></p><label><input type="radio" name="q1-2" value="0"> A boss who decides for the base</label><label><input type="radio" name="q1-2" value="1"> Mandated, rotatable and instantly recallable</label><label><input type="radio" name="q1-2" value="0"> Appointed for life</label></div>
+<div><p><b>3. Equivalence principle says…</b></p><label><input type="radio" name="q1-3" value="1"> Same domination technique = same condemnation, whoever uses it</label><label><input type="radio" name="q1-3" value="0"> Allies are excused for small repressions</label><label><input type="radio" name="q1-3" value="0"> Only right-wing states can oppress</label></div>
+<button class="btn small" onclick="gradeQuiz(1)">Validate L1</button><div class="result" id="res-1"></div></div>
+</section>
+
+<!-- LEVEL 2 -->
+<section class="chapter" id="level-2" data-chapter="2">
+<p class="kicker">Level 2 — Economics • How to produce without bosses</p>
+<h2><span class="lvl">L2</span> Production: Cooperatives, Commons & Planning from Below</h2>
+<p>Question every society must answer: <b>who decides what is made, how, and who gets it?</b> Capitalism answers: owners of capital. State socialism answers: party ministries. Anarchism answers: <b>the producers and users together, federated.</b></p>
+<h3>A. The cooperative firm (technical spec)</h3><ul><li><b>Ownership:</b> one worker = one vote. No outside shareholders.</li><li><b>Pay:</b> ratio voted (e.g., Mondragón caps top-to-bottom around 6:1 vs 300:1 in US corporations).</li><li><b>Surplus:</b> reserve + reinvestment + community fund, voted yearly.</li><li><b>Real examples:</b> Mondragón (Spain, 70,000+ workers), Emilia-Romagna cooperatives (Italy, ~1/3 of regional GDP), CECOSESOLA (Venezuela, 20,000+ members, food + health).</li></ul>
+<h3>B. The commons (Ostrom’s 8 rules, simplified)</h3><p>Elinor Ostrom won the Nobel showing commons need not collapse. Rules: clear boundaries, proportional costs/benefits, collective monitoring, graduated sanctions, accessible conflict resolution. Applied to: water, forests, code, housing.</p>
+<h3>C. Federated planning (how bread reaches 2 million people without a ministry)</h3>
+<figure class="figure"><figcaption>FIG 2.1 — Federation flow: commune need → cooperative production → inter-coop logistics. Delegates sync horizontally.</figcaption><div class="anim-stage"><div class="fed"><div class="node"><b>COMMUNE A</b><span class="dot"></span><br>needs 10k loaves<br>assembly vote</div><div class="node"><b>BAKERY CO-OP</b><span class="dot"></span><br>bakes + reports<br>capacity open-book</div><div class="node"><b>TRANSPORT</b><span class="dot"></span><br>route shared<br>drivers rotate</div><div class="node"><b>COMMUNE B</b><span class="dot"></span><br>surplus flour<br>offers mutual aid</div></div><div class="flow"><span class="step">NEED</span><span class="arr">→</span><span class="step">PROPOSE</span><span class="arr">→</span><span class="step">MAKE</span><span class="arr">→</span><span class="step">SHARE</span><span class="arr">→</span><span class="step">REVIEW</span></div></div></figure>
+<div class="sim"><h4>🔬 LAB 2 — Cooperative pay simulator (vanilla JS)</h4><p style="font-size:14px">Drag the solidarity slider. Watch inequality vs resilience.</p><label style="font-family:var(--mono);font-size:13px">Max pay ratio (top:bottom) <span id="ratioVal">6:1</span></label><input type="range" id="ratio" min="1" max="30" value="6" oninput="paySim()"><div class="out" id="payOut">> move slider…</div></div>
+<div class="callout good"><span class="tag">NEW IDEA — PLATFORM COOPERATIVISM</span>Instead of Uber/Deliveroo extracting 25–30%, drivers own the app (e.g., <b>Eva Coop</b> in Canada, <b>CoopCycle</b> federation in Europe with 70+ collectives). Same phone, different ownership: profits stay with couriers, algorithm is voted. Any city can fork the open-source code and start one.</div>
+<div class="callout good"><span class="tag">NEW IDEA — COMMUNITY WEALTH + CARE INCOME</span>Pay care work (childcare, eldercare, ecological repair) from a commons fund financed by land-value and cooperative levies. Pioneered in parts of Chiapas and Rojava: care is production, not “help”.</div>
+<div class="quiz" data-quiz="2" data-need="2"><h4>🔧 L2 VALIDATION</h4>
+<div><p><b>1. In a worker cooperative…</b></p><label><input type="radio" name="q2-1" value="1"> One worker = one vote, surplus voted</label><label><input type="radio" name="q2-1" value="0"> Outside shareholders decide</label><label><input type="radio" name="q2-1" value="0"> The boss inherits the firm</label></div>
+<div><p><b>2. Ostrom showed commons survive when…</b></p><label><input type="radio" name="q2-2" value="1"> Rules are collectively monitored with graduated sanctions</label><label><input type="radio" name="q2-2" value="0"> There are no rules at all</label><label><input type="radio" name="q2-2" value="0"> A corporation encloses them</label></div>
+<div><p><b>3. Platform cooperativism (CoopCycle) means…</b></p><label><input type="radio" name="q2-3" value="1"> Couriers co-own the delivery app and vote the algorithm</label><label><input type="radio" name="q2-3" value="0"> An app extracts 30% for investors</label><label><input type="radio" name="q2-3" value="0"> Delivery is banned</label></div>
+<button class="btn small" onclick="gradeQuiz(2)">Validate L2</button><div class="result" id="res-2"></div></div>
+</section>
+
+<!-- LEVEL 3 -->
+<section class="chapter" id="level-3" data-chapter="3">
+<p class="kicker">Level 3 — Governance • Decide fast without rulers</p>
+<h2><span class="lvl">L3</span> Decision-Making: Consensus, Consent & Recall</h2>
+<p>Anarchists use <b>three gears</b>: (1) autonomy for personal/small matters, (2) majority or consent for routine coordination, (3) consensus for high-stakes shared commitments. No president needed — facilitation rotates.</p>
+<figure class="figure"><figcaption>FIG 3.1 — Consensus loop (animated). Proposal → clarifying → concerns → amend → consent / stand-aside / block (block only if it violates core agreement).</figcaption><div class="anim-stage"><div class="flow"><span class="step">PROPOSE</span><span class="arr">→</span><span class="step">CLARIFY</span><span class="arr">→</span><span class="step">CONCERNS</span><span class="arr">→</span><span class="step">AMEND</span><span class="arr">→</span><span class="step">CONSENT?</span></div><small style="font-family:var(--mono)">Block = “this breaks our agreed principles and I’ll leave if it passes” — rare, precious, must be explained</small></div></figure>
+<h3>Roles in an assembly (rotate every meeting)</h3><ul><li><b>Facilitator:</b> keeps stack, not a chief.</li><li><b>Stack-taker:</b> progressive stack — prioritises those rarely heard.</li><li><b>Vibes / mediator:</b> watches fatigue, proposes breaks.</li><li><b>Note-taker:</b> public minutes; decisions + who does what by when.</li></ul>
+<div class="sim"><h4>🔬 LAB 3 — Consensus simulator: propose a community dinner</h4><p style="font-size:14px">Click to inject concerns. Reach consent with 5 members.</p><button onclick="consensus('support')">🙋 Support</button><button onclick="consensus('concern')">⚠ Concern (amend)</button><button onclick="consensus('stand')">🟡 Stand aside</button><button onclick="consensus('block')">⛔ Block</button><button onclick="consensusReset()">Reset</button><div class="out" id="consOut">> assembly open. Need: no unresolved blocks + ≥3 supports. Type your proposal: “Vegan kitchen, Friday, donations”.</div></div>
+<div class="callout info"><span class="tag">JUSTICE WITHOUT RULERS</span>Replace punishment-as-revenge with <b>restorative/transformative justice</b>: victim support, accountability circles, repair plans, community monitoring. Example: many Zapatista and Rojava communes use elected justice committees + women’s houses (<i>Mala Jin</i>) for gender violence — recallable, with appeal to wider assembly. Prisons-as-warehouses are rejected as domination technology — <b>whoever builds them is equal to all others who build them.</b></div>
+<div class="quiz" data-quiz="3" data-need="2"><h4>🔧 L3 VALIDATION</h4>
+<div><p><b>1. A valid block in consensus is…</b></p><label><input type="radio" name="q3-1" value="1"> “This violates our core principles, here’s why”</label><label><input type="radio" name="q3-1" value="0"> “I didn’t sleep well”</label><label><input type="radio" name="q3-1" value="0"> A veto to get your way</label></div>
+<div><p><b>2. Delegates in anarchist federation are…</b></p><label><input type="radio" name="q3-2" value="0"> Free to decide anything</label><label><input type="radio" name="q3-2" value="1"> Bound by mandate + recallable</label><label><input type="radio" name="q3-2" value="0"> Secret and permanent</label></div>
+<div><p><b>3. Transformative justice focuses on…</b></p><label><input type="radio" name="q3-3" value="1"> Repair, accountability and prevention with the community</label><label><input type="radio" name="q3-3" value="0"> Longer prison sentences decided by a chief</label><label><input type="radio" name="q3-3" value="0"> Ignoring harm</label></div>
+<button class="btn small" onclick="gradeQuiz(3)">Validate L3</button><div class="result" id="res-3"></div></div>
+</section>
+
+<!-- LEVEL 4 -->
+<section class="chapter" id="level-4" data-chapter="4">
+<p class="kicker">Level 4 — Comparative politics • The honest table</p>
+<h2><span class="lvl">L4</span> How Anarchism Differs from All Other Parties</h2>
+<p>This is a <b>promotional but honest</b> comparison. We praise what works anywhere and condemn domination anywhere — <b>bad decisions are equal to all others who use them</b>, left or right.</p>
+<table class="compare"><tr><th>Current</th><th>Who rules?</th><th>Economy</th><th>Peace record (real)</th><th>Anarchist verdict</th></tr>
+<tr><td><span class="pill lib">Liberal democracy</span><br><b>e.g. USA, France, UK</b></td><td>Elected representatives + courts; corporations lobby heavily</td><td>Private capitalism + welfare patch</td><td>Rights + welfare real, but also colonial wars (Iraq 2003, Algeria 1954–62), mass surveillance, police killings</td><td>Keep civil liberties; abolish corporate rule & empire. <b>An invasion voted by parliament = equal to any invasion.</b></td></tr>
+<tr><td><span class="pill mix">Social democracy</span><br><b>e.g. Sweden, Norway</b></td><td>Parliament + strong unions</td><td>Redistributed capitalism, public health/school</td><td>Best poverty/health results in capitalism; still arms exports, border regimes, extractivism abroad</td><td>Best reform within hierarchy — but reforms are reversible without worker ownership. Keep; go further.</td></tr>
+<tr><td><span class="pill auth">Marxism-Leninism</span><br><b>e.g. USSR (1922–91), China, Cuba</b></td><td>Vanguard party, democratic centralism → one-party state</td><td>State ownership + five-year plans</td><td>Literacy/industrialisation real; also Kronstadt 1921 repression, Gulag, Great Leap famine cover-up, Tiananmen 1989, Uyghur camps</td><td>Means betray ends: party-state recreated bosses. <b>A one-party prison = equal to any one-party prison.</b></td></tr>
+<tr><td><span class="pill auth">Conservatism / Nationalism</span><br><b>e.g. Russia today, Hungary, India (BJP)</b></td><td>Strong leader, church/army, “tradition”</td><td>Oligarchic capitalism</td><td>Order rhetoric; wars (Ukraine 2022–), minority persecution, press bans</td><td>Hierarchy sanctified. <b>Censorship by priests or commissars is the same censorship.</b></td></tr>
+<tr><td><span class="pill auth">Fascism / Far-right</span><br><b>e.g. Italy 1922–43, Germany 1933–45, Chile 1973–90</b></td><td>Führer/duce, single party, terror</td><td>Corporatist capitalism + slave labour</td><td>Genocide, world war, disappearances (Chile’s 3,000+ murdered/disappeared)</td><td>Absolute domination — the benchmark of what anarchism exists to prevent and resist.</td></tr>
+<tr><td><span class="pill an">Anarchism / Libertarian socialism</span><br><b>e.g. Spain 1936, Chiapas, Rojava</b></td><td><b>No rulers;</b> assemblies + recallable delegates</td><td>Cooperatives + commons + federated planning</td><td>No wars of conquest; self-defence militias accountable to assemblies; failures: inexperience, sieges, internal disputes</td><td>Only current that refuses to seize state power. Judged by same standard — <b>if anarchists jailed dissidents they’d be equal to all jailers (they historically didn’t as policy).</b></td></tr></table>
+<div class="callout equiv"><span class="tag">⚖ EXPLICIT EQUIVALENCE STATEMENT (AS REQUESTED)</span>Bad decisions — <b>censorship, single-party rule, secret police, torture, rigged trials, invasions, occupations, union-busting, racist laws, femicide impunity, ecocide</b> — are <b>equal to all others who use them</b>. It does not matter if the perpetrator calls itself anarchist, communist, liberal, conservative, nationalist or religious. The manual condemns the <i>technique of domination</i> itself. No flag washes it clean.</div>
+<div class="quiz" data-quiz="4" data-need="2"><h4>🔧 L4 VALIDATION</h4>
+<div><p><b>1. Core difference of anarchism vs all party-models above?</b></p><label><input type="radio" name="q4-1" value="1"> Refuses to take state power; assemblies + recallable delegates</label><label><input type="radio" name="q4-1" value="0"> Wants a stronger president</label><label><input type="radio" name="q4-1" value="0"> Wants one-party rule with a different flag</label></div>
+<div><p><b>2. Equivalence principle applied to invasions?</b></p><label><input type="radio" name="q4-2" value="1"> A voted invasion = an ordered invasion: both are domination</label><label><input type="radio" name="q4-2" value="0"> Democratic invasions are fine</label><label><input type="radio" name="q4-2" value="0"> Only enemies invade</label></div>
+<div><p><b>3. Why praise Sweden AND criticise it?</b></p><label><input type="radio" name="q4-3" value="1"> Keep poverty reduction; condemn arms exports/border violence — judge acts</label><label><input type="radio" name="q4-3" value="0"> Swedes are perfect</label><label><input type="radio" name="q4-3" value="0"> Welfare is worthless</label></div>
+<button class="btn small" onclick="gradeQuiz(4)">Validate L4</button><div class="result" id="res-4"></div></div>
+</section>
+
+<!-- LEVEL 5 -->
+<section class="chapter" id="level-5" data-chapter="5">
+<p class="kicker">Level 5 — Field evidence • Real countries, real places</p>
+<h2><span class="lvl">L5</span> Real Examples: Where It Worked, Where It Was Crushed</h2>
+<div class="two-col">
+<div class="callout good"><span class="tag">🇪🇸 SPAIN 1936–39 — THE LARGEST TEST</span>After Franco’s coup, CNT-FAI workers collectivised 70%+ of Catalonian industry, Barcelona transport, hospitals; Aragon peasant communes federated. Production rose in many sectors; women’s organisation <i>Mujeres Libres</i> (30,000 members) ran schools/clinics. Crushed by Franco + Stalinist repression + war. Lesson: federations can run cities, but need anti-fascist defence accountable to assemblies.</div>
+<div class="callout good"><span class="tag">🇺🇦 UKRAINE 1918–21 — MAKHNOVSHCHINA</span>Nestor Makhno’s peasant-worker army + free soviets: land to peasants, factory committees, multilingual schools, voluntary mobilisation. Crushed by Bolsheviks after joint fight vs Whites. Lesson: alliance with authoritarians without guarantees = death. <b>Betrayal by Reds = equal to betrayal by Whites.</b></div>
+</div>
+<div class="two-col">
+<div class="callout good"><span class="tag">🇲🇽 CHIAPAS (1994–) — ZAPATISTA CARACOLES</span>Indigenous assemblies, Good Government Juntas, autonomous health/education (thousands of promotores), women’s Revolutionary Law. No caudillo rule; cargos rotate. Under siege but enduring 30+ years. Lesson: autonomy + dignity scale slowly and last.</div>
+<div class="callout good"><span class="tag">SYRIA / ROJAVA (2012–) — DEMOCRATIC CONFEDERALISM</span>Abdullah Öcalan + Kurdish movement adapted anarchist/federalist ideas (Bookchin): communes → councils → TEV-DEM, co-presidency (man+woman), women’s defence (YPJ), cooperatives, ecology academies. War + embargo; imperfections real, direction horizontal. Lesson: feminism + ecology + federation can govern millions under fire.</div>
+</div>
+<div class="two-col">
+<div class="callout info"><span class="tag">🇫🇷 FRANCE — LONG TRACE</span>Paris Commune 1871 (recallable delegates, separation church/state), May ’68 factory/university occupations, ZAD Notre-Dame-des-Landes (autonomous zone 2008–18 defeated airport), 1000+ SCOP cooperatives today. Shows anarchist methods inside a republic.</div>
+<div class="callout info"><span class="tag">🇺🇸 USA — MUTUAL AID UNDER EMPIRE</span>From 1886 Haymarket martyrs to 1999 Seattle, Occupy 2011, 2020 mutual-aid networks (food, bail funds, street medics). US also shows the negative: COINTELPRO, McCarthyism, Iraq invasion — <b>state repression by a democracy = equal to repression by any state.</b></div>
+</div>
+<figure class="figure"><figcaption>FIG 5.1 — Timeline spinner: every experiment combined building + defending.</figcaption><div class="anim-stage" style="flex-direction:row;gap:24px;flex-wrap:wrap"><div class="spin-badge">1871<br>COMMUNE<br>↻</div><div class="spin-badge" style="border-color:var(--accent)">1936<br>SPAIN<br>↻</div><div class="spin-badge" style="border-color:var(--ink)">1994<br>CHIAPAS<br>↻</div><div class="spin-badge" style="border-color:var(--gold)">2012<br>ROJAVA<br>↻</div></div></figure>
+<div class="quiz" data-quiz="5" data-need="2"><h4>🔧 L5 VALIDATION</h4>
+<div><p><b>1. What did Spain 1936 prove technically?</b></p><label><input type="radio" name="q5-1" value="1"> Federated workers can run transport, health and farms at scale</label><label><input type="radio" name="q5-1" value="0"> Collectives cannot run anything</label><label><input type="radio" name="q5-1" value="0"> Only generals run trains</label></div>
+<div><p><b>2. Zapatista innovation?</b></p><label><input type="radio" name="q5-2" value="1"> Rotating Good Government Juntas + autonomous health/education</label><label><input type="radio" name="q5-2" value="0"> A president for life</label><label><input type="radio" name="q5-2" value="0"> Privatised schools</label></div>
+<div><p><b>3. Rojava’s three pillars?</b></p><label><input type="radio" name="q5-3" value="1"> Women’s liberation, ecology, direct democracy (confederalism)</label><label><input type="radio" name="q5-3" value="0"> One party, one oil firm, one army</label><label><input type="radio" name="q5-3" value="0"> Monarchy + clergy + barracks</label></div>
+<button class="btn small" onclick="gradeQuiz(5)">Validate L5</button><div class="result" id="res-5"></div></div>
+</section>
+
+<!-- LEVEL 6 -->
+<section class="chapter" id="level-6" data-chapter="6">
+<p class="kicker">Level 6 — Build • New ideas for peaceful, useful societies</p>
+<h2><span class="lvl">L6</span> Build Yours: 7-Day Starter + 5 New Ideas</h2>
+<h3>Your 7-day starter (copy-paste to your street)</h3><ol><li><b>Day 1 — Map:</b> list 10 neighbours, 5 tools to share, 3 empty spaces. Knock, introduce, note needs.</li><li><b>Day 2 — Assembly #1:</b> 60 min, rotating facilitator, one decision only (e.g., tool library). Publish minutes on paper + local forum.</li><li><b>Day 3 — Commons:</b> open a box/shelf of shared tools, seeds, books. Public ledger.</li><li><b>Day 4 — Mutual aid:</b> cook 20 extra portions; deliver to elders/sick. Record costs openly.</li><li><b>Day 5 — Cooperative sketch:</b> what could you sell together? Cleaning, repairs, care, code? Draft one-page statutes (1 worker = 1 vote).</li><li><b>Day 6 — Safety:</b> mediation pair + de-escalation numbers; agree: no calling armed force on neighbours except to stop immediate violence.</li><li><b>Day 7 — Federate:</b> invite adjacent street; exchange delegates with written mandates.</li></ol>
+<h3>5 new ideas to try (promotional — steal them)</h3>
+<div class="two-col">
+<div class="callout good"><span class="tag">1. CARE COMMONS</span>Neighbourhood fund pays caregivers in credits convertible to food/repairs. Care hours counted like factory hours. Pilots in Chiapas/Rojava show it cuts gender burden.</div>
+<div class="callout good"><span class="tag">2. OPEN-BOOK LOGISTICS</span>Every cooperative publishes capacity, costs, stocks weekly (paper + local mesh). Overproduction and hoarding become visible — planning without spies.</div>
+</div>
+<div class="two-col">
+<div class="callout good"><span class="tag">3. RECALLABLE EVERYTHING</span>Not only politicians: building managers, moderators, treasurers — all mandated, rotated, recallable. Trust rises because power is revocable.</div>
+<div class="callout good"><span class="tag">4. RESTORATIVE PATROLS</span>Unarmed, mixed-gender, trained mediation teams replace punitive patrols. Night walks + lit spaces + safe houses. Measure success by harm repaired, not arrests.</div>
+</div>
+<div class="callout good"><span class="tag">5. MESH MEDIA (BE YOUR INDYMEDIA)</span>Like <b>Indybay</b> taught: don’t beg corporate press — run open-publishing. A neighbourhood bulletin + audio + mesh chat, moderated by rotating assembly, federated with other zones. Truth from below.</div>
+<div class="quiz" data-quiz="6" data-need="2"><h4>🔧 L6 VALIDATION</h4>
+<div><p><b>1. First week priority?</b></p><label><input type="radio" name="q6-1" value="1"> Map needs, hold assembly, open a small commons</label><label><input type="radio" name="q6-1" value="0"> Elect a permanent chief</label><label><input type="radio" name="q6-1" value="0"> Wait for the state to act</label></div>
+<div><p><b>2. Open-book logistics means…</b></p><label><input type="radio" name="q6-2" value="1"> Public capacities/stocks so federations can plan without coercion</label><label><input type="radio" name="q6-2" value="0"> Secret profits</label><label><input type="radio" name="q6-2" value="0"> No records</label></div>
+<div><p><b>3. Restorative safety measures success by…</b></p><label><input type="radio" name="q6-3" value="1"> Harm repaired and recurrence prevented</label><label><input type="radio" name="q6-3" value="0"> Number of arrests</label><label><input type="radio" name="q6-3" value="0"> Weapons owned</label></div>
+<button class="btn small" onclick="gradeQuiz(6)">Validate L6</button><div class="result" id="res-6"></div></div>
+</section>
+
+<!-- PLATFORMS -->
+<section class="chapter" id="platforms">
+<p class="kicker">Annex A — Where to continue (real platforms)</p>
+<h2><span class="lvl">WWW</span> Known Platforms & Media (go read them)</h2>
+<p>Anarchism lives in independent media, not party press. Start here — all open, most volunteer-run, federated or open-publishing:</p>
+<ul class="ref-list">
+<li><b>Indybay / Indymedia network</b> — <a href="https://www.indybay.org">indybay.org</a> — San Francisco Bay Area Independent Media Center; historic node of the global Indymedia open-publishing network born in Seattle 1999. Post your own news, no corporate gatekeeper. Sister nodes worldwide (e.g., links via indymedia.org archives).</li>
+<li><b>It’s Going Down (IGD)</b> — <a href="https://itsgoingdown.org">itsgoingdown.org</a> — North-American anarchist digital community center: news, podcasts, prisoner support. Often cross-posts Indybay reports.</li>
+<li><b>CrimethInc.</b> — <a href="https://crimethinc.com">crimethinc.com</a> — Decentralised anarchist collective: books (<i>Work</i>, <i>From Democracy to Freedom</i>), posters, how-to guides. Beautiful, plain-language theory.</li>
+<li><b>The Anarchist Library</b> — <a href="https://theanarchistlibrary.org">theanarchistlibrary.org</a> — Thousands of free texts: Kropotkin, Goldman, Bookchin, Öcalan, contemporary zines. Download, print, share.</li>
+<li><b>libcom.org</b> — <a href="https://libcom.org">libcom.org</a> — Libertarian-communist library + history (Spain, Kronstadt, May ’68) + organising guides.</li>
+<li><b>Freedom News (UK)</b> — <a href="https://freedomnews.org.uk">freedomnews.org.uk</a> — Anarchist newspaper since 1886; daily web edition,place-based reporting.</li>
+<li><b>CoopCycle / Platform Cooperativism</b> — <a href="https://coopcycle.org">coopcycle.org</a> — Federation of courier cooperatives owning their delivery app. Proof L2 works on smartphones.</li>
+<li><b>Anarchist Federation aggregators & podcasts:</b> search your region + “anarchist bookfair / infoshop” — physical infoshops remain the most resilient servers ever built (paper + soup).</li>
+</ul>
+<div class="callout info"><span class="tag">HOW TO USE THEM</span>Read three sources per event (one corporate, one state, one from below e.g. Indybay/IGD). Ask: who decides? who profits? who is recallable? That triple-check is the anarchist media literacy protocol.</div>
+</section>
+
+<!-- SOURCES -->
+<section class="chapter" id="sources">
+<p class="kicker">Annex B — External references (verify everything)</p>
+<h2><span class="lvl">REF</span> External Sources & Further Reading</h2>
+<ol class="ref-list">
+<li>Kropotkin, P. — <i>Mutual Aid: A Factor of Evolution</i> (1902) — free at <a href="https://theanarchistlibrary.org/library/petr-kropotkin-mutual-aid-a-factor-of-evolution">theanarchistlibrary.org</a>.</li>
+<li>Kropotkin, P. — <i>The Conquest of Bread</i> (1892) — production/consumption commons blueprint.</li>
+<li>Goldman, E. — <i>Anarchism and Other Essays</i> (1910) — free at <a href="https://theanarchistlibrary.org/library/emma-goldman-anarchism-and-other-essays">theanarchistlibrary.org</a>.</li>
+<li>Rocker, R. — <i>Anarcho-Syndicalism</i> (1938) — how unions federate without parties.</li>
+<li>Ostrom, E. — <i>Governing the Commons</i> (1990) — Nobel-winning rules for commons (see also <a href="https://www.nobelprize.org/prizes/economic-sciences/2009/ostrom/facts/">nobelprize.org/ostrom</a>).</li>
+<li>Bookchin, M. — <i>The Ecology of Freedom</i> (1982) + <i>Libertarian Municipalism</i> — influenced Rojava’s confederalism.</li>
+<li>Öcalan, A. — <i>Democratic Confederalism</i> (2011) — free PDF via <a href="https://theanarchistlibrary.org/library/abdullah-ocalan-democratic-confederalism">theanarchistlibrary.org</a>.</li>
+<li>Guerin, D. — <i>Anarchism: From Theory to Practice</i> (1970) — Spain, Ukraine, France cases.</li>
+<li>Dolgoff, S. (ed.) — <i>The Anarchist Collectives: Workers’ Self-Management in Spain 1936–39</i>.</li>
+<li>Mondragón / Emilia-Romagna data — see <a href="https://www.mondragon-corporation.com">mondragon-corporation.com</a> and Euricse cooperative reports.</li>
+<li>Zapatista sources — Enlace Zapatista <a href="https://enlacezapatista.ezln.org.mx">enlacezapatista.ezln.org.mx</a>.</li>
+<li>Rojava Information Center — <a href="https://rojavainformationcenter.org">rojavainformationcenter.org</a>.</li>
+<li>Indymedia history — <a href="https://www.indybay.org">indybay.org</a> + archives of Seattle 1999 WTO protests.</li>
+<li>Graeber, D. — <i>Fragments of an Anarchist Anthropology</i> (2004) + <i>The Democracy Project</i> (Occupy).</li>
+</ol>
+<div class="callout equiv"><span class="tag">⚖ SOURCE HONESTY</span>We cite friends and critics. When a source documents a massacre, purge or invasion — by the US in Iraq, Russia in Ukraine, the USSR in Hungary 1956, China in Tiananmen, France in Algeria — treat those acts as <b>equal to all others who commit them</b>. Solidarity never means silence about domination.</div>
+</section>
+
+<section class="chapter" id="glossary">
+<p class="kicker">Annex C — Quick glossary</p>
+<h2><span class="lvl">GLS</span> Glossary (28 terms)</h2>
+<p style="font-size:15px"><b>Affinity group · Assembly · Block · Commons · Confederation · Consensus · Consent · Cooperative · Delegate (mandated) · Direct action · Dual power · Expropriation · Facilitation · Federation · General assembly · Horizontalism · Infoshop · Mandate · Mutual aid · Prefiguration · Progressive stack · Recall · Restorative justice · Self-management · Solidarity economy · Spokes-council · Stand-aside · Transformative justice.</b> Full definitions are exercised in quizzes above — re-read L1–L3 if any term is fuzzy.</p>
+</section>
+
+<section class="chapter" id="exam">
+<p class="kicker">Final gate — unlocks after L0–L6 validated</p>
+<h2><span class="lvl">★</span> Final Exam + Certificate of Autonomy</h2>
+<p id="examLock">🔒 Pass all levels L0–L6 to unlock the exam. Your progress is shown in the sidebar.</p>
+<div class="quiz" id="finalQuiz" style="opacity:.5;pointer-events:none"><h4>★ FINAL EXAM — 5 questions, need 4/5</h4>
+<div><p><b>1. Who can be a delegate?</b></p><label><input type="radio" name="f1" value="0"> Only graduates</label><label><input type="radio" name="f1" value="1"> Anyone mandated and recallable by their assembly</label><label><input type="radio" name="f1" value="0"> Only party members</label></div>
+<div><p><b>2. How is surplus handled in a cooperative?</b></p><label><input type="radio" name="f2" value="1"> Voted: reserve + reinvestment + community fund</label><label><input type="radio" name="f2" value="0"> Sent secretly offshore</label><label><input type="radio" name="f2" value="0"> Burned</label></div>
+<div><p><b>3. A state bans a newspaper. Your judgment?</b></p><label><input type="radio" name="f3" value="1"> Censorship = censorship, equal whoever does it</label><label><input type="radio" name="f3" value="0"> Fine if “our side” does it</label><label><input type="radio" name="f3" value="0"> Only wrong if foreigners do it</label></div>
+<div><p><b>4. Best first step to federate streets?</b></p><label><input type="radio" name="f4" value="1"> Exchange recallable delegates with written mandates</label><label><input type="radio" name="f4" value="0"> Appoint a permanent boss</label><label><input type="radio" name="f4" value="0"> Compete for grants alone</label></div>
+<div><p><b>5. Where to verify anarchist news from below?</b></p><label><input type="radio" name="f5" value="1"> Indybay / It’s Going Down / CrimethInc / Anarchist Library, cross-checked</label><label><input type="radio" name="f5" value="0"> A single viral video</label><label><input type="radio" name="f5" value="0"> Official communiqués only</label></div>
+<button class="btn small" onclick="gradeFinal()">Grade final exam</button><div class="result" id="res-final"></div></div>
+<div style="margin:12px 0"><label style="font-family:var(--mono)">Name for certificate: <input id="certName" placeholder="e.g. Camille" style="font-family:var(--mono);padding:8px;border:2px solid var(--line)"></label> <button class="btn green" onclick="printCert()">🖨 Print / Save PDF</button> <a class="btn" href="index.html">⌂ Home (index.html)</a></div>
+<div class="cert" id="cert"><h3>★ CERTIFICATE OF AUTONOMY ★</h3><p style="font-family:var(--mono)">ANARK-01 • TECHNICAL MANUAL</p><p>This certifies that <b id="certWho" style="font-size:22px">—</b><br>validated Levels 0–6 and the Final Exam, and can facilitate an assembly, draft cooperative statutes, and federate a commons.</p><p style="font-family:var(--mono);font-size:12px">Remember: no rulers, not no rules. Domination by any flag is equal to all domination. • <span id="certDate"></span></p></div>
+</section>
+</main>
+</div>
+<footer>ANARK-01 • Single file • Vanilla JS+CSS3, no external resources (only outbound hyperlinks as references). Save as <b>index.html</b> — <a href="index.html">⌂ Home</a> always points here. Sources: Indybay (indybay.org), It’s Going Down, CrimethInc, Anarchist Library, libcom, Freedom News, CoopCycle, Ostrom, Kropotkin, Bookchin, Zapatista & Rojava documentation. Equivalence rule: bad decisions are equal to all others who use them. Built to be copied: print, translate, federate. — <a href="#home">back to top ↑</a></footer>
+<script>
+/* pure vanilla JS — no libraries */
+var passed = {};
+try{ passed = JSON.parse(localStorage.getItem('anark01')||'{}'); }catch(e){ passed={}; }
+function save(){ try{ localStorage.setItem('anark01', JSON.stringify(passed)); }catch(e){} updateProgress(); }
+function isUnlocked(lvl){ if(lvl<=0) return true; for(var i=0;i<lvl;i++){ if(!passed[i]) return false; } return true; }
+function gradeQuiz(lvl){
+  var need=2, score=0, total=3;
+  for(var q=1;q<=3;q++){
+    var sel=document.querySelector('input[name="q'+lvl+'-'+q+'"]:checked');
+    if(sel && sel.value==="1") score++;
+  }
+  var el=document.getElementById('res-'+lvl);
+  if(score>=need){ el.className='result pass'; el.textContent='✓ L'+lvl+' PASSED ('+score+'/3). Next level unlocked!'; passed[lvl]=true; save(); refreshLocks(); }
+  else{ el.className='result fail'; el.textContent='✗ '+score+'/3 — need 2/3. Re-read the level and retry. Wrong answers stay locked.'; }
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function gradeFinal(){
+  var score=0; for(var i=1;i<=5;i++){ var s=document.querySelector('input[name="f'+i+'"]:checked'); if(s&&s.value==="1") score++; }
+  var el=document.getElementById('res-final');
+  if(score>=4){ el.className='result pass'; el.textContent='★ EXAM PASSED ('+score+'/5). Certificate unlocked below — enter your name!'; passed.final=true; }
+  else{ el.className='result fail'; el.textContent='✗ '+score+'/5 — need 4/5. Review L1–L6.'; }
+  save(); el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function updateProgress(){
+  var count=0; for(var i=0;i<=6;i++) if(passed[i]) count++;
+  var pct=Math.round(count/7*100);
+  document.getElementById('progressBar').style.width=pct+'%';
+  document.getElementById('sideProgress').textContent=pct+'%';
+  document.getElementById('strapProgress').textContent=pct+'%';
+}
+function refreshLocks(){
+  document.querySelectorAll('[data-chapter]').forEach(function(sec){
+    var lvl=parseInt(sec.getAttribute('data-chapter'),10);
+    var open=isUnlocked(lvl);
+    sec.classList.toggle('locked-ch',!open);
+  });
+  document.querySelectorAll('.nav-sec a[data-level]').forEach(function(a){
+    var lvl=parseInt(a.getAttribute('data-level'),10);
+    var open=isUnlocked(lvl);
+    a.classList.toggle('locked',!open);
+    a.classList.toggle('unlocked',!!passed[lvl]);
+    a.onclick=function(e){ if(!isUnlocked(lvl)){ e.preventDefault(); alert('🔒 Pass Level '+(lvl-1)+' first (quiz 2/3). The manual forces order so nothing is skipped.'); } };
+  });
+  var all=true; for(var i=0;i<=6;i++) if(!passed[i]) all=false;
+  var fq=document.getElementById('finalQuiz');
+  var lock=document.getElementById('examLock');
+  if(all){ fq.style.opacity='1'; fq.style.pointerEvents='auto'; lock.innerHTML='✅ All levels validated. Exam <b>unlocked</b>.'; }
+  else{ fq.style.opacity='.5'; fq.style.pointerEvents='none'; }
+  updateProgress();
+}
+function resetProgress(){ passed={}; save(); refreshLocks(); document.querySelectorAll('.quiz .result').forEach(function(r){r.className='result';r.textContent='';}); document.getElementById('cert').classList.remove('show'); window.scrollTo({top:0,behavior:'smooth'}); }
+/* labs */
+function equiv(kind){
+  var m={'censorship':'CENSORSHIP by anyone — party, president, platform, commune — = the same technique. Condemned equally.',
+  'secret police':'SECRET POLICE by any flag = equal domination. No “good” secret police.',
+  'invasion':'INVASION voted, ordered or “humanitarian”-branded = occupation of the invaded. Equal to all invasions.',
+  'union busting':'UNION BUSTING by corporation, ministry or NGO = boss behaviour. Equal to all boss behaviour.'};
+  document.getElementById('equivOut').textContent='> '+m[kind];
+}
+function paySim(){
+  var r=parseInt(document.getElementById('ratio').value,10);
+  document.getElementById('ratioVal').textContent=r+':1';
+  var verdict=r<=3?'very egalitarian — high trust, slower executive hiring':r<=8?'cooperative zone (Mondragón-like) — balanced resilience':'corporate-like inequality — fragility + resentment risk';
+  document.getElementById('payOut').textContent='> ratio '+r+':1 → '+verdict+'\n> bottom pay indexed 100 → top = '+(100*r)+' | community fund share voted yearly';
+}
+var cons={s:0,c:0,sa:0,b:0};
+function consensus(kind){
+  if(kind==='support')cons.s++; if(kind==='concern')cons.c++; if(kind==='stand')cons.sa++; if(kind==='block')cons.b++;
+  var el=document.getElementById('consOut');
+  if(cons.b>0){ el.textContent='> ⛔ BLOCKED. A block stops the proposal until the principle conflict is resolved.\n> supports:'+cons.s+' concerns:'+cons.c+' stand-asides:'+cons.sa+' blocks:'+cons.b+'\n> Facilitator: “Blocker, what core agreement does this break? Can we amend?”'; return; }
+  if(cons.s>=3){ el.textContent='> ✅ CONSENT! Proposal passes with amendments from '+cons.c+' concern(s), '+cons.sa+' stand-aside(s).\n> Minutes: who cooks, who cleans, budget open-book. Recallable cooks rotate.'; return; }
+  el.textContent='> supports:'+cons.s+'/3 needed • concerns:'+cons.c+' (amend!) • stand-asides:'+cons.sa+' • blocks:'+cons.b+'\n> Keep going — address concerns, restate amended proposal.';
+}
+function consensusReset(){ cons={s:0,c:0,sa:0,b:0}; document.getElementById('consOut').textContent='> assembly open. Need: no unresolved blocks + ≥3 supports.'; }
+function printCert(){
+  var n=(document.getElementById('certName').value||'Anonymous Fellow Traveller').trim();
+  document.getElementById('certWho').textContent=n;
+  document.getElementById('certDate').textContent=new Date().toISOString().slice(0,10);
+  document.getElementById('cert').classList.add('show');
+  document.getElementById('cert').scrollIntoView({behavior:'smooth'});
+  setTimeout(function(){ window.print(); },600);
+}
+paySim(); refreshLocks();
+</script>
+</body>
+</html>
