@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Permission Quest — Zero to Hero | Android Rules & Permissions</title>
+<meta name="description" content="A gamified vanilla JS/CSS adventure to master Android permissions, runtime requests, scoped storage, location, notifications and Play policies.">
+<style>
+:root{
+  --bg:#0b1026; --bg2:#141b3d; --card:#1b2450; --card2:#232d63;
+  --line:#33408a; --txt:#eef1ff; --mut:#aab3dd;
+  --acc:#5df2c8; --acc2:#ffd166; --pink:#ff6b9d; --blue:#6cb8ff; --red:#ff5d5d;
+  --green:#3ddc84; --radius:16px;
+  --shadow:0 10px 30px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Courier New",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:radial-gradient(1200px 600px at 20% -10%, #2a3578 0%, transparent 60%),
+             radial-gradient(900px 500px at 90% 10%, #3b1f5e 0%, transparent 55%),
+             linear-gradient(var(--bg),#070b1d);
+  color:var(--txt); min-height:100vh; overflow-x:hidden;
+}
+.stars{position:fixed;inset:0;pointer-events:none;opacity:.7;
+  background-image:radial-gradient(2px 2px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 130px 80px,#fff,transparent),radial-gradient(1.5px 1.5px at 70px 150px,#9df,transparent),radial-gradient(1px 1px at 200px 200px,#fff,transparent),radial-gradient(2px 2px at 300px 90px,#ffd166,transparent),radial-gradient(1px 1px at 420px 140px,#fff,transparent);
+  background-size:460px 260px; animation:twinkle 6s linear infinite alternate;}
+@keyframes twinkle{from{opacity:.4}to{opacity:.85}}
+code{background:#0d1330;border:1px solid var(--line);padding:.1em .4em;border-radius:6px;color:var(--acc);font-size:.9em}
+pre{background:#0a0f2b;border:1px solid var(--line);border-radius:12px;padding:12px;overflow:auto;font-size:12.5px;line-height:1.55;color:#d7ddff}
+pre .k{color:var(--pink)} pre .s{color:var(--acc2)} pre .c{color:#7a86b8} pre .f{color:var(--blue)}
+
+/* HUD */
+.hud{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:10px 16px;background:rgba(11,16,38,.9);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.hud-left{display:flex;align-items:center;gap:14px}
+.logo{font-weight:900;font-size:20px;display:flex;gap:8px;align-items:center;line-height:1;text-shadow:0 2px 0 #000}
+.logo span{font-size:13px;letter-spacing:1px;color:var(--acc2)}
+.hud-stats{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px 10px;font-weight:800}
+.stat-label{font-size:10px;color:var(--mut);margin-right:6px}
+.xpbar{position:relative;width:210px;height:26px;background:#0a0f2b;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.xpbar div{height:100%;width:0%;background:linear-gradient(90deg,var(--acc),var(--blue));transition:width .6s}
+.xpbar span{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:800}
+.btn{font:inherit;font-weight:800;color:#0b1026;background:linear-gradient(180deg,var(--acc2),#ff9f1c);border:0;border-radius:12px;padding:10px 16px;cursor:pointer;box-shadow:0 4px 0 #7a4a00, var(--shadow);transition:transform .08s}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #7a4a00}
+.btn.big{font-size:17px;padding:14px 20px;margin:10px 6px 0 0}
+.btn.small{padding:7px 11px;font-size:13px}
+.btn.ghost{background:transparent;color:var(--txt);border:2px solid var(--line);box-shadow:none}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(1)}
+.hud-right{display:flex;gap:8px}
+
+/* layout */
+.layout{display:grid;grid-template-columns:300px 1fr;gap:16px;max-width:1220px;margin:16px auto;padding:0 16px 30px}
+.worldmap{background:linear-gradient(180deg,var(--card),var(--bg2));border:2px solid var(--line);border-radius:var(--radius);padding:14px;height:fit-content;position:sticky;top:70px}
+.worldmap h3{margin:4px 0}
+.map-hint{color:var(--mut);font-size:13px}
+#mapList{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:8px}
+#mapList li{display:flex;gap:10px;align-items:center;background:#0d1434;border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:13px}
+#mapList li.locked{opacity:.5;filter:grayscale(.6);cursor:not-allowed}
+#mapList li.done{border-color:var(--green)}
+#mapList li.current{outline:2px solid var(--acc2);background:#1a214f}
+#mapList .dot{width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:var(--card2);font-size:17px;flex:none}
+.map-card{background:#0d1434;border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px;font-size:13px}
+.rankbar{height:10px;background:#070b1d;border-radius:99px;margin-top:8px;overflow:hidden;border:1px solid var(--line)}
+.rankbar div{height:100%;width:0%;background:linear-gradient(90deg,var(--pink),var(--acc2))}
+.small-note{color:var(--mut)}
+
+main{min-width:0}
+.screen{display:none}
+.screen.active{display:block;animation:pop .35s}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.hero-banner{background:linear-gradient(180deg,#232d63,#141b3d);border:2px solid var(--line);border-radius:20px;padding:26px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero-banner h1{font-size:clamp(28px,5vw,52px);line-height:1;margin:12px 0;text-shadow:0 4px 0 #000}
+.hero-banner h1 span{font-size:.45em;color:var(--acc);display:block;letter-spacing:1px}
+.tagline{color:#d7ddff;max-width:720px;margin:0 auto}
+.rule-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+.rule-chips span{background:#0a0f2b;border:1px solid var(--line);border-radius:99px;padding:5px 12px;font-size:12px}
+.intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;margin:16px 0}
+.intro-card{background:#0d1434;border:1px solid var(--line);border-radius:14px;padding:14px}
+.intro-card.golden{background:linear-gradient(180deg,#3a2f10,#1c1708);border-color:var(--acc2)}
+.big-rule{font-size:16px;font-weight:800;color:var(--acc2)}
+.cheatsheet{margin-top:14px;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:16px}
+.legend-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.legend-grid div{background:#0d1434;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:13px}
+.legend-grid span{display:block;color:var(--mut);margin-top:6px}
+
+/* pixel droid */
+.pixel-android{width:110px;height:100px;margin:0 auto;position:relative;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.pixel-android .head{position:absolute;top:18px;left:15px;width:80px;height:40px;background:var(--green);border-radius:40px 40px 0 0}
+.pixel-android .body{position:absolute;top:60px;left:15px;width:80px;height:38px;background:var(--green);border-radius:0 0 14px 14px}
+.pixel-android .ant{position:absolute;top:6px;left:32px;width:4px;height:18px;background:var(--green);transform:rotate(-25deg)}
+.pixel-android .ant.r{left:auto;right:32px;transform:rotate(25deg)}
+.pixel-android .eye{position:absolute;top:34px;width:8px;height:8px;background:#0b1026;border-radius:50%}
+.eye.l{left:36px}.eye.r{right:36px}
+
+/* level */
+.level-head{display:flex;gap:14px;align-items:flex-start;background:linear-gradient(180deg,var(--card2),var(--bg2));border:2px solid var(--line);border-radius:16px;padding:14px}
+.level-head h2{margin:2px 0 6px;font-size:26px}
+.kicker{color:var(--acc);font-weight:800;letter-spacing:1px;font-size:12px}
+.story{color:#d7ddff;margin:0}
+.level-badge{margin-left:auto;flex:none;width:58px;height:58px;display:grid;place-items:center;font-size:26px;font-weight:900;background:radial-gradient(circle at 30% 30%,var(--acc2),#b96a00);border-radius:16px;color:#231600;box-shadow:0 4px 0 #000}
+.level-progress{height:12px;background:#0a0f2b;border:1px solid var(--line);border-radius:99px;margin:12px 0;overflow:hidden}
+.level-progress div{height:100%;width:0%;background:linear-gradient(90deg,var(--green),var(--acc));transition:width .5s}
+.card{background:linear-gradient(180deg,var(--card),#131a40);border:2px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;box-shadow:var(--shadow)}
+.card h3{margin-top:0}
+.card p{color:#d7ddff}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.worldmap{position:static}.two,.intro-grid,.legend-grid{grid-template-columns:1fr}}
+
+/* phone simulator */
+.phone-wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.phone{width:270px;background:#050816;border:3px solid #3a478f;border-radius:32px;padding:12px;box-shadow:var(--shadow);position:relative;flex:none}
+.phone .notch{width:110px;height:18px;background:#0a0f2b;border-radius:0 0 12px 12px;margin:0 auto 8px}
+.phone .pscreen{background:linear-gradient(180deg,#e8f7ff,#cfe3ff);color:#10203f;border-radius:18px;min-height:380px;padding:12px;position:relative;overflow:hidden}
+.app-row{display:flex;gap:8px;align-items:center;background:#fff;border-radius:12px;padding:8px;margin-bottom:8px;color:#10203f;font-weight:800;font-size:13px}
+.app-row .ic{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;font-size:20px}
+.sys-dialog{position:absolute;left:12px;right:12px;bottom:12px;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);padding:12px;transform:translateY(140%);transition:transform .35s cubic-bezier(.2,1.4,.4,1);color:#10203f}
+.sys-dialog.show{transform:none}
+.sys-dialog h4{margin:0 0 4px;font-size:14px}
+.sys-dialog p{font-size:12px;color:#3a4a6b;margin:0 0 10px}
+.sys-dialog .opts{display:flex;gap:8px;justify-content:flex-end}
+.sys-dialog button{border-radius:99px;border:0;padding:8px 14px;font-weight:800;cursor:pointer}
+.allow{background:var(--green)} .deny{background:#e5e8f5}
+.sys-toast{position:absolute;top:12px;left:12px;right:12px;background:#10203f;color:#fff;border-radius:10px;padding:8px;font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none}
+.sys-toast.show{opacity:1}
+.side-panel{flex:1;min-width:260px}
+.log{background:#070b1d;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:12.5px;min-height:120px;max-height:220px;overflow:auto}
+.log div{padding:3px 0;border-bottom:1px dashed #26306a}
+.pill{display:inline-block;background:#0a0f2b;border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-size:12px;margin:2px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+
+/* animations */
+.gate-demo{display:flex;align-items:center;gap:12px;background:#070b1d;border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
+.vault{width:90px;height:90px;border-radius:16px;background:linear-gradient(180deg,#3ddc84,#0e7a45);display:grid;place-items:center;font-size:40px;position:relative;overflow:hidden}
+.vault.locked{background:linear-gradient(180deg,#ff5d5d,#7a0e0e)}
+.vault::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.4) 50%,transparent 70%);transform:translateX(-100%);animation:shine 2.5s infinite}
+@keyframes shine{to{transform:translateX(100%)}}
+.radar{width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,#0e2a1c 0 20%,#123722 21% 40%,#0e2a1c 41% 60%,#07140d 61%),conic-gradient(from 0deg,rgba(61,220,132,.8),transparent 25%);border:2px solid var(--green);position:relative;overflow:hidden;margin:0 auto;animation:spin 3s linear infinite}
+@keyframes spin{to{filter:hue-rotate(20deg)}}
+.radar .blip{position:absolute;width:10px;height:10px;background:var(--acc2);border-radius:50%;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.2}}
+.storage-boxes{display:flex;gap:10px;flex-wrap:wrap}
+.sbox{flex:1;min-width:140px;background:#0d1434;border:1px dashed var(--blue);border-radius:12px;padding:10px;text-align:center}
+.sbox.full{border-style:solid;border-color:var(--red)}
+.bell{font-size:50px;display:inline-block;animation:ring 1.6s ease-in-out infinite;transform-origin:top center}
+@keyframes ring{0%,100%{transform:rotate(0)}20%{transform:rotate(14deg)}40%{transform:rotate(-12deg)}60%{transform:rotate(6deg)}}
+.toggle{position:relative;width:52px;height:28px;background:#3a447a;border-radius:99px;cursor:pointer;border:1px solid var(--line);flex:none}
+.toggle::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;background:#fff;border-radius:50%;transition:left .2s}
+.toggle.on{background:var(--green)} .toggle.on::after{left:26px}
+.toggle-row{display:flex;align-items:center;gap:10px;background:#0d1434;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;font-size:13px}
+
+/* quiz */
+.trial{background:linear-gradient(180deg,#2b1530,#171030);border:2px solid var(--pink);border-radius:16px;padding:16px;margin:16px 0}
+.quiz-q{background:#0d1434;border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
+.quiz-q h4{margin:0 0 8px}
+.quiz-q label{display:block;background:#131a40;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;cursor:pointer;font-size:14px}
+.quiz-q label:hover{border-color:var(--acc)}
+.quiz-q input{margin-right:8px}
+.quiz-q.correct{border-color:var(--green)} .quiz-q.wrong{border-color:var(--red)}
+#quizResult,#bossResult{font-weight:800;margin-top:10px;min-height:24px}
+.level-nav{display:flex;justify-content:space-between;margin:10px 0 30px}
+
+/* boss */
+.boss-arena{background:radial-gradient(600px 300px at 50% 0%,#5e1f2b,transparent),linear-gradient(#1c0f18,#0b1026);border:2px solid var(--red);border-radius:20px;padding:20px;text-align:center}
+.boss-emoji{font-size:80px;animation:bossfloat 2s ease-in-out infinite}
+@keyframes bossfloat{50%{transform:scale(1.08) rotate(-3deg)}}
+.boss-hp{position:relative;height:28px;background:#2a0d12;border:1px solid var(--red);border-radius:99px;overflow:hidden;margin:12px auto;max-width:520px}
+.boss-hp div{height:100%;width:100%;background:linear-gradient(90deg,#ff5d5d,#ff9f1c);transition:width .6s}
+.boss-hp span{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;font-size:13px}
+.certificate{margin:16px 0}
+.certificate.hidden{display:none}
+.cert-inner{background:linear-gradient(180deg,#fffbe8,#ffe9a8);color:#2b2100;border:6px double #8a6a00;border-radius:18px;padding:22px;text-align:center}
+.cert-inner input{font:inherit;font-weight:900;text-align:center;font-size:22px;background:transparent;border:0;border-bottom:3px dashed #8a6a00;width:min(360px,90%);color:#2b2100}
+.cert-stamp{font-size:60px}
+.cert-stats{margin:10px 0;font-weight:800}
+footer{max-width:1220px;margin:0 auto;padding:14px 16px 30px;color:var(--mut);font-size:12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(100px);background:#0d1434;border:2px solid var(--acc);color:var(--txt);padding:10px 16px;border-radius:99px;font-weight:800;transition:transform .3s;z-index:50}
+#toast.show{transform:translateX(-50%)}
+#confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}
+#confetti i{position:absolute;top:-12px;width:10px;height:14px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@media print{.hud,.worldmap,.level-nav,.trial,.boss-arena,footer,#toast{display:none!important}#certificate{display:block!important}}
+
+</style>
+</head>
+<body>
+<div class="stars" aria-hidden="true"></div>
+<header class="hud">
+  <div class="hud-left">
+    <div class="logo">🛡️<span>PERMISSION<br>QUEST</span></div>
+    <div class="hud-stats">
+      <div class="stat"><span class="stat-label">HERO LV</span><span id="hudLevel">1</span></div>
+      <div class="xpbar"><div id="xpFill"></div><span id="xpText">0 XP</span></div>
+      <div class="stat hearts"><span id="hudHearts">❤️❤️❤️</span></div>
+      <div class="stat streak">🔥 <span id="hudStreak">0</span></div>
+    </div>
+  </div>
+  <div class="hud-right">
+    <button id="btnMap" class="btn small">🗺️ MAP</button>
+    <button id="btnReset" class="btn small ghost" title="Reset progress">↺</button>
+    <button id="btnSound" class="btn small ghost" title="Toggle blips">🔊</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside id="worldMap" class="worldmap">
+    <h3>🌍 WORLD MAP</h3>
+    <p class="map-hint">Complete a level's trial to unlock the next. Boss waits at the end.</p>
+    <ol id="mapList"></ol>
+    <div class="map-card">
+      <strong>🏆 Hero Rank</strong>
+      <div id="heroRank">Noob — Sandbox Rookie</div>
+      <div class="rankbar"><div id="rankFill"></div></div>
+    </div>
+    <div class="map-card small-note">
+      💾 Progress saves in localStorage.<br>No account. No network. Pure vanilla.
+    </div>
+  </aside>
+
+  <main id="questArea">
+    <!-- INTRO -->
+    <section id="screen-intro" class="screen active">
+      <div class="hero-banner">
+        <div class="pixel-android" aria-hidden="true"><div class="ant"></div><div class="ant r"></div><div class="head"></div><div class="body"></div><div class="eye l"></div><div class="eye r"></div></div>
+        <h1>PERMISSION QUEST<br><span>Zero → Hero: Android Rules & Permissions</span></h1>
+        <p class="tagline">The Play Kingdom is leaking user data. The Council of Google Developers chose <b>you</b> to restore trust — one permission at a time.</p>
+        <div class="rule-chips">
+          <span>🟢 pure vanilla JS</span><span>🎨 pure CSS3</span><span>⛔ zero external resources</span><span>📱 8 playable levels</span>
+        </div>
+        <div class="intro-grid">
+          <div class="intro-card">
+            <h3>🎮 How to play</h3>
+            <ol>
+              <li>Enter each level, read the lore & play the <b>animated simulation</b>.</li>
+              <li>Touch the demo phone — Allow / Deny / toggle settings.</li>
+              <li>Pass the <b>Trial Gate quiz</b> (≥2/3) to unlock next level.</li>
+              <li>Earn XP, streaks & ranks. Beat the Final Boss for your certificate.</li>
+            </ol>
+          </div>
+          <div class="intro-card golden">
+            <h3>⚖️ The One Rule to rule them all</h3>
+            <p class="big-rule">Least privilege → permission-free alternative → request in context → check before use → respect denial → re-check later.</p>
+            <p>Every level teaches one piece of this loop.</p>
+          </div>
+        </div>
+        <button class="btn big" data-goto="0">▶ START AT LV.0 — SANDBOX VILLAGE</button>
+        <button class="btn ghost" id="btnContinue">Continue where I left off →</button>
+      </div>
+      <div class="cheatsheet">
+        <h3>📜 Quick legend (real Android vocabulary)</h3>
+        <div class="legend-grid">
+          <div><code>&lt;uses-permission&gt;</code><span>Manifest declaration. Required, but never enough alone for dangerous perms.</span></div>
+          <div><code>checkSelfPermission()</code><span>Ask “do I have it <i>right now</i>?” before every protected action.</span></div>
+          <div><code>RequestPermission launcher</code><span>Modern way to show system dialog & get result.</span></div>
+          <div><code>shouldShowRequestPermissionRationale()</code><span>Should I explain why before asking again?</span></div>
+          <div><code>targetSdkVersion</code><span>Opts you into newest permission behaviour. Play requires API 35+ (36 by Aug 2026).</span></div>
+          <div><code>Data Safety + Declarations</code><span>Play Console forms separate from code. Sensitive use needs review.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-level" class="screen">
+      <div class="level-head">
+        <button class="btn small ghost" id="btnBack">← Map</button>
+        <div>
+          <div id="levelKicker" class="kicker">LEVEL 0 · SANDBOX VILLAGE</div>
+          <h2 id="levelTitle">What is a permission?</h2>
+          <p id="levelStory" class="story"></p>
+        </div>
+        <div id="levelBadge" class="level-badge">0</div>
+      </div>
+      <div class="level-progress"><div id="levelProgressFill"></div></div>
+      <div id="levelBody"></div>
+      <div class="trial" id="trialBox">
+        <h3>🚪 TRIAL GATE — prove yourself to advance</h3>
+        <p class="trial-hint">Answer ≥2 of 3 correctly. Wrong answers cost a ❤️ but you can retry forever. Streaks give bonus XP.</p>
+        <div id="quizBox"></div>
+        <button class="btn big" id="btnSubmitQuiz">⚔️ CHALLENGE THE GATE</button>
+        <div id="quizResult"></div>
+      </div>
+      <div class="level-nav">
+        <button class="btn ghost" id="btnPrev">← Prev level</button>
+        <button class="btn" id="btnNext">Next level →</button>
+      </div>
+    </section>
+
+    <!-- FINALE -->
+    <section id="screen-boss" class="screen">
+      <div class="boss-arena">
+        <div class="boss-emoji" id="bossEmoji">👹</div>
+        <h2>FINAL BOSS: The Over-Permissioned App</h2>
+        <p>It requests <code>LOCATION + CAMERA + MIC + SMS + ALL FILES</code> on first launch, with no explanation. Audit it. Strip it. Ship it.</p>
+        <div class="boss-hp"><div id="bossHpFill"></div><span id="bossHpText">BOSS HP 100%</span></div>
+        <div id="bossQuiz"></div>
+        <button class="btn big" id="btnStrike">⚡ STRIKE (submit audit)</button>
+        <div id="bossResult"></div>
+      </div>
+      <div id="certificate" class="certificate hidden">
+        <div class="cert-inner">
+          <div class="cert-stamp">🛡️</div>
+          <h2>ANDROID PERMISSIONS HERO</h2>
+          <p>This certifies that</p>
+          <input id="heroName" maxlength="24" placeholder="YOUR HERO NAME" value="Permission Hero">
+          <p>mastered install-time vs runtime, rationale, location, scoped storage, notifications, special access & Play policy — with pure vanilla skills.</p>
+          <div class="cert-stats"><span id="certXp">0 XP</span> · <span id="certRank">Hero</span> · <span id="certDate"></span></div>
+          <div class="cert-btns">
+            <button class="btn" id="btnPrint">🖨️ Print / Save PDF</button>
+            <button class="btn ghost" id="btnReplay">↺ Replay quest</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <span>Tip: open DevTools → Application → Local Storage to see your save. <a href="index.html" class="btn-primary">Home</a></span>
+</footer>
+
+<div id="toast" role="status"></div>
+<div id="confetti" aria-hidden="true"></div>
+<script>
+/* Permission Quest — pure vanilla, no externals */
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+let blipOn=true;
+function blip(f=440){ if(!blipOn) return; try{ const C=window.AudioContext||window.webkitAudioContext; if(!C) return;
+  const ctx=blip.ctx||(blip.ctx=new C()); const o=ctx.createOscillator(),g=ctx.createGain();
+  o.frequency.value=f; o.type='square'; g.gain.value=.04; o.connect(g); g.connect(ctx.destination);
+  o.start(); g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.12); o.stop(ctx.currentTime+.13);}catch(e){} }
+
+const RANKS=[[0,'Noob — Sandbox Rookie'],[300,'Squire — Manifest Reader'],[700,'Knight — Runtime Duelist'],[1100,'Ranger — Location Scout'],[1500,'Mage — Storage Keeper'],[1900,'Warden — Policy Guard'],[2400,'HERO — Play Champion']];
+function rankFor(xp){ let r=RANKS[0][1]; for(const [t,n] of RANKS) if(xp>=t) r=n; return r; }
+
+let S={xp:0,hearts:3,streak:0,done:[],current:0,bossHp:100};
+try{ const raw=localStorage.getItem('pq-save-v1'); if(raw) S={...S,...JSON.parse(raw)}; }catch(e){}
+function save(){ try{localStorage.setItem('pq-save-v1',JSON.stringify(S))}catch(e){} }
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2200); }
+function confetti(n=80){ const c=$('#confetti'); for(let i=0;i<n;i++){ const el=document.createElement('i');
+  el.style.left=Math.random()*100+'vw'; el.style.background=`hsl(${Math.random()*360},90%,60%)`; el.style.animationDuration=(1.5+Math.random()*2)+'s';
+  el.style.transform=`rotate(${Math.random()*360}deg)`; c.appendChild(el); setTimeout(()=>el.remove(),3500);} }
+function addXP(n){ S.xp+=n; save(); renderHUD(); }
+function renderHUD(){
+  $('#hudLevel').textContent=Math.floor(S.xp/400)+1;
+  $('#xpFill').style.width=Math.min(100,(S.xp%400)/4)+'%';
+  $('#xpText').textContent=S.xp+' XP';
+  $('#hudHearts').textContent='❤️'.repeat(Math.max(0,S.hearts))||'💀';
+  $('#hudStreak').textContent=S.streak;
+  $('#heroRank').textContent=rankFor(S.xp);
+  $('#rankFill').style.width=Math.min(100,S.xp/24)+'%';
+  renderMap();
+}
+function log(el,msg,ok){ const d=document.createElement('div'); d.textContent=(ok===false?'❌ ':ok===true?'✅ ':'• ')+msg; el.prepend(d); }
+
+/* ============ LEVELS DATA ============ */
+const LEVELS=[
+{kicker:"LEVEL 0 · SANDBOX VILLAGE",title:"What is a permission? The sandbox & least privilege",
+story:"Every Android app lives in its own sandbox — a locked hut that cannot touch the camera, contacts or files of others. A permission is the village gate key. The elder's law: ask for the smallest key, only when you need to open that door.",
+body:()=>`
+<div class="card"><h3>🏕️ The mental model</h3>
+<p>A <b>permission protects restricted data or actions</b> outside your sandbox. Declaring it ≠ having it. Dangerous permissions must be <b>checked every time</b> before use, because the user can revoke them in Settings at any moment.</p>
+<div class="gate-demo"><div class="vault" id="vaultDemo">🔒</div>
+<div><b id="vaultText">App Sandbox: locked.</b><br><span class="pill">own files ✅</span> <span class="pill">camera ❌</span> <span class="pill">contacts ❌</span> <span class="pill">location ❌</span>
+<div class="btn-row"><button class="btn small" id="btnGrantKey">🔑 Grant CAMERA key</button><button class="btn small ghost" id="btnRevokeKey">Revoke</button></div></div></div>
+<p class="pill">💡 First look for a <b>permission-free path</b>: system photo picker &gt; full media access, intents &gt; direct hardware.</p></div>
+<div class="two"><div class="card"><h3>🎯 Permission-free vs permission-full</h3>
+<p>Tap both spells and watch the log:</p><div class="btn-row"><button class="btn small" id="demoPicker">🖼️ System photo picker (no perm)</button><button class="btn small ghost" id="demoFullLib">📚 Request READ_MEDIA (full library)</button></div>
+<div class="log" id="log0"></div></div>
+<div class="card"><h3>⚖️ Least privilege</h3><p>Ask: <i>does the feature still work with less?</i> Coarse instead of fine location. One photo instead of whole gallery. Inexact instead of exact alarm.</p>
+<pre><span class="c">// BAD — grabbed on launch, never used</span>
+<span class="k">&lt;uses-permission</span> android:name=<span class="s">"android.permission.ACCESS_FINE_LOCATION"</span> <span class="k">/&gt;</span>
+<span class="k">&lt;uses-permission</span> android:name=<span class="s">"android.permission.READ_SMS"</span> <span class="k">/&gt;</span>
+<span class="c">// GOOD — only what the visible button needs</span>
+<span class="c">// → use photo picker, no storage perm at all</span></pre></div></div>`,
+mount(){ const v=$('#vaultDemo'),t=$('#vaultText');
+  $('#btnGrantKey').onclick=()=>{v.textContent='🔓';v.classList.remove('locked');t.textContent='CAMERA key granted — gate opens for this action only.';blip(660);};
+  $('#btnRevokeKey').onclick=()=>{v.textContent='🔒';v.classList.add('locked');t.textContent='App Sandbox: locked.';blip(220);}; v.classList.add('locked');
+  const L=$('#log0');
+  $('#demoPicker').onclick=()=>{log(L,'Photo picker: user chose 2 images. Zero permissions, zero review risk.',true);blip(880);};
+  $('#demoFullLib').onclick=()=>{log(L,'READ_MEDIA_IMAGES: system dialog + Play declaration may be required. Heavier path.',false);blip(180);}; },
+quiz:[
+ {q:"What is an Android permission, fundamentally?",o:["A gate protecting restricted data/actions outside your sandbox","A UI theme for buttons","A Play Store screenshot"],a:0},
+ {q:"What should you try BEFORE requesting a permission?",o:["A permission-free alternative (e.g. photo picker, intent)","Requesting 5 more permissions just in case","Hiding the request in Terms & Conditions"],a:0},
+ {q:"Least privilege means…",o:["Request the smallest scope that still makes the feature work","Always ask for background + fine + exact for safety","Ask everything on first launch so you never ask again"],a:0}]},
+
+{kicker:"LEVEL 1 · MANIFEST CASTLE",title:"Declare in the manifest: uses-permission & uses-feature",
+story:"Before any gate can open, its name must be carved in the castle wall — AndroidManifest.xml. But beware: libraries sneak extra carvings into your wall (merged manifest), and hardware claims filter you out of Play.",
+body:()=>`
+<div class="card"><h3>🏰 Carve the wall — interactive manifest</h3>
+<p>Tick what your “Flashlight + QR scanner” app truly needs. Watch the manifest & Play warnings update live:</p>
+<div class="two"><div>
+<div class="toggle-row"><div class="toggle" data-perm="CAMERA"></div><span><code>CAMERA</code> — scanning QR (core feature ✅)</span></div>
+<div class="toggle-row"><div class="toggle" data-perm="FLASHLIGHT"></div><span><code>FLASHLIGHT</code> — normal perm, torch LED ✅</span></div>
+<div class="toggle-row"><div class="toggle" data-perm="FINE_LOCATION"></div><span><code>ACCESS_FINE_LOCATION</code> — “for ads” ❌ not core</span></div>
+<div class="toggle-row"><div class="toggle" data-perm="READ_SMS"></div><span><code>READ_SMS</code> — “auto-fill OTP” ⚠️ use SMS Retriever instead!</span></div>
+<div class="toggle-row"><div class="toggle" data-perm="BLUETOOTH"></div><span><code>BLUETOOTH_CONNECT</code> — not needed here ❌</span></div>
+<div class="log" id="log1"></div></div>
+<div><pre id="manifestPrev"></pre><p><span class="pill">📦 Merged manifest: SDK “super-ads” added <code>READ_SMS</code> — remove or justify!</span></p></div></div></div>
+<div class="two"><div class="card"><h3>🧩 uses-permission vs uses-feature</h3>
+<pre><span class="c">&lt;!-- PERMISSION: may I access it? --&gt;</span>
+<span class="k">&lt;uses-permission</span> android:name=<span class="s">"android.permission.CAMERA"</span> <span class="k">/&gt;</span>
+<span class="c">&lt;!-- FEATURE: what hardware do I need? affects Play filtering --&gt;</span>
+<span class="k">&lt;uses-feature</span> android:name=<span class="s">"android.hardware.camera"</span>
+  android:required=<span class="s">"false"</span> <span class="k">/&gt;</span> <span class="c">&lt;!-- false = install anyway, check at runtime --&gt;</span>
+<span class="c">&lt;!-- Only needed on old OS? cap it: --&gt;</span>
+<span class="k">&lt;uses-permission</span> android:name=<span class="s">"android.permission.WRITE_EXTERNAL_STORAGE"</span>
+  android:maxSdkVersion=<span class="s">"28"</span> <span class="k">/&gt;</span></pre></div>
+<div class="card"><h3>📚 Types you'll meet</h3><p><span class="pill">🟢 install-time: normal + signature — auto-granted</span> <span class="pill">🟡 runtime (dangerous) — user dialog</span> <span class="pill">🔴 special / app-op — toggle in Settings</span></p>
+<p>Groups (e.g. STORAGE, LOCATION) may change between releases — <b>never assume</b> granting one grants another. Always check each permission individually.</p></div></div>`,
+mount(){ const state=new Set(); const prev=$('#manifestPrev'),L=$('#log1');
+  function draw(){ let m=`<span class="c">&lt;!-- AndroidManifest.xml --&gt;</span>\n<span class="k">&lt;manifest</span> ...<span class="k">&gt;</span>\n`;
+    if(!state.size) m+=`  <span class="c">&lt;!-- nothing declared yet --&gt;</span>\n`;
+    for(const p of state) m+=`  <span class="k">&lt;uses-permission</span> android:name=<span class="s">"android.permission.${p}"</span> <span class="k">/&gt;</span>\n`;
+    m+=`  <span class="c">&lt;!-- ⚠️ merged-in by SDK: READ_SMS --&gt;</span>\n<span class="k">&lt;/manifest&gt;</span>`; prev.innerHTML=m;
+    L.innerHTML=''; if(state.has('FINE_LOCATION')) log(L,'FINE_LOCATION without core need → Play will likely reject background/location declaration.',false);
+    if(state.has('READ_SMS')) log(L,'READ_SMS is heavily restricted. Prefer SMS Retriever API (no permission).',false);
+    if(state.has('CAMERA')) log(L,'CAMERA declared. Still needs runtime request on API 23+.',true);
+    if(state.has('FLASHLIGHT')) log(L,'FLASHLIGHT is normal — granted at install.',true); }
+  $$('.toggle[data-perm]').forEach(t=>t.onclick=()=>{ const p=t.dataset.perm; t.classList.toggle('on');
+    t.classList.contains('on')?state.add(p):state.delete(p); blip(t.classList.contains('on')?700:300); draw(); }); draw(); },
+quiz:[
+ {q:"What does <uses-permission> do?",o:["Declares a permission your app may need — required but not sufficient for dangerous perms","Grants the permission automatically in all cases","Replaces runtime requests"],a:0},
+ {q:"What does <uses-feature android:required=\"false\"> mean?",o:["Hardware is optional; app installs anyway and must handle absence","The feature is banned on Play","The permission is auto-denied"],a:0},
+ {q:"A library adds READ_SMS to your merged manifest. You should…",o:["Remove it (tools:node=\"remove\") or justify it — you ship what you merge","Ignore it, libraries don't count","Request it silently at night"],a:0}]},
+
+{kicker:"LEVEL 2 · RUNTIME ARENA",title:"Ask at runtime: check → explain → request → handle",
+story:"Declaring is only half the duel. On Android 6.0+ (API 23+), dangerous permissions need a live duel: check before every use, explain in context, request once, and honour defeat gracefully.",
+body:()=>`
+<div class="card"><h3>⚔️ Duel simulator — tap the phone!</h3>
+<p>Press <b>📸 Take Photo</b>. Try: Allow → reinstall → Deny → Deny again (watch rationale + “no more dialog” state).</p>
+<div class="phone-wrap"><div class="phone"><div class="notch"></div><div class="pscreen">
+<div class="app-row"><span class="ic" style="background:#ffe1ec">📸</span> SnapQuest <span style="margin-left:auto;font-weight:400;font-size:11px" id="permBadge">CAMERA: ❌</span></div>
+<div class="app-row" style="font-weight:400"><span class="ic" style="background:#e1f3ff">🖼️</span> <button class="btn small" id="btnSnap" style="padding:6px 10px">📸 Take Photo</button> <button class="btn small ghost" id="btnReinstall" style="padding:6px 10px;color:#10203f;border-color:#10203f">↺ reinstall</button></div>
+<div class="sys-toast" id="phoneToast"></div>
+<div class="sys-dialog" id="permDialog"><h4>Allow SnapQuest to take pictures?</h4><p>System dialog • you cannot customize buttons. <span id="rationaleLine"></span></p><div class="opts"><button class="deny" id="btnDeny">Deny</button><button class="allow" id="btnAllow">Allow</button></div></div>
+</div></div>
+<div class="side-panel"><div class="btn-row"><span class="pill">denies: <b id="denyCount">0</b></span><span class="pill">rationale? <b id="ratState">false</b></span><span class="pill">can ask again? <b id="askState">yes</b></span></div>
+<div class="log" id="log2"></div>
+<pre><span class="c">// modern pattern — check every time, request in context</span>
+<span class="k">if</span> (<span class="f">checkSelfPermission</span>(CAMERA) == GRANTED) { <span class="f">openCamera</span>(); }
+<span class="k">else if</span> (<span class="f">shouldShowRequestPermissionRationale</span>()) { <span class="c">// user denied once → explain in YOUR ui</span>
+  <span class="f">showWhyWeNeedIt</span>(onContinue = { launcher.<span class="f">launch</span>(CAMERA) }); }
+<span class="k">else</span> { launcher.<span class="f">launch</span>(CAMERA); } <span class="c">// first ask OR “don’t ask again” → offer Settings shortcut</span></pre>
+</div></div></div>
+<div class="card"><h3>📏 The 5-step duel code</h3><p>1️⃣ Wait for the feature tap → 2️⃣ <code>checkSelfPermission()</code> → 3️⃣ optional in-app explainer with Cancel → 4️⃣ <code>ActivityResultLauncher(RequestPermission)</code> → 5️⃣ grant? proceed : fallback + disable only that feature. Repeat denials can silence the dialog — never loop-prompt; deep-link to Settings only when the user opts in.</p></div>`,
+mount(){ let granted=false,denies=0,asked=false,blocked=false;
+  const dlg=$('#permDialog'),toastEl=$('#phoneToast'),L=$('#log2');
+  const badge=$('#permBadge'),dc=$('#denyCount'),rs=$('#ratState'),as=$('#askState'),rl=$('#rationaleLine');
+  function ptoast(m){ toastEl.textContent=m; toastEl.classList.add('show'); setTimeout(()=>toastEl.classList.remove('show'),1800); }
+  function sync(){ badge.textContent='CAMERA: '+(granted?'✅':'❌'); dc.textContent=denies;
+    const rat=asked&&!granted&&!blocked; rs.textContent=rat; as.textContent=blocked?'no — use Settings':'yes';
+    rl.textContent=rat?'Your previous denial signals confusion — explain first!':''; }
+  function request(){ if(granted){ log(L,'Already granted — opening camera, no dialog needed.',true); ptoast('📸 Camera opened!'); return; }
+    if(blocked){ log(L,'System will NOT show dialog (denied twice). Show fallback + “Open Settings” button.',false); ptoast('⚠️ Enable Camera in Settings'); return; }
+    dlg.classList.add('show'); blip(520); }
+  $('#btnSnap').onclick=request;
+  $('#btnReinstall').onclick=()=>{granted=false;denies=0;asked=false;blocked=false;dlg.classList.remove('show');log(L,'App reinstalled — permission state reset.',undefined);sync();};
+  $('#btnAllow').onclick=()=>{granted=true;asked=true;dlg.classList.remove('show');log(L,'Granted! Launch camera now. Remember: re-check next time.',true);ptoast('✅ Photo captured!');blip(880);sync();};
+  $('#btnDeny').onclick=()=>{denies++;asked=true;dlg.classList.remove('show');
+    if(denies===1){log(L,'Denied once. Next time show YOUR rationale UI before re-asking.',false);ptoast('🚫 Denied — feature disabled, app keeps working');}
+    else{blocked=true;log(L,'Denied twice → system stops showing dialog. Offer graceful fallback.',false);ptoast('🚫 Blocked — link to Settings only');}
+    blip(180);sync();}; sync(); },
+quiz:[
+ {q:"When do you request a dangerous permission?",o:["When the user taps the feature that needs it (in context)","On first launch, all at once, before anything","In the Play listing description"],a:0},
+ {q:"shouldShowRequestPermissionRationale()==true means…",o:["User denied before — explain why in your UI before asking again","Permission is permanently granted","You should spam the dialog faster"],a:0},
+ {q:"User denied twice / dialog won't show. Best move?",o:["Graceful fallback + optional Settings shortcut when they opt in","Keep requesting in a loop until they break","Crash with an error"],a:0}]},
+
+{kicker:"LEVEL 3 · LOCATION LABYRINTH",title:"Location: foreground vs background, coarse vs fine",
+story:"Location is the minotaur of permissions — powerful, heavily guarded. Foreground first, coarse over fine, background only if your core quest truly needs continuous tracking (geofencing, sharing) — and Play will interrogate you for it.",
+body:()=>`
+<div class="card"><h3>🧭 Labyrinth map — choose your path</h3>
+<div class="two"><div style="text-align:center"><div class="radar"><span class="blip" style="top:30%;left:60%"></span><span class="blip" style="top:65%;left:35%;animation-delay:.4s"></span></div>
+<p><span class="pill">accuracy: <b id="accLabel">COARSE (~3 km)</b></span></p><div class="btn-row" style="justify-content:center"><button class="btn small" id="btnCoarse">📍 Coarse</button><button class="btn small ghost" id="btnFine">🎯 Fine (GPS)</button></div></div>
+<div><div class="toggle-row"><div class="toggle" id="tglFg"></div><span><b>Foreground</b> — while using the app (<code>ACCESS_COARSE/FINE_LOCATION</code>)</span></div>
+<div class="toggle-row"><div class="toggle" id="tglBg"></div><span><b>Background</b> — always, even closed (<code>ACCESS_BACKGROUND_LOCATION</code>, API 29+) — needs separate Play declaration!</span></div>
+<div class="log" id="log3"></div>
+<pre id="locCode"></pre></div></div></div>
+<div class="card"><h3>📜 Labyrinth rules</h3><p>• Ask foreground first; upgrade to background <b>later, in a separate context</b> (never together). • Support <b>approximate location</b> — many users grant only that. • One-time & auto-reset apply: re-check every return. • Nearby Bluetooth/Wi-Fi scans can <b>derive location</b> — on Android 12+ use <code>BLUETOOTH_SCAN</code> / <code>NEARBY_WIFI_DEVICES</code> precisely, plus location where the API still requires it.</p></div>`,
+mount(){ let acc='COARSE',fg=false,bg=false; const L=$('#log3'),code=$('#locCode');
+  function draw(){ $('#accLabel').textContent=acc==='COARSE'?'COARSE (~3 km)':'FINE (~GPS, metres)';
+    code.textContent=`// request: ${acc==='COARSE'?'ACCESS_COARSE_LOCATION':'ACCESS_FINE_LOCATION'}${fg?' + foreground ✓':''}${bg?' + BACKGROUND ⚠️ separate prompt + Play review':''}\n// UX: weather chip works with coarse — only navigation needs fine.`;
+    L.innerHTML=''; if(bg&&!fg) log(L,'Background without foreground = wrong order! Grant foreground first.',false);
+    else if(bg&&fg) log(L,'Background path: must be core feature (geofence/sharing) + Play declaration + video demo.',false);
+    else if(fg) log(L,`Foreground ${acc} granted — feature works. Respect “Precise OFF” toggle.`,true); }
+  $('#btnCoarse').onclick=()=>{acc='COARSE';blip(600);draw();};
+  $('#btnFine').onclick=()=>{acc='FINE';blip(750);log(L,'Fine requested — do you truly need GPS precision? If not, stay coarse.',false);draw();};
+  $('#tglFg').onclick=e=>{e.target.classList.toggle('on');fg=e.target.classList.contains('on');blip(fg?700:300);draw();};
+  $('#tglBg').onclick=e=>{e.target.classList.toggle('on');bg=e.target.classList.contains('on');blip(bg?200:300);draw();}; draw(); },
+quiz:[
+ {q:"Correct order for background location?",o:["Foreground first, then background later in separate context with justification","Background + foreground together on first launch","Background only, foreground is automatic"],a:0},
+ {q:"User grants approximate (coarse) but you asked fine. You should…",o:["Keep working with coarse where possible","Crash until they enable Precise","Secretly escalate to background"],a:0},
+ {q:"On Android 12+, to scan for BLE devices you should…",o:["Request BLUETOOTH_SCAN (and location only if the API derives it)","Always demand FINE_LOCATION + SMS","Use Classic Bluetooth without any permission"],a:0}]},
+
+{kicker:"LEVEL 4 · STORAGE, MEDIA, NOTIFICATIONS & ALARMS",title:"Scoped storage, photo picker, POST_NOTIFICATIONS, exact alarms",
+story:"The swamp of shared storage was drained: apps now live scoped. Your own files need nothing; shared media goes via MediaStore; user-chosen images via the picker. Meanwhile notifications (API 33+) and exact alarms grew their own gates.",
+body:()=>`
+<div class="two"><div class="card"><h3>🖼️ Gallery trial — picker vs broad access</h3>
+<div class="storage-boxes"><div class="sbox">📁<br><b>App-private</b><br><small>no perm needed</small></div><div class="sbox" id="sboxShared">🖼️<br><b>Shared media</b><br><small id="sharedState">picker → 0 perms</small></div><div class="sbox full">💽<br><b>All files</b><br><small>MANAGE_ALL_FILES — Play review!</small></div></div>
+<div class="btn-row"><button class="btn small" id="btnPicker2">Open photo picker</button><button class="btn small ghost" id="btnBroad">Request READ_MEDIA_IMAGES</button></div>
+<div class="log" id="log4"></div>
+<p><span class="pill">Android 14+: partial access — <code>READ_MEDIA_VISUAL_USER_SELECTED</code> — user may grant only selected items. Handle it!</span></p></div>
+<div class="card"><h3>🔔 <span class="bell">🔔</span> Notifications (API 33+) + ⏰ alarms</h3>
+<div class="toggle-row"><div class="toggle" id="tglNotif"></div><span><code>POST_NOTIFICATIONS</code> — ask when user enables a feature that benefits (new installs start OFF)</span></div>
+<div class="toggle-row"><div class="toggle" id="tglExact"></div><span><code>SCHEDULE_EXACT_ALARM</code> — special access; prefer inexact. <code>USE_EXACT_ALARM</code> is auto-granted but Play-restricted to clocks/calendars.</span></div>
+<div class="log" id="log4b"></div>
+<pre><span class="c">// ask notifications in context, not on launch</span>
+userTaps(<span class="s">"Enable order updates"</span>) → launcher.<span class="f">launch</span>(POST_NOTIFICATIONS)
+<span class="c">// alarms: try set() inexact first; exact only if missed delivery breaks core use</span></pre></div></div>`,
+mount(){ const L=$('#log4'),Lb=$('#log4b');
+  $('#btnPicker2').onclick=()=>{log(L,'Picker returned 3 URIs. No permission, no Play declaration, best UX.',true);$('#sharedState').textContent='picker → 0 perms ✅';blip(880);};
+  $('#btnBroad').onclick=()=>{log(L,'READ_MEDIA_IMAGES requested. Play: allowed only if picker cannot serve your core use (e.g. full gallery editor).',false);$('#sharedState').textContent='broad read ⚠️ review';blip(200);};
+  $('#tglNotif').onclick=e=>{const on=e.target.classList.toggle('on');log(Lb,on?'Notifications ON — but you can still start a foreground service without it (its own notification still shows).':'Notifications OFF — app must stay useful silently.',on);blip(on?700:300);};
+  $('#tglExact').onclick=e=>{const on=e.target.classList.toggle('on');log(Lb,on?'Exact alarm: user must grant in Special app access. Justify or go inexact!':'Inexact alarm: battery-friendly default. Good choice for reminders.',!on);blip(on?200:650);}; },
+quiz:[
+ {q:"Best way to let the user pick 2 photos for an avatar?",o:["System photo picker — no storage permission needed","MANAGE_EXTERNAL_STORAGE for full disk access","WRITE_EXTERNAL_STORAGE on all APIs"],a:0},
+ {q:"POST_NOTIFICATIONS on Android 13+ is…",o:["A runtime permission; new installs start with notifications OFF","Auto-granted and cannot be revoked","Only for system apps"],a:0},
+ {q:"For a daily reminder, you should…",o:["Prefer an inexact alarm; exact only for genuinely time-critical core use","Always use SCHEDULE_EXACT_ALARM for everything","Set 50 exact alarms to be safe"],a:0}]},
+
+{kicker:"LEVEL 5 · TEMPLE OF SPECIAL POWERS",title:"Special app access: draws, files, alarms that bypass dialogs",
+story:"Beyond dialogs lies the Temple — powers so strong they live as toggles in Settings → Special app access, not popups. Enter only with a public reason and a visible path for the user.",
+body:()=>`
+<div class="card"><h3>⛩️ Temple toggles — flip them, feel the weight</h3>
+<p>These are <b>not</b> <code>requestPermissions()</code> — you send the user to Settings via intent, they flip a switch:</p>
+<div id="templeToggles">
+<div class="toggle-row"><div class="toggle" data-t="Draw over other apps (SYSTEM_ALERT_WINDOW) — chat heads"></div><span>💬 <code>SYSTEM_ALERT_WINDOW</code> — draw over others</span></div>
+<div class="toggle-row"><div class="toggle" data-t="All-files access (MANAGE_EXTERNAL_STORAGE) — file manager only"></div><span>💽 <code>MANAGE_EXTERNAL_STORAGE</code> — all files (file managers/antivirus only!)</span></div>
+<div class="toggle-row"><div class="toggle" data-t="Exact alarms (SCHEDULE_EXACT_ALARM)"></div><span>⏰ <code>SCHEDULE_EXACT_ALARM</code> — exact timing</span></div>
+<div class="toggle-row"><div class="toggle" data-t="Install unknown apps (REQUEST_INSTALL_PACKAGES)"></div><span>📦 <code>REQUEST_INSTALL_PACKAGES</code> — sideloading</span></div>
+</div><div class="log" id="log5"></div>
+<pre><span class="c">// open the temple door (settings), don't demand</span>
+<span class="k">if</span> (!<span class="f">canDrawOverlays</span>()) <span class="f">startActivity</span>(<span class="k">new</span> <span class="f">Intent</span>(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
+<span class="c">// always explain WHY first, with Skip / Not now</span></pre></div>`,
+mount(){ const L=$('#log5'); $$('#templeToggles .toggle').forEach(t=>t.onclick=()=>{const on=t.classList.toggle('on');
+  log(L,(on?'Enabled: ':'Disabled: ')+t.dataset.t,on); blip(on?500:250); }); },
+quiz:[
+ {q:"How are special-access permissions granted?",o:["Via a toggle in Settings → Special app access (you deep-link there)","Via the normal Allow/Deny runtime dialog","Automatically when you add them to the manifest"],a:0},
+ {q:"MANAGE_EXTERNAL_STORAGE (all files) is okay for…",o:["File managers / backup / antivirus where broad access is the core function","A wallpaper app that could use the picker","Any app that wants faster code"],a:0},
+ {q:"USE_EXACT_ALARM vs SCHEDULE_EXACT_ALARM?",o:["USE_ is auto-granted but Play-restricted to clock/calendar core use; SCHEDULE_ needs user special-access grant","They are identical with different names","Neither exists anymore"],a:0}]},
+
+{kicker:"LEVEL 6 · PLAY FORTRESS",title:"Ship it: targetSdk, Data Safety, declarations, revocation",
+story:"The Fortress gate is Google Play review. Your targetSdk opts you into new rules (API 35 required, 36 by Aug 2026). Data Safety describes collection; permission declarations justify sensitive use. And even after install, grants decay: one-time, auto-reset, user revocation.",
+body:()=>`
+<div class="card"><h3>🏯 Pre-launch audit — check all to open the gate</h3>
+<div id="playChecks">
+<div class="toggle-row"><div class="toggle" data-c="targetSdk 35+ set — you accept newest permission behaviour"></div><span>🎯 <code>targetSdk 35+</code> (36 by Aug 31 2026)</span></div>
+<div class="toggle-row"><div class="toggle" data-c="Data Safety form filled (incl. SDKs' collection/sharing)"></div><span>🛡️ Data Safety describes collection — separate from code</span></div>
+<div class="toggle-row"><div class="toggle" data-c="Sensitive perm = core feature + in-context + video demo"></div><span>📹 Sensitive use (BG location, all files…) declared + reviewed</span></div>
+<div class="toggle-row"><div class="toggle" data-c="Fallback when denied — app never bricks"></div><span>🧩 Denial fallback: disable only that feature</span></div>
+<div class="toggle-row"><div class="toggle" data-c="Re-check on resume — handle one-time & auto-reset"></div><span>🔄 Re-check: one-time grants, auto-reset after months idle, Settings revokes</span></div>
+</div>
+<div class="gate-demo"><div class="vault locked" id="playGate">🏯</div><div><b id="playGateText">Fortress: SEALED (0/5)</b><div class="btn-row"><button class="btn small" id="btnDecay">⏳ Simulate 3 months idle (auto-reset)</button></div><div class="log" id="log6"></div></div></div></div>`,
+mount(){ const done=new Set(); const L=$('#log6');
+  function sync(){ const n=done.size; $('#playGateText').textContent=n>=5?'Fortress: OPEN — ready to ship! 🚀':`Fortress: SEALED (${n}/5)`;
+    const g=$('#playGate'); g.classList.toggle('locked',n<5); g.textContent=n>=5?'🚀':'🏯'; }
+  $$('#playChecks .toggle').forEach(t=>t.onclick=()=>{const on=t.classList.toggle('on'); on?done.add(t.dataset.c):done.delete(t.dataset.c);
+    log(L,(on?'✅ ':'↩️ ')+t.dataset.c,on); blip(on?800:300); sync();}); sync();
+  $('#btnDecay').onclick=()=>{log(L,'Auto-reset fired: unused app lost its runtime grants. Next launch must re-check!',false);blip(150);
+    $$('#playChecks .toggle').forEach(t=>{if(t.dataset.c.startsWith('Re-check')){t.classList.add('on');done.add(t.dataset.c);}});sync();}; },
+quiz:[
+ {q:"targetSdkVersion does what?",o:["Opts the app into newer platform/permission behaviour (Play mandates recent API)","Sets the minimum phone that can install","Disables all permissions for privacy"],a:0},
+ {q:"Data Safety vs permission declaration?",o:["Data Safety describes data collection; declarations separately justify sensitive permission use","They are the same checkbox","Neither is needed if you minify code"],a:0},
+ {q:"User granted camera, then didn't open the app for months. What happens?",o:["System may auto-reset the grant — always re-check before use","Grant becomes permanent and stronger","App is deleted from Play"],a:0}]}
+];
+
+const BOSS=[
+ {q:"This app asks LOCATION + CAMERA + MIC on first launch before any button. Verdict?",o:["❌ Violates incremental, in-context rule — request when the feature is tapped","✅ Efficient — ask everything upfront","✅ Required by Play"],a:0},
+ {q:"It wants background location for 'personalized tips'. Verdict?",o:["❌ Background needs core continuous use (geofence/sharing) + declaration — tips don't qualify","✅ Tips count as core functionality","✅ Just add maxSdkVersion and it's fine"],a:0},
+ {q:"It reads the whole gallery for an avatar upload + wants MANAGE_EXTERNAL_STORAGE. Fix?",o:["✅ Use photo picker (no perm); all-files only for file-manager core use","✅ Keep both, more access is safer","✅ Hide it in a library SDK so review misses it"],a:0},
+ {q:"Notifications never arrive on Android 14. Likely cause?",o:["POST_NOTIFICATIONS not requested/granted — new installs start OFF; request in context","Notifications were removed from Android","Need READ_SMS to receive notifications"],a:0}
+];
+
+/* ============ NAV / RENDER ============ */
+function renderMap(){ const ol=$('#mapList'); ol.innerHTML='';
+  LEVELS.forEach((l,i)=>{ const li=document.createElement('li');
+    const unlocked=i===0||S.done.includes(i-1);
+    li.className=(S.done.includes(i)?'done ':'')+(!unlocked?'locked ':'')+(S.current===i?'current':'');
+    li.innerHTML=`<span class="dot">${S.done.includes(i)?'✅':unlocked?'▶️':'🔒'}</span><span><b>LV.${i}</b> ${l.title.split(':')[0]}<br><small>${unlocked?(S.done.includes(i)?'+100 XP banked':'unlocked — tap to play'):'pass previous trial to unlock'}</small></span>`;
+    li.onclick=()=>{ if(!unlocked){toast('🔒 Pass the previous Trial Gate first!');blip(150);return;} openLevel(i); };
+    ol.appendChild(li); });
+  const b=document.createElement('li'); const bossOpen=S.done.length>=LEVELS.length;
+  b.className=(bossOpen?'':'locked ')+(S.bossHp<=0?'done':'');
+  b.innerHTML=`<span class="dot">${S.bossHp<=0?'🏆':bossOpen?'👹':'🔒'}</span><span><b>BOSS</b> The Over-Permissioned App<br><small>${S.bossHp<=0?'defeated!':'needs all 7 levels'}</small></span>`;
+  b.onclick=()=>{ if(!bossOpen){toast('👹 Defeat all 7 trials first!');return;} openBoss(); };
+  ol.appendChild(b);
+}
+function show(id){ $$('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); $('#worldMap').classList.remove('open'); }
+function openLevel(i){ S.current=i; save(); const l=LEVELS[i];
+  $('#levelKicker').textContent=l.kicker; $('#levelTitle').textContent=l.title; $('#levelStory').textContent=l.story;
+  $('#levelBadge').textContent=i; $('#levelBody').innerHTML=l.body(); l.mount();
+  $('#levelProgressFill').style.width=(S.done.length/LEVELS.length*100)+'%';
+  renderQuiz(); updateNav(); show('#screen-level'); renderMap(); }
+function updateNav(){ $('#btnPrev').disabled=S.current<=0;
+  const nextUnlocked=S.done.includes(S.current);
+  $('#btnNext').textContent=nextUnlocked?'Next level →':'Next (locked 🔒)';
+  $('#btnNext').disabled=S.current>=LEVELS.length-1&&!nextUnlocked; }
+function renderQuiz(){ const box=$('#quizBox'); box.innerHTML=''; $('#quizResult').textContent='';
+  LEVELS[S.current].quiz.forEach((q,qi)=>{ const d=document.createElement('div'); d.className='quiz-q'; d.id='q'+qi;
+    d.innerHTML=`<h4>Q${qi+1}. ${q.q}</h4>`+q.o.map((o,oi)=>`<label><input type="radio" name="q${qi}" value="${oi}"> ${o}</label>`).join('');
+    box.appendChild(d); }); }
+$('#btnSubmitQuiz').onclick=()=>{ const qs=LEVELS[S.current].quiz; let score=0;
+  qs.forEach((q,qi)=>{ const sel=document.querySelector(`input[name=q${qi}]:checked`); const d=$('#q'+qi);
+    d.classList.remove('correct','wrong');
+    if(sel&&+sel.value===q.a){score++;d.classList.add('correct');} else d.classList.add('wrong'); });
+  const res=$('#quizResult');
+  if(score>=2){ res.textContent=`✅ GATE OPEN! ${score}/3 — +100 XP${S.streak>=1?` + streak bonus ${S.streak*10}`:''}`;
+    res.style.color='var(--green)'; blip(880); confetti(60);
+    if(!S.done.includes(S.current)){ S.done.push(S.current); addXP(100+S.streak*10); S.streak++; }
+    else { addXP(20); S.streak++; } save(); renderHUD(); updateNav();
+    toast(S.current<LEVELS.length-1?'🚪 Next level unlocked!':'👹 The Boss awaits!');
+  } else { res.textContent=`❌ ${score}/3 — the gate holds. Review the simulation above & retry (−1 ❤️).`;
+    res.style.color='var(--red)'; S.hearts=Math.max(0,S.hearts-1); S.streak=0; save(); renderHUD(); blip(150);
+    if(S.hearts<=0){ res.textContent+=' 💀 Out of hearts — they regenerate! +3 ❤️'; S.hearts=3; save(); renderHUD(); } }
+};
+$('#btnNext').onclick=()=>{ const n=S.current+1;
+  if(!S.done.includes(S.current)){toast('🔒 Pass this Trial Gate (≥2/3) to advance!');blip(150);return;}
+  if(n<LEVELS.length) openLevel(n); else openBoss(); };
+$('#btnPrev').onclick=()=>{ if(S.current>0) openLevel(S.current-1); };
+$('#btnBack').onclick=()=>{ show('#screen-intro'); };
+$$('[data-goto]').forEach(b=>b.onclick=()=>openLevel(+b.dataset.goto));
+$('#btnContinue').onclick=()=>{ const nxt=S.done.length>=LEVELS.length?null:Math.min(S.done.length,LEVELS.length-1);
+  if(nxt===null) openBoss(); else openLevel(S.done.includes(nxt)?nxt:nxt); };
+$('#btnMap').onclick=()=>{ $('#worldMap').scrollIntoView({behavior:'smooth'}); toast('🗺️ Pick an unlocked level'); };
+$('#btnReset').onclick=()=>{ if(confirm('Reset all XP, hearts and unlocked levels?')){ S={xp:0,hearts:3,streak:0,done:[],current:0,bossHp:100}; save(); renderHUD(); show('#screen-intro'); toast('↺ New quest started'); } };
+$('#btnSound').onclick=e=>{ blipOn=!blipOn; e.target.textContent=blipOn?'🔊':'🔇'; };
+
+/* boss */
+function openBoss(){ show('#screen-boss'); renderBoss(); }
+function renderBoss(){ const box=$('#bossQuiz'); box.innerHTML='';
+  BOSS.forEach((q,qi)=>{ const d=document.createElement('div'); d.className='quiz-q'; d.id='bq'+qi;
+    d.innerHTML=`<h4>Audit ${qi+1}. ${q.q}</h4>`+q.o.map((o,oi)=>`<label><input type="radio" name="bq${qi}" value="${oi}"> ${o}</label>`).join('');
+    box.appendChild(d); });
+  $('#bossResult').textContent=''; syncBossHp(); }
+function syncBossHp(){ $('#bossHpFill').style.width=S.bossHp+'%'; $('#bossHpText').textContent='BOSS HP '+S.bossHp+'%';
+  $('#bossEmoji').textContent=S.bossHp<=0?'🏆':S.bossHp<40?'🥵':'👹'; }
+$('#btnStrike').onclick=()=>{ let score=0;
+  BOSS.forEach((q,qi)=>{ const sel=document.querySelector(`input[name=bq${qi}]:checked`); const d=$('#bq'+qi);
+    d.classList.remove('correct','wrong');
+    if(sel&&+sel.value===q.a){score++;d.classList.add('correct');} else d.classList.add('wrong'); });
+  const r=$('#bossResult');
+  if(score===4){ S.bossHp=0; addXP(300); S.streak+=2; save(); syncBossHp(); renderHUD();
+    r.textContent='🏆 FLAWLESS AUDIT 4/4! Boss purified. +300 XP — claim your certificate!'; r.style.color='var(--green)';
+    blip(990); confetti(160); showCert(); }
+  else if(score>=3){ S.bossHp=Math.max(5,S.bossHp-35); save(); syncBossHp();
+    r.textContent=`⚔️ ${score}/4 — solid hit! Boss HP → ${S.bossHp}%. Fix the red audits & strike again.`; r.style.color='var(--acc2)'; blip(600); confetti(40); }
+  else { S.hearts=Math.max(0,S.hearts-1); S.streak=0; save(); renderHUD();
+    r.textContent=`❌ ${score}/4 — boss counterattacks! (−1 ❤️) Re-read Levels 2–6, especially in-context & least privilege.`; r.style.color='var(--red)'; blip(150); }
+};
+function showCert(){ $('#certificate').classList.remove('hidden');
+  $('#certXp').textContent=S.xp+' XP'; $('#certRank').textContent=rankFor(S.xp);
+  $('#certDate').textContent=new Date().toLocaleDateString();
+  $('#certificate').scrollIntoView({behavior:'smooth'}); }
+$('#btnPrint').onclick=()=>window.print();
+$('#btnReplay').onclick=()=>{ S.bossHp=100; save(); openLevel(0); };
+
+document.addEventListener('keydown',e=>{ if(e.key==='m') $('#worldMap').scrollIntoView(); });
+$('#certDate').textContent=new Date().toLocaleDateString();
+if(S.bossHp<=0) setTimeout(showCert,0);
+renderHUD();
+
+</script>
+</body>
+</html>
