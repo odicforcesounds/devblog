@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Criminal Group Operations: A Technical Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --accent: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            background: var(--light);
+            color: #334155;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--dark) 0%, #334155 100%);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        nav {
+            background: var(--dark);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            background: var(--primary);
+        }
+
+        .nav-home {
+            color: var(--accent) !important;
+        }
+
+        main {
+            padding: 40px 20px;
+        }
+
+        section {
+            background: white;
+            margin-bottom: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 40px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        h2 {
+            color: var(--secondary);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        h3 {
+            color: var(--dark);
+            margin: 25px 0 15px;
+        }
+
+        p {
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .warning-box {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .info-box {
+            background: #dbeafe;
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .reference-box {
+            background: #f0fdf4;
+            border: 2px solid var(--success);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .reference-box h4 {
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+
+        .reference-box a {
+            color: var(--secondary);
+            word-break: break-all;
+        }
+
+        /* Animation Examples */
+        .animation-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #0f172a;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .network-node {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .network-connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            animation: flowLine 2s linear infinite;
+        }
+
+        @keyframes flowLine {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+
+        .pyramid-visual {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin: 30px 0;
+        }
+
+        .pyramid-level {
+            padding: 15px 30px;
+            border-radius: 4px;
+            text-align: center;
+            width: 100%;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .pyramid-level:hover {
+            transform: scale(1.02);
+        }
+
+        .level-1 { background: #dc2626; color: white; }
+        .level-2 { background: #ea580c; color: white; }
+        .level-3 { background: #d97706; color: white; }
+        .level-4 { background: #fbbf24; color: #1e293b; }
+
+        /* Interactive Quiz */
+        .quiz-container {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        .quiz-question {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .quiz-option {
+            padding: 12px 20px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .quiz-option.correct {
+            background: #d1fae5;
+            border-color: var(--success);
+        }
+
+        .quiz-option.wrong {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .quiz-feedback.show {
+            display: block;
+        }
+
+        .quiz-feedback.correct {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .quiz-feedback.incorrect {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .level-gate {
+            background: var(--dark);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 40px 0;
+        }
+
+        .level-gate h3 {
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .comparison-table th {
+            background: var(--dark);
+            color: white;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: #f1f5f9;
+        }
+
+        .country-card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--primary);
+        }
+
+        .country-card h4 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-top: 60px;
+        }
+
+        footer a {
+            color: var(--accent);
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8rem; }
+            nav ul { gap: 10px; }
+            section { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Understanding Criminal Group Operations</h1>
+            <p>A Comprehensive Technical Analysis of Organized Crime Structures, Methods, and Societal Impact</p>
+        </div>
+    </header>
+
+    <nav class="container">
+        <ul>
+            <li><a href="index.html" class="nav-home">🏠 Home</a></li>
+            <li><a href="#section1">Foundations</a></li>
+            <li><a href="#section2">Organization</a></li>
+            <li><a href="#section3">Operations</a></li>
+            <li><a href="#section4">Examples</a></li>
+            <li><a href="#section5">Politics</a></li>
+            <li><a href="#quiz">Test Knowledge</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <!-- Knowledge Validation System -->
+        <div id="knowledge-status" style="display:none;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p style="text-align:center; margin-top:10px;">
+                Knowledge Progress: <span id="progressText">0%</span>
+            </p>
+        </div>
+
+        <div class="level-gate" id="levelGate1">
+            <h3>🔐 Level 1 Locked</h3>
+            <p>Complete the foundations section to unlock the next level</p>
+            <button class="btn" onclick="showSection('section2')">Continue Learning</button>
+        </div>
+
+        <div class="level-gate" id="levelGate2" style="display:none;">
+            <h3>🔐 Level 2 Locked</h3>
+            <p>Complete the organization section to unlock the next level</p>
+            <button class="btn" onclick="showSection('section3')">Continue Learning</button>
+        </div>
+
+        <div class="level-gate" id="levelGate3" style="display:none;">
+            <h3>🔐 Level 3 Locked</h3>
+            <p>Complete the operations section to unlock the next level</p>
+        </div>
+
+        <!-- Section 1: Foundations -->
+        <section id="section1">
+            <h2>📚 Section 1: Foundations of Criminal Group Analysis</h2>
+            
+            <h3>1.1 Definition and Scope</h3>
+            
+            <div class="info-box">
+                <strong>Key Concept:</strong> Criminal groups are organized associations of individuals who engage in illegal activities for financial gain, power, or other objectives, operating outside the legal framework of their respective societies.
+            </div>
+
+            <p>Criminal groups, often referred to as organized crime syndicates, represent structured organizations that systematically engage in unlawful activities. Unlike opportunistic criminals who act individually, these groups possess defined hierarchies, operational procedures, and strategic planning mechanisms.</p>
+
+            <p>The study of criminal organizations requires understanding multiple dimensions:</p>
+            <ul>
+                <li><strong>Structural organization:</strong> How members are arranged and roles defined</li>
+                <li><strong>Economic operations:</strong> Revenue generation and money handling</li>
+                <li><strong>Social infiltration:</strong> Relationship with communities and institutions</li>
+                <li><strong>Adaptive methods:</strong> How they respond to law enforcement and market changes</li>
+            </ul>
+
+            <div class="highlight-box">
+                <strong>Important Note:</strong> Understanding these structures is essential for law enforcement, policymakers, journalists, and citizens who need to recognize and combat organized crime effectively.
+            </div>
+
+            <h3>1.2 Historical Context</h3>
+            
+            <p>Criminal groups have existed throughout human history, adapting to technological and social changes. Understanding this evolution helps us recognize patterns and vulnerabilities.</p>
+
+            <!-- Animated Timeline -->
+            <div class="animation-container" id="timelineAnimation">
+                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:white; text-align:center;">
+                    <p style="font-size:1.5rem;">Loading Timeline Animation...</p>
+                    <p style="font-size:0.9rem; opacity:0.7;">This visualization shows historical evolution</p>
+                </div>
+            </div>
+
+            <p>The historical development of criminal organizations follows distinct phases:</p>
+            <ul>
+                <li><strong>Pre-industrial era:</strong> Bandit groups, smuggling networks, piracy</li>
+                <li><strong>Industrial Revolution:</strong> Protection rackets, gambling operations, labor exploitation</li>
+                <li><strong>Modern era:</strong> Drug trafficking, financial crimes, cyber operations</li>
+                <li><strong>Contemporary:</strong> Transnational networks, cryptocurrency usage, sophisticated logistics</li>
+            </ul>
+
+            <h3>1.3 Types of Criminal Organizations</h3>
+
+            <p>Criminal groups vary significantly in structure, scope, and specialization:</p>
+
+            <div class="pyramid-visual">
+                <div class="pyramid-level level-1" onclick="explainLevel(1)">
+                    Level 1: Street-Level Operations
+                </div>
+                <div class="pyramid-level level-2" onclick="explainLevel(2)">
+                    Level 2: Regional Criminal Networks
+                </div>
+                <div class="pyramid-level level-3" onclick="explainLevel(3)">
+                    Level 3: Transnational Syndicates
+                </div>
+                <div class="pyramid-level level-4" onclick="explainLevel(4)">
+                    Level 4: Global Criminal Enterprises
+                </div>
+            </div>
+
+            <p>Each level presents different challenges for law enforcement and requires tailored approaches. Lower levels often serve as operational arms for higher-level organizations.</p>
+
+            <div class="reference-box">
+                <h4>📖 External References for Section 1</h4>
+                <p>These sources provide deeper understanding of criminal group definitions and classifications:</p>
+                <ul>
+                    <li><a href="https://www.unodc.org/unodc/en/organized-crime/" target="_blank" rel="noopener noreferrer">United Nations Office on Drugs and Crime - Organized Crime</a></li>
+                    <li><a href="https://www.fbi.gov/investigate/organized-crime" target="_blank" rel="noopener noreferrer">FBI Organized Crime Division</a></li>
+                    <li><a href="https://www.europol.europa.eu/crime-types/organised-crime" target="_blank" rel="noopener noreferrer">Europol Organized Crime Types</a></li>
+                    <li><a href="https://criminology.fandom.com/wiki/Organized_Crime" target="_blank" rel="noopener noreferrer">Criminology Wiki - Organized Crime Overview</a></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 2: Organization Structure -->
+        <section id="section2" style="display:none;">
+            <h2>🏛️ Section 2: Organizational Structures</h2>
+
+            <h3>2.1 Hierarchical Models</h3>
+
+            <p>Criminal organizations typically adopt structured hierarchies that facilitate command, control, and operational efficiency. Understanding these structures reveals how decisions flow and how the organization maintains operational security.</p>
+
+            <!-- Animated Network Visualization -->
+            <div class="animation-container" id="networkAnimation">
+                <div id="networkNodes"></div>
+            </div>
+
+            <p>Common hierarchical patterns include:</p>
+            <ul>
+                <li><strong>Traditional pyramid structure:</strong> Clear chain of command from leadership to street-level operatives</li>
+                <li><strong>Cell-based structure:</strong> Small independent units that limit damage when compromised</li>
+                <li><strong>Network structure:</strong> Decentralized nodes that communicate as needed without rigid hierarchy</li>
+                <li><strong>Hybrid models:</strong> Combinations adapting to specific operational needs and environments</li>
+            </ul>
+
+            <div class="warning-box">
+                <strong>⚠️ Law Enforcement Challenge:</strong> Modern criminal groups increasingly adopt decentralized network structures, making them harder to infiltrate and dismantle compared to traditional hierarchies.
+            </div>
+
+            <h3>2.2 Roles and Specializations</h3>
+
+            <p>Within criminal organizations, members often specialize in specific functions:</p>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Role</th>
+                        <th>Function</th>
+                        <th>Risk Level</th>
+                        <th>Typical Background</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Leadership</td>
+                        <td>Strategic direction, major decisions, external relationships</td>
+                        <td>Lower operational risk</td>
+                        <td>Diverse - often those with resources or connections</td>
+                    </tr>
+                    <tr>
+                        <td>Logistics</td>
+                        <td>Movement of goods, supply chain management</td>
+                        <td>High operational risk</td>
+                        <td>Transportation, military, or trade backgrounds</td>
+                    </tr>
+                    <tr>
+                        <td>Financial Operations</td>
+                        <td>Money laundering, investment, financial management</td>
+                        <td>Medium risk</td>
+                        <td>Finance, accounting, or business backgrounds</td>
+                    </tr>
+                    <tr>
+                        <td>Enforcement</td>
+                        <td>Security, intimidation, violent operations</td>
+                        <td>Very high risk</td>
+                        <td>Often those with criminal histories or violence experience</td>
+                    </tr>
+                    <tr>
+                        <td>Operational</td>
+                        <td>Street-level activities, direct criminal acts</td>
+                        <td>Highest risk</td>
+                        <td>Often from marginalized communities</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>2.3 Recruitment Mechanisms</h3>
+
+            <p>Criminal groups employ various methods to recruit members, often exploiting vulnerabilities in society:</p>
+
+            <ul>
+                <li><strong>Economic desperation:</strong> People in poverty or with limited legitimate opportunities</li>
+                <li><strong>Social networks:</strong> Family connections, friendships, community ties</li>
+                <li><strong>Coercion and intimidation:</strong> Forced recruitment through threats</li>
+                <li><strong>Shared criminal interests:</strong> Individuals seeking illegal opportunities</li>
+                <li><strong>Inadequate social services:</strong> Where legitimate support systems fail</li>
+            </ul>
+
+            <div class="highlight-box">
+                <strong>Critical Understanding:</strong> Criminal groups often thrive in areas where legitimate economic opportunities are scarce. This connection between social conditions and criminal recruitment is a key area for prevention efforts.
+            </div>
+
+            <div class="reference-box">
+                <h4>📖 External References for Section 2</h4>
+                <ul>
+                    <li><a href="https://www.ojp.gov/ncjrs/virtuallibrary/abstracts/organized-crime-structure-and-operations" target="_blank" rel="noopener noreferrer">OJP - Organized Crime Structure and Operations</a></li>
+                    <li><a href="https://www.smithsonianmag.com/history/history-organized-crime-180975645/" target="_blank" rel="noopener noreferrer">Smithsonian - History of Organized Crime</a></li>
+                    <li><a href="https://www.britannica.com/topic/organized-crime" target="_blank" rel="noopener noreferrer">Encyclopedia Britannica - Organized Crime</a></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 3: Operational Methods -->
+        <section id="section3" style="display:none;">
+            <h2>⚙️ Section 3: Operational Methods and Activities</h2>
+
+            <h3>3.1 Illicit Market Operations</h3>
+
+            <p>Criminal groups generate revenue through various illegal activities, often diversifying to reduce risk and increase profits:</p>
+
+            <p><strong>Drug Trafficking:</strong> One of the most common criminal activities, involving production, transportation, and distribution of illegal substances. This operation requires:</p>
+            <ul>
+                <li>Supply chain management from production regions</li>
+                <li>Transportation networks avoiding detection</li>
+                <li>Distribution networks reaching end consumers</li>
+                <li>Financial systems to process proceeds</li>
+            </ul>
+
+            <p><strong>Human Trafficking:</strong> A severe violation of human rights involving the recruitment, transportation, and exploitation of individuals. This represents one of the most harmful criminal activities with devastating human consequences.</p>
+
+            <p><strong>Arms Trafficking:</strong> Illegal trade in weapons, often fueling conflicts and enabling other criminal activities. The proliferation of illegal weapons creates significant public safety risks.</p>
+
+            <p><strong>Cybercrime Operations:</strong> Modern criminal groups increasingly operate in digital spaces, conducting:</p>
+            <ul>
+                <li>Fraudulent financial transactions</li>
+                <li>Data theft and ransomware attacks</li>
+                <li>Online fraud and identity theft</li>
+                <li>Digital platform exploitation</li>
+            </ul>
+
+            <h3>3.2 Money Laundering</h3>
+
+            <p>Understanding money laundering is crucial as it enables criminal groups to use their illegal profits. This process typically involves three stages:</p>
+
+            <div class="animation-container" id="launderingAnimation">
+                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:white; text-align:center; width:100%;">
+                    <div class="pyramid-level level-1" style="width:200px; margin:10px auto;">Placement</div>
+                    <div class="pyramid-level level-2" style="width:250px; margin:10px auto;">Layering</div>
+                    <div class="pyramid-level level-3" style="width:300px; margin:10px auto;">Integration</div>
+                    <p style="font-size:0.9rem; opacity:0.7; margin-top:20px;">Money Laundering Process</p>
+                </div>
+            </div>
+
+            <p>The placement stage involves introducing illegal funds into the financial system. Layering separates the money from its criminal source through complex transactions. Integration makes the money appear legitimate for use in the legal economy.</p>
+
+            <div class="warning-box">
+                <strong>Public Safety Note:</strong> Money laundering enables all other criminal activities by allowing groups to use their profits. Understanding this process helps in identifying and preventing it.
+            </div>
+
+            <h3>3.3 Corruption and Infiltration</h3>
+
+            <p>Criminal groups often seek to infiltrate legitimate institutions to protect their operations and gain advantages:</p>
+
+            <ul>
+                <li><strong>Government corruption:</strong> Bribing officials for protection or information</li>
+                <li><strong>Law enforcement infiltration:</strong> Corrupting officers or avoiding detection</li>
+                <li><strong>Business relationships:</strong> Using legitimate businesses as covers or investment vehicles</li>
+                <li><strong>Community influence:</strong> Building local support or fear-based compliance</li>
+            </ul>
+
+            <p>This infiltration can undermine democratic institutions, economic development, and public trust in governance. The damage extends beyond direct criminal activities to systemic corruption.</p>
+
+            <div class="reference-box">
+                <h4>📖 External References for Section 3</h4>
+                <ul>
+                    <li><a href="https://www.fatf-gafi.org/" target="_blank" rel="noopener noreferrer">Financial Action Task Force - Combating Money Laundering</a></li>
+                    <li><a href="https://www.unodc.org/unodc/en/human-trafficking/" target="_blank" rel="noopener noreferrer">UNODC - Human Trafficking</a></li>
+                    <li><a href="https://www.wilsoncenter.org/topic/organized-crime" target="_blank" rel="noopener noreferrer">Wilson Center - Organized Crime Research</a></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 4: Real Examples -->
+        <section id="section4" style="display:none;">
+            <h2>🌍 Section 4: Real-World Examples and Case Studies</h2>
+
+            <h3>4.1 Italian Organized Crime</h3>
+
+            <div class="country-card">
+                <h4>🇮🇹 Italy - The Mafia Traditions</h4>
+                <p>Italy has experienced various organized crime groups with distinct regional characteristics and historical development.</p>
+                
+                <p><strong>Cosa Nostra (Sicily):</strong> The Sicilian Mafia developed sophisticated operations involving drug trafficking, extortion, and corruption. Their structure emphasized secrecy, omertà (code of silence), and family-based recruitment. Law enforcement efforts, particularly the Maxi Trial of the 1980s, demonstrated the importance of witness protection and judicial cooperation.</p>
+                
+                <p><strong>'Ndrangheta (Calabria):</strong> Currently recognized as one of the most powerful criminal organizations in Europe, with significant involvement in international drug trafficking. Their family-based structure made them resistant to traditional law enforcement approaches.</p>
+                
+                <p><strong>Camorra (Campania):</strong> Based in Naples, this organization has historically been involved in various illegal activities including waste management corruption, counterfeiting, and drug trafficking.</p>
+            </div>
+
+            <h3>4.2 Eastern European Criminal Networks</h3>
+
+            <div class="country-card">
+                <h4>🇷🇺 Russia and Former Soviet States</h4>
+                <p>Post-Soviet transformation created conditions for organized crime expansion. Groups emerged from the collapse of state controls and the rapid development of market economies.</p>
+                
+                <p>These networks developed expertise in:</p>
+                <ul>
+                    <li>International money laundering through financial systems</li>
+                    <li>Resource exploitation and fraud</li>
+                    <li>Cybercrime operations targeting global victims</li>
+                    <li>Corruption of transitional institutions</li>
+                </ul>
+            </div>
+
+            <h3>4.3 Asian Criminal Organizations</h3>
+
+            <div class="country-card">
+                <h4>🇯🇵 Japan - Yakuza</h4>
+                <p>The Yakuza represent traditional organized crime groups with distinctive cultural elements and organizational structures. Historically involved in entertainment district control, gambling, and drug trafficking.</p>
+                
+                <p>Recent Japanese legislation has significantly reduced their visible presence, though they have adapted their operations.</p>
+            </div>
+
+            <div class="country-card">
+                <h4>🇹🇼 Taiwan and 🇵🇭 Philippines - Human Trafficking</h4>
+                <p>The "B Qingdao" human trafficking case (2022) revealed organized crime networks involved in coercing Indonesian workers into cyber scam operations in Myanmar and Cambodia. This case demonstrates how criminal groups exploit economic disparities and corrupt local officials to operate large-scale fraudulent operations.</p>
+            </div>
+
+            <h3>4.4 Latin American Criminal Organizations</h3>
+
+            <div class="country-card">
+                <h4>🇲🇽 Mexico</h4>
+                <p>Mexican criminal organizations have become major players in international drug trafficking, particularly cocaine, heroin, methamphetamine, and fentanyl. These organizations have evolved from simple transportation to sophisticated empire-building with territorial control.</p>
+                
+                <p>The violence associated with these organizations has had devastating effects on communities, demonstrating the human cost of organized crime conflicts.</p>
+            </div>
+
+            <div class="country-card">
+                <h4>🇨🇴 Colombia</h4>
+                <p>The cocaine trade shaped Colombian organized crime for decades. From the Medellín and Cali cartels to modern decentralized groups, Colombia's experience illustrates how criminal networks adapt to defeat law enforcement.</p>
+            </div>
+
+            <h3>4.5 African Criminal Networks</h3>
+
+            <div class="country-card">
+                <h4>Various African Nations</h4>
+                <p>Criminal networks in Africa engage in diverse illegal activities including wildlife trafficking, drug smuggling, and human trafficking. These operations often exploit weak governance structures and economic inequalities.</p>
+            </div>
+
+            <div class="reference-box">
+                <h4>📖 External References for Section 4</h4>
+                <ul>
+                    <li><a href="https://www.globalinitiative.net/" target="_blank" rel="noopener noreferrer">Global Initiative Against Transnational Organized Crime</a></li>
+                    <li><a href="https://www.irinnews.org/" target="_blank" rel="noopener noreferrer">IRIN News - Humanitarian and Crime Reporting</a></li>
+                    <li><a href="https://www.reuters.com/" target="_blank" rel="noopener noreferrer">Reuters - Global Crime Coverage</a></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 5: Political Parties Comparison -->
+        <section id="section5" style="display:none;">
+            <h2>🏛️ Section 5: Political Parties and Political Systems - Comparative Analysis</h2>
+
+            <div class="highlight-box">
+                <strong>Educational Purpose:</strong> This section examines political parties and systems around the world, comparing their structures, functions, and real-world examples. Political parties are legitimate democratic institutions that differ fundamentally from criminal organizations.
+            </div>
+
+            <h3>5.1 Understanding Political Parties</h3>
+
+            <p>Political parties are organized groups that seek political power through democratic processes, representing various ideologies, interests, and policy positions. They operate within legal frameworks and are accountable to voters through elections.</p>
+
+            <p>Political parties serve essential democratic functions:</p>
+            <ul>
+                <li>Representing citizen interests and preferences</li>
+                <li>Developing policy platforms and candidates</li>
+                <li>Providing political competition and choice</li>
+                <li>Facilitating governance and accountability</li>
+            </ul>
+
+            <h3>5.2 Types of Political Party Systems</h3>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>System Type</th>
+                        <th>Description</th>
+                        <th>Examples</th>
+                        <th>Characteristics</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Two-Party System</td>
+                        <td>Two major parties dominate politics</td>
+                        <td>United States, United Kingdom (historically)</td>
+                        <td>Simpler voter choice, potential for polarization</td>
+                    </tr>
+                    <tr>
+                        <td>Multi-Party System</td>
+                        <td>Multiple parties compete, often requiring coalitions</td>
+                        <td>Germany, Italy, Netherlands</td>
+                        <td>Greater representation, coalition governance</td>
+                    </tr>
+                    <tr>
+                        <td>Dominant Party System</td>
+                        <td>One party consistently wins elections</td>
+                        <td>Various developing democracies</td>
+                        <td>Stability vs. limited competition concerns</td>
+                    </tr>
+                    <tr>
+                        <td>One-Party System</td>
+                        <td>Only one party legally allowed</td>
+                        <td>China, Cuba, Vietnam</td>
+                        <td>State control, limited political pluralism</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>5.3 Political Parties in Different Countries</h3>
+
+            <div class="country-card">
+                <h4>🇺🇸 United States</h4>
+                <p><strong>Major Parties:</strong></p>
+                <ul>
+                    <li><strong>Democratic Party:</strong> Generally associated with progressive policies, social liberalism, and government intervention in economy</li>
+                    <li><strong>Republican Party:</strong> Generally associated with conservative policies, limited government, and free-market economics</li>
+                </ul>
+                <p>The US system features two major parties, though independent and third-party movements exist. Both parties have evolved significantly over American history, shifting positions on various issues.</p>
+            </div>
+
+            <div class="country-card">
+                <h4>🇬🇧 United Kingdom</h4>
+                <p><strong>Major Parties:</strong></p>
+                <ul>
+                    <li><strong>Conservative Party:</strong> Center-right, traditionally representing business interests and conservative values</li>
+                    <li><strong>Labour Party:</strong> Center-left, traditionally representing workers and progressive policies</li>
+                    <li><strong>Liberal Democrats:</strong> Center, promoting liberal values and electoral reform</li>
+                    <li><strong>Scottish National Party:</strong> Regional party advocating Scottish independence</li>
+                </ul>
+                <p>The UK has a multi-party system with the Conservatives and Labour as the two main competitors, though smaller parties have significant influence in certain regions.</p>
+            </div>
+
+            <div class="country-card">
+                <h4>🇩🇪 Germany</h4>
+                <p><strong>Major Parties:</strong></p>
+                <ul>
+                    <li><strong>CDU/CSU (Christian Democrats):</strong> Center-right, conservative, Christian democratic values</li>
+                    <li><strong>SPD (Social Democrats):</strong> Center-left, social democratic, workers' interests</li>
+                    <li><strong>AfD (Alternative for Germany):</strong> Right-wing populist</li>
+                    <li><strong>Greens:</strong> Environmental focus, progressive</li>
+                    <li><strong>FDP (Free Democrats):</strong> Liberal, free-market oriented</li>
+                    <li><strong>The Left:</strong> Left-wing, democratic socialism</li>
+                </ul>
+                <p>Germany's proportional representation system typically requires coalition governments, encouraging compromise and multi-party cooperation.</p>
+            </div>
+
+            <div class="country-card">
+                <h4>🇫🇷 France</h4>
+                <p><strong>Major Parties:</strong></p>
+                <ul>
+                    <li><strong>Renaissance (formerly Macron's movement):</strong> Centrist, pro-European, reform-oriented</li>
+                    <li><strong>National Rally (formerly National Front):</strong> Right-wing populist, nationalist</li>
+                    <li><strong>Socialist Party:</strong> Center-left (declining influence)</li>
+                    <li><strong>La France Insoumise:</strong> Left-wing populist</li>
+                    <li><strong>Les Républicains:</strong> Center-right (formerly Union for a Popular Movement)</li>
+                </ul>
+                <p>France's two-round presidential election system creates unique dynamics where parties must build coalitions between rounds.</p>
+            </div>
+
+            <div class="country-card">
+                <h4>🇧🇷 Brazil</h4>
+                <p><strong>Major Parties:</strong></p>
+                <ul>
+                    <li><strong>Workers' Party (PT):</strong> Left-wing, progressive, social policies</li>
+                    <li><strong>Brazilian Democratic Movement (MDB):</strong> Centrist, broad coalition</li>
+                    <li><strong>Brazilian Social Democracy Party (PSDB):</strong> Center-right</li>
+                    <li><strong>Liberal Party (PL):</strong> Right-wing, populist</li>
+                </ul>
+                <p>Brazil's multi-party system with numerous parties reflects its diverse society and regional variations. Coalition building is essential for governance.</p>
+            </div>
+
+            <h3>5.4 Key Differences Between Political Parties and Criminal Organizations</h3>
+
+            <div class="warning-box">
+                <strong>Fundamental Distinction:</strong> This is a critical educational point. Political parties and criminal organizations differ in fundamental ways that are essential to understand.
+            </div>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Aspect</th>
+                        <th>Political Parties</th>
+                        <th>Criminal Organizations</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Legal Status</td>
+                        <td>Legitimate, legal entities operating within constitutional frameworks</td>
+                        <td>Illegal organizations operating outside legal frameworks</td>
+                    </tr>
+                    <tr>
+                        <td>Accountability</td>
+                        <td>Accountable to voters through elections, subject to laws and regulations</td>
+                        <td>No democratic accountability, operate through secrecy and force</td>
+                    </tr>
+                    <tr>
+                        <td>Methods</td>
+                        <td>Campaigning, policy debate, coalition building, public engagement</td>
+                        <td>Violence, corruption, intimidation, illegal activities</td>
+                    </tr>
+                    <tr>
+                        <td>Goals</td>
+                        <td>Governing, policy implementation, public service (ideally)</td>
+                        <td>Profit, power through illegal means, exploitation</td>
+                    </tr>
+                    <tr>
+                        <td>Transparency</td>
+                        <td>Should operate transparently, subject to oversight</td>
+                        <td>Secretive by nature, hide activities and membership</td>
+                    </tr>
+                    <tr>
+                        <td>Relationship to Society</td>
+                        <td>Serve constituents, represent interests within system</td>
+                        <td>Exploit and harm communities, undermine legal order</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="highlight-box">
+                <strong>Educational Note:</strong> Both political parties and criminal organizations are "organized groups with leadership structures." However, the similarities end there. Political parties operate within democratic systems with legal constraints and accountability. Criminal organizations operate outside the law, using violence and corruption. Confusing these categories undermines understanding of both democratic politics and organized crime.
+            </div>
+
+            <div class="reference-box">
+                <h4>📖 External References for Section 5</h4>
+                <ul>
+                    <li><a href="https://www.idea.int/" target="_blank" rel="noopener noreferrer">International IDEA - Institute for Democracy and Electoral Assistance</a></li>
+                    <li><a href="https://www.pewresearch.org/" target="_blank" rel="noopener noreferrer">Pew Research Center - Political Research</a></li>
+                    <li><a href="https://www.bbc.com/news/politics" target="_blank" rel="noopener noreferrer">BBC News - World Politics Coverage</a></li>
+                    <li><a href="https://www.reuters.com/politics/" target="_blank" rel="noopener noreferrer">Reuters - Politics Section</a></li>
+                    <li><a href="https://ballotpedia.org/" target="_blank" rel="noopener noreferrer">Ballotpedia - Political Party Information</a></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 6: Knowledge Validation Quiz -->
+        <section id="quiz" style="display:none;">
+            <h2>📝 Knowledge Validation Test</h2>
+
+            <div class="info-box">
+                <strong>Instructions:</strong> Answer the following questions to validate your understanding of criminal group operations. Your score determines whether you can proceed to the advanced materials.
+            </div>
+
+            <div class="quiz-container">
+                <div id="quizProgress" style="text-align:center; margin-bottom:20px;">
+                    <strong>Question <span id="currentQuestion">1</span> of <span id="totalQuestions">5</span></strong>
+                </div>
+
+                <div class="progress-bar" style="margin-bottom:20px;">
+                    <div class="progress-fill" id="quizProgressFill"></div>
+                </div>
+
+                <div id="quizQuestions">
+                    <!-- Questions injected by JavaScript -->
+                </div>
+
+                <div id="quizResults" style="display:none;">
+                    <div class="highlight-box" style="text-align:center;">
+                        <h3>Quiz Complete!</h3>
+                        <p>Your Score: <span id="finalScore">0</span>/<span id="finalTotal">5</span></p>
+                        <p>Percentage: <span id="finalPercentage">0</span>%</p>
+                    </div>
+                    
+                    <div id="quizMessage" style="text-align:center; margin-top:20px;"></div>
+                    
+                    <div style="text-align:center; margin-top:30px;">
+                        <button class="btn" onclick="resetQuiz()">Retake Quiz</button>
+                        <button class="btn" onclick="showSection('section4')" id="advancedBtn" style="display:none;">Access Advanced Materials</button>
+                    </div>
+                </div>
+
+                <div id="quizNext" style="text-align:right; margin-top:20px;">
+                    <button class="btn" onclick="nextQuestion()" id="nextBtn">Next Question →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 7: References and Further Reading -->
+        <section id="references" style="display:none;">
+            <h2>📚 References and Further Reading</h2>
+
+            <p>This technical manual draws on research from multiple disciplines and sources. The following resources provide additional depth for those seeking to understand criminal group operations:</p>
+
+            <h3>Academic Sources</h3>
+            <ul>
+                <li><a href="https://www.jstor.org/" target="_blank" rel="noopener noreferrer">JSTOR - Academic Research on Crime and Society</a></li>
+                <li><a href="https://scholar.google.com/" target="_blank" rel="noopener noreferrer">Google Scholar - Research Papers</a></li>
+            </ul>
+
+            <h3>Government and International Sources</h3>
+            <ul>
+                <li><a href="https://www.unodc.org/" target="_blank" rel="noopener noreferrer">United Nations Office on Drugs and Crime (UNODC)</a></li>
+                <li><a href="https://www.fbi.gov/" target="_blank" rel="noopener noreferrer">Federal Bureau of Investigation (FBI)</a></li>
+                <li><a href="https://www.europol.europa.eu/" target="_blank" rel="noopener noreferrer">Europol - European Union Agency for Law Enforcement Cooperation</a></li>
+                <li><a href="https://www.state.gov/bureaus-offices/under-secretary-for-crime-and-justice/" target="_blank" rel="noopener noreferrer">US State Department - Crime and Justice</a></li>
+            </ul>
+
+            <h3>News and Research Organizations</h3>
+            <ul>
+                <li><a href="https://www.bbc.com/" target="_blank" rel="noopener noreferrer">BBC News</a></li>
+                <li><a href="https://www.nytimes.com/" target="_blank" rel="noopener noreferrer">The New York Times</a></li>
+                <li><a href="https://www.washingtonpost.com/" target="_blank" rel="noopener noreferrer">The Washington Post</a></li>
+                <li><a href="https://www.theguardian.com/" target="_blank" rel="noopener noreferrer">The Guardian</a></li>
+            </ul>
+
+            <div class="reference-box">
+                <h4>🔗 Additional Resources</h4>
+                <p>For current information on organized crime developments, consult reputable news sources and official government publications. Always verify information from multiple sources.</p>
+            </div>
+
+            <h3>Disclaimer and Educational Purpose</h3>
+            <div class="warning-box">
+                <p><strong>Important Notice:</strong> This educational material is intended to help citizens, students, journalists, and professionals understand criminal group operations for legitimate purposes including law enforcement, policy development, journalism, academic research, and public awareness. Understanding criminal organizations should never be used to facilitate criminal activities.</p>
+                <p>All examples provided are historical or publicly documented cases. The description of illegal activities is for understanding and prevention, not instruction.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Understanding Criminal Group Operations - Educational Resource</p>
+            <p style="margin-top:10px; font-size:0.9rem;">
+                This material is for educational purposes only. 
+                <a href="index.html">Return to Home</a>
+            </p>
+            <p style="margin-top:20px; font-size:0.8rem; opacity:0.7;">
+                External links open in new tabs. Verify information from multiple authoritative sources.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Knowledge State Management
+        let knowledgeState = {
+            sectionsCompleted: [],
+            quizScore: 0,
+            quizTaken: false
+        };
+
+        // Section navigation
+        function showSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth' });
+                
+                // Update knowledge state
+                if (!knowledgeState.sectionsCompleted.includes(sectionId)) {
+                    knowledgeState.sectionsCompleted.push(sectionId);
+                    updateProgress();
+                }
+            }
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const totalSections = 5; // sections 1-5
+            const completed = knowledgeState.sectionsCompleted.length;
+            const percentage = Math.min((completed / totalSections) * 100, 100);
+            
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = Math.round(percentage) + '%';
+            
+            document.getElementById('knowledge-status').style.display = 'block';
+            
+            // Check level gates
+            checkLevelGates();
+        }
+
+        function checkLevelGates() {
+            const gate1 = document.getElementById('levelGate1');
+            const gate2 = document.getElementById('levelGate2');
+            const gate3 = document.getElementById('levelGate3');
+            
+            if (knowledgeState.sectionsCompleted.includes('section1')) {
+                gate1.style.display = 'none';
+                document.getElementById('section2').style.display = 'block';
+            }
+            
+            if (knowledgeState.sectionsCompleted.includes('section2')) {
+                gate2.style.display = 'none';
+                document.getElementById('section3').style.display = 'block';
+            }
+            
+            if (knowledgeState.sectionsCompleted.includes('section3')) {
+                gate3.style.display = 'none';
+                document.getElementById('section4').style.display = 'block';
+                document.getElementById('quiz').style.display = 'block';
+            }
+        }
+
+        // Animated network visualization
+        function createNetworkAnimation() {
+            const container = document.getElementById('networkNodes');
+            if (!container) return;
+            
+            const nodes = [
+                { id: 'Leadership', x: 50, y: 10 },
+                { id: 'Finance', x: 20, y: 35 },
+                { id: 'Operations', x: 80, y: 35 },
+                { id: 'Logistics', x: 10, y: 60 },
+                { id: 'Enforcement', x: 90, y: 60 },
+                { id: 'External Contacts', x: 50, y: 80 }
+            ];
+            
+            container.innerHTML = '';
+            
+            nodes.forEach((node, index) => {
+                const el = document.createElement('div');
+                el.className = 'network-node';
+                el.style.left = node.x + '%';
+                el.style.top = node.y + '%';
+                el.style.transform = 'translate(-50%, -50%)';
+                el.textContent = node.id;
+                el.style.animation = `fadeIn 0.5s ease-out ${index * 0.15}s both`;
+                container.appendChild(el);
+            });
+            
+            // Create connections
+            const connections = [
+                [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 5], [1, 4], [2, 3]
+            ];
+            
+            connections.forEach(([from, to], index) => {
+                const line = document.createElement('div');
+                line.className = 'network-connection';
+                
+                const fromNode = nodes[from];
+                const toNode = nodes[to];
+                
+                const x1 = fromNode.x;
+                const y1 = fromNode.y;
+                const x2 = toNode.x;
+                const y2 = toNode.y;
+                
+                // Calculate position and rotation
+                const dx = (x2 - x1) * 1.5;
+                const dy = (y2 - y1) * 2;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+                
+                line.style.left = x1 + '%';
+                line.style.top = y1 + '%';
+                line.style.width = '150px';
+                line.style.transform = `rotate(${angle}deg)`;
+                line.style.animation = `flowLine 2s linear infinite ${index * 0.2}s`;
+                line.style.transformOrigin = 'left center';
+                
+                container.appendChild(line);
+            });
+        }
+
+        // Pyramid level explanation
+        function explainLevel(level) {
+            const explanations = {
+                1: "Street-level operations involve direct criminal activities like drug sales, petty theft, and local extortion. Members at this level face the highest risks and typically have limited organizational knowledge.",
+                2: "Regional networks coordinate multiple street-level operations across a geographic area. They manage supply chains, recruitment, and local enforcement while maintaining connections to higher levels.",
+                3: "Transnational syndicates operate across national borders, managing international drug trafficking, money laundering networks, and corruption of multiple governments. They have significant resources and sophisticated logistics.",
+                4: "Global criminal enterprises represent the highest level, with worldwide reach, massive financial resources, and the ability to corrupt governments and influence international affairs. These organizations can challenge state authority in some regions."
+            };
+            
+            alert(explanations[level]);
+        }
+
+        // Quiz System
+        const quizData = [
+            {
+                question: "What is the primary distinction between a criminal organization and a legitimate political party?",
+                options: [
+                    "Both are equally illegal",
+                    "Political parties are legitimate, legal entities operating within democratic frameworks, while criminal organizations operate outside the law",
+                    "They are the same thing with different names",
+                    "Criminal organizations are always larger than political parties"
+                ],
+                correct: 1,
+                explanation: "Political parties operate legally within democratic systems with accountability to voters. Criminal organizations operate illegally outside legal frameworks."
+            },
+            {
+                question: "Which of the following is a common hierarchical structure used by criminal organizations?",
+                options: [
+                    "Random and unstructured groups",
+                    "Traditional pyramid structure with clear chain of command",
+                    "Only democratic assemblies",
+                    "No organization at all"
+                ],
+                correct: 1,
+                explanation: "Criminal organizations often use pyramid structures for clear command chains, though modern groups also use cell-based and network structures for operational security."
+            },
+            {
+                question: "What are the three stages of money laundering?",
+                options: [
+                    "Planning, Execution, Cleanup",
+                    "Placement, Layering, Integration",
+                    "Collection, Storage, Spending",
+                    "Input, Processing, Output"
+                ],
+                correct: 1,
+                explanation: "Money laundering typically involves Placement (introducing illegal funds into the system), Layering (separating money from its source through transactions), and Integration (making money appear legitimate)."
+            },
+            {
+                question: "Which country's criminal organization is known as 'Cosa Nostra'?",
+                options: [
+                    "Colombia",
+                    "Mexico",
+                    "Italy (Sicily)",
+                    "Japan"
+                ],
+                correct: 2,
+                explanation: "Cosa Nostra is the Sicilian Mafia, one of Italy's major organized crime groups, known for its strict code of silence (omertà) and family-based structure."
+            },
+            {
+                question: "Why do criminal groups often recruit members from economically disadvantaged communities?",
+                options: [
+                    "They prefer criminals from wealthy backgrounds",
+                    "Economic desperation creates vulnerabilities that criminal groups exploit",
+                    "They only recruit through random selection",
+                    "Economic status has no impact on recruitment"
+                ],
+                correct: 1,
+                explanation: "Criminal groups often exploit economic vulnerability and lack of legitimate opportunities, which is why community development and economic opportunity are important for crime prevention."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let answers = [];
+
+        function initQuiz() {
+            const container = document.getElementById('quizQuestions');
+            container.innerHTML = '';
+            
+            quizData.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'quiz-question';
+                questionDiv.style.display = index === 0 ? 'block' : 'none';
+                questionDiv.id = `question-${index}`;
+                
+                questionDiv.innerHTML = `
+                    <h3 style="margin-bottom:15px;">Question ${index + 1}</h3>
+                    <p>${q.question}</p>
+                    <div class="quiz-options">
+                        ${q.options.map((opt, optIndex) => `
+                            <div class="quiz-option" data-question="${index}" data-option="${optIndex}" onclick="checkAnswer(${index}, ${optIndex})">
+                                ${String.fromCharCode(65 + optIndex)}. ${opt}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="quiz-feedback" id="feedback-${index}"></div>
+                `;
+                
+                container.appendChild(questionDiv);
+            });
+            
+            document.getElementById('totalQuestions').textContent = quizData.length;
+        }
+
+        function checkAnswer(questionIndex, optionIndex) {
+            const q = quizData[questionIndex];
+            const options = document.querySelectorAll(`#question-${questionIndex} .quiz-option`);
+            const feedback = document.getElementById(`feedback-${questionIndex}`);
+            
+            // Disable all options
+            options.forEach(opt => {
+                opt.style.pointerEvents = 'none';
+            });
+            
+            // Show correct/wrong styling
+            options.forEach((opt, idx) => {
+                if (idx === q.correct) {
+                    opt.classList.add('correct');
+                } else if (idx === optionIndex && idx !== q.correct) {
+                    opt.classList.add('wrong');
+                }
+            });
+            
+            // Show feedback
+            if (optionIndex === q.correct) {
+                feedback.className = 'quiz-feedback show correct';
+                feedback.innerHTML = `<strong>✓ Correct!</strong> ${q.explanation}`;
+                if (!answers[questionIndex]) {
+                    answers[questionIndex] = true;
+                    knowledgeState.quizScore++;
+                }
+            } else {
+                feedback.className = 'quiz-feedback show incorrect';
+                feedback.innerHTML = `<strong>✗ Not quite.</strong> ${q.explanation}`;
+            }
+            
+            // Update quiz progress
+            const correctAnswers = answers.filter(a => a === true).length;
+            document.getElementById('quizProgressFill').style.width = (correctAnswers / quizData.length * 100) + '%';
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < quizData.length - 1) {
+                currentQuestionIndex++;
+                document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+                
+                // Hide current, show next
+                document.getElementById(`question-${currentQuestionIndex - 1}`).style.display = 'none';
+                document.getElementById(`question-${currentQuestionIndex}`).style.display = 'block';
+            } else {
+                // Quiz complete
+                document.getElementById('quizQuestions').style.display = 'none';
+                document.getElementById('quizNext').style.display = 'none';
+                document.getElementById('quizResults').style.display = 'block';
+                
+                document.getElementById('finalScore').textContent = knowledgeState.quizScore;
+                document.getElementById('finalTotal').textContent = quizData.length;
+                const percentage = Math.round((knowledgeState.quizScore / quizData.length) * 100);
+                document.getElementById('finalPercentage').textContent = percentage;
+                
+                const message = document.getElementById('quizMessage');
+                if (percentage >= 80) {
+                    message.innerHTML = `
+                        <div class="highlight-box">
+                            <h3>Excellent! You've demonstrated strong understanding.</h3>
+                            <p>You may now access the advanced materials. Congratulations on completing this level!</p>
+                        </div>
+                    `;
+                    document.getElementById('advancedBtn').style.display = 'inline-block';
+                } else if (percentage >= 60) {
+                    message.innerHTML = `
+                        <div class="info-box">
+                            <h3>Good effort!</h3>
+                            <p>You have a basic understanding. Consider reviewing the material and retaking the quiz to strengthen your knowledge.</p>
+                        </div>
+                    `;
+                } else {
+                    message.innerHTML = `
+                        <div class="warning-box">
+                            <h3>More study needed</h3>
+                            <p>Please review the educational materials carefully and retake the quiz to proceed.</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            answers = [];
+            knowledgeState.quizScore = 0;
+            
+            document.getElementById('quizQuestions').style.display = 'block';
+            document.getElementById('quizNext').style.display = 'block';
+            document.getElementById('quizResults').style.display = 'none';
+            document.getElementById('advancedBtn').style.display = 'none';
+            
+            document.getElementById('currentQuestion').textContent = '1';
+            document.getElementById('quizProgressFill').style.width = '0%';
+            
+            // Reset questions
+            quizData.forEach((_, index) => {
+                document.getElementById(`question-${index}`).style.display = index === 0 ? 'block' : 'none';
+                document.getElementById(`question-${index}`).querySelectorAll('.quiz-option').forEach(opt => {
+                    opt.classList.remove('correct', 'wrong');
+                    opt.style.pointerEvents = 'auto';
+                });
+                document.getElementById(`feedback-${index}`).className = 'quiz-feedback';
+                document.getElementById(`feedback-${index}`).innerHTML = '';
+            });
+        }
+
+        // Initialize animations on load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(createNetworkAnimation, 500);
+            initQuiz();
+            updateProgress();
+        });
+
+        // Handle home link
+        document.querySelector('.nav-home').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
