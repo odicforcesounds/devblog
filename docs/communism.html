@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COMM-OS v1.0 — Technical Manual: How Communism Works | Complete Systems Guide</title>
+<meta name="description" content="A technical manual explaining communism: theory, production, planning, comparisons, country examples, and new ideas for peaceful useful societies. Interactive levels with validation.">
+<style>
+/* ============ COMM-OS MANUAL — pure vanilla CSS3, zero external resources ============ */
+:root{
+  --paper:#f6f1e7;
+  --ink:#1a1a1a;
+  --red:#b71c1c;
+  --red2:#e53935;
+  --gold:#c9a227;
+  --teal:#0e6e6e;
+  --blue:#1a3a5f;
+  --green:#2e7d32;
+  --muted:#6b6257;
+  --card:#fffdf6;
+  --line:#1a1a1a;
+  --mono:"Courier New",Courier,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:#2b2b2b;color:var(--ink);
+  font-family:var(--sans);line-height:1.65;
+}
+/* top progress */
+#topbar{position:sticky;top:0;z-index:100;background:#111;color:#fff;border-bottom:4px solid var(--red);display:flex;align-items:center;gap:12px;padding:8px 14px;flex-wrap:wrap}
+#topbar .logo{font-family:var(--mono);font-weight:bold;letter-spacing:1px;background:var(--red);color:#fff;padding:4px 10px;border:2px solid #fff}
+#topbar nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#topbar a{color:#fff;text-decoration:none;font-family:var(--mono);font-size:13px;padding:5px 9px;border:1px solid #444;border-radius:3px}
+#topbar a.home{background:var(--gold);color:#111;font-weight:bold;border-color:#111}
+#topbar a:hover{background:#fff;color:#111}
+#progressWrap{margin-left:auto;display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px}
+#progressBar{width:160px;height:12px;border:1px solid #fff;background:#333;position:relative}
+#progressFill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--red2));transition:width .6s}
+#resetBtn{background:transparent;color:#aaa;border:1px dashed #666;font-family:var(--mono);font-size:11px;cursor:pointer;padding:4px 8px}
+#resetBtn:hover{color:#fff;border-color:#fff}
+
+/* sheet */
+.sheet{max-width:1080px;margin:24px auto;background:var(--paper);border:2px solid #000;box-shadow:0 0 0 6px #111,0 20px 60px rgba(0,0,0,.6);}
+/* cover */
+.cover{border-bottom:3px double #000;padding:36px 36px 24px;display:grid;grid-template-columns:1fr 280px;gap:24px}
+@media(max-width:800px){.cover{grid-template-columns:1fr}}
+.cover h1{font-family:var(--mono);font-size:clamp(28px,5vw,52px);line-height:1;margin:0;text-transform:uppercase}
+.cover h1 span{color:var(--red)}
+.cover .sub{font-family:var(--mono);background:#111;color:var(--gold);display:inline-block;padding:6px 12px;margin:14px 0;letter-spacing:1px}
+.cover p.lead{font-size:18px}
+.spec-table{font-family:var(--mono);font-size:12.5px;border:2px solid #000;width:100%;border-collapse:collapse;background:var(--card)}
+.spec-table th,.spec-table td{border:1px solid #000;padding:6px 8px;text-align:left}
+.spec-table th{background:#111;color:#fff}
+.stamp{border:3px solid var(--red);color:var(--red);font-family:var(--mono);font-weight:bold;text-align:center;padding:10px;transform:rotate(-3deg);margin-top:12px;background:rgba(183,28,28,.06)}
+.manual-meta{display:flex;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;margin-top:14px}
+.manual-meta span{border:1px solid #000;padding:4px 8px;background:#fff}
+
+/* TOC */
+.toc{padding:24px 36px;border-bottom:2px solid #000;background:var(--card)}
+.toc h2,.level h2{font-family:var(--mono);text-transform:uppercase;letter-spacing:1px}
+.toc ol{columns:2;font-size:15px}
+@media(max-width:700px){.toc ol{columns:1}}
+.toc a{color:var(--blue)}
+.level-status{font-family:var(--mono);font-size:12px;padding:4px 8px;border:1px solid #000;display:inline-block;margin-left:10px;vertical-align:middle}
+.status-locked{background:#ddd;color:#555}
+.status-open{background:#fff3cd}
+.status-done{background:#d4edda;border-color:var(--green);color:var(--green)}
+
+/* levels */
+.level{padding:30px 36px;border-bottom:3px solid #000;position:relative}
+@media(max-width:600px){.level{padding:22px 18px}.toc,.cover{padding-left:18px;padding-right:18px}}
+.level-number{font-family:var(--mono);background:#111;color:#fff;display:inline-block;padding:4px 12px;font-size:13px;letter-spacing:2px}
+.level.locked .level-body{filter:blur(6px);pointer-events:none;user-select:none;max-height:300px;overflow:hidden}
+.lock-overlay{position:absolute;inset:60px 0 0 0;display:flex;align-items:center;justify-content:center;z-index:5}
+.level:not(.locked) .lock-overlay{display:none}
+.lock-card{background:#111;color:#fff;border:3px solid var(--gold);padding:22px;max-width:520px;text-align:center;font-family:var(--mono)}
+.lock-card button{background:var(--gold);border:none;font-family:var(--mono);font-weight:bold;padding:10px 18px;cursor:pointer;margin-top:10px}
+.figure{border:2px solid #000;background:var(--card);padding:14px;margin:18px 0}
+.figure figcaption{font-family:var(--mono);font-size:12.5px;border-top:1px dashed #000;margin-top:10px;padding-top:8px;color:#333}
+.callout{border-left:8px solid var(--red);background:#fff;padding:14px 16px;margin:18px 0}
+.callout.gold{border-color:var(--gold);background:#fffbe6}
+.callout.teal{border-color:var(--teal);background:#e6f4f4}
+.callout.green{border-color:var(--green);background:#eaf6ec}
+.callout h4{margin:0 0 6px;font-family:var(--mono);text-transform:uppercase}
+table.compare{width:100%;border-collapse:collapse;font-size:14px;background:#fff;margin:14px 0}
+table.compare th,table.compare td{border:1px solid #000;padding:8px;vertical-align:top}
+table.compare th{background:#111;color:#fff;font-family:var(--mono);font-size:12px}
+table.compare td:first-child{font-weight:bold}
+.badge{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 7px;border:1px solid #000;background:#eee;margin:2px}
+.badge.red{background:var(--red);color:#fff;border-color:#000}
+.badge.green{background:var(--green);color:#fff}
+.badge.blue{background:var(--blue);color:#fff}
+.badge.gold{background:var(--gold)}
+
+/* animations */
+.anim-stage{border:2px dashed #000;background:#111;color:#fff;padding:16px;position:relative;overflow:hidden;min-height:180px;margin:12px 0}
+.anim-stage .label{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:1px}
+.factory{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+.node{background:#fff;color:#111;font-family:var(--mono);font-size:12px;font-weight:bold;padding:10px;border:2px solid var(--gold);text-align:center;min-width:110px}
+.belt{flex:1;height:8px;background:#333;position:relative;overflow:hidden;border:1px solid #555}
+.belt::after{content:"";position:absolute;top:0;left:-30%;width:30%;height:100%;background:repeating-linear-gradient(90deg,var(--gold) 0 8px,#111 8px 16px);animation:beltmove 1.6s linear infinite}
+@keyframes beltmove{to{left:100%}}
+.coin{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ffe082,var(--gold));border:2px solid #7a5f00;position:absolute;top:44px;animation:coinflow 4s linear infinite;font-family:var(--mono);font-size:11px;font-weight:bold;display:flex;align-items:center;justify-content:center;color:#111}
+.coin.c2{animation-delay:1s}.coin.c3{animation-delay:2s}.coin.c4{animation-delay:3s}
+@keyframes coinflow{0%{left:5%;opacity:0}10%{opacity:1}85%{opacity:1}100%{left:90%;opacity:0}}
+.split{display:flex;gap:0;margin:16px 0;border:2px solid #fff}
+.split div{padding:12px;font-family:var(--mono);font-weight:bold;text-align:center;transition:width 1s}
+#wageBox{background:var(--teal);color:#fff}
+#surplusBox{background:var(--red2);color:#fff}
+.gears{display:flex;gap:18px;align-items:center;justify-content:center;margin:16px 0;font-size:52px}
+.gear{display:inline-block;animation:spin 4s linear infinite}
+.gear.r{animation-direction:reverse;color:var(--gold)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.flow-dots{display:flex;justify-content:space-around;margin:18px 0}
+.person{width:54px;height:54px;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:24px;background:#333;position:relative}
+.person::after{content:attr(data-n);position:absolute;bottom:-20px;font-family:var(--mono);font-size:10px;color:var(--gold)}
+.dot{position:absolute;width:12px;height:12px;background:var(--gold);border-radius:50%;animation:hop 2.2s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-30px) scale(1.4)}}
+.pulse{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.marquee{overflow:hidden;white-space:nowrap;border:1px solid var(--gold);padding:6px;font-family:var(--mono);font-size:12px;color:var(--gold);margin-top:10px}
+.marquee span{display:inline-block;animation:marq 18s linear infinite}
+@keyframes marq{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+.bar-compare{display:grid;grid-template-columns:140px 1fr;gap:8px;align-items:center;font-family:var(--mono);font-size:12px;margin:8px 0}
+.bar-track{background:#333;height:18px;border:1px solid #555;position:relative}
+.bar-fill{height:100%;width:0;transition:width 1.2s ease}
+.vote-box{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.vote-card{background:#fff;color:#111;border:2px solid var(--gold);padding:10px;flex:1;min-width:140px;text-align:center;font-family:var(--mono);font-size:13px;cursor:pointer}
+.vote-card:hover{background:#fff3cd}
+.vote-result{font-family:var(--mono);margin-top:10px;min-height:24px}
+
+/* interactive controls */
+input[type=range]{width:100%;accent-color:var(--red)}
+button.btn{font-family:var(--mono);font-weight:bold;background:#111;color:#fff;border:2px solid #000;padding:10px 16px;cursor:pointer}
+button.btn.gold{background:var(--gold);color:#111}
+button.btn.red{background:var(--red);color:#fff}
+button.btn:hover{transform:translateY(-1px);box-shadow:2px 2px 0 #000}
+.quiz{border:2px solid #000;background:#fff;padding:16px;margin:16px 0}
+.quiz h4{font-family:var(--mono);margin:0 0 10px;background:#111;color:#fff;padding:8px 10px}
+.quiz label{display:block;border:1px solid #ccc;padding:8px;margin:6px 0;cursor:pointer;font-size:14px}
+.quiz label:hover{border-color:#000;background:#fffbe6}
+.quiz .feedback{font-family:var(--mono);font-size:13px;margin-top:10px;padding:8px;display:none}
+.quiz .feedback.pass{display:block;background:#d4edda;border:1px solid var(--green)}
+.quiz .feedback.fail{display:block;background:#f8d7da;border:1px solid var(--red)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.tabs button{font-family:var(--mono);font-size:12px;padding:8px 12px;border:2px solid #000;background:#fff;cursor:pointer}
+.tabs button.active{background:#111;color:#fff}
+.tabpane{display:none;border:2px solid #000;background:#fff;padding:16px}
+.tabpane.active{display:block}
+details{border:1px solid #000;background:#fff;margin:8px 0;padding:10px 12px}
+summary{font-family:var(--mono);font-weight:bold;cursor:pointer}
+footer{background:#111;color:#ddd;padding:28px 36px;font-size:14px}
+footer a{color:var(--gold)}
+.ref-list{font-size:13.5px}
+.ref-list li{margin-bottom:8px}
+.cert{border:4px double var(--gold);background:#111;color:#fff;padding:24px;text-align:center;display:none;margin:18px 0}
+.cert.show{display:block;animation:pulse 2s infinite}
+.cert h3{font-family:var(--mono);color:var(--gold);letter-spacing:2px}
+@media print{#topbar,.lock-overlay,.anim-stage{display:none}.level.locked .level-body{filter:none;max-height:none}}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <span class="logo">★ COMM-OS</span>
+  <nav>
+    <a class="home" href="index.html">⌂ Home</a>
+    <a href="#level-0">0·Manual</a>
+    <a href="#level-1">1·Foundations</a>
+    <a href="#level-2">2·Production</a>
+    <a href="#level-3">3·Compare</a>
+    <a href="#level-4">4·Future</a>
+    <a href="#level-5">5·Lessons</a>
+    <a href="#refs">Refs</a>
+  </nav>
+  <div id="progressWrap">
+    <span id="progressText">CLEARANCE 0/6</span>
+    <div id="progressBar"><div id="progressFill"></div></div>
+    <button id="resetBtn" title="Reset all progress">reset</button>
+  </div>
+</div>
+
+<div class="sheet">
+
+<!-- ================= COVER ================= -->
+<header class="cover" id="top">
+  <div>
+    <div class="manual-meta"><span>DOC Nº COMM-OS-1.0</span><span>CLASS: PUBLIC EDUCATIONAL</span><span>REV 2026-10</span><span>PAGES: 1 FILE</span></div>
+    <h1>How <span>Communism</span> Works</h1>
+    <div class="sub">TECHNICAL MANUAL · THEORY → PRODUCTION → COMPARISON → PRACTICE</div>
+    <p class="lead"><strong>A promotional but rigorous introduction.</strong> This manual treats communism like an operating system for society: what problem it claims to solve, what mechanisms it proposes, how it has been tried in the real world, how it differs from capitalism, social democracy, fascism and anarchism — and what new, peaceful, useful ideas are emerging from it.</p>
+    <div class="callout gold">
+      <h4>⚠ How to use this manual (forced progression)</h4>
+      <p style="margin:0">You cannot skip. Each <strong>Level</strong> ends with a short validation quiz. Score <strong>≥ 2/3</strong> to unlock the next level. Your clearance is saved in this browser (<code>localStorage</code>). This is intentional: communism is a system — you must understand the base before the superstructure.</p>
+    </div>
+    <div class="manual-meta"><span>ⓘ 100% vanilla HTML+CSS+JS</span><span>ⓘ zero external scripts / fonts / images</span><span>ⓘ all diagrams are CSS + inline SVG</span></div>
+  </div>
+  <div>
+    <table class="spec-table">
+      <tr><th colspan="2">DOCUMENT CONTROL</th></tr>
+      <tr><td>Title</td><td>COMM-OS: Communism Systems Manual</td></tr>
+      <tr><td>Format</td><td>Single HTML file</td></tr>
+      <tr><td>Home</td><td><a href="index.html">index.html</a></td></tr>
+      <tr><td>Level 0</td><td>Reading protocol</td></tr>
+      <tr><td>Level 1</td><td>Core concepts</td></tr>
+      <tr><td>Level 2</td><td>Production machine</td></tr>
+      <tr><td>Level 3</td><td>Comparative politics + countries</td></tr>
+      <tr><td>Level 4</td><td>New peaceful models</td></tr>
+      <tr><td>Level 5</td><td>Failures &amp; lessons</td></tr>
+      <tr><td>Validation</td><td>6 quizzes, 70% to pass</td></tr>
+    </table>
+    <div class="stamp">PROMOTIONAL ARTICLE<br>EDUCATIONAL PURPOSE<br>VERIFY WITH SOURCES §8</div>
+  </div>
+</header>
+
+<!-- ================= TOC ================= -->
+<div class="toc">
+  <h2>📑 Contents — Table of Levels <span style="font-size:12px">(click Home anytime to return here)</span></h2>
+  <ol>
+    <li><a href="#level-0">Level 0 — Operator's Guide: what communism claims and how to read critically</a></li>
+    <li><a href="#level-1">Level 1 — Foundations: means of production, class, surplus value, alienation</a></li>
+    <li><a href="#level-2">Level 2 — The Production Machine: planning, cooperatives, distribution</a></li>
+    <li><a href="#level-3">Level 3 — Comparative Systems: capitalism vs social democracy vs fascism vs anarchism vs state socialism, with real countries</a></li>
+    <li><a href="#level-4">Level 4 — New Ideas for Peaceful &amp; Useful Societies</a></li>
+    <li><a href="#level-5">Level 5 — Failures, Bad Decisions &amp; Honest Lessons</a></li>
+    <li><a href="#refs">§8 External References &amp; Further Reading</a></li>
+    <li><a href="#cert">§9 Certification</a></li>
+  </ol>
+  <p style="font-family:var(--mono);font-size:12px">CONVENTION: <span class="badge red">CORE</span> = must know &nbsp; <span class="badge blue">FIGURE</span> = animated demo &nbsp; <span class="badge gold">FIELD DATA</span> = real country &nbsp; <span class="badge green">QUIZ GATE</span> = must pass</p>
+</div>
+
+<!-- ================= LEVEL 0 ================= -->
+<section class="level" id="level-0" data-level="0">
+  <span class="level-number">LEVEL 0 // CLEARANCE REQUIRED: NONE</span><span class="level-status status-open" data-status>● OPEN</span>
+  <div class="level-body">
+  <h2>0. Operator's Guide — What this manual is (and is not)</h2>
+  <p><span class="badge red">CORE</span> <strong>One-sentence definition:</strong> Communism is a theory and movement proposing that the <em>means of production</em> (factories, land, machines, software, data) should be owned in common and run democratically to meet human needs, rather than owned privately for profit — ultimately aiming for a classless, stateless society.</p>
+  <div class="callout teal"><h4>🔧 Technical reading: input → process → output</h4>
+  <p>Think of any society as a pipeline: <strong>Nature + Human Labor → Production → Distribution → Human Needs.</strong> Every political system is just a different way of wiring that pipeline: who decides what is produced, who does the work, who gets the result. This manual compares wirings.</p></div>
+  <p><strong>What communism promises (promotional claim, to be tested):</strong></p>
+  <ul>
+    <li>End artificial scarcity: produce for <em>use</em>, not for sale.</li>
+    <li>End class division: no permanent owners vs workers split.</li>
+    <li>Free development of each as condition for free development of all (<em>Communist Manifesto</em>, 1848).</li>
+    <li>Peace through shared interest: if no one profits from war, war becomes irrational.</li>
+  </ul>
+  <p><strong>What this manual will not do:</strong> hide famines, purges, censorship or economic failures where regimes calling themselves communist caused them. §5 covers them explicitly — with this fairness rule applied throughout:</p>
+  <div class="callout"><h4>⚖ Fairness rule (applies to every criticism in this manual)</h4><p style="margin:0"><strong>When a bad decision is discussed — authoritarian repression, censorship, imperial war, forced collectivization, cult of personality — it is explicitly equal to all others who use them, under any flag.</strong> A prison camp is a prison camp whether ordered by a tsar, a general, a colonial governor, a CEO-backed junta, or a general secretary. We judge <em>tools of domination</em> by what they do, not by the ideology of the hand holding them.</p></div>
+  <div class="quiz" data-quiz="0">
+    <h4><span class="badge green">QUIZ GATE 0</span> — Validate to unlock Level 1 (need 2/3)</h4>
+    <div data-q="1"><p><strong>Q1.</strong> In this manual's definition, what should be owned in common?</p>
+      <label><input type="radio" name="q0-1" value="a"> a) Only personal toothbrushes and houses</label>
+      <label><input type="radio" name="q0-1" value="b"> b) The means of production: factories, land, machines, software, data</label>
+      <label><input type="radio" name="q0-1" value="c"> c) Nothing — everything stays private</label></div>
+    <div data-q="2"><p><strong>Q2.</strong> What is the fairness rule for bad decisions?</p>
+      <label><input type="radio" name="q0-2" value="a"> a) Bad tools (repression, censorship, imperial war) are equal to all others who use them, under any flag</label>
+      <label><input type="radio" name="q0-2" value="b"> b) Only communists are ever blamed for bad decisions</label>
+      <label><input type="radio" name="q0-2" value="c"> c) Bad decisions never happened</label></div>
+    <div data-q="3"><p><strong>Q3.</strong> How do you unlock the next level?</p>
+      <label><input type="radio" name="q0-3" value="a"> a) By scrolling fast</label>
+      <label><input type="radio" name="q0-3" value="b"> b) By scoring ≥2/3 on the gate quiz</label>
+      <label><input type="radio" name="q0-3" value="c"> c) By paying</label></div>
+    <button class="btn gold" onclick="checkQuiz(0,['b','a','b'])">▶ RUN VALIDATION</button>
+    <div class="feedback" id="fb-0"></div>
+  </div>
+  </div>
+  <div class="lock-overlay"><div class="lock-card">🔒 LEVEL LOCKED<div>Complete previous gate.</div></div></div>
+</section>
+
+<!-- ================= LEVEL 1 ================= -->
+<section class="level locked" id="level-1" data-level="1">
+  <span class="level-number">LEVEL 1 // FOUNDATIONS</span><span class="level-status status-locked" data-status>🔒 LOCKED</span>
+  <div class="level-body">
+  <h2>1. Foundations — the five moving parts</h2>
+  <p>Marx and Engels argued history moves through <em>modes of production</em>: slavery → feudalism → capitalism → socialism → communism. Each mode = who owns the tools + how surplus is extracted. Capitalism's innovation was enormous productivity; its flaw, they claimed, was that productivity serves profit, not need.</p>
+
+  <div class="figure">
+    <figcaption><span class="badge blue">FIGURE 1.1 — ANIMATED</span> <strong>The surplus-value pump.</strong> A worker creates 8h of value, is paid for 4h. The gap = surplus. Drag the slider.</figcaption>
+    <div class="anim-stage">
+      <div class="label">SIM 01 // SURPLUS EXTRACTION — LIVE</div>
+      <div class="factory"><div class="node">👷<br>LABOR<br>8h</div><div class="belt"></div><div class="node">🏭<br>FIRM</div><div class="belt"></div><div class="node">💰<br>PROFIT</div></div>
+      <div class="coin">€</div><div class="coin c2">€</div><div class="coin c3">€</div><div class="coin c4">€</div>
+      <div class="split"><div id="wageBox" style="width:50%">WAGE 50%</div><div id="surplusBox" style="width:50%">SURPLUS 50%</div></div>
+      <label style="font-family:var(--mono);font-size:12px">WAGE SHARE: <span id="wageVal">50</span>% <input type="range" id="wageSlider" min="10" max="90" value="50" oninput="updateWage(this.value)"></label>
+      <div class="marquee"><span>value created by labor → wage covers subsistence → remainder appropriated by owner → reinvested or hoarded → repeat daily → class relation reproduced … </span></div>
+    </div>
+    <p><strong>1. Means of production.</strong> Not your phone or toothbrush (personal property). The <em>means</em> = things that make things: land, factories, servers, patents. Communism socializes these, keeps personal belongings personal.</p>
+    <p><strong>2. Class.</strong> Defined by relation to the means: bourgeoisie (own, buy labor), proletariat (own only labor, sell it), peasantry, lumpen, and today precariat. Middle managers = contradictory class location.</p>
+    <p><strong>3. Surplus value / exploitation (technical sense).</strong> Not "being mean" — a math claim: profit, interest and rent come from unpaid labor time. Capitalists compete to raise productivity so the same wage buys more surplus.</p>
+    <p><strong>4. Alienation (4 forms).</strong> From product (you don't own what you make), from process (assembly line decides rhythm), from fellow workers (competition), from species-being (work doesn't express you). Open-source and craft cooperatives are presented as partial antidotes.</p>
+    <p><strong>5. Base &amp; superstructure.</strong> Economy (base) shapes law, politics, culture (superstructure), which then defend the base. Hence communists say you can't vote away ownership without changing ownership.</p>
+  </div>
+
+  <div class="figure">
+    <figcaption><span class="badge blue">FIGURE 1.2 — ANIMATED</span> <strong>Base drives superstructure (and back).</strong></figcaption>
+    <div class="anim-stage"><div class="label">SIM 02 // BASE ⇆ SUPERSTRUCTURE</div>
+      <div class="gears"><span class="gear">⚙️</span><span style="font-family:var(--mono);font-size:13px">BASE:<br>who owns<br>what</span><span class="gear r">⚙️</span><span style="font-family:var(--mono);font-size:13px">SUPERSTRUCTURE:<br>law·media<br>school·state</span><span class="gear">⚙️</span></div>
+      <div class="marquee"><span>private ownership → property law → business press → economics curricula → police protect evictions → ideology says “this is natural” → ownership reproduced …</span></div>
+    </div>
+  </div>
+
+  <div class="callout gold"><h4>📦 Key vocabulary (memorize for gate)</h4>
+  <p><strong>Socialism</strong> = transitional stage: workers' state / collective ownership, distribution by contribution ("to each according to work"). <strong>Communism (higher stage)</strong> = classless, stateless, distribution by need ("to each according to need"), scarcity overcome. <strong>State socialism</strong> = 20th-century attempts (USSR, etc.) claiming to build socialism via nationalization + planning. Critics (including many socialists) say they created <em>state capitalism</em> or <em>bureaucratic collectivism</em> instead.</p></div>
+
+  <div class="quiz" data-quiz="1">
+    <h4><span class="badge green">QUIZ GATE 1</span> — need 2/3</h4>
+    <div><p><strong>Q1.</strong> Surplus value is:</p>
+      <label><input type="radio" name="q1-1" value="a"> a) Value created by workers beyond what they are paid, appropriated as profit/rent/interest</label>
+      <label><input type="radio" name="q1-1" value="b"> b) Extra politeness at work</label>
+      <label><input type="radio" name="q1-1" value="c"> c) Government taxes only</label></div>
+    <div><p><strong>Q2.</strong> "Means of production" means:</p>
+      <label><input type="radio" name="q1-2" value="a"> a) Toothbrushes and clothes</label>
+      <label><input type="radio" name="q1-2" value="b"> b) Factories, land, machines, software, patents — things that make things</label>
+      <label><input type="radio" name="q1-2" value="c"> c) Money in a bank</label></div>
+    <div><p><strong>Q3.</strong> Lower-stage socialism distributes "to each according to ___"?</p>
+      <label><input type="radio" name="q1-3" value="a"> a) work / contribution</label>
+      <label><input type="radio" name="q1-3" value="b"> b) astrological sign</label>
+      <label><input type="radio" name="q1-3" value="c"> c) need (that's the higher communist stage)</label></div>
+    <button class="btn gold" onclick="checkQuiz(1,['a','b','a'])">▶ RUN VALIDATION</button>
+    <div class="feedback" id="fb-1"></div>
+  </div>
+  </div>
+  <div class="lock-overlay"><div class="lock-card">🔒 LEVEL 1 LOCKED<br>Pass GATE 0 to unlock.<br><button onclick="document.getElementById('level-0').scrollIntoView({behavior:'smooth'})">GO TO GATE 0</button></div></div>
+</section>
+
+<!-- ================= LEVEL 2 ================= -->
+<section class="level locked" id="level-2" data-level="2">
+  <span class="level-number">LEVEL 2 // THE PRODUCTION MACHINE</span><span class="level-status status-locked" data-status>🔒 LOCKED</span>
+  <div class="level-body">
+  <h2>2. How to produce: from profit circuit to needs circuit</h2>
+  <p><span class="badge red">CORE</span> Capitalism's circuit: <code>M → C → M'</code> (money → commodities incl. labor → more money). Communism proposes: <code>Need → Plan → Production → Direct distribution → Need met</code>. The factory doesn't disappear; the <em>master</em> changes.</p>
+  <div class="tabs">
+    <button class="active" onclick="tab(event,'t-plan')">A. Planning</button>
+    <button onclick="tab(event,'t-coop')">B. Cooperatives</button>
+    <button onclick="tab(event,'t-distr')">C. Distribution</button>
+  </div>
+  <div class="tabpane active" id="t-plan">
+    <h3>A. Democratic planning — how it would technically work</h3>
+    <ol>
+      <li><strong>Needs census:</strong> households, hospitals, schools declare needs (bread, housing, care-hours, compute).</li>
+      <li><strong>Capacity inventory:</strong> factories, farms, labor-hours, energy, materials declare what they can do.</li>
+      <li><strong>Iteration:</strong> a planning board (or algorithm) proposes prices/quotas, producers &amp; consumers respond, repeat until supply ≈ demand. Think "negotiated coordination", not a genius with a spreadsheet.</li>
+      <li><strong>Execution + feedback:</strong> produce, monitor shortages/surpluses, adjust next cycle.</li>
+    </ol>
+    <div class="figure">
+      <figcaption><span class="badge blue">FIGURE 2.1 — INTERACTIVE</span> Balance needs vs capacity. Move sliders; watch the gauge.</figcaption>
+      <div class="anim-stage">
+        <div class="label">SIM 03 // PLAN BALANCER</div>
+        <label style="font-family:var(--mono);font-size:12px">BREAD NEEDED (units): <span id="needVal">600</span><input type="range" id="needR" min="0" max="1000" value="600" oninput="balance()"></label>
+        <label style="font-family:var(--mono);font-size:12px">BAKERY CAPACITY (units): <span id="capVal">600</span><input type="range" id="capR" min="0" max="1000" value="600" oninput="balance()"></label>
+        <div id="balanceMsg" style="font-family:var(--mono);font-weight:bold;margin-top:10px;background:#fff;color:#111;padding:8px">✓ BALANCED — no queue, no waste</div>
+      </div>
+    </div>
+    <p><strong>Real precedent:</strong> <span class="badge gold">FIELD DATA</span> Chile 1971-73 <em>Cybersyn</em> — Stafford Beer + Allende government wired ~500 factories with telex to a central operations room for real-time coordination without a market. Destroyed by the 1973 coup (see §5 fairness rule: a military coup is a military coup, equal to all others who use them). Modern computing makes this vastly more feasible.</p>
+  </div>
+  <div class="tabpane" id="t-coop">
+    <h3>B. Who decides at work? The cooperative cell</h3>
+    <p>Smallest unit: workers collectively own the firm, one worker one vote, elected recallable managers, capped pay ratios, surplus shared or reinvested by vote.</p>
+    <div class="figure">
+      <figcaption><span class="badge blue">FIGURE 2.2 — CLICK TO VOTE</span> You are worker #4. Vote on this month's surplus.</figcaption>
+      <div class="anim-stage"><div class="label">SIM 04 // CO-OP VOTE</div>
+        <p style="font-family:var(--mono);font-size:13px">SURPLUS: 10,000 — Options: (A) equal bonus (B) new machine (C) shorter hours</p>
+        <div class="vote-box">
+          <div class="vote-card" onclick="vote('A')">🅰<br>BONUS<br><span id="vA">2 votes</span></div>
+          <div class="vote-card" onclick="vote('B')">🅱<br>MACHINE<br><span id="vB">2 votes</span></div>
+          <div class="vote-card" onclick="vote('C')">🅲<br>TIME<br><span id="vC">1 vote</span></div>
+        </div>
+        <div class="vote-result" id="voteRes">+ your vote decides. Click a card.</div>
+      </div>
+    </div>
+    <p><strong>Real precedent:</strong> <span class="badge gold">FIELD DATA</span> Mondragón (Spain, 1956–today, ~70,000 workers), Emilia-Romagna cooperatives (Italy), and Yugoslav self-management (1950-1990) where workers' councils ran firms. Yugoslavia grew fast in the 1950s-70s but suffered regional inequality, debt and eventual breakup — lesson: self-management needs federation + investment planning, not firm egoism.</p>
+  </div>
+  <div class="tabpane" id="t-distr">
+    <h3>C. Distribution: from market rationing to need rationing</h3>
+    <div class="figure">
+      <figcaption><span class="badge blue">FIGURE 2.3 — ANIMATED</span> Market rations by wallet; needs-system rations by need.</figcaption>
+      <div class="anim-stage"><div class="label">SIM 05 // WHO GETS BREAD?</div>
+        <div class="flow-dots" style="position:relative">
+          <div class="person" data-n="needs 5">🧒</div><div class="person" data-n="needs 1">🧑‍💼</div><div class="person" data-n="needs 3">👵</div>
+          <div class="dot" style="left:15%"></div><div class="dot" style="left:48%;animation-delay:.7s"></div><div class="dot" style="left:75%;animation-delay:1.3s"></div>
+        </div>
+        <div class="bar-compare"><span>MARKET: gets by $$</span><div class="bar-track"><div class="bar-fill" data-bar="market" style="background:var(--red2)"></div></div></div>
+        <div class="bar-compare"><span>NEEDS: gets by need</span><div class="bar-track"><div class="bar-fill" data-bar="needs" style="background:var(--teal)"></div></div></div>
+        <button class="btn gold" onclick="runDistr()">▶ RUN COMPARISON</button>
+      </div>
+    </div>
+    <p>Communist proposal in stages: <strong>socialism:</strong> labor vouchers / wages + free decommodified services (health, school, transit); <strong>higher communism:</strong> "free access" for abundant goods (like water fountains, libraries, open-source software today) + democratically rationed quotas for scarce goods. Modern analog: public libraries, Wikipedia, Linux — "from each according to ability, to each according to need" already works for information goods with near-zero marginal cost.</p>
+  </div>
+  <div class="quiz" data-quiz="2">
+    <h4><span class="badge green">QUIZ GATE 2</span> — need 2/3</h4>
+    <div><p><strong>Q1.</strong> The communist circuit replaces M→C→M' with:</p>
+      <label><input type="radio" name="q2-1" value="a"> a) Need → Plan → Production → Distribution → Need met</label>
+      <label><input type="radio" name="q2-1" value="b"> b) Money → More money → Even more money</label>
+      <label><input type="radio" name="q2-1" value="c"> c) No production at all</label></div>
+    <div><p><strong>Q2.</strong> Cybersyn (Chile 1971-73) was:</p>
+      <label><input type="radio" name="q2-2" value="a"> a) A telex-based real-time factory coordination system</label>
+      <label><input type="radio" name="q2-2" value="b"> b) A brand of sneakers</label>
+      <label><input type="radio" name="q2-2" value="c"> c) A stock exchange</label></div>
+    <div><p><strong>Q3.</strong> A workers' cooperative means:</p>
+      <label><input type="radio" name="q2-3" value="a"> a) One worker one vote, elected managers, shared surplus</label>
+      <label><input type="radio" name="q2-3" value="b"> b) One boss owns everything forever</label>
+      <label><input type="radio" name="q2-3" value="c"> c) Nobody works</label></div>
+    <button class="btn gold" onclick="checkQuiz(2,['a','a','a'])">▶ RUN VALIDATION</button>
+    <div class="feedback" id="fb-2"></div>
+  </div>
+  </div>
+  <div class="lock-overlay"><div class="lock-card">🔒 LEVEL 2 LOCKED<br>Pass GATE 1.<br><button onclick="document.getElementById('level-1').scrollIntoView({behavior:'smooth'})">GO TO GATE 1</button></div></div>
+</section>
+
+<!-- ================= LEVEL 3 ================= -->
+<section class="level locked" id="level-3" data-level="3">
+  <span class="level-number">LEVEL 3 // COMPARATIVE SYSTEMS + REAL COUNTRIES</span><span class="level-status status-locked" data-status>🔒 LOCKED</span>
+  <div class="level-body">
+  <h2>3. All the others: what makes communism different?</h2>
+  <p>Promotional manuals must survive comparison. Here are six live wirings, each with a real example, strengths claimed by supporters, and criticisms — including of communism itself.</p>
+  <table class="compare">
+    <tr><th>System</th><th>Who owns? Who decides?</th><th>Real example</th><th>Result (balanced)</th></tr>
+    <tr><td>🏦 Liberal capitalism</td><td>Private ownership; market decides; state protects property.</td><td><span class="badge gold">FIELD DATA</span> <strong>USA (1945–today).</strong> Enormous innovation, GDP, universities. Also highest inequality in G7, employer-tied healthcare, mass incarceration, 2008 crisis, deindustrialization.</td><td>Dynamic but crisis-prone; freedom of enterprise, insecurity of employment.</td></tr>
+    <tr><td>🌹 Social democracy</td><td>Capitalism + strong unions, welfare, public services; capital still private.</td><td><span class="badge gold">FIELD DATA</span> <strong>Sweden / Nordics.</strong> Low poverty, free university/health, high happiness. Funded by high taxes on capitalist surplus; firms (IKEA, Volvo) still private; retrenchment since 1990s.</td><td>Humane capitalism — but depends on profitable capitalism underneath.</td></tr>
+    <tr><td>🚩 State socialism (20th c.)</td><td>State owns on behalf of workers; central plan; one party.</td><td><span class="badge gold">FIELD DATA</span> <strong>USSR (1922-91), Cuba (1959–), Vietnam, China pre-1978.</strong> USSR: rapid industrialization, literacy, defeated Nazism, space flight — plus purges, famine (1932-33), Gulag, stagnation. Cuba: world-class doctors/literacy under embargo — plus one-party rule, shortages. China post-1978: market reforms lifted 800M from poverty (World Bank) while creating billionaires + harsh labor discipline — critics ask if it is still socialist.</td><td>Proved rapid development possible; proved authoritarian planning without democracy ossifies.</td></tr>
+    <tr><td>⛓ Fascism / far-right</td><td>Private profit + dictatorial state, nationalism, repression of labor.</td><td><span class="badge gold">FIELD DATA</span> <strong>Nazi Germany, Mussolini's Italy, Pinochet's Chile (1973-90).</strong> Protected private property, smashed unions, used terror. Opposite of communism on ownership + equality, <em>identical</em> in repressive tools when communists used them — see fairness rule.</td><td>Capitalism without democracy; war-prone.</td></tr>
+    <tr><td>🏴 Anarchism / libertarian socialism</td><td>No state, no bosses; federated communes &amp; syndicates.</td><td><span class="badge gold">FIELD DATA</span> <strong>Spain 1936 (CNT-FAI collectives), Rojava/North Syria (2012–), Zapatistas (1994–).</strong> Direct democracy, cooperatives, women's liberation. Crushed by war/embargo or contained small-scale.</td><td>Closest cousin to communism's end-goal; hardest to defend at scale — so far.</td></tr>
+    <tr><td>🟡 Yugoslav self-management</td><td>Social ownership + workers' councils + market.</td><td><span class="badge gold">FIELD DATA</span> <strong>Yugoslavia (1950-90).</strong> Workers elected councils, firms competed. Living standards rose; then inequality between republics, foreign debt, nationalism tore it apart.</td><td>Proof workplaces can be democratic; warning that markets recreate inequality without solidarity mechanisms.</td></tr>
+  </table>
+  <div class="callout"><h4>⚖ Fairness rule applied — read aloud</h4><p><strong>Forced collectivization that starves peasants, secret police, show trials, invading neighbors, jailing journalists — these are equal to all others who use them.</strong> British colonial famines in India, French torture in Algeria, US-backed coups in Guatemala/Chile/Indonesia, and Stalin's purges all belong in the same moral category: domination techniques. Defending communism means <em>rejecting</em> those tools, not excusing them because of the flag.</p></div>
+  <details><summary>🔍 DEEP DIVE: Kerala, India — ballot-box communism</summary><p>Kerala's Communist Party (CPI-M) has repeatedly won elections since 1957. Result: highest literacy (~94%), lowest infant mortality in India, strong public health and land reform — inside capitalist India. Shows communist policies can work through democracy without one-party rule. Limitation: unemployment drives emigration; industry lags.</p></details>
+  <details><summary>🔍 DEEP DIVE: China — poverty miracle or state capitalism?</summary><p>1978-2020: collective + market hybrid lifted ~800M from extreme poverty (World Bank data). Supporters credit initial collective infrastructure (land reform, health, literacy) + state-guided investment. Critics note extreme exploitation (Foxconn, 996), billionaires, Xinjiang repression, real-estate bubbles. Honest manual verdict: development success + democratic deficit + rising capitalist inequality.</p></details>
+  <details><summary>🔍 DEEP DIVE: USSR — why did it fall?</summary><p>Achievements: 1917-1960 industrial leap, full employment, housing, education, victory over Nazism (27M Soviet dead). Causes of fall per historians: arms race burden, bureaucratic centralization stifling innovation, oil-price shock, nationalism, Gorbachev's reforms arriving too late, loss of democratic legitimacy. Lesson communists draw: planning needs democracy + information feedback, not just orders.</p></details>
+  <div class="quiz" data-quiz="3">
+    <h4><span class="badge green">QUIZ GATE 3</span> — need 2/3</h4>
+    <div><p><strong>Q1.</strong> Social democracy (Sweden) differs from communism because:</p>
+      <label><input type="radio" name="q3-1" value="a"> a) Capital stays private; welfare is funded from capitalist surplus</label>
+      <label><input type="radio" name="q3-1" value="b"> b) There is no government at all</label>
+      <label><input type="radio" name="q3-1" value="c"> c) It abolished all markets and private firms</label></div>
+    <div><p><strong>Q2.</strong> Fascism's relation to communism on ownership?</p>
+      <label><input type="radio" name="q3-2" value="a"> a) Opposite: fascism protects private profit and smashes unions</label>
+      <label><input type="radio" name="q3-2" value="b"> b) Identical in every way</label>
+      <label><input type="radio" name="q3-2" value="c"> c) Fascism abolished private property</label></div>
+    <div><p><strong>Q3.</strong> The fairness rule says repressive tools are:</p>
+      <label><input type="radio" name="q3-3" value="a"> a) Equal to all others who use them, under any flag</label>
+      <label><input type="radio" name="q3-3" value="b"> b) Fine when our side uses them</label>
+      <label><input type="radio" name="q3-3" value="c"> c) Never used by anyone else</label></div>
+    <button class="btn gold" onclick="checkQuiz(3,['a','a','a'])">▶ RUN VALIDATION</button>
+    <div class="feedback" id="fb-3"></div>
+  </div>
+  </div>
+  <div class="lock-overlay"><div class="lock-card">🔒 LEVEL 3 LOCKED<br>Pass GATE 2.<br><button onclick="document.getElementById('level-2').scrollIntoView({behavior:'smooth'})">GO TO GATE 2</button></div></div>
+</section>
+
+<!-- ================= LEVEL 4 ================= -->
+<section class="level locked" id="level-4" data-level="4">
+  <span class="level-number">LEVEL 4 // NEW IDEAS — PEACEFUL &amp; USEFUL SOCIETIES</span><span class="level-status status-locked" data-status>🔒 LOCKED</span>
+  <div class="level-body">
+  <h2>4. Patch notes: new ideas communists propose for the 21st century</h2>
+  <p>Old manuals nationalized everything and hoped. New currents — learning from failures — propose <strong>peaceful, plural, ecological</strong> designs. Five practical blueprints:</p>
+  <div class="figure"><figcaption><strong>4.1 Participatory economics (Parecon) &amp; negotiated planning.</strong> Workers' + consumers' councils propose, facilitators iterate. Balanced job complexes: everyone does some empowering and some rote work. Pay for effort, not output or power.</figcaption></div>
+  <div class="figure"><figcaption><strong>4.2 The commons + peer production.</strong> Linux, Wikipedia, open seeds, open medicine show post-scarcity logic already works where copying costs ~0. Proposal: extend to housing (community land trusts), energy (municipal solar), care (neighborhood cooperatives), platforms (driver-owned Uber).</figcaption></div>
+  <div class="figure"><figcaption><strong>4.3 Universal Basic Services (UBS) over UBI.</strong> Instead of cash alone, guarantee free housing floor, health, education, transit, internet, food staples — decommodify survival so no one must accept humiliating work. Pilot data: Finland UBI trial (wellbeing up, employment flat), Iran cash transfers, Kenya GiveDirectly, plus UBS modeling by UCL.</figcaption></div>
+  <div class="figure"><figcaption><strong>4.4 Ecological planning: the carbon budget as plan.</strong> Treat atmosphere, forests, water as hard constraints. Jobs guarantee in green retrofit, public transit, agroecology. Example: Cuba's "Special Period" after 1991 forced organic urban agriculture (organopónicos) — Havana now grows much of its vegetables inside the city.</figcaption></div>
+  <div class="figure"><figcaption><strong>4.5 Radical democracy toolkit.</strong> Sortition (random citizens' assemblies like Ireland 2016-18 on abortion), recallable delegates, participatory budgeting (Porto Alegre, Brazil: citizens voted 20% of budget, water access soared), municipalism (Preston, UK: local procurement kept wealth local).</figcaption></div>
+  <div class="callout green"><h4>🕊 Peace dividend — the promotional core</h4><p>Argument: capitalist competition rewards arms sales, fossil extraction and planned obsolescence. A needs-based commons rewards durability, repair, care and disarmament — because no firm profits from war. Costa Rica (abolished army 1948, invested in schools/parks) and post-war Vietnam-Cuba medical internationalism are cited as hints: cooperation pays when profit is removed from killing.</p></div>
+  <div class="quiz" data-quiz="4">
+    <h4><span class="badge green">QUIZ GATE 4</span> — need 2/3</h4>
+    <div><p><strong>Q1.</strong> Universal Basic Services means:</p>
+      <label><input type="radio" name="q4-1" value="a"> a) Free guaranteed housing floor, health, education, transit, internet, staples</label>
+      <label><input type="radio" name="q4-1" value="b"> b) Free yachts for all</label>
+      <label><input type="radio" name="q4-1" value="c"> c) No services at all</label></div>
+    <div><p><strong>Q2.</strong> Linux/Wikipedia are cited as proof that:</p>
+      <label><input type="radio" name="q4-2" value="a"> a) "From each according to ability, to each according to need" already works for information goods</label>
+      <label><input type="radio" name="q4-2" value="b"> b) Markets are the only way to make software</label>
+      <label><input type="radio" name="q4-2" value="c"> c) Nobody shares anything</label></div>
+    <div><p><strong>Q3.</strong> Participatory budgeting (Porto Alegre) means:</p>
+      <label><input type="radio" name="q4-3" value="a"> a) Citizens directly vote part of the municipal budget</label>
+      <label><input type="radio" name="q4-3" value="b"> b) Bankers decide in secret</label>
+      <label><input type="radio" name="q4-3" value="c"> c) No budget exists</label></div>
+    <button class="btn gold" onclick="checkQuiz(4,['a','a','a'])">▶ RUN VALIDATION</button>
+    <div class="feedback" id="fb-4"></div>
+  </div>
+  </div>
+  <div class="lock-overlay"><div class="lock-card">🔒 LEVEL 4 LOCKED<br>Pass GATE 3.<br><button onclick="document.getElementById('level-3').scrollIntoView({behavior:'smooth'})">GO TO GATE 3</button></div></div>
+</section>
+
+<!-- ================= LEVEL 5 ================= -->
+<section class="level locked" id="level-5" data-level="5">
+  <span class="level-number">LEVEL 5 // FAILURES &amp; HONEST LESSONS</span><span class="level-status status-locked" data-status>🔒 LOCKED</span>
+  <div class="level-body">
+  <h2>5. Error log — where self-declared communist projects failed</h2>
+  <p>A technical manual without a bug report is propaganda. Here are the documented bugs:</p>
+  <ul>
+    <li><strong>1932-33 Soviet famine (Holodomor) &amp; forced collectivization:</strong> millions dead. Lesson: coercing peasants + lying about harvests kills. <em>Equal to all others who use them:</em> British Bengal famine 1943, Irish famine under landlordism — forced extraction starves under any flag.</li>
+    <li><strong>Purges, Gulag, show trials (1930s-50s):</strong> terror as governance. Lesson: one-party monopoly without recall + secret police = tyranny. <em>Equal to all others who use them:</em> Nazi camps, US COINTELPRO, Operation Condor, colonial torture — political police are political police.</li>
+    <li><strong>Great Leap Forward, China 1958-62:</strong> voluntarist quotas + false reporting → famine killing tens of millions. Lesson: plan without truthful feedback is suicide. <em>Equal to all others who use them:</em> market crashes from falsified balance sheets (Enron, 2008) — lying about capacity kills under any system.</li>
+    <li><strong>Cultural Revolution violence, censorship, cult of personality (Mao, Stalin, Kim dynasty):</strong> Lesson: leader-worship destroys collective intelligence. <em>Equal to all others who use them:</em> fascist Führerprinzip, corporate CEO cults, monarchies — personality cults rot every regime that uses them.</li>
+    <li><strong>Tanks in Budapest 1956, Prague 1968, Tiananmen 1989:</strong> Lesson: socialism imposed by tanks is imperialism. <em>Equal to all others who use them:</em> US invasions of Iraq/Vietnam, French Algeria — invasion is invasion.</li>
+    <li><strong>Stagnation &amp; shortage (USSR 1970s-80s):</strong> no price signals + no democratic signals = wrong goods, queues, cynicism. Lesson: need feedback loops — democratic, informational, or both.</li>
+  </ul>
+  <div class="callout"><h4>⚖ Final fairness statement (required for certification)</h4><p><strong>Every bad decision listed above is explicitly equal to all others who use them.</strong> This manual promotes communism only insofar as it means <em>more</em> democracy (at work, in investment, in the plan), <em>more</em> truth (free press, open data, right to dissent), and <em>more</em> peace (no profit from war). Any "communism" that removes democracy, truth or peace is a mislabel — judge it as authoritarianism, like any other.</p></div>
+  <div class="quiz" data-quiz="5">
+    <h4><span class="badge green">QUIZ GATE 5 — FINAL</span> — need 2/3</h4>
+    <div><p><strong>Q1.</strong> The manual's verdict on purges, censorship, invasions done in communism's name?</p>
+      <label><input type="radio" name="q5-1" value="a"> a) They are equal to all others who use them — domination tools condemned under any flag</label>
+      <label><input type="radio" name="q5-1" value="b"> b) They were fine actually</label>
+      <label><input type="radio" name="q5-1" value="c"> c) They never happened</label></div>
+    <div><p><strong>Q2.</strong> Key lesson from planning failures (Great Leap, stagnation)?</p>
+      <label><input type="radio" name="q5-2" value="a"> a) Plans need truthful feedback + democracy, not just orders</label>
+      <label><input type="radio" name="q5-2" value="b"> b) Lying about harvests is good</label>
+      <label><input type="radio" name="q5-2" value="c"> c) Feedback is unnecessary</label></div>
+    <div><p><strong>Q3.</strong> What does this manual say genuine communism must increase?</p>
+      <label><input type="radio" name="q5-3" value="a"> a) Democracy, truth, and peace</label>
+      <label><input type="radio" name="q5-3" value="b"> b) Censorship and war</label>
+      <label><input type="radio" name="q5-3" value="c"> c) Billionaires</label></div>
+    <button class="btn red" onclick="checkQuiz(5,['a','a','a'])">▶ RUN FINAL VALIDATION</button>
+    <div class="feedback" id="fb-5"></div>
+  </div>
+  </div>
+  <div class="lock-overlay"><div class="lock-card">🔒 LEVEL 5 LOCKED<br>Pass GATE 4.<br><button onclick="document.getElementById('level-4').scrollIntoView({behavior:'smooth'})">GO TO GATE 4</button></div></div>
+</section>
+
+<!-- ================= REFS ================= -->
+<section class="level" id="refs" data-level="99">
+  <span class="level-number">§8 // EXTERNAL REFERENCES</span>
+  <div class="level-body">
+  <h2>8. External sources — verify everything (promotional claims must be checkable)</h2>
+  <p>All links are plain <code>&lt;a href&gt;</code> — no tracking, no scripts. Last checked Oct 2026.</p>
+  <ol class="ref-list">
+    <li>Marx &amp; Engels — <em>The Communist Manifesto</em> (1848), full text — <a href="https://www.marxists.org/archive/marx/works/1848/communist-manifesto/">marxists.org/archive/marx/works/1848/communist-manifesto</a></li>
+    <li>Marx — <em>Capital, Vol.1</em> on surplus value — <a href="https://www.marxists.org/archive/marx/works/1867-c1/">marxists.org/archive/marx/works/1867-c1</a></li>
+    <li>Marx — <em>Critique of the Gotha Programme</em> ("to each according to need") — <a href="https://www.marxists.org/archive/marx/works/1875/gotha/">marxists.org/archive/marx/works/1875/gotha</a></li>
+    <li>Engels — <em>Socialism: Utopian and Scientific</em> — <a href="https://www.marxists.org/archive/marx/works/1880/soc-utop/">marxists.org/archive/marx/works/1880/soc-utop</a></li>
+    <li>Rosa Luxemburg — <em>Reform or Revolution</em> — <a href="https://www.marxists.org/archive/luxemburg/1900/reform-revolution/">marxists.org/archive/luxemburg/1900/reform-revolution</a></li>
+    <li>Encyclopaedia Britannica — Communism / Socialism overviews — <a href="https://www.britannica.com/topic/communism">britannica.com/topic/communism</a></li>
+    <li>Stanford Encyclopedia of Philosophy — Marx — <a href="https://plato.stanford.edu/entries/marx/">plato.stanford.edu/entries/marx</a></li>
+    <li>World Bank — China poverty reduction data (800M lifted) — <a href="https://www.worldbank.org/en/country/china/overview">worldbank.org/en/country/china/overview</a></li>
+    <li>FAO / academic work on Cuba organopónicos &amp; Special Period — <a href="https://www.fao.org/cuba/en/">fao.org/cuba/en</a></li>
+    <li>Eden Medina — <em>Cybernetic Revolutionaries</em> (Cybersyn, Chile) — <a href="https://mitpress.mit.edu/9780262525961/cybernetic-revolutionaries/">mitpress.mit.edu — Cybernetic Revolutionaries</a></li>
+    <li>Mondragón Corporation, cooperatives data — <a href="https://www.mondragon-corporation.com/en/">mondragon-corporation.com</a></li>
+    <li>Participatory budgeting, Porto Alegre (World Bank case) — <a href="https://www.worldbank.org/en/topic/urbandevelopment/brief/participatory-budgeting">worldbank.org — participatory budgeting</a></li>
+    <li>UCL Institute for Global Prosperity — Universal Basic Services — <a href="https://www.ucl.ac.uk/bartlett/public-purpose/research/universal-basic-services">ucl.ac.uk — Universal Basic Services</a></li>
+    <li>Kerala development model (UN / academic surveys) — <a href="https://kerala.gov.in/">kerala.gov.in</a> + <a href="https://www.britannica.com/place/Kerala-state-India">britannica.com/place/Kerala-state-India</a></li>
+    <li>Orwell — <em>Homage to Catalonia</em> (Spain 1936 collectives, first-hand) — public-domain summaries via <a href="https://www.britannica.com/topic/Homage-to-Catalonia">britannica.com/topic/Homage-to-Catalonia</a></li>
+  </ol>
+  <div class="callout teal"><h4>📎 How to cite this manual</h4><p style="margin:0">Single file: <code>index.html</code>. Home link: <code>&lt;a href="index.html"&gt;Home&lt;/a&gt;</code> (present in top bar). No external JS/CSS/fonts/images were used — verify with View Source. External links above are references only.</p></div>
+  </div>
+</section>
+
+<!-- ================= CERT ================= -->
+<section class="level" id="cert" data-level="100">
+  <span class="level-number">§9 // CERTIFICATION</span>
+  <div class="level-body">
+  <h2>9. Operator certification</h2>
+  <p>Pass all six gates to earn the <strong>COMM-OS Operator Certificate</strong>. Print it. Argue with it. Improve it — that is the communist method: collective revision.</p>
+  <div class="cert" id="certBox">
+    <h3>★ CERTIFIED COMM-OS OPERATOR ★</h3>
+    <p style="font-family:var(--mono)">This reader completed Levels 0–5, compared real systems,<br>ran the simulators, and affirmed the fairness rule:<br><em>bad tools are equal to all others who use them.</em></p>
+    <p id="certDate" style="font-family:var(--mono);color:var(--gold)"></p>
+    <p><a href="index.html" style="color:#fff;border:1px solid var(--gold);padding:8px 14px;text-decoration:none;font-family:var(--mono)">⌂ Home — index.html</a></p>
+  </div>
+  <p id="certHint" style="font-family:var(--mono)">Status: <span id="certStatus">incomplete — finish all gates</span></p>
+  <footer style="background:transparent;color:#333;padding:18px 0 0">
+    <p><strong>Author's note (promotional, honest):</strong> This article promotes the <em>idea</em> that humanity can run production democratically for need, peacefully and ecologically — Mondragón, Kerala, open-source, participatory budgets and organopónicos suggest pieces already work. It does not promote any regime, party or leader. Where power concentrated without democracy it produced crimes — <strong>equal to all others who use them</strong> — and this manual condemns them as such. Read the sources, visit a cooperative, join a tenants' union or budgeting assembly, and test the claims yourself. <a href="index.html">⌂ Home</a></p>
+  </footer>
+  </div>
+</section>
+
+</div><!-- /sheet -->
+<div style="text-align:center;color:#888;font-family:var(--mono);font-size:12px;padding:18px"><a href="index.html" style="color:#c9a227">⌂ Home (index.html)</a> · COMM-OS v1.0 · single file · vanilla JS+CSS3 · no external resources</div>
+
+<script>
+/* ============ pure vanilla JS, no external resources ============ */
+var ANSWERS_TOTAL = 6;
+var passed = {};
+try{ passed = JSON.parse(localStorage.getItem('commos_passed')||'{}'); }catch(e){ passed={}; }
+
+function save(){ try{ localStorage.setItem('commos_passed', JSON.stringify(passed)); }catch(e){} }
+function countPassed(){ var n=0; for(var i=0;i<6;i++){ if(passed[i]) n++; } return n; }
+
+function refreshLocks(){
+  var levels = document.querySelectorAll('.level[data-level]');
+  levels.forEach(function(sec){
+    var lv = parseInt(sec.getAttribute('data-level'),10);
+    if(lv>5) return; // refs & cert always open
+    var st = sec.querySelector('[data-status]');
+    if(lv===0){ sec.classList.remove('locked'); if(st){st.textContent = passed[0]?'✔ PASSED':'● OPEN'; st.className='level-status '+(passed[0]?'status-done':'status-open');} return; }
+    var prevOk = !!passed[lv-1];
+    var done = !!passed[lv];
+    if(prevOk){ sec.classList.remove('locked'); } else { sec.classList.add('locked'); }
+    if(st){ st.textContent = done?'✔ PASSED':(prevOk?'● OPEN':'🔒 LOCKED'); st.className='level-status '+(done?'status-done':(prevOk?'status-open':'status-locked')); }
+  });
+  var n = countPassed();
+  document.getElementById('progressText').textContent = 'CLEARANCE '+n+'/'+ANSWERS_TOTAL;
+  document.getElementById('progressFill').style.width = (n/ANSWERS_TOTAL*100)+'%';
+  var all = true; for(var i=0;i<6;i++){ if(!passed[i]) all=false; }
+  var box = document.getElementById('certBox');
+  if(all){ box.classList.add('show'); document.getElementById('certStatus').textContent='complete — certified '+new Date().toISOString().slice(0,10); document.getElementById('certDate').textContent='CLEARED '+new Date().toISOString().slice(0,10)+' · '+n+'/6 GATES'; }
+  else { box.classList.remove('show'); document.getElementById('certStatus').textContent='incomplete — '+n+'/6 gates passed'; }
+}
+
+function checkQuiz(level, correct){
+  var ok=0;
+  for(var i=0;i<correct.length;i++){
+    var sel = document.querySelector('input[name="q'+level+'-'+(i+1)+'"]:checked');
+    if(sel && sel.value===correct[i]) ok++;
+  }
+  var fb = document.getElementById('fb-'+level);
+  if(ok>=2){
+    passed[level]=true; save(); refreshLocks();
+    fb.className='feedback pass';
+    fb.textContent='✔ VALIDATED '+ok+'/'+correct.length+' — next level unlocked. Scroll down.';
+    var nxt = document.querySelector('.level[data-level="'+(level+1)+'"]');
+    if(nxt){ setTimeout(function(){ nxt.scrollIntoView({behavior:'smooth'}); },600); }
+  } else {
+    fb.className='feedback fail';
+    fb.textContent='✘ FAILED '+ok+'/'+correct.length+' — need ≥2. Re-read the level and retry. (Answers are in the text.)';
+  }
+}
+
+function updateWage(v){
+  document.getElementById('wageVal').textContent=v;
+  document.getElementById('wageBox').style.width=v+'%';
+  document.getElementById('wageBox').textContent='WAGE '+v+'%';
+  document.getElementById('surplusBox').style.width=(100-v)+'%';
+  document.getElementById('surplusBox').textContent='SURPLUS '+(100-v)+'%';
+}
+function balance(){
+  var n=+document.getElementById('needR').value, c=+document.getElementById('capR').value;
+  document.getElementById('needVal').textContent=n; document.getElementById('capVal').textContent=c;
+  var m=document.getElementById('balanceMsg');
+  if(n===c){ m.textContent='✓ BALANCED — no queue, no waste'; m.style.background='#d4edda'; }
+  else if(n>c){ m.textContent='⚠ SHORTAGE '+(n-c)+' — queues grow → raise capacity or prioritize needs'; m.style.background='#f8d7da'; }
+  else { m.textContent='⚠ SURPLUS '+(c-n)+' — store, share, or shift labor to other needs'; m.style.background='#fff3cd'; }
+}
+var votes={A:2,B:2,C:1}, voted=false;
+function vote(x){
+  if(voted){ document.getElementById('voteRes').textContent='Already voted — one worker one vote! Reset page to revote.'; return; }
+  voted=true; votes[x]++;
+  document.getElementById('vA').textContent=votes.A+' votes';
+  document.getElementById('vB').textContent=votes.B+' votes';
+  document.getElementById('vC').textContent=votes.C+' votes';
+  var win=Object.keys(votes).sort(function(a,b){return votes[b]-votes[a];})[0];
+  var names={A:'equal bonus',B:'new machine',C:'shorter hours'};
+  document.getElementById('voteRes').textContent='✔ Motion carried: "'+names[win]+'" wins '+votes[win]+' votes. Surplus allocated democratically.';
+}
+function runDistr(){
+  var mb=document.querySelector('[data-bar="market"]'), nb=document.querySelector('[data-bar="needs"]');
+  mb.style.width='0'; nb.style.width='0';
+  setTimeout(function(){ mb.style.width='88%'; nb.style.width='34%'; },60);
+  setTimeout(function(){ mb.title='rich gets most'; },1300);
+}
+function tab(e,id){
+  document.querySelectorAll('#level-2 .tabs button').forEach(function(b){b.classList.remove('active');});
+  e.target.classList.add('active');
+  document.querySelectorAll('#level-2 .tabpane').forEach(function(p){p.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+}
+document.getElementById('resetBtn').onclick=function(){
+  passed={}; save(); refreshLocks();
+  document.querySelectorAll('.feedback').forEach(function(f){f.className='feedback';f.textContent='';});
+  document.querySelectorAll('input[type=radio]').forEach(function(r){r.checked=false;});
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+refreshLocks();
+balance();
+setTimeout(runDistr,1200);
+</script>
+</body>
+</html>
