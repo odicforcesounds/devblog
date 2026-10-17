@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MECHANICS: Zero to Hero — Newton Academy</title>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#111936; --panel:#16224a; --card:#1c2a5c;
+  --neon:#00f0ff; --neon2:#a6ff00; --gold:#ffd23f; --pink:#ff2e88; --orange:#ff7a18;
+  --ink:#eef3ff; --dim:#9aa7d0; --good:#2eff8b; --bad:#ff4d4d;
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Courier New",monospace;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, #24307a 0%, transparent 60%),
+    radial-gradient(900px 500px at 90% 10%, #3a1160 0%, transparent 60%),
+    radial-gradient(800px 600px at 50% 110%, #073b4c 0%, transparent 60%),
+    var(--bg);
+  color:var(--ink); min-height:100vh;
+}
+a{color:var(--neon)}
+/* stars */
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; opacity:.5;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, #fff 100%, transparent 100%),
+    radial-gradient(1px 1px at 30% 80%, #fff 100%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 70% 30%, #fff 100%, transparent 100%),
+    radial-gradient(1px 1px at 85% 70%, #fff 100%, transparent 100%),
+    radial-gradient(1px 1px at 55% 55%, #fff 100%, transparent 100%),
+    radial-gradient(2px 2px at 15% 85%, var(--neon) 100%, transparent 100%),
+    radial-gradient(1px 1px at 90% 15%, var(--gold) 100%, transparent 100%);
+}
+/* HUD */
+.hud{
+  position:sticky; top:0; z-index:50;
+  display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+  padding:10px 14px; background:rgba(11,16,32,.88); backdrop-filter:blur(10px);
+  border-bottom:2px solid #26346f;
+}
+.logo{
+  font-weight:900; letter-spacing:1px; font-size:18px;
+  background:linear-gradient(90deg,var(--neon),var(--neon2),var(--gold));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 0 18px rgba(0,240,255,.25);
+}
+.badge{
+  border:1px solid #33448a; background:#0f1736; padding:6px 10px; border-radius:999px;
+  font-size:13px; display:flex; gap:8px; align-items:center;
+}
+.badge b{color:var(--gold)}
+.progress{flex:1 1 160px; height:12px; background:#0f1736; border:1px solid #33448a; border-radius:999px; overflow:hidden; min-width:140px}
+.progress>div{height:100%; width:0%; background:linear-gradient(90deg,var(--neon),var(--neon2)); transition:width .6s; box-shadow:0 0 12px var(--neon)}
+.btn{
+  font:inherit; cursor:pointer; color:#06121a; font-weight:800;
+  background:linear-gradient(180deg,var(--neon2),#7dd800);
+  border:0; border-radius:10px; padding:10px 14px;
+  box-shadow:0 4px 0 #4a7a00, 0 0 18px rgba(166,255,0,.35);
+  transition:transform .08s;
+}
+.btn:active{transform:translateY(3px); box-shadow:0 1px 0 #4a7a00}
+.btn.secondary{background:linear-gradient(180deg,#fff,#b9c7ff); box-shadow:0 4px 0 #5a6aa8}
+.btn.ghost{background:#0f1736; color:var(--ink); border:1px solid #33448a; box-shadow:none}
+.btn.warn{background:linear-gradient(180deg,#ffd23f,#ff7a18); box-shadow:0 4px 0 #7a3400}
+.btn:disabled{filter:grayscale(1); opacity:.5; cursor:not-allowed}
+.layout{max-width:1180px; margin:0 auto; padding:18px 14px 80px; display:grid; grid-template-columns:300px 1fr; gap:16px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+/* map */
+.map{background:linear-gradient(180deg,var(--bg2),#0d1330); border:1px solid #2b3a7d; border-radius:var(--radius); padding:14px; position:sticky; top:70px; align-self:start}
+@media(max-width:900px){.map{position:static}}
+.map h2{margin:4px 0 10px; font-size:14px; letter-spacing:2px; color:var(--dim)}
+.node{
+  display:flex; gap:10px; align-items:center; width:100%; text-align:left;
+  background:#0f1736; border:1px solid #2b3a7d; color:var(--ink);
+  border-radius:12px; padding:10px; margin:8px 0; cursor:pointer; font:inherit;
+}
+.node .ico{font-size:22px; width:36px; height:36px; display:grid; place-items:center; background:#1a2560; border-radius:10px; flex:0 0 36px}
+.node .t{font-weight:800; font-size:13.5px}
+.node .s{font-size:12px; color:var(--dim)}
+.node.locked{opacity:.45; filter:grayscale(.6)}
+.node.active{outline:2px solid var(--neon); box-shadow:0 0 16px rgba(0,240,255,.35)}
+.node.done{border-color:var(--neon2)}
+.node.done .ico{background:#123f1e}
+.stars{color:var(--gold); font-size:12px}
+/* stage */
+.stage{background:linear-gradient(180deg,rgba(22,34,74,.95),rgba(13,19,48,.95)); border:1px solid #2b3a7d; border-radius:var(--radius); overflow:hidden}
+.hero-banner{padding:22px 20px 14px; border-bottom:1px solid #2b3a7d; background:
+  linear-gradient(90deg, rgba(0,240,255,.12), transparent 40%, rgba(255,46,136,.12));}
+.hero-banner .kicker{color:var(--neon); letter-spacing:3px; font-size:12px; font-weight:800}
+.hero-banner h1{margin:6px 0; font-size:clamp(22px,4vw,36px); line-height:1.05}
+.hero-banner p{color:var(--dim); max-width:70ch}
+.level-head{display:flex; gap:12px; align-items:center; padding:16px 20px 0}
+.level-num{font-size:13px; color:#06121a; background:var(--gold); font-weight:900; padding:4px 10px; border-radius:999px}
+.level-head h2{margin:0; font-size:22px}
+.tabs{display:flex; gap:8px; padding:12px 20px; flex-wrap:wrap}
+.tab{font:inherit; font-size:13px; font-weight:800; letter-spacing:1px; padding:8px 12px; border-radius:999px; border:1px solid #33448a; background:#0f1736; color:var(--ink); cursor:pointer}
+.tab.on{background:var(--neon); color:#06121a; border-color:var(--neon)}
+.pane{padding:0 20px 20px; display:none}
+.pane.on{display:block; animation:pop .35s ease}
+@keyframes pop{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+.card{background:#0e1740; border:1px solid #2f4188; border-radius:14px; padding:14px}
+.card h3{margin:0 0 8px; font-size:15px; color:var(--gold)}
+.card p, .card li{font-size:14px; line-height:1.6; color:#d6deff}
+.formula{
+  font-weight:900; background:#06122e; border:1px dashed var(--neon);
+  padding:8px 10px; border-radius:10px; margin:8px 0; color:var(--neon); text-align:center;
+}
+.tip{border-left:4px solid var(--neon2); padding:8px 10px; background:#0c2416; border-radius:0 10px 10px 0; font-size:13.5px}
+.warnbox{border-left:4px solid var(--orange); padding:8px 10px; background:#2a1606; border-radius:0 10px 10px 0; font-size:13.5px}
+/* lab */
+.lab{background:#050a1e; border:1px solid #2f4188; border-radius:14px; padding:12px; margin-top:12px}
+.lab canvas{width:100%; height:260px; background:
+  linear-gradient(180deg,#0a1233 0%, #050a1e 100%);
+  border-radius:10px; border:1px solid #22306b; display:block}
+.controls{display:flex; gap:12px; flex-wrap:wrap; margin-top:10px}
+.ctrl{flex:1 1 180px; background:#0e1740; border:1px solid #2f4188; border-radius:10px; padding:8px 10px}
+.ctrl label{font-size:12px; color:var(--dim); display:flex; justify-content:space-between}
+.ctrl output{color:var(--gold); font-weight:800}
+.ctrl input[type=range]{width:100%; accent-color:var(--neon)}
+.rowbtns{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+.readout{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+.chip{background:#0f1736; border:1px solid #33448a; border-radius:999px; padding:6px 10px; font-size:13px}
+.chip b{color:var(--neon)}
+.vectors{display:flex; gap:8px; flex-wrap:wrap; font-size:13px; color:var(--dim)}
+.legend i{display:inline-block; width:18px; height:4px; vertical-align:middle; border-radius:2px; margin-right:6px}
+/* quiz */
+.quiz-q{background:#0e1740; border:1px solid #2f4188; border-radius:12px; padding:12px; margin:10px 0}
+.quiz-q h4{margin:0 0 8px}
+.opt{display:block; width:100%; text-align:left; margin:6px 0; padding:10px; border-radius:10px; border:1px solid #33448a; background:#0a1230; color:var(--ink); font:inherit; cursor:pointer}
+.opt:hover{border-color:var(--neon)}
+.opt.correct{background:#0e3a1f; border-color:var(--good)}
+.opt.wrong{background:#3a0e0e; border-color:var(--bad)}
+.explain{font-size:13px; color:var(--dim); display:none; margin-top:6px}
+.quiz-q.answered .explain{display:block}
+.boss{border:2px solid var(--gold); background:linear-gradient(180deg,#2a2106,#0e1740); border-radius:14px; padding:14px; margin-top:14px}
+dialog{background:#0e1740; color:var(--ink); border:2px solid var(--neon); border-radius:16px; padding:20px; max-width:520px}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+.confetti{position:fixed; pointer-events:none; inset:0; overflow:hidden; z-index:99}
+.confetti span{position:absolute; top:-20px; width:10px; height:14px; animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+footer{text-align:center; color:var(--dim); font-size:12px; padding:20px}
+kbd{background:#000; border:1px solid #444; border-bottom-width:3px; border-radius:6px; padding:1px 6px; font:inherit}
+.meter{height:10px; background:#0a1230; border-radius:999px; overflow:hidden; border:1px solid #2f4188}
+.meter>div{height:100%; transition:width .2s}
+.small{font-size:12.5px; color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="hud">
+  <div class="logo">⚙ NEWTON ACADEMY · MECHANICS ZERO→HERO</div>
+  <div class="badge">⭐ XP <b id="hud-xp">0</b></div>
+  <div class="badge">🎖 Rank <b id="hud-rank">Cadet</b></div>
+  <div class="progress"><div id="hud-bar"></div></div>
+  <button class="btn ghost" id="btn-reset" title="Reset save">↺ Reset</button>
+</div>
+
+<div class="layout">
+  <nav class="map" aria-label="Level map">
+    <h2>🗺 MISSION MAP — complete a level's trial to unlock the next</h2>
+    <div id="nodes"></div>
+    <div class="card" style="margin-top:10px">
+      <h3>How to play</h3>
+      <p class="small">1️⃣ Read <b>Briefing</b> → 2️⃣ Play with <b>Lab</b> → 3️⃣ Pass <b>Trial</b> (2/3). You earn XP, ranks, and the final <b>HERO license</b>. No libraries, no internet — just vanilla JS + CSS + canvas.</p>
+      <div class="meter"><div id="map-meter" style="width:0%;background:linear-gradient(90deg,var(--neon),var(--neon2))"></div></div>
+      <p class="small" id="map-text">0 / 8 systems mastered</p>
+    </div>
+  </nav>
+
+  <main class="stage">
+    <div class="hero-banner">
+      <div class="kicker" id="kicker">NEWTON ACADEMY · PHYSICS ENGINE v1.0</div>
+      <h1 id="title">From crawling to supersonic. Master the forces that move the world.</h1>
+      <p id="subtitle">Mechanics is the operating system of reality: how things move, why they move, and what it costs in force and energy. Each level gives you animated intuition + the exact formulas engineers use for cars and planes. Finish all 8 to become <b style="color:var(--gold)">HERO</b>.</p>
+    </div>
+    <div id="level-container"></div>
+    <div style="padding:0 20px 20px"><div class="boss" id="final-boss" style="display:none">
+      <h3 style="margin:0">🏆 FINAL BOSS — HERO CERTIFICATION</h3>
+      <p class="small">Unlocked after all 8 trials. 5 mixed questions. Pass 4/5 to earn the Hero license.</p>
+      <div id="boss-quiz"></div>
+      <div class="rowbtns"><button class="btn warn" id="boss-check">Submit for Hero rank</button>
+      <button class="btn ghost" id="boss-reset">Retry</button></div>
+      <p id="boss-result" class="small"></p>
+    </div></div>
+  </main>
+</div>
+<footer><a class="btn-primary" href="index.html">Home</a></footer>
+<div class="confetti" id="confetti"></div>
+<dialog id="win-dialog"><h2>🎉 Level cleared!</h2><p id="win-text"></p><button class="btn" onclick="document.getElementById('win-dialog').close()">Continue ▶</button></dialog>
+
+<script>
+"use strict";
+/* ============ STATE ============ */
+const LS="mech-hero-vanilla-v1";
+let state={xp:0, unlocked:1, done:{}, boss:false};
+try{const s=JSON.parse(localStorage.getItem(LS)); if(s&&typeof s.xp==="number") state=s;}catch(e){}
+function save(){localStorage.setItem(LS,JSON.stringify(state));}
+function rank(){const x=state.xp; if(state.boss) return "HERO 🏆"; if(x>=1400) return "Test Pilot ✈"; if(x>=1000) return "Race Engineer 🏎"; if(x>=700) return "Dynamicist 🌀"; if(x>=400) return "Energeticist ⚡"; if(x>=150) return "Force Adept 💪"; return "Cadet 🌱";}
+function refreshHUD(){
+  document.getElementById("hud-xp").textContent=state.xp;
+  document.getElementById("hud-rank").textContent=rank();
+  const n=Object.keys(state.done).length;
+  document.getElementById("hud-bar").style.width=Math.round((n/8)*100)+"%";
+  document.getElementById("map-meter").style.width=Math.round((n/8)*100)+"%";
+  document.getElementById("map-text").textContent=n+" / 8 systems mastered";
+  if(n>=8) document.getElementById("final-boss").style.display="block";
+}
+function boom(n=80){
+  const c=document.getElementById("confetti"); c.innerHTML="";
+  const colors=["#00f0ff","#a6ff00","#ffd23f","#ff2e88","#ffffff"];
+  for(let i=0;i<n;i++){const s=document.createElement("span");
+    s.style.left=Math.random()*100+"vw"; s.style.background=colors[i%colors.length];
+    s.style.animationDuration=(1.5+Math.random()*1.5)+"s"; s.style.transform=`rotate(${Math.random()*360}deg)`;
+    c.appendChild(s); setTimeout(()=>s.remove(),3200);}
+}
+document.getElementById("btn-reset").onclick=()=>{if(confirm("Reset all progress?")){state={xp:0,unlocked:1,done:{},boss:false};save();renderAll();}};
+
+/* ============ CURRICULUM DATA ============ */
+const LEVELS=[
+ {id:1,icon:"🏃",title:"Motion: the language",sub:"distance · speed · velocity · acceleration · SUVAT",
+  briefing:`<div class="grid2">
+   <div class="card"><h3>1 · Distance vs displacement</h3><p><b>Distance</b> is how much ground you covered (scalar, metres). <b>Displacement Δx</b> is straight-line change from start to finish (vector: has direction).</p><div class="formula">speed = distance / time &nbsp;·&nbsp; velocity = Δx / Δt</div><p>Speed ignores direction. Velocity doesn't: 60 km/h north ≠ 60 km/h south.</p></div>
+   <div class="card"><h3>2 · Acceleration</h3><p>Acceleration is rate of change of velocity — speeding up, slowing down <i>or turning</i>.</p><div class="formula">a = (v − u) / t &nbsp;&nbsp; [m/s²]</div><p class="tip">💡 In a car, the pedal doesn't set speed — it (roughly) sets acceleration. Speed is the <i>accumulation</i> of acceleration.</p></div>
+   <div class="card"><h3>3 · The SUVAT equations</h3><p>For constant acceleration, 5 letters rule everything: <b>s</b> displacement, <b>u</b> initial velocity, <b>v</b> final, <b>a</b> accel, <b>t</b> time.</p><div class="formula">v = u + at<br>s = ut + ½at²<br>v² = u² + 2as</div></div>
+   <div class="card"><h3>4 · Graphs tell the story</h3><p>📈 <b>x–t graph:</b> slope = velocity. Curved = accelerating.<br>📈 <b>v–t graph:</b> slope = acceleration, <b>area = distance</b>.</p><p class="warnbox">⚠ Common boss mistake: zero velocity ≠ zero acceleration. At the top of a throw, v=0 but a=g downwards!</p></div></div>`,
+  labHelp:"Drag the sliders. Green arrow = velocity vector. Watch the position trace and the live v–t mini-graph. Try: set velocity 0, acceleration +2 — that's a launch!",
+  quiz:[
+   {q:"A car drives 60 km north then 40 km south. Distance vs displacement?",opts:["distance 100 km, displacement 20 km north","distance 20 km, displacement 100 km","both 100 km","both 20 km"],a:0,ex:"Distance adds up (100). Displacement cancels (20 N)."},
+   {q:"v–t graph: what does the AREA under the curve give?",opts:["acceleration","displacement / distance","force","jerk"],a:1,ex:"Area = v×t = metres. Slope = acceleration."},
+   {q:"A ball at the very top of its toss has v=0. Its acceleration is…",opts:["0","9.8 m/s² downwards","9.8 m/s² upwards","depends on mass"],a:1,ex:"Gravity never switches off. a=g down even when v=0."}
+  ]},
+ {id:2,icon:"📦",title:"Forces & Newton",sub:"F=ma · 3 laws · friction · free-body diagrams",
+  briefing:`<div class="grid2">
+   <div class="card"><h3>Newton 1 — Inertia</h3><p>Objects keep doing what they're doing unless a net force acts. Passengers lurch forward when a car brakes because <i>they</i> wanted to keep moving.</p><div class="formula">If F<sub>net</sub>=0 → v = constant</div></div>
+   <div class="card"><h3>Newton 2 — F = ma</h3><p>The workhorse. Bigger force → bigger acceleration. Bigger mass → smaller acceleration.</p><div class="formula">F<sub>net</sub> = m · a</div><p class="tip">💡 Double the mass, need double the engine force for same punch.</p></div>
+   <div class="card"><h3>Newton 3 — Action/reaction</h3><p>Every push pushes back. Rocket exhaust pushes down → rocket goes up. Wheels push road back → road pushes car forward.</p></div>
+   <div class="card"><h3>Friction: f = μN</h3><p><b>Static</b> friction holds you still (up to a max). <b>Kinetic</b> friction opposes sliding. <b>Rolling</b> resistance is much smaller — that's why wheels win.</p><div class="formula">f ≤ μ<sub>s</sub>N (static) · f = μ<sub>k</sub>N (sliding)</div></div></div>`,
+  labHelp:"Set PUSH force, mass, and grip μ. Net force = push − friction. Watch acceleration obey F=ma live.",
+  quiz:[
+   {q:"A 1000 kg car accelerates at 2 m/s². Net force?",opts:["500 N","2000 N","1000 N","9800 N"],a:1,ex:"F=ma = 1000×2 = 2000 N."},
+   {q:"Why can you walk forward?",opts:["Newton 3rd: foot pushes ground back, ground pushes you forward","Newton 1st only","No friction needed","Gravity pushes you"],a:0,ex:"Walking is reaction force from the ground."},
+   {q:"A box doesn't move when pushed gently because…",opts:["static friction exactly balances the push","mass is zero","kinetic friction is huge","gravity vanished"],a:0,ex:"Static friction matches push until its max μN."}
+  ]},
+ {id:3,icon:"🚀",title:"Gravity & Projectiles",sub:"weight · free-fall · parabolas · air drag",
+  briefing:`<div class="grid2">
+   <div class="card"><h3>Weight vs mass</h3><p>Mass (kg) is stuff. Weight (N) is gravity pulling that stuff.</p><div class="formula">W = m·g &nbsp; (Earth g=9.8, Moon 1.6, Jupiter 24.8 m/s²)</div></div>
+   <div class="card"><h3>Free fall: all things fall together</h3><p>Without air, hammer and feather hit together — acceleration doesn't depend on mass. With air, drag ruins it.</p><div class="formula">s = ½gt² (dropped from rest)</div></div>
+   <div class="card"><h3>Projectiles = two motions in one</h3><p>Horizontal: constant velocity (no force). Vertical: accelerated by g. Result: a <b>parabola</b>. 45° gives max range in vacuum.</p><div class="formula">Range = v₀²·sin(2θ) / g</div></div>
+   <div class="card"><h3>Inclined plane bonus</h3><p>A slope splits weight into downhill + into-slope parts. That's why ramps trade force for distance — ancestor of gears.</p></div></div>`,
+  labHelp:"Aim the cannon (angle + muzzle speed), pick a planet, FIRE. Ghost dots show vacuum vs air trajectory. Notice 45° flies farthest.",
+  quiz:[
+   {q:"Where is your weight greatest?",opts:["Moon","Earth","Jupiter","Same everywhere"],a:2,ex:"W=mg, Jupiter's g is biggest."},
+   {q:"In vacuum, max projectile range is at…",opts:["30°","45°","60°","90°"],a:1,ex:"sin(2θ) peaks at 2θ=90°, so θ=45°."},
+   {q:"Horizontal velocity of a projectile (no air)…",opts:["stays constant","grows","shrinks to zero","equals vertical"],a:0,ex:"No horizontal force → Newton 1 → constant vx."}
+  ]},
+ {id:4,icon:"⚡",title:"Work, Energy, Power",sub:"KE · PE · conservation · efficiency",
+  briefing:`<div class="grid2">
+   <div class="card"><h3>Work = force × distance</h3><div class="formula">W = F·d·cosθ &nbsp; [joules]</div><p>Pushing a wall all day? Zero displacement → zero work (physics is harsh).</p></div>
+   <div class="card"><h3>Kinetic + potential</h3><div class="formula">KE = ½mv² &nbsp;·&nbsp; PE = mgh</div><p>Speed costs <i>squared</i>: 2× speed = 4× energy. That's why braking from 100 is brutal vs 50.</p></div>
+   <div class="card"><h3>Conservation</h3><p>Energy never dies, it converts: PE ⇆ KE ⇆ heat/sound. Pendulum and roller-coasters are energy ping-pong.</p><div class="formula">E_total = KE + PE (+ heat) = const</div></div>
+   <div class="card"><h3>Power = how fast</h3><div class="formula">P = W/t = F·v &nbsp; [watts]</div><p>Same energy, faster delivery = more power. 1 hp ≈ 746 W.</p></div></div>`,
+  labHelp:"Slide DROP HEIGHT, release the ball. Watch PE→KE→heat on bounce. Higher drop = faster impact (v=√2gh).",
+  quiz:[
+   {q:"Double your speed. Kinetic energy…",opts:["doubles","quadruples","halves","unchanged"],a:1,ex:"KE∝v², 2²=4."},
+   {q:"A 2 kg brick 10 m up (g≈10) has PE ≈",opts:["20 J","200 J","2 J","100 J"],a:1,ex:"mgh=2×10×10=200 J."},
+   {q:"Power is…",opts:["energy / time","force × time","mass × speed","energy × time"],a:0,ex:"P=W/t. Engine power = force × velocity."}
+  ]},
+ {id:5,icon:"🎱",title:"Momentum & Collisions",sub:"p=mv · impulse · elastic vs inelastic · recoil",
+  briefing:`<div class="grid2">
+   <div class="card"><h3>Momentum = motion that refuses to stop</h3><div class="formula">p = m·v &nbsp; [kg·m/s]</div><p>Truck at 30 km/h beats bike at 30 km/h — mass matters.</p></div>
+   <div class="card"><h3>Impulse: the punch</h3><div class="formula">J = F·Δt = Δp</div><p>Airbags stretch Δt → smaller F for same Δp. That's the whole trick.</p></div>
+   <div class="card"><h3>Conservation</h3><p>In a crash (no outside push), total momentum before = after. Use it to predict wrecks, rockets, recoil.</p><div class="formula">m₁u₁+m₂u₂ = m₁v₁+m₂v₂</div></div>
+   <div class="card"><h3>Elastic vs sticky</h3><p><b>Elastic</b> (billiards): KE kept. <b>Inelastic</b> (cars crumpling): KE → heat + deformation, momentum still kept. Crumple zones sacrifice car to save Δt.</p></div></div>`,
+  labHelp:"Set both carts' mass + velocity and bounciness (elasticity). COLLIDE and watch momentum bar stay constant while KE may vanish.",
+  quiz:[
+   {q:"Impulse J equals…",opts:["change in momentum","mass × gravity","force / time","energy × distance"],a:0,ex:"J=FΔt=Δp."},
+   {q:"Why do airbags help?",opts:["increase Δt, so peak F drops","increase momentum","remove inertia","make F bigger"],a:0,ex:"Same Δp over longer time = gentler force."},
+   {q:"In any collision without external forces…",opts:["total momentum conserved","KE always conserved","both stop","mass is lost"],a:0,ex:"Momentum always; KE only if elastic."}
+  ]},
+ {id:6,icon:"🌀",title:"Rotation & Torque",sub:"ω · α · τ=rF · inertia · gears · centripetal",
+  briefing:`<div class="grid2">
+   <div class="card"><h3>Torque = rotational force</h3><div class="formula">τ = r·F·sinθ &nbsp; [N·m]</div><p>Long wrench = easy bolt. Pushing at the hinge = suffering (θ≈0).</p></div>
+   <div class="card"><h3>Angular F=ma</h3><div class="formula">τ = I·α &nbsp;·&nbsp; I≈mr² (hoop)</div><p><b>I</b> = moment of inertia: mass far from centre resists spin. Figure skaters pull arms in to spin faster (conservation of <b>L=Iω</b>).</p></div>
+   <div class="card"><h3>Gears trade spin for strength</h3><p>Small gear → big gear: slower but stronger (more torque). Cars do this every shift.</p><div class="formula">ratio = teeth_driven / teeth_driver</div></div>
+   <div class="card"><h3>Centripetal: turning needs force</h3><div class="formula">F = mv² / r (toward centre)</div><p>No outward “centrifugal” force — just inertia wanting straight. Grip/friction provides the inward pull.</p></div></div>`,
+  labHelp:"Add TORQUE to spin the disk. Bigger radius/mass = bigger inertia = lazier spin. Then play with gear ratio.",
+  quiz:[
+   {q:"Why is a long wrench better?",opts:["more torque (bigger r)","less mass","more friction","less inertia"],a:0,ex:"τ=rF. Double r, double twist."},
+   {q:"Skater pulls arms in and spins faster because…",opts:["angular momentum L=Iω conserved, I shrank","torque grew","mass grew","gravity dropped"],a:0,ex:"Smaller I → bigger ω to keep L."},
+   {q:"Centripetal force points…",opts:["toward centre","outward","along motion","up"],a:0,ex:"Inward. Outward feel is just inertia."}
+  ]},
+ {id:7,icon:"🏎",title:"CARS: force in action",sub:"engine · drag · braking · cornering · gears",
+  briefing:`<div class="grid2">
+   <div class="card"><h3>Longitudinal battle</h3><p>Engine pushes forward, air + tyres hold back:</p><div class="formula">ma = F_engine − ½ρC<sub>d</sub>Av² − C<sub>rr</sub>mg</div><p>Top speed = where engine exactly equals drag. Drag ∝ v² — going 2× faster needs ~8× power.</p></div>
+   <div class="card"><h3>Braking: energy must die</h3><div class="formula">d_brake = v² / (2μg)</div><p>Double speed → <b>quadruple</b> stopping distance. Wet road halves μ → doubles distance.</p></div>
+   <div class="card"><h3>Cornering = rotation</h3><p>Turning needs grip: mv²/r ≤ μmg. Slow in, fast out. Low, wide, spoiler = more normal load → more grip.</p></div>
+   <div class="card"><h3>Gears = torque traders</h3><p>1st gear: huge torque, low speed (climbing). Top gear: low torque, high speed (cruising). Power ≈ torque × rpm.</p><p class="tip">🏁 F1 trick: downforce wings trade drag for corner grip — slower on straights, faster in bends.</p></div></div>`,
+  labHelp:"Hold THROTTLE to accelerate, BRAKE to stop. Raise drag (spoiler/roof box) and feel top speed collapse. Then test corner grip below.",
+  quiz:[
+   {q:"At top speed, engine force…",opts:["equals drag+rolling resistance","is zero","exceeds drag hugely","is infinite"],a:0,ex:"a=0 → forces balance."},
+   {q:"60→120 km/h. Braking distance roughly…",opts:["×2","×4","same","×1.5"],a:1,ex:"d∝v². Twice speed, four times distance."},
+   {q:"Why do F1 cars have wings?",opts:["downforce → more grip in corners","to fly","to reduce weight","for looks only"],a:0,ex:"Wings press car down, N rises, max grip μN rises."}
+  ]},
+ {id:8,icon:"✈",title:"PLANES: beating gravity",sub:"lift · drag · thrust · weight · stall · control",
+  briefing:`<div class="grid2">
+   <div class="card"><h3>Four forces, one deal</h3><p><b>Lift ↑</b> vs <b>Weight ↓</b>, <b>Thrust →</b> vs <b>Drag ←</b>. Level flight: L=W, T=D. Climb: L+Tilt beats weight. Turn: bank to tilt lift sideways (hello centripetal!).</p></div>
+   <div class="card"><h3>Lift formula (the money equation)</h3><div class="formula">L = ½·ρ·v²·S·C<sub>L</sub></div><p>Faster or bigger wing or better angle → more lift. Thin air up high (small ρ) forces faster flight — that's why jets cruise fast & high.</p></div>
+   <div class="card"><h3>Angle of attack & stall</h3><p>Tilting the wing up raises C<sub>L</sub>… until ~15° where airflow separates and <b>stall</b> kills lift. Pilots trade speed for AoA on landing (flaps raise C<sub>L</sub> safely).</p></div>
+   <div class="card"><h3>Control surfaces = torque in the sky</h3><p><b>Ailerons</b> roll, <b>elevator</b> pitches, <b>rudder</b> yaws — all tiny wings making torque τ=rF. Bernoulli (fast air = low pressure) + Newton (wing deflects air down → pushed up) both explain lift.</p></div></div>`,
+  labHelp:"Slide SPEED and ANGLE OF ATTACK. Watch lift grow with v², peak, then STALL. Balance the 4 forces to hold level flight.",
+  quiz:[
+   {q:"Level cruise requires…",opts:["Lift=Weight and Thrust=Drag","Lift>Weight always","Thrust=0","Drag=0"],a:0,ex:"Balanced forces → constant velocity (Newton 1)."},
+   {q:"Double airspeed (same AoA). Lift…",opts:["×2","×4","×½","unchanged"],a:1,ex:"L∝v²."},
+   {q:"A stall happens because…",opts:["AoA too high, airflow separates","engine stops","too fast","too cold"],a:0,ex:"Beyond ~15°, C_L collapses."}
+  ]}
+];
+const BOSS=[
+ {q:"You throw a ball straight up. At the top, a = ?",opts:["0","g downwards","g upwards","v-dependent"],a:1},
+ {q:"1200 kg car, F_engine 3600 N, drag 1200 N. a = ?",opts:["3 m/s²","2 m/s²","1 m/s²","4 m/s²"],a:1,ex:"(3600-1200)/1200=2"},
+ {q:"Why do landing planes extend flaps?",opts:["more lift at low speed","more drag only","less weight","more thrust"],a:0},
+ {q:"Skater spins faster pulling arms in: conserved quantity?",opts:["angular momentum","force","torque","mass"],a:0},
+ {q:"Car doubles speed in rain (μ halved). Braking distance ×?",opts:["×4","×8","×2","×1"],a:1,ex:"v²×2 → 4×2=8"}
+];
+
+/* ============ RENDER ============ */
+let current=1, raf=null;
+function stopLoop(){if(raf){cancelAnimationFrame(raf); raf=null;}}
+function renderAll(){renderMap(); openLevel(Math.min(current,state.unlocked)); refreshHUD();}
+function renderMap(){
+  const box=document.getElementById("nodes"); box.innerHTML="";
+  LEVELS.forEach(L=>{
+    const locked=L.id>state.unlocked, done=!!state.done[L.id];
+    const b=document.createElement("button");
+    b.className="node"+(locked?" locked":"")+(done?" done":"")+(L.id===current?" active":"");
+    b.innerHTML=`<div class="ico">${locked?"🔒":L.icon}</div><div><div class="t">${L.id}. ${L.title}</div><div class="s">${L.sub}</div><div class="stars">${done?"★★★ passed":"☆☆☆"}</div></div>`;
+    b.onclick=()=>{if(locked){alert("🔒 Clear Level "+(L.id-1)+" trial first, cadet!");return;} openLevel(L.id);};
+    box.appendChild(b);
+  });
+}
+function openLevel(id){
+  current=id; stopLoop();
+  const L=LEVELS[id-1];
+  document.getElementById("kicker").textContent=`LEVEL ${L.id} / 8 · ${L.sub.toUpperCase()}`;
+  document.getElementById("title").textContent=`${L.icon} ${L.title}`;
+  document.getElementById("subtitle").innerHTML=`Master this system to unlock Level ${L.id<8?L.id+1:"HERO FINAL"}. Read, experiment, then pass the trial. <b>Reward: ${(L.id*50)} XP.</b>`;
+  const locked=L.id>state.unlocked, done=!!state.done[L.id];
+  const c=document.getElementById("level-container");
+  c.innerHTML=`
+   <div class="level-head"><span class="level-num">LEVEL ${L.id}</span><h2>${L.title}</h2>
+   <span class="badge">${done?"✅ CLEARED":"🎯 "+(locked?"LOCKED":"IN PROGRESS")}</span></div>
+   <div class="tabs">
+     <button class="tab on" data-t="b">📖 1 · BRIEFING</button>
+     <button class="tab" data-t="l">🧪 2 · LAB</button>
+     <button class="tab" data-t="q">⚔ 3 · TRIAL (${done?"passed":"2/3 to pass"})</button>
+   </div>
+   <div class="pane on" id="pane-b">${L.briefing}
+     <div class="rowbtns"><button class="btn" data-go="l">To the Lab 🧪 →</button></div></div>
+   <div class="pane" id="pane-l">
+     <p class="small">🧪 <b>LAB:</b> ${L.labHelp}</p>
+     <div class="lab"><canvas id="cv" width="800" height="260"></canvas>
+       <div class="controls" id="ctrls"></div>
+       <div class="rowbtns" id="labbtns"></div>
+       <div class="readout" id="readout"></div>
+     </div>
+     <div class="rowbtns"><button class="btn secondary" data-go="b">← Briefing</button>
+     <button class="btn" data-go="q">Take the Trial ⚔ →</button></div>
+   </div>
+   <div class="pane" id="pane-q"><div id="quiz"></div>
+     <div class="rowbtns"><button class="btn warn" id="q-check">Submit trial ⚔</button>
+     <button class="btn ghost" id="q-retry">Retry</button></div>
+     <p id="q-res" class="small"></p></div>`;
+  c.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+    c.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+    t.classList.add("on");
+    c.querySelectorAll(".pane").forEach(p=>p.classList.remove("on"));
+    const p=c.querySelector("#pane-"+t.dataset.t); p.classList.add("on");
+    if(t.dataset.t==="l") initLab(L.id);
+    else stopLoop();
+  });
+  c.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>c.querySelector(`[data-t="${b.dataset.go}"]`).click());
+  renderMap(); initQuiz(L); initLab(L.id);
+  c.querySelector('[data-t="b"]').click(); // start on briefing; lab inits anyway
+}
+function addCtrl(host,label,min,max,val,step,fmt){
+  const d=document.createElement("div"); d.className="ctrl";
+  d.innerHTML=`<label>${label} <output></output></label>`;
+  const inp=document.createElement("input"); inp.type="range"; inp.min=min; inp.max=max; inp.step=step; inp.value=val;
+  const out=d.querySelector("output");
+  const show=()=>out.textContent=fmt(parseFloat(inp.value));
+  inp.oninput=show; show(); d.appendChild(inp); host.appendChild(d); return inp;
+}
+function chip(host,html){const s=document.createElement("span"); s.className="chip"; s.innerHTML=html; host.appendChild(s); return s;}
+function labButtons(list){const h=document.getElementById("labbtns"); h.innerHTML=""; list.forEach(([t,fn,cls])=>{const b=document.createElement("button"); b.className="btn "+(cls||"secondary"); b.textContent=t; b.onclick=fn; h.appendChild(b);});}
+
+/* ============ QUIZ ============ */
+function quizHTML(hostEl,list){
+  hostEl.innerHTML="";
+  list.forEach((Q,i)=>{
+    const q=document.createElement("div"); q.className="quiz-q"; q.dataset.a=Q.a;
+    q.innerHTML=`<h4>Q${i+1}. ${Q.q}</h4>`;
+    Q.opts.forEach((o,j)=>{const b=document.createElement("button"); b.className="opt"; b.textContent=String.fromCharCode(65+j)+") "+o; b.onclick=()=>{q.querySelectorAll(".opt").forEach(x=>x.classList.remove("correct","wrong")); b.classList.add(j===Q.a?"correct":"wrong"); q.dataset.pick=j; q.classList.add("answered");}; q.appendChild(b);});
+    const e=document.createElement("div"); e.className="explain"; e.textContent="💡 "+(Q.ex||Q.opts[Q.a]+" is correct."); q.appendChild(e);
+    hostEl.appendChild(q);
+  });
+}
+function gradeQuiz(hostEl,list,need){
+  let score=0; const qs=[...hostEl.children];
+  qs.forEach((q,i)=>{const pick=parseInt(q.dataset.pick??"-1"); if(pick===list[i].a) score++;
+    q.querySelectorAll(".opt").forEach((b,j)=>{if(j===list[i].a) b.classList.add("correct");}); q.classList.add("answered");});
+  return {score,total:list.length,pass:score>=need};
+}
+function initQuiz(L){
+  const host=document.getElementById("quiz"); quizHTML(host,L.quiz);
+  document.getElementById("q-retry").onclick=()=>{quizHTML(host,L.quiz); document.getElementById("q-res").textContent="";};
+  document.getElementById("q-check").onclick=()=>{
+    const r=gradeQuiz(host,L.quiz,2);
+    const res=document.getElementById("q-res");
+    if(r.pass){
+      const first=!state.done[L.id];
+      state.done[L.id]=true; state.unlocked=Math.max(state.unlocked,Math.min(8,L.id+1));
+      if(first) state.xp+=L.id*50+50; else state.xp+=10;
+      save(); refreshHUD(); renderMap(); boom();
+      res.innerHTML=`✅ <b>${r.score}/${r.total} — LEVEL ${L.id} CLEARED!</b> +XP. ${L.id<8?"Next level unlocked 🔓":"Boss trial below 👇"}`;
+      document.getElementById("win-text").textContent=`Level ${L.id} cleared ${r.score}/${r.total}. Rank: ${rank()}. ${L.id<8?"Level "+(L.id+1)+" unlocked!":"All systems mastered — face the HERO boss!"}`;
+      document.getElementById("win-dialog").showModal();
+      if(L.id<8) setTimeout(()=>openLevel(L.id+1),1600);
+    } else res.innerHTML=`❌ ${r.score}/${r.total}. Need 2/3. Replay the Lab 🧪 — then retry (answers revealed above).`;
+  };
+}
+// boss
+quizHTML(document.getElementById("boss-quiz"),BOSS);
+document.getElementById("boss-reset").onclick=()=>quizHTML(document.getElementById("boss-quiz"),BOSS);
+document.getElementById("boss-check").onclick=()=>{
+  const host=document.getElementById("boss-quiz"); const r=gradeQuiz(host,BOSS,4);
+  const el=document.getElementById("boss-result");
+  if(r.pass && !state.boss){state.boss=true; state.xp+=500; save(); refreshHUD(); boom(160);
+    el.innerHTML=`🏆 <b>${r.score}/5 — YOU ARE A MECHANICS HERO!</b> +500 XP. Screenshot this. F=ma forever.`;}
+  else if(r.pass){el.textContent="🏆 Already a HERO. Score "+r.score+"/5.";}
+  else el.textContent=`❌ ${r.score}/5 — need 4/5. Review Levels 3, 6, 7 and retry.`;
+};
+
+/* ============ LABS (canvas sims) ============ */
+const cv=()=>document.getElementById("cv");
+function initLab(id){
+  stopLoop();
+  if(id===1) lab1(); if(id===2) lab2(); if(id===3) lab3(); if(id===4) lab4();
+  if(id===5) lab5(); if(id===6) lab6(); if(id===7) lab7(); if(id===8) lab8();
+}
+/* L1 kinematics */
+function lab1(){
+  const c=cv(),x=c.getContext("2d"),H=document.getElementById("ctrls"),R=document.getElementById("readout");
+  const vS=addCtrl(H,"initial velocity u (m/s)",-6,10,4,.5,v=>v.toFixed(1)), aS=addCtrl(H,"acceleration a (m/s²)",-3,3,1,.2,v=>v.toFixed(1));
+  let px=60,t=0,trail=[],run=true;
+  const c1=chip(R,""),c2=chip(R,""),c3=chip(R,"");
+  labButtons([["⏸ Pause",()=>run=!run,"secondary"],["↺ Reset",()=>{px=60;t=0;trail=[];}]]);
+  (function loop(){
+    raf=requestAnimationFrame(loop);
+    const dt=1/60; if(run){t+=dt; const v=parseFloat(vS.value)+parseFloat(aS.value)*t; px+=v*14*dt; if(px>770){px=60;trail=[];} if(px<20)px=20; trail.push(px); if(trail.length>300)trail.shift();
+      // draw
+      x.clearRect(0,0,800,260); x.fillStyle="#0a1233"; x.fillRect(0,0,800,260);
+      x.strokeStyle="#22306b"; for(let gx=0;gx<800;gx+=40){x.beginPath();x.moveTo(gx,0);x.lineTo(gx,260);x.stroke();}
+      // road
+      x.fillStyle="#1a2560"; x.fillRect(0,150,800,60);
+      x.fillStyle="#a6ff00"; for(let d=0;d<800;d+=40) x.fillRect(d,178,22,4);
+      // trail
+      x.strokeStyle="#00f0ff"; x.beginPath(); trail.forEach((p,i)=>{const y=150-((i/trail.length)*0); i?x.lineTo(p,150):x.moveTo(p,150);}); x.stroke();
+      // runner (CSS-ish robot)
+      const u=parseFloat(vS.value),vv=u+parseFloat(aS.value)*t;
+      x.font="34px monospace"; x.fillText("🏃",px-16,168);
+      // velocity arrow
+      x.strokeStyle="#2eff8b"; x.lineWidth=4; x.beginPath(); x.moveTo(px,120); x.lineTo(px+vv*12,120); x.stroke();
+      x.fillStyle="#2eff8b"; x.fillText("v",px+vv*12+6,124);
+      // v-t mini graph
+      x.strokeStyle="#ffd23f"; x.strokeRect(560,16,220,90);
+      x.fillStyle="#9aa7d0"; x.font="11px monospace"; x.fillText("v–t graph (slope=a, area=dist)",564,28);
+      x.strokeStyle="#ff2e88"; x.lineWidth=2; x.beginPath();
+      for(let i=0;i<=60;i++){const tt=i/60*8, vvv=u+parseFloat(aS.value)*tt; const gx=565+i/60*210, gy=96-(vvv/12)*60; i?x.lineTo(gx,Math.max(34,Math.min(100,gy))):x.moveTo(gx,gy);} x.stroke(); x.lineWidth=1;
+      c1.innerHTML=`t=<b>${t.toFixed(1)}s</b>`; c2.innerHTML=`v=<b>${vv.toFixed(1)} m/s</b>`; c3.innerHTML=`x≈<b>${((px-60)/14).toFixed(1)} m</b> · s=ut+½at²`;
+    }
+  })();
+}
+/* L2 forces */
+function lab2(){
+  const c=cv(),x=c.getContext("2d"),H=document.getElementById("ctrls"),R=document.getElementById("readout");
+  const FS=addCtrl(H,"push F (N)",0,600,260,10,v=>v+" N"), MS=addCtrl(H,"mass m (kg)",20,300,100,5,v=>v+" kg"), US=addCtrl(H,"grip μ",0,1,.4,.05,v=>v.toFixed(2));
+  let px=120,v=0,run=true;
+  const c1=chip(R,""),c2=chip(R,""),c3=chip(R,"");
+  labButtons([["⏸ Pause",()=>run=!run,"secondary"],["↺ Reset",()=>{px=120;v=0;}]]);
+  (function loop(){
+    raf=requestAnimationFrame(loop);
+    const F=parseFloat(FS.value),m=parseFloat(MS.value),mu=parseFloat(US.value);
+    const N=m*9.8, fmax=mu*N;
+    let f; if(Math.abs(v)<.05&&F<=fmax) f=F; else f=Math.sign(v||F)*Math.min(fmax,Math.abs(F)+ (v!==0?fmax*0:0)) || Math.sign(F)*Math.min(fmax,F*0+ (F>fmax?fmax:F));
+    // simpler: kinetic = mu*N opposing motion
+    if(Math.abs(v)>.05) f=Math.sign(v)*mu*N; else f=Math.min(F,fmax);
+    const Fn=F-f, a=Fn/m;
+    if(run){v+=a*(1/60); if(Math.abs(v)<.02&&F<=fmax)v=0; px+=v*8*(1/60)*3; if(px>720){px=60;v=0;} if(px<60){px=60;v=Math.max(0,v);}}
+    x.clearRect(0,0,800,260); x.fillStyle="#0a1233"; x.fillRect(0,0,800,260);
+    x.fillStyle="#1a2560"; x.fillRect(0,190,800,70);
+    // box scaled by mass
+    const s=30+ (m/300)*50;
+    x.fillStyle="#ffd23f"; x.fillRect(px,190-s,s,s);
+    x.font="28px monospace"; x.fillText("📦",px+4,190-s+30);
+    // arrows: push green, friction red, net cyan
+    const arr=(x0,col,len)=>{x.strokeStyle=col;x.lineWidth=5;x.beginPath();x.moveTo(px+s/2,190-s/2);x.lineTo(px+s/2+len,190-s/2);x.stroke();x.fillStyle=col;x.beginPath();x.arc(px+s/2+len,190-s/2,5,0,7);x.fill();x.lineWidth=1;};
+    arr(0,"#2eff8b",F/4); arr(0,"#ff4d4d",-Math.abs(f)/4);
+    c1.innerHTML=`friction=<b>${f.toFixed(0)} N</b> (μN=${fmax.toFixed(0)})`;
+    c2.innerHTML=`F<sub>net</sub>=<b>${Fn.toFixed(0)} N</b>`; c3.innerHTML=`a=F/m=<b>${a.toFixed(2)} m/s²</b> · v=<b>${v.toFixed(1)} m/s</b>`;
+    x.fillStyle="#9aa7d0"; x.font="12px monospace";
+    x.fillText("→ push (green) vs ← friction (red). Net rules. F=ma.",20,30);
+  })();
+}
+/* L3 projectile */
+function lab3(){
+  const c=cv(),x=c.getContext("2d"),H=document.getElementById("ctrls"),R=document.getElementById("readout");
+  const AS=addCtrl(H,"angle θ (°)",10,80,45,1,v=>v+"°"), VS=addCtrl(H,"muzzle v₀ (m/s)",10,80,45,1,v=>v+" m/s");
+  const GS=addCtrl(H,"gravity g (m/s²)",1.6,24.8,9.8,.1,v=>v.toFixed(1));
+  let balls=[],run=true; const gName=v=>v<3?"Moon 🌙":v<12?"Earth 🌍":v<20?"Mars 🔴":"Jupiter ♃";
+  const c1=chip(R,""),c2=chip(R,"");
+  labButtons([["🔥 FIRE",()=>{const th=parseFloat(AS.value)*Math.PI/180,v0=parseFloat(VS.value); balls.push({x:40,y:210,vx:v0*Math.cos(th),vy:-v0*Math.sin(th),trail:[]});},"warn"],["🧹 Clear",()=>balls=[], "secondary"],["⏸ Pause",()=>run=!run,"secondary"]]);
+  (function loop(){
+    raf=requestAnimationFrame(loop);
+    const g=parseFloat(GS.value),dt=1/60;
+    if(run) balls.forEach(b=>{b.vy+=g*dt*2; b.x+=b.vx*dt*4; b.y+=b.vy*dt*4; b.trail.push([b.x,b.y]); if(b.y>222){b.y=222;b.vy*=-.45;b.vx*=.9;}});
+    balls=balls.filter(b=>b.x<810);
+    x.clearRect(0,0,800,260); const gr=x.createLinearGradient(0,0,0,260); gr.addColorStop(0,"#0a1233"); gr.addColorStop(1,"#12301a"); x.fillStyle=gr; x.fillRect(0,0,800,260);
+    x.fillStyle="#1f8a3a"; x.fillRect(0,222,800,38);
+    x.font="30px monospace"; x.fillText("💣",18,222);
+    const th=parseFloat(AS.value)*Math.PI/180;
+    x.strokeStyle="#9aa7d0"; x.lineWidth=6; x.beginPath(); x.moveTo(32,216); x.lineTo(32+Math.cos(th)*44,216-Math.sin(th)*44); x.stroke(); x.lineWidth=1;
+    balls.forEach(b=>{x.strokeStyle="rgba(0,240,255,.5)"; x.beginPath(); b.trail.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1])); x.stroke();
+      x.fillStyle="#ffd23f"; x.beginPath(); x.arc(b.x,b.y,7,0,7); x.fill();});
+    // theory range marker
+    const v0=parseFloat(VS.value),Rth=(v0*v0*Math.sin(2*th)/(g))/2*4+40;
+    x.strokeStyle="#ff2e88"; x.setLineDash([6,6]); x.beginPath(); x.moveTo(Math.min(790,Rth),222); x.lineTo(Math.min(790,Rth),180); x.stroke(); x.setLineDash([]);
+    x.fillStyle="#ff9ecb"; x.font="11px monospace"; x.fillText("theory range (vac)",Math.min(640,Rth-120),190);
+    const thd=parseFloat(AS.value);
+    c1.innerHTML=`${gName(g)} g=<b>${g.toFixed(1)}</b>`; c2.innerHTML=`Range= v₀²sin2θ/g ≈ <b>${(v0*v0*Math.sin(2*th)/g).toFixed(1)} m</b> ${thd===45?"· 45° optimal ✨":""}`;
+  })();
+}
+/* L4 energy */
+function lab4(){
+  const c=cv(),x=c.getContext("2d"),H=document.getElementById("ctrls"),R=document.getElementById("readout");
+  const HS=addCtrl(H,"drop height h (m)",1,20,10,.5,v=>v+" m"), MS=addCtrl(H,"mass (kg)",1,20,5,1,v=>v+" kg");
+  let y=0,vy=0,mode="fall",heat=0;
+  const c1=chip(R,""),c2=chip(R,""),c3=chip(R,"");
+  labButtons([["⬇ Drop",()=>{y=0;vy=0;heat=0;mode="fall";}],["↺ Reset",()=>{y=0;vy=0;heat=0;mode="fall";},"secondary"]]);
+  (function loop(){
+    raf=requestAnimationFrame(loop);
+    const h=parseFloat(HS.value),m=parseFloat(MS.value),g=9.8,dt=1/60;
+    const ground=200, top=200-h*8, px=200;
+    if(mode==="fall"){vy+=g*dt*2; y+=vy*dt*20; if(top+y>=ground){y=ground-top; vy*=-.55; heat+=m*g*h*.25; if(Math.abs(vy)<1.2) mode="rest";}}
+    if(mode==="rest"){y=ground-top; vy=0;}
+    const yy=top+y, PE=Math.max(0,m*g*(ground-yy)/8), KE=.5*m*vy*vy/40, E0=m*g*h;
+    x.clearRect(0,0,800,260); x.fillStyle="#0a1233"; x.fillRect(0,0,800,260);
+    // tower + ground
+    x.fillStyle="#22306b"; x.fillRect(150,top,14,ground-top); x.fillStyle="#ffd23f"; x.fillRect(140,top-6,60,8);
+    x.fillStyle="#1a2560"; x.fillRect(0,ground,800,60);
+    // ball + ghost energy trail
+    x.fillStyle="#00f0ff"; x.beginPath(); x.arc(px,yy,12+ m,0,7); x.fill();
+    x.font="12px monospace"; x.fillStyle="#9aa7d0"; x.fillText(`h=${h}m  v=√2gh`,300,40);
+    // bars
+    const bw=220;
+    x.fillStyle="#0f1736"; x.fillRect(480,30,240,90);
+    x.fillStyle="#a6ff00"; x.fillRect(480,40,Math.min(1,PE/E0)*bw,18);
+    x.fillStyle="#ff2e88"; x.fillRect(480,64,Math.min(1,KE/E0)*bw,18);
+    x.fillStyle="#ff7a18"; x.fillRect(480,90,Math.min(1,heat/E0)*bw,12);
+    x.fillStyle="#fff"; x.font="12px monospace"; x.fillText(`PE ${PE.toFixed(0)}J`,484,53); x.fillText(`KE ${KE.toFixed(0)}J`,484,77); x.fillText(`heat ${heat.toFixed(0)}J`,484,100);
+    c1.innerHTML=`impact v=√(2gh)=<b>${Math.sqrt(2*g*h).toFixed(1)} m/s</b>`;
+    c2.innerHTML=`E₀=mgh=<b>${E0.toFixed(0)} J</b>`; c3.innerHTML=`KE∝v² — 2× height ≈ 1.4× speed`;
+  })();
+}
+/* L5 momentum */
+function lab5(){
+  const c=cv(),x=c.getContext("2d"),H=document.getElementById("ctrls"),R=document.getElementById("readout");
+  const M1=addCtrl(H,"m₁ (kg)",1,10,4,1,v=>v+"kg"), V1=addCtrl(H,"v₁ (m/s)",-6,6,4,.5,v=>v+"m/s");
+  const M2=addCtrl(H,"m₂ (kg)",1,10,4,1,v=>v+"kg"), V2=addCtrl(H,"v₂ (m/s)",-6,6,-3,.5,v=>v+"m/s");
+  const ES=addCtrl(H,"bounciness e",0,1,.9,.05,v=>v.toFixed(2));
+  let p1={x:150,v:0},p2={x:620,v:0},run=false,msg="Press COLLIDE";
+  const c1=chip(R,""),c2=chip(R,""),c3=chip(R,"");
+  function collide(){p1={x:150,v:parseFloat(V1.value)}; p2={x:620,v:parseFloat(V2.value)}; run=true; msg="rolling…";}
+  labButtons([["💥 COLLIDE",collide,"warn"],["↺ Reset",()=>{run=false;p1={x:150,v:0};p2={x:620,v:0};msg="Press COLLIDE";},"secondary"]]);
+  (function loop(){
+    raf=requestAnimationFrame(loop);
+    const m1=parseFloat(M1.value),m2=parseFloat(M2.value),e=parseFloat(ES.value);
+    if(run){p1.x+=p1.v*3; p2.x+=p2.v*3;
+      if(Math.abs(p1.x-p2.x)<50){
+        const u1=p1.v,u2=p2.v;
+        p1.v=((m1-e*m2)*u1+(1+e)*m2*u2)/(m1+m2);
+        p2.v=((m2-e*m1)*u2+(1+e)*m1*u1)/(m1+m2);
+        p1.x-=10;p2.x+=10; msg=e>.8?"elastic-ish ✨ KE kept":"sticky 💥 KE→heat"; run=false; setTimeout(()=>{if(!run){}},10);
+        // keep drifting after
+        setTimeout(()=>{},0);
+      }
+      if(p1.x<20||p1.x>780||p2.x<20||p2.x>780) run=false;
+    }
+    if(!run&&(Math.abs(p1.v)+Math.abs(p2.v)>0)){p1.x+=p1.v*2; p2.x+=p2.v*2; if(p1.x<20)p1.x=20; if(p2.x>760)p2.x=760;}
+    x.clearRect(0,0,800,260); x.fillStyle="#0a1233"; x.fillRect(0,0,800,260);
+    x.fillStyle="#1a2560"; x.fillRect(0,150,800,8);
+    const draw=(p,m,col,em)=>{const w=30+m*10; x.fillStyle=col; x.fillRect(p.x-w/2,110,w,40); x.font="24px monospace"; x.fillText(em,p.x-14,140);};
+    draw(p1,m1,"#00f0ff","🎱"); draw(p2,m2,"#ffd23f","🎯");
+    const P=m1*p1.v+m2*p2.v, KE=.5*m1*p1.v*p1.v+.5*m2*p2.v*p2.v;
+    x.fillStyle="#9aa7d0"; x.font="13px monospace"; x.fillText(msg,20,40);
+    c1.innerHTML=`p total=<b>${P.toFixed(1)}</b> (conserved!)`; c2.innerHTML=`v₁=<b>${p1.v.toFixed(1)}</b> v₂=<b>${p2.v.toFixed(1)}</b>`; c3.innerHTML=`KE=<b>${KE.toFixed(1)}J</b>`;
+  })();
+  collide(); run=false; p1={x:150,v:0};p2={x:620,v:0};
+}
+/* L6 rotation */
+function lab6(){
+  const c=cv(),x=c.getContext("2d"),H=document.getElementById("ctrls"),R=document.getElementById("readout");
+  const TS=addCtrl(H,"torque τ (N·m)",0,40,14,1,v=>v+""), RS=addCtrl(H,"disk radius r (m)",.5,2,1,.1,v=>v.toFixed(1)), MS=addCtrl(H,"mass (kg)",2,40,12,1,v=>v+"kg");
+  const GS=addCtrl(H,"gear ratio (driven/driver)",1,4,2,.25,v=>v.toFixed(2)+"×");
+  let ang=0,om=0;
+  const c1=chip(R,""),c2=chip(R,""),c3=chip(R,"");
+  labButtons([["🌀 Spin up (hold to push)",()=>{om+=2;},"warn"],["🛑 Brake",()=>om=0,"secondary"]]);
+  (function loop(){
+    raf=requestAnimationFrame(loop);
+    const tq=parseFloat(TS.value),r=parseFloat(RS.value),m=parseFloat(MS.value);
+    const I=.5*m*r*r, al=tq/I;
+    om+=al*(1/60)*.6; om*=.998; ang+=om*(1/60)*2;
+    const cx=200,cy=130, Rpx=40+r*30;
+    x.clearRect(0,0,800,260); x.fillStyle="#0a1233"; x.fillRect(0,0,800,260);
+    // wheel
+    x.strokeStyle="#00f0ff"; x.lineWidth=6; x.beginPath(); x.arc(cx,cy,Rpx,0,7); x.stroke();
+    x.strokeStyle="#ffd23f"; x.lineWidth=4; x.beginPath(); x.moveTo(cx,cy); x.lineTo(cx+Math.cos(ang)*Rpx,cy+Math.sin(ang)*Rpx); x.stroke();
+    x.beginPath(); x.moveTo(cx,cy); x.lineTo(cx+Math.cos(ang+2.1)*Rpx,cy+Math.sin(ang+2.1)*Rpx); x.stroke();
+    x.fillStyle="#fff"; x.beginPath(); x.arc(cx,cy,6,0,7); x.fill(); x.lineWidth=1;
+    x.fillStyle="#9aa7d0"; x.font="12px monospace"; x.fillText("τ=Iα · I=½mr²",120,230);
+    // gears
+    const ratio=parseFloat(GS.value), g1x=520,g2x=660,gy=130,r1=34,r2=34*ratio/1.6;
+    x.strokeStyle="#a6ff00"; x.lineWidth=4;
+    const a1=ang*2, a2=-ang*2/ratio;
+    x.beginPath(); x.arc(g1x,gy,r1,0,7); x.stroke(); x.beginPath(); x.arc(g2x,gy,Math.min(70,r2),0,7); x.stroke();
+    for(let i=0;i<8;i++){x.beginPath(); x.moveTo(g1x+Math.cos(a1+i*.785)*r1,gy+Math.sin(a1+i*.785)*r1); x.lineTo(g1x+Math.cos(a1+i*.785)*(r1+8),gy+Math.sin(a1+i*.785)*(r1+8)); x.stroke();}
+    x.fillStyle="#9aa7d0"; x.fillText(`gear ${ratio.toFixed(2)}×: ${(om/ratio).toFixed(1)} rad/s, ${ratio.toFixed(1)}× torque`,500,230);
+    c1.innerHTML=`I=<b>${I.toFixed(1)}</b> α=τ/I=<b>${al.toFixed(2)}</b>`; c2.innerHTML=`ω=<b>${om.toFixed(2)} rad/s</b>`; c3.innerHTML=`v at rim=ωr=<b>${(om*r).toFixed(1)} m/s</b>`;
+  })();
+}
+/* L7 cars */
+function lab7(){
+  const c=cv(),x=c.getContext("2d"),H=document.getElementById("ctrls"),R=document.getElementById("readout");
+  const ES=addCtrl(H,"engine force (kN)",0,8,4,.2,v=>v+"kN"), DS=addCtrl(H,"drag area CdA",.2,1.6,.6,.05,v=>v.toFixed(2)), MS=addCtrl(H,"mass (t)",.8,2.5,1.2,.1,v=>v+"t");
+  let v=0,px=60,thr=false,brk=false;
+  const c1=chip(R,""),c2=chip(R,""),c3=chip(R,"");
+  const b1=document.createElement("button"); // hold buttons via labbtns custom
+  labButtons([["🏁 HOLD: THROTTLE",()=>thr=true],["Release",()=>thr=false,"secondary"],["🛑 BRAKE",()=>{v=Math.max(0,v-14);},"warn"],["↺ Reset",()=>{v=0;px=60;},"secondary"]]);
+  // hold throttle: pointer
+  setTimeout(()=>{const btns=[...document.getElementById("labbtns").children]; const t0=btns[0];
+    t0.onpointerdown=()=>thr=true; t0.onpointerup=()=>thr=false; t0.onpointerleave=()=>thr=false;},50);
+  (function loop(){
+    raf=requestAnimationFrame(loop);
+    const Fe=thr?parseFloat(ES.value)*1000:0, CdA=parseFloat(DS.value),m=parseFloat(MS.value)*1000;
+    const rho=1.225, Fd=.5*rho*CdA*v*v, Frr=.012*m*9.8;
+    let F=Fe-Fd-Frr; if(!thr&&!brk) F=-Fd-Frr;
+    if(brk){} // brake handled by button impulse + auto below
+    // auto brake if brake held via key? use button repeated
+    v+=F/m*(1/60)*3; if(v<0)v=0; if(v>90)v=90;
+    px+=v*(1/60)*6; if(px>700){px=60;}
+    x.clearRect(0,0,800,260); x.fillStyle="#0a1233"; x.fillRect(0,0,800,260);
+    // sky + road
+    x.fillStyle="#16224a"; x.fillRect(0,0,800,140); x.fillStyle="#222"; x.fillRect(0,150,800,70);
+    x.fillStyle="#a6ff00"; for(let d=0;d<800;d+=50) x.fillRect((d+ (px*2%50)),182,26,4);
+    // speed lines
+    x.strokeStyle=`rgba(0,240,255,${Math.min(.8,v/60)})`; for(let i=0;i<v/4;i++){const lx=Math.random()*800; x.beginPath(); x.moveTo(lx,20+Math.random()*110); x.lineTo(lx-30,20+Math.random()*110); x.stroke();}
+    // car
+    x.font="44px monospace"; x.fillText(thr?"🏎💨":"🏎",px,178);
+    // speedo
+    x.fillStyle="#0f1736"; x.fillRect(560,16,220,110);
+    x.fillStyle="#ffd23f"; x.font="26px monospace"; x.fillText(`${Math.round(v*3.6)} km/h`,590,52);
+    x.fillStyle="#22306b"; x.fillRect(580,66,180,12);
+    x.fillStyle="#2eff8b"; x.fillRect(580,66,Math.min(180,v/90*180),12);
+    const Pb=Fe*v/1000;
+    c1.innerHTML=`v=<b>${(v).toFixed(1)} m/s</b> (${Math.round(v*3.6)} km/h)`;
+    c2.innerHTML=`drag=<b>${Fd.toFixed(0)}N</b> eng=<b>${Fe.toFixed(0)}N</b>`;
+    c3.innerHTML=`brake d≈v²/2μg=<b>${(v*v/(2*.7*9.8)).toFixed(0)} m</b> · P=<b>${Pb.toFixed(0)} kW</b>`;
+  })();
+}
+/* L8 planes */
+function lab8(){
+  const c=cv(),x=c.getContext("2d"),H=document.getElementById("ctrls"),R=document.getElementById("readout");
+  const SS=addCtrl(H,"airspeed v (m/s)",10,120,55,1,v=>v+" m/s"), AS=addCtrl(H,"angle of attack (°)",0,22,8,.5,v=>v+"°"), TS=addCtrl(H,"thrust (kN)",0,120,45,1,v=>v+"kN");
+  let parts=[]; for(let i=0;i<60;i++) parts.push({x:Math.random()*800,y:40+Math.random()*160,s:.5+Math.random()});
+  const c1=chip(R,""),c2=chip(R,""),c3=chip(R,"");
+  labButtons([]);
+  (function loop(){
+    raf=requestAnimationFrame(loop);
+    const v=parseFloat(SS.value),aoa=parseFloat(AS.value),Thr=parseFloat(TS.value)*1000;
+    const rho=1.225,S=30,m=12000,W=m*9.8;
+    const Cl=aoa<=15? .11*aoa+.25 : Math.max(0,1.9-(aoa-15)*.28); // stall model
+    const L=.5*rho*v*v*S*Cl, Cd=.025+Cl*Cl*.055+.0004*aoa*aoa, D=.5*rho*v*v*S*Cd;
+    parts.forEach(p=>{p.x+=v*3*(1/60)*p.s*2; if(p.x>800){p.x=-20;p.y=40+Math.random()*160;} });
+    x.clearRect(0,0,800,260); x.fillStyle="#0a1233"; x.fillRect(0,0,800,260);
+    // airflow
+    parts.forEach(p=>{
+      const over=p.y>110&&p.y<170&&p.x>250&&p.x<520;
+      x.strokeStyle=over?"#00f0ff":"#33448a"; x.lineWidth=over?2.5:1.5;
+      const bend=over? -(aoa-4)*1.2:0;
+      x.beginPath(); x.moveTo(p.x,p.y); x.lineTo(p.x+34,p.y+bend*.4); x.stroke();});
+    x.lineWidth=1;
+    // wing cross-section rotated by aoa
+    x.save(); x.translate(380,140); x.rotate(-aoa*Math.PI/180);
+    x.fillStyle=aoa>15?"#ff4d4d":"#ffd23f";
+    x.beginPath(); x.moveTo(-90,0); x.quadraticCurveTo(0,-22,90,-2); x.lineTo(90,6); x.quadraticCurveTo(0,8,-90,10); x.closePath(); x.fill();
+    x.restore();
+    x.fillStyle="#9aa7d0"; x.font="12px monospace"; x.fillText(aoa>15?"⚠ STALLED — airflow separated!":"smooth attached flow ✨",300,40);
+    // force balance mini plane
+    x.font="30px monospace"; x.fillText("✈",620,140);
+    const sc=.0006;
+    const arrow=(dx,dy,col,lab)=>{x.strokeStyle=col;x.lineWidth=4;x.beginPath();x.moveTo(635,130);x.lineTo(635+dx,130+dy);x.stroke();x.fillStyle=col;x.font="11px monospace";x.fillText(lab,635+dx-10,130+dy-6);x.lineWidth=1;};
+    arrow(Thr*sc,0,"#2eff8b","T"); arrow(-D*sc,0,"#ff4d4d","D"); arrow(0,-L*sc,"#00f0ff","L"); arrow(0,W*sc,"#ffd23f","W");
+    const vs=(L-W)/m*8;
+    c1.innerHTML=`L=½ρv²SCl=<b>${(L/1000).toFixed(0)} kN</b> vs W=<b>${(W/1000).toFixed(0)} kN</b>`;
+    c2.innerHTML=`Cl=<b>${Cl.toFixed(2)}</b> ${aoa>15?"STALL 🔻":"flying ✅"} · D=<b>${(D/1000).toFixed(1)}kN</b>`;
+    c3.innerHTML= L>W+.5e3?`⬆ CLIMBING (+${vs.toFixed(1)} m/s)` : L<W-.5e3?`⬇ DESCENDING (${vs.toFixed(1)} m/s)`:`➡ LEVEL FLIGHT — L≈W, T≈D? ${Math.abs(Thr-D)<8000?"balanced ✅":"adjust thrust"}`;
+  })();
+}
+
+renderAll();
+refreshHUD();
+</script>
+</body>
+</html>
