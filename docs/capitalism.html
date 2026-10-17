@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAP-01 — How Capitalism Works | Technical Manual</title>
+<meta name="description" content="A technical manual explaining how capitalism works: production, markets, finance, labor, state, comparative systems, real country cases, crises and how to build peaceful useful societies. Single-file, vanilla JS/CSS.">
+<style>
+/* ============ CAP-01 TECHNICAL MANUAL — pure CSS3, no external resources ============ */
+:root{
+  --paper:#f6f1e7; --ink:#1a1a1a; --muted:#5b5649; --line:#d8cfba;
+  --accent:#b3541e; --accent2:#0f5257; --accent3:#1a7a4c;
+  --warn:#8c1d18; --gold:#c9a227; --card:#fffdf7; --dark:#141310;
+  --mono:"Courier New",Courier,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.65;font-size:16px}
+a{color:var(--accent2)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+/* Top bar */
+.topbar{position:sticky;top:0;z-index:50;background:var(--dark);color:#f2ede0;border-bottom:4px solid var(--gold)}
+.topbar-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:10px 16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.stamp{font-family:var(--mono);font-weight:700;background:var(--gold);color:#141310;padding:4px 8px;border:2px solid #141310;box-shadow:3px 3px 0 #000;font-size:13px;letter-spacing:1px}
+.brand h1{font-size:16px;margin:0;letter-spacing:.5px;line-height:1.2}
+.brand small{display:block;font-weight:400;color:#d8cfba;font-size:12px}
+.navlinks{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap;align-items:center}
+.navlinks a.btn,.navlinks button{text-decoration:none;font-family:var(--mono);font-size:13px;background:#f2ede0;color:#141310;border:2px solid #000;padding:7px 12px;box-shadow:2px 2px 0 var(--gold);cursor:pointer}
+.navlinks a.btn:hover,.navlinks button:hover{background:var(--gold)}
+.progress-wrap{flex-basis:100%;height:10px;background:#2a2822;border:1px solid #555;border-radius:99px;overflow:hidden}
+#progressBar{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),#7dd87d);transition:width .5s}
+/* Layout */
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:290px 1fr;gap:0;padding:0 0 60px}
+.sidebar{border-right:2px solid var(--line);background:#efe7d3;padding:18px 14px;position:sticky;top:96px;align-self:start;max-height:calc(100vh - 110px);overflow:auto}
+.sidebar h2{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--muted);margin:4px 0 10px}
+.toc{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.toc button{width:100%;text-align:left;font-family:var(--mono);font-size:13px;background:var(--card);border:2px solid var(--ink);padding:9px 10px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.toc button .n{background:var(--ink);color:#fff;font-size:11px;padding:2px 6px;border-radius:3px;min-width:34px;text-align:center}
+.toc button.unlocked .n{background:var(--accent2)}
+.toc button.current{outline:3px solid var(--gold)}
+.toc button.locked{opacity:.55;cursor:not-allowed;background:#e2d9c2}
+.toc button .lock{margin-left:auto}
+.sidebar .note{font-size:12.5px;color:var(--muted);border-top:1px dashed var(--muted);margin-top:14px;padding-top:10px}
+main{padding:22px 26px;min-width:0}
+.cover{background:var(--card);border:3px solid var(--ink);box-shadow:6px 6px 0 var(--ink);padding:28px;margin-bottom:26px;position:relative;overflow:hidden}
+.cover::after{content:"CAP-01 / REV 1.0";position:absolute;right:12px;top:10px;font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line);padding:2px 6px;background:var(--paper)}
+.cover h2{font-size:clamp(28px,4vw,44px);line-height:1.05;margin:6px 0 10px}
+.kicker{font-family:var(--mono);background:var(--dark);color:var(--gold);display:inline-block;padding:4px 10px;font-size:12px;letter-spacing:2px}
+.lede{font-size:17px;max-width:65ch}
+.spec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:18px 0}
+.spec{font-family:var(--mono);font-size:12px;border:2px solid var(--ink);background:var(--paper);padding:10px}
+.spec b{display:block;font-size:13px}
+.howto{background:#141310;color:#f2ede0;border:2px solid #000;padding:16px;font-size:14px}
+.howto ol{margin:8px 0 0 20px;padding:0}
+.level{background:var(--card);border:2px solid var(--ink);margin:26px 0;box-shadow:5px 5px 0 rgba(0,0,0,.15)}
+.level.locked-level{filter:saturate(.4)}
+.level-head{display:flex;gap:14px;align-items:flex-start;padding:18px 20px;border-bottom:2px solid var(--ink);background:linear-gradient(180deg,#fff,#f3ecdb);flex-wrap:wrap}
+.level-num{font-family:var(--mono);font-weight:800;font-size:28px;background:var(--ink);color:#fff;width:56px;height:56px;display:grid;place-items:center;flex-shrink:0}
+.level.unlocked .level-num{background:var(--accent2)}
+.level-head h3{margin:0;font-size:22px}
+.level-head .sub{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.level-body{padding:20px}
+.level-body h4{margin:26px 0 8px;font-size:18px;border-left:6px solid var(--accent);padding-left:10px}
+.level-body h5{margin:18px 0 6px}
+p,li{max-width:75ch}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px;background:#fff}
+th,td{border:1px solid var(--ink);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--dark);color:#f2ede0;font-family:var(--mono);font-size:12px;letter-spacing:.5px}
+tr:nth-child(even) td{background:#faf6ec}
+.callout{border:2px dashed var(--accent2);background:#eaf4f4;padding:12px 14px;margin:14px 0;font-size:14.5px}
+.warnbox{border:2px solid var(--warn);background:#fdecea;padding:12px 14px;margin:14px 0}
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}
+.gloss div{border:1px solid var(--line);background:#fff;padding:10px;font-size:14px}
+.gloss b{font-family:var(--mono);font-size:13px}
+/* Animated demos — pure CSS */
+.demo{border:2px solid var(--ink);background:#101010;color:#f2ede0;padding:16px;margin:16px 0;position:relative;overflow:hidden}
+.demo h5{margin:0 0 10px;font-family:var(--mono);letter-spacing:1px;color:var(--gold);font-size:13px}
+.stage{background:#1d1c18;border:1px solid #444;border-radius:6px;padding:14px;min-height:150px;position:relative;overflow:hidden}
+.factory-line{display:flex;gap:6px;align-items:flex-end;height:90px;border-bottom:3px solid var(--gold);padding-bottom:6px}
+.crate{width:34px;background:var(--gold);border:2px solid #000;animation:moveCrate 2.4s linear infinite}
+.crate:nth-child(1){height:30px}.crate:nth-child(2){height:52px}.crate:nth-child(3){height:40px}.crate:nth-child(4){height:64px}.crate:nth-child(5){height:36px}.crate:nth-child(6){height:58px}
+@keyframes moveCrate{0%{transform:translateX(-10px)}50%{transform:translateX(10px)}100%{transform:translateX(-10px)}}
+.belt{height:10px;background:repeating-linear-gradient(90deg,#555 0 14px,#222 14px 28px);animation:belt 1s linear infinite;margin-top:4px}
+@keyframes belt{to{background-position:28px 0}}
+.tick{font-family:var(--mono);font-size:12px;color:#9be29b;margin-top:8px;min-height:18px}
+/* Supply demand */
+.sd-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.layout{grid-template-columns:1fr}.sidebar{position:static;max-height:none}.sd-wrap{grid-template-columns:1fr}}
+.sd-svg{width:100%;height:220px;background:#fff;border:1px solid #444}
+.sd-controls{font-size:14px;color:#f2ede0}
+.sd-controls input{width:100%}
+.eq{font-family:var(--mono);background:#000;display:inline-block;padding:4px 8px;margin-top:8px;color:var(--gold)}
+/* Money erosion */
+.coins{display:flex;gap:8px;margin:10px 0}
+.coin{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ffe98a,var(--gold) 60%,#7a5f0a);border:2px solid #000;display:grid;place-items:center;font-weight:800;color:#222;animation:shrink 5s ease-in-out infinite;transform-origin:center}
+.coin:nth-child(2){animation-delay:.4s}.coin:nth-child(3){animation-delay:.8s}.coin:nth-child(4){animation-delay:1.2s}
+@keyframes shrink{0%,100%{transform:scale(1)}50%{transform:scale(.72);filter:grayscale(.6)}}
+/* Interest bars */
+.bars{display:flex;align-items:flex-end;gap:10px;height:130px;border-left:2px solid #777;border-bottom:2px solid #777;padding:8px;margin-top:8px}
+.bar{width:44px;background:linear-gradient(180deg,#7dd87d,#1a7a4c);border:2px solid #000;animation:grow 3s ease-in-out infinite alternate}
+@keyframes grow{from{transform:scaleY(.6)}to{transform:scaleY(1)}}
+/* Lab */
+.lab{background:#fff;border:2px solid var(--accent2);padding:14px;margin:14px 0;color:var(--ink)}
+.lab label{font-family:var(--mono);font-size:13px;display:block;margin:8px 0 4px}
+.lab input[type=range]{width:100%}
+.lab output{font-family:var(--mono);background:var(--dark);color:var(--gold);padding:2px 8px}
+.lab .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.lab .row{grid-template-columns:1fr}}
+.btn{font-family:var(--mono);background:var(--accent2);color:#fff;border:2px solid #000;padding:9px 14px;cursor:pointer;box-shadow:3px 3px 0 #000}
+.btn.secondary{background:#fff;color:var(--ink)}
+.btn:hover{filter:brightness(1.1)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+/* Quiz */
+.quiz{border:2px solid var(--ink);background:#fffbe8;padding:14px;margin:16px 0}
+.quiz h5{font-family:var(--mono);margin:0 0 8px}
+.quiz fieldset{border:1px solid var(--line);margin:10px 0;padding:10px}
+.quiz legend{font-family:var(--mono);font-size:13px;padding:0 6px}
+.quiz label{display:block;padding:6px 8px;border:1px solid transparent;border-radius:4px;cursor:pointer}
+.quiz label:hover{background:#fff;border-color:var(--gold)}
+.quiz .result{font-family:var(--mono);font-size:14px;margin-top:10px;padding:8px;display:none}
+.quiz .result.pass{display:block;background:#d9f2d9;border:2px solid var(--accent3)}
+.quiz .result.fail{display:block;background:#fbd9d9;border:2px solid var(--warn)}
+.badge{font-family:var(--mono);font-size:12px;background:var(--dark);color:var(--gold);padding:3px 8px;border-radius:99px;display:inline-block;margin-left:8px}
+/* Country cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:12px 0}
+.card{border:2px solid var(--ink);background:#fff;padding:12px;font-size:14px}
+.card h6{margin:0 0 6px;font-size:15px}
+.card .tag{font-family:var(--mono);font-size:11px;background:var(--paper);border:1px solid var(--line);padding:2px 6px;display:inline-block;margin:2px 4px 6px 0}
+.card ul{margin:6px 0 6px 18px;padding:0}
+/* Refs */
+.refs{font-size:13.5px;background:#141310;color:#d8cfba;padding:14px;border:2px solid #000;margin:14px 0}
+.refs a{color:var(--gold)}
+.refs ol{margin:8px 0 0 20px}
+/* Gate overlay */
+.gate{border:2px dashed var(--warn);background:#fff;padding:12px;font-family:var(--mono);font-size:13px;margin:12px 0}
+footer{max-width:1180px;margin:0 auto;padding:20px 16px 60px;color:var(--muted);font-size:13px}
+.print-note{font-family:var(--mono);font-size:12px}
+@media print{.sidebar,.topbar .navlinks,.demo,.lab,.quiz .btn{display:none}.layout{grid-template-columns:1fr}body{background:#fff}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html" title="Home — index.html">
+      <span class="stamp">CAP-01</span>
+      <h1>HOW CAPITALISM WORKS — Technical Manual<small>Vanilla JS + CSS3 · Single file · No external resources</small></h1>
+    </a>
+    <nav class="navlinks" aria-label="Top navigation">
+      <a class="btn" href="index.html">⌂ Home</a>
+      <a class="btn" href="#level-0">Start ↓</a>
+      <button id="resetBtn" type="button">Reset progress</button>
+    </nav>
+    <div class="progress-wrap" aria-label="Manual progress"><div id="progressBar"></div></div>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar" aria-label="Manual contents">
+    <h2>CONTENTS / ACCESS CONTROL</h2>
+    <ol class="toc" id="toc"></ol>
+    <div class="note">
+      <b>How to use this manual:</b> each level ends with a validation quiz.
+      You must score ≥ 2/3 to unlock the next level. Progress is stored only in your browser (<code>localStorage</code>). Nothing is uploaded.<br><br>
+      This is <b>not promotional</b>. Failures name the decision-makers responsible. Sources are linked for verification.
+    </div>
+  </aside>
+
+  <main id="main">
+    <section class="cover" id="home">
+      <span class="kicker">FIELD MANUAL · ECONOMICS · CIVICS</span>
+      <h2>Capitalism, explained like an engineer would explain a machine.</h2>
+      <p class="lede">What are the parts? How does value flow? Where does it break? How do other systems differ — and what do real countries show? This manual dissects capitalism into testable mechanisms, with <b>animated models</b>, <b>hands-on labs</b> (lemonade stand, price lab, inflation lab), and <b>graded checks</b> at every level.</p>
+      <div class="spec-grid">
+        <div class="spec"><b>MODEL</b>CAP-01 Rev 1.0</div>
+        <div class="spec"><b>STACK</b>HTML · CSS3 · Vanilla JS</div>
+        <div class="spec"><b>EXTERNAL DEPS</b>None (links only)</div>
+        <div class="spec"><b>LEVELS</b>10 (L0–L9)</div>
+        <div class="spec"><b>TIME</b>~2–3 hours full pass</div>
+        <div class="spec"><b>STANCE</b>Descriptive, critical, sourced</div>
+      </div>
+      <div class="howto">
+        <b>READING PROTOCOL (forced progression):</b>
+        <ol>
+          <li>Read L0, run the animation, pass the quiz → L1 unlocks.</li>
+          <li>Do not skip: labs change numbers so you <i>feel</i> incentives.</li>
+          <li>L6–L8 compare systems and assign responsibility for historical failures.</li>
+          <li>L9 turns theory into peaceful, useful designs you can test locally.</li>
+        </ol>
+      </div>
+      <p class="print-note">Home link: <a href="index.html">index.html</a> · All styling/behaviour is inline. External links below are references only and never required for the page to work offline (except the target sites themselves).</p>
+    </section>
+
+    <!-- ================= L0 ================= -->
+    <section class="level" id="level-0" data-level="0" data-title="L0 — Core definition">
+      <div class="level-head"><div class="level-num">L0</div><div><h3>L0 — What “capitalism” technically is</h3><div class="sub">PREREQ: NONE · OBJECTIVE: DEFINE THE 5 PILLARS · TIME 15 MIN</div></div></div>
+      <div class="level-body">
+        <h4>0.1 Definition without slogans</h4>
+        <p><b>Capitalism</b> is a coordination system where (1) most productive assets are <b>privately owned</b>, (2) production is guided by <b>prices formed in markets</b>, (3) investment comes from <b>accumulated capital seeking return</b>, (4) labour is hired via <b>wage contracts</b>, and (5) firms compete under (imperfect) <b>rule of law</b>. Remove any pillar and you get a different system (see L6).</p>
+        <div class="gloss">
+          <div><b>Capital</b><br>Wealth set aside to produce more wealth: machines, stock, cash, code, reputation.</div>
+          <div><b>Market</b><br>Any protocol where buyers/sellers meet and a price clears (bazaar, NYSE, eBay, Uber surge).</div>
+          <div><b>Profit</b><br>Revenue − full costs. Signal that says “do more of this” (or “stop”).</div>
+          <div><b>Competition</b><br>Rivalry that copies success and punishes waste — when entry is actually open.</div>
+        </div>
+        <h4>0.2 Animated: the circular flow</h4>
+        <div class="demo"><h5>FIG 0-A · HOUSEHOLDS ⇄ FIRMS (ANIMATED)</h5>
+          <div class="stage">
+            <div class="factory-line" aria-hidden="true"><div class="crate"></div><div class="crate"></div><div class="crate"></div><div class="crate"></div><div class="crate"></div><div class="crate"></div></div>
+            <div class="belt"></div>
+            <div class="tick" id="flowTick">Households → labour → Firms → wages → Households → spending → Firms …</div>
+          </div>
+          <p style="color:#d8cfba;font-size:13px">Households sell labour/capital; firms pay wages/interest/dividends; households buy goods; money loops. Leaks: savings, taxes, imports. Injections: investment, state spending, exports.</p>
+        </div>
+        <h4>0.3 Why prices matter (the information argument)</h4>
+        <p>Economist F. Hayek’s point: no planner knows everyone’s needs. A rising bread price <i>compresses</i> thousands of facts (bad harvest + fuel cost + demand) into one number everyone can act on. That is powerful — and also brutal, because price alone ignores who can pay.</p>
+        <div class="refs"><b>EXTERNAL REFERENCES — verify, don’t trust:</b><ol>
+          <li><a href="https://www.econlib.org/library/Essays/hykKnw.html" target="_blank" rel="noopener">Hayek — “The Use of Knowledge in Society” (1945)</a></li>
+          <li><a href="https://www.marxists.org/archive/smith-adam/wealth-nations/" target="_blank" rel="noopener">Adam Smith — Wealth of Nations, esp. Books I–II</a></li>
+          <li><a href="https://www.imf.org/en/Publications/fandd/issues/Series/Back-to-Basics" target="_blank" rel="noopener">IMF “Back to Basics” explainers</a></li>
+        </ol></div>
+        <div class="quiz" data-quiz="0" data-pass="2"><h5>CHECK L0 — 3 questions, need 2 correct <span class="badge">GATE</span></h5>
+          <fieldset><legend>1. Which is NOT a pillar of capitalism as defined here?</legend>
+            <label><input type="radio" name="q0a" value="0"> Private ownership of productive assets</label>
+            <label><input type="radio" name="q0a" value="1"> Prices formed in markets</label>
+            <label><input type="radio" name="q0a" value="0"> State ownership of all firms by definition</label>
+            <label><input type="radio" name="q0a" value="0"> Wage labour + capital seeking return</label></fieldset>
+          <fieldset><legend>2. What does a rising price technically communicate?</legend>
+            <label><input type="radio" name="q0b" value="0"> A moral judgment</label>
+            <label><input type="radio" name="q0b" value="1"> Compressed scarcity information (demand up / supply down)</label>
+            <label><input type="radio" name="q0b" value="0"> Proof the seller is guilty of gouging</label></fieldset>
+          <fieldset><legend>3. In the circular flow, firms pay households for…</legend>
+            <label><input type="radio" name="q0c" value="1"> Labour, capital use, land (wages, interest, rent, dividends)</label>
+            <label><input type="radio" name="q0c" value="0"> Nothing — firms only receive</label>
+            <label><input type="radio" name="q0c" value="0"> Only taxes</label></fieldset>
+          <button class="btn" type="button" data-check>Validate L0</button>
+          <div class="result" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= L1 ================= -->
+    <section class="level" id="level-1" data-level="1" data-title="L1 — How production works">
+      <div class="level-head"><div class="level-num">L1</div><div><h3>L1 — How production works: recipe + machine + organisation</h3><div class="sub">PREREQ: L0 · PRODUCTION FUNCTION · DIVISION OF LABOUR · TIME 20 MIN</div></div></div>
+      <div class="level-body">
+        <h4>1.1 The recipe: land, labour, capital, knowledge</h4>
+        <p>Output = <code>f(land, labour, capital, know-how)</code>. Capitalism’s bet: if people can <i>keep</i> part of the surplus, they will reinvest in better recipes (technology) and machines. Example: a bakery. Same flour + hands, but a €4,000 oven doubles loaves per hour — that oven is capital.</p>
+        <h4>1.2 Division of labour (Smith’s pin factory, real numbers)</h4>
+        <p>Smith observed ~10 workers making 48,000 pins/day by splitting 18 operations vs. ~200 pins if each worked alone. Modern twin: <b>Amazon fulfilment centres</b> or <b>Foxconn lines for Apple</b> — extreme splitting raises throughput but can deskill work. That trade-off is technical, not ideological.</p>
+        <div class="demo"><h5>FIG 1-A · THROUGHPUT vs SPECIALISATION</h5>
+          <div class="stage"><div class="factory-line"><div class="crate"></div><div class="crate"></div><div class="crate"></div><div class="crate"></div><div class="crate"></div><div class="crate"></div></div><div class="belt"></div>
+          <div class="tick">Specialisation ↑ → output/hour ↑ → coordination cost ↑ → fragility ↑ (one station down = line down).</div></div>
+        </div>
+        <div class="lab"><b>LAB 1 — Lemonade stand (profit simulator)</b>
+          <p style="margin:6px 0">Drag sliders. Profit = (Price − unit cost) × cups sold − fixed cost. Cups sold fall when price rises.</p>
+          <label>Price per cup: <output id="oPrice">$1.50</output></label><input id="inPrice" type="range" min="0.5" max="5" step="0.1" value="1.5">
+          <label>Unit cost (lemons+sugar+cup): <output id="oCost">$0.60</output></label><input id="inCost" type="range" min="0.2" max="2" step="0.05" value="0.6">
+          <label>Foot traffic (marketing): <output id="oTraf">100 people</output></label><input id="inTraf" type="range" min="20" max="300" step="5" value="100">
+          <p><b>Result: <span id="lab1Out">—</span></b></p>
+          <p style="font-size:13px">Lesson: you control price/cost, not demand. Platforms like <b>Shopify, eBay, Uber Eats</b> are just ways to buy traffic or outsource fixed costs — they don’t repeal the equation.</p>
+        </div>
+        <div class="refs"><b>REFERENCES:</b><ol>
+          <li><a href="https://www.marxists.org/archive/smith-adam/wealth-nations/" target="_blank" rel="noopener">Smith, Book I, ch.1 — Division of labour</a></li>
+          <li><a href="https://www.bls.gov/productivity/" target="_blank" rel="noopener">US Bureau of Labor Statistics — Productivity data</a></li>
+          <li><a href="https://www.shopify.com/editions" target="_blank" rel="noopener">Shopify — example of lowered fixed-cost retail</a> · <a href="https://www.ebay.com/" target="_blank" rel="noopener">eBay</a></li>
+        </ol></div>
+        <div class="quiz" data-quiz="1" data-pass="2"><h5>CHECK L1 <span class="badge">GATE</span></h5>
+          <fieldset><legend>1. What raises labour productivity sustainably?</legend>
+            <label><input type="radio" name="q1a" value="1"> More/better capital + know-how per worker</label>
+            <label><input type="radio" name="q1a" value="0"> Longer hours only, forever</label>
+            <label><input type="radio" name="q1a" value="0"> Printing money</label></fieldset>
+          <fieldset><legend>2. Division of labour mainly trades…</legend>
+            <label><input type="radio" name="q1b" value="1"> Higher throughput for higher coordination/fragility</label>
+            <label><input type="radio" name="q1b" value="0"> Nothing, it is pure gain</label></fieldset>
+          <fieldset><legend>3. Profit in the lab = ?</legend>
+            <label><input type="radio" name="q1c" value="0"> Price × traffic</label>
+            <label><input type="radio" name="q1c" value="1"> (Price − unit cost) × quantity − fixed cost</label></fieldset>
+          <button class="btn" type="button" data-check>Validate L1</button><div class="result" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= L2 ================= -->
+    <section class="level" id="level-2" data-level="2" data-title="L2 — Markets & prices">
+      <div class="level-head"><div class="level-num">L2</div><div><h3>L2 — Markets &amp; prices: supply, demand, and when they lie</h3><div class="sub">PREREQ: L1 · EQUILIBRIUM · ELASTICITY · EXTERNALITIES · TIME 25 MIN</div></div></div>
+      <div class="level-body">
+        <h4>2.1 How a price is born</h4>
+        <p>Demand slopes down (cheaper → more wanted), supply slopes up (pricier → more offered). Where they cross = equilibrium. Move either curve and price + quantity adjust. No mysticism.</p>
+        <div class="demo"><h5>FIG 2-A · LIVE SUPPLY / DEMAND — DRAG THE SHIFTERS</h5>
+          <div class="stage">
+            <div class="sd-wrap">
+              <svg class="sd-svg" id="sdSvg" viewBox="0 0 300 220" role="img" aria-label="Supply and demand diagram">
+                <line x1="20" y1="10" x2="20" y2="200" stroke="#333" stroke-width="2"/><line x1="20" y1="200" x2="290" y2="200" stroke="#333" stroke-width="2"/>
+                <line id="dLine" x1="30" y1="40" x2="270" y2="180" stroke="#c0392b" stroke-width="3"/>
+                <line id="sLine" x1="30" y1="180" x2="270" y2="40" stroke="#2471a3" stroke-width="3"/>
+                <circle id="eqPt" cx="150" cy="110" r="7" fill="#c9a227" stroke="#000" stroke-width="2"/>
+                <text x="36" y="36" font-size="12" fill="#c0392b" font-family="monospace">D</text>
+                <text x="258" y="36" font-size="12" fill="#2471a3" font-family="monospace">S</text>
+              </svg>
+              <div class="sd-controls">
+                <label>Demand shift <span id="dVal">0</span></label><input id="dShift" type="range" min="-60" max="60" value="0">
+                <label>Supply shift <span id="sVal">0</span></label><input id="sShift" type="range" min="-60" max="60" value="0">
+                <div class="eq" id="eqOut">P*=110 · Q*=150</div>
+                <p style="font-size:13px">Try: heatwave → demand right (price up). New factory → supply right (price down). Real twin: <b>Uber surge pricing</b> and <b>Airbnb seasonal pricing</b>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h4>2.2 When prices lie: externalities &amp; market power</h4>
+        <table><tr><th>Failure</th><th>Mechanism</th><th>Real example + guilty / responsible</th><th>Textbook fix</th></tr>
+        <tr><td>Negative externality</td><td>Cost dumped on third parties</td><td>Industrial pollution; tobacco health costs. <b>Guilty:</b> polluting firms + lax regulators who priced damage at zero.</td><td>Pigouvian tax, cap-and-trade (EU ETS)</td></tr>
+        <tr><td>Monopoly / platform lock-in</td><td>One seller sets price, blocks entry</td><td>Standard Oil (broken 1911); modern app-store fees / Amazon Buy Box disputes. <b>Guilty:</b> firm abuse + antitrust non-enforcement.</td><td>Antitrust, interoperability</td></tr>
+        <tr><td>Information asymmetry</td><td>Seller knows more</td><td>US subprime mortgages 2007 (sellers knew risk, buyers/ratings didn’t — see L8). <b>Guilty:</b> originators, rating agencies, buyers’ wilful blindness.</td><td>Disclosure, liability, standardisation</td></tr>
+        <tr><td>Public goods</td><td>Non-excludable → under-supplied</td><td>Lighthouses, basic research, vaccines. Not a “guilt” case — a boundary case for state action.</td><td>Public funding</td></tr></table>
+        <div class="callout"><b>Key nuance:</b> “free market” in textbooks means <i>open entry + enforced rules</i>, not “no rules”. A market with rigged entry is a rent machine, not a free market.</div>
+        <div class="refs"><b>REFERENCES:</b><ol>
+          <li><a href="https://www.ftc.gov/legal-library/browse/federal-courts" target="_blank" rel="noopener">US FTC antitrust cases</a></li>
+          <li><a href="https://climate.ec.europa.eu/eu-action/eu-emissions-trading-system-eu-ets_en" target="_blank" rel="noopener">EU Emissions Trading System (cap-and-trade in practice)</a></li>
+          <li><a href="https://www.uber.com/us/en/marketplace/" target="_blank" rel="noopener">Uber marketplace / surge explainer</a> · <a href="https://www.airbnb.com/" target="_blank" rel="noopener">Airbnb</a></li>
+        </ol></div>
+        <div class="quiz" data-quiz="2" data-pass="2"><h5>CHECK L2 <span class="badge">GATE</span></h5>
+          <fieldset><legend>1. A demand increase (supply fixed) causes…</legend>
+            <label><input type="radio" name="q2a" value="1"> Higher equilibrium price and quantity</label>
+            <label><input type="radio" name="q2a" value="0"> Lower price, same quantity</label></fieldset>
+          <fieldset><legend>2. Pollution is a…</legend>
+            <label><input type="radio" name="q2b" value="1"> Negative externality — cost imposed on others</label>
+            <label><input type="radio" name="q2b" value="0"> Public good</label></fieldset>
+          <fieldset><legend>3. A monopoly with blocked entry tends to…</legend>
+            <label><input type="radio" name="q2c" value="1"> Raise price / restrict output vs competition</label>
+            <label><input type="radio" name="q2c" value="0"> Lower price below cost forever out of kindness</label></fieldset>
+          <button class="btn" type="button" data-check>Validate L2</button><div class="result" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= L3 ================= -->
+    <section class="level" id="level-3" data-level="3" data-title="L3 — Capital & finance">
+      <div class="level-head"><div class="level-num">L3</div><div><h3>L3 — Capital &amp; finance: interest, shares, risk</h3><div class="sub">PREREQ: L2 · COMPOUNDING · STOCKS/BONDS · BANKS · TIME 25 MIN</div></div></div>
+      <div class="level-body">
+        <h4>3.1 Why interest exists</h4>
+        <p>€100 today &gt; €100 next year (you could use it, and the future is uncertain). Interest is the price of <i>time + risk</i>. Compounding = interest earning interest — the engine of both fortunes and debt traps.</p>
+        <div class="demo"><h5>FIG 3-A · COMPOUNDING (7% vs 2%)</h5>
+          <div class="stage"><div class="bars"><div class="bar" style="height:40px"></div><div class="bar" style="height:65px;animation-delay:.3s"></div><div class="bar" style="height:95px;animation-delay:.6s"></div><div class="bar" style="height:120px;animation-delay:.9s;background:linear-gradient(180deg,#ffd76e,var(--accent))"></div></div>
+          <div class="tick">€1,000 at 7% → ~€1,967 in 10y. At 2% → ~€1,219. Same wait, different price of capital.</div></div>
+        </div>
+        <div class="lab"><b>LAB 2 — Compound calculator</b>
+          <div class="row"><div><label>Principal € <output id="oP">1000</output></label><input id="inP" type="range" min="100" max="20000" step="100" value="1000">
+          <label>Rate % <output id="oR">7%</output></label><input id="inR" type="range" min="0" max="15" step="0.5" value="7"></div>
+          <div><label>Years <output id="oY">10</output></label><input id="inY" type="range" min="1" max="40" value="10">
+          <p><b>Future value: <span id="lab2Out">—</span></b></p></div></div>
+        </div>
+        <h4>3.2 Stocks vs bonds vs bank loans (who bears risk?)</h4>
+        <table><tr><th>Instrument</th><th>You get</th><th>If firm fails</th><th>Example venue</th></tr>
+        <tr><td>Share (equity)</td><td>Vote + residual profit</td><td>Last paid — high risk, high upside</td><td><b>NYSE / Nasdaq</b>, ETFs via brokers</td></tr>
+        <tr><td>Bond</td><td>Fixed coupon + principal</td><td>Paid before shareholders</td><td>Corporate/Treasury bonds</td></tr>
+        <tr><td>Bank loan</td><td>Credit with collateral</td><td>Bank seizes collateral</td><td>Local bank, <b>Kickstarter</b> (pre-sale, not equity)</td></tr></table>
+        <div class="warnbox"><b>2008 preview (full file in L8):</b> banks packaged bad mortgages into AAA bonds. Borrowers defaulted, rating models were wrong, regulators asleep. <b>Guilty parties named in L8</b> — finance without skin-in-the-game becomes fraud-adjacent.</div>
+        <div class="refs"><b>REFERENCES:</b><ol>
+          <li><a href="https://www.nyse.com/" target="_blank" rel="noopener">NYSE</a> · <a href="https://www.nasdaq.com/" target="_blank" rel="noopener">Nasdaq</a> · <a href="https://www.kickstarter.com/" target="_blank" rel="noopener">Kickstarter (crowdfunding model)</a></li>
+          <li><a href="https://www.federalreservehistory.org/essays/great-recession-and-its-aftermath" target="_blank" rel="noopener">Federal Reserve History — Great Recession</a></li>
+          <li><a href="https://www.investor.gov/" target="_blank" rel="noopener">Investor.gov — US retail-investor basics</a></li>
+        </ol></div>
+        <div class="quiz" data-quiz="3" data-pass="2"><h5>CHECK L3 <span class="badge">GATE</span></h5>
+          <fieldset><legend>1. Compounding means…</legend>
+            <label><input type="radio" name="q3a" value="1"> Returns themselves earn returns over time</label>
+            <label><input type="radio" name="q3a" value="0"> Interest is paid only once</label></fieldset>
+          <fieldset><legend>2. Who is paid LAST in bankruptcy?</legend>
+            <label><input type="radio" name="q3b" value="1"> Shareholders (equity holders)</label>
+            <label><input type="radio" name="q3b" value="0"> Bondholders</label></fieldset>
+          <fieldset><legend>3. Interest compensates for…</legend>
+            <label><input type="radio" name="q3c" value="1"> Waiting (time) + risk of non-repayment</label>
+            <label><input type="radio" name="q3c" value="0"> Bank kindness</label></fieldset>
+          <button class="btn" type="button" data-check>Validate L3</button><div class="result" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= L4 ================= -->
+    <section class="level" id="level-4" data-level="4" data-title="L4 — Labour & firms">
+      <div class="level-head"><div class="level-num">L4</div><div><h3>L4 — Labour, wages &amp; the firm: why companies exist</h3><div class="sub">PREREQ: L3 · WAGES · ENTREPRENEURSHIP · COOPERATIVES · TIME 20 MIN</div></div></div>
+      <div class="level-body">
+        <h4>4.1 Why wages differ</h4>
+        <p>Wages ≈ supply of a skill vs demand for it, plus bargaining power, plus rents (licences, networks, location). A nurse and a Solidity dev differ less by “merit” than by scarcity + ability to capture value. Minimum wages, unions, and monopsony (one big employer, e.g. a single factory town or a dominant delivery platform) shift the split.</p>
+        <h4>4.2 Why firms exist at all (Coase, 1937)</h4>
+        <p>Why not hire a freelancer for every micro-task? Because <i>transaction costs</i> (finding, contracting, supervising) are real. Firms replace endless bargaining with hierarchy — until hierarchy itself becomes the cost (bureaucracy). Platforms like <b>Upwork / Fiverr / Uber</b> push the boundary back toward markets by lowering search costs.</p>
+        <h4>4.3 Entrepreneurship vs rent-seeking</h4>
+        <table><tr><th>Activity</th><th>Creates value?</th><th>Example</th></tr>
+        <tr><td>Productive entrepreneurship</td><td>Yes — new/better/cheaper</td><td>BioNTech mRNA work; Shopify enabling SMEs; M-Pesa mobile money (Kenya)</td></tr>
+        <tr><td>Rent-seeking</td><td>No — captures existing pie</td><td>Lobbying for a monopoly licence; patent trolling; rigged privatisation (Russia 1990s — <b>guilty:</b> oligarchs + officials who designed loans-for-shares)</td></tr>
+        <tr><td>Cooperative / mutual</td><td>Yes — shared ownership</td><td><b>Mondragón (Spain)</b>, Crédit Mutuel, John Lewis Partnership — capitalist ownership, democratic governance</td></tr></table>
+        <div class="refs"><b>REFERENCES:</b><ol>
+          <li><a href="https://www.ilo.org/global/lang--en/index.htm" target="_blank" rel="noopener">ILO — labour standards &amp; statistics</a></li>
+          <li><a href="https://www.mondragon-corporation.com/en/" target="_blank" rel="noopener">Mondragón Corporation</a> · <a href="https://www.upwork.com/" target="_blank" rel="noopener">Upwork</a></li>
+          <li><a href="https://www.oecd.org/employment/" target="_blank" rel="noopener">OECD Employment Outlook</a></li>
+        </ol></div>
+        <div class="quiz" data-quiz="4" data-pass="2"><h5>CHECK L4 <span class="badge">GATE</span></h5>
+          <fieldset><legend>1. Firms exist (Coase) mainly because…</legend>
+            <label><input type="radio" name="q4a" value="1"> Organising inside can be cheaper than contracting every task</label>
+            <label><input type="radio" name="q4a" value="0"> Bosses enjoy meetings</label></fieldset>
+          <fieldset><legend>2. Rent-seeking is…</legend>
+            <label><input type="radio" name="q4b" value="1"> Capturing wealth without creating it (e.g. lobbying for monopoly)</label>
+            <label><input type="radio" name="q4b" value="0"> Paying rent on an apartment</label></fieldset>
+          <fieldset><legend>3. A cooperative differs by…</legend>
+            <label><input type="radio" name="q4c" value="1"> Workers/members own and govern the firm</label>
+            <label><input type="radio" name="q4c" value="0"> Being automatically non-profit</label></fieldset>
+          <button class="btn" type="button" data-check>Validate L4</button><div class="result" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= L5 ================= -->
+    <section class="level" id="level-5" data-level="5" data-title="L5 — State, money, taxes">
+      <div class="level-head"><div class="level-num">L5</div><div><h3>L5 — State, money &amp; taxes: referee, insurer, arsonist</h3><div class="sub">PREREQ: L4 · CENTRAL BANKS · INFLATION · TAXES · TIME 25 MIN</div></div></div>
+      <div class="level-body">
+        <h4>5.1 What the state does in capitalism</h4>
+        <p>Enforces contracts/property, issues money, taxes, provides public goods, regulates externalities, redistributes, and bails out (or doesn’t). Every success <i>and</i> disaster in this manual involves this actor — neutral description, then judgment with names.</p>
+        <h4>5.2 Money &amp; inflation lab</h4>
+        <div class="demo"><h5>FIG 5-A · INFLATION ERODES CASH (ANIMATED)</h5>
+          <div class="stage"><div class="coins"><div class="coin">€</div><div class="coin">€</div><div class="coin">€</div><div class="coin">€</div></div>
+          <div class="tick">10% yearly inflation → money halves in ~7 years. Debtors gain, savers and fixed-wage workers lose.</div></div>
+        </div>
+        <div class="lab"><b>LAB 3 — What will €1,000 buy in N years?</b>
+          <label>Inflation % <output id="oI">3%</output></label><input id="inI" type="range" min="0" max="25" step="0.5" value="3">
+          <label>Years <output id="oIY">10</output></label><input id="inIY" type="range" min="1" max="30" value="10">
+          <p><b>Purchasing power left: <span id="lab3Out">—</span></b></p>
+          <p style="font-size:13px">Real cases: Weimar Germany 1923, Hungary 1946, Zimbabwe 2008, Venezuela 2018, Turkey 2022–23, Argentina 2023–24. <b>Guilty where applicable:</b> governments monetising deficits + central banks forced to print (see L8).</p>
+        </div>
+        <h4>5.3 Taxes in one table</h4>
+        <table><tr><th>Tax</th><th>Base</th><th>Effect on behaviour</th></tr>
+        <tr><td>VAT / sales</td><td>Consumption</td><td>Easy to collect, regressive unless compensated</td></tr>
+        <tr><td>Income / payroll</td><td>Labour</td><td>Can discourage work at extremes; funds welfare</td></tr>
+        <tr><td>Corporate</td><td>Profits</td><td>Mobile base — triggers race-to-bottom without coordination (see OECD global minimum 15%)</td></tr>
+        <tr><td>Property / land</td><td>Immobile value</td><td>Economists’ favourite: hard to dodge</td></tr>
+        <tr><td>Carbon</td><td>Emissions</td><td>Prices the externality from L2</td></tr></table>
+        <div class="refs"><b>REFERENCES:</b><ol>
+          <li><a href="https://www.ecb.europa.eu/ecb/educational/explainers/html/index.en.html" target="_blank" rel="noopener">ECB explainers — money &amp; inflation</a></li>
+          <li><a href="https://www.oecd.org/tax/beps/" target="_blank" rel="noopener">OECD — Global minimum tax (Pillar Two)</a></li>
+          <li><a href="https://data.worldbank.org/indicator/FP.CPI.TOTL.ZG" target="_blank" rel="noopener">World Bank — inflation data</a></li>
+        </ol></div>
+        <div class="quiz" data-quiz="5" data-pass="2"><h5>CHECK L5 <span class="badge">GATE</span></h5>
+          <fieldset><legend>1. Unexpected high inflation mainly transfers wealth…</legend>
+            <label><input type="radio" name="q5a" value="1"> From savers/lenders to borrowers (debts shrink in real terms)</label>
+            <label><input type="radio" name="q5a" value="0"> From borrowers to savers</label></fieldset>
+          <fieldset><legend>2. A land/property tax is efficient because…</legend>
+            <label><input type="radio" name="q5b" value="1"> Land can’t flee abroad</label>
+            <label><input type="radio" name="q5b" value="0"> Houses enjoy paying</label></fieldset>
+          <fieldset><legend>3. Central banks typically fight inflation by…</legend>
+            <label><input type="radio" name="q5c" value="1"> Raising interest rates / tightening money</label>
+            <label><input type="radio" name="q5c" value="0"> Printing more to cover prices</label></fieldset>
+          <button class="btn" type="button" data-check>Validate L5</button><div class="result" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= L6 ================= -->
+    <section class="level" id="level-6" data-level="6" data-title="L6 — Comparing systems">
+      <div class="level-head"><div class="level-num">L6</div><div><h3>L6 — Capitalism vs other systems (no caricatures)</h3><div class="sub">PREREQ: L5 · COMPARATIVE POLITICS · REAL VARIANTS · TIME 30 MIN</div></div></div>
+      <div class="level-body">
+        <h4>6.1 Master comparison (what textbooks + history actually say)</h4>
+        <table><tr><th>System</th><th>Who owns capital?</th><th>How is production decided?</th><th>Real example</th><th>Documented strength / documented failure</th></tr>
+        <tr><td><b>Liberal capitalism</b></td><td>Private, dispersed</td><td>Markets + light regulation</td><td>USA, UK, Canada, Australia</td><td>Innovation + high GDP/capita / inequality, 2008 crisis, healthcare gaps (US)</td></tr>
+        <tr><td><b>Social-market / ordoliberal</b></td><td>Private</td><td>Markets + strong rules + welfare</td><td>Germany, Netherlands</td><td>Export power + stability / slow growth phases, Hartz reforms controversy</td></tr>
+        <tr><td><b>Nordic model</b></td><td>Private, high unionisation</td><td>Markets + high tax + universal services</td><td>Sweden, Denmark, Norway</td><td>High trust + mobility / high tax burden, oil dependence (Norway)</td></tr>
+        <tr><td><b>State-directed capitalism</b></td><td>Private + SOEs</td><td>Industrial policy + markets</td><td>South Korea (1960–90s), Japan (MITI era), Singapore (Temasek)</td><td>Rapid catch-up / crony risk, chaebol dominance</td></tr>
+        <tr><td><b>Market-Leninism</b></td><td>Mixed, party controls heights</td><td>Markets under authoritarian command</td><td>China post-1978, Vietnam Đổi Mới</td><td>800M lifted from poverty (World Bank) / repression, property bubble, Evergrande 2021</td></tr>
+        <tr><td><b>Democratic socialism (mixed)</b></td><td>Mixed, large public sector</td><td>Markets + planning + nationalisation waves</td><td>UK 1945–79, France Mitterrand 1981–83, Portugal today (NHS-style SNS)</td><td>Public health/education expansion / fiscal crises, reversals</td></tr>
+        <tr><td><b>Central planning (command)</b></td><td>State</td><td>Five-year plans, quotas</td><td>USSR, Maoist China, Cuba, pre-1991 Eastern bloc</td><td>Industrialisation, full employment claims / shortages, famines (Ukraine 1932–33, China 1959–61 — <b>guilty:</b> Stalin, Mao leaderships + planning apparatus)</td></tr>
+        <tr><td><b>Petro-rentier / kleptocratic</b></td><td>Clique captures rents</td><td>Looting via state</td><td>Venezuela under Chávez/Maduro, Russia 2000s–now, Equatorial Guinea</td><td>Short booms / collapse, hyperinflation, exile. <b>Guilty:</b> named ruling cliques + enablers</td></tr></table>
+        <h4>6.2 Parties are not systems — mapping the words</h4>
+        <p>“Communist”, “socialist”, “social-democratic”, “liberal”, “conservative”, “libertarian” mean different things per country. Rule of thumb: ask <i>who owns what, who decides prices, who can be fired by voters</i>. Examples: Sweden’s Social Democrats govern a deeply capitalist export economy with high taxes; China’s Communist Party governs a market economy without political competition; US Republicans and Democrats both govern capitalism but differ on tax/regulation/welfare; France’s RN vs LFI differ on identity + state but both accept mixed economy.</p>
+        <div class="callout"><b>Method note:</b> GDP per capita (PPP), Gini, HDI, and World Bank poverty series are the shared scoreboard. They flatter markets and miss care work, nature, and fear. Read them together, never alone.</div>
+        <div class="refs"><b>REFERENCES:</b><ol>
+          <li><a href="https://data.worldbank.org/" target="_blank" rel="noopener">World Bank Data (GDP, poverty, Gini)</a></li>
+          <li><a href="https://hdr.undp.org/" target="_blank" rel="noopener">UNDP Human Development Reports</a></li>
+          <li><a href="https://www.oecd.org/social/expenditure-database.htm" target="_blank" rel="noopener">OECD Social Expenditure Database</a></li>
+          <li><a href="https://www.marxists.org/archive/marx/works/1848/communist-manifesto/" target="_blank" rel="noopener">Marx &amp; Engels — Communist Manifesto (primary source)</a> · <a href="https://mises.org/library" target="_blank" rel="noopener">Mises Institute library (Austrian counterpoint)</a></li>
+        </ol></div>
+        <div class="quiz" data-quiz="6" data-pass="2"><h5>CHECK L6 <span class="badge">GATE</span></h5>
+          <fieldset><legend>1. The Nordic model is best described as…</legend>
+            <label><input type="radio" name="q6a" value="1"> Private-ownership capitalism + high tax + universal services</label>
+            <label><input type="radio" name="q6a" value="0"> Central planning with no markets</label></fieldset>
+          <fieldset><legend>2. China post-1978 is…</legend>
+            <label><input type="radio" name="q6b" value="1"> Markets under authoritarian party control (market-Leninism)</label>
+            <label><input type="radio" name="q6b" value="0"> A stateless free market</label></fieldset>
+          <fieldset><legend>3. To compare party labels across countries you should ask…</legend>
+            <label><input type="radio" name="q6c" value="1"> Who owns capital, who sets prices, can voters remove rulers?</label>
+            <label><input type="radio" name="q6c" value="0"> Only what the party name sounds like</label></fieldset>
+          <button class="btn" type="button" data-check>Validate L6</button><div class="result" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= L7 ================= -->
+    <section class="level" id="level-7" data-level="7" data-title="L7 — Country cases">
+      <div class="level-head"><div class="level-num">L7</div><div><h3>L7 — Real country cases: what worked, what broke, who decided</h3><div class="sub">PREREQ: L6 · 8 CASES · SOURCED · TIME 30 MIN</div></div></div>
+      <div class="level-body">
+        <div class="cards">
+          <div class="card"><h6>🇺🇸 USA — scale + innovation, inequality + 2008</h6><span class="tag">liberal capitalism</span><span class="tag">NYSE/NASDAQ</span><ul><li>Strength: venture capital, universities, tech platforms (<b>Amazon, eBay, Apple, Google</b>).</li><li>Failure: subprime crisis, opioids, health costs. <b>Guilty:</b> see L8 file.</li></ul></div>
+          <div class="card"><h6>🇩🇪 Germany — ordoliberalism + Mittelstand</h6><span class="tag">social market</span><span class="tag">codetermination</span><ul><li>Works councils, apprenticeships, export SMEs.</li><li>Strain: energy shock 2022, diesel scandal — <b>guilty:</b> VW management (admitted fraud 2015).</li></ul></div>
+          <div class="card"><h6>🇸🇪🇩🇰 Sweden/Denmark — flexicurity</h6><span class="tag">nordic</span><ul><li>Easy hiring/firing + generous retraining + high trust.</li><li>Lesson: security of <i>people</i>, not of <i>jobs</i>.</li></ul></div>
+          <div class="card"><h6>🇸🇬🇰🇷 Singapore / South Korea — directed catch-up</h6><span class="tag">state-directed</span><ul><li>Singapore: Temasek, HDB housing, CPF savings. Korea: Park Chung-hee chaebol push, then democratisation 1987.</li><li>Cost: inequality, chaebol corruption (Samsung heir convicted 2017/2021 — pardoned 2022).</li></ul></div>
+          <div class="card"><h6>🇨🇳 China — poverty cut + control</h6><span class="tag">market-Leninism</span><ul><li>Deng 1978 reforms, SEZs; World Bank: ~800M out of extreme poverty.</li><li>Failures: Tiananmen 1989 repression (<b>guilty:</b> CCP leadership), Evergrande/property bust, zero-COVID costs.</li></ul></div>
+          <div class="card"><h6>🇨🇱 Chile — laboratory then correction</h6><span class="tag">Chicago Boys → democracy</span><ul><li>1973 coup dictatorship + radical privatisation (<b>guilty:</b> Pinochet junta + civilian advisers for repression; economics debated).</li><li>1990–2019: democratic growth + pension/inequality protests → 2019 estallido, constitutional attempts.</li></ul></div>
+          <div class="card"><h6>🇻🇪 Venezuela — rentier collapse</h6><span class="tag">petro-state</span><ul><li>Oil 90%+ exports; price controls + expropriations + PDVSA purges → production fell ~3Mb/d to &lt;1Mb/d; hyperinflation 2018. <b>Guilty:</b> Chávez/Maduro governments + PDVSA mismanagement (documented by IMF, ENCOVI).</li></ul></div>
+          <div class="card"><h6>🇧🇼🇮🇳 Botswana / India — institutions matter</h6><span class="tag">counter-examples</span><ul><li>Botswana: diamonds + rule of law → African success (Acemoglu/Robinson).</li><li>India: Licence Raj stagnation → 1991 Rao/Singh liberalisation → IT boom (Infosys, Flipkart) alongside persistent informality.</li></ul></div>
+        </div>
+        <div class="callout"><b>Honest pattern:</b> every fast catch-up used markets <i>plus</i> a capable state (education, infrastructure, banks). Every collapse combined concentrated power with no feedback (no free press, no independent courts, no opposition). The variable isn’t “more market” or “more state” alone — it’s <b>constrained power + open entry</b>.</div>
+        <div class="refs"><b>REFERENCES:</b><ol>
+          <li><a href="https://data.worldbank.org/country" target="_blank" rel="noopener">World Bank country profiles</a></li>
+          <li><a href="https://www.imf.org/en/Countries" target="_blank" rel="noopener">IMF country reports (incl. Venezuela, Argentina)</a></li>
+          <li><a href="https://encyclopedia.ushmm.org/" target="_blank" rel="noopener">Context on authoritarian planning crimes</a> · <a href="https://www.reuters.com/" target="_blank" rel="noopener">Reuters (VW, Samsung, Evergrande timelines)</a></li>
+        </ol></div>
+        <div class="quiz" data-quiz="7" data-pass="2"><h5>CHECK L7 <span class="badge">GATE</span></h5>
+          <fieldset><legend>1. Botswana vs many oil states suggests…</legend>
+            <label><input type="radio" name="q7a" value="1"> Institutions (rule of law, constraints) shape resource outcomes</label>
+            <label><input type="radio" name="q7a" value="0"> Resources alone guarantee wealth</label></fieldset>
+          <fieldset><legend>2. Venezuela’s collapse is best explained by…</legend>
+            <label><input type="radio" name="q7b" value="1"> Oil dependence + price controls/expropriations + PDVSA mismanagement under Chávez/Maduro</label>
+            <label><input type="radio" name="q7b" value="0"> Too much competition</label></fieldset>
+          <fieldset><legend>3. South Korea’s catch-up combined…</legend>
+            <label><input type="radio" name="q7c" value="1"> State direction + markets/exports, later democratisation</label>
+            <label><input type="radio" name="q7c" value="0"> Pure laissez-faire from day one</label></fieldset>
+          <button class="btn" type="button" data-check>Validate L7</button><div class="result" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= L8 ================= -->
+    <section class="level" id="level-8" data-level="8" data-title="L8 — Crises & guilt">
+      <div class="level-head"><div class="level-num">L8</div><div><h3>L8 — When capitalism breaks: crisis files + named responsibility</h3><div class="sub">PREREQ: L7 · 1929 · 1970s · 2008 · FRAUDS · TIME 30 MIN</div></div></div>
+      <div class="level-body">
+        <h4>8.1 Incident reports (blameless systems don’t exist — decisions have authors)</h4>
+        <table><tr><th>Incident</th><th>What happened (technical)</th><th>Guilty / responsible (evidence-based)</th><th>Fix adopted</th></tr>
+        <tr><td>Great Depression 1929–33</td><td>Stock crash + bank runs + Fed tightened + gold-standard straitjacket; GDP −30%, unemployment 25% (US).</td><td><b>Guilty:</b> Fed (Friedman/Schwartz verdict: allowed money supply to collapse); governments clinging to gold; banks with no deposit insurance.</td><td>Deposit insurance (FDIC), SEC, fiat + lender-of-last-resort doctrine</td></tr>
+        <tr><td>Stagflation 1970s</td><td>OPEC embargo + wage-price spirals + accommodative policy → inflation + stagnation.</td><td><b>Guilty:</b> OPEC governments (embargo weapon); Western governments/central banks late to tighten; firms+unions in spiral (shared).</td><td>Volcker shock 1979–82, central-bank independence</td></tr>
+        <tr><td>2008 subprime</td><td>NINJA loans → MBS/CDO → AAA ratings → leverage 30:1 → Lehman. $15T+ wealth wiped.</td><td><b>Guilty:</b> 1) originators (Countrywide et al.), 2) banks (Lehman, Bear, Merrill), 3) rating agencies (Moody’s/S&P/ Fitch paid-by-issuer), 4) regulators/SEC/Fed, 5) political push for homeownership without underwriting (both parties). Convictions/fines: see FCIC report.</td><td>Dodd-Frank, Basel III, CFPB, stress tests</td></tr>
+        <tr><td>Enron 2001 / Wirecard 2020 / FTX 2022</td><td>Accounting fraud / fake escrow / customer-fund misuse.</td><td><b>Guilty:</b> Enron execs (Lay/Skilling convicted) + Arthur Andersen (obstruction); Wirecard’s Braun/Marsalek (German courts); SBF convicted 2023 (US court). Auditors/regulators secondarily liable for blindness.</td><td>Sarbanes-Oxley, audit rotation debates, MiCA/crypto custody rules</td></tr>
+        <tr><td>Austerity &amp; euro crisis 2010–15 (Greece)</td><td>Sovereign debt + no lender of last resort + forced contraction → −25% GDP.</td><td><b>Shared guilt:</b> Greek governments (falsified stats pre-2009 — <b>guilty:</b> PASOK/ND era book-cooking); lenders/ECB/IMF (IMF itself admitted multipliers underestimated, 2013 mea culpa).</td><td>ESM, ECB “whatever it takes” (Draghi 2012), debt restructuring</td></tr></table>
+        <h4>8.2 Boom-bust anatomy (Minsky in 5 steps)</h4>
+        <p>Displacement (new tech) → Boom (credit) → Euphoria (prices detach) → Profit-taking (smart money exits) → Panic (leverage unwinds). Platforms amplify it: <b>Robinhood/GameStop 2021</b>, crypto leverage, housing portals. Euphoria is measurable: price-to-rent, CAPE ratio, loan-to-income.</p>
+        <div class="refs"><b>REFERENCES (primary where possible):</b><ol>
+          <li><a href="https://www.govinfo.gov/app/details/GPO-FCIC" target="_blank" rel="noopener">US Financial Crisis Inquiry Commission report (2011)</a></li>
+          <li><a href="https://www.federalreservehistory.org/essays/stock-market-crash-of-1929" target="_blank" rel="noopener">Fed History — 1929 crash</a></li>
+          <li><a href="https://www.imf.org/external/pubs/ft/wp/2013/wp1317.pdf" target="_blank" rel="noopener">IMF Blanchard-Leigh (2013) — austerity multipliers mea culpa [PDF]</a></li>
+          <li><a href="https://www.justice.gov/" target="_blank" rel="noopener">US DOJ — Enron / FTX verdicts</a></li>
+        </ol></div>
+        <div class="quiz" data-quiz="8" data-pass="2"><h5>CHECK L8 <span class="badge">GATE</span></h5>
+          <fieldset><legend>1. Friedman/Schwartz blamed the Depression mainly on…</legend>
+            <label><input type="radio" name="q8a" value="1"> The Fed allowing the money supply to collapse</label>
+            <label><input type="radio" name="q8a" value="0"> Capitalism having markets at all</label></fieldset>
+          <fieldset><legend>2. A core 2008 guilt finding (FCIC) was…</legend>
+            <label><input type="radio" name="q8b" value="1"> Lending fraud + misrated securities + regulatory failure (multiple named actors)</label>
+            <label><input type="radio" name="q8b" value="0"> Nobody did anything wrong</label></fieldset>
+          <fieldset><legend>3. Minsky’s cycle ends in panic because…</legend>
+            <label><input type="radio" name="q8c" value="1"> Leveraged bets unwind together when prices turn</label>
+            <label><input type="radio" name="q8c" value="0"> Panic is random and unpreventable in principle</label></fieldset>
+          <button class="btn" type="button" data-check>Validate L8</button><div class="result" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= L9 ================= -->
+    <section class="level" id="level-9" data-level="9" data-title="L9 — Peaceful useful societies">
+      <div class="level-head"><div class="level-num">L9</div><div><h3>L9 — New ideas for peaceful, useful societies (build, don’t preach)</h3><div class="sub">PREREQ: L8 · DESIGN PATTERNS · LOCAL PLAYBOOK · FINAL EXAM · TIME 30 MIN</div></div></div>
+      <div class="level-body">
+        <h4>9.1 Design constraints (engineering, not utopia)</h4>
+        <p>Any proposal must pass: (a) <b>incentive-compatible</b> (works even if people are selfish), (b) <b>falsifiable</b> (metrics + sunset clause), (c) <b>power-constrained</b> (losers can reverse it), (d) <b>funded</b> (who pays, in numbers). If it fails one, it’s a wish.</p>
+        <h4>9.2 Seven buildable patterns (pick one, pilot it)</h4>
+        <table><tr><th>Pattern</th><th>Mechanism</th><th>Real pilot to copy</th><th>Metric</th></tr>
+        <tr><td>1. Flexicurity 2.0</td><td>Easy hiring + portable benefits + retraining vouchers</td><td>Denmark flexicurity; France CPF training accounts</td><td>Re-employment in 6 months, wage recovery</td></tr>
+        <tr><td>2. Land-value + carbon dividends</td><td>Tax immobile value &amp; pollution, return as citizen dividend</td><td>Alaska Permanent Fund; Switzerland CO₂ redistribution; EU ETS + Social Climate Fund</td><td>Gini after transfers, emissions/tax €</td></tr>
+        <tr><td>3. Platform cooperatives</td><td>Drivers/couriers own the app (like a taxi co-op with code)</td><td>Stocksy (photos), Resonate (music), driver co-ops in NYC/EU</td><td>Take-rate kept by workers, retention</td></tr>
+        <tr><td>4. Open industrial commons</td><td>Shared fablabs, repair cafés, open-source machines</td><td>Barcelona Fab City, Open Source Ecology, <b>Wikipedia / Linux / Arduino</b> as proof</td><td>Cost per prototype, repair rate</td></tr>
+        <tr><td>5. Participatory budgeting</td><td>Citizens allocate part of municipal budget</td><td>Porto Alegre (Brazil), Paris (€100M+ voted), NYC PBNYC</td><td>Turnout, project completion</td></tr>
+        <tr><td>6. Baby bonds + apprenticeships</td><td>Capital endowment at birth + paid work-learning path</td><td>UK Child Trust (2005–11), German dual system, Singapore SkillsFuture</td><td>Wealth at 25 for bottom quartile</td></tr>
+        <tr><td>7. Adversarial transparency</td><td>Beneficial-ownership registry + ad archives + public procurement open data</td><td>UK PSC register, EU beneficial ownership, OpenContracting</td><td>Time to identify a shell owner</td></tr></table>
+        <h4>9.3 How to produce (a 90-day local playbook)</h4>
+        <p><b>Days 1–15:</b> map one street’s unused capacity (rooms on <b>Airbnb</b>-style listing? tools? skills?). <b>16–45:</b> form a co-op or micro-firm on <b>Shopify/eBay/Etsy</b> with 3 products and real unit economics from L1. <b>46–75:</b> add one commons (repair slot, shared printer, tutoring). <b>76–90:</b> publish accounts + vote next cycle (pattern 5). Measure: revenue, hours, waste avoided, neighbours served. If numbers fail, pivot — that’s capitalism’s useful half (selection), tamed by the peaceful half (no one starves during the test).</p>
+        <div class="lab"><b>FINAL LAB — Design your mini-society (self-graded, then exam)</b>
+          <label>Pick a pattern (1–7): <output id="oPat">2</output></label><input id="inPat" type="range" min="1" max="7" step="1" value="2">
+          <p id="patOut" style="font-size:14px"></p>
+          <label>Write your falsifiable pledge (e.g. “If re-employment &lt; 50% in 12 months, we kill the pilot”):</label>
+          <input id="pledge" type="text" placeholder="Type your pledge here…" style="width:100%;padding:10px;border:2px solid var(--ink);font-size:14px">
+          <p><button class="btn secondary" id="pledgeBtn" type="button">Stamp my pledge</button> <span id="pledgeOut" style="font-family:var(--mono);font-size:13px"></span></p>
+        </div>
+        <div class="refs"><b>REFERENCES:</b><ol>
+          <li><a href="https://www.oecd.org/employment/flexicurity.htm" target="_blank" rel="noopener">OECD — flexicurity</a> · <a href="https://participatorybudgeting.org/" target="_blank" rel="noopener">Participatory Budgeting Project</a></li>
+          <li><a href="https://platform.coop/" target="_blank" rel="noopener">Platform Cooperativism Consortium</a> · <a href="https://www.opencontracting.org/" target="_blank" rel="noopener">Open Contracting Partnership</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/" target="_blank" rel="noopener">Wikipedia</a> · <a href="https://www.arduino.cc/" target="_blank" rel="noopener">Arduino (open hardware example)</a> · <a href="https://www.etsy.com/" target="_blank" rel="noopener">Etsy</a></li>
+        </ol></div>
+        <div class="quiz" data-quiz="9" data-pass="2"><h5>FINAL EXAM L9 <span class="badge">CERTIFIES MANUAL</span></h5>
+          <fieldset><legend>1. An idea is “buildable” here only if it is…</legend>
+            <label><input type="radio" name="q9a" value="1"> Incentive-compatible, falsifiable, reversible, funded</label>
+            <label><input type="radio" name="q9a" value="0"> Loudly believed by its author</label></fieldset>
+          <fieldset><legend>2. A land-value dividend works because…</legend>
+            <label><input type="radio" name="q9b" value="1"> It taxes immobile value and shares rents without killing production</label>
+            <label><input type="radio" name="q9b" value="0"> Land multiplies when taxed</label></fieldset>
+          <fieldset><legend>3. Platform cooperativism changes…</legend>
+            <label><input type="radio" name="q9c" value="1"> Who owns the platform and keeps the take-rate</label>
+            <label><input type="radio" name="q9c" value="0"> Nothing — it’s just rebranding</label></fieldset>
+          <button class="btn" type="button" data-check>Validate L9 + Finish</button><div class="result" aria-live="polite"></div>
+        </div>
+        <div id="certificate" style="display:none;border:3px solid var(--accent3);background:#eef7ee;padding:16px;font-family:var(--mono)"></div>
+      </div>
+    </section>
+
+    <section class="level" id="level-refs" data-level="99" data-title="Appendix — Sources">
+      <div class="level-head"><div class="level-num">§</div><div><h3>Appendix — Master source list &amp; how to verify</h3><div class="sub">ALWAYS OPEN · CROSS-CHECK NUMBERS BEFORE QUOTING</div></div></div>
+      <div class="level-body">
+        <p>Data: <a href="https://data.worldbank.org/" target="_blank" rel="noopener">World Bank</a> · <a href="https://www.imf.org/en/Data" target="_blank" rel="noopener">IMF Data</a> · <a href="https://fred.stlouisfed.org/" target="_blank" rel="noopener">FRED (St. Louis Fed)</a> · <a href="https://data.oecd.org/" target="_blank" rel="noopener">OECD Data</a> · <a href="https://www.ilo.org/" target="_blank" rel="noopener">ILO</a>. History: <a href="https://www.federalreservehistory.org/" target="_blank" rel="noopener">Fed History</a> · <a href="https://www.govinfo.gov/app/details/GPO-FCIC" target="_blank" rel="noopener">FCIC</a>. Theory (opposing): <a href="https://www.econlib.org/" target="_blank" rel="noopener">Econlib</a> · <a href="https://mises.org/" target="_blank" rel="noopener">Mises</a> · <a href="https://www.marxists.org/" target="_blank" rel="noopener">Marxists Internet Archive</a>. Platforms cited as mechanisms: <a href="https://www.amazon.com/" target="_blank" rel="noopener">Amazon</a>, <a href="https://www.ebay.com/" target="_blank" rel="noopener">eBay</a>, <a href="https://www.shopify.com/" target="_blank" rel="noopener">Shopify</a>, <a href="https://www.airbnb.com/" target="_blank" rel="noopener">Airbnb</a>, <a href="https://www.uber.com/" target="_blank" rel="noopener">Uber</a>, <a href="https://www.upwork.com/" target="_blank" rel="noopener">Upwork</a>, <a href="https://www.kickstarter.com/" target="_blank" rel="noopener">Kickstarter</a>, <a href="https://www.nyse.com/" target="_blank" rel="noopener">NYSE</a>, <a href="https://www.nasdaq.com/" target="_blank" rel="noopener">Nasdaq</a>.</p>
+        <p><a href="index.html">⌂ Home (index.html)</a> · <a href="#home">Back to top</a></p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer> CAP-01 · Single HTML file · Vanilla JS + CSS3 only — no external CSS/JS/fonts/images. External hyperlinks are references. Content is descriptive + critical, not investment advice. Verify figures via linked primary sources. Guilt attributions refer to documented decisions (court verdicts, official reports), not to peoples or ideologies as such.</footer>
+
+<script>
+(function(){
+"use strict";
+var KEY="cap01-progress-v1";
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{passed:[]}}catch(e){return{passed:[]}}}
+function save(s){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
+var state=load();
+function isPassed(n){return state.passed.indexOf(n)>-1}
+function markPassed(n){if(!isPassed(n)){state.passed.push(n);save(state);}render();}
+/* TOC */
+var levels=[0,1,2,3,4,5,6,7,8,9];
+var titles=["L0 — Core definition","L1 — How production works","L2 — Markets & prices","L3 — Capital & finance","L4 — Labour & firms","L5 — State, money, taxes","L6 — Comparing systems","L7 — Country cases","L8 — Crises & guilt","L9 — Peaceful societies"];
+var toc=document.getElementById("toc");
+levels.forEach(function(n,i){
+  var unlocked=(n===0)||isPassed(n-1);
+  var li=document.createElement("li");
+  var b=document.createElement("button");
+  b.type="button";
+  b.className=(unlocked?"unlocked":"locked")+(isPassed(n)?" current":"");
+  b.innerHTML='<span class="n">'+titles[n].split(" ")[0]+'</span><span>'+titles[n].slice(titles[n].indexOf("—")+1).trim()+'</span><span class="lock">'+(isPassed(n)?"✓":(unlocked?"○":"🔒"))+'</span>';
+  b.addEventListener("click",function(){
+    if((n===0)||isPassed(n-1)){document.getElementById("level-"+n).scrollIntoView({behavior:"smooth"});}
+    else{alert("Locked: pass L"+(n-1)+" quiz first (≥2/3).");}
+  });
+  li.appendChild(b);toc.appendChild(li);
+});
+function render(){
+  var secs=document.querySelectorAll(".level[data-level]");
+  secs.forEach(function(sec){
+    var n=parseInt(sec.getAttribute("data-level"),10);
+    if(n>9)return;
+    var unlocked=(n===0)||isPassed(n-1);
+    sec.classList.toggle("unlocked",unlocked);
+    sec.classList.toggle("locked-level",!unlocked);
+    var gate=sec.querySelector(".gate-lock");
+    if(!unlocked && !gate){
+      var d=document.createElement("div");d.className="gate gate-lock";
+      d.textContent="🔒 LOCKED — pass the previous level quiz (≥2/3) to unlock this level. Scroll up and validate.";
+      sec.querySelector(".level-body").prepend(d);
+    }
+    if(unlocked && gate){gate.remove();}
+  });
+  toc.innerHTML="";
+  levels.forEach(function(n){
+    var unlocked=(n===0)||isPassed(n-1);
+    var li=document.createElement("li");
+    var b=document.createElement("button");
+    b.type="button";
+    b.className=(unlocked?"unlocked":"locked")+(isPassed(n)?" current":"");
+    b.innerHTML='<span class="n">'+titles[n].split(" ")[0]+'</span><span>'+titles[n].slice(titles[n].indexOf("—")+1).trim()+'</span><span class="lock">'+(isPassed(n)?"✓":(unlocked?"○":"🔒"))+'</span>';
+    b.addEventListener("click",function(){
+      if((n===0)||isPassed(n-1)){document.getElementById("level-"+n).scrollIntoView({behavior:"smooth"});}
+      else{alert("Locked: pass L"+(n-1)+" quiz first (≥2/3).");}
+    });
+    li.appendChild(b);toc.appendChild(li);
+  });
+  var done=state.passed.filter(function(x){return x<=9}).length;
+  document.getElementById("progressBar").style.width=Math.round(done/10*100)+"%";
+  if(isPassed(9)){
+    var c=document.getElementById("certificate");
+    c.style.display="block";
+    c.innerHTML="✔ MANUAL COMPLETE — CAP-01 CERTIFIED<br>Levels passed: "+done+"/10 · "+new Date().toLocaleDateString()+"<br>Next: pick ONE pattern from L9 and run the 90-day playbook. <a href='index.html'>⌂ Home</a>";
+  }
+}
+document.getElementById("resetBtn").addEventListener("click",function(){
+  if(confirm("Reset all progress?")){state={passed:[]};save(state);render();}
+});
+/* Quizzes */
+var answers={0:["q0a","q0b","q0c"],1:["q1a","q1b","q1c"],2:["q2a","q2b","q2c"],3:["q3a","q3b","q3c"],4:["q4a","q4b","q4c"],5:["q5a","q5b","q5c"],6:["q6a","q6b","q6c"],7:["q7a","q7b","q7c"],8:["q8a","q8b","q8c"],9:["q9a","q9b","q9c"]};
+document.querySelectorAll(".quiz").forEach(function(q){
+  var n=parseInt(q.getAttribute("data-quiz"),10);
+  var btn=q.querySelector("[data-check]");
+  var res=q.querySelector(".result");
+  if(isPassed(n)){res.className="result pass";res.textContent="✓ Already validated ("+answers[n].length+" questions). Next level unlocked.";}
+  btn.addEventListener("click",function(){
+    var score=0,total=answers[n].length,missing=false;
+    answers[n].forEach(function(name){
+      var sel=q.querySelector('input[name="'+name+'"]:checked');
+      if(!sel){missing=true;return;}
+      if(sel.value==="1")score++;
+    });
+    if(missing){res.className="result fail";res.textContent="Answer all "+total+" questions first.";return;}
+    if(score>=2){res.className="result pass";res.textContent="✓ PASS — "+score+"/"+total+". L"+(n+1)+" unlocked (if any). Progress saved.";markPassed(n);}
+    else{res.className="result fail";res.textContent="✗ "+score+"/"+total+" — need ≥2. Re-read the level, retry (answers shuffle by understanding, not memory).";}
+  });
+});
+/* Flow tick */
+var flows=["Households → labour → Firms → wages → Households → spending → Firms …","Firms → goods → Markets → prices → Households …","Banks → credit → Investment → machines → output …","State → rules + taxes ⇄ both sides …"];
+var fi=0;setInterval(function(){fi=(fi+1)%flows.length;var el=document.getElementById("flowTick");if(el)el.textContent=flows[fi];},2600);
+/* Lab1 */
+function lab1(){
+  var p=parseFloat(document.getElementById("inPrice").value),
+      c=parseFloat(document.getElementById("inCost").value),
+      t=parseFloat(document.getElementById("inTraf").value);
+  document.getElementById("oPrice").textContent="$"+p.toFixed(2);
+  document.getElementById("oCost").textContent="$"+c.toFixed(2);
+  document.getElementById("oTraf").textContent=t+" people";
+  var qty=Math.max(0,Math.round(t*(1-(p-0.5)/5.5)));
+  var profit=(p-c)*qty-20;
+  document.getElementById("lab1Out").textContent=qty+" cups → $"+profit.toFixed(2)+" profit (fixed $20)";
+}
+["inPrice","inCost","inTraf"].forEach(function(id){document.getElementById(id).addEventListener("input",lab1)});lab1();
+/* SD diagram */
+function sd(){
+  var d=parseFloat(document.getElementById("dShift").value),
+      s=parseFloat(document.getElementById("sShift").value);
+  document.getElementById("dVal").textContent=(d>0?"+":"")+d;
+  document.getElementById("sVal").textContent=(s>0?"+":"")+s;
+  var dEl=document.getElementById("dLine"),sEl=document.getElementById("sLine");
+  dEl.setAttribute("x1",30+d);dEl.setAttribute("x2",270+d);
+  sEl.setAttribute("x1",30+s);sEl.setAttribute("x2",270+s);
+  var P=Math.round(110+d*0.6-s*0.6),Q=Math.round(150+(d+s)*0.35);
+  document.getElementById("eqPt").setAttribute("cx",150+(d+s)*0.35);
+  document.getElementById("eqPt").setAttribute("cy",110-d*0.25+s*0.25);
+  document.getElementById("eqOut").textContent="P*="+P+" · Q*="+Q;
+}
+["dShift","sShift"].forEach(function(id){document.getElementById(id).addEventListener("input",sd)});sd();
+/* Lab2 compound */
+function lab2(){
+  var P=parseFloat(document.getElementById("inP").value),
+      r=parseFloat(document.getElementById("inR").value)/100,
+      y=parseFloat(document.getElementById("inY").value);
+  document.getElementById("oP").textContent=P;
+  document.getElementById("oR").textContent=(r*100)+"%";
+  document.getElementById("oY").textContent=y;
+  document.getElementById("lab2Out").textContent="€"+(P*Math.pow(1+r,y)).toFixed(2);
+}
+["inP","inR","inY"].forEach(function(id){document.getElementById(id).addEventListener("input",lab2)});lab2();
+/* Lab3 inflation */
+function lab3(){
+  var i=parseFloat(document.getElementById("inI").value)/100,
+      y=parseFloat(document.getElementById("inIY").value);
+  document.getElementById("oI").textContent=(i*100)+"%";
+  document.getElementById("oIY").textContent=y;
+  document.getElementById("lab3Out").textContent="€"+(1000/Math.pow(1+i,y)).toFixed(2)+" of today’s goods";
+}
+["inI","inIY"].forEach(function(id){document.getElementById(id).addEventListener("input",lab3)});lab3();
+/* Pattern picker */
+var pats={1:"Flexicurity 2.0 — protect people, not jobs: portable benefits + retraining vouchers.",2:"Land-value + carbon dividends — tax what can’t flee, return proceeds per capita.",3:"Platform cooperative — drivers/creatives own the app; cap take-rate at 10%.",4:"Open industrial commons — fablab + repair café; publish all designs.",5:"Participatory budgeting — 10% of local budget voted by residents.",6:"Baby bonds + apprenticeships — endow every child, pay to learn a trade.",7:"Adversarial transparency — publish owners, contracts, ad buyers."};
+function pat(){var v=document.getElementById("inPat").value;document.getElementById("oPat").textContent=v;document.getElementById("patOut").textContent=pats[v];}
+document.getElementById("inPat").addEventListener("input",pat);pat();
+document.getElementById("pledgeBtn").addEventListener("click",function(){
+  var v=document.getElementById("pledge").value.trim();
+  document.getElementById("pledgeOut").textContent=v?("✔ STAMPED: “"+v+"” — now add a date and a killer metric."):"Type a pledge first.";
+});
+render();
+})();
+</script>
+</body>
+</html>
