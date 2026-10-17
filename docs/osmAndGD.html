@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open Streets Heroes — OSM + Android Game Design Quest</title>
+<meta name="description" content="Zero to Hero game-course: OpenStreetMap + Game Design for Android. Pure vanilla JS/CSS, no external resources.">
+<style>/* ============================================================
+   OPEN STREETS HEROES — pure vanilla CSS3, zero external assets
+   Theme: game world map + OSM cartography
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b1020; --bg2:#111936; --panel:#162044; --panel2:#1c2a55;
+  --ink:#eef2ff; --muted:#9aa8d0; --line:#2c3a6e;
+  --green:#3ddc84; --green-d:#1a9e5c; --gold:#ffcf3f; --gold-d:#c99800;
+  --blue:#4da3ff; --red:#ff5d6c; --purple:#b388ff; --orange:#ff9f43;
+  --radius:18px; --shadow:0 12px 40px rgba(0,0,0,.45);
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(1200px 600px at 20% -10%,#22306b 0%,transparent 60%),radial-gradient(1000px 500px at 90% 10%,#123f3a 0%,transparent 55%),var(--bg);color:var(--ink);font-family:var(--font);line-height:1.6;min-height:100vh}
+a{color:var(--gold)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 18px}
+/* ---------- HUD ---------- */
+.hud{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:rgba(11,16,32,.88);border-bottom:2px solid var(--line)}
+.hud-inner{display:flex;align-items:center;gap:12px;padding:10px 18px;max-width:1080px;margin:0 auto;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:900;letter-spacing:.5px}
+.brand-badge{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:22px;background:linear-gradient(145deg,#23408f,#162044);border:2px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.15)}
+.brand small{display:block;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1.5px}
+.home-link{display:inline-flex;align-items:center;gap:6px;background:#0e1530;border:2px solid var(--line);color:var(--ink);text-decoration:none;padding:7px 12px;border-radius:999px;font-weight:800;font-size:13px}
+.home-link:hover{border-color:var(--gold);color:var(--gold)}
+.hud-stats{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{background:#0e1530;border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800;display:inline-flex;gap:7px;align-items:center}
+.pill b{color:var(--gold)}
+.xpbar{width:160px;height:10px;background:#0a0f24;border-radius:999px;border:1px solid var(--line);overflow:hidden}
+.xpbar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--green),var(--gold));transition:width .8s cubic-bezier(.2,.9,.2,1)}
+.btn{cursor:pointer;border:0;border-radius:12px;padding:11px 16px;font-weight:900;font-size:14px;color:#0b1020;background:linear-gradient(180deg,var(--gold),#ffb700);box-shadow:0 4px 0 var(--gold-d),0 8px 20px rgba(0,0,0,.35);transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--gold-d)}
+.btn.secondary{background:linear-gradient(180deg,#dbe6ff,#aabbff);box-shadow:0 4px 0 #5a72b5,0 8px 20px rgba(0,0,0,.35)}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line);box-shadow:none}
+.btn.small{padding:8px 12px;font-size:13px}
+.btn:disabled{filter:grayscale(1);opacity:.5;cursor:not-allowed}
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;border-bottom:2px solid var(--line)}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:26px;padding:36px 0 28px;align-items:center}
+@media(max-width:860px){.hero-grid{grid-template-columns:1fr}}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:900;letter-spacing:2px;color:#0b1020;background:var(--green);padding:6px 12px;border-radius:999px}
+h1{font-size:clamp(32px,5vw,58px);line-height:1.02;margin:14px 0 10px;font-weight:950}
+h1 .stroke{color:transparent;-webkit-text-stroke:2px var(--gold)}
+.lead{color:var(--muted);font-size:17px;max-width:52ch}
+.hero-cta{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.quest-list{margin:18px 0 0;list-style:none;display:grid;gap:8px;font-size:14px;color:var(--muted)}
+.quest-list li{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+.quest-list b{color:var(--ink)}
+/* animated map */
+.map-stage{position:relative;background:#0e1a3a;border:2px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow);min-height:420px}
+.map-bg{position:absolute;inset:0;
+ background:
+  linear-gradient(rgba(77,163,255,.14) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(77,163,255,.14) 1px,transparent 1px),
+  radial-gradient(circle at 30% 30%,#1d3a6e 0 90px,transparent 91px),
+  radial-gradient(circle at 75% 65%,#144d3a 0 110px,transparent 111px),
+  linear-gradient(180deg,#132154,#0e1a3a);
+ background-size:32px 32px,32px 32px,auto,auto,auto;
+ animation:panGrid 14s linear infinite}
+@keyframes panGrid{to{background-position:64px 32px,32px 64px,0 0,0 0,0 0}}
+.road{position:absolute;background:#e8ecff;border-radius:999px;box-shadow:0 0 0 4px rgba(232,236,255,.12)}
+.road.h{height:14px;left:-5%;right:-5%}.road.v{width:14px;top:-5%;bottom:-5%}
+.road.r1{top:28%}.road.r2{top:62%;height:10px;opacity:.85}.road.r3{top:82%;height:8px;opacity:.7}
+.road.c1{left:24%}.road.c2{left:58%;width:10px;opacity:.85}.road.c3{left:82%;width:8px;opacity:.7}
+.river{position:absolute;left:-10%;right:-10%;top:46%;height:22px;background:linear-gradient(180deg,#4da3ff,#1e6fd9);transform:rotate(-8deg);border-radius:999px;opacity:.9}
+.pin{position:absolute;font-size:22px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.player{position:absolute;width:44px;height:44px;z-index:3;offset-path:path("M 20 360 C 120 300 140 220 240 210 S 360 140 420 60");animation:drive 9s linear infinite}
+.player-inner{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#ffcf3f 45%,#b87a00 100%);border:3px solid #0b1020;display:grid;place-items:center;font-size:22px;animation:spinBob 1s ease-in-out infinite}
+@keyframes drive{from{offset-distance:0%}to{offset-distance:100%}}
+@keyframes spinBob{50%{transform:scale(1.08) rotate(-6deg)}}
+.trail{position:absolute;inset:0;pointer-events:none}
+.gps{position:absolute;left:62%;top:52%;width:18px;height:18px;background:var(--blue);border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 0 rgba(77,163,255,.7);animation:pulse 1.8s infinite;z-index:2}
+@keyframes pulse{70%{box-shadow:0 0 0 26px rgba(77,163,255,0)}100%{box-shadow:0 0 0 0 rgba(77,163,255,0)}}
+.map-label{position:absolute;font-size:11px;font-weight:900;letter-spacing:1px;background:rgba(11,16,32,.85);border:1px solid var(--line);padding:4px 8px;border-radius:999px;color:var(--muted)}
+.tile-toast{position:absolute;right:12px;top:12px;background:rgba(11,16,32,.9);border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-family:var(--mono);font-size:11px;color:var(--green)}
+/* ---------- WORLD MAP / LEVELS NAV ---------- */
+.section{padding:30px 0}
+.section h2{font-size:clamp(24px,3.5vw,36px);margin-bottom:6px}
+.section .sub{color:var(--muted);margin-bottom:18px;max-width:70ch}
+.world{position:relative;background:linear-gradient(180deg,var(--panel),#0e1530);border:2px solid var(--line);border-radius:22px;padding:22px;box-shadow:var(--shadow);overflow:hidden}
+.world::before{content:"";position:absolute;inset:0;background:radial-gradient(400px 200px at 15% 20%,rgba(61,220,132,.12),transparent),radial-gradient(400px 200px at 85% 80%,rgba(255,207,63,.1),transparent);pointer-events:none}
+.level-path{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;position:relative}
+@media(max-width:760px){.level-path{grid-template-columns:1fr}}
+.lvl-card{position:relative;background:#0e1530;border:2px solid var(--line);border-radius:16px;padding:16px;text-align:left;color:var(--ink);transition:transform .15s}
+.lvl-card:not(.locked):hover{transform:translateY(-3px);border-color:var(--gold)}
+.lvl-card.locked{opacity:.62;filter:saturate(.4)}
+.lvl-num{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:1px}
+.lvl-card h3{font-size:18px;margin:4px 0 6px}
+.lvl-card p{font-size:13px;color:var(--muted);min-height:60px}
+.lvl-emoji{font-size:34px}
+.lvl-status{margin-top:10px;display:flex;gap:8px;align-items:center;font-size:13px;font-weight:800}
+.stars{color:var(--gold);letter-spacing:2px}
+.go{display:inline-block;margin-top:10px;text-decoration:none;font-weight:900;font-size:13px;background:var(--green);color:#06130c;padding:8px 12px;border-radius:10px}
+.locked .go{background:#38406b;color:#aab;pointer-events:none}
+/* ---------- LEVEL PANELS ---------- */
+.level{background:linear-gradient(180deg,var(--panel2),var(--panel));border:2px solid var(--line);border-radius:22px;padding:24px;margin:22px 0;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.level.locked-level{display:none}
+.level.locked-level.show-locked{display:block;opacity:.9}
+.level-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:12px}
+.level-icon{font-size:40px;background:#0e1530;border:2px solid var(--line);border-radius:14px;width:64px;height:64px;display:grid;place-items:center;flex-shrink:0}
+.tag{display:inline-block;font-size:11px;font-weight:900;letter-spacing:1.5px;padding:4px 10px;border-radius:999px;background:#0e1530;border:1px solid var(--line);color:var(--gold)}
+.level h2{font-size:26px}
+.concepts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+@media(max-width:800px){.concepts{grid-template-columns:1fr}}
+.card{background:rgba(11,16,32,.6);border:1px solid var(--line);border-radius:14px;padding:14px}
+.card h4{margin-bottom:6px;font-size:15px;color:var(--gold)}
+.card p, .card li{font-size:14px;color:#cdd6f4}
+.card ul{padding-left:18px}
+code,.code{font-family:var(--mono);font-size:12.5px;background:#0a0f24;border:1px solid var(--line);border-radius:8px;padding:2px 6px;color:#9ef0c3}
+pre{background:#070c1f;border:1px solid var(--line);border-radius:12px;padding:12px;overflow:auto;font-family:var(--mono);font-size:12.5px;line-height:1.5;color:#c8f5d6;margin:10px 0}
+.demo{border:2px dashed #3a4a8a;border-radius:14px;padding:14px;margin:14px 0;background:rgba(77,163,255,.06)}
+.demo h5{font-size:13px;letter-spacing:1.5px;color:var(--blue);margin-bottom:10px}
+/* node demo */
+.node-svg{width:100%;height:220px;background:#0a1230;border-radius:12px;border:1px solid var(--line);cursor:crosshair}
+.hint{font-size:13px;color:var(--muted)}
+.quiz{background:#0b1330;border:2px solid var(--gold-d);border-radius:14px;padding:14px;margin-top:14px}
+.quiz h5{color:var(--gold);letter-spacing:1px;margin-bottom:8px}
+.q{margin:10px 0;padding:10px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid var(--line)}
+.q p{font-weight:700;font-size:14px;margin-bottom:8px}
+.q label{display:block;font-size:14px;padding:7px 10px;border-radius:8px;cursor:pointer;border:1px solid transparent}
+.q label:hover{background:rgba(255,207,63,.08);border-color:var(--line)}
+.q input{margin-right:8px}
+.quiz-result{font-weight:900;margin-top:10px;min-height:24px}
+/* phone */
+.phone-row{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start}
+@media(max-width:800px){.phone-row{grid-template-columns:1fr}}
+.phone{width:260px;margin:0 auto;background:#050814;border:3px solid #334;border-radius:32px;padding:12px;box-shadow:var(--shadow)}
+.phone-screen{background:#10265c;border-radius:18px;height:360px;position:relative;overflow:hidden;border:2px solid var(--line)}
+.phone-notch{width:110px;height:18px;background:#050814;border-radius:0 0 12px 12px;margin:0 auto}
+.mini-map{position:absolute;inset:26px 8px 54px 8px;background:
+ linear-gradient(rgba(255,255,255,.12) 1px,transparent 1px),
+ linear-gradient(90deg,rgba(255,255,255,.12) 1px,transparent 1px),#1a3a2a;
+ background-size:24px 24px,24px 24px,auto;border-radius:10px;overflow:hidden}
+.mini-road{position:absolute;background:#e8ecff;border-radius:99px}
+.phone-bar{position:absolute;bottom:8px;left:8px;right:8px;display:flex;gap:6px}
+.phone-bar button{flex:1;border:0;border-radius:8px;padding:8px;font-weight:900;cursor:pointer}
+/* loop diagram */
+.loop{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:12px 0}
+.loop span{background:#0b1330;border:2px solid var(--green);padding:8px 12px;border-radius:999px;font-weight:900;font-size:13px;animation:glow 2s infinite}
+.loop span:nth-child(even){border-color:var(--line);background:transparent;animation:none;color:var(--muted)}
+@keyframes glow{50%{box-shadow:0 0 18px rgba(61,220,132,.6)}}
+canvas.game{width:100%;height:260px;background:#071026;border:1px solid var(--line);border-radius:12px;display:block}
+.controls-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+input[type=range]{accent-color:var(--gold)}
+.tiles-pyramid{display:flex;align-items:end;gap:6px;justify-content:center;margin:10px 0}
+.tiles-pyramid div{border:2px solid var(--blue);border-radius:6px;background:rgba(77,163,255,.15);display:grid;place-items:center;font-family:var(--mono);font-size:11px;animation:floaty 3s ease-in-out infinite}
+@keyframes floaty{50%{transform:translateY(-4px)}}
+/* boss */
+.boss-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:800px){.boss-grid{grid-template-columns:1fr}}
+.footer{padding:30px 0 60px;color:var(--muted);font-size:13px;text-align:center}
+.footer a{color:var(--gold)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(100px);background:#0e1530;border:2px solid var(--gold);color:var(--ink);padding:12px 18px;border-radius:14px;font-weight:800;z-index:99;transition:transform .3s;box-shadow:var(--shadow);max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:98;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:10px;height:14px;opacity:.9;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.sr{position:absolute;left:-9999px}
+.progress-steps{display:flex;gap:6px;margin:10px 0}
+.progress-steps i{height:8px;flex:1;border-radius:99px;background:#0a0f24;border:1px solid var(--line)}
+.progress-steps i.done{background:var(--green)}
+</style>
+</head>
+<body id="top">
+<div class="sr">Open Streets Heroes game course</div>
+
+<!-- HUD -->
+<header class="hud">
+  <div class="hud-inner">
+    <a class="brand" href="index.html" title="Home"><span class="brand-badge">🗺️</span><span>OPEN STREETS HEROES<small>OSM × ANDROID QUEST</small></span></a>
+    <a class="home-link" href="index.html">🏠 Home</a>
+    <a class="home-link" href="#world">🕹️ Levels</a>
+    <div class="hud-stats">
+      <span class="pill">⚡ <b id="xpVal">0</b> XP</span>
+      <span class="pill">🎖️ <span id="lvlVal">LVL 1</span></span>
+      <span class="pill"><span class="xpbar"><i id="xpFill"></i></span></span>
+      <button class="btn small ghost" id="resetSave" style="color:#fff">↺ Reset</button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="kicker">🎮 A PLAYABLE COURSE · 100% VANILLA · 0 EXTERNAL FILES</span>
+      <h1>From Zero to <span class="stroke">HERO</span>:<br>OpenStreetMap<br>+ Android Games.</h1>
+      <p class="lead">You are a courier-explorer in a city with <b>no map</b>. To save it, you must master <b>OpenStreetMap</b> — nodes, ways, tags, tiles — then master <b>game design for Android</b> — loops, balance, lifecycles — and finally fuse both into a location-based game. <b>6 levels. Quizzes lock the path. Code, play, win.</b></p>
+      <div class="hero-cta">
+        <a href="#level1" class="btn" style="text-decoration:none;display:inline-block">▶ Start Level 1</a>
+        <a href="#world" class="btn secondary" style="text-decoration:none;display:inline-block">See world map</a>
+      </div>
+      <ul class="quest-list">
+        <li>🧱 <b>No libraries, no CDN, no images.</b> All art is CSS3 + inline SVG + &lt;canvas&gt; below.</li>
+        <li>🔒 <b>Levels unlock sequentially.</b> Pass the quiz (100%) to open the next. Progress saves in your browser.</li>
+        <li>📱 <b>Android-first:</b> permissions, MapView/osmdroid, game loop, sensors, performance.</li>
+      </ul>
+      <div class="progress-steps" id="progressSteps" aria-label="progress"></div>
+    </div>
+    <div class="map-stage" aria-hidden="true">
+      <div class="map-bg"></div>
+      <div class="road h r1" style="top:26%"></div>
+      <div class="road h r2"></div>
+      <div class="road h r3"></div>
+      <div class="road v c1"></div>
+      <div class="road v c2"></div>
+      <div class="road v c3"></div>
+      <div class="river"></div>
+      <span class="pin" style="left:16%;top:14%">🏫</span>
+      <span class="pin" style="left:72%;top:18%;animation-delay:.4s">🏥</span>
+      <span class="pin" style="left:84%;top:66%;animation-delay:.8s">🏪</span>
+      <span class="pin" style="left:10%;top:68%;animation-delay:1.2s">⛲</span>
+      <div class="gps" id="gpsDot"></div>
+      <div class="player"><div class="player-inner">🛵</div></div>
+      <svg class="trail" viewBox="0 0 460 420"><path d="M 20 360 C 120 300 140 220 240 210 S 360 140 420 60" fill="none" stroke="#ffcf3f" stroke-width="3" stroke-dasharray="10 8" opacity=".7"/></svg>
+      <span class="map-label" style="left:12px;top:12px">🗺️ OSM TILE · z15 / 14-17</span>
+      <div class="tile-toast">tiles → 256×256<br>rendered live… ●</div>
+      <span class="map-label" style="right:12px;bottom:12px">📍 YOU · courier Lv.<span id="miniLvl">1</span></span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+<!-- WORLD MAP -->
+<section class="section" id="world">
+  <h2>🗺️ World Map — 6 Levels</h2>
+  <p class="sub">Like any good game, you can't skip. Click an unlocked level to jump to it. Locked levels show what you'll earn. <b>Home</b> always brings you back here (<a href="index.html">index.html</a>).</p>
+  <div class="world"><div class="level-path">
+    <div class="lvl-card" data-level="1"><div class="lvl-emoji">🌱</div><div class="lvl-num">LEVEL 1 · OSM ZERO</div><h3>Nodes, Ways, Relations</h3><p>The atoms of the free map. Draw your first road.</p><div class="lvl-status"></div><a class="go" href="#level1">Play</a></div>
+    <div class="lvl-card" data-level="2"><div class="lvl-emoji">🏗️</div><div class="lvl-num">LEVEL 2 · HOW OSM WORKS</div><h3>Tags, Edits, Tiles</h3><p>key=value magic, community edits, tile pyramid.</p><div class="lvl-status"></div><a class="go" href="#level2">Play</a></div>
+    <div class="lvl-card" data-level="3"><div class="lvl-emoji">📱</div><div class="lvl-num">LEVEL 3 · OSM ON ANDROID</div><h3>MapView & Offline</h3><p>osmdroid, intents, permissions, offline tiles.</p><div class="lvl-status"></div><a class="go" href="#level3">Play</a></div>
+    <div class="lvl-card" data-level="4"><div class="lvl-emoji">🎲</div><div class="lvl-num">LEVEL 4 · GAME DESIGN</div><h3>Loops & Fun</h3><p>MDA, core loop, balance, flow, juice.</p><div class="lvl-status"></div><a class="go" href="#level4">Play</a></div>
+    <div class="lvl-card" data-level="5"><div class="lvl-emoji">⚙️</div><div class="lvl-num">LEVEL 5 · ANDROID ENGINE</div><h3>Loop & Performance</h3><p>Lifecycle, Canvas, sensors, 60 FPS.</p><div class="lvl-status"></div><a class="go" href="#level5">Play</a></div>
+    <div class="lvl-card" data-level="6"><div class="lvl-emoji">👑</div><div class="lvl-num">LEVEL 6 · FINAL BOSS</div><h3>Geo-Quest Fusion</h3><p>Build a location game. Collect, validate, win.</p><div class="lvl-status"></div><a class="go" href="#level6">Play</a></div>
+  </div></div>
+</section>
+
+<!-- ================= LEVEL 1 ================= -->
+<section class="level" id="level1" data-level="1">
+  <div class="level-head"><div class="level-icon">🌱</div><div><span class="tag">LEVEL 1 · OSM ZERO</span><h2>What is OpenStreetMap? The Wikipedia of Maps</h2><p class="hint">Story: your city vanished from commercial maps. The community rebuilds it — you hold the first GPS trace. <a href="index.html" style="color:var(--gold)">🏠 Home</a></p></div></div>
+  <div class="concepts">
+    <div class="card"><h4>1.1 OSM in 30 seconds</h4><p><b>OpenStreetMap (2004, UK)</b> is a free, editable world map built by ~10M volunteers. Data is <b>open (ODbL)</b>: anyone can use it, with attribution. Unlike Google Maps, you own the data — perfect for Android indie games (no API key bills).</p><ul><li><b>Database, not picture:</b> geometry + tags.</li><li><b>3 primitives only:</b> Node, Way, Relation.</li><li><b>Rendered later</b> into tiles you see.</li></ul></div>
+    <div class="card"><h4>1.2 The 3 atoms — animated below 👇</h4><ul><li><b>Node</b> = point: <code>lat, lon</code>. A tree, shop, GPS fix.</li><li><b>Way</b> = ordered node list. Open = road/river. Closed = building/park area.</li><li><b>Relation</b> = group of nodes/ways with roles. Bus route, multipolygon, turn restriction.</li></ul><p>Try it: each click drops a <b>Node</b>. Connect 3+ and you've authored a <b>Way</b>.</p></div>
+  </div>
+  <div class="demo"><h5>🎮 INTERACTIVE — CLICK TO MAP (SVG, NO LIBS)</h5>
+    <svg id="nodeSvg" class="node-svg" viewBox="0 0 600 220" role="img" aria-label="click to add nodes"></svg>
+    <p class="hint" id="nodeInfo"></p>
+    <div class="controls-row"><button class="btn small secondary" id="clearNodes">🧹 Clear trace</button><span class="hint">Each click = +2 XP. Real editors: iD (web), JOSM (desktop), Vespucci/StreetComplete (Android).</span></div>
+  </div>
+  <div class="concepts"><div class="card"><h4>1.3 Why OSM for games?</h4><ul><li>Free POIs (treasures, gyms, checkpoints) worldwide.</li><li>Offline: ship <code>.map / .mbtiles</code>, play without network.</li><li>Real streets = real level geometry (routing, geofences).</li></ul></div>
+  <div class="card"><h4>1.4 Golden rule</h4><p><b>Map what's on the ground.</b> No fictional roads, no copyrighted imports. Your edits go live in minutes and power thousands of apps.</p></div></div>
+  <form class="quiz" id="quiz1"><h5>⚔️ LEVEL 1 TRIAL — 3/3 to unlock Level 2</h5>
+    <div class="q" id="quiz1_q0"><p>1. What is a Node in OSM?</p><label><input type="radio" name="quiz1_q0" value="a"> A rendered PNG tile</label><label><input type="radio" name="quiz1_q0" value="b"> A single point with lat/lon</label><label><input type="radio" name="quiz1_q0" value="c"> A bus route timetable</label></div>
+    <div class="q" id="quiz1_q1"><p>2. An open Way with 20 nodes usually represents…?</p><label><input type="radio" name="quiz1_q1" value="a"> A single tree</label><label><input type="radio" name="quiz1_q1" value="b"> A road or river</label><label><input type="radio" name="quiz1_q1" value="c"> A user account</label></div>
+    <div class="q" id="quiz1_q2"><p>3. What is a Relation used for?</p><label><input type="radio" name="quiz1_q2" value="a"> Storing passwords</label><label><input type="radio" name="quiz1_q2" value="b"> Coloring tiles</label><label><input type="radio" name="quiz1_q2" value="c"> Grouping elements (e.g. bus route, multipolygon)</label></div>
+    <button class="btn" type="submit">Validate → Unlock L2</button><div class="quiz-result"></div>
+  </form>
+  <p class="lock-note hint" style="display:none">🔒 Locked. Pass previous level. <a href="index.html">🏠 Home</a></p>
+</section>
+
+<!-- ================= LEVEL 2 ================= -->
+<section class="level" id="level2" data-level="2">
+  <div class="level-head"><div class="level-icon">🏗️</div><div><span class="tag">LEVEL 2 · HOW OSM WORKS</span><h2>Tags, Edits & the Tile Machine</h2><p class="hint"><a href="index.html">🏠 Home</a> · Geometry is meaningless without meaning. That's tags.</p></div></div>
+  <div class="concepts">
+    <div class="card"><h4>2.1 Tags: key=value</h4><p>Every object carries tags: <code>highway=primary</code>, <code>amenity=school</code>, <code>natural=tree</code>. Keys group, values specify. No fixed schema — community votes on the wiki.</p><pre>node: highway=bus_stop
+way:  highway=residential + name=Rue 10 + maxspeed=30
+area: building=yes + building:levels=3</pre></div>
+    <div class="card"><h4>2.2 Contribution loop</h4><p><b>Survey → Edit → Validate → Render → Use.</b> Collect with GPS/StreetComplete → edit in iD/JOSM → changeset uploaded with comment → validators + bots check → renderers (Mapnik) bake tiles in minutes → your Android app reads them.</p><ul><li><b>Changeset</b> = one edit session with message.</li><li><b>Revert</b> possible; vandalism is caught fast.</li></ul></div>
+  </div>
+  <div class="demo"><h5>🎮 TAG FORGE — TYPE TO BUILD REAL OSM XML</h5>
+    <div class="controls-row">key: <input id="tagK" value="amenity" style="padding:8px;border-radius:8px;border:1px solid var(--line);background:#0a0f24;color:#fff"> value: <input id="tagV" value="cafe" style="padding:8px;border-radius:8px;border:1px solid var(--line);background:#0a0f24;color:#fff"></div>
+    <pre id="tagOut"></pre>
+    <p class="hint">💡 Game idea: <code>amenity=*</code> → spawn points. <code>leisure=park</code> → safe zones. <code>highway=*</code> → enemy paths (routing!).</p>
+    <h5 style="margin-top:12px">🔍 ZOOM PYRAMID — DRAG THE SLIDER</h5>
+    <input type="range" id="zoomRange" min="0" max="19" value="12" style="width:100%"><p class="hint" id="zoomTxt"></p>
+    <div class="tiles-pyramid"><div style="width:44px;height:44px">z0<br>1</div><div style="width:54px;height:54px;animation-delay:.2s">z5<br>1k</div><div style="width:68px;height:68px;animation-delay:.4s">z10<br>1M</div><div style="width:84px;height:84px;animation-delay:.6s">z15<br>1B</div></div>
+    <p class="hint">Each zoom quadruples tiles. Phones cache only z12–z17 around the player = offline + fast.</p>
+  </div>
+  <form class="quiz" id="quiz2"><h5>⚔️ LEVEL 2 TRIAL</h5>
+    <div class="q" id="quiz2_q0"><p>1. Which is a valid OSM tag?</p><label><input type="radio" name="quiz2_q0" value="a"> color=pretty please</label><label><input type="radio" name="quiz2_q0" value="b"> amenity=school</label><label><input type="radio" name="quiz2_q0" value="c"> password=1234</label></div>
+    <div class="q" id="quiz2_q1"><p>2. What happens after you upload a changeset?</p><label><input type="radio" name="quiz2_q1" value="a"> Nothing, it's hidden</label><label><input type="radio" name="quiz2_q1" value="b"> You get paid cash</label><label><input type="radio" name="quiz2_q1" value="c"> Validation + rendering into tiles</label></div>
+    <div class="q" id="quiz2_q2"><p>3. Why do mobile games cache only a few zoom levels?</p><label><input type="radio" name="quiz2_q2" value="a"> Phones can't show maps</label><label><input type="radio" name="quiz2_q2" value="b"> To save storage/battery and stay offline-capable</label><label><input type="radio" name="quiz2_q2" value="c"> Google forbids it</label></div>
+    <button class="btn" type="submit">Validate → Unlock L3</button><div class="quiz-result"></div>
+  </form>
+  <p class="lock-note hint" style="display:none">🔒 Locked. <a href="index.html">🏠 Home</a></p>
+</section>
+
+<!-- ================= LEVEL 3 ================= -->
+<section class="level" id="level3" data-level="3">
+  <div class="level-head"><div class="level-icon">📱</div><div><span class="tag">LEVEL 3 · OSM ON ANDROID</span><h2>Put the Free Map in Your Game</h2><p class="hint"><a href="index.html">🏠 Home</a> · Zero Google Maps bills. Full offline. Total control.</p></div></div>
+  <div class="concepts">
+    <div class="card"><h4>3.1 Three ways to show OSM</h4><ul><li><b>osmdroid (MapView)</b> — drop-in, free. <code>map.controller.setZoom(16); map.controller.setCenter(GeoPoint)</code>.</li><li><b>MapLibre / Tangram</b> — vector, styled with JSON, 60fps.</li><li><b>Geo-intent</b> — <code>geo:lat,lon?q=cafe</code> opens any map app. Zero code map!</li></ul></div>
+    <div class="card"><h4>3.2 Android location stack</h4><ul><li><code>ACCESS_FINE_LOCATION + ACCESS_COARSE_LOCATION</code> in Manifest; request at runtime (Android 6+).</li><li><b>FusedLocationProviderClient</b> — battery-smart GPS/Wi-Fi fusion.</li><li><b>Foreground service</b> for tracking while playing; geofence with <code>GeofencingClient</code>.</li><li><b>Offline:</b> pre-pack <code>.mbtiles</code> in <code>assets/</code> or download region on Wi-Fi.</li></ul></div>
+  </div>
+  <div class="demo"><h5>🎮 SIMULATED ANDROID PHONE — PRESS THE DPAD</h5>
+    <div class="phone-row">
+      <div class="phone"><div class="phone-screen"><div class="phone-notch"></div>
+        <div class="mini-map" id="miniMap"><div class="mini-road" style="left:0;right:0;top:45%;height:10px"></div><div class="mini-road" style="top:0;bottom:0;left:40%;width:10px"></div><div class="mini-road" style="top:0;bottom:0;left:70%;width:7px;opacity:.8"></div><div style="position:absolute;left:44%;top:48%;font-size:18px">📍</div><div style="position:absolute;left:12%;top:20%;font-size:16px">🏫</div><div style="position:absolute;left:74%;top:70%;font-size:16px">💎</div></div>
+        <div class="phone-bar"><button data-pan="up">▲</button><button data-pan="left">◀</button><button data-pan="right">▶</button><button data-pan="down">▼</button><button data-pan="in">+</button><button data-pan="out">−</button></div>
+      </div><p class="hint" style="text-align:center" id="phoneZoom">zoom 1.0</p></div>
+      <div><pre>// osmdroid in one Activity (Kotlin)
+map.setTileSource(TileSourceFactory.MAPNIK)
+map.setMultiTouchControls(true)
+map.controller.setZoom(16.0)
+map.controller.setCenter(GeoPoint(14.6937,-17.4441))
+
+// request location (runtime permission!)
+ActivityCompat.requestPermissions(this,
+  arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+
+// fire-and-forget map intent — no SDK needed
+val uri = Uri.parse("geo:14.6937,-17.4441?q=cafe")
+startActivity(Intent(Intent.ACTION_VIEW, uri))</pre>
+      <p class="hint"><label><input type="checkbox" id="permToggle" checked> ACCESS_FINE_LOCATION granted</label> — toggle to see graceful degradation (lesson: never crash without GPS!). Attribution required: <code>© OpenStreetMap contributors</code> on screen.</p></div>
+    </div>
+  </div>
+  <form class="quiz" id="quiz3"><h5>⚔️ LEVEL 3 TRIAL</h5>
+    <div class="q" id="quiz3_q0"><p>1. Which library shows OSM tiles free on Android?</p><label><input type="radio" name="quiz3_q0" value="a"> A paid satellite SDK only</label><label><input type="radio" name="quiz3_q0" value="b"> Photoshop</label><label><input type="radio" name="quiz3_q0" value="c"> osmdroid / MapLibre</label></div>
+    <div class="q" id="quiz3_q1"><p>2. Since Android 6, location permission must be…?</p><label><input type="radio" name="quiz3_q1" value="a"> Assumed automatically</label><label><input type="radio" name="quiz3_q1" value="b"> Requested at runtime + declared in Manifest</label><label><input type="radio" name="quiz3_q1" value="c"> Bought from Google</label></div>
+    <div class="q" id="quiz3_q2"><p>3. Best offline strategy?</p><label><input type="radio" name="quiz3_q2" value="a"> Stream 4K tiles on mobile data</label><label><input type="radio" name="quiz3_q2" value="b"> Pre-pack / pre-download regional tiles</label><label><input type="radio" name="quiz3_q2" value="c"> Disable the map</label></div>
+    <button class="btn" type="submit">Validate → Unlock L4</button><div class="quiz-result"></div>
+  </form>
+  <p class="lock-note hint" style="display:none">🔒 Locked. <a href="index.html">🏠 Home</a></p>
+</section>
+
+<!-- ================= LEVEL 4 ================= -->
+<section class="level" id="level4" data-level="4">
+  <div class="level-head"><div class="level-icon">🎲</div><div><span class="tag">LEVEL 4 · GAME DESIGN CORE</span><h2>Fun Is Engineered: MDA, Loops, Flow</h2><p class="hint"><a href="index.html">🏠 Home</a> · A map without a game is just wallpaper.</p></div></div>
+  <div class="loop"><span>⚡ ACTION</span><span>→</span><span>🎁 REWARD</span><span>→</span><span>📈 PROGRESS</span><span>→</span><span>🔁 REPEAT</span></div>
+  <div class="concepts">
+    <div class="card"><h4>4.1 MDA framework</h4><ul><li><b>Mechanics</b> (rules you code): move, collect, geofence trigger.</li><li><b>Dynamics</b> (what emerges): race to POI, territory control.</li><li><b>Aesthetics</b> (feelings): discovery, fellowship, challenge. Design backwards from feeling!</li></ul></div>
+    <div class="card"><h4>4.2 Pillars of a good Android game</h4><ul><li><b>Core loop ≤30s:</b> walk → discover → collect → upgrade.</li><li><b>Clear goal + feedback:</b> every tap sparkles (juice).</li><li><b>Fair progression:</b> tutorial → easy wins → mastery.</li><li><b>Session design:</b> 2-min bus-stop sessions, cloud save.</li></ul></div>
+  </div>
+  <div class="demo"><h5>🎮 FLOW TUNER — DRAG TO FEEL BALANCE</h5>
+    <input type="range" id="funRange" min="0" max="100" value="55" style="width:100%"><p class="hint" id="funOut"></p>
+    <p class="hint">Techniques: dynamic difficulty, pity timers, daily quests, haptics + sound juice, color-blind-safe palettes, big touch targets (48dp+).</p></div>
+  <form class="quiz" id="quiz4"><h5>⚔️ LEVEL 4 TRIAL</h5>
+    <div class="q" id="quiz4_q0"><p>1. In MDA, Mechanics are…?</p><label><input type="radio" name="quiz4_q0" value="a"> Player emotions</label><label><input type="radio" name="quiz4_q0" value="b"> Rules/systems you code</label><label><input type="radio" name="quiz4_q0" value="c"> Marketing art</label></div>
+    <div class="q" id="quiz4_q1"><p>2. Ideal mobile core loop length?</p><label><input type="radio" name="quiz4_q1" value="a"> 3 hours unskippable</label><label><input type="radio" name="quiz4_q1" value="b"> 45 minutes</label><label><input type="radio" name="quiz4_q1" value="c"> Seconds–couple minutes, repeatable</label></div>
+    <div class="q" id="quiz4_q2"><p>3. Flow state happens when…?</p><label><input type="radio" name="quiz4_q2" value="a"> Challenge matches skill</label><label><input type="radio" name="quiz4_q2" value="b"> Game is impossibly hard</label><label><input type="radio" name="quiz4_q2" value="c"> Ads play every 5s</label></div>
+    <button class="btn" type="submit">Validate → Unlock L5</button><div class="quiz-result"></div>
+  </form>
+  <p class="lock-note hint" style="display:none">🔒 Locked. <a href="index.html">🏠 Home</a></p>
+</section>
+
+<!-- ================= LEVEL 5 ================= -->
+<section class="level" id="level5" data-level="5">
+  <div class="level-head"><div class="level-icon">⚙️</div><div><span class="tag">LEVEL 5 · ANDROID ENGINE ROOM</span><h2>Lifecycle, Game Loop & 60 FPS</h2><p class="hint"><a href="index.html">🏠 Home</a> · Ship buttery gameplay on a $120 phone.</p></div></div>
+  <div class="concepts">
+    <div class="card"><h4>5.1 Respect the lifecycle</h4><pre>onCreate() → load assets
+onResume() → start loop/thread
+onPause()  → PAUSE game + save!
+onDestroy()→ release sensors, GPS</pre><p>Never run GPS/render in background. Save state in <code>onPause</code> — a call can arrive mid-boss-fight.</p></div>
+    <div class="card"><h4>5.2 Rendering choices</h4><ul><li><b>Canvas/SurfaceView:</b> simple 2D, easy, enough for map games.</li><li><b>OpenGL ES / Vulkan:</b> max perf, more code.</li><li><b>Engines (libGDX, Godot, Unity):</b> physics, particles, export to Android fast.</li><li><b>Fixed timestep:</b> <code>update(dt); render()</code> via <code>requestAnimationFrame</code>/Choreographer; pool objects, avoid GC spikes.</li></ul></div>
+  </div>
+  <div class="demo"><h5>🎮 PLAYABLE LOOP — COLLECT 8 STARS (ARROWS / TOUCH)</h5>
+    <canvas class="game" id="gameCanvas"></canvas>
+    <p class="hint" id="gameHud"></p>
+    <p class="hint">What you're feeling: <code>update()</code> moves stars, <code>render()</code> draws them, FPS meter guards perf. On Android add: wake-locks off, <code>doze</code>-aware location, <code>RecyclerView</code> for leaderboards, <code>DataStore</code> for saves, haptics on pickup.</p></div>
+  <form class="quiz" id="quiz5"><h5>⚔️ LEVEL 5 TRIAL</h5>
+    <div class="q" id="quiz5_q0"><p>1. Where must you pause/save the game?</p><label><input type="radio" name="quiz5_q0" value="a"> Never, keep GPS on forever</label><label><input type="radio" name="quiz5_q0" value="b"> In onPause()</label><label><input type="radio" name="quiz5_q0" value="c"> Only when battery dies</label></div>
+    <div class="q" id="quiz5_q1"><p>2. The classic game loop is…?</p><label><input type="radio" name="quiz5_q1" value="a"> Delete the app</label><label><input type="radio" name="quiz5_q1" value="b"> update(dt) → render(), repeat each frame</label><label><input type="radio" name="quiz5_q1" value="c"> Show ads → crash</label></div>
+    <div class="q" id="quiz5_q2"><p>3. For smooth budget phones you should…?</p><label><input type="radio" name="quiz5_q2" value="a"> Allocate objects every frame</label><label><input type="radio" name="quiz5_q2" value="b"> Run 8K textures</label><label><input type="radio" name="quiz5_q2" value="c"> Pool objects, batch draws, cap particle counts</label></div>
+    <button class="btn" type="submit">Validate → Unlock BOSS</button><div class="quiz-result"></div>
+  </form>
+  <p class="lock-note hint" style="display:none">🔒 Locked. <a href="index.html">🏠 Home</a></p>
+</section>
+
+<!-- ================= LEVEL 6 ================= -->
+<section class="level" id="level6" data-level="6">
+  <div class="level-head"><div class="level-icon">👑</div><div><span class="tag">LEVEL 6 · FINAL BOSS</span><h2>Geo-Quest: Fuse OSM + Game Design</h2><p class="hint"><a href="index.html">🏠 Home</a> · Design doc + playable prototype in one level.</p></div></div>
+  <div class="boss-grid">
+    <div class="card"><h4>📜 The design: "Dakar Treasures"</h4><ul><li><b>Fantasy:</b> courier restoring the map, one POI at a time.</li><li><b>Map → mechanics:</b> Overpass query <code>tourism=attraction around player</code> = treasures; <code>highway=*</code> = safe paths; geofence 50m = collect.</li><li><b>Anti-cheat:</b> mock-location check, speed sanity (&lt;15 m/s walking), server-validated claims.</li><li><b>Ethics:</b> OSM attribution, don't encourage trespass, night-mode safety, battery disclosure.</li><li><b>Monetize fairly:</b> cosmetics, not pay-to-win; offline city packs.</li></ul><pre>// Overpass: POIs near player (use sparingly, cache!)
+[out:json];node(around:800,LAT,LON)[tourism];
+out;</pre></div>
+    <div class="demo"><h5>🎮 BOSS FIGHT — GRAB 3 💎 WITH 🛵 (ARROWS / TOUCH)</h5><canvas class="game" id="bossCanvas"></canvas><p class="hint" id="bossMsg">Collect all 3 treasures to prove your loop works.</p></div>
+  </div>
+  <form class="quiz" id="quiz6"><h5>👑 HERO VALIDATION — FINAL EXAM</h5>
+    <div class="q" id="quiz6_q0"><p>1. Best source for treasure POIs in your Android geo-game?</p><label><input type="radio" name="quiz6_q0" value="a"> Hardcode 3 secret spots</label><label><input type="radio" name="quiz6_q0" value="b"> OSM POIs via Overpass, cached + attributed</label><label><input type="radio" name="quiz6_q0" value="c"> Scrape a copyrighted map</label></div>
+    <div class="q" id="quiz6_q1"><p>2. What stops GPS spoofers?</p><label><input type="radio" name="quiz6_q1" value="a"> Nothing, trust everything</label><label><input type="radio" name="quiz6_q1" value="b"> Ban all rural players</label><label><input type="radio" name="quiz6_q1" value="c"> Mock-location flags + speed checks + server validation</label></div>
+    <div class="q" id="quiz6_q2"><p>3. You must always…?</p><label><input type="radio" name="quiz6_q2" value="a"> Hide where map data comes from</label><label><input type="radio" name="quiz6_q2" value="b"> Credit © OpenStreetMap contributors + respect battery/safety</label><label><input type="radio" name="quiz6_q2" value="c"> Drain battery silently</label></div>
+    <button class="btn" type="submit">👑 Claim HERO title</button><div class="quiz-result"></div>
+  </form>
+  <p class="lock-note hint" style="display:none">🔒 Locked. <a href="index.html">🏠 Home</a></p>
+</section>
+
+<footer class="footer">
+  <p>🏠 <a href="index.html">Home (index.html)</a></p>
+  <p>Map data concept © <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap contributors (ODbL)</a> — always attribute in real apps. Go map your street! 🛵💨</p>
+  <p><a href="#top">↑ Back to top / Home</a></p>
+</footer>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+<div class="confetti" id="confetti"></div>
+<script>
+/* Open Streets Heroes — pure vanilla JS, no external libs */
+(function(){
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const store={get(){try{return JSON.parse(localStorage.getItem("osh_save")||"{}")}catch(e){return{}}},set(v){localStorage.setItem("osh_save",JSON.stringify(v))}};
+let save=Object.assign({xp:0,unlocked:1,done:{}},store.get());
+function persist(){store.set(save)}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2600)}
+function confetti(n=80){const c=$("#confetti");c.innerHTML="";const colors=["#ffcf3f","#3ddc84","#4da3ff","#ff5d6c","#b388ff"];for(let i=0;i<n;i++){const s=document.createElement("i");s.style.left=Math.random()*100+"vw";s.style.background=colors[i%colors.length];s.style.animationDuration=(1.6+Math.random()*1.8)+"s";s.style.transform=`rotate(${Math.random()*360}deg)`;c.appendChild(s);setTimeout(()=>s.remove(),3800)}}
+function renderHUD(){
+  $("#xpVal").textContent=save.xp;
+  $("#lvlVal").textContent=save.unlocked>6?"HERO":("LVL "+save.unlocked);
+  const pct=Math.min(100,Math.round(save.xp/600*100));
+  $("#xpFill").style.width=pct+"%";
+  // world cards
+  $$(".lvl-card").forEach(card=>{
+    const lvl=+card.dataset.level;
+    const unlocked=lvl<=save.unlocked;
+    card.classList.toggle("locked",!unlocked);
+    const go=card.querySelector(".go");
+    const st=card.querySelector(".lvl-status");
+    if(unlocked){go.textContent=save.done[lvl]?"↻ Replay Level "+lvl:"▶ Play Level "+lvl;
+      st.innerHTML=`<span class="stars">${save.done[lvl]?"★★★":"★☆☆"}</span><span>${save.done[lvl]?"Cleared!":"Unlocked"}</span>`;}
+    else{go.textContent="🔒 Locked";st.innerHTML=`<span>Finish Level ${lvl-1} to unlock</span>`;}
+  });
+  // level sections gating
+  $$(".level").forEach(sec=>{
+    const lvl=+sec.dataset.level;
+    const unlocked=lvl<=save.unlocked;
+    sec.classList.toggle("locked-level",!unlocked);
+    const lock=sec.querySelector(".lock-note");
+    if(lock) lock.style.display=unlocked?"none":"block";
+  });
+  // progress steps
+  const ps=$("#progressSteps");ps.innerHTML="";
+  for(let i=1;i<=6;i++){const it=document.createElement("i");if(save.done[i])it.className="done";ps.appendChild(it)}
+  persist();
+}
+function awardXP(n){save.xp+=n;renderHUD()}
+function completeLevel(lvl){
+  if(!save.done[lvl]){save.done[lvl]=true;awardXP(100);confetti(90);toast(`🏆 Level ${lvl} cleared! +100 XP. Level ${lvl+1<=6?lvl+1:"HERO"} unlocked!`);}
+  else{awardXP(20);toast(`Level ${lvl} replayed! +20 XP`)}
+  save.unlocked=Math.max(save.unlocked,Math.min(6,lvl+1));
+  if(lvl===6 && !save._hero){save._hero=true;awardXP(200);confetti(150);toast("👑 YOU ARE A HERO! OSM + Android Game Master!")}
+  renderHUD();
+  const next=document.querySelector(`[data-level="${lvl+1}"]`);
+  if(next) setTimeout(()=>next.scrollIntoView({behavior:"smooth"}),600);
+}
+// ---- generic quiz checker ----
+function checkQuiz(formId,answers,level){
+  const form=$("#"+formId);if(!form)return;
+  form.addEventListener("submit",e=>{
+    e.preventDefault();
+    let score=0;const total=answers.length;
+    answers.forEach((correct,i)=>{
+      const sel=form.querySelector(`input[name="${formId}_q${i}"]:checked`);
+      const box=form.querySelector(`#${formId}_q${i}`);
+      if(box) box.style.borderColor="";
+      if(sel&&sel.value===correct){score++;if(box)box.style.borderColor="#3ddc84";}
+      else if(box)box.style.borderColor="#ff5d6c";
+    });
+    const res=form.querySelector(".quiz-result");
+    if(score===total){res.textContent=`✅ Perfect ${score}/${total}! Level ${level} validated.`;res.style.color="#3ddc84";completeLevel(level);}
+    else{res.textContent=`❌ ${score}/${total}. Review the lesson and retry — a hero never gives up!`;res.style.color="#ff5d6c";awardXP(score*5);}
+  });
+}
+// ---- Level 1: node placer ----
+function initNodes(){
+  const svg=$("#nodeSvg");if(!svg)return;let pts=[];
+  const render=()=>{
+    svg.innerHTML="";
+    // grid dots
+    for(let x=20;x<600;x+=30)for(let y=20;y<200;y+=30){const c=document.createElementNS("http://www.w3.org/2000/svg","circle");c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",1.4);c.setAttribute("fill","#2c3a6e");svg.appendChild(c)}
+    if(pts.length>1){const pl=document.createElementNS("http://www.w3.org/2000/svg","polyline");pl.setAttribute("points",pts.map(p=>p.join(",")).join(" "));pl.setAttribute("fill","none");pl.setAttribute("stroke","#ffcf3f");pl.setAttribute("stroke-width","5");pl.setAttribute("stroke-linecap","round");svg.appendChild(pl)}
+    pts.forEach((p,i)=>{const g=document.createElementNS("http://www.w3.org/2000/svg","g");
+      g.innerHTML=`<circle cx="${p[0]}" cy="${p[1]}" r="10" fill="#3ddc84" stroke="#06130c" stroke-width="3"/><text x="${p[0]}" y="${p[1]+5}" text-anchor="middle" font-size="11" font-weight="900">N${i+1}</text>`;
+      svg.appendChild(g)});
+    $("#nodeInfo").textContent=pts.length===0?"👆 Click anywhere to drop a Node (lat/lon point).":pts.length===1?`1 node placed. A Node = single point. Add 2+ to form a Way!`:`${pts.length} nodes → 1 Way with ${pts.length-1} segments. Closed loop = Area. This is OSM geometry!`;
+  };
+  svg.addEventListener("click",e=>{const r=svg.getBoundingClientRect();const x=(e.clientX-r.left)*(600/r.width);const y=(e.clientY-r.top)*(220/r.height);pts.push([Math.round(x),Math.round(y)]);if(pts.length>12)pts.shift();render();awardXP(2)});
+  $("#clearNodes").addEventListener("click",()=>{pts=[];render()});
+  render();
+}
+// ---- Level 2: tile pyramid + tag builder ----
+function initTags(){
+  const k=$("#tagK"),v=$("#tagV"),out=$("#tagOut");
+  if(!k)return;
+  const upd=()=>{out.textContent=`<node id="123" lat="14.69" lon="-17.44"><tag k="${k.value||'highway'}" v="${v.value||'primary'}"/></node>`};
+  k.addEventListener("input",upd);v.addEventListener("input",upd);upd();
+  // zoom simulator
+  const z=$("#zoomRange"),zt=$("#zoomTxt");if(z){const upd2=()=>{const zv=+z.value;zt.textContent=`z${zv} → ${(Math.pow(4,zv)).toLocaleString()} tiles to cover the world. OSM renders vector → raster 256×256 PNGs.`};z.addEventListener("input",upd2);upd2()}
+}
+// ---- Level 3: fake android map ----
+function initPhone(){
+  const m=$("#miniMap");if(!m)return;let x=0,y=0,sc=1;
+  const roads=$$(".mini-road",m);
+  const draw=()=>{m.style.backgroundPosition=`${x}px ${y}px,${x}px ${y}px,0 0`;roads.forEach(r=>{r.style.transform=`translate(${x*0.4}px,${y*0.4}px) scale(${sc})`});$("#phoneZoom").textContent="zoom "+sc.toFixed(1)};
+  $$("[data-pan]").forEach(b=>b.addEventListener("click",()=>{const d=b.dataset.pan;if(d==="up")y+=24;if(d==="down")y-=24;if(d==="left")x+=24;if(d==="right")x-=24;if(d==="in")sc=Math.min(2.5,sc+0.2);if(d==="out")sc=Math.max(0.6,sc-0.2);draw();awardXP(1)}));
+  draw();
+  // permission toggle demo
+  const t=$("#permToggle");if(t)t.addEventListener("change",()=>{toast(t.checked?"📍 ACCESS_FINE_LOCATION granted — GPS dot live!":"🚫 Location denied — map still works offline, no blue dot.");$("#gpsDot").style.display=t.checked?"block":"none"});
+}
+// ---- Level 4: difficulty balance ----
+function initBalance(){
+  const r=$("#funRange"),o=$("#funOut");if(!r)return;
+  const upd=()=>{const v=+r.value;let msg=v<30?"😴 Too easy — boredom. Add enemies / timers!":v<70?"😄 FLOW STATE! Challenge ≈ Skill. This is the goal.":"😡 Too hard — rage quit! Add tutorials / checkpoints.";
+    o.textContent=`Difficulty ${v}% → ${msg}`};r.addEventListener("input",upd);upd();
+}
+// ---- Level 5+6: canvas mini games ----
+function miniGame(canvasId,hudId,winScore){
+  const cv=$("#"+canvasId);if(!cv)return;const ctx=cv.getContext("2d");
+  const hud=$("#"+hudId);let px=140,py=200,stars=[],score=0,frames=0,fps=60,last=performance.now(),over=false;
+  const spawn=()=>({x:20+Math.random()*260,y:-20,s:2+Math.random()*2});
+  for(let i=0;i<4;i++)stars.push(spawn());
+  cv.tabIndex=0;
+  const key={};window.addEventListener("keydown",e=>{key[e.key]=true;if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault()});
+  window.addEventListener("keyup",e=>key[e.key]=false);
+  // touch
+  cv.addEventListener("pointermove",e=>{const r=cv.getBoundingClientRect();px=(e.clientX-r.left)*(300/r.width);py=(e.clientY-r.top)*(260/r.height)});
+  function loop(t){
+    if(over)return;
+    frames++;if(t-last>=500){fps=Math.round(frames*1000/(t-last));frames=0;last=t}
+    if(key.ArrowLeft)px-=4;if(key.ArrowRight)px+=4;if(key.ArrowUp)py-=4;if(key.ArrowDown)py+=4;
+    px=Math.max(12,Math.min(288,px));py=Math.max(12,Math.min(248,py));
+    ctx.fillStyle="#071026";ctx.fillRect(0,0,300,260);
+    ctx.strokeStyle="#1c2a55";for(let x=0;x<300;x+=30){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,260);ctx.stroke()}for(let y=0;y<260;y+=26){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(300,y);ctx.stroke()}
+    stars.forEach(s=>{s.y+=s.s;if(s.y>270){Object.assign(s,spawn())}
+      ctx.font="18px sans-serif";ctx.fillText("⭐",s.x,s.y);
+      if(Math.hypot(s.x-px,s.y-py)<18){score++;Object.assign(s,spawn());awardXP(2);if(score>=winScore){over=true;onWin()}}});
+    // player = map explorer
+    ctx.font="26px sans-serif";ctx.fillText("🧭",px-13,py+9);
+    ctx.fillStyle="#9aa8d0";ctx.font="11px monospace";ctx.fillText(`FPS:${fps} SCORE:${score}/${winScore} ←→↑↓ move`,8,16);
+    if(hud)hud.textContent=`Score ${score}/${winScore} · FPS ${fps} · Game loop: update() → render() @ requestAnimationFrame`;
+    requestAnimationFrame(loop);
+  }
+  function onWin(){confetti(60);toast(`🎮 ${canvasId} complete! You felt the Android game loop.`);awardXP(30)}
+  // size canvas backing store
+  cv.width=300;cv.height=260;
+  requestAnimationFrame(loop);
+  cv.addEventListener("click",()=>{if(over){over=false;score=0;requestAnimationFrame(loop)}});
+}
+function initBoss(){
+  const cv=$("#bossCanvas");if(!cv)return;const ctx=cv.getContext("2d");cv.width=300;cv.height=260;
+  let px=30,py=220,treasures=[{x:250,y:40},{x:150,y:120},{x:60,y:60}],found=0;
+  const keys={};window.addEventListener("keydown",e=>keys[e.key]=true);window.addEventListener("keyup",e=>keys[e.key]=false);
+  cv.tabIndex=0;
+  function loop(){
+    if(keys.ArrowLeft)px-=3;if(keys.ArrowRight)px+=3;if(keys.ArrowUp)py-=3;if(keys.ArrowDown)py-=3;
+    px=Math.max(10,Math.min(290,px));py=Math.max(10,Math.min(250,py));
+    ctx.fillStyle="#0d2b1d";ctx.fillRect(0,0,300,260);
+    ctx.strokeStyle="#2c5a3c";for(let i=0;i<300;i+=25){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,260);ctx.stroke()}for(let i=0;i<260;i+=25){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(300,i);ctx.stroke()}
+    // roads
+    ctx.fillStyle="#e8ecff";ctx.fillRect(0,130,300,12);ctx.fillRect(140,0,12,260);
+    treasures.forEach(t=>{if(!t.got){ctx.font="20px sans-serif";ctx.fillText("💎",t.x-10,t.y+7);
+      if(Math.hypot(t.x-px,t.y-py)<20){t.got=true;found++;awardXP(15);toast(`💎 Treasure ${found}/3 — OSM POI collected!`);if(found===3){confetti(120);$("#bossMsg").textContent="👑 ALL TREASURES FOUND! You combined OSM POIs + Android game design. Now pass the final quiz below!";}}}});
+    ctx.font="24px sans-serif";ctx.fillText("🛵",px-12,py+8);
+    ctx.fillStyle="#fff";ctx.font="11px monospace";ctx.fillText(`TREASURES ${found}/3 · use ←→↑↓ or tap`,8,16);
+    requestAnimationFrame(loop);
+  }
+  cv.addEventListener("pointermove",e=>{const r=cv.getBoundingClientRect();px=(e.clientX-r.left)*(300/r.width);py=(e.clientY-r.top)*(260/r.height)});
+  loop();
+}
+document.addEventListener("DOMContentLoaded",()=>{
+  renderHUD();
+  initNodes();initTags();initPhone();initBalance();
+  miniGame("gameCanvas","gameHud",8);
+  initBoss();
+  checkQuiz("quiz1",["b","b","c"],1);
+  checkQuiz("quiz2",["b","c","b"],2);
+  checkQuiz("quiz3",["c","b","b"],3);
+  checkQuiz("quiz4",["b","c","a"],4);
+  checkQuiz("quiz5",["b","b","c"],5);
+  checkQuiz("quiz6",["b","c","b"],6);
+  $("#resetSave").addEventListener("click",()=>{if(confirm("Reset all XP and progress?")){save={xp:0,unlocked:1,done:{}};persist();renderHUD();window.scrollTo({top:0,behavior:"smooth"});toast("Progress reset. New run started!")}});
+  // smooth locked click
+  $$(".lvl-card").forEach(c=>c.addEventListener("click",e=>{
+    const lvl=+c.dataset.level;
+    if(lvl>save.unlocked){e.preventDefault();toast(`🔒 Finish Level ${save.unlocked} first, hero!`);return}
+    const t=document.querySelector(`[data-level="${lvl}"]`);if(t)t.scrollIntoView({behavior:"smooth"});
+  }));
+});
+})();
+
+</script>
+</body>
+</html>
