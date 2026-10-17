@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Debian Linux Technical Manual — From Zero to Hero. Gated interactive manual with paranoid security at every level. Pure vanilla JS/CSS, single file.">
+<title>DEBIAN TECHNICAL MANUAL — From Zero to Hero | TM-DEB-12</title>
+<style>
+:root{
+  --paper:#f4f1e8; --ink:#1a1a1a; --red:#c1121f; --debian:#d70a53;
+  --blue:#0a3d62; --green:#1a7a2e; --amber:#b7790f; --mono:'Courier New',Courier,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  --locked:#8a8a8a; --ok:#0e7a2e;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#2b2b2b;color:var(--ink);font-family:var(--sans);line-height:1.6}
+a{color:var(--blue)}
+/* TOP BAR */
+.topbar{position:sticky;top:0;z-index:50;background:#111;color:#eee;display:flex;align-items:center;gap:12px;padding:8px 14px;border-bottom:4px solid var(--debian);flex-wrap:wrap}
+.topbar a.home{background:var(--debian);color:#fff;text-decoration:none;font-family:var(--mono);font-weight:bold;padding:6px 14px;border:2px solid #fff;letter-spacing:1px}
+.topbar a.home:hover{background:#fff;color:var(--debian)}
+.doc-id{font-family:var(--mono);font-size:.82rem;opacity:.9}
+.progress-wrap{flex:1;min-width:180px;background:#333;height:14px;border:1px solid #555;position:relative}
+.progress-fill{background:linear-gradient(90deg,var(--debian),#ff5a8a);height:100%;width:0%;transition:width .6s}
+.progress-label{font-family:var(--mono);font-size:.75rem}
+.paranoid{font-family:var(--mono);font-size:.75rem;background:#000;border:1px solid var(--amber);color:var(--amber);padding:4px 8px}
+/* LAYOUT */
+.shell{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:280px 1fr;gap:0;background:var(--paper);min-height:100vh;box-shadow:0 0 40px #000}
+@media(max-width:900px){.shell{grid-template-columns:1fr}}
+.sidebar{background:#ece7d8;border-right:3px double #333;padding:16px;position:sticky;top:57px;align-self:start;max-height:calc(100vh - 57px);overflow:auto}
+@media(max-width:900px){.sidebar{position:static;max-height:none}}
+.sidebar h3{font-family:var(--mono);border-bottom:2px solid #333;padding-bottom:6px;margin-top:0}
+.toc{list-style:none;padding:0;margin:0}
+.toc li{margin:6px 0;font-family:var(--mono);font-size:.86rem}
+.toc a.toc-link{display:block;padding:8px 10px;border:1px solid #333;background:#fff;text-decoration:none;color:#111}
+.toc a.toc-link.locked{opacity:.55;background:#ddd;border-style:dashed;cursor:not-allowed}
+.toc a.toc-link.done{border-left:8px solid var(--ok)}
+.toc a.toc-link.current{border-left:8px solid var(--debian);background:#fff8e6}
+.badge{float:right;background:#111;color:#fff;padding:1px 7px;font-size:.7rem;border-radius:10px}
+.badge.unlocked{background:var(--ok)} .badge.lockedb{background:#777}
+.resetbtn{margin-top:12px;width:100%;font-family:var(--mono);background:#111;color:#fff;border:1px solid #111;padding:8px;cursor:pointer}
+.resetbtn:hover{background:var(--red)}
+.manual{padding:0}
+.page{padding:28px 34px;border-bottom:3px double #333;background:var(--paper);position:relative}
+@media(max-width:600px){.page{padding:18px}}
+.page-header{border:2px solid #111;padding:10px 14px;background:#fff;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.level-tag{font-family:var(--mono);background:#111;color:#fff;padding:4px 10px}
+.level-tag.hero{background:var(--debian)}
+h1.manual-title{font-family:var(--mono);font-size:2rem;margin:.2em 0;line-height:1.1}
+h2{font-family:var(--mono);border-left:10px solid var(--debian);padding-left:10px;margin-top:2em;background:linear-gradient(90deg,#fff,transparent)}
+h3.hmono{font-family:var(--mono);color:var(--blue);border-bottom:1px dashed #333;padding-bottom:4px}
+.stamp{display:inline-block;border:3px solid var(--red);color:var(--red);font-family:var(--mono);font-weight:bold;padding:4px 10px;transform:rotate(-4deg);letter-spacing:2px}
+.code,pre{background:#111;color:#c8ff9e;font-family:var(--mono);padding:14px;overflow:auto;border-left:6px solid var(--debian);font-size:.88rem;line-height:1.5}
+pre .c{color:#888} pre .g{color:#7CFC00} pre .y{color:#ffe66d} pre .r{color:#ff6b6b} pre .b{color:#7dd3fc}
+.inline-code{font-family:var(--mono);background:#111;color:#ffe66d;padding:1px 6px;font-size:.9em}
+table.spec{width:100%;border-collapse:collapse;font-size:.9rem;background:#fff;margin:12px 0}
+table.spec th,table.spec td{border:1px solid #333;padding:8px;text-align:left}
+table.spec th{background:#111;color:#fff;font-family:var(--mono)}
+.warning,.note,.paranoid-box,.benefit{padding:12px 14px;margin:14px 0;border:2px solid}
+.warning{background:#fde2e2;border-color:var(--red)}
+.note{background:#e6f0ff;border-color:var(--blue)}
+.paranoid-box{background:#fff6d6;border-color:var(--amber)}
+.benefit{background:#e6f5e9;border-color:var(--green)}
+.paranoid-box::before{content:"🛡️ PARANOID PROTOCOL — ";font-family:var(--mono);font-weight:bold;color:#7a5200}
+.warning::before{content:"⚠️ ";font-weight:bold}
+.benefit::before{content:"✓ BENEFIT: ";font-family:var(--mono);font-weight:bold;color:var(--green)}
+/* ANIM STAGE - unified style */
+.stage{background:#0d1117;color:#e6edf3;border:2px solid #333;border-radius:8px;padding:16px;margin:14px 0;position:relative;overflow:hidden}
+.stage h4{margin:0 0 10px;font-family:var(--mono);color:#ffe66d}
+.anim-row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.node{background:#161b22;border:1px solid #58a6ff;border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:.85rem;min-width:110px;text-align:center;position:relative;opacity:.35;transition:all .4s}
+.node.active{opacity:1;border-color:#7CFC00;box-shadow:0 0 18px #7CFC0088;transform:scale(1.05)}
+.node.blocked{border-color:var(--red);box-shadow:0 0 18px #ff000088}
+.arrow{font-size:1.6rem;color:#58a6ff;animation:pulseArrow 1.2s infinite}
+@keyframes pulseArrow{0%,100%{opacity:.3;transform:translateX(0)}50%{opacity:1;transform:translateX(6px)}}
+.packet{width:18px;height:18px;border-radius:50%;background:#7CFC00;box-shadow:0 0 12px #7CFC00;position:absolute;top:50%;left:0;transition:left 1s linear;z-index:2}
+.bar-track{background:#222;height:22px;border:1px solid #555;border-radius:4px;overflow:hidden;margin:8px 0}
+.bar-fill{height:100%;width:0%;background:linear-gradient(90deg,#0e7a2e,#7CFC00);transition:width .5s}
+.led{width:14px;height:14px;border-radius:50%;background:#333;display:inline-block;margin-right:6px;border:1px solid #666}
+.led.on{background:#7CFC00;box-shadow:0 0 8px #7CFC00}
+.btn{font-family:var(--mono);background:var(--debian);color:#fff;border:2px solid #111;padding:9px 16px;cursor:pointer;font-weight:bold;letter-spacing:.5px;margin:6px 6px 6px 0}
+.btn:hover{background:#111;color:#ffe66d}
+.btn.ghost{background:#fff;color:#111}
+.btn.green{background:var(--ok)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.terminal{background:#000;color:#0f0;font-family:var(--mono);padding:14px;border:2px solid #333;min-height:180px;font-size:.88rem;white-space:pre-wrap}
+.terminal input{background:transparent;border:none;color:#0f0;font-family:var(--mono);width:70%;outline:none;font-size:.88rem}
+.quiz{background:#fff;border:2px solid #111;padding:14px;margin:12px 0}
+.quiz p.q{font-weight:bold}
+.quiz label{display:block;background:#f6f3ea;border:1px solid #999;padding:8px;margin:6px 0;cursor:pointer;font-family:var(--mono);font-size:.88rem}
+.quiz label:hover{border-color:var(--debian)}
+.quiz label.correct{background:#d3f9d8;border-color:var(--ok)}
+.quiz label.wrong{background:#ffd6d6;border-color:var(--red)}
+.quiz-result{font-family:var(--mono);font-weight:bold;margin-top:8px}
+.lock-overlay{background:#1a1a1a;color:#eee;padding:30px;text-align:center;border:3px dashed var(--red);margin:14px 0}
+.lock-overlay .big{font-size:3rem}
+.challenge{background:#fffbe6;border:2px dashed var(--amber);padding:14px;margin:12px 0}
+.toggles{display:flex;gap:8px;flex-wrap:wrap}
+.toggle{font-family:var(--mono);border:2px solid #111;padding:6px 10px;cursor:pointer;background:#fff;user-select:none}
+.toggle.on{background:#111;color:#7CFC00}
+.permgrid{display:grid;grid-template-columns:repeat(9,1fr);gap:4px;margin:10px 0}
+.permgrid button{font-family:var(--mono);padding:8px 0;border:2px solid #111;background:#fff;cursor:pointer;font-weight:bold}
+.permgrid button.on{background:var(--ok);color:#fff}
+.kbd{font-family:var(--mono);background:#222;color:#fff;border:1px solid #777;border-bottom-width:3px;padding:1px 7px;border-radius:4px;font-size:.85em}
+.footer-manual{background:#111;color:#bbb;font-family:var(--mono);padding:24px;font-size:.82rem}
+.footer-manual a{color:#ffe66d}
+.sources li{margin-bottom:6px}
+.toc-mini{background:#fff;border:1px solid #333;padding:10px 14px;font-size:.9rem}
+.onion{display:flex;flex-direction:column;align-items:center;gap:6px}
+.layer{border:2px solid #ffe66d;border-radius:12px;padding:8px 18px;font-family:var(--mono);width:90%;text-align:center;background:#161b22;color:#fff;transition:all .4s;opacity:.4}
+.layer.active{opacity:1;box-shadow:0 0 16px #ffe66d88}
+.logline{opacity:0;transform:translateX(-12px);transition:all .4s;font-family:var(--mono);font-size:.84rem;margin:3px 0}
+.logline.show{opacity:1;transform:none}
+.seal{font-family:var(--mono);background:var(--ok);color:#fff;padding:6px 12px;display:inline-block;margin:8px 0}
+.seal.fail{background:var(--red)}
+.fhs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.fhs div{background:#161b22;border:1px solid #58a6ff;padding:10px;font-family:var(--mono);font-size:.8rem;border-radius:6px;cursor:pointer}
+.fhs div:hover,.fhs div.sel{border-color:#7CFC00;background:#0e2a12}
+.dep-graph{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-family:var(--mono)}
+.dep{border:2px solid #7CFC00;padding:8px 12px;border-radius:20px;background:#0e2a12;color:#fff;font-size:.82rem;opacity:.25;transition:all .4s}
+.dep.on{opacity:1;transform:scale(1.06)}
+@media print{.topbar,.sidebar,.btn,.resetbtn{display:none}.shell{grid-template-columns:1fr}.page{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="home" href="index.html">⌂ HOME</a>
+  <span class="doc-id">TM-DEB-12 // DEBIAN TECHNICAL MANUAL // CLEARANCE REQUIRED</span>
+  <div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-label" id="progressLabel">0 / 10 SECTIONS</span>
+  <span class="paranoid" id="paranoidMeter">🛡️ PARANOIA: LVL 0</span>
+</div>
+
+<div class="shell">
+<nav class="sidebar" aria-label="Manual index">
+  <h3>📕 MANUAL INDEX</h3>
+  <ul class="toc" id="toc"></ul>
+  <button class="resetbtn" onclick="resetProgress()">↺ RESET CLEARANCE</button>
+  <div class="toc-mini" style="margin-top:12px">
+    <b>How gating works:</b> each level ends with a validation quiz + hands-on check. Score ≥ 70% to unlock the next level. Progress is stored in <span class="inline-code" style="color:#111;background:#ddd">localStorage</span> — no server, no tracking. Paranoid-approved.
+  </div>
+</nav>
+
+<main class="manual" id="manual">
+
+<!-- ============ COVER ============ -->
+<section class="page" id="level-cover" data-level="cover">
+  <div class="page-header"><span class="level-tag">TM-DEB-12 §0</span><span style="font-family:var(--mono)">REV 12.7 “BOOKWORM” // UNCLASSIFIED</span></div>
+  <div class="stamp">PARANOID EDITION</div>
+  <h1 class="manual-title">DEBIAN LINUX<br>TECHNICAL MANUAL<br><span style="font-size:1.1rem;color:var(--debian)">FROM ZERO TO HERO — UNDERSTAND EVERYTHING, TRUST NOTHING, VERIFY EVERYTHING</span></h1>
+  <p><b>Scope:</b> this single-file manual (pure HTML + CSS3 + vanilla JS, <b>zero external resources</b>) teaches how Debian works: hardware → boot → kernel → userspace → packaging → networking → identity → <b>paranoid security at every layer</b> → operations → automation. Each chapter has the same anatomy: <b>Concept → Animated model → Try-it lab → Paranoid protocol → Validation quiz.</b> You cannot skip: later chapters stay <b>locked</b> until you prove mastery.</p>
+  <div class="note"><b>Who is this for?</b> Absolute beginners <i>and</i> future sysadmins. “Zero” assumes you only know how to plug in a computer. “Hero” means you can install Debian with LUKS + Secure Boot, harden SSH, write nftables, audit with AppArmor/AIDE, and recover a broken GRUB from a live USB — while explaining <i>why</i> each step matters.</div>
+  <div class="benefit">Debian’s benefits you will feel firsthand: 100% free software (DFSG), reproducible stable releases (~2 years), 60 000+ signed packages, APT atomic dependency solving, AppArmor + SELinux-ready, runs on 9 architectures, 10-year LTS support via Freexian/LTS team. Security is not a product — it is a property of the design.</div>
+  <div class="stage"><h4>FIG 0. — THE STACK YOU WILL CONQUER (watch it light up)</h4>
+    <div class="anim-row" id="stackRow">
+      <div class="node">HARDWARE</div><span class="arrow">→</span>
+      <div class="node">BOOT<br><small>UEFI/GRUB</small></div><span class="arrow">→</span>
+      <div class="node">KERNEL</div><span class="arrow">→</span>
+      <div class="node">SYSTEMD</div><span class="arrow">→</span>
+      <div class="node">APT / FILES</div><span class="arrow">→</span>
+      <div class="node">NET + USERS</div><span class="arrow">→</span>
+      <div class="node">🛡️ HARDENED</div>
+    </div>
+    <button class="btn" onclick="animateStack()">▶ ANIMATE STACK</button>
+    <button class="btn ghost" onclick="document.getElementById('level-0').scrollIntoView()">↓ START LEVEL 0</button>
+  </div>
+  <div class="toc-mini"><b>Reading order enforced:</b> 0 Philosophy → 1 Install &amp; Disks → 2 Boot &amp; systemd → 3 Kernel, Files &amp; Permissions → 4 APT/dpkg → 5 Networking → 6 Users, PAM &amp; sudo → 7 Paranoid Hardening → 8 Operations, Logs &amp; Backup → 9 HERO Final Exam.</div>
+</section>
+
+<!-- ============ LEVEL 0 ============ -->
+<section class="page" id="level-0" data-level="0">
+  <div class="page-header"><span class="level-tag">LEVEL 0 — PHILOSOPHY</span><span style="font-family:var(--mono)">PAGE 001 // UNLOCKED</span></div>
+  <h2>0. What Debian actually is (and why trust it)</h2>
+  <h3 class="hmono">0.1 Free software as a security property</h3>
+  <p>Debian is not a company product. It is a <b>volunteer association + social contract + constitution + DFSG (Debian Free Software Guidelines)</b>. Every package in <span class="inline-code">main</span> must satisfy DFSG: source available, modifiable, redistributable. <b>Why paranoid people care:</b> you can audit anything; no hidden telemetry blob is allowed in <span class="inline-code">main</span>. Non-free firmware lives separately in <span class="inline-code">non-free-firmware</span> — explicit, never silent.</p>
+  <table class="spec"><tr><th>Branch</th><th>Updates</th><th>Use when</th></tr>
+  <tr><td><b>Stable</b> (bookworm)</td><td>security + point releases</td><td>servers, heroes, exams</td></tr>
+  <tr><td><b>Testing</b> (trixie)</td><td>rolling toward next stable</td><td>desktop, newer HW</td></tr>
+  <tr><td><b>Unstable (sid)</b></td><td>daily uploads</td><td>developers only</td></tr>
+  <tr><td><b>Experimental</b></td><td>no migration</td><td>never on prod</td></tr></table>
+  <div class="paranoid-box">Enable only <span class="inline-code">main + contrib + non-free-firmware (if needed)</span> at install. Each extra repo is extra trust. Pin <span class="inline-code">stable</span>, never mix testing/unstable on a machine you care about unless you can pin + rollback.</div>
+  <h3 class="hmono">0.2 Release anatomy — animated</h3>
+  <div class="stage"><h4>FIG 0.2 — PACKAGE MIGRATION: unstable → testing → stable</h4>
+    <div class="anim-row" id="migRow"><div class="node">experimental</div><span class="arrow">→</span><div class="node">unstable (sid)</div><span class="arrow">→</span><div class="node">testing</div><span class="arrow">→</span><div class="node">stable</div></div>
+    <div class="bar-track"><div class="bar-fill" id="migBar"></div></div>
+    <button class="btn" onclick="animateMigration()">▶ SIMULATE 10-DAY MIGRATION + RC-BUG GATE</button>
+    <div id="migLog" style="font-family:var(--mono);font-size:.82rem"></div>
+  </div>
+  <div class="quiz" data-quiz="L0">
+    <p class="q">Q1. Which repo component guarantees DFSG freedom?</p>
+    <label><input type="radio" name="L0q1" value="0"> non-free</label>
+    <label><input type="radio" name="L0q1" value="1"> main</label>
+    <label><input type="radio" name="L0q1" value="0"> contrib alone</label>
+    <p class="q">Q2. Testing becomes Stable when?</p>
+    <label><input type="radio" name="L0q2" value="0"> Every 6 months automatically</label>
+    <label><input type="radio" name="L0q2" value="1"> When RC bugs ≈ 0 and release team freezes + signs off</label>
+    <label><input type="radio" name="L0q2" value="0"> When Linus tags a kernel</label>
+    <p class="q">Q3. Paranoid repo policy?</p>
+    <label><input type="radio" name="L0q3" value="1"> Minimal sources, signed Release files, verify fingerprints</label>
+    <label><input type="radio" name="L0q3" value="0"> Add every PPA you find on a blog</label>
+    <div class="quiz-result" id="res-L0"></div>
+    <button class="btn green" onclick="validateLevel(0)">✔ VALIDATE LEVEL 0 (≥70% TO UNLOCK L1)</button>
+  </div>
+</section>
+
+<!-- ============ LEVEL 1 ============ -->
+<section class="page" id="level-1" data-level="1">
+  <div class="page-header"><span class="level-tag">LEVEL 1 — INSTALL &amp; DISKS</span><span style="font-family:var(--mono)">PAGE 010</span></div>
+  <h2>1. From ISO to encrypted disk</h2>
+  <h3 class="hmono">1.1 Verify before you boot (most skipped, most critical)</h3>
+  <pre><span class="c"># on your CURRENT machine, before flashing USB:</span>
+sha256sum debian-12.7.0-amd64-netinst.iso
+<span class="c"># compare to SHA256SUMS from debian.org, then verify signature:</span>
+gpg --verify SHA256SUMS.sign SHA256SUMS
+<span class="g">Good signature from "Debian CD signing key"</span></pre>
+  <div class="paranoid-box">Flash with <span class="inline-code">cp</span> or Balena-independent <span class="inline-code">dd status=progress bs=4M</span>, then boot USB in <b>UEFI mode</b> (not Legacy/CSM) so you get GPT + ESP + Secure Boot path. Keep the signed checksums offline.</div>
+  <h3 class="hmono">1.2 Partitioning — animated GPT vs MBR</h3>
+  <div class="stage"><h4>FIG 1.2 — GPT LAYOUT FOR PARANOID UEFI INSTALL</h4>
+    <div class="anim-row" id="gptRow">
+      <div class="node">ESP<br><small>512M FAT32 /boot/efi</small></div><span class="arrow">→</span>
+      <div class="node">/boot<br><small>1G ext4 (unencrypted)</small></div><span class="arrow">→</span>
+      <div class="node">LUKS2<br><small>rest of disk</small></div><span class="arrow">→</span>
+      <div class="node">LVM: / + swap + /home</div>
+    </div>
+    <button class="btn" onclick="animateNodes('gptRow')">▶ ANIMATE LAYOUT</button>
+    <table class="spec"><tr><th>Scheme</th><th>Why</th></tr><tr><td>GPT + UEFI</td><td>no 2TB limit, redundant headers, ESP standard</td></tr><tr><td>LUKS2 + Argon2id</td><td>offline disk theft = bricks without passphrase</td></tr><tr><td>LVM on LUKS</td><td>one passphrase, flexible /, /home, swap</td></tr><tr><td>Separate /home</td><td>reinstall OS without losing data</td></tr></table>
+  </div>
+  <h3 class="hmono">1.3 Installer choices that matter</h3>
+  <ul><li><b>Partitioning:</b> Guided → “Encrypted LVM” if unsure; Manual if you want ESP + /boot + LUKS as above.</li>
+  <li><b>Software selection:</b> uncheck everything except <b>SSH server + standard utilities</b> for servers. Add desktop later via APT — smaller attack surface.</li>
+  <li><b>Root password vs sudo:</b> set root password <i>and</i> create admin user → sudo path audited; empty root password locks root (Ubuntu-style).</li></ul>
+  <div class="benefit">Debian Installer (d-i) + Calamares both produce reproducible, preseedable installs. Preseed file = infrastructure-as-code for bare metal.</div>
+  <div class="challenge"><b>🔬 LAB 1 — Plan your disk:</b> you have a 512 GB NVMe laptop that may be stolen. Tick every required control, then validate.
+    <div class="toggles" id="lab1">
+      <span class="toggle" data-ok="1">GPT + UEFI ESP</span><span class="toggle" data-ok="1">LUKS2 full-disk (except ESP/boot)</span><span class="toggle" data-ok="1">Strong passphrase + backup keyslot</span><span class="toggle" data-ok="0">Single FAT32 partition, no encryption</span><span class="toggle" data-ok="1">Separate /home (LVM)</span><span class="toggle" data-ok="0">Disable Secure Boot forever</span>
+    </div>
+    <button class="btn" onclick="checkToggles('lab1','lab1res',true)">CHECK LAB 1</button><span id="lab1res" style="font-family:var(--mono);font-weight:bold"></span>
+  </div>
+  <div class="quiz" data-quiz="L1">
+    <p class="q">Q1. Why verify SHA256 + GPG before flashing?</p>
+    <label><input type="radio" name="L1q1" value="1"> To detect tampered / corrupted ISO before it owns your machine</label>
+    <label><input type="radio" name="L1q1" value="0"> To make the USB faster</label>
+    <p class="q">Q2. Where does the bootloader live on UEFI+GPT?</p>
+    <label><input type="radio" name="L1q2" value="0"> In MBR bootcode only</label>
+    <label><input type="radio" name="L1q2" value="1"> As .efi binary in ESP (/boot/efi), NVRAM points to it</label>
+    <p class="q">Q3. LUKS protects against?</p>
+    <label><input type="radio" name="L1q3" value="0"> Remote SSH brute force while running</label>
+    <label><input type="radio" name="L1q3" value="1"> Offline disk removal / theft when powered off</label>
+    <div class="quiz-result" id="res-L1"></div>
+    <button class="btn green" onclick="validateLevel(1)">✔ VALIDATE LEVEL 1</button>
+  </div>
+</section>
+
+<!-- ============ LEVEL 2 ============ -->
+<section class="page" id="level-2" data-level="2">
+  <div class="page-header"><span class="level-tag">LEVEL 2 — BOOT &amp; SYSTEMD</span><span style="font-family:var(--mono)">PAGE 024</span></div>
+  <h2>2. How Debian wakes up: firmware → GRUB → kernel → systemd</h2>
+  <div class="stage"><h4>FIG 2 — BOOT CHAIN SIMULATOR (press STEP)</h4>
+    <div class="anim-row" id="bootRow"><div class="node">UEFI FW</div><span class="arrow">→</span><div class="node">shim + GRUB</div><span class="arrow">→</span><div class="node">vmlinuz + initrd</div><span class="arrow">→</span><div class="node">systemd PID1</div><span class="arrow">→</span><div class="node">multi-user.target</div></div>
+    <div id="bootLog"></div>
+    <button class="btn" onclick="stepBoot()">▶ STEP BOOT</button>
+    <button class="btn ghost" onclick="resetBoot()">↺ RESET</button>
+  </div>
+  <pre><span class="c"># what you see when it breaks (learn these):</span>
+journalctl -b -p err        <span class="c"># errors this boot</span>
+systemctl --failed          <span class="c"># failed units</span>
+systemd-analyze blame | head <span class="c"># who slowed boot</span>
+systemd-analyze critical-chain</pre>
+  <h3 class="hmono">2.1 GRUB rescue is a hero skill</h3>
+  <pre>grub&gt; ls (hd0,gpt2)/boot   <span class="c"># find vmlinuz</span>
+grub&gt; set root=(hd0,gpt2) | linux /vmlinuz root=/dev/mapper/vg-root | initrd /initrd.img | boot</pre>
+  <div class="paranoid-box">Enable Secure Boot (shim-signed + grub-efi-amd64-signed + kernel signed). Set UEFI admin password + disable USB boot in BIOS for kiosks/servers. GRUB password (<span class="inline-code">grub-mkpasswd-pbkdf2</span>) blocks single-user bypass via <span class="inline-code">init=/bin/bash</span>. Without it, “encrypted disk” still allows evil-maid on unencrypted <span class="inline-code">/boot</span> — mitigate with TPM2 + measured boot where possible.</div>
+  <h3 class="hmono">2.2 systemd targets &amp; units</h3>
+  <table class="spec"><tr><th>Old SysV</th><th>systemd target</th><th>Command</th></tr><tr><td>runlevel 5</td><td>graphical.target</td><td>systemctl isolate graphical.target</td></tr><tr><td>runlevel 3</td><td>multi-user.target</td><td>systemctl get-default / set-default</td></tr><tr><td>service foo start</td><td>foo.service</td><td>systemctl enable --now foo</td></tr></table>
+  <div class="quiz" data-quiz="L2">
+    <p class="q">Q1. Order?</p>
+    <label><input type="radio" name="L2q1" value="1"> UEFI → GRUB → kernel+initrd → systemd</label>
+    <label><input type="radio" name="L2q1" value="0"> systemd → kernel → GRUB → UEFI</label>
+    <p class="q">Q2. initrd/initramfs job?</p>
+    <label><input type="radio" name="L2q2" value="1"> Unlock LUKS, load drivers, mount real / then pivot</label>
+    <label><input type="radio" name="L2q2" value="0"> Run the desktop environment</label>
+    <p class="q">Q3. Which blocks GRUB single-user bypass?</p>
+    <label><input type="radio" name="L2q3" value="1"> GRUB PBKDF2 password + UEFI password</label>
+    <label><input type="radio" name="L2q3" value="0"> A prettier GRUB theme</label>
+    </div>
+    <div class="quiz-result" id="res-L2"></div>
+    <button class="btn green" onclick="validateLevel(2)">✔ VALIDATE LEVEL 2</button>
+</section>
+
+<!-- ============ LEVEL 3 ============ -->
+<section class="page" id="level-3" data-level="3">
+  <div class="page-header"><span class="level-tag">LEVEL 3 — KERNEL, FILES &amp; PERMISSIONS</span><span style="font-family:var(--mono)">PAGE 041</span></div>
+  <h2>3. Kernel, FHS, permissions: who can touch what</h2>
+  <h3 class="hmono">3.1 Kernel vs userspace</h3>
+  <p>Kernel = scheduler + memory + syscalls + drivers. Everything else (bash, apt, sshd) is <b>userspace</b> talking via <b>syscalls</b> (<span class="inline-code">read, write, openat, execve, socket</span>). Trace it: <span class="inline-code">strace -e openat ls</span>.</p>
+  <h3 class="hmono">3.2 FHS explorer (click a dir)</h3>
+  <div class="stage"><h4>FIG 3.2 — CLICK TO LEARN FHS</h4>
+    <div class="fhs" id="fhsGrid">
+      <div data-d="/bin → /usr/bin: essential user commands">/bin</div><div data-d="/sbin → /usr/sbin: admin binaries (fdisk, nft)">/sbin</div><div data-d="/etc: host config. BACK THIS UP. No binaries here.">/etc</div><div data-d="/home: user data. Separate partition, encrypt it.">/home</div><div data-d="/var: mutable data: logs /var/log, mail, lib">/var</div><div data-d="/tmp + /var/tmp: world-writable WITH sticky bit">/tmp</div><div data-d="/proc + /sys: kernel APIs as files (not on disk)">/proc,/sys</div><div data-d="/boot: kernel + initrd + grub.cfg. Keep unencrypted, verify it.">/boot</div>
+    </div><div id="fhsOut" style="font-family:var(--mono);color:#7CFC00;margin-top:8px">Click a directory…</div>
+  </div>
+  <h3 class="hmono">3.3 Permissions lab — the famous rwx (interactive)</h3>
+  <div class="stage"><h4>LAB 3.3 — CHMOD SIMULATOR: toggle bits, see octal + ls -l</h4>
+    <div style="font-family:var(--mono)">owner group other</div>
+    <div class="permgrid" id="permGrid"></div>
+    <div style="font-family:var(--mono);font-size:1.1rem">octal: <b id="permOct" style="color:#ffe66d">644</b> &nbsp; ls -l: <b id="permLs" style="color:#7CFC00">-rw-r--r--</b></div>
+    <div id="permExplain" style="font-size:.88rem"></div>
+    <button class="btn" onclick="setPerm('755')">set 755 (script)</button>
+    <button class="btn" onclick="setPerm('600')">set 600 (private key)</button>
+    <button class="btn" onclick="setPerm('644')">set 644 (file)</button>
+  </div>
+  <pre>chown root:www-data file && chmod 640 file  <span class="c"># secret readable by group only</span>
+chmod +t /tmp  <span class="c"># sticky: only owner can delete own files (1xxx)</span>
+chmod u+s /usr/bin/sudo <span class="c"># setuid: run as owner (4xxx) — audit these!</span>
+find / -perm -4000 -type f 2>/dev/null  <span class="c"># list setuid — paranoid routine</span></pre>
+  <div class="paranoid-box">Default <span class="inline-code">umask 027</span> (not 022) on multi-user machines so new files are not world-readable. Never <span class="inline-code">chmod 777</span> — it is never the fix. Private keys <span class="inline-code">600</span>, <span class="inline-code">~/.ssh 700</span>, <span class="inline-code">authorized_keys 600</span>.</div>
+  <div class="quiz" data-quiz="L3">
+    <p class="q">Q1. What does 640 mean?</p>
+    <label><input type="radio" name="L3q1" value="1"> rw- r-- --- (owner rw, group r, other none)</label>
+    <label><input type="radio" name="L3q1" value="0"> rwx for everyone</label>
+    <p class="q">Q2. setuid bit does what?</p>
+    <label><input type="radio" name="L3q2" value="1"> Runs executable as file owner (e.g. sudo as root)</label>
+    <label><input type="radio" name="L3q2" value="0"> Makes file undeletable</label>
+    <p class="q">Q3. Sticky bit on /tmp?</p>
+    <label><input type="radio" name="L3q3" value="1"> Anyone can create, only owner can delete/rename own files</label>
+    <label><input type="radio" name="L3q3" value="0"> Makes /tmp encrypted</label>
+    </div><div class="quiz-result" id="res-L3"></div>
+    <button class="btn green" onclick="validateLevel(3)">✔ VALIDATE LEVEL 3</button>
+</section>
+
+<!-- ============ LEVEL 4 ============ -->
+<section class="page" id="level-4" data-level="4">
+  <div class="page-header"><span class="level-tag">LEVEL 4 — APT &amp; DPKG</span><span style="font-family:var(--mono)">PAGE 058</span></div>
+  <h2>4. Packaging: why Debian rarely breaks</h2>
+  <pre><span class="c"># the only APT survival kit you need:</span>
+apt update && apt full-upgrade   <span class="c"># refresh index + upgrade</span>
+apt show nginx | apt depends nginx | apt rdepends nginx
+dpkg -L openssh-server  <span class="c"># files from a .deb</span>
+apt-cache policy         <span class="c"># pin / candidate versions</span>
+unattended-upgrades      <span class="c"># auto security updates — ENABLE IT</span></pre>
+  <div class="stage"><h4>FIG 4 — DEPENDENCY RESOLVER (type a package, watch SAT solve)</h4>
+    <div class="dep-graph" id="depGraph"><span class="dep">nginx</span><span>⇐</span><span class="dep">libssl3</span><span class="dep">libpcre3</span><span class="dep">zlib1g</span><span class="dep">GPG-signed Release</span></div>
+    <div class="bar-track"><div class="bar-fill" id="aptBar"></div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="aptInput" value="nginx" style="font-family:var(--mono);padding:8px;flex:1;min-width:140px" placeholder="package name"><button class="btn" onclick="simulateAPT()">apt install --simulate</button></div>
+    <div id="aptLog" style="font-family:var(--mono);font-size:.84rem"></div>
+  </div>
+  <div class="paranoid-box">APT verifies <b>InRelease GPG signatures + hashes</b> for every index. Never bypass with <span class="inline-code">--allow-unauthenticated</span>. Prefer <span class="inline-code">deb822 .sources</span> with <span class="inline-code">Signed-By=/usr/share/keyrings/…</span> over legacy <span class="inline-code">apt-key</span>. Enable <span class="inline-code">unattended-upgrades</span> for <span class="inline-code">stable-security</span> only — auto-reboot servers at 04:00 with a health check.</div>
+  <div class="benefit">Atomic dpkg + trigger + conffile prompts mean config you edited is never silently overwritten (you get a diff choice). Rollback via <span class="inline-code">apt install pkg=oldversion</span> + snapshot (/timeshift/btrfs/LVM).</div>
+  <div class="quiz" data-quiz="L4">
+    <p class="q">Q1. apt update vs apt upgrade?</p>
+    <label><input type="radio" name="L4q1" value="1"> update refreshes index; upgrade installs newer .debs</label>
+    <label><input type="radio" name="L4q1" value="0"> They do the same thing</label>
+    <p class="q">Q2. How does APT trust packages?</p>
+    <label><input type="radio" name="L4q2" value="1"> GPG-signed InRelease + SHA256 of each .deb</label>
+    <label><input type="radio" name="L4q2" value="0"> HTTPS alone</label>
+    <p class="q">Q3. Safest auto-update?</p>
+    <label><input type="radio" name="L4q3" value="1"> unattended-upgrades limited to security repo</label>
+    <label><input type="radio" name="L4q3" value="0"> cron apt-get -y dist-upgrade from sid</label>
+  </div><div class="quiz-result" id="res-L4"></div>
+  <button class="btn green" onclick="validateLevel(4)">✔ VALIDATE LEVEL 4</button>
+</section>
+
+<!-- ============ LEVEL 5 ============ -->
+<section class="page" id="level-5" data-level="5">
+  <div class="page-header"><span class="level-tag">LEVEL 5 — NETWORKING</span><span style="font-family:var(--mono)">PAGE 074</span></div>
+  <h2>5. Networking: packets, systemd-networkd vs NM, firewall</h2>
+  <pre>ip a && ip r && resolvectl status   <span class="c"># modern replacements for ifconfig/route</span>
+ss -tulpn   <span class="c"># WHO is listening? close what you don't need</span>
+ping 9.9.9.9; traceroute debian.org; dig +dnssec debian.org</pre>
+  <div class="stage"><h4>FIG 5A — TCP 3-WAY HANDSHAKE (animated)</h4>
+    <div class="anim-row" id="tcpRow"><div class="node">CLIENT</div><span class="arrow">⇄</span><div class="node">SERVER :22</div></div>
+    <div id="tcpLog" style="font-family:var(--mono);font-size:.84rem;min-height:70px"></div>
+    <button class="btn" onclick="animateHandshake()">▶ SYN → SYN/ACK → ACK</button>
+  </div>
+  <div class="stage"><h4>LAB 5B — NFTABLES DEFAULT-DENY FIREWALL (toggle rules, test packets)</h4>
+    <p style="font-size:.86rem">Policy: <b>deny all inbound except established + SSH (rate-limited) + HTTP/S</b>. Try sending packets:</p>
+    <div class="toggles" id="fwToggles">
+      <span class="toggle on" data-rule="est">✔ allow ESTABLISHED</span>
+      <span class="toggle on" data-rule="ssh">✔ allow SSH/22 (limit)</span>
+      <span class="toggle on" data-rule="web">✔ allow 80/443</span>
+      <span class="toggle" data-rule="telnet">✘ allow telnet/23</span>
+    </div>
+    <div style="margin-top:8px"><button class="btn" onclick="testPacket(22)">send → :22</button><button class="btn" onclick="testPacket(80)">send → :80</button><button class="btn" onclick="testPacket(23)">send → :23</button><button class="btn" onclick="testPacket(3306)">send → :3306</button></div>
+    <div id="fwOut" style="font-family:var(--mono);margin-top:8px"></div>
+    <pre style="margin-top:8px"><span class="c"># real nftables equivalent (/etc/nftables.conf):</span>
+table inet filter {
+  chain input { type filter hook input priority 0; policy drop;
+    ct state established,related accept
+    tcp dport 22 ct state new limit rate 5/minute accept
+    tcp dport {80,443} accept; iif lo accept }
+}</pre>
+  </div>
+  <div class="paranoid-box">Paranoid net: static IP via systemd-networkd on servers, NetworkManager only on laptops; <b>DNS over TLS</b> (systemd-resolved + Quad9); disable IPv6 only if you firewall it too (don’t ignore it); <b>nftables default-drop inbound</b>; no listening service you can’t name. Test from outside: <span class="inline-code">nmap -sV yourhost</span>.</div>
+  <div class="quiz" data-quiz="L5">
+    <p class="q">Q1. 3-way handshake?</p>
+    <label><input type="radio" name="L5q1" value="1"> SYN → SYN/ACK → ACK</label>
+    <label><input type="radio" name="L5q1" value="0"> ACK → SYN → FIN</label>
+    <p class="q">Q2. Correct firewall default?</p>
+    <label><input type="radio" name="L5q2" value="1"> Deny inbound by default, allowlist needed ports</label>
+    <label><input type="radio" name="L5q2" value="0"> Allow all, blocklist bad ports</label>
+    <p class="q">Q3. ss -tulpn shows?</p>
+    <label><input type="radio" name="L5q3" value="1"> Listening sockets + owning processes — your attack surface</label>
+    <label><input type="radio" name="L5q3" value="0"> Wi-Fi passwords</label>
+  </div><div class="quiz-result" id="res-L5"></div>
+  <button class="btn green" onclick="validateLevel(5)">✔ VALIDATE LEVEL 5</button>
+</section>
+
+<!-- ============ LEVEL 6 ============ -->
+<section class="page" id="level-6" data-level="6">
+  <div class="page-header"><span class="level-tag">LEVEL 6 — USERS, PAM &amp; SUDO</span><span style="font-family:var(--mono)">PAGE 089</span></div>
+  <h2>6. Identity: UID, PAM, sudo, SSH keys</h2>
+  <pre>id alice; getent passwd alice; getent group sudo
+<span class="c"># /etc/passwd (world-readable) + /etc/shadow (root-only, yescrypt hashes)</span>
+grep alice /etc/shadow  <span class="c"># $y$ = yescrypt. $1$ = broken MD5 — migrate!</span></pre>
+  <div class="stage"><h4>LAB 6 — SSH HARDENING CHECKER (toggle to reach A+)</h4>
+    <div class="toggles" id="sshLab">
+      <span class="toggle on" data-s="2">PasswordAuthentication no</span>
+      <span class="toggle on" data-s="2">PubkeyAuthentication yes (ed25519)</span>
+      <span class="toggle" data-s="2">PermitRootLogin no</span>
+      <span class="toggle" data-s="1">Port 2222 (obscurity only)</span>
+      <span class="toggle" data-s="2">MFA / 2FA (libpam-google-auth)</span>
+      <span class="toggle" data-s="1">Fail2Ban / rate-limit</span>
+      <span class="toggle" data-s="-3">Password 123456</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="sshBar"></div></div>
+    <div style="font-family:var(--mono)">SSH SCORE: <b id="sshScore">0</b>/10 <span id="sshGrade"></span></div>
+    <button class="btn" onclick="scoreSSH()">EVALUATE sshd_config</button>
+  </div>
+  <pre><span class="c"># /etc/ssh/sshd_config.d/99-paranoid.conf</span>
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+AllowUsers alice
+MaxAuthTries 3
+LoginGraceTime 30
+<span class="c"># + ed25519 keys only, ssh-copy-id, then restart + keep a spare session open!</span></pre>
+  <div class="paranoid-box">sudo via group <span class="inline-code">sudo</span>, never share root password. <span class="inline-code">Defaults timestamp_timeout=5, passwd_tries=3</span> in sudoers (visudo!). PAM + faillock locks after 5 fails. YubiKey / TOTP for sudo on heroes.</div>
+  <div class="quiz" data-quiz="L6">
+    <p class="q">Q1. Where are password hashes?</p>
+    <label><input type="radio" name="L6q1" value="1"> /etc/shadow, root-only, yescrypt</label>
+    <label><input type="radio" name="L6q1" value="0"> /etc/passwd, world-readable plaintext</label>
+    <p class="q">Q2. Safest SSH auth?</p>
+    <label><input type="radio" name="L6q2" value="1"> ed25519 key + passphrase + MFA, root login off</label>
+    <label><input type="radio" name="L6q2" value="0"> root + password 1234 on port 22</label>
+    <p class="q">Q3. Edit sudoers with?</p>
+    <label><input type="radio" name="L6q3" value="1"> visudo (syntax-checked, locking)</label>
+    <label><input type="radio" name="L6q3" value="0"> Any editor, force-save</label>
+  </div><div class="quiz-result" id="res-L6"></div>
+  <button class="btn green" onclick="validateLevel(6)">✔ VALIDATE LEVEL 6</button>
+</section>
+
+<!-- ============ LEVEL 7 ============ -->
+<section class="page" id="level-7" data-level="7">
+  <div class="page-header"><span class="level-tag">LEVEL 7 — PARANOID HARDENING ★</span><span style="font-family:var(--mono)">PAGE 104 // CORE</span></div>
+  <h2>7. Defense in depth: the paranoid stack</h2>
+  <p>No single control saves you. Heroes layer <b>7 walls</b> so one failure ≠ breach.</p>
+  <div class="stage"><h4>FIG 7 — LUKS ONION: click to peel attacker’s view</h4>
+    <div class="onion" id="onion">
+      <div class="layer">① ATTACKER: stolen laptop, no passphrase → NOTHING</div>
+      <div class="layer">② LUKS2 + Argon2id (1GB RAM, 4s) — brute force dies here</div>
+      <div class="layer">③ LVM: / , swap (encrypted!), /home</div>
+      <div class="layer">④ FILESYSTEM + fscrypt / eCryptfs (optional per-user)</div>
+      <div class="layer">⑤ APP DATA (Firefox profile, keys — 600!)</div>
+    </div>
+    <button class="btn" onclick="peelOnion()">▶ PEEL NEXT LAYER</button>
+    <button class="btn ghost" onclick="resetOnion()">↺ RESET</button>
+  </div>
+  <table class="spec"><tr><th>#</th><th>Layer</th><th>Tool on Debian</th><th>One command</th></tr>
+  <tr><td>1</td><td>Full-disk encryption</td><td>LUKS2</td><td><span class="inline-code">cryptsetup luksAddKey /dev/nvme0n1p3</span></td></tr>
+  <tr><td>2</td><td>Integrity / MAC</td><td>AIDE + debsums</td><td><span class="inline-code">aideinit && debsums -c</span></td></tr>
+  <tr><td>3</td><td>Mandatory access</td><td>AppArmor (enforce)</td><td><span class="inline-code">aa-enforce /etc/apparmor.d/*</span></td></tr>
+  <tr><td>4</td><td>Firewall</td><td>nftables</td><td><span class="inline-code">nft list ruleset</span></td></tr>
+  <tr><td>5</td><td>Updates</td><td>unattended-upgrades</td><td><span class="inline-code">dpkg-reconfigure unattended-upgrades</span></td></tr>
+  <tr><td>6</td><td>Intrusion / audit</td><td>fail2ban + auditd + rkhunter</td><td><span class="inline-code">fail2ban-client status sshd</span></td></tr>
+  <tr><td>7</td><td>Backup (ransomware-proof)</td><td>borg + offline copy</td><td><span class="inline-code">borg create ::{now} /etc /home</span></td></tr></table>
+  <pre><span class="c"># 15-minute paranoid baseline (server):</span>
+apt install nftables apparmor apparmor-utils aide fail2ban unattended-upgrades needrestart debsums rkhunter
+systemctl enable --now nftables apparmor fail2ban
+aa-status; nft list ruleset; fail2ban-client status
+<span class="c"># kernel hardening /etc/sysctl.d/99-paranoid.conf:</span>
+kernel.kptr_restrict=2
+kernel.dmesg_restrict=1
+kernel.unprivileged_bpf_disabled=2
+net.ipv4.ip_forward=0
+net.ipv4.conf.all.rp_filter=1
+kernel.yama.ptrace_scope=2</pre>
+  <div class="warning"><b>Swap encrypts too!</b> Unencrypted swap leaks LUKS keys + browser secrets to disk. With “Encrypted LVM” installer option, swap is inside LUKS automatically. Verify: <span class="inline-code">swapon --show; lsblk -f</span>.</div>
+  <div class="challenge"><b>🔬 LAB 7 — Spot the sin:</b> select ONLY the paranoid-correct practices:
+    <div class="toggles" id="lab7"><span class="toggle" data-ok="1">Auto security updates + reboot window</span><span class="toggle" data-ok="0">chmod 777 to “fix” website</span><span class="toggle" data-ok="1">AppArmor enforce + auditd</span><span class="toggle" data-ok="0">Same password everywhere + root SSH open</span><span class="toggle" data-ok="1">Borg backup + offline + test restore</span><span class="toggle" data-ok="1">AIDE baseline + debsums weekly</span></div>
+    <button class="btn" onclick="checkToggles('lab7','lab7res',true)">CHECK LAB 7</button><span id="lab7res" style="font-family:var(--mono);font-weight:bold"></span>
+  </div>
+  <div class="quiz" data-quiz="L7">
+    <p class="q">Q1. Defense in depth means?</p>
+    <label><input type="radio" name="L7q1" value="1"> Layered controls so one failure is contained</label>
+    <label><input type="radio" name="L7q1" value="0"> One strong antivirus is enough</label>
+    <p class="q">Q2. AppArmor does what?</p>
+    <label><input type="radio" name="L7q2" value="1"> Confines programs to least-privilege profiles (MAC)</label>
+    <label><input type="radio" name="L7q2" value="0"> Encrypts the disk</label>
+    <p class="q">Q3. 3-2-1 backup?</p>
+    <label><input type="radio" name="L7q3" value="1"> 3 copies, 2 media, 1 offline/offsite, tested restore</label>
+    <label><input type="radio" name="L7q3" value="0"> One USB stick in the same bag</label>
+  </div><div class="quiz-result" id="res-L7"></div>
+  <button class="btn green" onclick="validateLevel(7)">✔ VALIDATE LEVEL 7</button>
+</section>
+
+<!-- ============ LEVEL 8 ============ -->
+<section class="page" id="level-8" data-level="8">
+  <div class="page-header"><span class="level-tag">LEVEL 8 — OPERATIONS</span><span style="font-family:var(--mono)">PAGE 121</span></div>
+  <h2>8. Operate like an admin: services, logs, backup, rescue</h2>
+  <div class="stage"><h4>FIG 8 — FAKE JOURNALCTL (type commands below)</h4>
+    <div class="terminal" id="faketerm">debian-hero:~$ type `help` and press Enter
+</div>
+    <div style="display:flex;margin-top:6px"><span style="font-family:var(--mono);background:#000;color:#0f0;padding:8px">$</span><input id="fakeinput" placeholder="help | status nginx | failed | blame | clear" style="flex:1;font-family:var(--mono);padding:8px;background:#111;color:#0f0;border:2px solid #333" onkeydown="if(event.key==='Enter')runFake()"></div>
+    <button class="btn" onclick="runFake()">RUN</button>
+  </div>
+  <pre><span class="c"># backup that actually restores (borg, encrypted + dedup):</span>
+borg init --encryption=repokey /mnt/offline/borg-repo
+borg create /mnt/offline/borg-repo::{now:%Y-%m-%d} /etc /home /var/lib --exclude /home/*/.cache
+borg list /mnt/offline/borg-repo  <span class="c"># TEST restore monthly to a VM!</span>
+<span class="c"># rescue broken GRUB from live USB:</span>
+cryptsetup open /dev/sda3 crypt && mount /dev/mapper/vg-root /mnt \
+ && mount /dev/sda2 /mnt/boot && mount /dev/sda1 /mnt/boot/efi \
+ && arch-chroot /mnt grub-install && update-grub</pre>
+  <div class="benefit">journalctl is structured + tamper-evident (ForwardSecureSealing). Enable persistent logs + remote syslog for servers so attacker can’t wipe local truth.</div>
+  <div class="quiz" data-quiz="L8">
+    <p class="q">Q1. systemctl --failed shows?</p>
+    <label><input type="radio" name="L8q1" value="1"> Units that failed to start — triage starting point</label>
+    <label><input type="radio" name="L8q1" value="0"> Deleted files</label>
+    <p class="q">Q2. Good backup rule?</p>
+    <label><input type="radio" name="L8q2" value="1"> Encrypted, versioned, offline, restore-tested</label>
+    <label><input type="radio" name="L8q2" value="0"> Drag /home to same disk once</label>
+  </div><div class="quiz-result" id="res-L8"></div>
+  <button class="btn green" onclick="validateLevel(8)">✔ VALIDATE LEVEL 8</button>
+</section>
+
+<!-- ============ LEVEL 9 / HERO ============ -->
+<section class="page" id="level-9" data-level="9">
+  <div class="page-header"><span class="level-tag hero">★ LEVEL 9 — HERO EXAM</span><span style="font-family:var(--mono)">PAGE 140 // SEALED</span></div>
+  <h2>9. Hero validation: prove you can be trusted with root</h2>
+  <p>Scenario: you inherit a Debian 12 VPS running a small shop. It has <b>password SSH as root on :22, no firewall, no updates, chmod 777 shop/, no backup</b>. In the final drill, pick the <b>correct order + commands</b>.</p>
+  <div class="quiz" data-quiz="L9">
+    <p class="q">Q1. First 5 minutes?</p>
+    <label><input type="radio" name="L9q1" value="0"> Install a new theme</label>
+    <label><input type="radio" name="L9q1" value="1"> Snapshot/backup → create admin + key → lock root/password SSH → nftables drop → unattended-upgrades</label>
+    <label><input type="radio" name="L9q1" value="0"> Reboot and hope</label>
+    <p class="q">Q2. Fix 777 shop/?</p>
+    <label><input type="radio" name="L9q2" value="1"> chown -R root:www-data shop; find shop -type d -exec chmod 750 {} \; -o -type f -exec chmod 640 {} \;</label>
+    <label><input type="radio" name="L9q2" value="0"> Leave 777, it “just works”</label>
+    <p class="q">Q3. Prove ongoing hygiene?</p>
+    <label><input type="radio" name="L9q3" value="1"> needrestart + debsums + AIDE + log review + tested borg restore</label>
+    <label><input type="radio" name="L9q3" value="0"> Disable logging to save disk</label>
+    <p class="q">Q4. Kernel ships as?</p>
+    <label><input type="radio" name="L9q4" value="1"> Signed linux-image .deb + initramfs + modules, verified by APT + Secure Boot</label>
+    <label><input type="radio" name="L9q4" value="0"> Random binary from a forum</label>
+  </div><div class="quiz-result" id="res-L9"></div>
+  <button class="btn green" onclick="validateLevel(9)">★ CLAIM HERO STATUS</button>
+  <div id="heroSeal"></div>
+</section>
+
+<!-- ============ APPENDIX ============ -->
+<section class="page" id="level-sources" data-level="sources">
+  <div class="page-header"><span class="level-tag">APPENDIX A — SOURCES &amp; CHEATSHEET</span><span style="font-family:var(--mono)">PAGE 150</span></div>
+  <h2>External sources (links only — no external assets loaded)</h2>
+  <ul class="sources">
+    <li><a href="https://www.debian.org/doc/">Debian Documentation (install, release notes, manuals)</a></li>
+    <li><a href="https://wiki.debian.org/">Debian Wiki — SecureBoot, EncryptedInstall, Systemd, nftables</a></li>
+    <li><a href="https://www.debian.org/security/">Debian Security + security-tracker</a></li>
+    <li><a href="https://manpages.debian.org/">manpages.debian.org — apt, nft, cryptsetup, sshd_config, apparmor</a></li>
+    <li><a href="https://www.debian.org/social_contract">Social Contract / DFSG / Constitution — why trust works</a></li>
+    <li><a href="https://wiki.debian.org/AppArmor">AppArmor on Debian</a> · <a href="https://wiki.debian.org/UnattendedUpgrades">UnattendedUpgrades</a> · <a href="https://wiki.debian.org/nftables">nftables</a></li>
+  </ul>
+  <h3 class="hmono">Hero cheatsheet (print this)</h3>
+  <pre>apt update && apt full-upgrade; needrestart -r a
+systemctl --failed; journalctl -p err -b; systemd-analyze blame
+ss -tulpn; nft list ruleset; aa-status; fail2ban-client status
+find / -perm -4000 2>/dev/null; debsums -c; aide --check
+borg create repo::{now} /etc /home; borg list repo
+<span class="c"># never: 777, --allow-unauthenticated, root+password on :22, unencrypted swap</span></pre>
+  <p><a href="index.html" style="font-family:var(--mono);font-weight:bold">⌂ HOME (index.html) — back to cover</a> · <a href="#level-cover">Top of manual</a></p>
+  <div class="footer-manual">TM-DEB-12 · Single file · Vanilla JS+CSS3 · No external resources (fonts/CDN) — only outbound &lt;a&gt; links above. Gating via localStorage key <b>deb-manual-v1</b>. To reuse: copy this file as index.html anywhere. End of manual.</div>
+</section>
+
+</main>
+</div>
+
+<script>
+/* ===== GATING ===== */
+var LEVELS=[
+ {n:0,t:"L0 · Philosophy",id:"level-0"},
+ {n:1,t:"L1 · Install & Disks",id:"level-1"},
+ {n:2,t:"L2 · Boot & systemd",id:"level-2"},
+ {n:3,t:"L3 · Kernel & Perms",id:"level-3"},
+ {n:4,t:"L4 · APT & dpkg",id:"level-4"},
+ {n:5,t:"L5 · Networking",id:"level-5"},
+ {n:6,t:"L6 · Users & SSH",id:"level-6"},
+ {n:7,t:"L7 · ★ Hardening",id:"level-7"},
+ {n:8,t:"L8 · Operations",id:"level-8"},
+ {n:9,t:"L9 · ★ HERO Exam",id:"level-9"}
+];
+var KEY="deb-manual-v1";
+function getState(){try{return JSON.parse(localStorage.getItem(KEY))||{passed:[-1]}}catch(e){return{passed:[-1]}}}
+function maxPassed(){var s=getState();return Math.max.apply(null,s.passed.concat([-1]))}
+function isUnlocked(n){return n<=maxPassed()+1}
+function savePass(n){var s=getState();if(s.passed.indexOf(n)<0)s.passed.push(n);localStorage.setItem(KEY,JSON.stringify(s));renderTOC();updateProgress()}
+function resetProgress(){localStorage.removeItem(KEY);renderTOC();updateProgress();applyLocks();document.getElementById('manual').scrollIntoView();alert("Clearance reset. Start again from Level 0, recruit.")}
+function renderTOC(){
+ var t=document.getElementById('toc');t.innerHTML="";
+ var cov=document.createElement('li');cov.innerHTML='<a class="toc-link" href="#level-cover">⌂ COVER <span class="badge unlocked">open</span></a>';t.appendChild(cov);
+ LEVELS.forEach(function(L){
+  var un=isUnlocked(L.n), done=maxPassed()>=L.n;
+  var li=document.createElement('li');
+  var a=document.createElement('a');
+  a.href=un?("#"+L.id):"#level-cover";
+  a.className="toc-link"+(un?"":" locked")+(done?" done":"");
+  a.innerHTML=(un?"▣ ":"🔒 ")+L.t+' <span class="badge '+(un?(done?"unlocked":"unlocked"):"lockedb")+'">'+(done?"PASS":(un?"OPEN":"LOCK"))+"</span>";
+  if(!un)a.onclick=function(e){e.preventDefault();alert("🔒 Complete Level "+(L.n-1)+" validation first. The manual enforces order — like runlevels enforce boot order.");document.getElementById('level-'+(maxPassed()+1)).scrollIntoView()};
+  li.appendChild(a);t.appendChild(li);
+ });
+ var s=document.createElement('li');s.innerHTML='<a class="toc-link" href="#level-sources">APPENDIX · Sources</a>';t.appendChild(s);
+}
+function applyLocks(){
+ LEVELS.forEach(function(L){
+  var sec=document.getElementById(L.id);if(!sec)return;
+  var old=sec.querySelector('.lock-overlay');if(old)old.remove();
+  sec.style.filter="";sec.style.pointerEvents="";
+  if(!isUnlocked(L.n)){
+   sec.style.filter="blur(1px)";sec.style.pointerEvents="none";
+   var d=document.createElement('div');d.className="lock-overlay";
+   d.style.pointerEvents="auto";d.style.filter="none";
+   d.innerHTML='<div class="big">🔒</div><h3 style="font-family:var(--mono)">LEVEL '+L.n+' SEALED — CLEARANCE REQUIRED</h3><p>Pass Level '+(L.n-1)+' validation (≥70%) to break this seal.</p><button class="btn" onclick="document.getElementById(\'level-'+(maxPassed()+1)+'\').scrollIntoView()">← GO TO LEVEL '+(maxPassed()+1)+'</button>';
+   sec.prepend(d);
+  }
+ });
+}
+function updateProgress(){
+ var m=maxPassed();var done=m+1;if(m<-0)done=0;
+ var total=LEVELS.length;var pct=Math.round(Math.max(0,m+1)/total*100);
+ document.getElementById('progressFill').style.width=pct+"%";
+ document.getElementById('progressLabel').textContent=Math.max(0,m+1)+" / "+total+" SECTIONS";
+ document.getElementById('paranoidMeter').textContent="🛡️ PARANOIA: LVL "+Math.max(0,m+1);
+}
+/* ===== QUIZ ENGINE ===== */
+function quizzesInLevel(n){
+ var map={0:["L0q1","L0q2","L0q3"],1:["L1q1","L1q2","L1q3"],2:["L2q1","L2q2","L2q3"],3:["L3q1","L3q2","L3q3"],4:["L4q1","L4q2","L4q3"],5:["L5q1","L5q2","L5q3"],6:["L6q1","L6q2","L6q3"],7:["L7q1","L7q2","L7q3"],8:["L8q1","L8q2"],9:["L9q1","L9q2","L9q3","L9q4"]};
+ return map[n]||[];
+}
+function validateLevel(n){
+ var names=quizzesInLevel(n),score=0,total=names.length;
+ names.forEach(function(nm){
+  var sel=document.querySelector('input[name="'+nm+'"]:checked');
+  document.querySelectorAll('input[name="'+nm+'"]').forEach(function(r){
+   var lab=r.closest('label');lab.classList.remove('correct','wrong');
+   if(r.checked){lab.classList.add(r.value==="1"?"correct":"wrong")}
+   else if(r.value==="1"&&!sel){/* hint nothing */}
+  });
+  if(sel&&sel.value==="1")score++;
+ });
+ /* labs required for some levels */
+ var labOk=true,labMsg="";
+ if(n===1){labOk=labState('lab1');labMsg=labOk?"":" + LAB 1 incomplete";}
+ if(n===7){labOk=labState('lab7')&&labOk;labMsg+=" (LAB 7 required)";}
+ var pct=Math.round(score/total*100);
+ var el=document.getElementById('res-L'+n);
+ var pass=pct>=70&&labOk;
+ el.innerHTML="SCORE "+score+"/"+total+" ("+pct+"%)"+labMsg+" → "+(pass?'<span class="seal">✔ PASSED — NEXT LEVEL UNLOCKED</span>':'<span class="seal fail">✘ NEED ≥70%'+(labOk?"":" + LABS")+'</span>');
+ if(pass){savePass(n);applyLocks();
+  if(n===9){document.getElementById('heroSeal').innerHTML='<div class="seal" style="font-size:1.2rem">★ HERO OF DEBIAN — CLEARANCE: ROOT ★</div><p>You verified ISOs, encrypted disks, rescued GRUB, solved deps, firewalled packets, hardened SSH, layered AppArmor/AIDE/borg. Now maintain it: <span class="inline-code">unattended-upgrades + nftables + tested restores</span>. Print the cheatsheet. Teach someone else.</p><button class="btn" onclick="window.print()">🖨 PRINT CERTIFICATE / MANUAL</button>';document.getElementById('heroSeal').scrollIntoView({behavior:"smooth"})}
+  else{var nxt=document.getElementById('level-'+(n+1));if(nxt)nxt.scrollIntoView({behavior:"smooth"})}
+ }
+}
+function labState(id){
+ var ok=true,any=false;
+ document.querySelectorAll('#'+id+' .toggle').forEach(function(t){
+  var should=t.dataset.ok==="1",ison=t.classList.contains('on');any=any||ison;
+  if(should&&!ison)ok=false;if(!should&&ison)ok=false;
+ });
+ return ok&&any;
+}
+function checkToggles(id,resId,strict){
+ var els=document.querySelectorAll('#'+id+' .toggle'),good=0,bad=0;
+ els.forEach(function(t){
+  var should=t.dataset.ok==="1",ison=t.classList.contains('on');
+  t.style.borderColor=ison?(should?"green":"red"):"#111";
+  if(ison&&should)good++;if(ison&&!should)bad++;
+ });
+ var r=document.getElementById(resId);
+ r.textContent=bad===0&&good>0?"✔ CORRECT SELECTION ("+good+" controls)":"✘ "+bad+" dangerous choice(s) selected — unselect red, select required";
+ r.style.color=bad===0&&good>0?"green":"red";
+}
+document.addEventListener('click',function(e){
+ if(e.target.classList&&e.target.classList.contains('toggle'))e.target.classList.toggle('on');
+});
+/* ===== ANIMATIONS ===== */
+function animateNodes(rowId){
+ var nodes=document.querySelectorAll('#'+rowId+' .node');nodes.forEach(function(n){n.classList.remove('active')});
+ nodes.forEach(function(n,i){setTimeout(function(){n.classList.add('active')},i*450)});
+}
+function animateStack(){animateNodes('stackRow')}
+var migStep=0;
+function animateMigration(){
+ var nodes=document.querySelectorAll('#migRow .node');
+ var log=document.getElementById('migLog');log.innerHTML="";
+ nodes.forEach(function(n){n.classList.remove('active')});
+ document.getElementById('migBar').style.width="0%";
+ var msgs=["Day 0: upload to unstable, autopkgtest runs…","Day 5: no RC bugs, 10-day clock ticking…","Day 10: migrates to testing…","Freeze: release team blesses testing → stable, images signed!"];
+ msgs.forEach(function(m,i){setTimeout(function(){
+  if(nodes[i])nodes[i].classList.add('active');
+  document.getElementById('migBar').style.width=((i+1)/msgs.length*100)+"%";
+  log.innerHTML+="<div class='logline show'>› "+m+"</div>";
+ },i*800)});
+}
+var bootStep=-1;
+var bootMsgs=["[UEFI] Secure Boot verifies shim → GRUBx64.efi signature OK","[GRUB] menu: Debian 12, Advanced, memtest. Loading vmlinuz + initrd…","[KERNEL] initramfs: cryptsetup unlocks LUKS, LVM activates vg-root","[SYSTEMD] PID1: mounts /, pivots, starts multi-user.target — login!"];
+function stepBoot(){
+ var nodes=document.querySelectorAll('#bootRow .node');
+ bootStep=Math.min(bootStep+1,nodes.length-1);
+ nodes[bootStep].classList.add('active');
+ var log=document.getElementById('bootLog');
+ log.innerHTML+="<div class='logline show'>"+bootMsgs[bootStep]+"</div>";
+ if(bootStep===nodes.length-1)log.innerHTML+="<div class='logline show' style='color:#7CFC00'>✔ BOOT COMPLETE — try: journalctl -b, systemctl --failed</div>";
+}
+function resetBoot(){bootStep=-1;document.querySelectorAll('#bootRow .node').forEach(function(n){n.classList.remove('active')});document.getElementById('bootLog').innerHTML=""}
+/* FHS */
+document.querySelectorAll('#fhsGrid div').forEach(function(d){
+ d.onclick=function(){document.querySelectorAll('#fhsGrid div').forEach(function(x){x.classList.remove('sel')});d.classList.add('sel');document.getElementById('fhsOut').textContent="› "+d.dataset.d}
+});
+/* PERMISSIONS */
+var permBits=[6,4,4];
+function renderPerm(){
+ var names=["r","w","x"],grid=document.getElementById('permGrid');grid.innerHTML="";
+ var vals=[4,2,1],oct="",ls="-";
+ var who=["u","g","o"];
+ for(var w=0;w<3;w++){for(var b=0;b<3;b++){
+  (function(w,b){var btn=document.createElement('button');var on=(permBits[w]&vals[b])!==0;
+   btn.textContent=who[w]+names[b]+(on?" ✓":" ·");if(on)btn.classList.add('on');
+   btn.onclick=function(){permBits[w]^=vals[b];renderPerm()};grid.appendChild(btn)})(w,b);
+ }}
+ oct=""+permBits[0]+permBits[1]+permBits[2];
+ document.getElementById('permOct').textContent=oct;
+ var s="-";for(var w2=0;w2<3;w2++){s+=(permBits[w2]&4?"r":"-")+(permBits[w2]&2?"w":"-")+(permBits[w2]&1?"x":"-")}
+ document.getElementById('permLs').textContent=s;
+ var ex={ "755":"rwxr-xr-x: scripts & dirs — everyone can run/enter, only you write.","644":"rw-r--r--: normal files — you write, world reads.","600":"rw-------: secrets (keys, shadow-like) — only you.","640":"rw-r-----: group-shared secret (log, web config).","700":"rwx------: private dir (~/.ssh).","750":"rwxr-x---: team dir, others blocked."};
+ document.getElementById('permExplain').innerHTML="<b>Meaning:</b> "+(ex[oct]||"Custom mask — check umask & group needs. World-writable? Justify it or remove it.");
+}
+function setPerm(o){permBits=[+o[0],+o[1],+o[2]];renderPerm()}
+renderPerm();
+/* APT */
+function simulateAPT(){
+ var pkg=(document.getElementById('aptInput').value||"nginx").trim()||"nginx";
+ var deps=document.querySelectorAll('#depGraph .dep');
+ document.getElementById('aptLog').innerHTML="";document.getElementById('aptBar').style.width="0%";
+ deps.forEach(function(d){d.classList.remove('on');if(d.textContent.toLowerCase().indexOf('nginx')>=0||pkg==="nginx"){}d.textContent=d.textContent});
+ deps[0].textContent=pkg;
+ var steps=["› Resolving "+pkg+": reading signed InRelease… <b style='color:#7CFC00'>Good signature</b>","› Depends: libssl3, libpcre3, zlib1g — versions satisfiable","› 4 packages, 2.1 MB download, 7.8 MB disk","› Unpacking + triggers (man-db, libc) + conffiles preserved… DONE"];
+ deps.forEach(function(d,i){setTimeout(function(){d.classList.add('on')},i*500)});
+ steps.forEach(function(s,i){setTimeout(function(){
+  document.getElementById('aptLog').innerHTML+="<div class='logline show'>"+s+"</div>";
+  document.getElementById('aptBar').style.width=((i+1)/steps.length*100)+"%";
+ },i*650)});
+}
+/* TCP */
+function animateHandshake(){
+ var log=document.getElementById('tcpLog');log.innerHTML="";
+ var nodes=document.querySelectorAll('#tcpRow .node');nodes.forEach(function(n){n.classList.remove('active')});
+ var steps=[["CLIENT","SYN seq=0 →"], ["SERVER :22","SYN/ACK seq=0 ack=1 →"], ["CLIENT","ACK ack=1 — ESTABLISHED 🔒 (then SSH banner + keys)"]];
+ steps.forEach(function(s,i){setTimeout(function(){
+  nodes[i%2].classList.add('active');
+  log.innerHTML+="<div class='logline show'>"+(i+1)+". <b>"+s[0]+"</b>: "+s[1]+"</div>";
+ },i*900)});
+}
+/* FIREWALL */
+document.querySelectorAll('#fwToggles .toggle').forEach(function(t){t.onclick=function(){t.classList.toggle('on')}});
+function fwRules(){var r={};document.querySelectorAll('#fwToggles .toggle').forEach(function(t){r[t.dataset.rule]=t.classList.contains('on')});return r}
+function testPacket(port){
+ var r=fwRules(),out=document.getElementById('fwOut'),verdict,why;
+ if(port===22){verdict=r.ssh?"ACCEPT (rate 5/min, log)":"DROP";why=r.ssh?"rule: allow SSH":"policy: default drop — SSH closed"}
+ else if(port===80||port===443){verdict=r.web?"ACCEPT":"DROP";why=r.web?"rule: allow web":"policy drop"}
+ else if(port===23){verdict=r.telnet?"ACCEPT ⚠️ TELNET IS PLAINTEXT — NEVER":"DROP ✔ (telnet should stay closed)";why="telnet transmits passwords in clear"}
+ else{verdict="DROP ✔";why="no rule → default deny (stealth)"}
+ out.innerHTML="packet → :"+port+" → <b style='color:"+(verdict.indexOf("ACCEPT")===0&&port!==23?"#7CFC00":"#ff6b6b")+"'>"+verdict+"</b> — "+why;
+}
+/* SSH LAB */
+function scoreSSH(){
+ var score=0;document.querySelectorAll('#sshLab .toggle').forEach(function(t){if(t.classList.contains('on'))score+=+t.dataset.s});
+ score=Math.max(0,Math.min(10,score));
+ document.getElementById('sshBar').style.width=(score*10)+"%";
+ document.getElementById('sshScore').textContent=score;
+ document.getElementById('sshGrade').textContent=score>=8?"— GRADE A+ (hero)":score>=5?"— GRADE B (okay, lock root+MFA!)":"— GRADE F (pwned on Shodan)";
+}
+/* ONION */
+var onionStep=-1;
+function peelOnion(){
+ var layers=document.querySelectorAll('#onion .layer');
+ onionStep=Math.min(onionStep+1,layers.length-1);
+ layers[onionStep].classList.add('active');
+}
+function resetOnion(){onionStep=-1;document.querySelectorAll('#onion .layer').forEach(function(l){l.classList.remove('active')})}
+/* FAKE TERM */
+var fakeHist=[];
+function runFake(){
+ var inp=document.getElementById('fakeinput'),term=document.getElementById('faketerm');
+ var cmd=inp.value.trim().toLowerCase();inp.value="";
+ term.textContent+="\n$ "+cmd+"\n";
+ var out={
+  "help":"commands: status NAME | failed | blame | logs | clear",
+  "failed":" 0 loaded units listed. (use systemctl --failed on real box)",
+  "blame":" 4.2s NetworkManager-wait-online … 1.1s apt-daily … (systemd-analyze blame)",
+  "logs":" journal: sshd accepted key for alice; nftables dropped 23/scan from 45.x …",
+  "status nginx":" ● nginx.service active (running) since boot; listening :80 :443",
+  "clear":"__CLEAR__"
+ }[cmd]||"bash: "+cmd+": try help (this is a simulator — open a real Debian shell for the rest!)";
+ if(out==="__CLEAR__"){term.textContent="debian-hero:~$ "}else{term.textContent+=out+"\ndebian-hero:~$ ";}
+ term.scrollTop=term.scrollHeight;
+}
+/* INIT */
+renderTOC();updateProgress();applyLocks();
+</script>
+</body>
+</html>
