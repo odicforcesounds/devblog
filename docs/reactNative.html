@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>React Native Android Quest — Zero to Hero</title>
+<meta name="description" content="A gamified vanilla JS/CSS adventure that teaches React Native for Android from zero to hero.">
+<style>*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b1020;--bg2:#111936;--card:#161f42;--card2:#1c2650;
+  --line:#2b3a7a;--txt:#eaf0ff;--mut:#9aa7d0;
+  --acc:#61dafb;--acc2:#7c5cff;--good:#3ddc84;--warn:#ffb020;--bad:#ff5d6c;--gold:#ffd54a;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(1000px 500px at 20% -5%,#24307a 0%,transparent 60%),radial-gradient(900px 500px at 90% 10%,#3a1f7a 0%,transparent 55%),var(--bg);color:var(--txt);font-family:var(--sans);min-height:100vh}
+#bg-orbs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#bg-orbs i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.35;animation:drift 14s ease-in-out infinite alternate}
+#bg-orbs i:nth-child(1){width:420px;height:420px;background:#2840ff;left:-120px;top:-80px}
+#bg-orbs i:nth-child(2){width:380px;height:380px;background:#7c5cff;right:-100px;top:20%}
+#bg-orbs i:nth-child(3){width:520px;height:520px;background:#00e5a0;left:30%;bottom:-220px;opacity:.18}
+@keyframes drift{to{transform:translate(40px,50px) scale(1.08)}}
+#hud{position:sticky;top:0;z-index:20;display:flex;gap:14px;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(11,16,32,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.logo{display:flex;gap:10px;align-items:center}
+.logo strong{font-size:15px;letter-spacing:.5px}
+.logo small{display:block;color:var(--mut);font-size:10px;letter-spacing:1.5px}
+.logo-atom{width:38px;height:38px;border-radius:50%;border:2px solid var(--acc);position:relative;display:grid;place-items:center;animation:spin 8s linear infinite}
+.logo-atom span{width:10px;height:10px;background:var(--acc);border-radius:50%;box-shadow:0 0 12px var(--acc)}
+.logo-atom::before,.logo-atom::after{content:"";position:absolute;inset:2px;border:1px solid var(--acc2);border-radius:50%;transform:rotate(60deg)}
+.logo-atom::after{transform:rotate(-60deg)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hud-center{flex:1;max-width:520px}
+.xp-top{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);letter-spacing:1px;margin-bottom:5px}
+#hud-rank{color:var(--gold);font-weight:800}
+.xp-bar{height:14px;background:#080c1d;border:1px solid var(--line);border-radius:99px;overflow:hidden;position:relative}
+#xp-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--acc),var(--acc2),var(--good));border-radius:99px;transition:width .8s cubic-bezier(.2,.9,.2,1)}
+.xp-shine{position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.25) 50%,transparent 70%);animation:shine 2.6s linear infinite}
+@keyframes shine{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.hud-right{display:flex;align-items:center;gap:8px}
+.stat{background:#0a0f26;border:1px solid var(--line);padding:6px 10px;border-radius:10px;font-size:13px}
+#app{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:22px 16px 60px}
+.screen{display:none}.screen.active{display:block;animation:pop .35s ease}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}}
+.hero{text-align:center;padding:34px 18px;background:linear-gradient(180deg,rgba(124,92,255,.18),rgba(97,218,251,.07));border:1px solid var(--line);border-radius:22px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent,rgba(97,218,251,.12),transparent 30%);animation:spin 9s linear infinite;pointer-events:none}
+.hero-badge{display:inline-block;font-size:11px;letter-spacing:1px;background:#0a0f26;border:1px solid var(--acc);color:var(--acc);padding:6px 12px;border-radius:99px;margin-bottom:14px}
+.hero h1{font-size:clamp(34px,6vw,62px);line-height:.95;letter-spacing:-1px}
+.hero h1 span{background:linear-gradient(90deg,var(--acc),var(--good));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tagline{color:var(--mut);max-width:640px;margin:12px auto 0}
+.hero-cta{margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.hero-stats{display:flex;gap:26px;justify-content:center;margin-top:20px}
+.hero-stats div{display:grid}
+.hero-stats b{font-size:24px;color:var(--gold)}
+.hero-stats span{font-size:11px;color:var(--mut);letter-spacing:1px}
+.btn{background:linear-gradient(180deg,#2ee6a8,#1cb877);border:0;color:#06130d;font-weight:900;padding:12px 20px;border-radius:12px;cursor:pointer;letter-spacing:.5px;box-shadow:0 6px 0 #0c6b44,0 10px 24px rgba(0,0,0,.4);transition:transform .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #0c6b44}
+.btn.big{font-size:16px}
+.btn.small{padding:8px 12px;font-size:13px}
+.btn.secondary{background:linear-gradient(180deg,#61dafb,#3a8bff);box-shadow:0 6px 0 #1c4fa0,0 10px 24px rgba(0,0,0,.4);color:#04121a}
+.btn.ghost{background:#0a0f26;color:var(--txt);border:1px solid var(--line);box-shadow:none;font-weight:700}
+.btn:disabled{filter:grayscale(1);opacity:.5;cursor:not-allowed}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:14px 0}
+.how-card{display:flex;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.how-card i{font-size:26px}.how-card p{color:var(--mut);font-size:13px;margin-top:4px}
+.map-title{margin:22px 4px 12px;font-size:20px}
+.map-title small{color:var(--mut);font-size:13px}
+.level-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.lvl{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:14px;position:relative;overflow:hidden;cursor:pointer;transition:transform .15s}
+.lvl:hover{transform:translateY(-3px)}
+.lvl.locked{filter:grayscale(.9);opacity:.62;cursor:not-allowed}
+.lvl.done{border-color:var(--good)}
+.lvl .num{position:absolute;right:10px;top:6px;font-size:52px;font-weight:900;opacity:.12}
+.lvl h3{font-size:16px;margin:6px 0}
+.lvl p{color:var(--mut);font-size:13px;min-height:38px}
+.pill{display:inline-block;font-size:11px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:#0a0f26;color:var(--acc);font-weight:800;letter-spacing:.5px}
+.pill.easy{color:var(--good);border-color:var(--good)}.pill.mid{color:var(--warn);border-color:var(--warn)}.pill.hard{color:#ff9ecf;border-color:#ff9ecf}.pill.boss{color:var(--gold);border-color:var(--gold)}
+.lvl-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;color:var(--mut)}
+.lvl-foot b{color:var(--gold)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:14px}
+.lore p{color:#cdd6f5;font-size:14px;line-height:1.6;margin-top:8px}
+.arch-mini{display:flex;gap:8px;align-items:stretch;margin-top:12px;flex-wrap:wrap}
+.arch-chip{background:#0a0f26;border:1px solid var(--acc);border-radius:12px;padding:10px 12px;font-size:12px;font-weight:800;text-align:center}
+.arch-chip small{font-weight:400;color:var(--mut)}
+.arch-chip.nat{border-color:var(--good)}.arch-chip.gpu{border-color:var(--gold)}
+.arch-arrow{display:grid;place-items:center;color:var(--mut);font-size:13px;text-align:center}
+.level-top{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+#level-crumb{font-size:13px;color:var(--mut)}
+.xp-pill{margin-left:auto;background:#0a0f26;border:1px solid var(--gold);color:var(--gold);padding:6px 12px;border-radius:99px;font-weight:900;font-size:13px}
+#level-body{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px}
+#level-body h2{font-size:26px;margin:4px 0 6px}
+#level-body h3{margin:18px 0 8px;color:var(--acc)}
+#level-body h4{margin:14px 0 6px}
+#level-body p,#level-body li{color:#d3dbf7;font-size:14.5px;line-height:1.65}
+#level-body ul{margin:8px 0 8px 20px}
+.story{background:#0a0f26;border-left:4px solid var(--acc2);padding:12px;border-radius:0 12px 12px 0;margin:12px 0;font-style:italic;color:#c9d4ff}
+.code{background:#070b1d;border:1px solid #24306b;border-radius:12px;padding:12px;overflow:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6;margin:10px 0;white-space:pre}
+.tok-k{color:#c792ea}.tok-s{color:#9ef0a0}.tok-f{color:#61dafb}.tok-c{color:#5b6590;font-style:italic}.tok-n{color:#ffb020}
+.callout{border:1px dashed var(--acc);border-radius:12px;padding:10px 12px;margin:10px 0;background:rgba(97,218,251,.06);font-size:13.5px}
+.warnbox{border:1px solid var(--warn);background:rgba(255,176,32,.08);border-radius:12px;padding:10px 12px;margin:10px 0;font-size:13.5px}
+.goodbox{border:1px solid var(--good);background:rgba(61,220,132,.08);border-radius:12px;padding:10px 12px;margin:10px 0;font-size:13.5px}
+.demo{border:1px solid var(--line);border-radius:14px;background:#0a0f26;padding:14px;margin:14px 0}
+.demo h4{color:var(--gold);letter-spacing:1px;font-size:12px;margin-bottom:10px}
+.split{display:grid;grid-template-columns:1fr 300px;gap:14px}
+@media(max-width:820px){.split{grid-template-columns:1fr}}
+.phone{width:250px;margin:0 auto;background:#05070f;border:3px solid #334;border-radius:30px;padding:10px;box-shadow:0 14px 40px rgba(0,0,0,.5)}
+.phone .notch{width:110px;height:18px;background:#111936;border-radius:0 0 12px 12px;margin:0 auto 8px}
+.phone .scr{background:linear-gradient(180deg,#f4f6ff,#dfe8ff);border-radius:18px;min-height:360px;color:#162;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.and-bar{background:#1cb877;color:#fff;font-size:11px;padding:6px 10px;display:flex;justify-content:space-between}
+.and-app{padding:10px;display:flex;flex-direction:column;gap:8px;flex:1}
+.mock-view{background:#fff;border:2px solid #1c2650;border-radius:10px;padding:8px;color:#1c2650;font-size:13px}
+.mock-text{color:#1c2650;font-weight:800}
+.mock-btn{background:#1c72ff;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:800;cursor:pointer;user-select:none}
+.mock-btn:active{transform:scale(.97)}
+.thread-row{display:flex;gap:8px;margin:10px 0}
+.thread{flex:1;border-radius:12px;padding:10px;border:1px solid var(--line);background:#0d1330;min-height:86px;position:relative;overflow:hidden}
+.thread b{font-size:12px}.thread small{color:var(--mut);display:block;font-size:11px}
+.packet{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);top:52px;left:8px}
+.packet.go{animation:pkt 1.6s linear infinite}
+@keyframes pkt{to{transform:translateX(220px);opacity:0}}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+input[type=text],textarea,select{background:#070b1d;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px;font-family:var(--mono);font-size:13px;width:100%}
+textarea{min-height:110px;resize:vertical}
+label{font-size:12px;color:var(--mut);display:block;margin:8px 0 4px}
+#quiz-box{margin-top:14px;background:linear-gradient(180deg,#1a2350,#141b40);border:1px solid var(--gold);border-radius:16px;padding:16px}
+#quiz-box h3{color:var(--gold)}
+.q{background:#0a0f26;border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
+.q p{font-weight:800;margin-bottom:8px}
+.opt{display:block;width:100%;text-align:left;background:#141c44;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:9px 10px;margin:6px 0;cursor:pointer;font-size:14px}
+.opt:hover{border-color:var(--acc)}
+.opt.ok{background:rgba(61,220,132,.18);border-color:var(--good)}
+.opt.no{background:rgba(255,93,108,.15);border-color:var(--bad)}
+.opt:disabled{cursor:default;opacity:.95}
+.quiz-msg{font-weight:800;margin-top:8px}
+.level-nav{display:flex;justify-content:space-between;margin-top:14px}
+.badge{display:inline-block;background:#0a0f26;border:1px solid var(--gold);color:var(--gold);border-radius:99px;padding:6px 12px;margin:4px;font-size:12px;font-weight:800}
+.win-card{text-align:center;background:var(--card);border:1px solid var(--gold);border-radius:22px;padding:26px}
+.win-trophy{font-size:70px;animation:bounce 1.2s ease infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+#confetti{width:100%;border-radius:12px;margin-top:12px;background:#070b1d;border:1px solid var(--line)}
+.cert{margin:16px auto;max-width:560px;background:linear-gradient(180deg,#fffbe8,#fff);color:#1a2350;border-radius:14px;padding:6px}
+.cert-inner{border:2px dashed #b89b2e;border-radius:10px;padding:18px}
+.cert.hidden{display:none}
+.cert-sign{display:flex;justify-content:space-between;margin-top:14px;font-size:12px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(100px);background:#0a0f26;border:1px solid var(--good);color:var(--txt);padding:12px 18px;border-radius:12px;z-index:50;transition:transform .3s;max-width:90vw}
+#toast.show{transform:translateX(-50%) translateY(0)}
+.flex-stage{background:#fff;border-radius:12px;padding:8px;display:flex;gap:6px;min-height:120px}
+.flex-stage div{background:#1c72ff;color:#fff;border-radius:8px;padding:14px;font-weight:800;min-width:44px;text-align:center}
+.stack-vis{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.stack-vis span{background:#7c5cff;color:#fff;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:800;animation:pop .3s}
+.bar-compare{display:grid;gap:8px;margin-top:8px}
+.bar{height:22px;border-radius:8px;background:#1a2350;overflow:hidden;position:relative}
+.bar i{display:block;height:100%;border-radius:8px}
+footer{text-align:center;color:var(--mut);font-size:12px;padding:18px;position:relative;z-index:1}
+.kbd{background:#0a0f26;border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:1px 7px;font-family:var(--mono);font-size:12px}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+th,td{border:1px solid var(--line);padding:8px;text-align:left}
+th{background:#0a0f26;color:var(--acc)}
+</style>
+</head>
+<body>
+<div id="bg-orbs" aria-hidden="true"><i></i><i></i><i></i></div>
+<header id="hud">
+  <div class="hud-left">
+    <div class="logo" aria-label="React Native Android Quest logo">
+      <span class="logo-atom"><span></span></span>
+      <div><strong>RN_ANDROID_QUEST</strong><small>ZERO → HERO • VANILLA BUILD</small></div>
+    </div>
+  </div>
+  <div class="hud-center">
+    <div class="xp-wrap">
+      <div class="xp-top"><span id="hud-rank">RANK: NOOB</span><span id="hud-xp-text">0 XP</span></div>
+      <div class="xp-bar"><div id="xp-fill"></div><div class="xp-shine"></div></div>
+    </div>
+  </div>
+  <div class="hud-right">
+    <div class="stat" title="Levels cleared">🏆 <b id="hud-levels">0/13</b></div>
+    <div class="stat" title="Streak">🔥 <b id="hud-streak">0</b></div>
+    <button id="btn-map" class="btn small">🗺 MAP</button>
+    <button id="btn-reset" class="btn small ghost" title="Reset progress">↺</button>
+  </div>
+</header>
+
+<main id="app">
+  <!-- MAP SCREEN -->
+  <section id="screen-map" class="screen active">
+    <div class="hero">
+      <div class="hero-badge">100% VANILLA JS + CSS3 • NO CDN • NO FRAMEWORKS • WORKS OFFLINE</div>
+      <h1>REACT NATIVE <span>for ANDROID</span></h1>
+      <p class="tagline">You are a <b>JS Apprentice</b> crashing into the <b>Android Kingdom</b>. Master the Bridge, tame Java/Kotlin natives, ship an <b>.AAB to the Play Store</b> and become <b>HERO</b>.</p>
+      <div class="hero-cta">
+        <button id="btn-start" class="btn big">▶ START QUEST</button>
+        <button id="btn-continue" class="btn big secondary">⚡ CONTINUE</button>
+      </div>
+      <div class="hero-stats">
+        <div><b>13</b><span>levels</span></div>
+        <div><b>38</b><span>challenges</span></div>
+        <div><b>9</b><span>playgrounds</span></div>
+        <div><b>1300</b><span>max XP</span></div>
+      </div>
+    </div>
+
+    <div class="how">
+      <div class="how-card"><i>🎮</i><div><b>Play to unlock</b><p>Levels are locked. Finish the quiz + interaction with 100% to open the next gate.</p></div></div>
+      <div class="how-card"><i>📱</i><div><b>Touch everything</b><p>Every concept has a living Android phone you can poke, break and fix.</p></div></div>
+      <div class="how-card"><i>🌉</i><div><b>See the invisible</b><p>Watch the JS thread, Bridge, Fabric, Hermes and Yoga layout animate in front of you.</p></div></div>
+    </div>
+
+    <h2 class="map-title">🗺 WORLD MAP — THE ANDROID SAGA <small id="map-progress"></small></h2>
+    <div id="level-grid" class="level-grid"></div>
+
+    <div class="lore box">
+      <h3>📖 The lore (read in 30 sec)</h3>
+      <p><b>React Native (RN)</b> lets you write <b>Android apps in JavaScript + React</b>, but the buttons you see are <b>real native Android Views</b> — not a WebView. Your JS runs on a JS engine (<b>Hermes</b>), talks over a <b>Bridge / JSI + Fabric</b> to <b>Java/Kotlin + Android SDK</b>, which draws with the GPU. Learn that pipeline and every bug makes sense.</p>
+      <div class="arch-mini">
+        <div class="arch-chip js">JS THREAD<br><small>React • Hermes</small></div>
+        <div class="arch-arrow">⇄<small>bridge / JSI</small></div>
+        <div class="arch-chip nat">NATIVE SIDE<br><small>Java/Kotlin • Views</small></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-chip gpu">SCREEN<br><small>GPU • 60fps</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEVEL SCREEN -->
+  <section id="screen-level" class="screen">
+    <div class="level-top">
+      <button id="btn-back" class="btn small ghost">← MAP</button>
+      <div id="level-crumb"></div>
+      <div id="level-xp-pill" class="xp-pill"></div>
+    </div>
+    <article id="level-body"></article>
+    <div id="quiz-box"></div>
+    <div class="level-nav">
+      <button id="btn-prev" class="btn small ghost">← PREV</button>
+      <button id="btn-next" class="btn" disabled>NEXT LEVEL 🔒</button>
+    </div>
+  </section>
+
+  <!-- VICTORY SCREEN -->
+  <section id="screen-win" class="screen">
+    <div class="win-card">
+      <div class="win-trophy">🏆</div>
+      <h2>YOU ARE A REACT NATIVE HERO!</h2>
+      <p id="win-text"></p>
+      <div id="win-badges" class="badges"></div>
+      <div class="win-row">
+        <button id="btn-cert" class="btn big">🎓 CLAIM CERTIFICATE</button>
+        <button id="btn-replay" class="btn big secondary">↺ REPLAY QUEST</button>
+      </div>
+      <canvas id="confetti" width="600" height="220"></canvas>
+      <div id="cert" class="cert hidden">
+        <div class="cert-inner">
+          <small>CERTIFICATE OF HEROISM • RN_ANDROID_QUEST</small>
+          <h3 id="cert-name">ANDROID HERO</h3>
+          <p>Cleared all 13 levels • <span id="cert-xp"></span> XP • Can explain Bridge, Fabric, Hermes, Yoga & ship an AAB</p>
+          <div class="cert-sign"><span>___________<br>Yoga the Wise</span><span>___________<br>Hermes the Swift</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span><a href="index.html"  class="btn-primary">Home</a></span>
+</footer>
+
+<div id="toast"></div>
+<script>/* RN_ANDROID_QUEST — pure vanilla, zero dependencies */
+(function(){
+"use strict";
+var LS="rn_android_quest_v1";
+var S={xp:0,done:[],streak:0,last:""};
+try{var raw=localStorage.getItem(LS);if(raw){S=Object.assign(S,JSON.parse(raw));}}catch(e){}
+function save(){try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}}
+function today(){return new Date().toISOString().slice(0,10);}
+function toast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove("show");},2600);}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function code(s){
+  var h=esc(s);
+  h=h.replace(/(\/\/[^\n]*|#[^\n]*|<!--[\s\S]*?-->)/g,"###C###$1###");
+  h=h.replace(/(&quot;|&apos;|'[^'\n]*'|"[^"\n]*"|`[^`\n]*`)/g,"###S###$1###");
+  h=h.replace(/\b(import|from|export|default|const|let|var|function|return|if|else|for|while|new|extends|class|async|await|useState|useEffect|StyleSheet|View|Text|Pressable)\b/g,"<span class='tok-k'>$1</span>");
+  h=h.replace(/(&lt;\/?[A-Za-z][^&]*?&gt;)/g,"<span class='tok-f'>$1</span>");
+  h=h.replace(/###S###(.*?)###/g,"<span class='tok-s'>$1</span>");
+  h=h.replace(/###C###(.*?)###/g,"<span class='tok-c'>$1</span>");
+  return h;
+}
+function C(s){return "<div class='code'>"+code(s)+"</div>";}
+
+/* ============ CURRICULUM ============ */
+var LEVELS=[
+{id:0,icon:"🌉",title:"What is React Native, really?",desc:"JS thread vs Native thread. Why RN is NOT a WebView.",diff:"EASY",xp:100,badge:"🌉 Bridge Seer",
+story:"You wake up on the JS Thread island. Across the fog is the Native Continent (Java/Kotlin). A shimmering Bridge is the only crossing. Every button you ever tap must travel it.",
+body:
+"<h2>Level 1 — The Big Mental Model</h2><p><b>React Native = React UI + real Android Views.</b> You write <span class='kbd'>&lt;View&gt;</span> in JavaScript, RN creates a real <span class='kbd'>android.view.ViewGroup</span> on the phone. No browser, no WebView (unless you add one).</p>"
++"<h3>The 3 actors</h3><ul><li><b>1. JS thread (Hermes):</b> runs your React code, computes <i>what</i> should be on screen.</li><li><b>2. Bridge / JSI + Fabric:</b> serialises instructions like <i>'create view #42, color blue'</i> and ships them across.</li><li><b>3. Native / UI thread (Java/Kotlin + GPU):</b> creates real Views, lays them out with <b>Yoga</b>, draws at 60fps.</li></ul>"
++"<div class='goodbox'>✅ <b>Android proof:</b> Accessibility services, TalkBack, ripple effects and the Play Store all see a normal native app — because it IS one.</div>"
++C("import { View, Text } from 'react-native';\n\nexport default function App() {\n  // You write THIS (JS + JSX)...\n  return (\n    <View style={{ padding: 20 }}>\n      <Text>Hello Android!</Text>\n    </View>\n  );\n}\n// ...RN creates THAT: android.widget.TextView\n// ...inside a ViewGroup. Real natives!")
++"<h3>Old Bridge vs New Architecture</h3><table><tr><th></th><th>Old (Bridge, JSON)</th><th>New (JSI + Fabric + TurboModules)</th></tr><tr><td>Talk</td><td>Async JSON queue, can clog</td><td>Direct JS ↔ C++ memory, sync when needed</td></tr><tr><td>UI</td><td>Async layout</td><td>Fabric renders in C++, faster</td></tr><tr><td>Modules</td><td>All loaded at start</td><td>TurboModules lazy-load</td></tr></table><div class='callout'>💡 <b>Interview line:</b> “JS describes UI, Yoga computes layout, Fabric mounts native views, Hermes runs the logic.” Say that and you already sound mid-level.</div>",
+demo:"bridge",
+quiz:[
+{q:"React Native on Android renders UI as…",opts:["A Chrome WebView","Real native android.view Views","PNG screenshots of a website","Only Jetpack Compose code you hand-write"],a:1,why:"<View> becomes a real ViewGroup, <Text> a TextView. That's why it feels native."},
+{q:"What runs your JavaScript on modern RN Android?",opts:["V8 in Chrome","Hermes engine","JVM directly","Dalvik interpreter"],a:1,why:"Hermes is Meta's JS engine tuned for mobile start-up and bytecode."},
+{q:"What does the Bridge / JSI carry?",opts:["Electricity to the GPU","Serialized create/update-view + native-call messages","APK files","Play Store passwords"],a:1,why:"e.g. {type:'CREATE_VIEW', id:42, props:{color:'blue'}}."}]},
+
+{id:1,icon:"🛠",title:"Android Dev Environment",desc:"Node, JDK 17, Android Studio, SDK 34, emulator, ADB.",diff:"EASY",xp:100,badge:"🛠 Env Tamer",
+story:"The Gatekeeper blocks you: 'No SDK, no entry!' You must forge the toolchain: Node + JDK + Android Studio + emulator.",
+body:
+"<h2>Level 2 — Forge your tools</h2><p>RN Android needs <b>both worlds</b>: JS tooling AND Android tooling.</p><ul><li><b>Node 18+ LTS</b> + <b>JDK 17</b> (Android Gradle plugin hates wrong Java!)</li><li><b>Android Studio</b> → SDK Platform <b>34</b>, Build-Tools, Emulator, <b>ANDROID_HOME</b> env var</li><li>A virtual device (Pixel 6, API 34) or a real phone with <b>USB debugging</b></li><li><span class='kbd'>npx react-native doctor</span> — your diagnostic spell</li></ul>"
++C("# check your forge\nnode -v      # want v18+\njava -version # want 17\nadb devices  # must list emulator-5554\nnpx react-native doctor\n\n# create + run\nnpx react-native@latest init HeroApp\ncd HeroApp\nnpx react-native run-android")
++"<div class='warnbox'>⚠️ <b>Top 3 Android setup deaths:</b> ① wrong JDK (use 17!) ② ANDROID_HOME missing ③ emulator has no disk space. Fix those and 90% of red screens vanish.</div><h3>ADB — your magic wand</h3>"+C("adb devices          # list phones\nadb reverse tcp:8081 tcp:8081  # let phone reach Metro\nadb logcat *:E        # read native crashes"),
+demo:"terminal",
+quiz:[
+{q:"Which JDK does modern React Native Android want?",opts:["JDK 8","JDK 11","JDK 17","No JDK, JS is enough"],a:2,why:"Gradle + AGP 8 require JDK 17."},
+{q:"What does `adb reverse tcp:8081 tcp:8081` do?",opts:["Charges the phone","Lets the phone reach Metro bundler on your PC","Installs the Play Store","Formats the emulator"],a:1,why:"The phone's 8081 is forwarded to your PC's Metro server."},
+{q:"`npx react-native doctor` is for…",opts:["Healing your back","Diagnosing env: Node, JDK, SDK, emulator","Deleting node_modules","Publishing to Play"],a:1,why:"Run it first whenever run-android fails."}]},
+
+{id:2,icon:"📦",title:"First App & Project Anatomy",desc:"Metro, index.js, App.tsx, android/ folder, Gradle.",diff:"EASY",xp:100,badge:"📦 App Summoner",
+story:"You chant `npx react-native init HeroApp`. Lightning! A folder tree erupts. A phone lights up: HELLO ANDROID.",
+body:
+"<h2>Level 3 — Summon your first app</h2>"
++C("HeroApp/\n  index.js            # entry: registers root component\n  App.tsx             # YOUR code lives here\n  package.json        # JS deps\n  metro.config.js     # Metro bundler config\n  android/            # REAL Android project!\n    app/src/main/java/com/heroapp/MainActivity.java\n    app/build.gradle  # SDK versions, signing\n    settings.gradle")
++"<h3>Who does what at launch?</h3><ul><li><b>Metro</b> bundles your JS (like a super-fast webpack) and serves it on <span class='kbd'>:8081</span>.</li><li><b>MainActivity.java</b> boots React, loads the bundle (from Metro in dev, from <span class='kbd'>assets/</span> in release).</li><li><b>Hot reload:</b> press <span class='kbd'>R</span> twice or shake → Reload. JS updates without recompiling Java!</li></ul><div class='callout'>💡 <b>Dev vs Release:</b> dev loads JS from your laptop (fast iteration). Release embeds <span class='kbd'>index.android.bundle</span> inside the APK (works offline).</div>",
+demo:"files",
+quiz:[
+{q:"Where does your UI code live?",opts:["android/app/build.gradle","App.tsx / index.js","metro.config.js","The emulator's SD card"],a:1,why:"App.tsx is the root React component."},
+{q:"What is Metro?",opts:["An Android emulator","The JS bundler + dev server on port 8081","A database","A Play Store rule"],a:1,why:"Metro bundles and serves JS to the phone."},
+{q:"In a RELEASE APK, where is the JS?",opts:["Still on your laptop","Embedded as index.android.bundle in assets","On a CDN only","Nowhere — converted to Java by magic"],a:1,why:"Release embeds the bundle so the app works offline."}]},
+
+{id:3,icon:"⚛",title:"JSX & Components",desc:"Functional components, JSX compiles to createElement.",diff:"EASY",xp:100,badge:"⚛ JSX Ninja",
+story:"The Component Wizards demand you stop writing XML and start writing spells that LOOK like HTML but are pure JS.",
+body:
+"<h2>Level 4 — JSX is just function calls</h2><p><b>JSX</b> is sugar. This:</p>"
++C("const el = <Text style={{color:'blue'}}>Hi</Text>;\n// becomes:\nconst el = React.createElement(Text, {style:{color:'blue'}}, 'Hi');")
++"<p><b>Rules:</b> one parent, <span class='kbd'>className</span> → <span class='kbd'>style</span>, all tags closed, JS in <span class='kbd'>{}</span>. Components are just functions returning JSX — <b>capitalised</b> or React treats them as strings!</p>"
++C("function Greet({ name }) {           // ✅ functional component\n  return <Text>Hello, {name}!</Text>;\n}\n\nexport default function App() {\n  return (\n    <View>\n      <Greet name=\"Android\" />\n      <Greet name=\"Hero\" />\n    </View>\n  );\n}")
++"<div class='warnbox'>⚠️ <b>Android gotcha:</b> there is no <span class='kbd'>&lt;div&gt;</span> or <span class='kbd'>&lt;p&gt;</span>. Use <span class='kbd'>&lt;View&gt;</span> + <span class='kbd'>&lt;Text&gt;</span>. <span class='kbd'>&lt;Text&gt;</span> cannot contain <span class='kbd'>&lt;View&gt;</span> — text nesting rule!</div>",
+demo:"jsx",
+quiz:[
+{q:"<Text>Hi</Text> compiles to…",opts:["A string 'Hi'","React.createElement(Text, null, 'Hi')","An Android APK","A SQL query"],a:1,why:"JSX is always createElement calls."},
+{q:"Why must components be Capitalised?",opts:["Style only","Lowercase is treated as host string like 'view'","Java requires it","To please linters"],a:1,why:"<greet/> = string, <Greet/> = your function."},
+{q:"Android equivalent of <div> is…",opts:["<div> still works","<View>","<span>","<layout>"],a:1,why:"View → ViewGroup. There is no DOM on native."}]},
+
+{id:4,icon:"🧠",title:"Props, State & Hooks",desc:"useState, useEffect, data flows down, events flow up.",diff:"MEDIUM",xp:100,badge:"🧠 State Sage",
+story:"Two rivers: Props flow DOWN from parents, State lives INSIDE. When State changes, React re-renders — and the Bridge carries the diff.",
+body:
+"<h2>Level 5 — The re-render spell</h2>"
++C("function Counter() {\n  const [n, setN] = useState(0); // state persists across renders\n  useEffect(() => {\n    console.log('mounted! load data here');\n    return () => console.log('cleanup');\n  }, []); // [] = run once\n\n  return (\n    <View>\n      <Text>Taps: {n}</Text>\n      <Button title=\"+1\" onPress={() => setN(n + 1)} />\n    </View>\n  );\n}")
++"<ul><li><b>props</b> = arguments, read-only, flow down.</li><li><b>state</b> = memory, <span class='kbd'>setX</span> triggers re-render + minimal native updates (diffing!).</li><li><b>useEffect</b> = side-effects: fetch, timers, listeners. Deps array controls when.</li></ul><div class='warnbox'>⚠️ <b>Classic bug:</b> calling <span class='kbd'>setState</span> during render = infinite loop. And <span class='kbd'>useState</span> in a condition = broken hook order. Hooks ALWAYS top-level!</div>",
+demo:"state",
+quiz:[
+{q:"What happens on setN(n+1)?",opts:["Nothing","Component re-renders and RN diffs native updates"," whole phone reboots","Java file is rewritten"],a:1,why:"React reconciles the virtual tree, Fabric updates only changed views."},
+{q:"useEffect(..., []) runs…",opts:["Every render","Once on mount (+ cleanup on unmount)","Never","Only on Android 14"],a:1,why:"Empty deps = mount/unmount only."},
+{q:"Props are…",opts:["Writable by the child","Read-only, owned by parent","Stored in Gradle","Only strings"],a:1,why:"To change props, parent re-renders with new values."}]},
+
+{id:5,icon:"🎨",title:"Styling & Yoga Flexbox",desc:"StyleSheet, no CSS cascade, flex defaults to column.",diff:"MEDIUM",xp:100,badge:"🎨 Yoga Master",
+story:"You enter the Yoga Dojo. 'Forget the web,' says the master. 'Here, EVERYTHING is flexbox, default is COLUMN.'",
+body:
+"<h2>Level 6 — Styling without CSS</h2><ul><li>No cascade, no <span class='kbd'>class</span>, no <span class='kbd'>px</span> — numbers are <b>dp</b> (density-independent).</li><li><span class='kbd'>StyleSheet.create</span> gives IDs (fast bridge transfer) + validation.</li><li>Flexbox <b>defaults to column</b> (unlike web row!). Yoga engine computes layout in C++.</li></ul>"
++C("import { StyleSheet } from 'react-native';\nconst s = StyleSheet.create({\n  card: {\n    flex: 1, flexDirection: 'row',\n    justifyContent: 'center', alignItems: 'center',\n    backgroundColor: '#1c72ff', padding: 16,\n    borderRadius: 12, elevation: 4, // Android shadow!\n  },\n  title: { color: 'white', fontSize: 18, fontWeight: '800' },\n});")
++"<div class='callout'>💡 <b>Android shadows:</b> <span class='kbd'>elevation</span> draws native shadows. iOS uses shadow* props. Use <span class='kbd'>Platform.select({android:{elevation:4}})</span> for per-OS polish.</div>",
+demo:"flex",
+quiz:[
+{q:"Default flexDirection in RN?",opts:["row","column","column-reverse","grid"],a:1,why:"Yoga defaults to column — opposite of web CSS."},
+{q:"StyleSheet.create is good because…",opts:["It's required by law","Sends numeric IDs over bridge + validates","Makes CSS files","Only works on iOS"],a:1,why:"IDs are cheaper than style objects on every render."},
+{q:"Android native shadow prop?",opts:["box-shadow","elevation","shadowOpacity","textShadow"],a:1,why:"elevation maps to Android's native shadow renderer."}]},
+
+{id:6,icon:"📱",title:"Core Android Components",desc:"View, Text, Image, TextInput, ScrollView, FlatList, Pressable.",diff:"MEDIUM",xp:100,badge:"📱 Component Smith",
+story:"The Armory opens. Each weapon maps to a native warrior: View→ViewGroup, Text→TextView, Image→ImageView…",
+body:
+"<h2>Level 7 — Your Android arsenal</h2><table><tr><th>RN</th><th>Android native</th><th>Use</th></tr><tr><td>View</td><td>ViewGroup</td><td>Boxes, layout</td></tr><tr><td>Text</td><td>TextView</td><td>All text (only text host!)</td></tr><tr><td>Image</td><td>ImageView (Fresco)</td><td>resizeMode cover/contain</td></tr><tr><td>TextInput</td><td>EditText</td><td>Forms, keyboardType</td></tr><tr><td>ScrollView</td><td>ScrollView</td><td>Few items, scrolls</td></tr><tr><td>FlatList</td><td>RecyclerView-like</td><td>1000s rows, virtualised</td></tr><tr><td>Pressable</td><td>RippleDrawable</td><td>Touches + android_ripple</td></tr></table>"
++C("<Pressable\n  android_ripple={{ color: '#9cc4ff' }}\n  onPress={() => console.log('tap!')}>\n  <Text>Tap for ripple</Text>\n</Pressable>\n\n<TextInput\n  placeholder=\"Type here\"\n  keyboardType=\"numeric\"\n  returnKeyType=\"done\"\n/>")
++"<div class='warnbox'>⚠️ <b>Never</b> map 1000 rows with <span class='kbd'>ScrollView</span> — it renders ALL at once and OOMs. <span class='kbd'>FlatList</span> recycles like RecyclerView. More in Level 10.</div>",
+demo:"cores",
+quiz:[
+{q:"FlatList on Android behaves like…",opts:["ScrollView","RecyclerView (recycles rows)","WebView","ViewPager only"],a:1,why:"Windowing renders only visible rows."},
+{q:"Which gives native Android ripple?",opts:["<Button> only","Pressable android_ripple","CSS :hover","Alert"],a:1,why:"Pressable forwards ripple to RippleDrawable."},
+{q:"Where can raw text live?",opts:["Directly in <View>","Only inside <Text>","Anywhere","In <Image>"],a:1,why:"Bare strings in View throw: 'Text strings must be rendered within <Text>'."}]},
+
+{id:7,icon:"🧭",title:"Navigation on Android",desc:"Stack, Tabs, hardware back button, deep links.",diff:"MEDIUM",xp:100,badge:"🧭 Navigator",
+story:"The kingdom has many rooms. You need doors (Stack), corridors (Tabs), and respect for the sacred BACK button.",
+body:
+"<h2>Level 8 — Stacks, tabs & back</h2><p><b>React Navigation</b> is the standard. Screens are components in navigators; <span class='kbd'>navigation.navigate('Details')</span> pushes, back button pops.</p>"
++C("import { NavigationContainer } from '@react-navigation/native';\nimport { createNativeStackNavigator } from '@react-navigation/native-stack';\nconst Stack = createNativeStackNavigator();\n\nexport default function App() {\n  return (\n    <NavigationContainer>\n      <Stack.Navigator>\n        <Stack.Screen name=\"Home\" component={Home} />\n        <Stack.Screen name=\"Details\" component={Details} />\n      </Stack.Navigator>\n    </NavigationContainer>\n  );\n}\n// Details: navigation.goBack()  |  route.params.id")
++"<ul><li><b>Native stack</b> uses real Android fragments — 60fps push animations free.</li><li><b>BackHandler:</b> hardware back pops by default; intercept to confirm unsaved forms.</li><li><b>Deep links:</b> <span class='kbd'>myapp://details/42</span> via linking config + intent-filter in AndroidManifest.</li></ul>",
+demo:"nav",
+quiz:[
+{q:"navigation.navigate('Details') does…",opts:["Reloads the APK","Pushes Details onto the native stack","Opens Chrome","Deletes Home"],a:1,why:"Stack push with native fragment animation."},
+{q:"Android back button by default…",opts:["Kills the app always","Pops the navigation stack","Sends SMS","Does nothing"],a:1,why:"React Navigation wires BackHandler to pop."},
+{q:"Deep links on Android need…",opts:["Only JS","linking config + intent-filter in AndroidManifest.xml","A new JDK","Root access"],a:1,why:"The manifest tells Android your app owns myapp:// URLs."}]},
+
+{id:8,icon:"⚡",title:"Bridge, JSI, Fabric & Native Modules",desc:"Write Java/Kotlin, expose to JS. TurboModules.",diff:"HARD",xp:100,badge:"⚡ Turbo Forger",
+story:"Time to descend into the engine room: C++, JNI, Java/Kotlin. You will forge your OWN native module: BatteryLevel.",
+body:
+"<h2>Level 9 — Talk to the metal</h2><p>Need camera, bluetooth, DRM? Write a <b>Native Module</b> (Java/Kotlin) and call it from JS. Modern way: <b>TurboModules + JSI</b> (lazy, typed via Codegen).</p>"
++C("// android/.../BatteryModule.java (simplified)\npublic class BatteryModule extends ReactContextBaseJavaModule {\n  public String getName() { return \"Battery\"; }\n  @ReactMethod\n  public void getLevel(Promise p) {\n    // ... Android BatteryManager code\n    p.resolve(87);\n  }\n}\n\n// JS side\nimport { NativeModules } from 'react-native';\nconst { Battery } = NativeModules;\nconst lvl = await Battery.getLevel(); // 87 🎉")
++"<div class='callout'>💡 <b>Old vs New:</b> old modules cross the JSON bridge async. <b>TurboModules</b> use JSI — JS holds a C++ pointer to the native object. Faster, sync-capable, lazy-loaded. <b>Fabric</b> does the same for UI (your custom native <i>views</i>).</div><div class='warnbox'>⚠️ UI work MUST be on UI thread; heavy work off-thread or you drop frames. Use <span class='kbd'>runOnUiThread</span> / coroutines correctly.</div>",
+demo:"turbo",
+quiz:[
+{q:"@ReactMethod marks…",opts:["A JS comment","A Java method callable from JS","A CSS rule","A Gradle task"],a:1,why:"The annotation exposes it over the bridge/JSI."},
+{q:"TurboModules improve on legacy modules by…",opts:["More JSON","Lazy loading + direct JSI refs, less bridge traffic","Bigger APK","Needing no Java"],a:1,why:"Loaded on first use, typed via Codegen."},
+{q:"Fabric is…",opts:["A JS testing lib","The new C++ UI renderer","A font","An emulator skin"],a:1,why:"Fabric mounts/updates native views from C++."}]},
+
+{id:9,icon:"🚀",title:"Lists, Hermes & 60fps",desc:"FlatList windowing, memo, Hermes bytecode.",diff:"HARD",xp:100,badge:"🚀 Perf Hunter",
+story:"The village scrolls at 8fps. The elder whispers: 'Window your list, memo your rows, let Hermes carry the bytecode…'",
+body:
+"<h2>Level 10 — Buttery scrolls</h2><ul><li><b>FlatList</b> renders only the window (<span class='kbd'>windowSize</span>, <span class='kbd'>getItemLayout</span> for fixed heights skips measurement!).</li><li><b>Keys:</b> stable <span class='kbd'>keyExtractor={item=>item.id}</span> — never index as key for mutable lists.</li><li><b>memo:</b> wrap rows in <span class='kbd'>React.memo</span> so unchanged rows skip re-render.</li><li><b>Hermes:</b> precompiled bytecode → faster start (T TI), smaller memory. Enabled by default; ships <span class='kbd'>.hbc</span>.</li></ul>"
++C("<FlatList\n  data={users}\n  keyExtractor={u => u.id}\n  getItemLayout={(_, i) => ({length: 72, offset: 72*i, index: i})}\n  windowSize={5}           // keep 5 screens in memory\n  removeClippedSubviews    // drop off-screen views (Android!)\n  renderItem={({item}) => <RowMemo item={item} />}\n/>\nconst RowMemo = React.memo(Row);")
++"<div class='goodbox'>✅ <b>Profiler rule:</b> if JS thread &gt;16ms/frame you drop below 60fps. Move work off render: <span class='kbd'>useMemo</span>, <span class='kbd'>InteractionManager</span>, <span class='kbd'>FlatList</span> props first, native driver for animations (<span class='kbd'>useNativeDriver:true</span>).</div>",
+demo:"perf",
+quiz:[
+{q:"getItemLayout helps because…",opts:["It styles rows","Skips measuring fixed-height rows","Loads images","Signs the APK"],a:1,why:"No on-layout pass → instant scroll math."},
+{q:"Never use index as key when…",opts:["List never changes","List reorders/inserts","List is empty","Always fine"],a:1,why:"Index keys scramble state on reorder."},
+{q:"Hermes gives you…",opts:["Slower start","Precompiled bytecode, faster TTI","Bigger bundle","Only iOS benefit"],a:1,why:"Bytecode ships ready to execute."}]},
+
+{id:10,icon:"🔐",title:"Device Powers: Permissions, Storage, Camera",desc:"Runtime permissions, AsyncStorage, MMKV, camera.",diff:"HARD",xp:100,badge:"🔐 Device Mage",
+story:"To photograph the Dragon you need CAMERA permission at RUNTIME (Android 6+), a place to store loot (MMKV), and clean error paths.",
+body:
+"<h2>Level 11 — Android device powers</h2><p>Android guards sensors with <b>runtime permissions</b>. Declare in manifest, request in JS, handle 'never ask again'.</p>"
++C("import { PermissionsAndroid, Platform } from 'react-native';\nasync function askCamera() {\n  if (Platform.OS !== 'android') return true;\n  const g = await PermissionsAndroid.request(\n    PermissionsAndroid.PERMISSIONS.CAMERA,\n    { title: 'Dragon photo', message: 'We need camera!' }\n  );\n  return g === PermissionsAndroid.RESULTS.GRANTED;\n}\n// AndroidManifest.xml:\n// <uses-permission android:name=\"android.permission.CAMERA\" />")
++"<ul><li><b>Storage:</b> <span class='kbd'>AsyncStorage</span> (simple) → <span class='kbd'>MMKV</span> (fast, JSI, encrypted option) for tokens/settings. Big data → SQLite (WatermelonDB) / files.</li><li><b>Camera/Location:</b> use battle-tested libs (vision-camera, geolocation) — they wrap the nasty Camera2 / FusedLocation Java for you.</li><li><b>Background:</b> Android kills background JS aggressively — use HeadlessJS / WorkManager / Notifee for tasks & pushes (FCM).</li></ul>",
+demo:"perm",
+quiz:[
+{q:"Android 6+ permissions must be…",opts:["Declared only in manifest","Declared + requested at runtime","Requested once forever","Avoided"],a:1,why:"Install-time manifest + runtime prompt."},
+{q:"Best fast key-value store today?",opts:["A text file","MMKV (JSI, sync, fast)","Gradle cache","Logcat"],a:1,why:"MMKV uses JSI direct memory — ~30x faster than AsyncStorage."},
+{q:"Push notifications on RN Android use…",opts:["Polling every second","FCM via native service + JS handler","SMS","Email"],a:1,why:"Firebase Cloud Messaging wakes the app natively."}]},
+
+{id:11,icon:"📦",title:"Debug → Sign → Play Store",desc:"Logcat, Flipper, release AAB, signing, staged rollout.",diff:"HARD",xp:100,badge:"📦 Ship Captain",
+story:"Final gate: turn dev spaghetti into a signed, shrunk, Play-ready .AAB. The Store Dragon inspects EVERYTHING.",
+body:
+"<h2>Level 12 — Ship it, hero</h2><ul><li><b>Debug:</b> <span class='kbd'>adb logcat</span> for native crashes, Metro logs for JS redbox, Flipper / React DevTools for network & layout.</li><li><b>Release build:</b> <span class='kbd'>cd android && ./gradlew bundleRelease</span> → <span class='kbd'>app-release.aab</span> (Play wants AAB, not APK!). Hermes bytecode + ProGuard/R8 shrink + split ABIs.</li><li><b>Sign:</b> keystore (<span class='kbd'>my-release-key.jks</span>) + <span class='kbd'>gradle.properties</span> passwords. LOSE THE KEY = new app listing forever.</li><li><b>Rollout:</b> Play Console → internal → closed → staged (20%) → full. Watch ANRs & crashes.</li></ul>"
++C("cd android\n./gradlew bundleRelease\n# → app/build/outputs/bundle/release/app-release.aab\n# upload to Play Console. Done. 🎉\n\n# handy lifelines\nadb logcat *:E | grep -i react\nnpx react-native run-android --variant=release  # test release locally")
++"<div class='warnbox'>⚠️ <b>Release-only bugs?</b> You used <span class='kbd'>__DEV__</span>-only code, forgot a permission, or ProGuard stripped a native class. Test <span class='kbd'>--variant=release</span> BEFORE uploading.</div>",
+demo:"build",
+quiz:[
+{q:"Play Store wants…",opts:["Debug APK","Signed .AAB bundle","Source zip","Screenshots only"],a:1,why:"AAB lets Play generate per-device APKs."},
+{q:"Where do native Android crashes appear?",opts:["Metro only","adb logcat","VS Code themes","Gradle docs"],a:1,why:"logcat is the native console."},
+{q:"Losing your signing key means…",opts:["Nothing","You can never update that app listing again","Faster builds","Free promo"],a:1,why:"Signatures must match forever — back it up!"}]},
+
+{id:12,icon:"👑",title:"HERO BOSS: Ship the Quest App",desc:"Build a working mini-app + pass the Hero Exam.",diff:"BOSS",xp:200,badge:"👑 ANDROID HERO",
+story:"The Dragon lands. 'Prove it,' it growls. Build a mini Quest Tracker with state, list, storage and navigation logic — then survive 4 exam questions.",
+body:
+"<h2>Final Boss — Prove you are Hero</h2><p>Below is a <b>real working mini-app</b> (vanilla JS mirroring RN logic): add quests, tap to complete, filter, XP sums live. This is exactly <span class='kbd'>useState + FlatList + Pressable</span> thinking.</p><div class='goodbox'>✅ <b>Boss task (do it!):</b> add 2 quests, complete 1, switch the filter. The tracker below must show your actions. Then ace the exam to earn the crown.</div>"
++C("// The RN version of the boss app you are about to play with:\nfunction QuestApp() {\n  const [quests, setQuests] = useState([\n    { id: '1', title: 'Fix Bridge bug', done: false, xp: 50 },\n  ]);\n  const done = quests.filter(q => q.done).length;\n  return (\n    <FlatList data={quests} keyExtractor={q => q.id}\n      renderItem={({item}) => (\n        <Pressable onPress={() => toggle(item.id)}>\n          <Text>{item.title} {item.done ? '✅' : '⬜'}</Text>\n        </Pressable>\n      )}\n    />\n  );\n}"),
+demo:"boss",
+quiz:[
+{q:"This list re-renders efficiently because…",opts:["It uses FlatList + stable keys + memo rows","It uses ScrollView for 10k rows","It has no keys","It reloads the app per tap"],a:0,why:"Windowing + keys + memo = Hero pattern."},
+{q:"Completing a quest calls setQuests with…",opts:["A mutated same array","A NEW array (immutable update)","A SQL string","Nothing"],a:1,why:"New array reference tells React to re-render."},
+{q:"To persist quests after restart you'd use…",opts:["A global var","MMKV / AsyncStorage","console.log","component state only"],a:1,why:"State dies on restart; storage survives."},
+{q:"Tapping a quest on Android shows ripple via…",opts:["CSS hover","Pressable android_ripple","Alert","Vibration only"],a:1,why:"RippleDrawable, the native touch feedback."}]}
+];
+
+/* ============ STATE / RANK ============ */
+function rankFor(x){if(x>=1300)return"👑 ANDROID HERO";if(x>=1000)return"⚡ TURBO HERO";if(x>=700)return"🎨 YOGA MASTER";if(x>=450)return"📱 COMPONENT SMITH";if(x>=200)return"🌉 BRIDGE CROSSER";if(x>=1)return"🌱 EXPLORER";return"🥚 NOOB";}
+function maxXP(){return LEVELS.reduce(function(a,l){return a+l.xp;},0);}
+var cur=0, passed={}, interacted={};
+try{var d=localStorage.getItem(LS+"_pass");if(d)passed=JSON.parse(d);}catch(e){}
+function savePass(){try{localStorage.setItem(LS+"_pass",JSON.stringify(passed));}catch(e){}}
+function unlocked(i){if(i===0)return true;return passed[LEVELS[i-1].id];}
+function doneCount(){return LEVELS.filter(function(l){return passed[l.id];}).length;}
+
+/* ============ HUD ============ */
+function hud(){
+  document.getElementById("xp-fill").style.width=Math.min(100,S.xp/maxXP()*100)+"%";
+  document.getElementById("hud-xp-text").textContent=S.xp+" / "+maxXP()+" XP";
+  document.getElementById("hud-rank").textContent="RANK: "+rankFor(S.xp);
+  document.getElementById("hud-levels").textContent=doneCount()+"/"+LEVELS.length;
+  document.getElementById("hud-streak").textContent=S.streak;
+  var mp=document.getElementById("map-progress");if(mp)mp.textContent="— "+doneCount()+"/"+LEVELS.length+" cleared • "+S.xp+" XP";
+}
+function bumpStreak(){var t=today();if(S.last!==t){var y=new Date();y.setDate(y.getDate()-1);var ys=y.toISOString().slice(0,10);S.streak=(S.last===ys)?(S.streak+1):1;S.last=t;save();}}
+
+/* ============ MAP ============ */
+function renderMap(){
+  var g=document.getElementById("level-grid");g.innerHTML="";
+  LEVELS.forEach(function(L,i){
+    var un=unlocked(i),dn=!!passed[L.id];
+    var d=document.createElement("div");d.className="lvl"+(un?"":" locked")+(dn?" done":"");
+    d.innerHTML="<span class='num'>"+(i+1)+"</span><span class='pill "+(L.diff==="EASY"?"easy":L.diff==="MEDIUM"?"mid":L.diff==="BOSS"?"boss":"hard")+"'>"+L.diff+" • +"+L.xp+" XP</span><h3>"+L.icon+" "+(i+1)+". "+esc(L.title)+"</h3><p>"+esc(L.desc)+"</p><div class='lvl-foot'><span>"+(dn?"✅ CLEARED":un?"▶ PLAYABLE":"🔒 FINISH PREVIOUS")+"</span><b>"+(dn?"+"+L.xp+" XP":" ")+"</b></div>";
+    if(un)d.onclick=function(){openLevel(i);};
+    else d.onclick=function(){toast("🔒 Clear level "+i+" first, hero!");};
+    g.appendChild(d);
+  });
+  hud();
+}
+function show(id){
+  ["screen-map","screen-level","screen-win"].forEach(function(s){document.getElementById(s).classList.remove("active");});
+  document.getElementById(id).classList.add("active");window.scrollTo(0,0);
+}
+
+/* ============ LEVEL ============ */
+function taskFor(demo){
+  return {bridge:"Press LAUNCH MESSAGE and watch 3 packets cross",terminal:"Run the 4 forge commands",files:"Click 3 project files",jsx:"Move the name slider + toggle dark",state:"Tap +1 five times",flex:"Change direction + justify once each",cores:"Try all 4 armory tabs",nav:"Push 2 screens then Go Back",turbo:"Toggle Turbo ON and fire a call",perf:"Toggle 1000 rows both modes",perm:"Request permission + save a token",build:"Press each pipeline stage to 100%",boss:"Add + complete a quest"}[demo]||"Play with the demo";
+}
+function openLevel(i){
+  cur=i;var L=LEVELS[i];
+  document.getElementById("level-crumb").innerHTML="<b style='color:#fff'>LVL "+(i+1)+"/"+LEVELS.length+"</b> • "+esc(L.title);
+  document.getElementById("level-xp-pill").textContent="+"+L.xp+" XP • "+L.diff;
+  var b=document.getElementById("level-body");
+  b.innerHTML="<span class='pill'>"+L.icon+" LEVEL "+(i+1)+"</span><h2>"+esc(L.title)+"</h2><p style='color:var(--mut)'>"+esc(L.desc)+"</p><div class='story'>"+esc(L.story)+"</div><div>"+L.body+"</div>"
+   +"<div class='demo'><h4>🎮 INTERACTIVE LAB — "+esc(taskFor(L.demo))+"</h4><div id='demo-slot'></div><div id='task-line' style='margin-top:8px;font-size:13px;color:var(--mut)'>⬜ Lab task: "+esc(taskFor(L.demo))+"</div></div>";
+  mountDemo(L.demo,document.getElementById("demo-slot"));
+  renderQuiz(L);
+  var nx=document.getElementById("btn-next");
+  nx.disabled=true;nx.textContent=(i===LEVELS.length-1)?"FINISH QUEST 👑":"NEXT LEVEL 🔒";
+  nx.onclick=function(){
+    if(i===LEVELS.length-1){win();}else{openLevel(i+1);}
+  };
+  document.getElementById("btn-prev").onclick=function(){if(i>0)openLevel(i-1);};
+  show("screen-level");
+}
+function markInteract(msg){
+  var L=LEVELS[cur];
+  if(!interacted[L.id]){interacted[L.id]=true;toast("⚡ Lab complete! "+(msg||"Nice hands-on!"));}
+  var t=document.getElementById("task-line");if(t){t.innerHTML="✅ Lab task done — now ace the quiz below!";t.style.color="var(--good)";}
+  checkUnlock();
+}
+function renderQuiz(L){
+  var box=document.getElementById("quiz-box");
+  box.innerHTML="<h3>⚔️ GATE QUIZ — 100% to unlock next level ("+L.quiz.length+" questions)</h3><div id='qs'></div><div class='quiz-msg' id='qmsg'></div><button class='btn small ghost' id='retry' style='display:none;margin-top:8px'>↺ RETRY QUIZ</button>";
+  var wrap=document.getElementById("qs");var state={ans:{}};
+  L.quiz.forEach(function(Q,qi){
+    var d=document.createElement("div");d.className="q";
+    d.innerHTML="<p>Q"+(qi+1)+". "+esc(Q.q)+"</p>";
+    Q.opts.forEach(function(o,oi){
+      var btn=document.createElement("button");btn.className="opt";btn.textContent=["A) ","B) ","C) ","D) "][oi]+o;
+      btn.onclick=function(){
+        if(state.ans[qi]!==undefined)return;
+        state.ans[qi]=oi;
+        var btns=d.querySelectorAll(".opt");
+        btns.forEach(function(x,x2){x.disabled=true;if(x2===Q.a)x.classList.add("ok");});
+        if(oi===Q.a){btn.classList.add("ok");}
+        else{btn.classList.add("no");}
+        var m=document.createElement("div");m.style.cssText="font-size:12.5px;color:var(--mut);margin-top:6px";
+        m.textContent=(oi===Q.a?"✅ ":"❌ ")+Q.why;d.appendChild(m);
+        grade();
+      };
+      d.appendChild(btn);
+    });
+    wrap.appendChild(d);
+  });
+  function grade(){
+    if(Object.keys(state.ans).length<L.quiz.length)return;
+    var ok=L.quiz.every(function(Q,i){return state.ans[i]===Q.a;});
+    var m=document.getElementById("qmsg");
+    if(ok){
+      m.style.color="var(--good)";
+      m.textContent="🏆 FLAWLESS! Gate opens…";
+      if(!passed[L.id]){
+        passed[L.id]=true;savePass();
+        S.xp+=L.xp;bumpStreak();save();hud();renderMap();
+        toast("+"+L.xp+" XP! "+L.badge+" badge earned!");
+      }
+      document.getElementById("retry").style.display="none";
+      checkUnlock(true);
+    }else{
+      m.style.color="var(--bad)";
+      var n=L.quiz.filter(function(Q,i){return state.ans[i]===Q.a;}).length;
+      m.textContent="💔 "+n+"/"+L.quiz.length+" — the gate holds. Hit RETRY and try again!";
+      document.getElementById("retry").style.display="inline-block";
+      document.getElementById("retry").onclick=function(){renderQuiz(L);};
+    }
+  }
+}
+function checkUnlock(fromQuiz){
+  var L=LEVELS[cur];var nx=document.getElementById("btn-next");
+  var qok=!!passed[L.id], lab=!!interacted[L.id];
+  if(qok&&lab){nx.disabled=false;nx.textContent=(cur===LEVELS.length-1)?"👑 CLAIM VICTORY →":"NEXT LEVEL → ("+(cur+2)+")";}
+  else if(fromQuiz&&qok&&!lab){toast("📱 Quiz passed! Now finish the lab task above ☝️");nx.disabled=true;}
+}
+
+/* ============ DEMOS ============ */
+function phoneShell(inner,bar){return "<div class='phone'><div class='notch'></div><div class='scr'><div class='and-bar'><span>"+(bar||"HeroApp • Android")+"</span><span>▼ ◉ ◀</span></div><div class='and-app'>"+inner+"</div></div></div>";}
+function mountDemo(type,slot){
+  if(type==="bridge"){
+    slot.innerHTML="<div class='split'><div><p style='font-size:13px;color:var(--mut)'>Each tap on <b style='color:#fff'>SET TITLE</b> sends a JSON message JS → Bridge → Native TextView. Watch the packets fly!</p><div class='thread-row'><div class='thread'><b>🧠 JS THREAD</b><small>Hermes • React</small><div class='packet' id='p1'></div></div><div class='thread'><b>🌉 BRIDGE</b><small>JSON queue</small></div><div class='thread'><b>🤖 NATIVE UI</b><small>TextView #42</small></div></div><div class='btnrow'><button class='btn small' id='b-go'>🚀 LAUNCH MESSAGE</button><span id='b-count' style='font-size:12px;color:var(--mut)'>messages: 0</span></div><div class='code' id='b-log'>// bridge log…</div></div><div>"+phoneShell("<div class='mock-view'><div class='mock-text' id='b-phone' style='font-size:18px'>Hello Android!</div><small style='color:#667'>↑ real TextView #42</small></div>")+"</div></div>";
+    var n=0;document.getElementById("b-go").onclick=function(){n++;document.getElementById("b-count").textContent="messages: "+n;
+      var p=document.getElementById("p1");p.classList.remove("go");void p.offsetWidth;p.classList.add("go");
+      var titles=["Hello Android!","Bridge works!","I am NATIVE!","60fps baby!"];
+      setTimeout(function(){document.getElementById("b-phone").textContent=titles[n%titles.length];
+        document.getElementById("b-log").textContent="{type:'UPDATE_VIEW', id:42, text:'"+titles[n%titles.length]+"'}  // 0."+(n)+"ms over bridge";},700);
+      if(n>=1)markInteract();};
+  }
+  else if(type==="terminal"){
+    slot.innerHTML="<p style='font-size:13px;color:var(--mut)'>Press each command in order — the forge checks your environment.</p><div class='btnrow'><button class='btn small' data-c='node -v'>1️⃣ node -v</button><button class='btn small' data-c='java -version'>2️⃣ java -version</button><button class='btn small' data-c='adb devices'>3️⃣ adb devices</button><button class='btn small secondary' data-c='run'>4️⃣ run-android</button></div><div class='code' id='t-out'>$ welcome, apprentice. Run the forge…</div>"+phoneShell("<div class='mock-text'>🤖 emulator-5554</div><div class='mock-view' id='t-phone'>waiting for build…</div><div class='mock-btn' id='t-btn'>Install HeroApp</div>");
+    var out={},done=0;
+    var outs={"node -v":"v20.11.0 ✅ (need 18+)","java -version":"openjdk 17.0.9 ✅ (Gradle happy)","adb devices":"emulator-5554 device ✅","run":"BUILD SUCCESSFUL ✅ Installing on Pixel 6… 🎉"};
+    slot.querySelectorAll("[data-c]").forEach(function(b){b.onclick=function(){var c=b.getAttribute("data-c");
+      document.getElementById("t-out").textContent="$ "+c+"\n"+outs[c]+"\n"+document.getElementById("t-out").textContent.slice(0,400);
+      if(!out[c]){out[c]=1;done++;}
+      if(c==="run"&&out["node -v"]&&out["java -version"]&&out["adb devices"]){document.getElementById("t-phone").innerHTML="<b>🎉 HELLO ANDROID!</b><br><small>Metro :8081 connected</small>";markInteract("Forge lit!");}
+      else if(c==="run"){toast("⚠️ Run forge steps 1-3 first!");}
+    };});
+    document.getElementById("t-btn").onclick=function(){document.getElementById("t-phone").innerHTML="<b>🎉 HELLO ANDROID!</b>";};
+  }
+  else if(type==="files"){
+    slot.innerHTML="<div class='split'><div><div class='btnrow'><button class='btn small' data-f='App'>App.tsx</button><button class='btn small' data-f='Main'>MainActivity.java</button><button class='btn small' data-f='Gradle'>build.gradle</button><button class='btn small' data-f='Metro'>metro.config.js</button></div><div class='code' id='f-view'>// click a file 👆 (3 to finish lab)</div></div><div>"+phoneShell("<div class='mock-text'>📦 HeroApp</div><div class='mock-view' id='f-seen'>explored: 0/3</div>")+"</div></div>";
+    var seen={};
+    var txt={App:"// App.tsx — YOUR code\nfunction App() {\n  return <Text>Hello!</Text>;\n}",Main:"// MainActivity.java — boots React\npublic class MainActivity extends ReactActivity {\n  protected String getMainComponentName(){\n    return \"HeroApp\";\n  }\n}",Gradle:"// android/app/build.gradle\nandroid {\n  compileSdk 34\n  defaultConfig { applicationId \"com.heroapp\" }\n}",Metro:"// metro.config.js — bundler\nmodule.exports = {\n  transformer: { hermesParser: true }\n};"};
+    slot.querySelectorAll("[data-f]").forEach(function(b){b.onclick=function(){var f=b.getAttribute("data-f");
+      document.getElementById("f-view").textContent=txt[f];seen[f]=1;
+      document.getElementById("f-seen").textContent="explored: "+Object.keys(seen).length+"/3";
+      if(Object.keys(seen).length>=3)markInteract("Anatomy learned!");};});
+  }
+  else if(type==="jsx"){
+    slot.innerHTML="<div class='split'><div><label>Your name (prop!)</label><input type='text' id='j-name' value='Android'><label>Awesomeness: <b id='j-v'>70</b>%</label><input type='range' id='j-r' min='0' max='100' value='70' style='width:100%'><div class='btnrow'><button class='btn small' id='j-dark'>🌙 TOGGLE DARK</button></div><div class='code' id='j-code'></div></div><div id='j-phone'></div></div>";
+    var dark=false;
+    function draw(){var nm=(document.getElementById("j-name").value||"Hero").slice(0,16);var v=+document.getElementById("j-r").value;
+      document.getElementById("j-v").textContent=v;
+      document.getElementById("j-code").textContent="<Greet name=\""+nm+"\" />\n// → createElement(Greet,{name:\""+nm+"\"})\n// awesomeness="+v+"%";
+      var bg=dark?"#1c2650":"#ffffff",fg=dark?"#fff":"#1c2650";
+      document.getElementById("j-phone").innerHTML=phoneShell("<div class='mock-view' style='background:"+bg+";color:"+fg+"'><div class='mock-text' style='color:"+fg+"'>Hello, "+esc(nm)+"! 👋</div><div style='background:#1c72ff;height:10px;border-radius:6px;width:"+v+"%'></div><small>awesomeness "+v+"%</small></div>");
+    }
+    document.getElementById("j-name").oninput=draw;document.getElementById("j-r").oninput=function(){draw();markInteract("JSX is alive!");};
+    document.getElementById("j-dark").onclick=function(){dark=!dark;draw();markInteract("JSX is alive!");};draw();
+  }
+  else if(type==="state"){
+    slot.innerHTML="<div class='split'><div><p style='font-size:13px;color:var(--mut)'>Tap +1. Each <b>setN</b> re-renders + diffs. Try spamming — renders stay cheap!</p><div class='btnrow'><button class='btn' id='s-add'>+1 TAP</button><button class='btn small ghost' id='s-reset'>reset</button></div><div class='code' id='s-log'>renders: 1 • state n = 0</div><div class='bar-compare'><small style='color:var(--mut)'>Render cost (native updates only, not full redraw)</small><div class='bar'><i id='s-bar' style='width:8%;background:linear-gradient(90deg,#3ddc84,#61dafb)'></i></div></div></div><div id='s-phone'></div></div>";
+    var n=0,r=1;
+    function draw(){document.getElementById("s-log").textContent="renders: "+r+" • state n = "+n+"\nsetN("+(n+1)+") → re-render → Fabric updates ONLY the number TextView";
+      document.getElementById("s-bar").style.width=Math.min(96,8+n*6)+"%";
+      document.getElementById("s-phone").innerHTML=phoneShell("<div class='mock-text' style='font-size:13px'>Taps: <b style='font-size:30px'>"+n+"</b></div><div class='mock-view'>renders so far: "+r+"</div><div class='mock-btn'>+1 (Pressable)</div>"); }
+    document.getElementById("s-add").onclick=function(){n++;r++;draw();if(n>=5)markInteract(n+" taps → "+r+" renders!");};
+    document.getElementById("s-reset").onclick=function(){n=0;r=1;draw();};draw();
+  }
+  else if(type==="flex"){
+    slot.innerHTML="<div class='split'><div><label>flexDirection</label><select id='f-dir'><option value='column'>column (RN default!)</option><option value='row'>row</option></select><label>justifyContent</label><select id='f-j'><option>flex-start</option><option>center</option><option>space-between</option><option>space-around</option></select><label>alignItems</label><select id='f-a'><option>stretch</option><option>center</option><option>flex-start</option><option>flex-end</option></select><div class='code' id='f-code'></div></div><div><div class='flex-stage' id='f-stage'><div>1</div><div>2</div><div>3</div></div><small style='color:var(--mut)'>↑ Yoga layout, live. White = parent View</small></div></div>";
+    var touched={};
+    function draw(){var d=document.getElementById("f-dir").value,j=document.getElementById("f-j").value,a=document.getElementById("f-a").value;
+      var st=document.getElementById("f-stage");st.style.flexDirection=d;st.style.justifyContent=j;st.style.alignItems=a;
+      document.getElementById("f-code").textContent="{ flexDirection:'"+d+"',\n  justifyContent:'"+j+"', alignItems:'"+a+"' }";
+      if(touched.d&&touched.j)markInteract("Flexbox tamed!");
+    }
+    document.getElementById("f-dir").onchange=function(){touched.d=1;draw();};
+    document.getElementById("f-j").onchange=function(){touched.j=1;draw();};
+    document.getElementById("f-a").onchange=draw;draw();
+  }
+  else if(type==="cores"){
+    slot.innerHTML="<div class='btnrow'><button class='btn small' data-t='0'>Text</button><button class='btn small' data-t='1'>Image</button><button class='btn small' data-t='2'>Input</button><button class='btn small' data-t='3'>Ripple</button></div><div class='split'><div><div class='code' id='c-code'></div></div><div id='c-phone'></div></div>";
+    var seen={},snip=["<Text>Hello <Text style={{fontWeight:'bold'}}>bold</Text></Text>\n// → TextView (nest Text in Text!)","<Image source={{uri:'https://…/dragon.png'}}\n  style={{width:200,height:120}} resizeMode='cover' />\n// → ImageView via Fresco","<TextInput placeholder='Type here'\n  keyboardType='numeric' returnKeyType='done' />\n// → EditText + soft keyboard","<Pressable android_ripple={{color:'#9cc4ff'}}\n  onPress={boom}>\n  <Text>Ripple me</Text>\n</Pressable>"];
+    var prev=["<div class='mock-text'>Hello <b>bold</b> 👋</div><div class='mock-view'><small>TextView • selectable</small></div>","<div class='mock-view' style='background:linear-gradient(135deg,#7c5cff,#61dafb);color:#fff;text-align:center;padding:26px'>🐉 dragon.png<br><small>200×120 cover</small></div>","<div class='mock-view'>Type here… <span style='background:#61dafb'>|</span><br><small>⌨️ numeric keyboard up</small></div>","<div class='mock-btn' id='c-rip'>RIPPLE ME ⚡</div>"];
+    function show2(i){document.getElementById("c-code").textContent=snip[i];document.getElementById("c-phone").innerHTML=phoneShell(prev[i]);seen[i]=1;
+      var rp=document.getElementById("c-rip");if(rp)rp.onclick=function(){rp.textContent="🌊 RIPPLE!";setTimeout(function(){rp.textContent="RIPPLE ME ⚡";},600);};
+      if(Object.keys(seen).length>=4)markInteract("Armory mastered!");}
+    slot.querySelectorAll("[data-t]").forEach(function(b){b.onclick=function(){show2(+b.getAttribute("data-t"));};});show2(0);
+  }
+  else if(type==="nav"){
+    slot.innerHTML="<div class='split'><div><div class='btnrow'><button class='btn small' id='n-push'>📄 PUSH Details</button><button class='btn small ghost' id='n-back'>◀ GO BACK</button></div><div class='stack-vis' id='n-stack'></div><div class='code' id='n-code'>navigation.navigate('Details')</div></div><div id='n-phone'></div></div>";
+    var st=["Home"];
+    function draw(){document.getElementById("n-stack").innerHTML=st.map(function(s){return "<span>"+esc(s)+"</span>";}).join(" → ");
+      var top=st[st.length-1];
+      document.getElementById("n-phone").innerHTML=phoneShell("<div class='mock-text'>📱 "+esc(top)+"</div><div class='mock-view'>"+(top==="Home"?"Welcome hero! Push Details →":"Details of quest #42<br><small>route.params.id = 42</small>")+"</div><div class='mock-btn'>"+(top==="Home"?"Go to Details →":"← Go Back")+"</div><small style='color:#667'>stack depth: "+st.length+" • back button pops</small>");}
+    var pushes=0;
+    document.getElementById("n-push").onclick=function(){st.push("Details #"+(st.length));pushes++;document.getElementById("n-code").textContent="navigation.navigate('Details', {id:"+(st.length*7)+"})  // push";draw();if(pushes>=2)markInteract("Navigator!");};
+    document.getElementById("n-back").onclick=function(){if(st.length>1)st.pop();document.getElementById("n-code").textContent="navigation.goBack()  // pop (or hardware back)";draw();};draw();
+  }
+  else if(type==="turbo"){
+    slot.innerHTML="<div class='btnrow'><button class='btn small' id='tb-mode'>MODE: LEGACY BRIDGE 🐢</button><button class='btn small secondary' id='tb-fire'>⚡ CALL Battery.getLevel()</button></div><div class='bar-compare'><div><small>Legacy: JSON queue + all modules at boot</small><div class='bar'><i id='tb-old' style='width:88%;background:#ff5d6c'></i></div></div><div><small>TurboModule + JSI: lazy + direct pointer</small><div class='bar'><i id='tb-new' style='width:24%;background:linear-gradient(90deg,#3ddc84,#61dafb)'></i></div></div></div><div class='code' id='tb-log'>// press CALL…</div>";
+    var turbo=false;
+    document.getElementById("tb-mode").onclick=function(){turbo=!turbo;document.getElementById("tb-mode").textContent=turbo?"MODE: TURBO + JSI 🚀":"MODE: LEGACY BRIDGE 🐢";};
+    document.getElementById("tb-fire").onclick=function(){var t0=performance.now();
+      document.getElementById("tb-log").textContent=turbo?"Battery.getLevel() → JSI direct → 87% in 0.4ms (no JSON!)" : "Battery.getLevel() → JSON → queue → Java → 87% in 8.2ms";
+      if(turbo)markInteract("Turbo forged!");else toast("🐢 Legacy works… now flip TURBO ON!");
+    };
+  }
+  else if(type==="perf"){
+    slot.innerHTML="<div class='btnrow'><button class='btn small' id='p-scroll'>SCROLL 1000 ROWS (ScrollView)</button><button class='btn small secondary' id='p-flat'>SCROLL 1000 ROWS (FlatList)</button></div><div class='code' id='p-log'>// pick a strategy…</div><div class='bar-compare'><div><small>Views mounted</small><div class='bar'><i id='p-bar' style='width:4%;background:#61dafb'></i></div></div></div>";
+    document.getElementById("p-scroll").onclick=function(){document.getElementById("p-bar").style.width="100%";document.getElementById("p-bar").style.background="#ff5d6c";
+      document.getElementById("p-log").textContent="ScrollView: mounted 1000/1000 views → 184MB → 🐌 8fps → OOM risk!\nFix: FlatList!";};
+    document.getElementById("p-flat").onclick=function(){document.getElementById("p-bar").style.width="6%";document.getElementById("p-bar").style.background="linear-gradient(90deg,#3ddc84,#61dafb)";
+      document.getElementById("p-log").textContent="FlatList: mounted 12/1000 (windowSize=5) → 9MB → ✅ 60fps\n+ getItemLayout + memo + Hermes bytecode";markInteract("60fps!");};
+  }
+  else if(type==="perm"){
+    slot.innerHTML="<div class='split'><div><div class='btnrow'><button class='btn small' id='pm-ask'>📷 REQUEST CAMERA</button><button class='btn small ghost' id='pm-settings'>⚙ OPEN SETTINGS</button></div><label>Loot to store (MMKV)</label><input type='text' id='pm-val' value='dragon-egg-001'><div class='btnrow'><button class='btn small secondary' id='pm-save'>💾 SAVE</button><button class='btn small ghost' id='pm-load'>📂 LOAD</button></div><div class='code' id='pm-log'>// permission: unknown • storage: empty</div></div><div id='pm-phone'></div></div>";
+    var perm="unknown",store="";
+    function draw(){document.getElementById("pm-log").textContent="// permission: "+perm+" • MMKV: '"+(store||"empty")+"'";
+      document.getElementById("pm-phone").innerHTML=phoneShell("<div class='mock-text'>📷 Camera: "+perm.toUpperCase()+"</div><div class='mock-view'>"+(perm==="granted"?"🐉 DRAGON PHOTO! 📸":"System dialog: allow camera?<br><small>Allow / Deny / Never ask</small>")+"</div><div class='mock-view'>💰 loot: "+esc(store||"—")+"</div>");}
+    var asked=false,saved=false;
+    document.getElementById("pm-ask").onclick=function(){perm="granted";asked=true;draw();maybe();toast("✅ Permission granted!");};
+    document.getElementById("pm-settings").onclick=function(){perm="granted";asked=true;draw();maybe();toast("⚙ Enabled in Settings");};
+    document.getElementById("pm-save").onclick=function(){store=document.getElementById("pm-val").value;saved=true;draw();maybe();};
+    document.getElementById("pm-load").onclick=function(){draw();toast(store?"📂 Loaded: "+store:"📂 empty");};
+    function maybe(){if(asked&&saved)markInteract("Device mage!");}draw();
+  }
+  else if(type==="build"){
+    slot.innerHTML="<p style='font-size:13px;color:var(--mut)'>Tap each stage in order: bundle → shrink → sign → upload.</p><div class='btnrow'><button class='btn small' data-s='0'>1️⃣ BUNDLE JS</button><button class='btn small' data-s='1'>2️⃣ R8 SHRINK</button><button class='btn small' data-s='2'>3️⃣ SIGN AAB</button><button class='btn small' data-s='3'>4️⃣ PLAY UPLOAD</button></div><div class='bar-compare' id='bd-bars'></div><div class='code' id='bd-log'>$ ready. tap 1️⃣…</div>";
+    var names=["index.android.bundle (Hermes .hbc)","R8: 28MB → 11MB, obfuscated","Signed with my-release-key.jks ✅","Play Console: staged rollout 20% 🚀"];
+    var step=0;var wrap=document.getElementById("bd-bars");
+    function bars(){wrap.innerHTML=names.map(function(n2,i){return "<div><small>"+(i+1)+". "+(i<step?"✅ ":"")+esc(n2)+"</small><div class='bar'><i style='width:"+(i<step?100:4)+"%;background:"+(i<step?"linear-gradient(90deg,#3ddc84,#61dafb)":"#1a2350")+"'></i></div></div>";}).join("");}
+    bars();
+    slot.querySelectorAll("[data-s]").forEach(function(b){b.onclick=function(){var i=+b.getAttribute("data-s");
+      if(i!==step){toast("⏳ Do stage "+(step+1)+" first!");return;}
+      step++;bars();document.getElementById("bd-log").textContent="$ "+names[i];
+      if(step>=4)markInteract("SHIPPED! 🚀");};});
+  }
+  else if(type==="boss"){
+    slot.innerHTML="<div class='split'><div><div class='btnrow'><input type='text' id='boss-in' value='Defeat the Bridge Dragon'><button class='btn small' id='boss-add'>➕ ADD</button></div><div class='btnrow'><button class='btn small ghost' data-f2='all'>ALL</button><button class='btn small ghost' data-f2='open'>OPEN</button><button class='btn small ghost' data-f2='done'>DONE</button></div><div id='boss-list'></div></div><div>"+phoneShell("<div class='mock-text'>⚔️ Quest Tracker</div><div class='mock-view' id='boss-stats'></div><div style='font-size:11px;color:#667'>mirrors FlatList + useState logic</div>")+"</div></div>";
+    var qs=[{id:1,title:"Learn the Bridge",done:true,xp:50},{id:2,title:"Master Flexbox",done:false,xp:50}];var f="all",nid=3;
+    function draw(){var vis=qs.filter(function(q){return f==="all"||(f==="open"?!q.done:q.done);});
+      document.getElementById("boss-list").innerHTML=vis.map(function(q){return "<button class='opt' data-id='"+q.id+"'>"+(q.done?"✅":"⬜")+" "+esc(q.title)+" <small style='color:var(--gold)'>+"+q.xp+"xp</small></button>";}).join("")||"<p style='color:var(--mut);font-size:13px'>No quests in this filter.</p>";
+      var dxp=qs.filter(function(q){return q.done;}).reduce(function(a,q){return a+q.xp;},0);
+      document.getElementById("boss-stats").innerHTML="done "+qs.filter(function(q){return q.done;}).length+"/"+qs.length+" • "+dxp+" XP banked";
+      slot.querySelectorAll("[data-id]").forEach(function(b){b.onclick=function(){var q=qs.filter(function(x){return x.id==b.getAttribute("data-id");})[0];q.done=!q.done;draw();check();};});}
+    var added=false,completed=false;
+    function check(){if(added&&qs.some(function(q){return q.done;}))markInteract("Boss app works!");}
+    document.getElementById("boss-add").onclick=function(){var v=document.getElementById("boss-in").value.trim();if(!v)return;qs.push({id:nid++,title:v,done:false,xp:50});added=true;document.getElementById("boss-in").value="";draw();check();};
+    slot.querySelectorAll("[data-f2]").forEach(function(b){b.onclick=function(){f=b.getAttribute("data-f2");draw();};});draw();
+  }
+}
+
+/* ============ WIN ============ */
+function win(){
+  show("screen-win");
+  document.getElementById("win-text").innerHTML="Cleared <b>"+doneCount()+"/"+LEVELS.length+"</b> levels with <b>"+S.xp+" XP</b> — rank <b>"+rankFor(S.xp)+"</b>. You can whiteboard the JS→Native pipeline, style with Yoga, virtualise lists, forge TurboModules and ship an AAB.";
+  document.getElementById("win-badges").innerHTML=LEVELS.filter(function(l){return passed[l.id];}).map(function(l){return "<span class='badge'>"+l.badge+"</span>";}).join("");
+  document.getElementById("cert-xp").textContent=S.xp;
+  boom();
+}
+function boom(){
+  var c=document.getElementById("confetti"),x=c.getContext("2d");var P=[];
+  for(var i=0;i<140;i++)P.push({x:Math.random()*600,y:Math.random()*-220,s:2+Math.random()*4,v:1+Math.random()*2.5,c:["#61dafb","#7c5cff","#3ddc84","#ffd54a","#ff5d6c"][i%5],r:Math.random()*6});
+  var f=0;(function tick(){x.clearRect(0,0,600,220);P.forEach(function(p){p.y+=p.v;p.x+=Math.sin((p.y+p.r*50)/30);x.fillStyle=p.c;x.fillRect(p.x,p.y,p.s,p.s*0.6);});if(++f<220)requestAnimationFrame(tick);})();
+}
+
+/* ============ WIRE ============ */
+document.getElementById("btn-start").onclick=function(){var i=0;for(var k=0;k<LEVELS.length;k++){if(!passed[LEVELS[k].id]){i=k;break;}else i=Math.min(k+1,LEVELS.length-1);}openLevel(i);};
+document.getElementById("btn-continue").onclick=function(){document.getElementById("btn-start").onclick();};
+document.getElementById("btn-map").onclick=function(){renderMap();show("screen-map");};
+document.getElementById("btn-back").onclick=function(){renderMap();show("screen-map");};
+document.getElementById("btn-reset").onclick=function(){if(confirm("Reset all XP and badges?")){S={xp:0,done:[],streak:0,last:""};passed={};interacted={};save();savePass();renderMap();hud();toast("🗑 Progress wiped. Fresh run!");}};
+document.getElementById("btn-replay").onclick=function(){renderMap();show("screen-map");};
+document.getElementById("btn-cert").onclick=function(){var n=prompt("Hero name for the certificate:","Android Hero")||"Android Hero";document.getElementById("cert-name").textContent=n.toUpperCase();document.getElementById("cert").classList.remove("hidden");document.getElementById("cert").scrollIntoView({behavior:"smooth"});};
+renderMap();hud();
+})();
+</script>
+</body>
+</html>
