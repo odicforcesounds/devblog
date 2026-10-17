@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Police Groups in Society — A Technical Manual</title>
+<style>
+  :root{
+    --bg:#0e1318;
+    --panel:#131b24;
+    --panel-2:#17212b;
+    --ink:#e6edf3;
+    --muted:#8fa3b8;
+    --accent:#4fd1c5;
+    --accent-2:#818cf8;
+    --warn:#fbbf24;
+    --bad:#f87171;
+    --good:#34d399;
+    --line:rgba(145,181,213,.14);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:980px;margin:0 auto;padding:24px 20px 80px}
+
+  /* Top bar */
+  .topbar{position:sticky;top:0;z-index:30;background:rgba(14,19,24,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .topbar-inner{display:flex;align-items:center;gap:14px;padding:10px 20px;max-width:980px;margin:0 auto}
+  .brand{font-weight:700;letter-spacing:.3px;color:var(--ink)}
+  .brand .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--accent);margin-right:8px;vertical-align:middle;box-shadow:0 0 10px var(--accent)}
+  .crumb{color:var(--muted);font-size:13px}
+  .home-link{font-size:14px;font-weight:600;color:var(--accent);padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:rgba(79,209,197,.06)}
+  .home-link:hover{background:rgba(79,209,197,.14);text-decoration:none}
+
+  .header-eyebrow{color:var(--accent);font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+  .header-title{font-size:clamp(28px,4.4vw,46px);line-height:1.12;margin:14px 0 10px;font-weight:800}
+  .header-sub{color:var(--muted);font-size:15px;max-width:70ch}
+
+  .chapter{display:flex;gap:18px;margin:48px 0;border-left:2px solid var(--line);padding-left:20px}
+  .chapter > div{flex:0 0 74px}
+  .chapter h2{margin:0 0 6px;font-size:15px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;font-weight:700}
+  .chapter .num{font-family:ui-monospace,monospace;color:var(--muted);font-size:13px}
+  .chapter > section{flex:1}
+
+  h2{font-size:26px;margin:0 0 10px;letter-spacing:-.2px}
+  h3{font-size:17px;margin:22px 0 8px;color:var(--accent-2)}
+  p{margin:10px 0;color:var(--ink)}
+  .small{color:var(--muted);font-size:13.5px}
+
+  .note{background:rgba(129,140,248,.08);border:1px solid rgba(129,140,248,.25);border-radius:10px;padding:12px 14px;margin:14px 0;font-size:14px}
+  .warn{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:10px;padding:12px 14px;margin:14px 0;font-size:14px}
+
+  /* Card grid */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card h4{margin:0 0 6px;color:var(--accent);font-size:14px;letter-spacing:.5px;text-transform:uppercase}
+  .card .who{font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+
+  /* Concept chip */
+  .concept{display:inline-block;background:rgba(79,209,197,.08);border:1px solid rgba(79,209,197,.3);color:var(--accent);border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:600;letter-spacing:.4px}
+
+  /* Animation stage */
+  .stage{width:100%;aspect-ratio:16/9;background:linear-gradient(180deg,#11171f,#0a0f14);border:1px solid var(--line);border-radius:14px;position:relative;overflow:hidden;margin:16px 0}
+  .stage canvas{display:block;width:100%;height:100%}
+  .stage .legend{position:absolute;left:10px;bottom:10px;background:rgba(8,12,16,.7);backdrop-filter:blur(4px);padding:6px 10px;border-radius:8px;font-size:12px;color:var(--muted);border:1px solid var(--line)}
+
+  /* Table */
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--accent);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.5px}
+  td small{color:var(--muted);font-size:12px;display:block}
+  tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+
+  /* Callout banner */
+  .banner{background:linear-gradient(120deg,rgba(79,209,197,.12),rgba(129,140,248,.08));border:1px solid rgba(79,209,197,.25);border-left:4px solid var(--accent);border-radius:10px;padding:16px 18px;margin:18px 0}
+  .banner h3{margin:0 0 6px;color:var(--accent)}
+  .banner p{margin:6px 0 0}
+
+  /* Level gate */
+  .gate{display:none;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:14px;margin:14px 0}
+  .gate.open{display:block;animation:rise .35s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .gate-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .gate h3{margin:0;font-size:14px;color:var(--accent-2)}
+  .gate .lock{font-size:11px;color:var(--muted);background:rgba(143,163,184,.1);padding:2px 8px;border-radius:999px}
+
+  /* Quiz */
+  .quiz{box:border-box}
+  .quiz-question{margin:14px 0}
+  .quiz-question .q{font-weight:600;margin-bottom:8px}
+  .quiz-option{display:block;width:100%;text-align:left;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);padding:9px 12px;border-radius:8px;margin:4px 0;cursor:pointer;font-size:14px;transition:.15s}
+  .quiz-option:hover{border-color:var(--accent);background:rgba(79,209,197,.06)}
+  .quiz-option.selected{border-color:var(--accent);background:rgba(79,209,197,.14)}
+  .quiz-option.correct{background:rgba(52,211,153,.16);border-color:var(--good)}
+  .quiz-option.wrong{background:rgba(248,113,113,.14);border-color:var(--bad)}
+  .quiz-feedback{margin-top:6px;font-size:13.5px;padding:8px 10px;border-radius:8px;display:none}
+  .quiz-feedback.show{display:block}
+  .quiz-feedback.ok{background:rgba(52,211,153,.1);color:var(--good)}
+  .quiz-feedback.no{background:rgba(248,113,113,.1);color:var(--bad)}
+  .btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:9px 16px;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.primary{background:linear-gradient(180deg,rgba(79,209,197,.2),rgba(79,209,197,.06));border-color:var(--accent);color:var(--accent)}
+
+  .progress{display:flex;gap:6px;margin:14px 0}
+  .seg{height:6px;flex:1;border-radius:3px;background:var(--line)}
+  .seg.fill{background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+
+  .refs{font-size:13.5px;color:var(--muted)}
+  .refs li{margin:6px 0}
+  .refs a{font-size:13.5px}
+
+  .level-picker{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+  .lpadding{flex:1 1 46%}
+  .lp{display:inline-flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:10px;font-size:13.5px;cursor:pointer;transition:.15s}
+  .lp:hover{border-color:var(--accent)}
+  .lp .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+  .lp.active{border-color:var(--accent);background:rgba(79,209,197,.08);box-shadow:0 0 0 1px var(--accent) inset}
+  .lp.active .dot{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .lp.locked{opacity:.5;cursor:not-allowed}
+  .lp.locked .dot{background:var(--bad)}
+
+  .footer{margin-top:40px;border-top:1px solid var(--line);padding-top:14px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .footer a{color:var(--accent)}
+
+  @media (max-width:720px){
+    .grid2{grid-template-columns:1fr}
+    .chapter{flex-wrap:wrap}
+    .chapter > div{flex:0 0 auto;width:auto}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="home-link" href="index.html" aria-label="Go to home page">Home · index.html</a>
+    <span class="crumb">Technical Manual / Police Groups in Society</span>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <div class="header-eyebrow">Edition 1.0 · Promotional Reference · Interactive</div>
+  <h1 class="header-title">How Police Groups Work in Different Societies</h1>
+  <p class="header-sub">A technical-reference guide to the structure, activity, and evolution of police groups across societies — with animated examples and a graduated knowledge check. Read it top-to-bottom to earn each next level.</p>
+
+  <div class="banner">
+    <h3>How to use this manual</h3>
+    <p>This document is built like a technical manual. Each <b>Level</b> unlocks the next only when you answer its check. Real country examples are used throughout. Where a decision is framed as “bad,” the manual treats it as a class of failure common to multiple systems — outcomes of comparable quality — rather than a trophy for any one country.</p>
+  </div>
+
+  <!-- Level gate -->
+  <div id="gate-1" class="gate open">
+    <div class="gate-head"><span class="dot" style="width:10px;height:10px;border-radius:50%;background:var(--accent);display:inline-block"></span> <span>Level 1 · Concepts</span> <span class="lock">Unlocked</span></div>
+    <p class="small">Before comparing countries, learn the vocabulary. Continue to the questions below, then mark <b>Validate Level 1</b>.</p>
+
+    <div class="quiz" id="quiz-1">
+      <div class="quiz-question">
+        <div class="q">1) A “police group” in this manual means:</div>
+        <button class="quiz-option" data-correct="true">Any organized body that performs policing functions — uniformed police, gendarmerie, constabulary, special forces with police roles, and oversight bodies that shape policing.</button>
+        <button class="quiz-option">Only the regular municipal police force of a city.</button>
+        <button class="quiz-option">Only armed officers on patrol.</button>
+        <div class="quiz-feedback"></div>
+      </div>
+
+      <div class="quiz-question">
+        <div class="q">2) “Police by consent” most closely describes:</div>
+        <button class="quiz-option">A model where legitimacy depends on public approval and police generally remain unarmed in routine work.</button>
+        <button class="quiz-option" data-correct="true">A model where legitimacy depends on public approval and police generally remain unarmed in routine work (as historically in the UK and New Zealand).</button>
+        <button class="quiz-option">A model where police rule by decree without local input.</button>
+        <div class="quiz-feedback"></div>
+      </div>
+
+      <div class="quiz-question">
+        <div class="q">3) A “dual police” system is one where:</div>
+        <button class="quiz-option" data-correct="true">Two distinct national forces share policing duties — for example a metropolitan police and a rural/gendarmerie force — plus municipal police.</button>
+        <button class="quiz-option">Police work is split between men and women.</button>
+        <button class="quiz-option">Police officers are forbidden to carry radios.</button>
+        <div class="quiz-feedback"></div>
+      </div>
+
+      <button class="btn primary" id="btn-1">Validate Level 1</button>
+    </div>
+  </div>
+
+  <!-- CHAPTER 1 -->
+  <section class="chapter" id="ch1">
+    <div>
+      <h2>Chapter 1</h2>
+      <div class="num">LEVEL 1</div>
+    </div>
+    <section>
+      <h2>What a “police group” is — and is not</h2>
+      <p>In technical terms, a police group is a <b>bounded organization</b> with authority to apply coercive force under a legal framework, a defined jurisdiction, internal hierarchy, and accountability channels. The group may be called police, gendarmerie, constabulary, civil guard, or something else — the name is local, not universal.</p>
+
+      <h3>Core concepts</h3>
+      <p><span class="concept">Jurisdiction</span> — the territory and subject-matter a group is empowered to act in.<br>
+      <span class="concept">Hierarchy</span> — the chain of command and rank structure.<br>
+      <span class="concept">Function</span> — what the group actually does: patrol, investigate, respond, detain, prevent.<br>
+      <span class="concept">Consent / legitimacy</span> — whether the public accepts the group’s right to act.<br>
+      <span class="concept">Oversight</span> — independent bodies that inspect, investigate, and discipline.<br>
+      <span class="concept">Co-production</span> — the extent to which policing relies on non-police actors (medics, social workers, community members).</p>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="who">Concept map</div>
+          <h4>Four axes of comparison</h4>
+          <p class="small" style="margin:8px 0 0">Every police group can be described along: (1) <b>centralization</b>, (2) <b>armed vs. unarmed routine posture</b>, (3) <b>training depth</b>, (4) <b>oversight independence</b>. These four axes explain most cross-country differences without reducing a country to a stereotype.</p>
+        </div>
+        <div class="card">
+          <div class="who">Watch-out</div>
+          <h4>The “best police” trap</h4>
+          <p class="small" style="margin:8px 0 0">No single system is universally “best.” Each trades off cost, speed, local knowledge, coercion, and accountability. A system that excels at corruption control may be criticized elsewhere for severity; a decentralized system may be flexible but uneven. Compare <b>dimensions</b>, not medals.</p>
+        </div>
+      </div>
+
+      <div class="note"><b>Manual convention:</b> when this text labels a decision a “bad decision,” it means a decision that fails its own stated objective and is structurally comparable to similar failures in other systems — it does <b>not</b> claim any country is uniquely bad. Equal weight across systems.</div>
+    </section>
+  </section>
+
+  <!-- CHAPTER 2 -->
+  <section class="chapter" id="ch2">
+    <div>
+      <h2>Chapter 2</h2>
+      <div class="num">LEVEL 2</div>
+    </div>
+    <section>
+      <h2>How police groups produce their activity</h2>
+      <p>Activity is not random. A group’s output — patrols, arrests, reports, stops, prevention — flows from four inputs and one feedback loop.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="who">Inputs</div>
+          <h4>What feeds the machine</h4>
+          <p class="small" style="margin:8px 0 0"><b>Budget & staffing</b> set capacity. <b>Legal mandate</b> sets what is allowed. <b>Data & intelligence</b> set where attention goes. <b>Training & doctrine</b> set the style of action. Change any input and activity changes.</p>
+        </div>
+        <div class="card">
+          <div class="who">Cycle</div>
+          <h4>The feedback loop</h4>
+          <p class="small" style="margin:8px 0 0">Activity produces records (calls, crimes, stops). Records feed analysis. Analysis changes deployment. Deployment changes activity. The loop is where strategy becomes reality — or where it silently degrades.</p>
+        </div>
+      </div>
+
+      <h3>The activity stack (bottom to top)</h3>
+      <table>
+        <tr><th>Layer</th><th>What it is</th><th>Example</th></tr>
+        <tr><td><b>1 · Reactivity</b></td><td>Responding to calls and incidents as they arrive.</td><td>UK 999/101 calls; US 911 dispatch; Japan koban local reports.</td></tr>
+        <tr><td><b>2 · Patrol & visibility</b></td><td>Presence meant to deter and to gather local knowledge.</td><td>Neighborhood beats; koban boxes; foot patrols; random vehicle stops (varies by country).</td></tr>
+        <tr><td><b>3 · Investigation</b></td><td>Follow-up after an event, including forensics and interviews.</td><td>Detective branches; specialized units; cross-border cooperation.</td></tr>
+        <tr><td><b>4 · Proactive / prevention</b></td><td>Acting before harm using patterns, partnerships, and problem-solving.</td><td>Community policing; intelligence-led deployment; problem-oriented projects (SARA).</td></tr>
+        <tr><td><b>5 · Strategic governance</b></td><td>Policy, standards, training, oversight, funding choices.</td><td>National standards bodies; independent complaints offices; academies; budget cycles.</td></tr>
+      </table>
+
+      <div class="stage" id="stage-activity">
+        <canvas id="cv-activity" aria-hidden="true"></canvas>
+        <div class="legend">Animated cycle: calls → deployment → records → analysis → new deployment. Each society tilts the stack differently.</div>
+      </div>
+
+      <h3>The SARA loop — problem-oriented policing</h3>
+      <p>One widely used framework is <b>SARA</b>: <b>S</b>canning, <b>A</b>nalysis, <b>R</b>esponse, <b>A</b>ssessment. It is a decision model that keeps a team from acting on hunches alone.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="who">Scanning</div>
+          <h4>Spot the recurring problem</h4>
+          <p class="small" style="margin:8px 0 0">What keeps happening? Which locations, times, victims, and repeat events form a pattern worth a project — not just one-off calls.</p>
+        </div>
+        <div class="card">
+          <div class="who">Analysis</div>
+          <h4>Understand causes</h4>
+          <p class="small" style="margin:8px 0 0">Look at the “problem triangle” — likely offender, suitable target, absence of capable guardian — plus environment and incentives.</p>
+        </div>
+        <div class="card">
+          <div class="who">Response</div>
+          <h4>Design an intervention</h4>
+          <p class="small" style="margin:8px 0 0">Not necessarily “more arrests.” Could be environmental change, partnership with housing/health, targeted deterrence, or removing a contributing condition.</p>
+        </div>
+        <div class="card">
+          <div class="who">Assessment</div>
+          <h4>Did it work?</h4>
+          <p class="small" style="margin:8px 0 0">Measure before/after on the problem you defined. If it didn’t help, revise. The loop is the point — not the single action.</p>
+        </div>
+      </div>
+
+      <div class="stage" id="stage-sara">
+        <canvas id="cv-sara" aria-hidden="true"></canvas>
+        <div class="legend">SARA loop animated: scan → analyze → respond → assess → back to scan.</div>
+      </div>
+    </section>
+  </section>
+
+  <!-- Level 2 gate -->
+  <div id="gate-2" class="gate">
+    <div class="gate-head"><span class="dot" style="width:10px;height:10px;border-radius:50%;background:var(--bad);display:inline-block"></span> <span>Level 2 · Activity</span> <span class="lock">Locked</span></div>
+    <p class="small">Answer the Level 2 check to unlock the country comparison.</p>
+    <div class="quiz" id="quiz-2">
+      <div class="quiz-question">
+        <div class="q">1) Which best describes the SARA model?</div>
+        <button class="quiz-option">A ranking of officers.</button>
+        <button class="quiz-option" data-correct="true">A four-step problem-solving cycle: Scanning, Analysis, Response, Assessment.</button>
+        <button class="quiz-option">A budgeting formula.</button>
+        <div class="quiz-feedback"></div>
+      </div>
+      <div class="quiz-question">
+        <div class="q">2) In a feedback loop, what turns activity into the next round of activity?</div>
+        <button class="quiz-option" data-correct="true">Records and analysis that reshape deployment and priorities.</button>
+        <button class="quiz-option">Nothing — activity is purely instinctive.</button>
+        <button class="quiz-option">A single annual speech by the chief.</button>
+        <div class="quiz-feedback"></div>
+      </div>
+      <button class="btn primary" id="btn-2">Validate Level 2</button>
+    </div>
+  </div>
+
+  <!-- CHAPTER 3 -->
+  <section class="chapter" id="ch3">
+    <div>
+      <h2>Chapter 3</h2>
+      <div class="num">LEVEL 3</div>
+    </div>
+    <section>
+      <h2>A real comparison: different police parties, different countries</h2>
+      <p>Here we compare real systems side-by-side. The goal is <b>understanding</b>, not ranking. Each system is a bundle of choices.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="who">United Kingdom — England &amp; Wales</div>
+          <h4>Policing by consent, unarmed routine, regional forces</h4>
+          <p class="small" style="margin:8px 0 0">Most officers do not carry firearms and historically rely on public approval. Policing is delivered by regional forces under national training/standards expectations; oversight is via the Independent Office for Police Conduct (IOPC), which handles the most serious matters and sets complaint-handling standards.</p>
+          <p class="small" style="margin:6px 0 0"><b>Good fit:</b> legitimacy-driven, de-escalation culture, independent oversight.<br><b>Trade-off:</b> capacity strain, uneven local performance, firearm incidents require specially armed units.</p>
+        </div>
+        <div class="card">
+          <div class="who">Japan</div>
+          <h4>Koban community policing, long training, high visibility</h4>
+          <p class="small" style="margin:8px 0 0">Japan operates roughly 6,000 neighborhood police boxes (koban) staffed around the clock, embedding officers in daily community life — addressing lost-and-found, directions, minor disputes, and local crime prevention alongside law enforcement. Training and academy structure are comparatively long and formal.</p>
+          <p class="small" style="margin:6px 0 0"><b>Good fit:</b> local knowledge, prevention, low threshold for contact.<br><b>Trade-off:</b> historical debate about closeness of police-community ties and conformity pressure; success partly reflects broader social context.</p>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="who">United States</div>
+          <h4>Many agencies, decentralized, armed, broad mandate</h4>
+          <p class="small" style="margin:8px 0 0">The US has on the order of 18,000 law-enforcement agencies across local, state, and federal levels. Training length is comparatively short on average, and academies historically emphasize technical/firearm skills more than de-escalation and crisis intervention. Some agencies carry military-style equipment; funding is largely local.</p>
+          <p class="small" style="margin:6px 0 0"><b>Good fit:</b> local responsiveness, specialization, rapid innovation in some agencies.<br><b>Trade-off:</b> patchwork standards, broad mandates (including mental-health calls), higher lethal-encounter statistics than many peer democracies.</p>
+        </div>
+        <div class="card">
+          <div class="who">France</div>
+          <h4>Dual national forces plus municipal police</h4>
+          <p class="small" style="margin:8px 0 0">France has a dual structure: a National Police (Police nationale) for urban areas and a National Gendarmerie (Gendarmerie nationale) with a rural/military heritage, plus municipal police at the local level. This split is a classic “dual police” example.</p>
+          <p class="small" style="margin:6px 0 0"><b>Good fit:</b> clear national capacity, specialized jurisdiction split.<br><b>Trade-off:</b> coordination complexity between forces; public debate about protest policing and use-of-force norms.</p>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="who">Germany</div>
+          <h4>Federal, state (Land) police, emphasis on restraint in firearms training</h4>
+          <p class="small" style="margin:8px 0 0">Germany’s policing is organized at the state (Land) level, with federal police (Bundespolizei, BKA) for specific cross-cutting roles. Firearms training in Germany is commonly described as emphasizing avoidance of force. Police functions can be broad, including public-order and regulatory tasks.</p>
+          <p class="small" style="margin:6px 0 0"><b>Good fit:</b> federal flexibility, restraint-minded training posture, specialized federal units.<br><b>Trade-off:</b> coordination across Länder, varied local capacity.</p>
+        </div>
+        <div class="card">
+          <div class="who">Singapore</div>
+          <h4>Centralized, technology-heavy, neighborhood centres, corruption-control focus</h4>
+          <p class="small" style="margin:8px 0 0">The Singapore Police Force (SPF) is a centralized force under the Ministry of Home Affairs, organized with both staff and line functions. It developed a Neighbourhood Police Centre (NPC) model for local one-stop presence, pairs policing with broader corruption-control institutions and policy choices (pay, conditions, enforcement).</p>
+          <p class="small" style="margin:6px 0 0"><b>Good fit:</b> coordination, tech, corruption-control design.<br><b>Trade-off:</b> centralized model may generalize less easily; legitimacy and severity questions are debated by observers.</p>
+        </div>
+      </div>
+
+      <h3>Country comparison table</h3>
+      <table>
+        <tr><th>Dimension</th><th>UK (E&amp;W)</th><th>Japan</th><th>USA</th><th>France</th><th>Germany</th><th>Singapore</th></tr>
+        <tr>
+          <td><b>Structure</b>
+            <small>How organized</small>
+          </td>
+          <td>Regional forces under common standards</td>
+          <td>National police with ~6,000 koban boxes</td>
+          <td>~18,000 local/state/federal agencies</td>
+          <td>Dual national + municipal</td>
+          <td>State (Land) police + federal units</td>
+          <td>Centralized national force</td>
+        </tr>
+        <tr>
+          <td><b>Routine arming</b>
+            <small>Default posture</small>
+          </td>
+          <td>Generally unarmed</td>
+          <td>Armed, with community presence</td>
+          <td>Armed</td>
+          <td>Armed</td>
+          <td>Armed, restraint focus in training</td>
+          <td>Armed, technology-intensive</td>
+        </tr>
+        <tr>
+          <td><b>Training emphasis</b>
+            <small>Academy direction</small>
+          </td>
+          <td>Standards set centrally; de-escalation valued</td>
+          <td>Long, formal, community-embedded</td>
+          <td>Shorter on average; technical/skills emphasis</td>
+          <td>National training structures</td>
+          <td>Firearms training emphasizes avoiding force</td>
+          <td>Centralized training and tech skills</td>
+        </tr>
+        <tr>
+          <td><b>Oversight model</b>
+            <small>Independent scrutiny</small>
+          </td>
+          <td>IOPC (serious matters + standards)</td>
+          <td>National oversight mechanisms exist</td>
+          <td>Fragmented; varied by jurisdiction</td>
+          <td>National oversight + judicial control</td>
+          <td>State/federal oversight mix</td>
+          <td>Centralized discipline + anti-corruption institutions</td>
+        </tr>
+        <tr>
+          <td><b>Mandate breadth</b>
+            <small>What they do</small>
+          </td>
+          <td>Patrol, investigate, respond; support officers for low-level tasks</td>
+          <td>Prevention, local service, enforcement</td>
+          <td>Broad: patrol, mental-health, traffic, etc.</td>
+          <td>Broad, with dual-force division</td>
+          <td>Broad, including public order</td>
+          <td>Broad, integrated with national security posture</td>
+        </tr>
+      </table>
+
+      <div class="warn"><b>Equal-weight rule on bad decisions:</b> this manual treats a “bad decision” as a failure shared across systems — e.g., poor escalation, weak accountability, over-broad mandate, or data used punitively without safeguards — and notes such failures can appear in any country. When discussing them, the manual does not award a “worst” trophy to any single place.</div>
+
+      <div class="stage" id="stage-compare">
+        <canvas id="cv-compare" aria-hidden="true"></canvas>
+        <div class="legend">Animated radar-style comparison: each axis is a dimension, not a score. Society shapes the shape.</div>
+      </div>
+    </section>
+  </section>
+
+  <!-- Level 3 gate -->
+  <div id="gate-3" class="gate">
+    <div class="gate-head"><span class="dot" style="width:10px;height:10px;border-radius:50%;background:var(--bad);display:inline-block"></span> <span>Level 3 · Country comparison</span> <span class="lock">Locked</span></div>
+    <p class="small">Answer the Level 3 check to unlock the development and references section.</p>
+    <div class="quiz" id="quiz-3">
+      <div class="quiz-question">
+        <div class="q">1) Which country is a textbook example of a “dual” national police structure (two national forces with different roles, plus municipal police)?</div>
+        <button class="quiz-option" data-correct="true">France (National Police + National Gendarmerie + municipal police).</button>
+        <button class="quiz-option">Japan.</button>
+        <button class="quiz-option">New Zealand.</button>
+        <div class="quiz-feedback"></div>
+      </div>
+      <div class="quiz-question">
+        <div class="q">2) Which idea best matches “policing by consent”?</div>
+        <button class="quiz-option" data-correct="true">Legitimacy rests on public approval; routine officers may be unarmed and rely on cooperation.</button>
+        <button class="quiz-option">Police command by personal authority alone.</button>
+        <button class="quiz-option">Consent is irrelevant; force defines legitimacy.</button>
+        <div class="quiz-feedback"></div>
+      </div>
+      <div class="quiz-question">
+        <div class="q">3) A “bad decision” in policing, in this manual’s terms, is:</div>
+        <button class="quiz-option">A trophy that belongs to one country only.</button>
+        <button class="quiz-option" data-correct="true">A failure class (poor escalation, weak accountability, misaligned mandate, or misuse of data) that can occur in many systems and is weighed equally across them.</button>
+        <button class="quiz-option">Anything any police ever do.</button>
+        <div class="quiz-feedback"></div>
+      </div>
+      <button class="btn primary" id="btn-3">Validate Level 3</button>
+    </div>
+  </div>
+
+  <!-- CHAPTER 4 -->
+  <section class="chapter" id="ch4">
+    <div>
+      <h2>Chapter 4</h2>
+      <div class="num">LEVEL 4</div>
+    </div>
+    <section>
+      <h2>Developing activity: how a police group improves</h2>
+      <p>Improvement is not a slogan. It is a set of interventions that change inputs and the feedback loop. Below are techniques used (with variation) across societies, followed by the real example of a “bad decision” class and how to avoid it.</p>
+
+      <h3>Improvement levers</h3>
+      <table>
+        <tr><th>Lever</th><th>What it changes</th><th>Real-world flavour</th></tr>
+        <tr><td><b>Longer, deeper training</b></td><td>Decision quality under stress; de-escalation; legal/ethical judgment.</td><td>Several European systems train recruits for years and pair academy study with practice; some include degree-level study.</td></tr>
+        <tr><td><b>Problem-oriented projects (SARA)</b></td><td>Shifts from “more of the same” to tailored interventions.</td><td>Local teams targeting a recurring hotspot or repeat harm with analysis and follow-up assessment.</td></tr>
+        <tr><td><b>Intelligence-led deployment</b></td><td>Prioritization informed by analysis, not only the loudest call.</td><td>Data-informed resource targeting, with safeguards against bias and over-policing.</td></tr>
+        <tr><td><b>Co-production / alternative responders</b></td><td>Reduces armed escalation by sending the right responder.</td><td>Unarmed crisis responders for mental-health calls; community support officers handling low-level matters; CAHOOTS-style programs.</td></tr>
+        <tr><td><b>Independent oversight</b></td><td>Improves accountability and public confidence.</td><td>Watchdog bodies that investigate serious matters and set complaint standards; external audit of use-of-force.</td></tr>
+        <tr><td><b>Transparency &amp; data</b></td><td>Makes activity visible and debatable.</td><td>Published stop/arrest/use-of-force data; regular public reporting; open methodology.</td></tr>
+        <tr><td><b>Corruption-control design</b></td><td>Reduces rent-seeking and abuse.</td><td>Pay/conditions, clear anti-corruption institutions, enforcement, and prevention — an integrated approach rather than one silver bullet.</td></tr>
+      </table>
+
+      <div class="banner">
+        <h3>Real example: a bad-decision class and why it is equal across systems</h3>
+        <p>Consider <b>“escalate-by-default in low-risk encounters.”</b> If routine encounters are handled by maximizing coercion rather than de-escalation, several things happen at once: public trust falls, the encounter set expands (more people are pulled into conflict), and the group spends capacity on avoidable conflict instead of prevention.</p>
+        <p>This is a <b>decision class</b>, not a country trophy. Similar failures can arise wherever doctrine, training, incentives, or data practices push officers toward escalation, silence, or secrecy. The manual treats the quality of the failure as comparable across systems and asks: what input produced it, and which lever would change it?</p>
+      </div>
+
+      <div class="stage" id="stage-dev">
+        <canvas id="cv-dev" aria-hidden="true"></canvas>
+        <div class="legend">Animated “improvement flywheel”: better training → better decisions → less avoidable conflict → more capacity for prevention → more trust.</div>
+      </div>
+
+      <h3>How to read a country’s police group (a short method)</h3>
+      <p><span class="concept">Step 1</span> Name the group(s) and their jurisdiction.<br>
+      <span class="concept">Step 2</span> State the default armed/unarmed posture and use-of-force rules.<br>
+      <span class="concept">Step 3</span> Identify training length/emphasis and doctrine.<br>
+      <span class="concept">Step 4</span> Identify oversight and accountability channels.<br>
+      <span class="concept">Step 5</span> Identify where co-production and alternative responders sit.<br>
+      <span class="concept">Step 6</span> Read the feedback loop: what data is collected, who sees it, and how it changes deployment.</p>
+
+      <div class="note"><b>Promotional note:</b> this manual is intended to promote clear, comparative understanding of police groups — the discipline of comparing real systems honestly, without turning any country into a moral mascot.</div>
+    </section>
+  </section>
+
+  <!-- Level 4 gate -->
+  <div id="gate-4" class="gate">
+    <div class="gate-head"><span class="dot" style="width:10px;height:10px;border-radius:50%;background:var(--bad);display:inline-block"></span> <span>Level 4 · Development</span> <span class="lock">Locked</span></div>
+    <p class="small">Answer to complete the manual.</p>
+    <div class="quiz" id="quiz-4">
+      <div class="quiz-question">
+        <div class="q">1) Which is an “improvement lever” in this manual?</div>
+        <button class="quiz-option" data-correct="true">Longer/deeper training, problem-oriented (SARA) projects, independent oversight, alternative responders, transparency, and corruption-control design.</button>
+        <button class="quiz-option">Slogans alone, with no change to inputs or feedback.</button>
+        <button class="quiz-option">Removing every record so nothing can be judged.</button>
+        <div class="quiz-feedback"></div>
+      </div>
+      <div class="quiz-question">
+        <div class="q">2) The “escalate-by-default” bad-decision class:</div>
+        <button class="quiz-option" data-correct="true">Is a failure class that can appear in multiple systems and is weighed equally, not a single-country trophy.</button>
+        <button class="quiz-option">Exists only in one specific country.</button>
+        <button class="quiz-option">Is not a real concept.</button>
+        <div class="quiz-feedback"></div>
+      </div>
+      <button class="btn primary" id="btn-4">Validate Level 4 — Complete</button>
+    </div>
+  </div>
+
+  <!-- Completion -->
+  <div id="done" class="gate">
+    <div class="gate-head"><span class="dot" style="width:10px;height:10px;border-radius:50%;background:var(--good);display:inline-block;box-shadow:0 0 10px var(--good)"></span> <span>Manual complete</span> <span class="lock">All levels validated</span></div>
+    <p>You have worked through the four levels. The next sections list references for further study.</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress" id="progress">
+    <div class="seg fill" style="width:25%"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div>
+  </div>
+  <div class="small" id="progress-label">Progress: Level 1 of 4</div>
+
+  <!-- References -->
+  <h2 style="margin-top:44px">External references</h2>
+  <p class="small">These are sources consulted for this manual. Follow them in order if you want to extend each level. This manual did not invent these ideas; it organized them for study.</p>
+  <ol class="refs">
+    <li>Council on Foreign Relations — <i>How Police Compare in Different Democracies</i> — a comparative overview of organization, funding, training, use of force, and accountability. <a href="https://www.cfr.org/backgrounders/how-police-compare-different-democracies" target="_blank" rel="noopener">cfr.org</a></li>
+    <li>ASU Center for Problem-Oriented Policing — <i>The SARA Model</i> — the Scanning, Analysis, Response, Assessment framework. <a href="https://popcenter.asu.edu/content/sara-model" target="_blank" rel="noopener">popcenter.asu.edu</a></li>
+    <li>College of Policing (UK) — <i>Problem-solving policing: SARA model</i> — a practitioner guide to SARA in UK policing. <a href="https://www.college.police.uk/guidance/problem-solving-policing/sara-model" target="_blank" rel="noopener">college.police.uk</a></li>
+    <li>Independent Office for Police Conduct (IOPC), England &amp; Wales — overview of the complaints oversight framework. <a href="https://www.policeconduct.gov.uk" target="_blank" rel="noopener">policeconduct.gov.uk</a></li>
+    <li>Japan National Police Agency — <i>Police of Japan</i> — reference on the Japanese police system and community presence. <a href="https://www.npa.go.jp/english/Police_of_Japan/2020/poj2020_full.pdf" target="_blank" rel="noopener">npa.go.jp</a></li>
+    <li>Wikipedia — <i>Kōban</i> — neighborhood police box system overview. <a href="https://en.wikipedia.org/wiki/K%C5%8Dban" target="_blank" rel="noopener">en.wikipedia.org</a></li>
+    <li>Wikipedia — <i>Singapore Police Force</i> — organizational structure and history overview. <a href="https://en.wikipedia.org/wiki/Singapore_Police_Force" target="_blank" rel="noopener">en.wikipedia.org</a></li>
+    <li>Singapore police / CPIB — <i>Singapore’s corruption-control framework</i> — the integrated approach to corruption control. <a href="https://www.cpib.gov.sg/about-corruption/prevention-and-education/singapores-corruption-control-framework/" target="_blank" rel="noopener">cpib.gov.sg</a></li>
+    <li>Law enforcement by country (overview) — comparative starting point for structure and naming across states. <a href="https://en.wikipedia.org/wiki/Law_enforcement_by_country" target="_blank" rel="noopener">en.wikipedia.org</a></li>
+    <li>Carnegie Council — <i>Intelligence-led policing</i> — definition and framing of data-informed policing. <a href="https://www.carnegiecouncil.org/explore-engage/key-terms/intelligence-led-policing" target="_blank" rel="noopener">carnegiecouncil.org</a></li>
+  </ol>
+
+  <div class="footer">
+    <span>Technical Manual — Police Groups in Society — Edition 1.0</span>
+    <span>Home · <a href="index.html">index.html</a></span>
+  </div>
+
+</main>
+
+<script>
+/* ---------- Quiz harness ---------- */
+(function(){
+  function bindQuiz(containerId, btnId, numCorrectAttr, totalAttr){
+    var container = document.getElementById(containerId);
+    var questions = container.querySelectorAll('.quiz-question');
+    var btn = document.getElementById(btnId);
+    var answered = new Array(questions.length).fill(false);
+    var selected = new Array(questions.length).fill(null);
+
+    questions.forEach(function(q, i){
+      var options = q.querySelectorAll('.quiz-option');
+      var fb = q.querySelector('.quiz-feedback');
+      options.forEach(function(o, j){
+        o.addEventListener('click', function(){
+          if(answered[i]) return;
+          var correct = o.getAttribute('data-correct') === 'true';
+          options.forEach(function(x){ x.classList.remove('selected'); });
+          o.classList.add('selected');
+          // reveal correct/wrong styling for all options
+          options.forEach(function(opt){
+            if(opt.getAttribute('data-correct') === 'true') opt.classList.add('correct');
+            else if(opt === o && !correct) opt.classList.add('wrong');
+          });
+          selected[i] = j;
+          fb.classList.remove('show','ok','no');
+          fb.textContent = correct
+            ? 'Correct.'
+            : 'Not quite — review the relevant section, then pick again.';
+          fb.classList.add('show', correct ? 'ok' : 'no');
+        });
+      });
+    });
+
+    btn.addEventListener('click', function(){
+      var allAnswered = questions.every(function(q, i){ return selected[i] !== null; });
+      if(!allAnswered){
+        // nudge
+        var fb = container.querySelector('.quiz-feedback');
+        if(fb){
+          fb.classList.remove('show','ok','no');
+          fb.textContent = 'Answer every question before validating.';
+          fb.classList.add('show','no');
+        }
+        return;
+      }
+      var correctCount = 0;
+      questions.forEach(function(q, i){
+        var opts = q.querySelectorAll('.quiz-option');
+        opts.forEach(function(o){
+          if(o.getAttribute('data-correct') === 'true' && o.classList.contains('selected')) correctCount++;
+        });
+      });
+      btn.textContent = (correctCount === questions.length)
+        ? 'Level ' + numCorrectAttr + ' complete ✓'
+        : 'Review and try again';
+      if(correctCount === questions.length){
+        unlockLevel(numCorrectAttr);
+      } else {
+        var fb2 = container.querySelector('.quiz-feedback');
+        fb2.classList.remove('show','ok','no');
+        fb2.textContent = 'You got ' + correctCount + '/' + questions.length + ' — review the chapter and retry.';
+        fb2.classList.add('show','no');
+      }
+    });
+  }
+
+  function unlockLevel(n){
+    var gate = document.getElementById('gate-' + n);
+    if(!gate) return;
+    gate.classList.add('open');
+    var lock = gate.querySelector('.lock');
+    if(lock) lock.textContent = 'Unlocked';
+    updateProgress();
+    // unlock next question block visibility handled by CSS (.gate.open)
+  }
+
+  window.unlockLevel = unlockLevel;
+
+  bindQuiz('quiz-1','btn-1','1',4);
+  bindQuiz('quiz-2','btn-2','2',2);
+  bindQuiz('quiz-3','btn-3','3',3);
+  bindQuiz('quiz-4','btn-4','4',2);
+
+  // Completion
+  document.getElementById('btn-4').addEventListener('click', function(){
+    var done = document.getElementById('done');
+    if(done) done.classList.add('open');
+    updateProgress();
+  });
+
+  function updateProgress(){
+    var filled = 0;
+    var gates = [1,2,3,4];
+    gates.forEach(function(n){
+      var g = document.getElementById('gate-' + n);
+      if(g && g.classList.contains('open')) filled++;
+    });
+    var p = document.getElementById('progress');
+    if(p){
+      var segs = p.querySelectorAll('.seg');
+      segs.forEach(function(s,i){
+        s.classList.toggle('fill', i < filled);
+      });
+    }
+    var lbl = document.getElementById('progress-label');
+    if(lbl) lbl.textContent = 'Progress: Level ' + filled + ' of 4' + (filled===4 ? ' — complete' : '');
+  }
+  updateProgress();
+})();
+
+/* ---------- Canvas animations (pure, no external assets) ---------- */
+(function(){
+  function setup(id, draw){
+    var stage = document.getElementById(id);
+    if(!stage) return;
+    var cv = stage.querySelector('canvas');
+    if(!cv) return;
+    var ctx = cv.getContext('2d');
+    var running = true;
+    var last = 0;
+    function resize(){
+      var dpr = window.devicePixelRatio || 1;
+      var rect = stage.getBoundingClientRect();
+      cv.width = Math.max(1, Math.floor(rect.width * dpr));
+      cv.height = Math.max(1, Math.floor(rect.height * dpr));
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    function loop(t){
+      if(!running) return;
+      if(!last) last = t;
+      var dt = Math.min(64, t - last);
+      last = t;
+      ctx.clearRect(0,0,cv.width/cv.style.width?cv.width/(window.devicePixelRatio||1):cv.width, cv.height/(window.devicePixelRatio||1));
+      // keep width in css pixels for drawing
+      draw(ctx, cv.clientWidth || 400, cv.clientHeight || 225, t, dt);
+      requestAnimationFrame(loop);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    requestAnimationFrame(loop);
+    return function stop(){ running = false; };
+  }
+
+  // Activity cycle: dots flowing around a loop with labels
+  setup('stage-activity', function(ctx, w, h, t, dt){
+    var cx = w/2, cy = h/2, R = Math.min(w,h)/2 - 18;
+    var nodes = [
+      {l:'Calls / incidents', a:-Math.PI*0.8},
+      {l:'Deployment', a:-Math.PI*0.2},
+      {l:'Records', a:Math.PI*0.4},
+      {l:'Analysis', a:Math.PI*1.0},
+    ];
+    var n = nodes.length;
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(79,209,197,.55)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI*2);
+    ctx.stroke();
+    nodes.forEach(function(node, i){
+      var base = node.a;
+      var pos = (base + t*0.00012) % (Math.PI*2);
+      var x = cx + Math.cos(pos)*R;
+      var y = cy + Math.sin(pos)*R;
+      // pulse
+      var pulse = 1 + 0.12*Math.sin(t*0.003 + i);
+      ctx.fillStyle = i%2 ? 'rgba(129,140,248,.9)' : 'rgba(79,209,197,.95)';
+      ctx.beginPath();
+      ctx.arc(x, y, 8*pulse, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = '#e6edf3';
+      ctx.font = '600 11px ui-sans-serif,system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(node.l, cx, y + 22);
+    });
+    // moving particle
+    var ppos = (t*0.0004) % (Math.PI*2);
+    var px = cx + Math.cos(ppos)*R;
+    var py = cy + Math.sin(ppos)*R;
+    ctx.fillStyle = '#fff';
+    ctx.shadowColor = 'rgba(79,209,197,.9)';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(px, py, 6, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  });
+
+  // SARA loop: four nodes arranged in a square with rotating highlight
+  setup('stage-sara', function(ctx, w, h, t, dt){
+    var cx = w/2, cy = h/2, R = Math.min(w,h)/2 - 22;
+    var nodes = [
+      {l:'Scanning', x:-R, y:-R},
+      {l:'Analysis', x: R, y:-R},
+      {l:'Response', x: R, y: R},
+      {l:'Assessment', x:-R, y: R},
+    ];
+    // box
+    ctx.strokeStyle = 'rgba(79,209,197,.4)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cx-R, cy-R, R*2, R*2);
+    nodes.forEach(function(node){
+      var pulse = 1 + 0.1*Math.sin(t*0.0025 + node.l.length);
+      ctx.fillStyle = 'rgba(14,19,24,.7)';
+      ctx.beginPath();
+      ctx.arc(cx+node.x, cy+node.y, 22*pulse, 0, Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(79,209,197,.7)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.font = '700 12px ui-sans-serif,system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(node.l, cx+node.x, cy+node.y);
+    });
+    // arrow tips along edges
+    var idx = Math.floor((t*0.0008) % 4);
+    var a = nodes[idx], b = nodes[(idx+1)%4];
+    ctx.strokeStyle = 'rgba(52,211,153,.95)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx+a.x, cy+a.y);
+    ctx.lineTo(cx+b.x, cy+b.y);
+    ctx.stroke();
+    // arrowhead
+    var ang = Math.atan2(b.y-a.y, b.x-a.x);
+    ctx.fillStyle = 'rgba(52,211,153,.95)';
+    ctx.beginPath();
+    ctx.moveTo(cx+b.x, cy+b.y);
+    ctx.lineTo(cx+b.x - 10*Math.cos(ang-0.4), cy+b.y - 10*Math.sin(ang-0.4));
+    ctx.lineTo(cx+b.x - 10*Math.cos(ang+0.4), cy+b.y - 10*Math.sin(ang+0.4));
+    ctx.closePath();
+    ctx.fill();
+  });
+
+  // Radar-style comparison: animated rotating shape with muted axes
+  setup('stage-compare', function(ctx, w, h, t, dt){
+    var cx = w/2, cy = h/2, R = Math.min(w,h)/2 - 26;
+    var axes = 4;
+    var values = [
+      0.7 + 0.18*Math.sin(t*0.0007),
+      0.5 + 0.25*Math.sin(t*0.0009 + 1.1),
+      0.6 + 0.2*Math.sin(t*0.0006 + 2.3),
+      0.55 + 0.22*Math.sin(t*0.0008 + 3.4),
+    ];
+    // draw faint axes
+    for(var i=0;i<axes;i++){
+      var ang = (Math.PI*2/axes)*i - Math.PI/2;
+      ctx.strokeStyle = 'rgba(143,163,184,.18)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(ang)*R, cy + Math.sin(ang)*R);
+      ctx.stroke();
+      var lx = cx + Math.cos(ang)*R*1.08;
+      var ly = cy + Math.sin(ang)*R*1.08;
+      ctx.fillStyle = 'rgba(143,163,184,.7)';
+      ctx.font = '11px ui-sans-serif,system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('dim'+(i+1), lx, ly);
+    }
+    // polygon
+    ctx.fillStyle = 'rgba(79,209,197,.12)';
+    ctx.strokeStyle = 'rgba(79,209,197,.8)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for(var j=0;j<axes;j++){
+      var a = (Math.PI*2/axes)*j - Math.PI/2;
+      var r = values[j]*R;
+      var x = cx + Math.cos(a)*r;
+      var y = cy + Math.sin(a)*r;
+      if(j===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    // rotating ring
+    ctx.strokeStyle = 'rgba(129,140,248,.5)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R*0.7, (t*0.0005)% (Math.PI*2), (t*0.0005 + Math.PI*1.4)%(Math.PI*2));
+    ctx.stroke();
+  });
+
+  // Development flywheel
+  setup('stage-dev', function(ctx, w, h, t, dt){
+    var cx = w/2, cy = h/2, R = Math.min(w,h)/2 - 30;
+    var steps = [
+      {l:'Better training'},
+      {l:'Better decisions'},
+      {l:'Less avoidable conflict'},
+      {l:'More capacity for prevention'},
+      {l:'More trust / legitimacy'},
+    ];
+    var n = steps.length;
+    ctx.strokeStyle = 'rgba(129,140,248,.3)';
+    ctx.lineWidth = 1.5;
+    for(var i=0;i<n;i++){
+      var a = (Math.PI*2/n)*i - Math.PI/2;
+      var x = cx + Math.cos(a)*R;
+      var y = cy + Math.sin(a)*R;
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(14,19,24,.7)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(129,140,248,.7)';
+      ctx.stroke();
+      ctx.fillStyle = '#e6edf3';
+      ctx.font = '600 10px ui-sans-serif,system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(steps[i].l, x, y);
+    }
+    // arrow around
+    var idx = Math.floor((t*0.0006) % n);
+    var a = (Math.PI*2/n)*idx - Math.PI/2;
+    var b = (Math.PI*2/n)*((idx+1)%n) - Math.PI/2;
+    var x1 = cx + Math.cos(a)*R, y1 = cy + Math.sin(a)*R;
+    var x2 = cx + Math.cos(b)*R, y2 = cy + Math.sin(b)*R;
+    ctx.strokeStyle = 'rgba(52,211,153,.95)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    var ang = Math.atan2(y2-y1, x2-x1);
+    ctx.fillStyle = 'rgba(52,211,153,.95)';
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - 11*Math.cos(ang-0.4), y2 - 11*Math.sin(ang-0.4));
+    ctx.lineTo(x2 - 11*Math.cos(ang+0.4), y2 - 11*Math.sin(ang+0.4));
+    ctx.closePath();
+    ctx.fill();
+    // center pulsing hub
+    var hub = 1 + 0.08*Math.sin(t*0.003);
+    ctx.fillStyle = 'rgba(52,211,153,.2)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 18*hub, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#34d399';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 6, 0, Math.PI*2);
+    ctx.fill();
+  });
+})();
+</script>
+</body>
+</html>
