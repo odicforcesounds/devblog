@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEB DESIGN QUEST — Zero to Hero</title>
+<meta name="description" content="A game-like interactive quest to master Web Design: HTML, CSS, Box Model, Flexbox, Grid, Typography, Color, Responsive, Motion, UX & Accessibility. Pure vanilla JS + CSS3.">
+<style>
+/* WEB DESIGN QUEST — pure CSS3, no externals. System fonts only. */
+:root{
+  --bg:#0b0e1a; --bg2:#12172e; --card:#171d3a; --card2:#1e2450;
+  --line:#2c3570; --txt:#eef1ff; --mut:#a7b0d6;
+  --p:#7c5cff; --p2:#00e5ff; --pink:#ff4d8d; --gold:#ffc94d; --green:#2de1a8; --red:#ff5d5d;
+  --r:18px; --shadow:0 20px 60px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; color:var(--txt);
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:radial-gradient(1200px 600px at 20% -10%,#2a2f7a 0%,transparent 60%),
+             radial-gradient(1000px 500px at 90% 10%,#0e4a5a 0%,transparent 60%),
+             linear-gradient(var(--bg),var(--bg));
+  min-height:100vh; overflow-x:hidden;
+}
+code,kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+code{background:#0d1130;border:1px solid var(--line);padding:.1em .4em;border-radius:6px;font-size:.9em;color:#c8fff0}
+kbd{background:#fff;color:#111;border-radius:6px;padding:0 .45em;border-bottom:3px solid #999;font-size:.85em}
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:36px 36px;mask-image:radial-gradient(ellipse at 50% 0%,black 30%,transparent 80%);pointer-events:none;z-index:0}
+.bg-orbs{position:fixed;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.bg-orbs span{position:absolute;width:420px;height:420px;border-radius:50%;filter:blur(90px);opacity:.28;animation:drift 14s ease-in-out infinite alternate}
+.bg-orbs span:nth-child(1){background:var(--p);left:-120px;top:-80px}
+.bg-orbs span:nth-child(2){background:var(--p2);right:-100px;top:10%;animation-delay:-4s}
+.bg-orbs span:nth-child(3){background:var(--pink);left:30%;bottom:-200px;animation-delay:-8s}
+@keyframes drift{to{transform:translate(60px,40px) scale(1.15)}}
+
+/* HUD */
+.hud{position:sticky;top:0;z-index:50;display:flex;gap:14px;align-items:center;justify-content:space-between;
+  padding:10px 16px;background:rgba(11,14,26,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.logo{font-weight:900;letter-spacing:.08em;font-size:.95rem}
+.logo-cube{display:inline-block;background:linear-gradient(135deg,var(--p),var(--p2));padding:2px 8px;border-radius:8px;margin-right:8px;animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-3px) rotate(-3deg)}}
+.logo b{color:var(--gold)}
+.hud-rank{font-size:.8rem;color:var(--mut)}
+.hud-center{flex:1;max-width:520px}
+.xp-top{display:flex;justify-content:space-between;font-size:.75rem;color:var(--mut);margin-bottom:6px}
+.xp-bar{position:relative;height:14px;background:#0a0d22;border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.xp-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--p),var(--p2),var(--green));border-radius:99px;transition:width .8s cubic-bezier(.2,.9,.2,1)}
+.xp-shine{position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);animation:shine 2.8s linear infinite}
+@keyframes shine{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.hud-right{display:flex;align-items:center;gap:8px}
+.hearts{letter-spacing:2px;filter:drop-shadow(0 0 8px rgba(255,77,141,.7));animation:beat 1.6s ease-in-out infinite}
+@keyframes beat{50%{transform:scale(1.08)}}
+
+/* Buttons */
+.btn{border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:12px;padding:.6em 1em;cursor:pointer;font-weight:700;transition:.2s}
+.btn:hover{transform:translateY(-2px);border-color:var(--p2);box-shadow:0 8px 24px rgba(0,229,255,.25)}
+.btn.primary{background:linear-gradient(135deg,var(--p),#4d7cff);border-color:transparent}
+.btn.big{font-size:1.1rem;padding:.8em 1.6em;border-radius:16px}
+.btn.small{font-size:.85rem;padding:.4em .8em}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.good{border-color:var(--green);box-shadow:0 0 18px rgba(45,225,168,.5)}
+.btn.bad{border-color:var(--red);animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-4px)}}
+
+/* Screens */
+#app{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:20px 16px 80px}
+.screen{display:none;animation:fadeUp .5s ease}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}}
+
+/* Hero */
+.hero{text-align:center;padding:36px 18px 10px}
+.hero-badge{display:inline-block;font-size:.75rem;letter-spacing:.08em;border:1px solid var(--line);background:rgba(255,255,255,.06);padding:.5em 1em;border-radius:99px;color:var(--mut);margin-bottom:18px}
+.hero h1{font-size:clamp(2.4rem,7vw,4.6rem);line-height:.95;margin:.2em 0;letter-spacing:-.03em}
+.grad{background:linear-gradient(90deg,var(--p2),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+.grad2{background:linear-gradient(90deg,var(--gold),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{max-width:640px;margin:0 auto;color:var(--mut);font-size:1.08rem;line-height:1.6}
+.hero-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0}
+.hcard{background:linear-gradient(var(--card),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:16px;text-align:left;transition:.25s}
+.hcard:hover{transform:translateY(-4px) rotate(-.5deg);border-color:var(--p)}
+.hcard-ico{font-size:1.7rem}
+.hcard b{display:block;margin:.4em 0 .2em}
+.hcard span{color:var(--mut);font-size:.9rem}
+.hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:18px 0}
+.hero-how{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;margin-top:18px}
+.hero-how>div{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.hero-how ol{margin:.5em 0 0 1.2em;color:var(--mut)}
+.cheat{color:var(--mut);line-height:1.6}
+.scroll-hint{margin:22px;color:var(--mut);animation:bob 1.6s infinite}
+
+.map-title{margin-top:30px}
+.map-sub{color:var(--mut);margin-top:-8px}
+.map{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:18px 0 30px}
+.map-card{position:relative;background:linear-gradient(180deg,var(--card2),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer;overflow:hidden;transition:.25s;min-height:170px}
+.map-card:hover:not(.locked){transform:translateY(-4px) scale(1.02)}
+.map-card.locked{opacity:.55;filter:grayscale(.7);cursor:not-allowed}
+.map-card.done{border-color:var(--green)}
+.map-card .lvl{font-size:.75rem;color:var(--gold);font-weight:800;letter-spacing:.1em}
+.map-card h3{margin:.3em 0;font-size:1.05rem}
+.map-card p{color:var(--mut);font-size:.85rem;min-height:2.6em}
+.map-card .meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:.8rem}
+.badge{border-radius:99px;padding:.2em .7em;font-weight:800;font-size:.75rem}
+.badge.lock{border:1px solid var(--line)}
+.badge.open{background:var(--gold);color:#111}
+.badge.clear{background:var(--green);color:#04281c}
+.map-card.boss{border:2px dashed var(--pink)}
+.foot{color:var(--mut);border-top:1px solid var(--line);padding-top:18px;font-size:.9rem;line-height:1.6}
+
+/* Level */
+.level-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.level-progress{display:flex;gap:6px}
+.dot{width:28px;height:10px;border-radius:99px;background:#0d1130;border:1px solid var(--line)}
+.dot.done{background:var(--green)}
+.dot.now{background:var(--gold);animation:bob 1.2s infinite}
+#levelBody{background:linear-gradient(180deg,rgba(30,36,80,.9),rgba(18,23,46,.95));border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+.level-hero{padding:28px 24px 18px;border-bottom:1px solid var(--line);background:radial-gradient(600px 200px at 20% 0%,rgba(124,92,255,.35),transparent)}
+.level-hero .kicker{color:var(--gold);font-weight:800;letter-spacing:.12em;font-size:.8rem}
+.level-hero h2{margin:.2em 0;font-size:clamp(1.6rem,4vw,2.4rem)}
+.level-hero p{color:var(--mut);line-height:1.6;max-width:70ch}
+.lesson{padding:20px 24px;border-bottom:1px dashed var(--line)}
+.lesson h3{margin-top:0}
+.lesson p,.lesson li{color:#d6dbf5;line-height:1.7}
+.lesson ul{padding-left:1.2em}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.two,.hero-cards,.hero-how{grid-template-columns:1fr}.hud{flex-wrap:wrap}.hud-center{order:3;flex-basis:100%}}
+.callout{border-left:4px solid var(--gold);background:rgba(255,201,77,.08);padding:10px 14px;border-radius:0 12px 12px 0;margin:12px 0}
+.callout.nasty{border-color:var(--pink);background:rgba(255,77,141,.08)}
+.callout.good{border-color:var(--green);background:rgba(45,225,168,.08)}
+.mini-table{width:100%;border-collapse:collapse;font-size:.9rem;margin:10px 0}
+.mini-table th,.mini-table td{border:1px solid var(--line);padding:8px;text-align:left}
+.mini-table th{background:#0d1130}
+
+/* Labs */
+.lab{margin:16px 0;background:#0a0d22;border:1px solid var(--line);border-radius:16px;padding:16px}
+.lab-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.lab-title{font-weight:900;letter-spacing:.04em}
+.lab-title i{font-style:normal;background:var(--p2);color:#04222a;border-radius:6px;padding:0 6px;margin-right:6px;font-size:.8em}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.controls label{font-size:.8rem;color:var(--mut)}
+.controls input[type=range]{accent-color:var(--p2)}
+.chip{border:1px solid var(--line);background:#141a3d;color:var(--txt);border-radius:99px;padding:.35em .8em;cursor:pointer;font-size:.85rem}
+.chip.on{background:var(--p2);color:#04222a;border-color:transparent;font-weight:800}
+.stage{background:repeating-linear-gradient(45deg,#0e1433,#0e1433 12px,#0c122c 12px,#0c122c 24px);border:1px dashed var(--line);border-radius:12px;padding:16px;min-height:120px;position:relative;overflow:hidden}
+.codebox{background:#05071a;border-radius:10px;padding:10px 12px;font-size:.85rem;color:#9ef0d0;overflow:auto;border:1px solid #1c2456;margin-top:10px;white-space:pre-wrap}
+
+/* Specific demos */
+.tag-builder{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.tag-part{border:2px dashed var(--p2);border-radius:10px;padding:.5em .9em;cursor:grab;background:#10164a}
+.cascade-bar{display:flex;height:46px;border-radius:10px;overflow:hidden;border:1px solid var(--line);margin:10px 0}
+.cascade-bar div{display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;animation:grow 1.2s ease}
+@keyframes grow{from{transform:scaleX(0);transform-origin:left}}
+.box-demo{display:flex;justify-content:center;padding:18px}
+.box-margin{background:rgba(255,201,77,.18);border:2px dashed var(--gold);padding:22px;border-radius:8px;transition:.2s}
+.box-border{background:rgba(255,77,141,.2);border:4px solid var(--pink);padding:18px;transition:.2s}
+.box-padding{background:rgba(0,229,255,.18);border:2px dashed var(--p2);padding:18px;transition:.2s}
+.box-content{background:linear-gradient(135deg,var(--p),var(--p2));padding:22px 34px;border-radius:6px;font-weight:900;text-align:center;transition:.2s}
+.flex-stage{display:flex;gap:8px;min-height:110px;background:#0e1433;border-radius:10px;padding:10px;border:1px solid var(--line)}
+.flex-stage div{background:linear-gradient(135deg,var(--pink),var(--gold));border-radius:8px;min-width:56px;display:flex;align-items:center;justify-content:center;font-weight:900;animation:pop .4s ease}
+@keyframes pop{from{transform:scale(.6)}}
+.grid-stage{display:grid;gap:8px;min-height:140px}
+.grid-stage div{background:linear-gradient(135deg,var(--p2),var(--p));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;min-height:44px}
+.type-sample{border:1px solid var(--line);border-radius:10px;padding:16px;background:#fff;color:#111}
+.resizer{overflow:hidden;border:2px solid var(--p2);border-radius:10px;background:#fff;color:#111;transition:width .3s;margin:0 auto}
+.resizer-inner{padding:14px}
+.contrast-card{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.contrast-card{grid-template-columns:1fr}}
+.swatch{height:64px;border-radius:10px;border:1px solid var(--line)}
+.anim-box{width:70px;height:70px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--pink));margin:16px auto}
+.a11y-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.a11y-item{background:#141a3d;border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;text-align:center}
+.a11y-item.found{border-color:var(--red);background:rgba(255,93,93,.12)}
+.a11y-item.fixed{border-color:var(--green);background:rgba(45,225,168,.12)}
+
+/* Quiz gate */
+.gate{padding:22px 24px;background:linear-gradient(180deg,#1a1140,#0e1433);border-top:2px solid var(--gold)}
+.gate h3{margin:0 0 4px}
+.gate p{color:var(--mut)}
+.quiz-q{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.quiz-q b{display:block;margin-bottom:10px}
+.quiz-opts{display:grid;gap:8px}
+.opt{text-align:left;border:1px solid var(--line);background:#10164a;color:var(--txt);border-radius:10px;padding:.7em .9em;cursor:pointer;transition:.18s}
+.opt:hover{border-color:var(--p2)}
+.opt.picked{border-color:var(--gold);background:#2a2350}
+.opt.right{border-color:var(--green);background:rgba(45,225,168,.15)}
+.opt.wrong{border-color:var(--red);background:rgba(255,93,93,.15)}
+.explain{display:none;margin-top:8px;font-size:.9rem;color:var(--mut)}
+.explain.show{display:block}
+.gate-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.score-pill{border:1px solid var(--line);border-radius:99px;padding:.4em 1em;font-weight:800}
+
+/* Win */
+.win-card{max-width:640px;margin:30px auto;background:linear-gradient(var(--card2),var(--bg2));border:1px solid var(--gold);border-radius:22px;padding:28px;text-align:center;box-shadow:var(--shadow)}
+.win-trophy{font-size:4rem;animation:bob 1.4s infinite}
+.cert{border:2px solid var(--gold);border-radius:14px;padding:18px;margin:16px 0;background:radial-gradient(400px 150px at 50% 0%,rgba(255,201,77,.25),transparent),#0d1130}
+.cert-head{letter-spacing:.2em;font-size:.75rem;color:var(--gold)}
+.cert-name{font-size:1.8rem;font-weight:900;margin:.3em 0}
+.cert-row{display:flex;justify-content:space-between;color:var(--mut);font-size:.85rem;margin-top:10px}
+.win-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.win-actions input{background:#0a0d22;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:.6em 1em}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(100px);background:#0d1130;border:1px solid var(--p2);padding:.8em 1.2em;border-radius:99px;z-index:99;transition:.35s;box-shadow:var(--shadow)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.confetti span{position:fixed;top:-12px;width:10px;height:14px;z-index:99;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@media print{.hud,.level-top,.gate-actions,.win-actions,.hero-cta{display:none!important}body{background:#fff;color:#000}#levelBody,.win-card{box-shadow:none}}
+
+</style>
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-orbs" aria-hidden="true"><span></span><span></span><span></span></div>
+
+<header class="hud">
+  <div class="hud-left">
+    <div class="logo"><span class="logo-cube" aria-hidden="true">&lt;/&gt;</span> WEB DESIGN <b>QUEST</b></div>
+    <div class="hud-rank" id="hudRank">Rank: Noob 🌱</div>
+  </div>
+  <div class="hud-center">
+    <div class="xp-wrap">
+      <div class="xp-top"><span id="xpLabel">0 XP</span><span id="levelLabel">Map 0 / 10 cleared</span></div>
+      <div class="xp-bar"><div class="xp-fill" id="xpFill"></div><div class="xp-shine"></div></div>
+    </div>
+  </div>
+  <div class="hud-right">
+    <div class="hearts" id="hearts" title="Lives refill when you retry a quiz">❤❤❤</div>
+    <button class="btn small ghost" id="resetBtn" title="Reset all progress">↺ Reset</button>
+    <button class="btn small ghost" id="soundBtn" title="Toggle sound effects">🔊</button>
+  </div>
+</header>
+
+<main id="app">
+  <!-- INTRO / HERO -->
+  <section id="screen-intro" class="screen active">
+    <div class="hero">
+      <div class="hero-badge">PURE VANILLA JS + CSS3 • ZERO EXTERNAL RESOURCES • 10 LEVELS + FINAL BOSS</div>
+      <h1>From <span class="grad">Zero</span> to <span class="grad2">Hero</span><br>of Web Design.</h1>
+      <p class="lede">This is not a tutorial. It's a <b>game</b>. You can't skip. You clear a level by <b>playing</b> with live code and <b>proving</b> you got it in the quiz gate. Fail? You respawn. Win? You earn XP and unlock the next dungeon.</p>
+      <div class="hero-cards">
+        <div class="hcard"><div class="hcard-ico">🕹️</div><b>Play to unlock</b><span>10 locked levels. Quiz gates. No skipping.</span></div>
+        <div class="hcard"><div class="hcard-ico">🧪</div><b>Touch everything</b><span>30+ live labs: flexbox, grid, box-model, contrast…</span></div>
+        <div class="hcard"><div class="hcard-ico">👾</div><b>Beat the boss</b><span>Debug a broken page under time pressure.</span></div>
+      </div>
+      <div class="hero-cta">
+        <button class="btn big primary" id="startBtn">▶ START QUEST</button>
+        <button class="btn big" id="continueBtn" style="display:none">↳ CONTINUE — <span id="continueLabel"></span></button>
+      </div>
+      <div class="hero-how">
+        <div><b>How it works</b><ol><li>Read the briefing (2 min).</li><li>Mess with the animated lab.</li><li>Pass the gate quiz (2/3) to unlock next.</li></ol></div>
+        <div class="cheat"><b>Nasty details included:</b> cascade &amp; specificity, margin collapse, stacking contexts, flex vs grid, fluid type with <code>clamp()</code>, contrast ratios, responsive breakpoints, transforms &amp; keyframes, accessibility &amp; performance.</div>
+      </div>
+      <div class="scroll-hint">▼ scroll for the world map ▼</div>
+    </div>
+
+    <h2 class="map-title">🗺️ WORLD MAP — choose your dungeon</h2>
+    <p class="map-sub">Locked levels are sealed. Clear them in order. Click a cleared level to replay for more XP.</p>
+    <div class="map" id="map"></div>
+
+    <footer class="foot">
+      <p>Tip: press <kbd>←</kbd><kbd>→</kbd> to move between levels, <kbd>1</kbd>–<kbd>4</kbd> to answer quiz questions.</p>
+      <span><a href="index.html" class="btn-primary">Home</a></span>
+    </footer>
+  </section>
+
+  <!-- LEVEL SCREEN -->
+  <section id="screen-level" class="screen">
+    <div class="level-top">
+      <button class="btn small" id="backBtn">← MAP</button>
+      <div class="level-progress" id="levelProgress"></div>
+      <div class="level-nav">
+        <button class="btn small" id="prevLevel">← Prev</button>
+        <button class="btn small" id="nextLevel">Next →</button>
+      </div>
+    </div>
+    <article id="levelBody"></article>
+  </section>
+
+  <!-- VICTORY -->
+  <section id="screen-win" class="screen">
+    <div class="win-card">
+      <div class="win-trophy">🏆</div>
+      <h2>YOU ARE A WEB DESIGN HERO</h2>
+      <p id="winStats"></p>
+      <div class="cert" id="cert">
+        <div class="cert-head">CERTIFICATE OF HEROISM</div>
+        <div class="cert-name" id="certName">Anonymous Hero</div>
+        <div class="cert-sub">has cleared all 10 dungeons + the Final Boss of Web Design Quest</div>
+        <div class="cert-row"><span id="certXp"></span><span id="certDate"></span></div>
+      </div>
+      <div class="win-actions">
+        <input id="heroName" maxlength="24" placeholder="Enter hero name for certificate…">
+        <button class="btn primary" id="printBtn">🖨️ Print / Save certificate</button>
+        <button class="btn" id="replayBtn">↺ Replay any level</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+<div class="confetti" id="confetti" aria-hidden="true"></div>
+
+<script>
+/* WEB DESIGN QUEST — pure vanilla JS, zero dependencies */
+(function(){
+"use strict";
+var LS="wdq-v1";
+var state={xp:0,cleared:[],hearts:3,sound:true,name:"",current:0};
+try{var s=JSON.parse(localStorage.getItem(LS)||"{}");if(s&&typeof s==="object")state=Object.assign(state,s);}catch(e){}
+function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}}
+function $(id){return document.getElementById(id);}
+function el(html){var d=document.createElement("div");d.innerHTML=html.trim();return d.firstChild;}
+function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove("show");},2600);}
+function beep(f,d,type){if(!state.sound)return;try{var C=window.AudioContext||window.webkitAudioContext;if(!C)return;var c=beep._c||(beep._c=new C());var o=c.createOscillator(),g=c.createGain();o.type=type||"square";o.frequency.value=f||440;g.gain.value=.06;o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+(d||.15));o.stop(c.currentTime+(d||.15));}catch(e){}}
+function good(){beep(660,.12);beep(880,.18,"sine");}
+function bad(){beep(160,.25,"sawtooth");}
+function confetti(n){var c=$("confetti");var colors=["#7c5cff","#00e5ff","#ff4d8d","#ffc94d","#2de1a8"];for(var i=0;i<(n||60);i++){var s=document.createElement("span");s.style.left=Math.random()*100+"vw";s.style.background=colors[i%colors.length];s.style.animationDuration=(1.6+Math.random()*1.8)+"s";s.style.transform="rotate("+Math.random()*360+"deg)";c.appendChild(s);(function(sp){setTimeout(function(){sp.remove();},3400);})(s);}}
+function rank(){var n=state.cleared.length;if(n>=10)return"Hero 🏆";if(n>=8)return"Wizard 🧙";if(n>=6)return"Knight 🛡️";if(n>=4)return"Ranger 🏹";if(n>=2)return"Apprentice ✨";if(n>=1)return"Noob+ 🌱";return"Noob 🌱";}
+function refreshHUD(){$("xpLabel").textContent=state.xp+" XP";$("levelLabel").textContent="Map "+state.cleared.length+" / 10 cleared";var pct=Math.min(100,state.cleared.length/10*100+ (state.xp%200)/20);$("xpFill").style.width=pct+"%";$("hudRank").textContent="Rank: "+rank();$("hearts").textContent="❤".repeat(Math.max(0,state.hearts))+"🖤".repeat(Math.max(0,3-state.hearts));var cb=$("continueBtn");if(state.cleared.length>0&&state.cleared.length<10){cb.style.display="";$("continueLabel").textContent="LEVEL "+(Math.min(10,state.cleared.length+1));}else cb.style.display="none";}
+/* ============ LEVELS DATA ============ */
+var LEVELS=[
+{id:1,title:"The Internet & HTML",sub:"How the web really works + your first tags",xp:100,
+brief:"Every website is just files delivered from a server to your browser. HTML is the skeleton: it describes <b>meaning</b>, not looks. Browsers parse tags into the DOM tree, then paint it.",
+lessons:[
+"<h3>1. Request → Response → Render</h3><p>You type a URL → DNS finds the server → server returns <code>index.html</code> → browser parses HTML into the <b>DOM</b>, fetches CSS/JS, builds render tree, paints pixels. That's all web design ever is.</p><div class='lab'><div class='lab-head'><span class='lab-title'><i>LIVE</i>Packet journey</span></div><div class='stage' style='display:flex;align-items:center;justify-content:space-between;font-size:1.6rem'><span>🧑 You</span><span class='fly' style='animation:fly 2.2s ease-in-out infinite'>📦</span><span>🖥️ Server</span><span>🎨 Browser</span></div><style>.fly{display:inline-block}</style><div class='codebox'>GET /index.html → 200 OK (14kb) → parse → DOM → render</div></div>",
+"<h3>2. Anatomy of a tag — the nasty details</h3><p>Tags nest like boxes. Void elements (<code>&lt;img&gt;</code>, <code>&lt;br&gt;</code>) can't have children. Browsers <b>auto-fix</b> broken nesting, which is why sloppy HTML still renders — but screen readers suffer.</p><ul><li><code>&lt;p&gt;Hello &lt;strong&gt;world&lt;/strong&gt;&lt;/p&gt;</code> — element, attribute, content.</li><li>Semantic > generic: use <code>&lt;header&gt; &lt;main&gt; &lt;nav&gt; &lt;button&gt;</code> not <code>&lt;div&gt;</code> soup.</li><li class='callout nasty' style='list-style:none'>☠️ Nasty: <code>&lt;div&gt;Click me&lt;/div&gt;</code> is not keyboard-focusable. <code>&lt;button&gt;</code> is. Semantics = accessibility for free.</li></ul>",
+"<h3>3. Your lab: build a valid tag</h3><p>Click parts in order: <b>open → content → close</b>. The game is the DOM parser — wrong order gets rejected like a browser would.</p>"
+],
+lab:"tag",
+quiz:[
+{q:"What does HTML describe?",o:["How things look (colors, layout)","The meaning & structure of content","Server passwords","Image compression"],a:1,e:"HTML = skeleton/meaning. CSS = looks. JS = behavior."},
+{q:"Which is semantic and keyboard-accessible?",o:["<div onclick>Click</div>","<button>Click</button>","<span>Click</span>","<font>Click</font>"],a:1,e:"<button> is focusable, announces role, works with Enter/Space."},
+{q:"What is the DOM?",o:["A design tool","The browser's live tree of your HTML","A database","A font format"],a:1,e:"Browser parses tags into the Document Object Model tree, which CSS/JS then manipulate."}
+]},
+{id:2,title:"CSS Core: Cascade & Selectors",sub:"Specificity wars, inheritance, the C in CSS",xp:150,
+brief:"CSS is a list of rules fighting to style the same element. The winner is decided by <b>origin → importance → specificity → order</b>. Learn this and 80% of 'CSS is broken' confusion disappears.",
+lessons:[
+"<h3>1. Rule anatomy</h3><p><code>selector { property: value; }</code>. The browser matches selectors right-to-left, computes a value per property per element, then inherits where it makes sense (text props inherit, box props don't).</p><table class='mini-table'><tr><th>Selector</th><th>Example</th><th>Specificity</th></tr><tr><td>element</td><td><code>p</code></td><td>0-0-1</td></tr><tr><td>class</td><td><code>.card</code></td><td>0-1-0</td></tr><tr><td>id</td><td><code>#hero</code></td><td>1-0-0</td></tr><tr><td>inline</td><td><code>style='…'</code></td><td>beats all</td></tr></table>",
+"<div class='callout nasty'>☠️ Nasty: <code>!important</code> beats everything except another <code>!important</code> later. Two of them = arms race. Avoid; raise specificity properly or reorder.</div>",
+"<h3>2. Watch the cascade fight</h3><p>Same element, three rules. The most specific wins — not the first.</p>"
+],
+lab:"cascade",
+quiz:[
+{q:"p {color:red} vs .lead {color:blue} on <p class='lead'> — winner?",o:["red (element first)","blue (class more specific)","whichever loads first","both mix to purple"],a:1,e:"Class (0-1-0) beats element (0-0-1) regardless of order."},
+{q:"Which beats everything (almost)?",o:["* selector","!important",":hover","@media"],a:1,e:"!important jumps the queue. Use sparingly."},
+{q:"Which properties inherit by default?",o:["margin, padding","color, font-family","border, width","position, float"],a:1,e:"Text-related props (color, font) inherit; box props reset per element."}
+]},
+{id:3,title:"The Box Model",sub:"margin • border • padding • content + collapse",xp:150,
+brief:"Every element is a box. <code>box-sizing: border-box</code> makes <code>width</code> include padding+border — the only sane default. Margins collapse vertically, which surprises everyone once.",
+lessons:[
+"<h3>1. Four layers</h3><p>Outside→in: <b>margin</b> (space between boxes, transparent) → <b>border</b> → <b>padding</b> (space inside, shows background) → <b>content</b>. DevTools hover shows exactly this.</p><div class='callout good'>✅ Pro move: <code>* { box-sizing: border-box }</code> at the top of every project. This quest's CSS does it.</div>",
+"<div class='callout nasty'>☠️ Nasty: vertical margins <b>collapse</b> — two <code>margin:20px</code> blocks end up 20px apart, not 40px. Fix with padding, gap, or one-directional margins.</div>",
+"<h3>2. Lab: drag the sliders, feel the box</h3>"
+],
+lab:"box",
+quiz:[
+{q:"With box-sizing: border-box, width:200px + padding:20px means…?",o:["Total 240px wide","Total 200px wide","Content 200px + padding extra","Browser crashes"],a:1,e:"border-box includes padding+border inside the declared width."},
+{q:"Which shows the element's background?",o:["margin","padding + content","only border","none"],a:1,e:"Background paints under padding+content+border, never margin."},
+{q:"Two stacked divs each margin:30px. Gap?",o:["60px","30px (collapsed)","0px","90px"],a:1,e:"Adjacent vertical margins collapse to the larger one."}
+]},
+{id:4,title:"Flexbox Dungeon",sub:"One-dimensional layout that finally centered a div",xp:200,
+brief:"Flexbox lays out items along one axis (row or column). Parent controls alignment via <code>justify-content</code> (main axis) and <code>align-items</code> (cross axis). Children can grow, shrink, and reorder.",
+lessons:[
+"<h3>1. The two axes</h3><p><code>display:flex</code> → <code>flex-direction: row | column</code> defines the <b>main axis</b>. <code>justify-content</code> spreads along it; <code>align-items</code> aligns across it. <code>gap</code> replaces margin hacks.</p><p>Children: <code>flex: 1</code> = grow equally. <code>flex-shrink</code> lets them squeeze. <code>order</code> reorders visually (DOM order stays for screen readers!).</p><div class='callout nasty'>☠️ Nasty: <code>order</code> and <code>flex-direction: row-reverse</code> only change visuals — keyboard + screen reader still follow DOM. Don't reorder meaningfully.</div>",
+"<h3>2. Lab: command the row</h3><p>Toggle the chips — this is literally how toolbars, navs and card rows are built.</p>"
+],
+lab:"flex",
+quiz:[
+{q:"justify-content aligns along…?",o:["Cross axis","Main axis","Z axis","No axis"],a:1,e:"justify-* = main axis (direction of flex-direction). align-* = cross axis."},
+{q:"How do you center a div with flex?",o:["margin:auto everywhere","display:flex; justify-content:center; align-items:center","float:center","text-align:center only"],a:1,e:"Parent centers both axes. The meme is dead."},
+{q:"flex:1 on three children means…?",o:["All overlap","They share free space equally","First takes all","They disappear"],a:1,e:"flex-grow:1 each → equal shares of leftover space."}
+]},
+{id:5,title:"Grid + Positioning",sub:"Two-dimensional layouts + stacking contexts",xp:200,
+brief:"Grid places items in rows AND columns at once. Positioning (<code>static → relative → absolute → fixed → sticky</code>) pulls elements out of flow. <code>z-index</code> only works inside the same <b>stacking context</b>.",
+lessons:[
+"<h3>1. Grid in one breath</h3><p><code>display:grid; grid-template-columns: 1fr 2fr 1fr; gap:12px</code> — <code>fr</code> = fraction of free space. <code>repeat(auto-fit, minmax(180px,1fr))</code> = responsive grid with zero media queries.</p><p>Flexbox = one dimension (rows <i>or</i> columns). Grid = two (rows <i>and</i> columns). Use flex for components, grid for page skeletons.</p>",
+"<h3>2. Positioning & z-index — the haunted mansion</h3><ul><li><code>absolute</code> anchors to nearest <b>positioned</b> ancestor (not static).</li><li><code>fixed</code> anchors to viewport. <code>sticky</code> is hybrid (scrolls then sticks).</li><li class='callout nasty' style='list-style:none'>☠️ Nasty: <code>opacity &lt; 1, transform, filter</code> create new stacking contexts — a child <code>z-index:9999</code> can still lose to an outside <code>z-index:1</code>. Fix: raise the parent, not the child.</li></ul>"
+],
+lab:"grid",
+quiz:[
+{q:"repeat(auto-fit, minmax(180px,1fr)) does what?",o:["Fixed 3 columns forever","As many 180px+ columns as fit, stretching","One column only","Hides the grid"],a:1,e:"auto-fit + minmax = intrinsic responsive grid, no breakpoints needed."},
+{q:"absolute positions relative to…?",o:["Always the page","Nearest positioned ancestor","The mouse","Nothing"],a:1,e:"It climbs ancestors until one isn't static; else the viewport."},
+{q:"z-index:9999 losing means likely…?",o:["Typo in HTML","Parent trapped in a lower stacking context","Browser bug","Needs !important"],a:1,e:"Stacking contexts trap children. opacity/transform/filter create them."}
+]},
+{id:6,title:"Typography",sub:"The 90% of design nobody notices until it's bad",xp:150,
+brief:"Typography IS web design. Control <code>font-size</code>, <code>line-height</code> (~1.5 body, ~1.1 headings), <code>measure</code> (45–75 chars), contrast, and hierarchy. Fluid type with <code>clamp()</code> scales without breakpoints.",
+lessons:[
+"<h3>1. The rules that matter</h3><ul><li>System font stacks load instantly (this game uses one — zero downloads).</li><li><code>line-height:1.5</code> body; tighter headings; <code>letter-spacing:-0.02em</code> on big titles.</li><li>One or two families max. Weight + size = hierarchy, not 9 colors.</li><li><code>font-size: clamp(1.5rem, 4vw, 3rem)</code> = fluid between min and max. No media query.</li></ul><div class='callout nasty'>☠️ Nasty: <code>line-height</code> without units (1.5) scales with font-size; <code>150%</code>/<code>1.5em</code> can compound weirdly in nested elements. Prefer unitless.</div>",
+"<h3>2. Lab: tune the type</h3>"
+],
+lab:"type",
+quiz:[
+{q:"Ideal body line-height?",o:["1.0","~1.5","3.0","0.5"],a:1,e:"~1.4–1.6 gives air; 1.0 crams lines together."},
+{q:"clamp(1rem, 2.5vw, 1.5rem) means…?",o:["Random size","Fluid between 1rem and 1.5rem following viewport","Fixed 2.5vw always","Broken CSS"],a:1,e:"clamp(MIN, PREFERRED, MAX) — fluid type without breakpoints."},
+{q:"Best line length (measure)?",o:["10–20 chars","45–75 chars","200 chars","Full 4K width"],a:1,e:"Narrow measures read faster with less eye travel."}
+]},
+{id:7,title:"Color & Hierarchy",sub:"Theory, contrast ratios, and the 60-30-10 rule",xp:150,
+brief:"Color guides the eye. Use HSL to reason (hue/saturation/lightness), the <b>60-30-10</b> split, and always check <b>contrast ratios</b>: 4.5:1 body, 3:1 large text (WCAG AA).",
+lessons:[
+"<h3>1. Pick like a pro</h3><ul><li>60% neutral base, 30% secondary, 10% accent. One accent = power.</li><li>HSL > HEX for tweaking: fix hue, slide lightness for shades.</li><li>Never pure <code>#000</code> on pure <code>#fff</code> for long text — <code>#111</code> on <code>#fafafa</code> is kinder.</li><li>Don't convey meaning by color alone (add icon/text) — color-blind users need it.</li></ul>",
+"<div class='callout nasty'>☠️ Nasty: light-gray <code>#aaa</code> on white looks chic and fails WCAG (2.3:1). Body text needs 4.5:1. The lab below computes the real ratio.</div>"
+],
+lab:"color",
+quiz:[
+{q:"WCAG AA body text needs contrast of…?",o:["2:1","3:1","4.5:1","21:1"],a:2,e:"4.5:1 for normal text, 3:1 for large (≥24px or 19px bold)."},
+{q:"60-30-10 means…?",o:["60 fonts max","60% base / 30% secondary / 10% accent","10px margins","60fps animations"],a:1,e:"Restraint creates hierarchy; accent stays special."},
+{q:"Why not color-alone for errors?",o:["Colors are ugly","Color-blind users miss it","Red is illegal","No reason"],a:1,e:"~8% of men have color-vision deficiency. Pair color with icon + text."}
+]},
+{id:8,title:"Responsive Design",sub:"Fluid grids, flexible media, breakpoints",xp:200,
+brief:"Screens range from watches to walls. Formula: <b>fluid units (%) + flexible media (max-width:100%) + media queries</b>. Design mobile-first: base styles for phones, <code>min-width</code> queries add complexity upward.",
+lessons:[
+"<h3>1. The three ingredients</h3><ul><li><code>img,video{max-width:100%;height:auto}</code> — never overflow.</li><li>Fluid layout first (%, fr, flex-wrap, auto-fit grid). Breakpoints only where design <i>breaks</i>, not for devices.</li><li><code>&lt;meta name='viewport' content='width=device-width, initial-scale=1'&gt;</code> — without it phones fake a 980px window.</li></ul><div class='callout nasty'>☠️ Nasty: missing viewport meta = your media queries never fire on mobile. It's line 4 of this page's HTML — view source.</div>",
+"<h3>2. Lab: drag the viewport</h3><p>Slide to shrink the fake browser. Watch the layout snap at breakpoints — that's a media query firing.</p>"
+],
+lab:"responsive",
+quiz:[
+{q:"Mobile-first means…?",o:["Design desktop, shrink later","Base = mobile, min-width queries enhance upward","Only build apps","Hide content on phones"],a:1,e:"Progressive enhancement: small screen works, larger screens get more columns."},
+{q:"Why does max-width:100% on images matter?",o:["Makes them blurry","Stops overflow on narrow screens","Speeds servers","SEO trick"],a:1,e:"Flexible media scales down; fixed 1200px images break 360px phones."},
+{q:"The viewport meta tag does what?",o:["Nothing","Tells phones to use real device width","Adds dark mode","Blocks zoom"],a:1,e:"Without it mobile browsers emulate ~980px and your responsive CSS never triggers."}
+]},
+{id:9,title:"Motion: Transforms & Animation",sub:"GPU-friendly movement, keyframes, easing",xp:200,
+brief:"Animate <code>transform</code> + <code>opacity</code> (GPU-composited, 60fps). Animating <code>width/top/margin</code> forces layout per frame = jank. Respect <code>prefers-reduced-motion</code>.",
+lessons:[
+"<h3>1. The performance rule</h3><p><code>transform: translate/scale/rotate</code> + <code>opacity</code> run on the compositor. Everything else (width, height, left, margin) triggers layout → paint → composite. On phones that's the difference between silk and slideshow.</p><p>Transitions = A→B (<code>transition: transform .3s ease</code>). Keyframes = full choreography (<code>@keyframes</code> + <code>animation</code>). Easing = personality: <code>ease-out</code> snappy, <code>cubic-bezier(.2,.9,.2,1)</code> bouncy-pro.</p><div class='callout nasty'>☠️ Nasty: infinite full-screen blur/gradient animation + fixed background = battery fire. Animate small elements, pause offscreen, honor reduced-motion.</div>"
+],
+lab:"motion",
+quiz:[
+{q:"Which two properties are GPU-cheap to animate?",o:["width + height","transform + opacity","margin + top","border + padding"],a:1,e:"They skip layout/paint and composite directly. 60fps territory."},
+{q:"transition vs @keyframes?",o:["Same thing","Transition = A→B on state change; keyframes = multi-step timeline","Keyframes only for colors","Transitions need JS"],a:1,e:"Hover fade = transition. Loading spinner = keyframes."},
+{q:"prefers-reduced-motion is for…?",o:["Slow internet","Users sensitive to motion (vestibular disorders)","Old browsers","Print styles"],a:1,e:"Honor it: disable/parallax-heavy/looping animation when set."}
+]},
+{id:10,title:"UX, Accessibility & Performance",sub:"The final dungeon before the boss",xp:250,
+brief:"Beautiful + unusable = failure. Design for keyboard, screen readers, touch (≥44px targets), feedback states, and speed (images, fonts, layout shift). Accessibility IS usability.",
+lessons:[
+"<h3>1. The checklist heroes use</h3><ul><li>Every <code>&lt;img&gt;</code> has <code>alt</code>. Every input has <code>&lt;label&gt;</code>. Focus is always visible (<code>:focus-visible</code>).</li><li>Touch targets ≥ 44×44px. Color + icon + text for status, never color alone.</li><li>Performance = design: compress images (WebP/AVIF), <code>loading='lazy'</code> below fold, <code>width/height</code> to stop layout shift (CLS), system fonts = zero FOUT.</li></ul>",
+"<div class='callout nasty'>☠️ Nasty: <code>div onclick</code> without role/tabindex is invisible to keyboard + screen readers. <code>&lt;button&gt;</code> + real <code>&lt;a href&gt;</code> fix 90% of a11y bugs.</div>",
+"<h3>2. Lab: audit this cursed card</h3><p>Click the 5 planted bugs to fix them. Then face the boss.</p>"
+],
+lab:"a11y",
+quiz:[
+{q:"Minimum touch target?",o:["16px","24px","~44×44px","100px"],a:2,e:"WCAG + Apple HIG: ~44px so thumbs actually hit."},
+{q:"Why set width+height on <img>?",o:["Looks retro","Reserves space → prevents Cumulative Layout Shift","Faster colors","Required by HTML"],a:1,e:"Without dimensions the page jumps when images load (CLS penalty)."},
+{q:"A div-as-button needs what to be accessible?",o:["Nothing","role, tabindex, keyboard handler — or just use <button>","Bigger font","More divs"],a:1,e:"Real <button> gives all three free. Custom divs must reimplement them."}
+]}
+];
+var BOSS={title:"FINAL BOSS: The Broken Page 👹",xp:300,
+quiz:[
+{q:"H1 is invisible on mobile but fine on desktop. First suspect?",o:["Missing viewport meta","Wrong font","Server down","Too much XP"],a:0,e:"No viewport meta → phone renders 980px fake width, media queries misfire."},
+{q:"A modal's close button with z-index:9999 hides behind overlay z-index:10. Why?",o:["Needs bigger number","Modal is trapped in a lower stacking context","CSS is random","Add !important twice"],a:1,e:"Raise the modal's parent context, not the child number."},
+{q:"Page janks when animating width on 50 cards. Fix?",o:["Animate transform: scaleX instead","Add more cards","Use tables","Increase duration"],a:0,e:"transform/opacity composite on GPU; width triggers layout per frame."},
+{q:"Gray #aaa button text on white fails audit. Requirement?",o:["Make it prettier","Reach 4.5:1 contrast for body text","Remove text","Use an image"],a:1,e:"AA body = 4.5:1. Darken text or background."}
+]};
+/* ============ MAP ============ */
+function renderMap(){var m=$("map");m.innerHTML="";LEVELS.forEach(function(L,i){var cleared=state.cleared.indexOf(L.id)>-1;var unlocked=i===0||state.cleared.indexOf(LEVELS[i-1].id)>-1;var d=document.createElement("div");d.className="map-card"+(cleared?" done":"")+(!unlocked?" locked":"");d.innerHTML="<div class='lvl'>LEVEL "+L.id+"</div><h3>"+(unlocked?(cleared?"✅ ":"▶ "):"🔒 ")+L.title+"</h3><p>"+L.sub+"</p><div class='meta'><span>+"+L.xp+" XP</span><span class='badge "+(cleared?"clear":unlocked?"open":"lock")+"'>"+(cleared?"CLEARED":unlocked?"OPEN":"LOCKED")+"</span></div>";if(unlocked)d.onclick=function(){openLevel(i);window.scrollTo({top:0,behavior:"smooth"});};else d.onclick=function(){toast("Clear Level "+LEVELS[i-1].id+" first! No skipping. 😤");bad();};m.appendChild(d);});
+var b=document.createElement("div");b.className="map-card boss"+(state.cleared.length>=10?"":" locked");b.innerHTML="<div class='lvl'>👹 BOSS</div><h3>The Broken Page</h3><p>4 debug scenarios. Timed by honor. Pass 3/4.</p><div class='meta'><span>+300 XP</span><span class='badge "+(state.cleared.indexOf(99)>-1?"clear":state.cleared.length>=10?"open":"lock")+"'>"+(state.cleared.indexOf(99)>-1?"SLAIN":state.cleared.length>=10?"FIGHT":"SEALED")+"</span></div>";
+b.onclick=function(){if(state.cleared.length>=10)openBoss();else{toast("Slay all 10 levels to unseal the boss!");bad();}};
+m.appendChild(b);}
+/* ============ LEVEL VIEW ============ */
+function dots(idx){var h="";for(var i=0;i<10;i++)h+="<span class='dot "+(i<state.cleared.length?"done":"")+(i===idx?" now":"")+"'></span>";return h;}
+function openLevel(i){state.current=i;save();show("screen-level");var L=LEVELS[i];$("levelProgress").innerHTML=dots(i);
+var body=$("levelBody");var cleared=state.cleared.indexOf(L.id)>-1;
+var html="<div class='level-hero'><div class='kicker'>LEVEL "+L.id+" / 10 • +"+L.xp+" XP "+(cleared?"• ✅ CLEARED":"")+"</div><h2>"+L.title+"</h2><p>"+L.brief+"</p></div>";
+L.lessons.forEach(function(t){html+="<div class='lesson'>"+t+"<div class='lab-slot'></div></div>";});
+html+="<div class='lab' id='activeLab'></div>";
+html+="<div class='gate' id='gate'><h3>🔒 GATE QUIZ — score 2/3 to unlock Level "+(L.id+1>10?"BOSS":L.id+1)+"</h3><p>Pick answers. Keys <kbd>1</kbd>–<kbd>4</kbd> work. Wrong answers cost a ❤ (refills on retry).</p><div id='quiz'></div><div class='gate-actions'><button class='btn primary' id='checkBtn'>CHECK ANSWERS</button><button class='btn ghost' id='retryBtn'>↺ Retry</button><span class='score-pill' id='scorePill'>Not checked</span></div><div id='gateMsg' style='margin-top:10px'></div></div>";
+body.innerHTML=html;
+// move lab html into activeLab
+var labBox=$("activeLab");
+labBox.innerHTML="<div class='lab-head'><span class='lab-title'><i>LAB</i>"+L.title+" playground</span><span style='color:var(--mut);font-size:.85rem'>touch it — the page won't break</span></div><div id='labStage'></div>";
+mountLab(L.id,$("labStage"));
+renderQuiz(L,$("quiz"),L.id);
+$("checkBtn").onclick=function(){checkQuiz(L,false);};
+$("retryBtn").onclick=function(){renderQuiz(L,$("quiz"),L.id);$("scorePill").textContent="Not checked";$("gateMsg").innerHTML="";if(state.hearts<=0){state.hearts=3;refreshHUD();save();toast("❤ Lives refilled. Go again!");}};
+refreshHUD();
+}
+function openBoss(){show("screen-level");$("levelProgress").innerHTML=dots(10);
+var body=$("levelBody");var slain=state.cleared.indexOf(99)>-1;
+body.innerHTML="<div class='level-hero'><div class='kicker'>👹 FINAL BOSS • +300 XP</div><h2>"+BOSS.title+"</h2><p>A client shipped this page and everything broke at once. Diagnose like a hero: <b>viewport, stacking context, compositor, contrast</b> — the four nasty details from Levels 8, 5, 9, 7. Score 3/4 to win the game.</p></div><div class='lesson'><div class='callout nasty'>👹 Boss rule: wrong answers cost a ❤. Lose all 3 and you restart the boss. No mercy.</div></div><div class='gate'><h3>⚔️ BOSS FIGHT</h3><div id='quiz'></div><div class='gate-actions'><button class='btn primary' id='checkBtn'>STRIKE 👹</button><button class='btn ghost' id='retryBtn'>↺ Retry</button><span class='score-pill' id='scorePill'>Not checked</span></div><div id='gateMsg' style='margin-top:10px'></div></div>";
+renderQuiz(BOSS,$("quiz"),99);
+$("checkBtn").onclick=function(){checkQuiz(BOSS,true);};
+$("retryBtn").onclick=function(){renderQuiz(BOSS,$("quiz"),99);$("scorePill").textContent="Not checked";$("gateMsg").innerHTML="";if(state.hearts<=0){state.hearts=3;refreshHUD();save();}};
+}
+function show(id){["screen-intro","screen-level","screen-win"].forEach(function(s){$(s).classList.toggle("active",s===id);});}
+/* ============ QUIZ ============ */
+function renderQuiz(L,box,lid){box.innerHTML="";L.quiz.forEach(function(Q,qi){var q=document.createElement("div");q.className="quiz-q";q.innerHTML="<b>Q"+(qi+1)+". "+Q.q+"</b>";var opts=document.createElement("div");opts.className="quiz-opts";Q.o.forEach(function(t,oi){var b=document.createElement("button");b.className="opt";b.innerHTML="<b>"+(oi+1)+".</b> "+t;b.onclick=function(){var all=opts.querySelectorAll(".opt");all.forEach(function(x){x.classList.remove("picked");});b.classList.add("picked");q.dataset.pick=oi;beep(500,.07);};opts.appendChild(b);});q.appendChild(opts);var ex=document.createElement("div");ex.className="explain";ex.textContent="💡 "+Q.e;q.appendChild(ex);box.appendChild(q);});box.dataset.lid=lid;}
+function checkQuiz(L,isBoss){var box=$("quiz");var qs=box.querySelectorAll(".quiz-q");var score=0;qs.forEach(function(q,qi){var pick=q.dataset.pick;var Q=L.quiz[qi];var opts=q.querySelectorAll(".opt");opts.forEach(function(o){o.classList.remove("right","wrong");});var ex=q.querySelector(".explain");if(pick!==undefined&&+pick===Q.a){score++;opts[+pick].classList.add("right");}else{if(pick!==undefined)opts[+pick].classList.add("wrong");opts[Q.a].classList.add("right");}ex.classList.add("show");});
+var need=isBoss?3:2;$("scorePill").textContent=score+" / "+qs.length+(score>=need?" — PASSED ✅":" — need "+need);
+if(score>=need){good();confetti(70);var lid=isBoss?99:L.id;var first=state.cleared.indexOf(lid)===-1;if(first){state.cleared.push(lid);state.cleared.sort(function(a,b){return a-b;});var gain=isBoss?BOSS.xp:L.xp;state.xp+=gain;save();}$("gateMsg").innerHTML="<div class='callout good'>🎉 <b>Gate cleared!</b> +"+(first?(isBoss?BOSS.xp:L.xp):0)+" XP. "+(isBoss?"<button class='btn primary' onclick='document.getElementById(\"replayBtn\").scrollIntoView()'>Claim victory →</button> <button class='btn' id='winGo'>🏆 CLAIM CROWN</button>":"Next level unlocked. <button class='btn primary' id='goNext'>Go → Level "+(L.id+1>10?"BOSS":L.id+1)+"</button> <button class='btn' id='goMap'>Map</button>")+"</div>";
+if(isBoss&&first){setTimeout(showWin,900);var wg=$("winGo");if(wg)wg.onclick=showWin;}
+else if(isBoss){var w2=$("winGo");if(w2)w2.onclick=showWin;}
+else{var gn=$("goNext");if(gn)gn.onclick=function(){if(L.id>=10)openBoss();else openLevel(L.id);};var gm=$("goMap");if(gm)gm.onclick=function(){show("screen-intro");renderMap();};}
+renderMap();
+}else{bad();state.hearts--;save();refreshHUD();$("gateMsg").innerHTML="<div class='callout nasty'>💔 <b>Gate holds.</b> You scored "+score+"/"+qs.length+", need "+need+". "+(state.hearts<=0?"No hearts left — press Retry to refill and try again.":"Review the 💡 notes above and retry.")+"</div>";if(state.hearts<=0)toast("💔 Out of lives! Hit Retry to respawn.");}
+refreshHUD();}
+function showWin(){show("screen-win");$("winStats").innerHTML="Cleared <b>10/10 levels + boss</b> • <b>"+state.xp+" XP</b> • Rank: <b>"+rank()+"</b>";$("certXp").textContent=state.xp+" XP • "+rank();$("certDate").textContent=new Date().toLocaleDateString();if(state.name)$("certName").textContent=state.name;confetti(140);good();setTimeout(good,300);}
+/* ============ LABS ============ */
+function mountLab(id,stage){
+if(id===1){stage.innerHTML="<div class='controls'><span style='color:var(--mut)'>Click in order:</span></div><div class='tag-builder' id='tb'></div><div class='stage' id='tbOut' style='font-size:1.3rem;min-height:90px;display:flex;align-items:center;justify-content:center'>…</div><div class='codebox' id='tbCode'>&lt;?&gt; waiting for parts…</div>";
+var parts=["&lt;p&gt;","Hello hero","&lt;/p&gt;"];var order=[];var tb=stage.querySelector("#tb");
+["&lt;/p&gt;","Hello hero","&lt;p&gt;"].forEach(function(p){var b=document.createElement("button");b.className="tag-part";b.textContent=p;b.onclick=function(){order.push(p);check();b.disabled=true;b.style.opacity=.4;};tb.appendChild(b);});
+function check(){var out=stage.querySelector("#tbOut"),code=stage.querySelector("#tbCode");
+if(order.length===3){if(order[0]==="&lt;p&gt;"&&order[1]==="Hello hero"&&order[2]==="&lt;/p&gt;"){out.innerHTML="<p style='margin:0'>Hello hero ✅ <small style='color:var(--green)'>(browser parsed it!)</small></p>";code.textContent="<p>Hello hero</p>  →  DOM: HTMLParagraphElement ✔";good();confetti(25);addXP(20);}else{out.textContent="⛔ Browser confused — invalid nesting! Reset…";code.textContent=order.join(" ")+"  →  parse error, DOM auto-fixed (don't rely on it)";bad();setTimeout(function(){order=[];tb.querySelectorAll("button").forEach(function(x){x.disabled=false;x.style.opacity=1;});out.textContent="…";},1200);}}}
+}
+if(id===2){stage.innerHTML="<div class='stage'><p id='csTarget' style='font-weight:900;font-size:1.3rem;margin:0'>I am a &lt;p class='lead' id='hero'&gt;</p></div><div class='cascade-bar'><div style='flex:1;background:#ff5d5d'>p → 0-0-1</div><div style='flex:2;background:#ffc94d;color:#111'>.lead → 0-1-0</div><div style='flex:3;background:#2de1a8;color:#04281c'>#hero → 1-0-0 WINS</div></div><div class='controls'><button class='chip on' data-c='red'>p {red}</button><button class='chip' data-c='orange'>.lead {orange}</button><button class='chip' data-c='green'>#hero {green}</button></div><div class='codebox'>Specificity: inline &gt; #id &gt; .class &gt; element. Later rule wins ties.</div>";
+var t=stage.querySelector("#csTarget");var map={red:"#ff5d5d",orange:"#ffc94d",green:"#2de1a8"};
+stage.querySelectorAll(".chip").forEach(function(c){c.onclick=function(){stage.querySelectorAll(".chip").forEach(function(x){x.classList.remove("on");});c.classList.add("on");t.style.color=map[c.dataset.c];beep(600,.08);};});t.style.color=map.green;
+}
+if(id===3){stage.innerHTML="<div class='controls'><label>margin <span id='vM'>22</span>px</label><input type='range' id='rM' min='0' max='40' value='22'><label>padding <span id='vP'>18</span>px</label><input type='range' id='rP' min='0' max='40' value='18'><label><input type='checkbox' id='cB' checked> border-box</label></div><div class='box-demo'><div class='box-margin' id='bM'><div class='box-border' id='bB'><div class='box-padding' id='bP'><div class='box-content' id='bC'>CONTENT<br><small id='bSize'>200px</small></div></div></div></div></div><div class='codebox' id='bCode'></div>";
+var rM=stage.querySelector("#rM"),rP=stage.querySelector("#rP"),cB=stage.querySelector("#cB");
+function up(){var m=+rM.value,p=+rP.value;stage.querySelector("#vM").textContent=m;stage.querySelector("#vP").textContent=p;stage.querySelector("#bM").style.padding=m+"px";stage.querySelector("#bP").style.padding=p+"px";var w=cB.checked?200:200+p*2+8;stage.querySelector("#bSize").textContent=(cB.checked?"200px total (border-box)":"~"+w+"px total (content-box!)");stage.querySelector("#bCode").textContent="box-sizing:"+(cB.checked?"border-box":"content-box")+"; margin:"+m+"px; padding:"+p+"px;";}
+rM.oninput=up;rP.oninput=up;cB.onchange=up;up();
+}
+if(id===4){stage.innerHTML="<div class='controls'><span>justify:</span><button class='chip on' data-j='flex-start'>start</button><button class='chip' data-j='center'>center</button><button class='chip' data-j='flex-end'>end</button><button class='chip' data-j='space-between'>between</button><button class='chip' data-j='space-around'>around</button><span>align:</span><button class='chip on' data-a='center'>center</button><button class='chip' data-a='flex-start'>top</button><button class='chip' data-a='stretch'>stretch</button><button class='chip' data-a='flex-end'>bottom</button></div><div class='flex-stage' id='fx'><div>1</div><div style='min-height:70px'>2</div><div>3</div><div>4</div></div><div class='codebox' id='fxCode'></div>";
+var fx=stage.querySelector("#fx");function fxUp(){stage.querySelector("#fxCode").textContent="display:flex; justify-content:"+fx.style.justifyContent+"; align-items:"+fx.style.alignItems+";";}fx.style.justifyContent="flex-start";fx.style.alignItems="center";fxUp();
+stage.querySelectorAll("[data-j]").forEach(function(c){c.onclick=function(){stage.querySelectorAll("[data-j]").forEach(function(x){x.classList.remove("on");});c.classList.add("on");fx.style.justifyContent=c.dataset.j;fxUp();beep(550,.07);};});
+stage.querySelectorAll("[data-a]").forEach(function(c){c.onclick=function(){stage.querySelectorAll("[data-a]").forEach(function(x){x.classList.remove("on");});c.classList.add("on");fx.style.alignItems=c.dataset.a;fxUp();beep(650,.07);};});
+}
+if(id===5){stage.innerHTML="<div class='controls'><span>columns:</span><button class='chip on' data-g='1fr 1fr 1fr'>3 equal</button><button class='chip' data-g='2fr 1fr'>2:1</button><button class='chip' data-g='repeat(auto-fit,minmax(90px,1fr))'>auto-fit ✨</button><button class='chip' data-g='1fr'>1 stack</button></div><div class='grid-stage' id='gs'><div>A</div><div>B</div><div>C</div><div>D</div><div>E</div><div>F</div></div><div class='codebox' id='gsCode'></div>";
+var gs=stage.querySelector("#gs");gs.style.gridTemplateColumns="1fr 1fr 1fr";function gsUp(){stage.querySelector("#gsCode").textContent="display:grid; grid-template-columns:"+gs.style.gridTemplateColumns+"; gap:8px;";}gsUp();
+stage.querySelectorAll("[data-g]").forEach(function(c){c.onclick=function(){stage.querySelectorAll("[data-g]").forEach(function(x){x.classList.remove("on");});c.classList.add("on");gs.style.gridTemplateColumns=c.dataset.g;gsUp();good();};});
+}
+if(id===6){stage.innerHTML="<div class='controls'><label>size <input type='range' id='tS' min='14' max='44' value='24'></label><label>height <input type='range' id='tH' min='10' max='25' value='15'></label><label>spacing <input type='range' id='tL' min='-5' max='20' value='0'></label></div><div class='type-sample'><div id='tT' style='font-size:24px'>The quick brown fox — typography is 90% of design.</div><div style='color:#555;font-size:.85rem;margin-top:8px' id='tM'>line-height 1.5 • measure matters • hierarchy via size+weight</div></div>";
+var s=stage.querySelector("#tS"),h=stage.querySelector("#tH"),l=stage.querySelector("#tL"),tt=stage.querySelector("#tT");
+function tUp(){tt.style.fontSize=s.value+"px";tt.style.lineHeight=(h.value/10);tt.style.letterSpacing=(l.value/10)+"px";}s.oninput=tUp;h.oninput=tUp;l.oninput=tUp;tUp();
+}
+if(id===7){stage.innerHTML="<div class='contrast-card'><div><label>foreground <input type='color' id='cF' value='#0b0e1a'></label><label>background <input type='color' id='cB2' value='#ffc94d'></label><div class='swatch' id='cPrev' style='display:flex;align-items:center;justify-content:center;font-weight:900;margin-top:8px'>Aa Hero text</div><div class='codebox' id='cRatio'></div></div><div><p style='color:var(--mut)'>60-30-10 demo — click a ratio:</p><div style='height:26px;border-radius:8px;overflow:hidden;display:flex;border:1px solid var(--line)'><div style='flex:6;background:#eef1ff'></div><div style='flex:3;background:#7c5cff'></div><div style='flex:1;background:#ff4d8d'></div></div><p style='color:var(--mut);font-size:.85rem'>60% neutral • 30% secondary • 10% accent</p><div class='controls'><button class='chip' data-th='#111111,#ffffff'>classic 📰</button><button class='chip' data-th='#0b0e1a,#ffc94d'>gold 🏆</button><button class='chip' data-th='#aaaaaa,#ffffff'>fail 💀</button></div></div></div>";
+function lum(hex){var c=hex.replace("#","");var r=parseInt(c.substr(0,2),16)/255,g=parseInt(c.substr(2,2),16)/255,b=parseInt(c.substr(4,2),16)/255;function f(x){return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4);}return .2126*f(r)+.7152*f(g)+.0722*f(b);}
+function ratio(a,b){var x=lum(a),y=lum(b);return((Math.max(x,y)+.05)/(Math.min(x,y)+.05));}
+var f=stage.querySelector("#cF"),bb=stage.querySelector("#cB2");
+function cUp(){var r=ratio(f.value,bb.value);var p=stage.querySelector("#cPrev");p.style.color=f.value;p.style.background=bb.value;stage.querySelector("#cRatio").textContent="Contrast "+r.toFixed(2)+":1 — "+(r>=4.5?"✅ AA body pass":r>=3?"⚠️ large-text only (3:1)":"⛔ FAIL — darken/lighten");}f.oninput=cUp;bb.oninput=cUp;cUp();
+stage.querySelectorAll("[data-th]").forEach(function(c){c.onclick=function(){var v=c.dataset.th.split(",");f.value=v[0];bb.value=v[1];cUp();beep(700,.08);};});
+}
+if(id===8){stage.innerHTML="<div class='controls'><label>viewport width <input type='range' id='rW' min='220' max='720' value='680'></label><span class='badge open' id='rBp'>desktop</span></div><div class='resizer' id='rBox' style='width:680px'><div class='resizer-inner'><nav style='display:flex;gap:8px;margin-bottom:8px' id='rNav'><span style='background:#7c5cff;color:#fff;border-radius:6px;padding:4px 10px'>Home</span><span style='background:#eee;border-radius:6px;padding:4px 10px'>About</span><span style='background:#eee;border-radius:6px;padding:4px 10px'>Work</span></nav><h3 style='margin:.2em 0'>Responsive headline</h3><p style='margin:.2em 0' id='rTxt'>Three columns on desktop, one on mobile. No horizontal scroll. Ever.</p><div style='display:flex;gap:8px' id='rCols'><div style='flex:1;background:#e3f6ff;border-radius:6px;padding:8px'>col 1</div><div style='flex:1;background:#e3f6ff;border-radius:6px;padding:8px'>col 2</div><div style='flex:1;background:#e3f6ff;border-radius:6px;padding:8px'>col 3</div></div></div></div><div class='codebox'>@media (max-width:520px){ nav→column; cols→stack } — drag left to fire it.</div>";
+var rw=stage.querySelector("#rW"),rb=stage.querySelector("#rBox");
+function rUp(){var w=+rw.value;rb.style.width=Math.min(w,720)+"px";var mobile=w<520;stage.querySelector("#rBp").textContent=mobile?"📱 mobile ≤520px":"🖥️ desktop";stage.querySelector("#rCols").style.flexDirection=mobile?"column":"row";stage.querySelector("#rNav").style.flexDirection=mobile?"column":"row";}rw.oninput=rUp;rUp();
+}
+if(id===9){stage.innerHTML="<div class='controls'><label>duration <input type='range' id='mD' min='1' max='30' value='12'></label><button class='chip on' data-e='ease'>ease</button><button class='chip' data-e='linear'>linear</button><button class='chip' data-e='cubic-bezier(.2,.9,.2,1.4)'>bounce</button><button class='chip' id='mGo'>▶ replay</button></div><div class='stage'><div class='anim-box' id='mBox'></div></div><div class='codebox'>transform + opacity only = GPU. width/top = jank.</div>";
+var box=stage.querySelector("#mBox"),dur=stage.querySelector("#mD"),eas="ease";
+function play(){box.style.animation="none";void box.offsetWidth;var d=dur.value/10;box.style.animation="mspin "+d+"s "+eas+" infinite alternate; mspin2 "+d+"s "+eas+" infinite alternate";var st=document.getElementById("mkeys");if(!st){st=document.createElement("style");st.id="mkeys";st.textContent="@keyframes mspin{to{transform:translateX(90px) rotate(180deg) scale(1.2)}}@keyframes mspin2{to{opacity:.4;border-radius:50%}}";document.head.appendChild(st);}box.style.animation="mspin "+d+"s "+eas+" infinite alternate";}
+stage.querySelectorAll("[data-e]").forEach(function(c){c.onclick=function(){stage.querySelectorAll("[data-e]").forEach(function(x){x.classList.remove("on");});c.classList.add("on");eas=c.dataset.e;play();};});
+dur.oninput=play;stage.querySelector("#mGo").onclick=function(){play();good();};play();
+}
+if(id===10){stage.innerHTML="<p style='color:var(--mut)'>Click each bug to fix it (5 hidden): fake button, image without alt, tiny target, gray-on-white text, missing label.</p><div class='a11y-grid' id='aG'><div class='a11y-item' data-b='div button'>&lt;div onclick&gt;Buy&lt;/div&gt; 👎</div><div class='a11y-item' data-b='no alt'>🖼️ image, alt='' 👎</div><div class='a11y-item' data-b='tiny'>tiny 18px link 👎</div><div class='a11y-item' data-b='contrast'>#aaa on #fff 👎</div><div class='a11y-item' data-b='no label'>input, no label 👎</div></div><div class='codebox' id='aMsg'>0 / 5 fixed</div>";
+var fixed=0;var fixes={"div button":"→ <button>Buy</button> ✅ keyboard+SR ready","no alt":"→ alt='Hero landing' ✅","tiny":"→ 44×44px target ✅","contrast":"→ #111 on #fff 16:1 ✅","no label":"→ <label>Email</label> ✅"};
+stage.querySelectorAll(".a11y-item").forEach(function(it){it.onclick=function(){if(it.classList.contains("fixed"))return;it.classList.add("fixed");it.textContent+= " "+fixes[it.dataset.b];fixed++;stage.querySelector("#aMsg").textContent=fixed+" / 5 fixed — "+(fixed>=5?"🎉 audit clean! +20 XP":"keep hunting…");beep(700+fixed*80,.1);if(fixed>=5){confetti(30);addXP(20);}};});
+}
+}
+function addXP(n){state.xp+=n;save();refreshHUD();toast("+"+n+" XP ⚡");}
+/* ============ WIRING ============ */
+$("startBtn").onclick=function(){var next=0;for(var i=0;i<LEVELS.length;i++){if(state.cleared.indexOf(LEVELS[i].id)===-1){next=i;break;}next=i;}openLevel(Math.min(next,9));};
+$("continueBtn").onclick=function(){$("startBtn").onclick();};
+$("backBtn").onclick=function(){show("screen-intro");renderMap();};
+$("prevLevel").onclick=function(){openLevel((state.current+9)%10);};
+$("nextLevel").onclick=function(){if(state.current>=9)openBoss();else openLevel(state.current+1);};
+$("resetBtn").onclick=function(){if(confirm("Reset all XP and locks?")){state={xp:0,cleared:[],hearts:3,sound:state.sound,name:"",current:0};save();refreshHUD();renderMap();toast("Fresh start. 🌱");}};
+$("soundBtn").onclick=function(){state.sound=!state.sound;save();$("soundBtn").textContent=state.sound?"🔊":"🔇";toast(state.sound?"Sound on":"Sound off");};
+$("heroName").oninput=function(e){state.name=e.target.value;save();$("certName").textContent=state.name||"Anonymous Hero";};
+$("printBtn").onclick=function(){window.print();};
+$("replayBtn").onclick=function(){show("screen-intro");renderMap();window.scrollTo({top:0,behavior:"smooth"});};
+document.addEventListener("keydown",function(e){if(!$("screen-level").classList.contains("active"))return;if(e.key==="ArrowRight")$("nextLevel").click();if(e.key==="ArrowLeft")$("prevLevel").click();if(["1","2","3","4"].indexOf(e.key)>-1){var i=+e.key-1;var qs=$("quiz").querySelectorAll(".quiz-q");var last=qs[qs.length-1];var scope=last;var all=$("quiz").querySelectorAll(".opt");var vis=[];$("quiz").querySelectorAll(".quiz-q").forEach(function(q){q.querySelectorAll(".opt").forEach(function(o){vis.push(o);});});if(all[i*0]&&qs.length){/* per-question keys handled by focus; use first unanswered */}/* simple: click ith option of first unanswered */for(var q=0;q<qs.length;q++){if(!qs[q].dataset.pick){var ob=qs[q].querySelectorAll(".opt")[i];if(ob){ob.click();}break;}}}});
+if(!state.sound)$("soundBtn").textContent="🔇";
+if(state.name){$("heroName").value=state.name;$("certName").textContent=state.name;}
+refreshHUD();renderMap();
+})();
+
+</script>
+</body>
+</html>
