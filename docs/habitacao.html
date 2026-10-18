@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposta para resolver os problemas de habitação</title>
+<style>
+  :root{
+    --bg:#0e0f12;
+    --bg2:#15171c;
+    --surface:#1b1f26;
+    --border:#2a2f3a;
+    --muted:#9aa3b2;
+    --text:#e6e9f0;
+    --accent:#7fb069;
+    --accent-soft:#3a5a31;
+    --gold:#c9a227;
+    --warn:#b47d6a;
+    --serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Georgia,serif;
+    --sans:"Helvetica Neue",Arial,system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #1c2430 0%, transparent 60%),
+      radial-gradient(900px 500px at 10% 110%, #1a1412 0%, transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.7;
+    min-height:100vh;
+  }
+  .container{max-width:840px;margin:0 auto;padding:32px 24px 80px}
+  header{
+    text-align:center;
+    padding:48px 20px 32px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:48px;
+  }
+  .kicker{
+    font-size:12px;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:18px;font-weight:600;
+  }
+  h1{
+    font-family:var(--serif);
+    font-size:clamp(30px,5vw,48px);
+    font-weight:600;
+    margin:0 0 12px;
+    letter-spacing:-.01em;
+  }
+  .subtitle{
+    color:var(--muted);
+    font-size:15px;
+    max-width:560px;
+    margin:0 auto;
+  }
+  .ornament{
+    display:block;
+    width:60px;height:2px;
+    margin:28px auto 0;
+    background:linear-gradient(90deg,transparent,var(--accent),transparent);
+    border-radius:2px;
+  }
+  article{font-family:var(--serif)}
+  article p{margin:0 0 18px}
+  article p.lead{
+    font-size:17px;
+    color:#d7dce2;
+  }
+  article a{color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent);transition:border-color .2s}
+  article a:hover{border-color:var(--gold)}
+  h2{
+    font-family:var(--serif);
+    font-size:24px;
+    margin:34px 0 14px;
+    padding-bottom:6px;
+    border-bottom:1px solid var(--border);
+    color:#eceff5;
+    scroll-margin-top:80px;
+  }
+  h3{
+    font-size:18px;
+    margin:24px 0 8px;
+    color:#cfd4dc;
+  }
+  .callout{
+    background:linear-gradient(180deg,#16211a 0%, #1a251f 100%);
+    border:1px solid var(--accent-soft);
+    border-left:4px solid var(--accent);
+    padding:18px 20px;
+    margin:22px 0;
+    border-radius:6px;
+  }
+  .callout .label{
+    font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--accent);font-family:var(--sans);font-weight:600;margin-bottom:8px;
+  }
+  .callout p{margin:0}
+  .legalbox{
+    background:#101318;
+    border:1px solid #232831;
+    padding:18px 20px;
+    margin:22px 0;
+    border-radius:6px;
+    font-size:14.5px;
+    color:#cdd3dc;
+  }
+  .legalbox .label{
+    font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:10px;font-weight:600;
+  }
+  .note{
+    background:#1a1512;
+    border:1px solid #3a2a22;
+    padding:14px 18px;
+    border-radius:6px;
+    margin:22px 0;
+    color:#e3d6c6;
+    font-size:14.5px;
+  }
+  .note .label{color:var(--gold);font-weight:600;margin-bottom:6px;font-size:12px;letter-spacing:.2em;text-transform:uppercase}
+  .two-col{
+    display:flex;
+    gap:18px;
+    margin:22px 0;
+    flex-wrap:wrap;
+  }
+  .card{
+    flex:1 1 200px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:16px 18px;
+  }
+  .card h4{margin:0 0 8px;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-family:var(--sans);font-weight:600}
+  .card p{margin:0;font-size:14px;color:#c7cdd4}
+  .stats{
+    display:flex;gap:10px;flex-wrap:wrap;
+    margin:26px 0;
+  }
+  .pill{
+    background:var(--surface);
+    border:1px solid var(--border);
+    padding:8px 14px;
+    border-radius:20px;
+    font-size:13px;
+    color:var(--muted);
+  }
+  .pill strong{color:var(--text);font-weight:600}
+  footer{
+    margin-top:60px;
+    border-top:1px solid var(--border);
+    padding-top:20px;
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+  }
+  .toc{
+    display:flex;gap:8px;flex-wrap:wrap;
+    margin-bottom:40px;
+    font-family:var(--sans);
+    font-size:13px;
+  }
+  .toc a{
+    color:var(--muted);
+    border-bottom:1px solid transparent;
+    padding-bottom:2px;
+  }
+  .toc a:hover{color:var(--text);border-bottom-color:var(--accent)}
+  .toc .sep{color:var(--border);user-select:none}
+  .tocintro{font-size:13px;color:var(--muted);margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="kicker">Proposta de política social · Habitação e solidariedade</div>
+    <h1>Proposta para resolver os problemas de habitação</h1>
+    <p class="subtitle">Um mecanismo baseado na lei do comodato, na fiscalização independente e no reconhecimento social e religioso da generosidade que transforma sobressalentes habitacionais em acolhimento temporário sem renda.</p>
+    <span class="ornament"></span>
+  </header>
+
+  <article>
+    <p class="lead">A falta de habitação acessível é, em muitos países, um problema estrutural que excede a capacidade do mercado de alojamento e dos instrumentos públicos tradicionais. Esta proposta parte de uma ideia simples, mas pouco explorada em larga escala: aproveitar uma figura jurídica já existente — o comodato — para criar um circuito de habitacional solidário, no qual proprietários dispostos a disponibilizar uma casa temporariamente, sem cobrar renda, sejam recompensados com visibilidade social e, quando pertinente, reconhecimento religioso ou comunitário, enquanto as condições de conservação são garantidas por um fiscalista que visita as habitações semanalmente.</p>
+
+    <p>O objetivo não é substituir o investimento público, nem transformar qualquer relação de alojamento em doação. Trata-se de criar, entre os que têm capacidade económica para oferecer um espaço habitacional sem necessidade imediata dele, um estímulo formal, transparente e legalmente seguro que os leva a participar nesse tipo de solidariedade, com proteção para as partes e para o património envolvido.</p>
+
+    <div class="tocintro">Estrutura da proposta</div>
+    <nav class="toc">
+      <a href="#sec1">1. Porque este caminho</a>
+      <span class="sep">·</span>
+      <a href="#sec2">2. O que é o comodato</a>
+      <span class="sep">·</span>
+      <a href="#sec3">3. Como funciona o sistema</a>
+      <span class="sep">·</span>
+      <a href="#sec4">4. O papel do fiscalista</a>
+      <span class="sep">·</span>
+      <a href="#sec5">5. Reconhecimento social e religioso</a>
+      <span class="sep">·</span>
+      <a href="#sec6">6. Enquadramento legal (Portugal)</a>
+      <span class="sep">·</span>
+      <a href="#sec7">7. Se a lei for insuficiente</a>
+      <span class="sep">·</span>
+      <a href="#sec8">8. Riscos e salvaguardas</a>
+      <span class="sep">·</span>
+      <a href="#sec9">9. Um modelo para adaptar</a>
+    </nav>
+
+    <h2 id="sec1">1. Porque este caminho</h2>
+    <p>Os instrumentos mais conhecidos para enfrentar a falta de habitação reunem-se geralmente em três grupos: construção pública ou subvencionada, regulação do mercado de aluguer e apoio direto a inquilinos ou famílias. Todos são necessários, e nenhum deles, por si só, resolve o problema em todas astemporidades.</p>
+    <p>Há, contudo, um recurso menos visível: a casa que já existe e que, num determinado momento da vida de um proprietário, não está a ser utilizada da forma mais intensiva possível. Pode ser uma segunda residência, um espaço que ficou vago entre venda e compra, uma Casa isolada num aglomerado, ou simplesmente uma habitação que o proprietário pode disponibilizar durante um período limitado sem perturbar a sua própria vida.</p>
+    <p>A ideia central desta proposta é dar a essa disponibilidade uma forma organizada, com regras claras, fiscalização independente e reconhecimento público, de modo a que o ato de oferecer uma habitação temporária sem renda seja não apenas possível, mas também compreensível, seguro e socialmente valorizado.</p>
+
+    <div class="callout">
+      <div class="label">Ideia central</div>
+      <p>Transformar a disponibilidade habitacional de quem a tem em oportunidade real para quem não a tem, com base numa figura jurídica consagrada (o comodato), protegida por fiscalização semanal feita por um fiscalista independente, e recompensada por exposição social e, quando se adequar, por reconhecimento vinculado à dimensão religiosa ou comunitária do doador.</p>
+    </div>
+
+    <h2 id="sec2">2. O que é o comodato</h2>
+    <p>O comodato é um contrato ou relação jurídica em que uma das partes entrega outra uma coisa — numa situação típica, um imóvel — para usar gratuitamente, obrigando o recipiente (o comodatário) a devolver o objecto no fim do prazo convencionado ou sempre que o doador (o comodante) o exigir. A gratuidade é parte essencial da figura: não se paga um preço pela posse do uso, ainda que possam surgir encargos a cargo do comodatário, como custos de funções ou despesas pendentes.</p>
+    <p>No regime comum, o comodato impõe ao comodatário a obrigação de usar a coisa com o cuidado devido e de a restituir no estado em que se encontra, salvo deterioração por causa de uso normal. É uma relação que protege tanto o proprietário — que continua a ser titular do bem — como a pessoa que recebe o uso, desde que as expectativas estejam definidas.</p>
+    <p>A este respeito, a proposta assenta numa observação importante: o comodato já é, em si mesmo, um instrumento de gratuidade temporária. O que o.proposta acrescenta não é uma nova figura jurídica, mas um sistema de organização, fiscalização e incentivo que rodeia essa figura para que ela possa ser usada numa escala e com uma confiança que, sozinha, ela não garante.</p>
+
+    <div class="legalbox">
+      <div class="label">Nota preliminar sobre o direito</div>
+      <p>Esta proposta refere-se ao comodato como categoria genérica presente em muitos ordenamentos. O seu regime concreto varia de país para país e deve ser lido no Código Civil ou no equivalente local. Em Portugal, o comodato integra o tema dos contratos sinalagmáticos e gratuitos do Código Civil, com as obrigações típicas de uso, guarda e restituição. As referências que se fazem ao longo do texto são ilustrativas.do quadro geral, não uma interpretação oficial de caso concreto.</p>
+    </div>
+
+    <h2 id="sec3">3. Como funciona o sistema</h2>
+    <p>O sistema propõe-se como um circuito público ou semipúblico, organizado por uma entidade gestora — que pode ser municipal, comunitária, religiosa ou mista — que intermediaria entre proprietários disponíveis e famílias ou pessoas que precisam de uma habitação temporária sem condições económicas de aluguer.</p>
+    <p>A dinâmica pode ser descrita em cinco momentos:</p>
+    <ol>
+      <li><strong>Declaração de disponibilidade.</strong> O proprietário indica que tem uma habitação disponível para comodato temporário, especificando o prazo aproximado, as condições de uso aceitáveis e os cuidados que espera do comodatário. Essa declaração não é uma doação definitiva nem uma alienação; é uma disponibilidade a ser enquadrada num contrato de comodato.</li>
+      <li><strong>Avaliação e acolhimento.</strong> A entidade gestora analisa a habitação, confirma que corresponda a um uso seguro e razoável, e verifica a situação da pessoa ou família que poderia ser acolhida, com critérios transparentes e respetivos pela dignidade das partes.</li>
+      <li><strong>Contrato de comodato.</strong> Romelebo é formalizado mediante contrato que define o prazo, os cuidados abertos ao comodatário, as cláusulas de manutenção, e o papel do fiscalista. O contrato protege ambas as partes e torna visível o que é e o que não é esperado.</li>
+      <li><strong>Fiscalização semanal.</strong> Um fiscalista independente visita a habitação semanalmente, verifica o estado do imóvel, listen e registra as observações, e assegura que o cuidado prometido está a ser dado. Esse registo é o coração do sistema: é o que transforma a generosidade numa relação verificável.</li>
+      <li><strong>Encerramento e reconhecimento.</strong> Ao fim do período, o imóvel é devolvido; o processo é avaliado, e o proprietário pode receber, se quiser e se for compatível, um reconhecimento público ou religioso que destaque o seu envolvimento.</li>
+    </ol>
+
+    <div class="stats">
+      <span class="pill"><strong>Gratuito</strong> — sem renda, sem aluguer</span>
+      <span class="pill"><strong>Temporário</strong> — com prazo definido</span>
+      <span class="pill"><strong>Fiscalizado</strong> — visita semanal do fiscalista</span>
+      <span class="pill"><strong>Reconhecido</strong> — exposição social e/ou religiosa</span>
+      <span class="pill"><strong>Seguro</strong> — contrato e registro documentados</span>
+    </div>
+
+    <h2 id="sec4">4. O papel do fiscalista</h2>
+    <p>O fiscalista é, neste proposta, a peça que faz confiança possível quando a gratuidade encontra um espaço de intimidade como uma habitação. Sem fiscalização independente, qualquer sistema de comodato solidário corre o risco de depender apenas da boa vontade, o que é insuficiente para proteger o bem e para manter a credibilidade do programa.</p>
+    <p>A função do fiscalista é, em essência, dupla:</p>
+    <ul>
+      <li><strong>Assegurar que a casa é cuidada.</strong> Visitando semanalmente, o fiscalista verifica condições de higiene, conservação das partes comuns e privativas, sinalização de eventuais danos, e o cumprimento dos cuidados acordados. O objetivo não é criar um regime de vigilância punitiva, mas garantir que a habitação continue a ser valorizada e a não se deteriorar por omissão.</li>
+      <li><strong>Documentar o processo.</strong> Cada visita gera um registo, que poderá ser partilhado, com os devidos limites de proteção de dados, com as partes. Esse registo permite ao proprietário saber o que acontece na sua casa, ao comodatário saber que está sob observação justa, e ao sistema ter uma base de facto para saber se o mecanismo funciona.</li>
+    </ul>
+    <p>O resultado esperado é que a casa, enquanto estiver sob o regime, seja mantida com cuidado e, na verdade, valorizada — não em termos especulativos, mas em termos de conservação, ordenação e uso digno. Essa valorização é positiva para o proprietário, para o comodatário e para a comunidade, porque menos abandono significa menos deterioração, menos custos futuros e mais qualidade de vida.</p>
+
+    <div class="note">
+      <div class="label">Observação importante</div>
+      <p>O fiscalista não é a polícia, nem um tribunal. É uma figura de verificação técnica e humana, cuja presença semanal deve ser explicada com clareza ao comodatário e ao proprietário, de modo a que ninguém se sinta subjulgido a uma relação de intromissão desnecessária. A confiança do sistema depende tanto da função do fiscalista como do respeito pelas pessoas envolvidas.</p>
+    </div>
+
+    <h2 id="sec5">5. Reconhecimento social e religioso</h2>
+    <p>Um dos eixos centrais desta proposta é o reconhecimento público de quem disponibiliza uma habitação temporária sem cobrar renda. Esse reconhecimento pode ter duas dimensões, que podem coexistir ou de que pode optar apenas uma, consoante a sensibilidade das partes:</p>
+
+    <h3>Dimensão social</h3>
+    <p>A dimensão social consiste na exposição controlada e digna do proprietário como pessoa que contribui com um recurso real para a solução de um problema coletivo. Pode assumir a forma de:</p>
+    <ul>
+      <li>publicação em registos oficiais ou comunitários de participantes voluntários;</li>
+      <li>citação em comunicados da entidade gestora, sempre com consentimento claro;</li>
+      <li>eventos ou iniciativas de reconhecimento de bens imobiliários cedidos em comodato solidário;</li>
+      <li>carimbo de reputação cívica que, sem exagero, permita a essa pessoa ser vista como alguém com capacidade económica que ousa oferecer.</li>
+    </ul>
+
+    <h3>Dimensão religiosa ou comunitária</h3>
+    <p>Quando se adequa à sensibilidade das partes, a mesma dinâmica pode ser enquadrada com uma relevância religiosa. O ator que disponibiliza a casa sem pedir dinheiro pode ser reconhecido como exemplo de prática religiosa de acolhimento, generosidade e serviço ao próximo. Isso não significa que o Estado ou a gestão pública imponha uma fé; significa que as comunidades religiosas e as instituições afins podem oferecer esse reconhecimento como um caminho adicional de incentivo e significado.</p>
+    <p>É legítimo, pois, pensar em um sistema em que um proprietário com possibilidades económicas recebe, se quiser, um sinal de reconhecimento religioso que destaque a sua disposição de oferecer uma habitação temporária gratuitamente. Isso pode funcionar como incentivo para quem partilha essa visão de mundo, e como comunicação pública de que a solidariedade não é apenas um gesto invisível, mas uma prática que pode ser honrada.</p>
+
+    <div class="callout">
+      <div class="label">Porque o reconhecimento importa</div>
+      <p>O incentivo não é, em si mesmo, a origem da generosidade, mas pode ser o motivo que transforma uma intenção em ação concreta. Muitas pessoas dispostas a ajudar nunca o fazem porque não há mecanismos claros, seguros e visíveis que as permitam fazê-lo sem expor-se a riscos. A exposição social — quando bem dirigida — e o reconhecimento religioso, quando pertinente, oferecem esse caminho de forma honrada, sem exigir “compra” da ação, mas dando visibilidade ao seu valor.</p>
+    </div>
+
+    <h2 id="sec6">6. Enquadramento legal (Portugal)</h2>
+    <p>É útil olhar para Portugal não como exemplo exaustivo, mas como um caso concreto em que se pode ler como o comodato pode ser adaptado a esta dinâmica. Em Portugal, o Código Civil regula o comodato e impõe ao comodatário obrigações de uso e de restituição, protegendo o comodante, que conserva a titularidade do bem. O proprietário pode, por conseguinte, entregar a uso temporário uma casa sem aliená-la, desde que o contrato respeite as regras gerais de boa fé e as obrigações de conservação.</p>
+
+    <p>Quanto ao aspecto da gratuidade, o comodato português destaca-se precisamente pela ausência de contraprestação em prestações de dar ou de fazer como contraprestação do uso. Isso pode deixar espaço para encargos como despesas pendentes, funções, ou custos de conservação, mas não transforma a relação numa locação: a essência permanece a gratuidade do uso.</p>
+
+    <div class="legalbox">
+      <div class="label">O que isto permite para o sistema proposto</div>
+      <p>Do ponto de vista estrutural, um proprietário em Portugal pode, em princípio, usar o comodato para disponibilizar uma casa temporariamente sem cobrar renda, com um prazo definido e com cláusulas de cuidados e restituição. O que não existe ainda é um sistema organizado que torne essa possibilidade fácil, segura e reconhecida, nem uma figura de fiscalista semanal que torna o sistema credível em larga escala. O caminho legal, contudo, parece existir como base para essa organização.</p>
+    </div>
+
+    <h3>Limites a ter em atenção</h3>
+    <p>Mesmo com um quadro jurídico favorável, surgem questões práticas:</p>
+    <ul>
+      <li><strong>Natureza do bem e possíveis exigências de utilização.</strong> Se a casa estiver sujeita a regimes de ocupação habitual ou a planos de utilização específicos, o comodato não deve entrar em conflito com eles.</li>
+      <li><strong>Segurança e verificação.</strong> A verba comodato não elimina a necessidade de cuidado com a segurança da pessoa acolhida e com a da entidade gestora. A fiscalização semanal ajuda, mas não substitui o devido senso comum e o respeito pelas regras de convivência.</li>
+      <li><strong>Proteção de dados.</strong> Os registros do fiscalista implicam um tratamento de dados que deve guardar os limites da lei. Não se trata de difundir a vida privada de ninguém, mas de manter um registo objetivo de Estado do imóvel.</li>
+      <li><strong>Incentivos e reconhecimento.</strong> A exposição social ou religiosa só deve acontecer com consentimento claro e de forma proporcional. O proprietário não deve sentir que está sendo pressionado a se tornar um “mártir da habitação”, mas que pode, se quiser, ser reconhecido.</li>
+    </ul>
+
+    <h2 id="sec7">7. Se a lei for insuficiente</h2>
+    <p>É honesto reconhecer que o comodato, tal como ele pode existir hoje em muitos países, não foidesenhado para um programa de habitação solidária em escala. Por isso, é possível que, em alguns lugares, a lei actual não seja suficiente nem para criar o sistema com a fluidez que se pretende. Nesse caso, a proposta inclui um segundo plano: propostas de mudança estrutural.</p>
+
+    <h3>Mudanças que se poderiam pretender</h3>
+    <ol>
+      <li><strong>Regime próprio de comodato solidário.</strong> Criar, junto ao direito civil ou a legislação de habitação, uma categoria mais específica para comodatos de habitação temporária a caráter solidário, com cláusulas mínimas de proteção, prazo, fiscalização e restituição. Isto pode simplificar o enquadramento e evitar que cada caso dependa de um contrato sob medida sem referências comuns.</li>
+      <li><strong>Definição de fiscalista ou supervisor.</strong> Estabelecer, em regulação ou em guia oficial, a figura de fiscalista (ou supervisior) com funções claras, limites e formação, de modo a que a fiscalização semanal não seja um entrave, mas um serviço reconhecido.</li>
+      <li><strong>Incentivos fiscais ou administrativos.</strong> Se a gratuidade do uso não for suficiente incentivo — especialmente para proprietários com possibilidades económicas que têm a opção de não dar a casa —, a lei poderia permitir benefícios fiscais, isenções ou reconhecimento que tornem o ato atrativo sem alterar a sua natureza gratuita.</li>
+      <li><strong>Reconhecimento institucional e religioso.</strong> Permitir que instituições religiosas, caritativas e comunitárias operem como parceiros legítimos na divulgação e reconhecimento do programa, dentro dos limites de neutralidade e pluralismo, para que o estigma de quem “concede uma casa” seja substituído pelo sentido de quem “oferece uma casa”.</li>
+      <li><strong>Multiusos e limites de duração.</strong> Definir limites razoáveis de tempo, formas de renovação, e critérios para situações de prolongamento, para que o comodato não se confunda com uma ocupação indefinida sem responsabilidades.</li>
+    </ol>
+
+    <div class="note">
+      <div class="label">Mudança estrutural com moderação</div>
+      <p>Propor mudanças na lei não significa desejar controlar pela obrigação o que já pode ser feito por incentivo. O primeiro passo é um mecanismo que funcione com a lei actual, em Countries onde o comodato já dá base suficiente. Só se a experiência mostrar que o enquadramento legal impede o sistema ou o torna inseguro é que incide na mudança estrutural.</p>
+    </div>
+
+    <h2 id="sec8">8. Riscos e salvaguardas</h2>
+    <p>Qualquer proposta que envolva entrega de um bem à outra pessoa e reconhecimento público traz riscos, e é preciso dizê-los antes de glorificar o sistema. Entre os mais relevantes:</p>
+    <ul>
+      <li><strong>Deterioração do imóvel.</strong> O fiscalista reduz esse risco, mas não o elimina. O contrato deve prever o que acontece em caso de dano grave ou negligência.</li>
+      <li><strong>Assimetria de poder.</strong> Um proprietário com recursos e uma pessoa sem habitação não estão na mesma posição. As regras e a fiscalização têm de proteger a dignidade do comodatário tanto quanto o património do comodante.</li>
+      <li><strong>Visibilidade indesejada.</strong> Reconhecimento social ou religioso pode ser lido como pressão ou como forma de exposição humilhante. Isso deve ser evitado com consentimento explícito e canais de saída.</li>
+      <li><strong>Confusão com aluguer ou doação.</strong> O sistema não pode permitir que o comodato seja usado para burlar regras de locação ou para prometer uma doação que nunca se concretiza. A clareza de que é gratuito, temporário e com devolução é essencial.</li>
+    </ul>
+
+    <div class="callout">
+      <div class="label">A salvaguarda central</div>
+      <p>Não julgar a proposta à medida em que funciona em casos perfeitos, mas à medida em que protege os casos difíceis. Um sistema de comodato solidário que só ajuda quando as partes são Ambas idôneos e que falha quando uma delas está vulnerável não resolverá o problema de habitação; pelo contrário, poderá fazê-lo piorar. Por isso, fiscalista, contrato, transparência e reconhecimento consentido não são acessórios: são o que faz a proposta ser mais que uma boa intenção.</p>
+    </div>
+
+    <h2 id="sec9">9. Um modelo para adaptar</h2>
+    <p>O que se propõe, em síntese, é um modelo que pode ser adaptado a diferentes países com base no seu direito civil, no seu grau de organização comunitária e na sua sensibilidade religiosa ou secular. A estrutura comum inclui:</p>
+    <div class="two-col">
+      <div class="card">
+        <h4>Base legal</h4>
+        <p>Comodato ou figura equivalente de entrega gratuita temporária com restituição.</p>
+      </div>
+      <div class="card">
+        <h4>Gestão</h4>
+        <p>Entidade ou rede que intermediarie oferenda e necessidade, com regras transparentes.</p>
+      </div>
+      <div class="card">
+        <h4>Fiscalista</h4>
+        <p>Visita semanal, registo objetivo, proteção do imóvel e da confiança.</p>
+      </div>
+      <div class="card">
+        <h4>Incentivo</h4>
+        <p>Exposição social e, quando pertinente, reconhecimento religioso ou comunitário.</p>
+      </div>
+      <div class="card">
+        <h4>Limites</h4>
+        <p>Prazos, cláusulas de uso, regras de devolução e critérios de encerramento.</p>
+      </div>
+      <div class="card">
+        <h4>Proteção</h4>
+        <p>Consentimento, limites de dados, salvaguardas para comodatário e comodante.</p>
+      </div>
+    </div>
+
+    <p>Este modelo não é, em primeiro lugar, uma solução mágica. É um canal: transforma uma disponibilidade dispersa em uma oferta organizada, protegida e reconhecida, e dá a quem a recebe não apenas um telhado temporário, mas também o sentimento — e o facto — de estar sob um regime de cuidado mútuo.</p>
+    <p>Onde o comodato já é uma lei e uma cultura suficiente, o sistema pode começar com relativamente pouco esforço legislativo, concentrando-se na organização, na fiscalização e no reconhecimento. Onde isso não bastar, a proposta pode evoluir para pedidos de mudança estrutural, sempre com o cuidado de não apagar a generosidade com a burocracia excessiva ou com condições que tornem a Oferta impraticável.</p>
+
+    <div class="callout">
+      <div class="label">Conclusão</div>
+      <p>A habitação é, ao mesmo tempo, um direito, um recurso de mercado e um dever de cuidar do que é común. Um sistema baseado no comodato, com fiscalista semanal e com reconhecimento social e religioso do proprietário generoso, não resolve, sozinho, a crise habitacional — mas pode ser uma peça útil, legalmente ancorada, humanamente protecta e socialmente visível. E, muitas vezes, uma peça útil e honesta é melhor do que a espera de uma solução perfeita que nunca chega sozinha.</p>
+    </div>
+  </article>
+
+  <footer>
+    <p>Documento de proposta · Baseado no princípio do comodato e na fiscalização independente · Adaptável a diferentes ordenamentos jurídicos.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var links = document.querySelectorAll('.toc a[href^="#"]');
+  links.forEach(function(link){
+    link.addEventListener('click', function(e){
+      var id = link.getAttribute('href').slice(1);
+      var target = document.getElementById(id);
+      if(!target) return;
+      e.preventDefault();
+      target.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+
+  var headings = document.querySelectorAll('article h2');
+  if('IntersectionObserver' in window){
+    var seen = new Set();
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting && !seen.has(entry.target)){
+          seen.add(entry.target);
+          var id = entry.target.id;
+          var link = document.querySelector('.toc a[href="#'+id+'"]');
+          if(link){
+            link.style.color = '#e6e9f0';
+            link.style.borderBottomColor = '#7fb069';
+          }
+        }
+      });
+    }, {rootMargin:'-40% 0px -55% 0px'});
+    headings.forEach(function(h){ io.observe(h); });
+  }
+})();
+</script>
+</body>
+</html>
