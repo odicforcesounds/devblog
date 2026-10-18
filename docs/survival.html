@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survival Technical Manual: Urban & Rural Conflict Zones</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg-secondary: #12121a;
+      --fg: #e8e8f0;
+      --muted: #6a6a7a;
+      --accent: #00ff88;
+      --accent-dim: #00cc6a;
+      --warning: #ff6b35;
+      --warning-dim: #cc5526;
+      --error: #ff3d3d;
+      --card: #1a1a24;
+      --border: #2a2a3a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background pattern - subtle grid */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+        linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Scanline effect */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 40px,
+        rgba(255, 255, 255, 0.02) 40px,
+        rgba(255, 255, 255, 0.02) 80px
+      );
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.8;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Header */
+    header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(10px);
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: normal;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .nav {
+      margin-top: 1rem;
+    }
+
+    .nav a {
+      color: var(--accent);
+      text-decoration: none;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: color 0.3s;
+    }
+
+    .nav a:hover {
+      color: var(--warning);
+    }
+
+    /* Section styles */
+    section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
+      padding: 2rem;
+    }
+
+    section h2 {
+      color: var(--accent);
+      font-size: 1.3rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    section h3 {
+      color: var(--warning);
+      font-size: 1.1rem;
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Content */
+    .manual-content {
+      color: var(--fg);
+      margin-bottom: 1.5rem;
+    }
+
+    .manual-content p {
+      margin-bottom: 1rem;
+      text-align: justify;
+    }
+
+    .manual-content ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .manual-content li {
+      margin-bottom: 0.5rem;
+    }
+
+    /* Code blocks */
+    .code-block {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      padding: 1rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+      border-radius: 0;
+    }
+
+    .code-block .keyword { color: #ff79c6; }
+    .code-block .string { color: #f1fa8c; }
+    .code-block .comment { color: #6272a4; }
+    .code-block .function { color: #bd93f9; }
+    .code-block .param { color: #ff5555; }
+
+    /* Animated example boxes */
+    .animated-example {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      position: relative;
+    }
+
+    .animated-example::before {
+      content: '▶';
+      position: absolute;
+      left: 1rem;
+      top: 1.2rem;
+      color: var(--accent);
+      font-size: 1.2rem;
+    }
+
+    .example-title {
+      color: var(--accent);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .example-title::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    /* Progress indicator */
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      margin: 1rem 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Quiz styles */
+    .quiz {
+      margin-top: 1.5rem;
+    }
+
+    .quiz question {
+      display: block;
+      margin-bottom: 1rem;
+      padding: 0.8rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .quiz question:hover {
+      background: var(--border);
+    }
+
+    .quiz question.selected {
+      border-color: var(--accent);
+      background: rgba(0, 255, 136, 0.1);
+    }
+
+    .quiz question.correct {
+      border-color: var(--accent);
+      background: rgba(0, 255, 136, 0.1);
+    }
+
+    .quiz question.wrong {
+      border-color: var(--error);
+      background: rgba(255, 61, 61, 0.1);
+    }
+
+    .options {
+      margin-top: 1rem;
+    }
+
+    .options label {
+      display: block;
+      margin: 0.5rem 0;
+      padding: 0.5rem 0.8rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .options label:hover {
+      border-color: var(--accent);
+    }
+
+    .options label.selected {
+      border-color: var(--accent);
+      background: rgba(0, 255, 136, 0.1);
+    }
+
+    .options label.correct {
+      border-color: var(--accent);
+      background: rgba(0, 255, 136, 0.1);
+    }
+
+    .options label.wrong {
+      border-color: var(--error);
+      background: rgba(255, 61, 61, 0.1);
+    }
+
+    .submit-btn {
+      margin-top: 1rem;
+      padding: 0.7rem 1.5rem;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: transform 0.2s;
+    }
+
+    .submit-btn:hover {
+      transform: scale(1.02);
+    }
+
+    .result {
+      margin-top: 1rem;
+      padding: 0.8rem;
+      display: none;
+    }
+
+    .result.correct {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid var(--accent);
+    }
+
+    .result.wrong {
+      background: rgba(255, 61, 61, 0.1);
+      border: 1px solid var(--error);
+    }
+
+    /* Reference links */
+    .references {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .references h3 {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+    }
+
+    .references ul {
+      list-style: none;
+    }
+
+    .references li {
+      margin-bottom: 0.5rem;
+    }
+
+    .references a {
+      color: var(--accent);
+      text-decoration: none;
+      word-break: break-all;
+      font-size: 0.85rem;
+    }
+
+    .references a:hover {
+      color: var(--warning);
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 2rem 0;
+    }
+
+    /* Intro banner */
+    .intro-banner {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Scroll animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Focus states */
+    a:focus, button:focus, .quiz question:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0ms !important;
+        transition-duration: 0ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <h1>Survival Technical Manual</h1>
+      <p>Civilian Preparedness: Rural & Urban Conflict Zones</p>
+      <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="#section-rural">Rural Survival</a>
+        <a href="#section-urban">Urban Survival</a>
+        <a href="#section-production">Production & Safety</a>
+        <a href="#section-politics">Politics & Conflict</a>
+        <a href="#section-quiz">Knowledge Check</a>
+      </div>
+    </header>
+
+    <!-- Home section -->
+    <section id="home">
+      <h2>Introduction & Welcome</h2>
+      <div class="intro-banner">
+        <p>This manual covers survival principles for two distinct environments: <strong>outside urban areas</strong> during civil conflict, and <strong>inside cities experiencing armed conflict or civil war</strong>. Read each section sequentially — knowledge compounds. At the end, test your understanding.</p>
+      </div>
+      
+      <p>This is not a promotional guide. Every decision described carries responsibility. Bad decisions have real consequences, and accountability rests with the actor. This manual draws from verified humanitarian sources, civilian preparedness guidelines, and real-world political analysis.</p>
+    </section>
+
+    <!-- Rural Survival Section -->
+    <section id="section-rural">
+      <h2>Survival Outside the City: Rural Conflict Zones</h2>
+      
+      <div class="reveal">
+        <p><strong>Rural conflict environments present unique challenges:</strong> fewer nearby services, longer distances to medical help, and hazards left by fighting (unexploded ordnance, contaminated areas). The following principles are based on <a href="https://www.icrc.org/en/law-and-policy/explosive-remnants-war" target="_blank">ICRC guidance on explosive remnants of war</a> and <a href="https://www.ready.gov/plan" target="_blank">FEMA/Ready.gov household planning</a>.</p>
+      </div>
+
+      <div class="animated-example">
+        <div class="example-title">Rural Decision Flow</div>
+        <div class="code-block" id="rural-flow">
+          if (suspectExplosive) {
+            /* STOP — do not approach or handle */
+            reportThroughLocalChannel();
+            seekCover();
+            waitForAuthorities();
+          } else {
+            /* Use only locally verified movement routes */
+            if (!localInfo.isRouteSafe) {
+              avoidImprovisingJourney();
+            } else {
+              assessResources();
+              executeEvacuationIfNeeded();
+            }
+          }
+        </div>
+      </div>
+
+      <div class="reveal">
+        <h3>Key Preparedness Principles</h3>
+        <ul>
+          <li><strong>Household Communication Plan:</strong> Agree on contact methods, reunion points, and alert systems. <a href="https://www.ready.gov/plan" target="_blank">Ready.gov</a> recommends planning for alerts, shelter, evacuation, communication, and household needs including medications, disability equipment, children, pets, and language access.</li>
+          <li><strong>Explosive Hazard Awareness:</strong> Treat all suspicious objects and contaminated areas as dangerous. Do not approach or handle them. Follow local mine-risk information and report hazards through established local channels.</li>
+          <li><strong>Route Verification:</strong> Do not assume a rural route is safe because it looks quiet. Use only locally verified information about movement. Avoid improvising journeys through uncertain areas.</li>
+          <li><strong>Practical Constraints:</strong> Account for water, food, medicines, charging/ power, transport, and assistance for those who cannot travel independently. Household planning should reflect actual local conditions, not generic "go bag" lists.</li>
+          <li><strong>Evacuation as Protective Option:</strong> Evacuation should be voluntary, not automatic. Routes must be current and credible. People may be unable, unwilling, or afraid to leave — respect this and ensure information about destinations and processes is clear.</li>
+        </ul>
+      </div>
+
+      <div class="reveal">
+        <h3>Rural Safety Production</h3>
+        <p>When producing resources in rural conflict zones:</p>
+        <ul>
+          <li>Prioritize local, sustainable production over dependency on supply chains that may be disrupted</li>
+          <li>Use <strong>rainwater harvesting</strong> with proper filtration (sediment filter, activated carbon, UV treatment if available)</li>
+          <li>Implement <strong>community seed banks</strong> to preserve agricultural biodiversity</li>
+          <li>Adopt <strong>low-intensity agriculture</strong> techniques that don't draw attention</li>
+          <li>Implement <strong>solar power systems</strong> with battery storage, concealed and protected</li>
+        </ul>
+      </div>
+
+      <div class="divider"></div>
+    </section>
+
+    <!-- Urban Survival Section -->
+    <section id="section-urban">
+      <h2>Survival Inside the City: Civil War & Conflicts</h2>
+      
+      <div class="reveal">
+        <p><strong>Urban conflict zones pose distinct risks:</strong> dense populations, difficulty distinguishing military from civilian objects, and attacks damaging homes, hospitals, schools, power grids, and water sources. Guidance must distinguish rural and urban risks — a countryside checklist cannot simply be transplanted into a city.</p>
+      </div>
+
+      <div class="animated-example">
+        <div class="example-title">Urban Shelter Decision</div>
+        <div class="code-block" id="urban-flow">
+          if (immediateThreatNearby) {
+            /* Seek immediate shelter — strengthen interior room, stay away from windows */
+            reinforceInteriorRoom();
+            keepAwayFromWindows();
+            monitorUpdates();
+          } else if (usableRouteExists) {
+            /* Voluntary, informed movement — verify route credibility first */
+            verifyRouteCredibility();
+            informHousehold();
+            executeMovement();
+          } else {
+            /* Shelter in place with essential supplies */
+            sustainShelterMode();
+          }
+        </div>
+      </div>
+
+      <div class="reveal">
+        <h3>Urban Civilian Preparedness</h3>
+        <ul>
+          <li><strong>Shelter Decision-Making:</strong> No blanket rule — the safest choice depends on the immediate threat, building structure, available shelter, and whether a route is actually usable. Give general prompts for considering whether to shelter or leave, not a blanket rule.</li>
+          <li><strong>Household Communication & Reunification:</strong> Agree on contacts and meeting arrangements in advance. Identify how to receive alerts and what to do if people are separated. <a href="https://www.ready.gov/plan" target="_blank">Ready.gov</a> makes this explicit in household-planning guidance.</li>
+          <li><strong>Essential Services Interruption:</strong> Plan for interruptions to water, electricity, healthcare, sanitation, transport, and communications. The <a href="https://www.icrc.org/en/law-and-policy/urban-warfare-and-violence" target="_blank">ICRC</a> describes damage to civilian infrastructure and resulting risks to dependent communities.</li>
+          <li><strong>Safe, Voluntary Movement:</strong> Avoid presenting humanitarian corridors or routes as safe unless information is current and credible. The <a href="https://blogs.icrc.org/law-and-policy/2021/05/11/preparedness-in-urban-operations/" target="_blank">ICRC</a> checklist advises accounting for civilian knowledge and the risk that routes could be attacked.</li>
+          <li><strong>Individual Needs:</strong> Include prescriptions, assistive devices, children, older people, disabilities, pets, and language access. These are explicit household-planning considerations.</li>
+        </ul>
+      </div>
+
+      <div class="reveal">
+        <h3>Urban Safety Production</h3>
+        <p>Resource production within conflict-affected cities:</p>
+        <ul>
+          <li><strong>Water storage & purification:</strong> Store minimum 3L per person per day. Use food-grade containers. Purification: boiling (1 minute at altitude), chemical treatment (chlorine, iodine), or <strong>DIY sand-clay filtration</strong> as secondary measure.</li>
+          <li><strong>Improvised power:</strong> Small solar chargers for essential devices. Bicycle dynamo generators for phone charging. Never connect to unknown electrical grids — they may be damaged or booby-trapped.</li>
+          <li><strong>Food production:</strong> Sprouting seeds (lentils, mung beans) in 2-3 days. Container gardening in windowsills. Community plots if accessible and safe.</li>
+          <li><strong>Waste management:</strong> Deep burial (minimum 60cm) away from water sources. Composting with lime to prevent disease. Incineration in controlled burns if safe.</li>
+        </ul>
+      </div>
+
+      <div class="divider"></div>
+    </section>
+
+    <!-- Production & Safety Section -->
+    <section id="section-production">
+      <h2>Production, Safety & Technical Protocols</h2>
+      
+      <div class="reveal">
+        <p>This section covers technical production methods and safety protocols applicable in both rural and urban conflict environments. All methods prioritize <strong>harm reduction</strong> and <strong>damage mitigation</strong>.</p>
+      </div>
+
+      <div class="animated-example">
+        <div class="example-title">Water Purification Protocol</div>
+        <div class="code-block" id="water-protocol">
+          /* Water Purification Priority Chain */
+          const purificationMethods = [
+            { name: 'Boiling', minTemp: 100, time: '1 min (3 min above 2,000m)', safe: true },
+            { name: 'Chlorination', amount: '2 drops/1L unscented bleach (5.25%)', time: '30 min wait', safe: true },
+            { name: 'Solar Disinfection (SODIS)', expose: '6+ hours direct sun', safe: true },
+            { name: 'Filtration', remove: ' Protozoa & sediment only', safe: false },
+            { name: 'None', risk: 'Waterborne disease', safe: false }
+          ];
+        </div>
+      </div>
+
+      <div class="reveal">
+        <h3>Rural Production Systems</h3>
+        <ol>
+          <li><strong>Rainwater Harvesting System:</strong> 
+            <ul>
+              <li>Collection surface: food-grade polyethylene or galvanized steel (painted with non-toxic paint)</li>
+              <li>First-flush diverter: discards initial contaminated runoff</li>
+              <li>Filtration train: sediment filter → activated carbon → final polish</li>
+              <li>Storage: dark-covered containers to prevent algae growth</li>
+              <li>Maintenance: monthly cleaning, filter replacement every 3-6 months</li>
+            </ul>
+          </li>
+          <li><strong>Solar Power Basics:</strong>
+            <ul>
+              <li>Panel: 50W minimum for essential devices</li>
+              <li>Charge controller: prevents battery overcharging</li>
+              <li>Battery: 12V deep-cycle, sized for 2-3 days autonomy</li>
+              <li>Inverter: only if AC devices needed (converts 12V DC to 110/220V AC)</li>
+            </ul>
+          </li>
+        </ol>
+      </div>
+
+      <div class="reveal">
+        <h3>Urban Production Systems</h3>
+        <ol>
+          <li><strong>Container Gardening:</strong>
+            <ul>
+              <li>Use 5-gallon minimum containers with drainage holes</li>
+              <li>Soil mix: 60% compost, 30% peat/cocopeat, 10% perlite</li>
+              <li>Plants: herbs, leafy greens, cherry tomatoes (high yield, small space)</li>
+              <li>Light: south-facing windowsills, supplemental LED if power available</li>
+            </ul>
+          </li>
+          <li><strong>Sprouting for Nutrition:</strong>
+            <ul>
+              <li>Seeds: lentils, mung beans, chickpeas, radish</li>
+              <li>Process: rinse 2-3 times daily, drain, keep at room temperature</li>
+              <li>Harvest: 2-3 days from dry seed to edible sprouts</li>
+              <li>Yield: 3-4 cups sprouts from 1 cup dry seed</li>
+            </ul>
+          </li>
+          <li><strong>Waste-to-Resource:</strong>
+            <ul>
+              <li>Greywater reuse: filter through sand column for plant irrigation</li>
+              <li>Composting human waste: only with proper training and materials (lime, carbon source)</li>
+              <li>Urine diversion: nitrogen source for compost if properly diluted (1:8 with water)</li>
+            </ul>
+          </li>
+        </ol>
+      </div>
+
+      <div class="divider"></div>
+    </section>
+
+    <!-- Political Parties & Conflict Section -->
+    <section id="section-politics">
+      <h2>Political Parties, Conflict & Security Policy: Comparative Examples</h2>
+      
+      <div class="reveal">
+        <p>The following examples illustrate how different political parties approach security, defense, and conflict policy across countries. These are <strong>historical illustrations</strong>, not current platform endorsements. Accountability for policy decisions rests with the voters and elected officials who implement them.</p>
+      </div>
+
+      <div class="animated-example">
+        <div class="example-title">Colombia: 2016 FARC Peace Agreement</div>
+        <div class="code-block" id="colombia-debate">
+          /* Key Political Divisions */
+          const colombiaParties = {
+            conservative: 'Former President Álvaro Uribe & Centro Democrático opposed the agreement, arguing it lacked adequate justice for victims',
+            liberal: 'Supported political participation component of the 2016 agreement',
+            socialist: 'FARC-EP transitioned to political party after disarmament',
+            outcome: 'Center Democraticos withdrew from Congress during revised accord vote',
+            source: 'HRW criticized aspects of justice arrangements; ABColombia reported party walkout'
+          };
+        </div>
+      </div>
+
+      <div class="reveal">
+        <h3>Colombia Context</h3>
+        <p>The 2016 peace agreement between the Colombian government and FARC-EP included six main components: one was <strong>political participation</strong>. The agreement envisioned FARC disarming and forming a political organization participating in Colombia's democratic system. However, former President Álvaro Uribe and his Centro Democrático party opposed the agreement, arguing it did not adequately ensure justice for victims. Human Rights Watch criticized aspects of the proposed justice arrangements and examined the record of Uribe's administration. A contemporaneous account reported that the Centro Democrático party withdrew from Congress during the vote on the revised accord.</p>
+        <p><strong>Sources:</strong> <a href="https://www.peaceagreements.org/agreements/wgg/1845/" target="_blank">PA-X: Final Agreement to End the Armed Conflict</a> | <a href="https://www.hrw.org/news/2016/08/16/colombia-peace-deals-unwelcome-critic" target="_blank">Human Rights Watch</a> | <a href="https://www.abcolombia.org.uk/revised-peace-accord-ratified-colombian-congress/" target="_blank">ABColombia</a></p>
+      </div>
+
+      <div class="animated-example">
+        <div class="example-title">United Kingdom: 2024 Election Manifestos</div>
+        <div class="code-block" id="uk-manifestos">
+          /* 2024 Security Comparison */
+          const ukParties = {
+            conservative: 'Supported raising defence spending, supported nuclear capability, NATO membership',
+            labour: 'Supported raising defence spending, favoured parliamentary oversight of arms exports',
+            liberal_democrat: 'Supported raising defence spending, favoured international diplomacy and arms-control',
+            green: 'No additional military-spending commitment; focused on human and environmental security',
+            reform_uk: 'Supported raising defence spending; particular emphasis on national sovereignty and border control'
+          };
+        </div>
+      </div>
+
+      <div class="reveal">
+        <h3>UK 2024 Election Security Comparison</h3>
+        <p>A 2024 comparison of the five largest parties' manifestos found differences in how they framed defence, alliances, nuclear policy, arms exports, and peacebuilding. The analysis reported that the Conservatives, Labour, Liberal Democrats, and Reform UK supported raising defence spending, while the Greens made no additional military-spending commitment. Differences were also described over nuclear policy, parliamentary oversight, arms exports, NATO, and positions on international conflicts. This was a snapshot of the 2024 manifestos, not a description of current party policy.</p>
+        <p><strong>Source:</strong> <a href="https://rethinkingsecurity.org.uk/2024/06/28/ge2024-what-the-manifestos-say-about-security/" target="_blank">Rethinking Security: GE2024 manifestos and international security</a></p>
+      </div>
+
+      <div class="animated-example">
+        <div class="example-title">United States: Party Platforms on Military & Security</div>
+        <div class="code-block" us-platforms">
+          /* US Party Comparison */
+          const usParties = {
+            democrat: 'Generally favour defence spending with oversight; support international alliances; arms-control diplomacy',
+            republican: 'Favor increased defence spending; strong NATO stance; emphasis on military readiness',
+            libertarian: 'Favour significant defence budget reductions; non-interventionist foreign policy',
+            green: 'Favour defence budget reduction; focus on human security, diplomacy, and arms-control'
+          };
+        </div>
+      </div>
+
+      <div class="reveal">
+        <h3>US Party Platforms</h3>
+        <p>While specific platforms evolve, general patterns exist: the Democratic Party generally favors defense spending with oversight and international alliances; the Republican Party favors increased defense spending and strong alliance posture; the Libertarian Party favors significant defense budget reductions and non-interventionism; the Green Party favors defense budget reduction and focus on human security, diplomacy, and arms-control. These are tendencies, not absolute positions, and individual candidates vary widely.</p>
+        <p><strong>Note:</strong> Accountability for military and security policy decisions rests with voters, elected officials, and oversight bodies. No single party holds monopoly on responsibility for war and peace outcomes.</p>
+      </div>
+
+      <div class="divider"></div>
+    </section>
+
+    <!-- Knowledge Validation Section -->
+    <section id="section-quiz">
+      <h2>Knowledge Validation</h2>
+      
+      <div class="reveal">
+        <p>Test your understanding. Answer all questions to complete the manual. Your results are for self-assessment only.</p>
+      </div>
+
+      <div class="quiz" id="quiz-1">
+        <h3>Question 1: Rural Survival</h3>
+        <p>When you encounter a suspicious object in a rural conflict zone, what should you do?</p>
+        <div class="options" id="options-1">
+          <label><input type="radio" name="q1" value="a"> Approach to identify it</label>
+          <label><input type="radio" name="q1" value="b"> Move it to examine it</label>
+          <label><input type="radio" name="q1" value="c"> Treat it as dangerous, do not approach, report through local channel</label>
+          <label><input type="radio" name="q1" value="d"> Ignore it and continue</label>
+        </div>
+      </div>
+
+      <div class="quiz" id="quiz-2">
+        <h3>Question 2: Urban Shelter Decision</h3>
+        <p>In a city experiencing armed conflict, what factors should influence your decision to shelter in place or evacuate?</p>
+        <div class="options" id="options-2">
+          <label><input type="radio" name="q2" value="a"> Always evacuate — it's safer to leave</label>
+          <label><input type="radio" name="q2" value="b"> Shelter in place only if immediate threat is nearby; otherwise evaluate route safety</label>
+          <label><input type="radio" name="q2" value="c"> Evacuate only if someone tells you to</label>
+          <label><input type="radio" name="q2" value="d"> Never shelter — always find open ground</label>
+        </div>
+      </div>
+
+      <div class="quiz" id="quiz-3">
+        <h3>Question 3: Political Parties & Conflict</h3>
+        <p>In the 2016 Colombian peace agreement, what was one of the six main components?</p>
+        <div class="options" id="options-3">
+          <label><input type="radio" name="q3" value="a"> Military expansion</label>
+          <label><input type="radio" name="q3" value="b"> Political participation</label>
+          <label><input type="radio" name="q3" value="c"> Currency reform</label>
+          <label><input type="radio" name="q3" value="d"> Trade tariffs</label>
+        </div>
+      </div>
+
+      <button class="submit-btn" onclick="validateAnswers()">Submit Answers</button>
+
+      <div id="results-1" class="result" style="display: none;"></div>
+      <div id="results-2" class="result" style="display: none;"></div>
+      <div id="results-3" class="result" style="display: none;"></div>
+    </section>
+
+    <!-- External References -->
+    <section class="references" id="references">
+      <h3>External References & Sources</h3>
+      <ul>
+        <li><a href="https://www.icrc.org/en/law-and-policy/explosive-remnants-war" target="_blank">ICRC: Explosive Remnants of War</a></li>
+        <li><a href="https://www.icrc.org/en/law-and-policy/urban-warfare-and-violence" target="_blank">ICRC: Urban Warfare and Violence</a></li>
+        <li><a href="https://blogs.icrc.org/law-and-policy/2021/05/11/preparedness-in-urban-operations/" target="_blank">ICRC Blog: Preparedness in Urban Operations</a></li>
+        <li><a href="https://www.ready.gov/plan" target="_blank">FEMA/Ready.gov: Make a Plan</a></li>
+        <li><a href="https://www.cdc.gov/health-literacy/php/develop-materials/plain-language.html" target="_blank">CDC: Plain Language Materials</a></li>
+        <li><a href="https://digital.gov/guides/plain-language" target="_blank">Digital.gov: Plain Language Guide</a></li>
+        <li><a href="https://www.peaceagreements.org/agreements/wgg/1845/" target="_blank">PA-X: Colombia 2016 Final Agreement</a></li>
+        <li><a href="https://www.hrw.org/news/2016/08/16/colombia-peace-deals-unwelcome-critic" target="_blank">HRW: Colombia Peace Deal's Unwelcome Critic</a></li>
+        <li><a href="https://www.abcolombia.org.uk/revised-peace-accord-ratified-colombian-congress/" target="_blank">ABColombia: Revised Peace Accord Ratified</a></li>
+        <li><a href="https://2009-2017.state.gov/secretary/remarks/2016/12/264709.htm" target="_blank">U.S. State Dept: Revised Colombia Peace Accord</a></li>
+        <li><a href="https://rethinkingsecurity.org.uk/2024/06/28/ge2024-what-the-manifestos-say-about-security/" target="_blank">Rethinking Security: GE2024 Manifestos</a></li>
+      </ul>
+    </section>
+  </div>
+
+  <script>
+    // Knowledge validation
+    function validateAnswers() {
+      let allSelected = true;
+      let correctCount = 0;
+      let totalQuestions = 3;
+      
+      // Question 1: Rural Survival
+      const q1 = document.querySelector('input[name="q1"]:checked');
+      const q1Result = document.getElementById('results-1');
+      
+      if (!q1) {
+        allSelected = false;
+        alert('Please answer all questions first.');
+        return;
+      }
+      
+      const q1Answer = q1.value;
+      const q1Correct = q1Answer === 'c';
+      
+      if (q1Correct) correctCount++;
+      document.querySelectorAll('#options-1 label').forEach(label => {
+        label.classList.toggle('correct', q1Correct && label.querySelector('input').value === 'c');
+        label.classList.toggle('wrong', !q1Correct && label.querySelector('input').value === 'c');
+      });
+      
+      // Question 2: Urban Shelter
+      const q2 = document.querySelector('input[name="q2"]:checked');
+      const q2Result = document.getElementById('results-2');
+      
+      const q2Answer = q2.value;
+      const q2Correct = q2Answer === 'b';
+      
+      if (q2Correct) correctCount++;
+      document.querySelectorAll('#options-2 label').forEach(label => {
+        label.classList.toggle('correct', q2Correct && label.querySelector('input').value === 'b');
+        label.classList.toggle('wrong', !q2Correct && label.querySelector('input').value === 'b');
+      });
+      
+      // Question 3: Political Parties
+      const q3 = document.querySelector('input[name="q3"]:checked');
+      const q3Result = document.getElementById('results-3');
+      
+      const q3Answer = q3.value;
+      const q3Correct = q3Answer === 'b';
+      
+      if (q3Correct) correctCount++;
+      document.querySelectorAll('#options-3 label').forEach(label => {
+        label.classList.toggle('correct', q3Correct && label.querySelector('input').value === 'b');
+        label.classList.toggle('wrong', !q3Correct && label.querySelector('input').value === 'b');
+      });
+      
+      // Show results
+      const resultsContainer = document.getElementById('results-1').parentNode;
+      resultsContainer.innerHTML = '';
+      
+      const resultsHtml = `
+        <div class="result ${correctCount === 3 ? 'correct' : 'wrong'}">
+          <strong>Score: ${correctCount}/${totalQuestions}</strong>
+          ${correctCount === 3 ? '<p>Excellent! You've grasped the key principles.</p>' : '<p>Review the manual sections and try again.</p>'}
+          <p>${correctCount === 3 ? 'All answers correct — you understand the core survival principles.' : 'Some answers need review.'}</p>
+        </div>
+      `;
+      
+      // Insert results after each quiz
+      document.getElementById('quiz-1').insertAdjacentHTML('afterend', resultsHtml);
+    }
+    
+    // Reveal on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+      const reveals = document.querySelectorAll('.reveal');
+      
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      });
+      
+      reveals.forEach(element => {
+        revealObserver.observe(element);
+      });
+    });
+    
+    // Progress bar update
+    document.addEventSelector('change', 'input[type="radio"]', function() {
+      const answered = document.querySelectorAll('input[type="radio"]:checked').length;
+      const total = document.querySelectorAll('input[type="radio"]').length;
+      const progress = (answered / total) * 100;
+      document.querySelector('.progress-fill').style.width = `${progress}%`;
+    });
+  </script>
+</body>
+</html>
