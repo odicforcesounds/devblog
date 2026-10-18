@@ -1,861 +1,917 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Survival Technical Manual: Urban & Rural Conflict Zones</title>
-  <style>
-    :root {
-      --bg: #0a0a0f;
-      --bg-secondary: #12121a;
-      --fg: #e8e8f0;
-      --muted: #6a6a7a;
-      --accent: #00ff88;
-      --accent-dim: #00cc6a;
-      --warning: #ff6b35;
-      --warning-dim: #cc5526;
-      --error: #ff3d3d;
-      --card: #1a1a24;
-      --border: #2a2a3a;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SURVIVAL: The Field Dossier: Outside the City, Inside the Conflict</title>
+<meta name="description" content="A dark-theme, self-contained survival guide: wilderness survival, urban survival during conflict, production of water, food and energy, and a levelled technical manual with quizzes.">
+<style>
+:root{
+  --bg:#0a0e13;--panel:#111923;--panel2:#172330;--line:#22344a;
+  --text:#d7e1ea;--muted:#8ba0b5;--accent:#ff8a3d;--accent2:#3dd6c6;
+  --danger:#ff4d5e;--ok:#4ade80;--warn:#facc15;
+  --radius:12px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3{line-height:1.25;color:#fff;margin:1.6em 0 .5em}
+h1{font-size:2.6rem;margin:0}
+h2{font-size:1.9rem;border-bottom:1px solid var(--line);padding-bottom:.35em}
+h3{font-size:1.25rem;color:var(--accent)}
+p{margin:.7em 0}
+code,kbd{font-family:var(--mono);background:#0d141c;border:1px solid var(--line);padding:.05em .35em;border-radius:6px;font-size:.92em}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+.hidden{display:none!important}
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(10,14,19,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;gap:18px;height:60px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+.brand{font-weight:800;letter-spacing:.12em;color:var(--accent);margin-right:auto}
+.topbar nav{display:flex;gap:6px;flex-wrap:wrap}
+.topbar nav a{color:var(--muted);padding:6px 10px;border-radius:8px;font-size:.92rem}
+.topbar nav a:hover,.topbar nav a.active{background:var(--panel2);color:#fff;text-decoration:none}
+.topbar nav a.home{border:1px solid var(--accent);color:var(--accent)}
 
-    body {
-      font-family: 'Courier New', monospace;
-      background: var(--bg);
-      color: var(--fg);
-      line-height: 1.6;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;padding:90px 0 70px;border-bottom:1px solid var(--line);
+  background:linear-gradient(120deg,#0a0e13,#16202b,#2a1710,#0a0e13);background-size:300% 300%;animation:heroShift 14s ease infinite}
+@keyframes heroShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.hero .kicker{color:var(--accent2);font-family:var(--mono);letter-spacing:.2em;font-size:.85rem}
+.hero .lead{font-size:1.25rem;color:var(--muted);max-width:760px}
+.hero .sig{position:absolute;right:-60px;top:-60px;width:360px;opacity:.12;animation:spin 60s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cta{display:inline-block;margin:18px 12px 0 0;padding:12px 20px;border-radius:10px;background:var(--accent);color:#120a05;font-weight:700;border:0;cursor:pointer;font-size:1rem}
+.cta.alt{background:transparent;color:var(--accent2);border:1px solid var(--accent2)}
+.cta:hover{text-decoration:none;filter:brightness(1.08)}
 
-    /* Background pattern - subtle grid */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: 
-        linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px),
-        linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px);
-      background-size: 50px 50px;
-      pointer-events: none;
-      z-index: 0;
-    }
+/* ---------- layout blocks ---------- */
+section.chapter{padding:40px 0}
+.part{margin-top:20px;padding:16px 22px;border-left:4px solid var(--accent2);background:var(--panel);border-radius:var(--radius)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin:18px 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.note{border-left:4px solid var(--accent2);background:#0e1b1f;padding:12px 16px;border-radius:8px;margin:14px 0}
+.bad{border-left:4px solid var(--danger);background:#1d1217;padding:12px 16px;border-radius:8px;margin:14px 0}
+.bad b{color:var(--danger)}
+.good{border-left:4px solid var(--ok);background:#0e1d15;padding:12px 16px;border-radius:8px;margin:14px 0}
+.good b{color:var(--ok)}
+.warn{border-left:4px solid var(--warn);background:#1f1b0c;padding:12px 16px;border-radius:8px;margin:14px 0}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.95rem}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--panel2);color:#fff}
+.cite{font-size:.75em;vertical-align:super;color:var(--accent2)}
+figcaption{color:var(--muted);font-size:.9rem;margin-top:6px}
+.btn{background:var(--panel2);color:var(--text);border:1px solid var(--line);padding:8px 14px;border-radius:9px;cursor:pointer;font:inherit}
+.btn:hover{border-color:var(--accent2);color:#fff}
+.btn.primary{background:var(--accent2);color:#04201d;border-color:var(--accent2);font-weight:700}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+input[type=number],select{background:#0d141c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;width:100%}
+label{display:block;font-size:.9rem;color:var(--muted);margin-bottom:4px}
 
-    /* Scanline effect */
-    body::after {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 40px,
-        rgba(255, 255, 255, 0.02) 40px,
-        rgba(255, 255, 255, 0.02) 80px
-      );
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.8;
-    }
+/* ---------- animation: rule of threes ---------- */
+.threes{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}
+.threes > div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center;opacity:0;transform:translateY(14px);animation:rise .6s ease forwards}
+.threes > div:nth-child(1){animation-delay:.2s}.threes > div:nth-child(2){animation-delay:.8s}
+.threes > div:nth-child(3){animation-delay:1.4s}.threes > div:nth-child(4){animation-delay:2s}
+.threes .big{font-size:1.8rem;font-weight:800;color:var(--accent)}
+@keyframes rise{to{opacity:1;transform:none}}
+.bar{height:12px;background:#0d141c;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--danger),var(--warn),var(--ok));animation:fill 8s ease-in-out infinite}
+@keyframes fill{0%{width:0}45%{width:100%}100%{width:100%}}
 
-    .container {
-      position: relative;
-      z-index: 1;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
+/* ---------- animation: water filter ---------- */
+.filter{position:relative;display:flex;justify-content:space-between;align-items:stretch;gap:8px;height:230px;margin:18px 0;padding:14px;background:#0d141c;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.stage{flex:1;border:1px dashed #3a536e;border-radius:10px;padding:8px;font-size:.82rem;text-align:center;color:var(--muted);position:relative;background:linear-gradient(#0d1a26,#0b1520)}
+.stage b{display:block;color:#fff;margin-bottom:4px}
+.drop{position:absolute;top:-14px;width:9px;height:12px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#4fb8ff;opacity:.9;animation:drip 3.2s linear infinite}
+.drop.dirty{background:#8a6b3a}
+.drop.clean{background:#7fe6ff}
+@keyframes drip{0%{transform:translateY(0);opacity:0}10%{opacity:.9}100%{transform:translateY(200px);opacity:0}}
 
-    /* Header */
-    header {
-      background: var(--card);
-      border: 1px solid var(--border);
-      padding: 1.5rem 2rem;
-      margin-bottom: 2rem;
-      backdrop-filter: blur(10px);
-    }
+/* ---------- animation: fire triangle ---------- */
+.fire-wrap{display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:center}
+@media (max-width:700px){.fire-wrap{grid-template-columns:1fr}}
+.flame{transform-origin:50% 100%;animation:flicker .5s ease-in-out infinite alternate;transition:opacity .6s}
+.flame.out{animation:none;opacity:0}
+@keyframes flicker{from{transform:scale(1,1)}to{transform:scale(1.07,.94)}}
+.side{transition:opacity .4s,stroke .4s;cursor:pointer}
+.side.off{opacity:.12}
+.smoke{transition:opacity .6s;opacity:0}
+.smoke.on{opacity:.6;animation:smoke 2.5s ease-out infinite}
+@keyframes smoke{0%{transform:translateY(0);opacity:.6}100%{transform:translateY(-30px);opacity:0}}
 
-    header h1 {
-      font-size: 1.8rem;
-      font-weight: normal;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 0.5rem;
-    }
+/* ---------- animation: heat loss ---------- */
+.heat{position:relative;height:220px;background:#0d141c;border:1px solid var(--line);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;overflow:hidden;margin:16px 0}
+.house{width:150px;height:110px;border:3px solid #6e8aa6;border-radius:6px;background:#1b2734;position:relative;transition:box-shadow .5s,border-color .5s}
+.house.insulated{border-color:var(--ok);box-shadow:inset 0 0 22px rgba(74,222,128,.35)}
+.arrow{position:absolute;color:var(--danger);font-size:22px;font-family:var(--mono);animation:escape 1.8s ease-in infinite}
+.house.insulated ~ .arrow,.arrow.hide{animation:none;opacity:.1}
+.arrow.a1{top:-34px;left:50%;margin-left:-6px;--dx:0px;--dy:-22px}
+.arrow.a2{left:-44px;top:50%;margin-top:-12px;--dx:-22px;--dy:0px;animation-delay:.45s}
+.arrow.a3{right:-44px;top:50%;margin-top:-12px;--dx:22px;--dy:0px;animation-delay:.9s}
+.arrow.a4{bottom:-40px;left:50%;margin-left:-6px;--dx:0px;--dy:22px;animation-delay:1.35s}
+@keyframes escape{0%{opacity:0;transform:translate(0,0)}25%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
 
-    header p {
-      color: var(--muted);
-      font-size: 0.85rem;
-    }
+/* ---------- animation: compass ---------- */
+.compass{width:180px;height:180px;margin:10px auto;border-radius:50%;border:2px solid var(--line);position:relative;background:radial-gradient(#15202b,#0a0e13)}
+.compass .needle{position:absolute;left:50%;top:50%;width:6px;height:150px;margin-left:-3px;margin-top:-75px;transform-origin:50% 50%;animation:sway 4s ease-in-out infinite}
+.compass .needle::before{content:"";position:absolute;top:0;left:0;width:6px;height:75px;background:var(--danger);border-radius:3px 3px 0 0}
+.compass .needle::after{content:"";position:absolute;bottom:0;left:0;width:6px;height:75px;background:#dfe7ef;border-radius:0 0 3px 3px}
+@keyframes sway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+.compass .n{position:absolute;left:50%;top:4px;transform:translateX(-50%);color:var(--danger);font-weight:800}
+.compass .s{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);color:var(--muted);font-weight:800}
+.compass .e{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:800}
+.compass .w{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:800}
 
-    .nav {
-      margin-top: 1rem;
-    }
+/* ---------- animation: conflict map ---------- */
+.cmap{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.zone{position:relative;border-radius:10px;padding:16px 8px;text-align:center;font-size:.9rem;cursor:pointer;border:1px solid var(--line);background:#0d141c;color:#fff;font:inherit;transition:transform .2s}
+.zone:hover{transform:translateY(-2px)}
+.zone.safe{border-color:var(--ok)}
+.zone.contest{border-color:var(--warn)}
+.zone.danger{border-color:var(--danger);animation:pulse 1.6s infinite}
+.zone .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.zone.safe .dot{background:var(--ok)}.zone.contest .dot{background:var(--warn)}.zone.danger .dot{background:var(--danger)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,77,94,.55)}70%{box-shadow:0 0 0 14px rgba(255,77,94,0)}100%{box-shadow:0 0 0 0 rgba(255,77,94,0)}}
+@media (max-width:700px){.cmap{grid-template-columns:repeat(2,1fr)}.threes{grid-template-columns:repeat(2,1fr)}}
+#zoneInfo{min-height:72px}
 
-    .nav a {
-      color: var(--accent);
-      text-decoration: none;
-      font-family: 'Courier New', monospace;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      transition: color 0.3s;
-    }
+/* ---------- animation: fire-hazard / checkpoint steps ---------- */
+.steps{counter-reset:s;list-style:none;padding:0;margin:14px 0}
+.steps li{counter-increment:s;position:relative;padding:10px 12px 10px 52px;margin:8px 0;background:var(--panel2);border-radius:10px;border:1px solid var(--line)}
+.steps li::before{content:counter(s);position:absolute;left:12px;top:9px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#120a05;display:flex;align-items:center;justify-content:center;font-weight:800}
 
-    .nav a:hover {
-      color: var(--warning);
-    }
+/* ---------- decision lab ---------- */
+.scenario{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin:16px 0}
+.scenario .opts{display:grid;gap:8px;margin-top:10px}
+.scenario .opt{text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:9px;cursor:pointer;font:inherit}
+.scenario .opt:hover{border-color:var(--accent2)}
+.scenario .result{margin-top:12px;padding:12px;border-radius:9px;display:none}
+.scenario .result.good{display:block}
+.scenario .result.bad{display:block}
 
-    /* Section styles */
-    section {
-      background: var(--card);
-      border: 1px solid var(--border);
-      margin-bottom: 2rem;
-      padding: 2rem;
-    }
+/* ---------- calculator ---------- */
+.calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.out{background:#0d141c;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:12px}
+.out strong{color:var(--accent2);font-size:1.2rem}
 
-    section h2 {
-      color: var(--accent);
-      font-size: 1.3rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--border);
-    }
+/* ---------- manual ---------- */
+.manual{display:grid;grid-template-columns:270px 1fr;gap:20px;padding:30px 0}
+@media (max-width:860px){.manual{grid-template-columns:1fr}}
+.toc{position:sticky;top:76px;align-self:start;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.toc h3{margin-top:0}
+.toc button{display:flex;justify-content:space-between;align-items:center;width:100%;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 4px;color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.toc button:disabled{color:#4a5b6c;cursor:not-allowed}
+.toc button.current{color:var(--accent)}
+.toc .st{font-size:.8rem;color:var(--muted)}
+.toc .st.done{color:var(--ok)}
+.manual-page{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px 30px;position:relative}
+.manual-page::before{content:"TECHNICAL MANUAL";position:absolute;top:10px;right:16px;font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;color:var(--muted)}
+.mhead{font-family:var(--mono);font-size:.82rem;color:var(--accent2);border-bottom:2px solid var(--accent2);padding-bottom:8px;margin-bottom:10px}
+.mod{padding:16px 0;border-bottom:1px dashed var(--line)}
+.mod h4{margin:0 0 6px;color:#fff;font-size:1.08rem;font-family:var(--mono)}
+.quiz{margin-top:22px;border-top:2px solid var(--accent);padding-top:16px}
+.q{margin:14px 0;padding:12px;background:#0d141c;border-radius:10px;border:1px solid var(--line)}
+.q .opt{display:block;margin:6px 0;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);cursor:pointer}
+.q .opt input{margin-right:8px}
+.q .opt{color:var(--text);font-size:1rem;margin:0}
+.q .fb{margin-top:6px;font-size:.92rem}
+.q .fb.ok{color:var(--ok)}.q .fb.no{color:var(--danger)}
+.score{font-size:1.1rem;margin-top:10px}
+.lockedmsg{text-align:center;padding:50px 20px;color:var(--muted)}
+.lockicon{font-size:2.4rem}
+.progressbar{height:8px;background:#0d141c;border-radius:4px;margin:12px 0;overflow:hidden;border:1px solid var(--line)}
+.progressbar span{display:block;height:100%;background:var(--ok);width:0;transition:width .6s}
+.pulse-ring{animation:pulse 2s infinite}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s}
+.reveal.in{opacity:1;transform:none}
 
-    section h3 {
-      color: var(--warning);
-      font-size: 1.1rem;
-      margin-top: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    /* Content */
-    .manual-content {
-      color: var(--fg);
-      margin-bottom: 1.5rem;
-    }
-
-    .manual-content p {
-      margin-bottom: 1rem;
-      text-align: justify;
-    }
-
-    .manual-content ul {
-      margin-left: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .manual-content li {
-      margin-bottom: 0.5rem;
-    }
-
-    /* Code blocks */
-    .code-block {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      padding: 1rem;
-      margin: 1rem 0;
-      overflow-x: auto;
-      font-family: 'Courier New', monospace;
-      font-size: 0.85rem;
-      color: var(--accent);
-      border-radius: 0;
-    }
-
-    .code-block .keyword { color: #ff79c6; }
-    .code-block .string { color: #f1fa8c; }
-    .code-block .comment { color: #6272a4; }
-    .code-block .function { color: #bd93f9; }
-    .code-block .param { color: #ff5555; }
-
-    /* Animated example boxes */
-    .animated-example {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      padding: 1.5rem;
-      margin: 1.5rem 0;
-      position: relative;
-    }
-
-    .animated-example::before {
-      content: '▶';
-      position: absolute;
-      left: 1rem;
-      top: 1.2rem;
-      color: var(--accent);
-      font-size: 1.2rem;
-    }
-
-    .example-title {
-      color: var(--accent);
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .example-title::before {
-      content: '';
-      width: 8px;
-      height: 8px;
-      background: var(--accent);
-      border-radius: 50%;
-    }
-
-    /* Progress indicator */
-    .progress-bar {
-      width: 100%;
-      height: 4px;
-      background: var(--border);
-      margin: 1rem 0;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: var(--accent);
-      width: 0%;
-      transition: width 0.3s ease;
-    }
-
-    /* Quiz styles */
-    .quiz {
-      margin-top: 1.5rem;
-    }
-
-    .quiz question {
-      display: block;
-      margin-bottom: 1rem;
-      padding: 0.8rem;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .quiz question:hover {
-      background: var(--border);
-    }
-
-    .quiz question.selected {
-      border-color: var(--accent);
-      background: rgba(0, 255, 136, 0.1);
-    }
-
-    .quiz question.correct {
-      border-color: var(--accent);
-      background: rgba(0, 255, 136, 0.1);
-    }
-
-    .quiz question.wrong {
-      border-color: var(--error);
-      background: rgba(255, 61, 61, 0.1);
-    }
-
-    .options {
-      margin-top: 1rem;
-    }
-
-    .options label {
-      display: block;
-      margin: 0.5rem 0;
-      padding: 0.5rem 0.8rem;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .options label:hover {
-      border-color: var(--accent);
-    }
-
-    .options label.selected {
-      border-color: var(--accent);
-      background: rgba(0, 255, 136, 0.1);
-    }
-
-    .options label.correct {
-      border-color: var(--accent);
-      background: rgba(0, 255, 136, 0.1);
-    }
-
-    .options label.wrong {
-      border-color: var(--error);
-      background: rgba(255, 61, 61, 0.1);
-    }
-
-    .submit-btn {
-      margin-top: 1rem;
-      padding: 0.7rem 1.5rem;
-      background: var(--accent);
-      color: var(--bg);
-      border: none;
-      cursor: pointer;
-      font-family: 'Courier New', monospace;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      transition: transform 0.2s;
-    }
-
-    .submit-btn:hover {
-      transform: scale(1.02);
-    }
-
-    .result {
-      margin-top: 1rem;
-      padding: 0.8rem;
-      display: none;
-    }
-
-    .result.correct {
-      background: rgba(0, 255, 136, 0.1);
-      border: 1px solid var(--accent);
-    }
-
-    .result.wrong {
-      background: rgba(255, 61, 61, 0.1);
-      border: 1px solid var(--error);
-    }
-
-    /* Reference links */
-    .references {
-      margin-top: 2rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--border);
-    }
-
-    .references h3 {
-      color: var(--muted);
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 1rem;
-    }
-
-    .references ul {
-      list-style: none;
-    }
-
-    .references li {
-      margin-bottom: 0.5rem;
-    }
-
-    .references a {
-      color: var(--accent);
-      text-decoration: none;
-      word-break: break-all;
-      font-size: 0.85rem;
-    }
-
-    .references a:hover {
-      color: var(--warning);
-    }
-
-    /* Divider */
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 2rem 0;
-    }
-
-    /* Intro banner */
-    .intro-banner {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      padding: 1rem 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    /* Scroll animations */
-    .reveal {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-    }
-
-    .reveal.active {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* Focus states */
-    a:focus, button:focus, .quiz question:focus {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-
-    /* Reduced motion */
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        animation-duration: 0ms !important;
-        transition-duration: 0ms !important;
-      }
-    }
-  </style>
+/* ---------- references / footer ---------- */
+.refs ol{padding-left:22px}
+.refs li{margin:6px 0}
+.refs li:target{outline:2px solid var(--accent2);border-radius:6px}
+footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--muted);font-size:.9rem}
+</style>
 </head>
 <body>
-  <div class="container">
-    <!-- Header -->
-    <header>
-      <h1>Survival Technical Manual</h1>
-      <p>Civilian Preparedness: Rural & Urban Conflict Zones</p>
-      <div class="nav">
-        <a href="index.html">Home</a>
-        <a href="#section-rural">Rural Survival</a>
-        <a href="#section-urban">Urban Survival</a>
-        <a href="#section-production">Production & Safety</a>
-        <a href="#section-politics">Politics & Conflict</a>
-        <a href="#section-quiz">Knowledge Check</a>
-      </div>
-    </header>
 
-    <!-- Home section -->
-    <section id="home">
-      <h2>Introduction & Welcome</h2>
-      <div class="intro-banner">
-        <p>This manual covers survival principles for two distinct environments: <strong>outside urban areas</strong> during civil conflict, and <strong>inside cities experiencing armed conflict or civil war</strong>. Read each section sequentially — knowledge compounds. At the end, test your understanding.</p>
-      </div>
-      
-      <p>This is not a promotional guide. Every decision described carries responsibility. Bad decisions have real consequences, and accountability rests with the actor. This manual draws from verified humanitarian sources, civilian preparedness guidelines, and real-world political analysis.</p>
-    </section>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">SURVIVAL // FIELD DOSSIER</div>
+    <nav>
+      <a href="index.html" class="home" id="homeLink">Home</a>
+      <a href="#article" data-go="article">Article</a>
+      <a href="#manual" data-go="manual">Technical Manual</a>
+      <a href="#decisions" data-go="article">Decision Lab</a>
+      <a href="#calc" data-go="article">Calculator</a>
+      <a href="#references" data-go="article">References</a>
+    </nav>
+  </div>
+</header>
 
-    <!-- Rural Survival Section -->
-    <section id="section-rural">
-      <h2>Survival Outside the City: Rural Conflict Zones</h2>
-      
-      <div class="reveal">
-        <p><strong>Rural conflict environments present unique challenges:</strong> fewer nearby services, longer distances to medical help, and hazards left by fighting (unexploded ordnance, contaminated areas). The following principles are based on <a href="https://www.icrc.org/en/law-and-policy/explosive-remnants-war" target="_blank">ICRC guidance on explosive remnants of war</a> and <a href="https://www.ready.gov/plan" target="_blank">FEMA/Ready.gov household planning</a>.</p>
-      </div>
+<!-- ============================ HERO ============================ -->
+<div class="hero">
+  <svg class="sig" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="none" stroke="#ff8a3d" stroke-width="1"/><circle cx="50" cy="50" r="30" fill="none" stroke="#3dd6c6" stroke-width="1" stroke-dasharray="4 4"/><polygon points="50,10 58,50 50,90 42,50" fill="#ff8a3d"/></svg>
+  <div class="wrap">
+    <div class="kicker">FIELD DOSSIER // VOL.1 // OUTSIDE THE CITY & INSIDE THE CONFLICT</div>
+    <h1>Survival: how to stay alive, healthy and free when everything around you breaks</h1>
+    <p class="lead">A complete, technical and honest guide: how water, fire, shelter, food and energy really work in the wild; how a city behaves when power, water and trust collapse; how to produce what you need; and the bad decisions that kill people who thought they were prepared. Read the article, or enter the <a href="#manual">Technical Manual</a> and unlock each level by proving what you know.</p>
+    <a class="cta" href="#article" data-go="article">Read the article</a>
+    <a class="cta alt" href="#manual" data-go="manual">Enter the Technical Manual</a>
+  </div>
+</div>
 
-      <div class="animated-example">
-        <div class="example-title">Rural Decision Flow</div>
-        <div class="code-block" id="rural-flow">
-          if (suspectExplosive) {
-            /* STOP — do not approach or handle */
-            reportThroughLocalChannel();
-            seekCover();
-            waitForAuthorities();
-          } else {
-            /* Use only locally verified movement routes */
-            if (!localInfo.isRouteSafe) {
-              avoidImprovisingJourney();
-            } else {
-              assessResources();
-              executeEvacuationIfNeeded();
-            }
-          }
-        </div>
-      </div>
+<!-- ============================ ARTICLE ============================ -->
+<main id="article" class="view">
 
-      <div class="reveal">
-        <h3>Key Preparedness Principles</h3>
-        <ul>
-          <li><strong>Household Communication Plan:</strong> Agree on contact methods, reunion points, and alert systems. <a href="https://www.ready.gov/plan" target="_blank">Ready.gov</a> recommends planning for alerts, shelter, evacuation, communication, and household needs including medications, disability equipment, children, pets, and language access.</li>
-          <li><strong>Explosive Hazard Awareness:</strong> Treat all suspicious objects and contaminated areas as dangerous. Do not approach or handle them. Follow local mine-risk information and report hazards through established local channels.</li>
-          <li><strong>Route Verification:</strong> Do not assume a rural route is safe because it looks quiet. Use only locally verified information about movement. Avoid improvising journeys through uncertain areas.</li>
-          <li><strong>Practical Constraints:</strong> Account for water, food, medicines, charging/ power, transport, and assistance for those who cannot travel independently. Household planning should reflect actual local conditions, not generic "go bag" lists.</li>
-          <li><strong>Evacuation as Protective Option:</strong> Evacuation should be voluntary, not automatic. Routes must be current and credible. People may be unable, unwilling, or afraid to leave — respect this and ensure information about destinations and processes is clear.</li>
-        </ul>
-      </div>
+<section class="chapter" id="intro">
+<div class="wrap">
+  <h2>0. Why survival is a skill, not a mood</h2>
+  <p>Most people who die in a disaster did not lack courage. They lacked a sequence. They drank the first water they found, lit a heater in a closed room, walked toward a crowd because it looked like help, or waited for an official announcement that never came. Survival is the discipline of <b>choosing the right thing in the right order</b> while your body and your nerves are shouting at you to do something else.</p>
+  <p>This dossier has three parts. <b>Part I</b> covers the wilderness and rural survival that has been taught for a century and that still works. <b>Part II</b> covers urban survival during conflict, civil war, blackouts and riots, where the enemy is often other people, disease, and bad information. <b>Part III</b> covers production and new ideas: how to make water, food, light and communication when the grid is gone, and how communities protect each other.</p>
+  <div class="note"><b>Honesty rule.</b> Every technique here is either a standard public-health or emergency-management recommendation, or a method used by wilderness schools, humanitarian agencies or field engineers. Where a technique is dangerous, the danger is written next to it. Nothing in this dossier explains how to make weapons or explosives, and no tactic here should be used against other people.</div>
+  <div class="warn"><b>Sources, not vibes.</b> Numbers come from the CDC<sup><a class="cite" href="#ref-1">[1]</a></sup>, Ready.gov<sup><a class="cite" href="#ref-2">[2]</a></sup>, the Sphere humanitarian standards<sup><a class="cite" href="#ref-3">[3]</a></sup>, the National Center for Home Food Preservation<sup><a class="cite" href="#ref-6">[6]</a></sup> and the ICRC<sup><a class="cite" href="#ref-8">[8]</a></sup>. Local laws and local health authorities always override this text.</div>
+</div>
+</section>
 
-      <div class="reveal">
-        <h3>Rural Safety Production</h3>
-        <p>When producing resources in rural conflict zones:</p>
-        <ul>
-          <li>Prioritize local, sustainable production over dependency on supply chains that may be disrupted</li>
-          <li>Use <strong>rainwater harvesting</strong> with proper filtration (sediment filter, activated carbon, UV treatment if available)</li>
-          <li>Implement <strong>community seed banks</strong> to preserve agricultural biodiversity</li>
-          <li>Adopt <strong>low-intensity agriculture</strong> techniques that don't draw attention</li>
-          <li>Implement <strong>solar power systems</strong> with battery storage, concealed and protected</li>
-        </ul>
-      </div>
+<section class="chapter" id="rule3">
+<div class="wrap">
+  <h2>1. The Rule of Threes: what kills you first</h2>
+  <p>Survival training uses a simple priority ladder. It is a rule of thumb, not a law of physics, but it puts the scarce resources in order. Watch the bar fill: the first two bullets are measured in minutes and hours, the last two in days and weeks.</p>
+  <div class="threes">
+    <div><div class="big">3 min</div>without air (breathing)</div>
+    <div><div class="big">3 hrs</div>without shelter in harsh cold, heat or storm</div>
+    <div><div class="big">3 days</div>without water (varies with heat and effort)</div>
+    <div><div class="big">3 weeks</div>without food (body reserves, not comfort)</div>
+  </div>
+  <div class="bar" aria-label="priority bar"><span></span></div>
+  <p><small>Ready.gov recommends at least one gallon (about 3.8 litres) of water per person per day, for at least three days<sup><a class="cite" href="#ref-2">[2]</a></sup>. The Sphere minimum for emergencies is 15 litres per person per day for drinking, cooking and hygiene<sup><a class="cite" href="#ref-3">[3]</a></sup>.</small></p>
+  <div class="bad"><b>Bad decision: starting with food.</b> People who are hungry panic about food. But a person who is wet, cold and without shelter at night can die of hypothermia within hours, long before hunger matters. Fix the minutes problem first, then the hours problem, then water, then food.</div>
+</div>
+</section>
 
-      <div class="divider"></div>
-    </section>
+<!-- ======================= PART I ======================= -->
+<section class="chapter" id="p1">
+<div class="wrap">
+  <div class="part"><h2 style="border:0;margin-top:0">PART I. Outside the city</h2>
+  <p>Wilderness, rural areas, flood zones, mountains and disaster sites with no power and no supply trucks. The threats: dehydration, cold, heat, injury, getting lost, and contaminated water.</p></div>
 
-    <!-- Urban Survival Section -->
-    <section id="section-urban">
-      <h2>Survival Inside the City: Civil War & Conflicts</h2>
-      
-      <div class="reveal">
-        <p><strong>Urban conflict zones pose distinct risks:</strong> dense populations, difficulty distinguishing military from civilian objects, and attacks damaging homes, hospitals, schools, power grids, and water sources. Guidance must distinguish rural and urban risks — a countryside checklist cannot simply be transplanted into a city.</p>
-      </div>
+  <h3 id="p1-water">1.1 Water: the first real priority</h3>
+  <p>The body loses roughly 2 to 3 litres a day at rest in temperate conditions, and much more in heat or hard work. Surface water (rivers, lakes, ponds, rain runoff) almost always carries bacteria, viruses and parasites such as <i>Giardia</i> and <i>Cryptosporidium</i>. Clear water is not safe water. Treatment works in layers:</p>
 
-      <div class="animated-example">
-        <div class="example-title">Urban Shelter Decision</div>
-        <div class="code-block" id="urban-flow">
-          if (immediateThreatNearby) {
-            /* Seek immediate shelter — strengthen interior room, stay away from windows */
-            reinforceInteriorRoom();
-            keepAwayFromWindows();
-            monitorUpdates();
-          } else if (usableRouteExists) {
-            /* Voluntary, informed movement — verify route credibility first */
-            verifyRouteCredibility();
-            informHousehold();
-            executeMovement();
-          } else {
-            /* Shelter in place with essential supplies */
-            sustainShelterMode();
-          }
-        </div>
-      </div>
+  <div class="filter" aria-label="Water treatment animation">
+    <div class="stage"><b>1. Settle / pre-filter</b>cloth, sand, or a sediment bottle removes silt and large particles</div>
+    <div class="stage"><b>2. Filter</b>ceramic or hollow-fibre filter removes most bacteria and protozoa</div>
+    <div class="stage"><b>3. Disinfect</b>boil, chlorine or UV kills viruses that filters miss</div>
+    <div class="stage"><b>4. Store</b>clean container, lid, label, used within days</div>
+    <span class="drop dirty" style="left:4%;animation-delay:0s"></span>
+    <span class="drop dirty" style="left:12%;animation-delay:.8s"></span>
+    <span class="drop dirty" style="left:30%;animation-delay:1.6s"></span>
+    <span class="drop clean" style="left:52%;animation-delay:2.4s"></span>
+    <span class="drop clean" style="left:74%;animation-delay:.4s"></span>
+    <span class="drop clean" style="left:88%;animation-delay:1.2s"></span>
+  </div>
+  <figcaption>Animation: brown drops are contaminated water; blue drops are cleaned at each stage. Real filters do not remove viruses by size alone; that is why step 3 exists.</figcaption>
 
-      <div class="reveal">
-        <h3>Urban Civilian Preparedness</h3>
-        <ul>
-          <li><strong>Shelter Decision-Making:</strong> No blanket rule — the safest choice depends on the immediate threat, building structure, available shelter, and whether a route is actually usable. Give general prompts for considering whether to shelter or leave, not a blanket rule.</li>
-          <li><strong>Household Communication & Reunification:</strong> Agree on contacts and meeting arrangements in advance. Identify how to receive alerts and what to do if people are separated. <a href="https://www.ready.gov/plan" target="_blank">Ready.gov</a> makes this explicit in household-planning guidance.</li>
-          <li><strong>Essential Services Interruption:</strong> Plan for interruptions to water, electricity, healthcare, sanitation, transport, and communications. The <a href="https://www.icrc.org/en/law-and-policy/urban-warfare-and-violence" target="_blank">ICRC</a> describes damage to civilian infrastructure and resulting risks to dependent communities.</li>
-          <li><strong>Safe, Voluntary Movement:</strong> Avoid presenting humanitarian corridors or routes as safe unless information is current and credible. The <a href="https://blogs.icrc.org/law-and-policy/2021/05/11/preparedness-in-urban-operations/" target="_blank">ICRC</a> checklist advises accounting for civilian knowledge and the risk that routes could be attacked.</li>
-          <li><strong>Individual Needs:</strong> Include prescriptions, assistive devices, children, older people, disabilities, pets, and language access. These are explicit household-planning considerations.</li>
-        </ul>
-      </div>
+  <table>
+    <tr><th>Method</th><th>How to do it correctly</th><th>Limits</th></tr>
+    <tr><td>Rolling boil</td><td>Bring to a vigorous rolling boil for <b>1 minute</b>; <b>3 minutes</b> above about 6,500 ft / 2,000 m<sup><a class="cite" href="#ref-1">[1]</a></sup>. Let it cool in a covered clean container.</td><td>Kills pathogens. Does not remove chemicals, salt or fuel smoke. Costs fuel.</td></tr>
+    <tr><td>Chlorine (unscented household bleach, 5 to 9% sodium hypochlorite)</td><td><b>2 drops per litre</b> (8 drops per US gallon) for clear water; <b>double</b> for cloudy water. Mix, cover, wait <b>30 minutes</b><sup><a class="cite" href="#ref-1">[1]</a></sup>.</td><td>Check the label: "scented", "splash-less" or "with added cleaners" bleach is unsafe. Weak against <i>Cryptosporidium</i>. Smell should be faintly of chlorine.</td></tr>
+    <tr><td>SODIS (solar)</td><td>Fill clear PET bottles, shake, lay them flat in full sun for <b>6 hours</b>, or <b>2 days</b> if overcast<sup><a class="cite" href="#ref-4">[4]</a></sup>.</td><td>Only for clear, low-turbidity water. Needs sun. Not a large-volume method.</td></tr>
+    <tr><td>Ceramic or hollow-fibre filter</td><td>Use the manufacturer's flow rate; replace cartridges on schedule.</td><td>Filters do not remove all viruses. Pair with disinfection when people are sick.</td></tr>
+  </table>
 
-      <div class="reveal">
-        <h3>Urban Safety Production</h3>
-        <p>Resource production within conflict-affected cities:</p>
-        <ul>
-          <li><strong>Water storage & purification:</strong> Store minimum 3L per person per day. Use food-grade containers. Purification: boiling (1 minute at altitude), chemical treatment (chlorine, iodine), or <strong>DIY sand-clay filtration</strong> as secondary measure.</li>
-          <li><strong>Improvised power:</strong> Small solar chargers for essential devices. Bicycle dynamo generators for phone charging. Never connect to unknown electrical grids — they may be damaged or booby-trapped.</li>
-          <li><strong>Food production:</strong> Sprouting seeds (lentils, mung beans) in 2-3 days. Container gardening in windowsills. Community plots if accessible and safe.</li>
-          <li><strong>Waste management:</strong> Deep burial (minimum 60cm) away from water sources. Composting with lime to prevent disease. Incineration in controlled burns if safe.</li>
-        </ul>
-      </div>
+  <div class="bad"><b>Bad decision: "It's a clean mountain stream."</b> Streams in cattle country, below villages, or downstream of a dead animal are contaminated, and there is no visual test. Hikers have caught <i>Giardia</i> from crystal-clear water for decades. <b>Better:</b> treat everything, every time, unless you are boiling it anyway.</div>
+  <div class="bad"><b>Bad decision: salt water or urine.</b> Drinking seawater makes the kidneys excrete more water than you gain. Drinking urine re-concentrates the same waste you are trying to flush. Both accelerate dehydration. <b>Better:</b> a solar still or rain catchment, even if slow, plus rationing.</div>
+  <div class="good"><b>Good practice: the solar still.</b> Dig a bowl, place a clean container in the centre, cover with clear plastic sealed to the ground, weight the centre with a stone so condensation drips into the container. Output is small (often under a litre a day) but it avoids contamination and it works when everything else fails. Treat its output as dubious until disinfected too.</div>
 
-      <div class="divider"></div>
-    </section>
-
-    <!-- Production & Safety Section -->
-    <section id="section-production">
-      <h2>Production, Safety & Technical Protocols</h2>
-      
-      <div class="reveal">
-        <p>This section covers technical production methods and safety protocols applicable in both rural and urban conflict environments. All methods prioritize <strong>harm reduction</strong> and <strong>damage mitigation</strong>.</p>
-      </div>
-
-      <div class="animated-example">
-        <div class="example-title">Water Purification Protocol</div>
-        <div class="code-block" id="water-protocol">
-          /* Water Purification Priority Chain */
-          const purificationMethods = [
-            { name: 'Boiling', minTemp: 100, time: '1 min (3 min above 2,000m)', safe: true },
-            { name: 'Chlorination', amount: '2 drops/1L unscented bleach (5.25%)', time: '30 min wait', safe: true },
-            { name: 'Solar Disinfection (SODIS)', expose: '6+ hours direct sun', safe: true },
-            { name: 'Filtration', remove: ' Protozoa & sediment only', safe: false },
-            { name: 'None', risk: 'Waterborne disease', safe: false }
-          ];
-        </div>
-      </div>
-
-      <div class="reveal">
-        <h3>Rural Production Systems</h3>
-        <ol>
-          <li><strong>Rainwater Harvesting System:</strong> 
-            <ul>
-              <li>Collection surface: food-grade polyethylene or galvanized steel (painted with non-toxic paint)</li>
-              <li>First-flush diverter: discards initial contaminated runoff</li>
-              <li>Filtration train: sediment filter → activated carbon → final polish</li>
-              <li>Storage: dark-covered containers to prevent algae growth</li>
-              <li>Maintenance: monthly cleaning, filter replacement every 3-6 months</li>
-            </ul>
-          </li>
-          <li><strong>Solar Power Basics:</strong>
-            <ul>
-              <li>Panel: 50W minimum for essential devices</li>
-              <li>Charge controller: prevents battery overcharging</li>
-              <li>Battery: 12V deep-cycle, sized for 2-3 days autonomy</li>
-              <li>Inverter: only if AC devices needed (converts 12V DC to 110/220V AC)</li>
-            </ul>
-          </li>
-        </ol>
-      </div>
-
-      <div class="reveal">
-        <h3>Urban Production Systems</h3>
-        <ol>
-          <li><strong>Container Gardening:</strong>
-            <ul>
-              <li>Use 5-gallon minimum containers with drainage holes</li>
-              <li>Soil mix: 60% compost, 30% peat/cocopeat, 10% perlite</li>
-              <li>Plants: herbs, leafy greens, cherry tomatoes (high yield, small space)</li>
-              <li>Light: south-facing windowsills, supplemental LED if power available</li>
-            </ul>
-          </li>
-          <li><strong>Sprouting for Nutrition:</strong>
-            <ul>
-              <li>Seeds: lentils, mung beans, chickpeas, radish</li>
-              <li>Process: rinse 2-3 times daily, drain, keep at room temperature</li>
-              <li>Harvest: 2-3 days from dry seed to edible sprouts</li>
-              <li>Yield: 3-4 cups sprouts from 1 cup dry seed</li>
-            </ul>
-          </li>
-          <li><strong>Waste-to-Resource:</strong>
-            <ul>
-              <li>Greywater reuse: filter through sand column for plant irrigation</li>
-              <li>Composting human waste: only with proper training and materials (lime, carbon source)</li>
-              <li>Urine diversion: nitrogen source for compost if properly diluted (1:8 with water)</li>
-            </ul>
-          </li>
-        </ol>
-      </div>
-
-      <div class="divider"></div>
-    </section>
-
-    <!-- Political Parties & Conflict Section -->
-    <section id="section-politics">
-      <h2>Political Parties, Conflict & Security Policy: Comparative Examples</h2>
-      
-      <div class="reveal">
-        <p>The following examples illustrate how different political parties approach security, defense, and conflict policy across countries. These are <strong>historical illustrations</strong>, not current platform endorsements. Accountability for policy decisions rests with the voters and elected officials who implement them.</p>
-      </div>
-
-      <div class="animated-example">
-        <div class="example-title">Colombia: 2016 FARC Peace Agreement</div>
-        <div class="code-block" id="colombia-debate">
-          /* Key Political Divisions */
-          const colombiaParties = {
-            conservative: 'Former President Álvaro Uribe & Centro Democrático opposed the agreement, arguing it lacked adequate justice for victims',
-            liberal: 'Supported political participation component of the 2016 agreement',
-            socialist: 'FARC-EP transitioned to political party after disarmament',
-            outcome: 'Center Democraticos withdrew from Congress during revised accord vote',
-            source: 'HRW criticized aspects of justice arrangements; ABColombia reported party walkout'
-          };
-        </div>
-      </div>
-
-      <div class="reveal">
-        <h3>Colombia Context</h3>
-        <p>The 2016 peace agreement between the Colombian government and FARC-EP included six main components: one was <strong>political participation</strong>. The agreement envisioned FARC disarming and forming a political organization participating in Colombia's democratic system. However, former President Álvaro Uribe and his Centro Democrático party opposed the agreement, arguing it did not adequately ensure justice for victims. Human Rights Watch criticized aspects of the proposed justice arrangements and examined the record of Uribe's administration. A contemporaneous account reported that the Centro Democrático party withdrew from Congress during the vote on the revised accord.</p>
-        <p><strong>Sources:</strong> <a href="https://www.peaceagreements.org/agreements/wgg/1845/" target="_blank">PA-X: Final Agreement to End the Armed Conflict</a> | <a href="https://www.hrw.org/news/2016/08/16/colombia-peace-deals-unwelcome-critic" target="_blank">Human Rights Watch</a> | <a href="https://www.abcolombia.org.uk/revised-peace-accord-ratified-colombian-congress/" target="_blank">ABColombia</a></p>
-      </div>
-
-      <div class="animated-example">
-        <div class="example-title">United Kingdom: 2024 Election Manifestos</div>
-        <div class="code-block" id="uk-manifestos">
-          /* 2024 Security Comparison */
-          const ukParties = {
-            conservative: 'Supported raising defence spending, supported nuclear capability, NATO membership',
-            labour: 'Supported raising defence spending, favoured parliamentary oversight of arms exports',
-            liberal_democrat: 'Supported raising defence spending, favoured international diplomacy and arms-control',
-            green: 'No additional military-spending commitment; focused on human and environmental security',
-            reform_uk: 'Supported raising defence spending; particular emphasis on national sovereignty and border control'
-          };
-        </div>
-      </div>
-
-      <div class="reveal">
-        <h3>UK 2024 Election Security Comparison</h3>
-        <p>A 2024 comparison of the five largest parties' manifestos found differences in how they framed defence, alliances, nuclear policy, arms exports, and peacebuilding. The analysis reported that the Conservatives, Labour, Liberal Democrats, and Reform UK supported raising defence spending, while the Greens made no additional military-spending commitment. Differences were also described over nuclear policy, parliamentary oversight, arms exports, NATO, and positions on international conflicts. This was a snapshot of the 2024 manifestos, not a description of current party policy.</p>
-        <p><strong>Source:</strong> <a href="https://rethinkingsecurity.org.uk/2024/06/28/ge2024-what-the-manifestos-say-about-security/" target="_blank">Rethinking Security: GE2024 manifestos and international security</a></p>
-      </div>
-
-      <div class="animated-example">
-        <div class="example-title">United States: Party Platforms on Military & Security</div>
-        <div class="code-block" us-platforms">
-          /* US Party Comparison */
-          const usParties = {
-            democrat: 'Generally favour defence spending with oversight; support international alliances; arms-control diplomacy',
-            republican: 'Favor increased defence spending; strong NATO stance; emphasis on military readiness',
-            libertarian: 'Favour significant defence budget reductions; non-interventionist foreign policy',
-            green: 'Favour defence budget reduction; focus on human security, diplomacy, and arms-control'
-          };
-        </div>
-      </div>
-
-      <div class="reveal">
-        <h3>US Party Platforms</h3>
-        <p>While specific platforms evolve, general patterns exist: the Democratic Party generally favors defense spending with oversight and international alliances; the Republican Party favors increased defense spending and strong alliance posture; the Libertarian Party favors significant defense budget reductions and non-interventionism; the Green Party favors defense budget reduction and focus on human security, diplomacy, and arms-control. These are tendencies, not absolute positions, and individual candidates vary widely.</p>
-        <p><strong>Note:</strong> Accountability for military and security policy decisions rests with voters, elected officials, and oversight bodies. No single party holds monopoly on responsibility for war and peace outcomes.</p>
-      </div>
-
-      <div class="divider"></div>
-    </section>
-
-    <!-- Knowledge Validation Section -->
-    <section id="section-quiz">
-      <h2>Knowledge Validation</h2>
-      
-      <div class="reveal">
-        <p>Test your understanding. Answer all questions to complete the manual. Your results are for self-assessment only.</p>
-      </div>
-
-      <div class="quiz" id="quiz-1">
-        <h3>Question 1: Rural Survival</h3>
-        <p>When you encounter a suspicious object in a rural conflict zone, what should you do?</p>
-        <div class="options" id="options-1">
-          <label><input type="radio" name="q1" value="a"> Approach to identify it</label>
-          <label><input type="radio" name="q1" value="b"> Move it to examine it</label>
-          <label><input type="radio" name="q1" value="c"> Treat it as dangerous, do not approach, report through local channel</label>
-          <label><input type="radio" name="q1" value="d"> Ignore it and continue</label>
-        </div>
-      </div>
-
-      <div class="quiz" id="quiz-2">
-        <h3>Question 2: Urban Shelter Decision</h3>
-        <p>In a city experiencing armed conflict, what factors should influence your decision to shelter in place or evacuate?</p>
-        <div class="options" id="options-2">
-          <label><input type="radio" name="q2" value="a"> Always evacuate — it's safer to leave</label>
-          <label><input type="radio" name="q2" value="b"> Shelter in place only if immediate threat is nearby; otherwise evaluate route safety</label>
-          <label><input type="radio" name="q2" value="c"> Evacuate only if someone tells you to</label>
-          <label><input type="radio" name="q2" value="d"> Never shelter — always find open ground</label>
-        </div>
-      </div>
-
-      <div class="quiz" id="quiz-3">
-        <h3>Question 3: Political Parties & Conflict</h3>
-        <p>In the 2016 Colombian peace agreement, what was one of the six main components?</p>
-        <div class="options" id="options-3">
-          <label><input type="radio" name="q3" value="a"> Military expansion</label>
-          <label><input type="radio" name="q3" value="b"> Political participation</label>
-          <label><input type="radio" name="q3" value="c"> Currency reform</label>
-          <label><input type="radio" name="q3" value="d"> Trade tariffs</label>
-        </div>
-      </div>
-
-      <button class="submit-btn" onclick="validateAnswers()">Submit Answers</button>
-
-      <div id="results-1" class="result" style="display: none;"></div>
-      <div id="results-2" class="result" style="display: none;"></div>
-      <div id="results-3" class="result" style="display: none;"></div>
-    </section>
-
-    <!-- External References -->
-    <section class="references" id="references">
-      <h3>External References & Sources</h3>
-      <ul>
-        <li><a href="https://www.icrc.org/en/law-and-policy/explosive-remnants-war" target="_blank">ICRC: Explosive Remnants of War</a></li>
-        <li><a href="https://www.icrc.org/en/law-and-policy/urban-warfare-and-violence" target="_blank">ICRC: Urban Warfare and Violence</a></li>
-        <li><a href="https://blogs.icrc.org/law-and-policy/2021/05/11/preparedness-in-urban-operations/" target="_blank">ICRC Blog: Preparedness in Urban Operations</a></li>
-        <li><a href="https://www.ready.gov/plan" target="_blank">FEMA/Ready.gov: Make a Plan</a></li>
-        <li><a href="https://www.cdc.gov/health-literacy/php/develop-materials/plain-language.html" target="_blank">CDC: Plain Language Materials</a></li>
-        <li><a href="https://digital.gov/guides/plain-language" target="_blank">Digital.gov: Plain Language Guide</a></li>
-        <li><a href="https://www.peaceagreements.org/agreements/wgg/1845/" target="_blank">PA-X: Colombia 2016 Final Agreement</a></li>
-        <li><a href="https://www.hrw.org/news/2016/08/16/colombia-peace-deals-unwelcome-critic" target="_blank">HRW: Colombia Peace Deal's Unwelcome Critic</a></li>
-        <li><a href="https://www.abcolombia.org.uk/revised-peace-accord-ratified-colombian-congress/" target="_blank">ABColombia: Revised Peace Accord Ratified</a></li>
-        <li><a href="https://2009-2017.state.gov/secretary/remarks/2016/12/264709.htm" target="_blank">U.S. State Dept: Revised Colombia Peace Accord</a></li>
-        <li><a href="https://rethinkingsecurity.org.uk/2024/06/28/ge2024-what-the-manifestos-say-about-security/" target="_blank">Rethinking Security: GE2024 Manifestos</a></li>
-      </ul>
-    </section>
+  <h3 id="p1-fire">1.2 Fire: heat, light, cooking and water purification</h3>
+  <p>Fire needs three elements, the <b>fire triangle</b>: heat, fuel and oxygen. Once a fire is burning and chain reactions sustain it, you have the fourth side, which makes it a <b>fire tetrahedron</b>. Remove any side and the fire stops. Click a side in the animation to remove it.</p>
+  <div class="card fire-wrap">
+    <svg viewBox="0 0 260 260" width="260" height="260" role="img" aria-label="Fire triangle interactive">
+      <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3a0"/><stop offset=".5" stop-color="#ff8a3d"/><stop offset="1" stop-color="#ff4d5e"/></linearGradient></defs>
+      <line class="side" data-side="heat" x1="130" y1="30" x2="40" y2="210" stroke="#ff8a3d" stroke-width="4"/>
+      <line class="side" data-side="fuel" x1="40" y1="210" x2="220" y2="210" stroke="#3dd6c6" stroke-width="4"/>
+      <line class="side" data-side="oxygen" x1="220" y1="210" x2="130" y2="30" stroke="#8ba0b5" stroke-width="4"/>
+      <text x="130" y="18" text-anchor="middle" fill="#ff8a3d" font-size="13" font-weight="700">HEAT (side)</text>
+      <text x="40" y="235" text-anchor="middle" fill="#3dd6c6" font-size="13" font-weight="700">FUEL</text>
+      <text x="220" y="235" text-anchor="middle" fill="#8ba0b5" font-size="13" font-weight="700">OXYGEN</text>
+      <g class="flame" id="flame">
+        <path d="M130 150 C105 130 115 110 125 95 C122 115 135 120 138 100 C160 125 152 160 130 165 C112 168 110 160 130 150Z" fill="url(#fg)"/>
+      </g>
+      <g class="smoke" id="smoke"><circle cx="130" cy="88" r="8" fill="#8ba0b5"/><circle cx="118" cy="70" r="6" fill="#8ba0b5"/></g>
+    </svg>
+    <div>
+      <p id="fireState"><b>Status:</b> burning. Click a side (the coloured lines) to remove it.</p>
+      <p><button class="btn" id="fireReset">Reset fire</button></p>
+      <p><small>Practical translation: <b>heat</b> = a spark or match and then kindling; <b>fuel</b> = dry tinder, kindling, fuel wood in order of size; <b>oxygen</b> = air flow. Smothering with a lid removes oxygen. Water removes heat. Removing the fuel (e.g. pulling burning wood out) removes fuel.</small></p>
+    </div>
   </div>
 
-  <script>
-    // Knowledge validation
-    function validateAnswers() {
-      let allSelected = true;
-      let correctCount = 0;
-      let totalQuestions = 3;
-      
-      // Question 1: Rural Survival
-      const q1 = document.querySelector('input[name="q1"]:checked');
-      const q1Result = document.getElementById('results-1');
-      
-      if (!q1) {
-        allSelected = false;
-        alert('Please answer all questions first.');
-        return;
-      }
-      
-      const q1Answer = q1.value;
-      const q1Correct = q1Answer === 'c';
-      
-      if (q1Correct) correctCount++;
-      document.querySelectorAll('#options-1 label').forEach(label => {
-        label.classList.toggle('correct', q1Correct && label.querySelector('input').value === 'c');
-        label.classList.toggle('wrong', !q1Correct && label.querySelector('input').value === 'c');
-      });
-      
-      // Question 2: Urban Shelter
-      const q2 = document.querySelector('input[name="q2"]:checked');
-      const q2Result = document.getElementById('results-2');
-      
-      const q2Answer = q2.value;
-      const q2Correct = q2Answer === 'b';
-      
-      if (q2Correct) correctCount++;
-      document.querySelectorAll('#options-2 label').forEach(label => {
-        label.classList.toggle('correct', q2Correct && label.querySelector('input').value === 'b');
-        label.classList.toggle('wrong', !q2Correct && label.querySelector('input').value === 'b');
-      });
-      
-      // Question 3: Political Parties
-      const q3 = document.querySelector('input[name="q3"]:checked');
-      const q3Result = document.getElementById('results-3');
-      
-      const q3Answer = q3.value;
-      const q3Correct = q3Answer === 'b';
-      
-      if (q3Correct) correctCount++;
-      document.querySelectorAll('#options-3 label').forEach(label => {
-        label.classList.toggle('correct', q3Correct && label.querySelector('input').value === 'b');
-        label.classList.toggle('wrong', !q3Correct && label.querySelector('input').value === 'b');
-      });
-      
-      // Show results
-      const resultsContainer = document.getElementById('results-1').parentNode;
-      resultsContainer.innerHTML = '';
-      
-      const resultsHtml = `
-        <div class="result ${correctCount === 3 ? 'correct' : 'wrong'}">
-          <strong>Score: ${correctCount}/${totalQuestions}</strong>
-          ${correctCount === 3 ? '<p>Excellent! You've grasped the key principles.</p>' : '<p>Review the manual sections and try again.</p>'}
-          <p>${correctCount === 3 ? 'All answers correct — you understand the core survival principles.' : 'Some answers need review.'}</p>
-        </div>
-      `;
-      
-      // Insert results after each quiz
-      document.getElementById('quiz-1').insertAdjacentHTML('afterend', resultsHtml);
+  <p><b>Fire-building, step by step.</b> Prepare three piles: <i>tinder</i> (dry grass, bark shavings, dry pine needles, cotton wool with petroleum jelly), <i>kindling</i> (pencil to thumb-thick twigs), and <i>fuel</i> (wrist to arm thick wood). Build a teepee or a lean-to over the tinder, light from downwind, feed the smallest size first and increase gradually. Keep a supply of dry wood under cover before the storm, not during it.</p>
+  <div class="bad"><b>Bad decision: a charcoal grill or generator inside a closed room.</b> Each year people die from carbon monoxide poisoning after running grills, camp stoves, generators or car engines in closed garages, tents and homes. CO is colourless and odourless and produces headache, dizziness, confusion and death without warning<sup><a class="cite" href="#ref-5">[5]</a></sup>. <b>Better:</b> cook and heat only outdoors or in a ventilated space, and install a battery-backed CO alarm.</div>
+
+  <h3 id="p1-shelter">1.3 Shelter: controlling heat loss</h3>
+  <p>In cold conditions you lose heat by four routes: <b>conduction</b> (touching the ground or wet clothing), <b>convection</b> (wind), <b>radiation</b> (to the cold sky) and <b>evaporation</b> (sweat, wet clothes). A good shelter cuts all four. The animation shows the heat escaping from an uninsulated shelter; toggle the insulation to see how the loss changes.</p>
+  <div class="heat">
+    <div class="house" id="house"><div style="text-align:center;margin-top:36px;color:var(--muted);font-family:var(--mono);font-size:.85rem">SHELTER</div></div>
+    <span class="arrow a1">&#8593;</span><span class="arrow a2">&#8592;</span><span class="arrow a3">&#8594;</span><span class="arrow a4">&#8595;</span>
+  </div>
+  <div style="text-align:center"><button class="btn primary" id="insulateBtn">Toggle insulation (ground pad, wall, roof)</button></div>
+  <ul>
+    <li><b>Site:</b> away from dead standing trees, avalanche paths, flood plains and dry riverbeds (flash floods). Prefer the lee of a ridge, under a stand of living trees.</li>
+    <li><b>Lean-to:</b> a ridge pole on two supports, ribs of sticks, and 30 to 50 cm of debris on top. Face the opening away from the wind and build a reflector fire in front.</li>
+    <li><b>Insulate from the ground first:</b> a thick layer of dry leaves or boughs. Ground contact steals more heat than the air.</li>
+    <li><b>Keep the clothes dry.</b> Wet insulation loses most of its value. Change into dry layers before sleep.</li>
+  </ul>
+  <div class="bad"><b>Bad decision: sleeping on bare ground next to a fire in a tent.</b> The fire warms the front while your back loses heat to the soil, and a small tent draws a dangerous amount of CO and sparks. <b>Better:</b> insulate beneath, keep the fire at a safe distance, and ventilate.</div>
+
+  <h3 id="p1-food">1.4 Food: calories, foraging, preservation and production</h3>
+  <p>An adult at rest needs about 2,000 to 2,500 kcal a day; cold weather, heavy work and growth push that higher. Starvation takes weeks, but energy deficit in the cold accelerates hypothermia and poor decisions. Prioritise <b>calorie-dense, low-spoilage</b> foods: rice, oats, dried beans, nuts, oils, dried meat, hard cheese, honey and sugar. Store them dry and sealed from pests.</p>
+  <table>
+    <tr><th>Food</th><th>Approx. energy</th><th>Storage notes</th></tr>
+    <tr><td>White rice (dry)</td><td>about 3,600 kcal/kg</td><td>Years in sealed, cool, dry containers; oxygen absorbers help.</td></tr>
+    <tr><td>Rolled oats</td><td>about 3,900 kcal/kg</td><td>Months; rancidity is the enemy of oats and nuts.</td></tr>
+    <tr><td>Dried beans and lentils</td><td>about 3,300 kcal/kg</td><td>Years; must be cooked fully (red kidney beans need a rolling boil for at least 10 minutes to destroy the toxin phytohaemagglutinin).</td></tr>
+    <tr><td>Cooking oil</td><td>about 8,800 kcal/kg</td><td>Months; dark, cool, sealed.</td></tr>
+  </table>
+
+  <div class="bad"><b>Bad decision: eating unidentified wild plants or mushrooms.</b> Death-cap mushrooms (<i>Amanita phalloides</i>) look like edible species and cause liver failure days after eating, when the victim believes they have recovered. Water hemlock is one of the most toxic plants in North America. <b>Rule:</b> eat only what you can identify with certainty, using two independent field guides and a local expert, and never test-taste a plant you cannot name.</div>
+
+  <div class="good"><b>Good practice: production that works quickly.</b> Sprouting seeds (mung beans, lentils) gives fresh vitamin C-rich food in 3 to 5 days using a jar and water. A container garden with kale, potatoes, beans and herbs on a balcony produces food within 60 to 120 days. A seed library (saved open-pollinated seeds, labelled and dried) keeps your garden alive for years.</div>
+
+  <p><b>Preservation.</b> Drying (below 15% water content for most foods) and salting are reliable and need no power. Fermentation (sauerkraut, kimchi) is safe when salt ratios and anaerobic conditions are right. <b>Canning low-acid foods (vegetables, meat, beans) requires a pressure canner.</b> A boiling water bath cannot reach the temperature needed to destroy <i>Clostridium botulinum</i> spores; home-canned low-acid food is a classic cause of fatal botulism<sup><a class="cite" href="#ref-6">[6]</a></sup>.</p>
+
+  <h3 id="p1-nav">1.5 Navigation without a phone</h3>
+  <p>Use a paper map (scale and grid reference), a compass, and time. Set the map to north with the compass, then take a bearing on your next landmark. Carry a whistle; three blasts is the international distress signal. Mark your route by breadcrumbs (cairns, tape) only where it is safe to return.</p>
+  <div class="grid2">
+    <div class="card" style="text-align:center"><div class="compass" aria-label="Compass animation"><span class="n">N</span><span class="s">S</span><span class="e">E</span><span class="w">W</span><div class="needle"></div></div><figcaption>Needle sways around magnetic north. Declination (difference to true north) can be 10 to 20 degrees in some places: always check your map.</figcaption></div>
+    <div class="card">
+      <h3 style="margin-top:0">Shadow-stick method (rough east-west)</h3>
+      <ol class="steps" style="margin:0">
+        <li>Push a straight stick into flat ground at sunrise and mark the tip of its shadow.</li>
+        <li>Wait 15 to 30 minutes and mark the new shadow tip.</li>
+        <li>The line from the first mark to the second runs roughly west to east. Left is west.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h3 id="p1-firstaid">1.6 First aid in the field</h3>
+  <p>The usual wilderness killers are severe bleeding, hypothermia, heat illness and sprains with delayed evacuation. Stop the Bleed training teaches the core steps<sup><a class="cite" href="#ref-7">[7]</a></sup>:</p>
+  <ol class="steps">
+    <li><b>Severe bleeding:</b> press hard with a hand or cloth directly on the wound. If it keeps bleeding on a limb, apply a commercial tourniquet 5 to 7 cm above the wound, tighten until bleeding stops, and write the time on the patient's skin or clothing. Do not loosen it.</li>
+    <li><b>Hypothermia (below about 35 °C core):</b> shivering, slurred speech, clumsiness, confusion. Remove wet clothes, insulate from the ground, use warm dry layers and warm sweet drinks only if the person is alert. Handle gently: rough movement can trigger dangerous heart rhythms in severe cases.</li>
+    <li><b>Heat exhaustion:</b> heavy sweating, cramps, nausea, weakness. Move to shade, sip water with electrolytes, cool the skin. <b>Heat stroke</b> (confusion, hot dry or wet skin, collapse) is an emergency: cool aggressively, evacuate.</li>
+  </ol>
+  <div class="bad"><b>Bad decision: loosening a tourniquet after five minutes "to save the limb".</b> Once the bleeding is controlled with a tourniquet, releasing it can cause the victim to bleed out. Tourniquet removal belongs to a surgeon, not to a frightened bystander. <b>Better:</b> tighten, mark the time, and get the patient to care.</div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Planning: the go-bag and the stay-kit</h3>
+    <p>A <b>go-bag</b> is for leaving within minutes (documents, medicines, water for 72 hours, light, radio, copies of contacts). A <b>stay-kit</b> is for remaining home or in a shelter for 2 weeks (stored water, food, medicines, sanitation, fuel-free cooking, batteries). Keep both, rotate food and medicines, and practise the route out of the area once a year.<sup><a class="cite" href="#ref-2">[2]</a></sup></p>
+  </div>
+</div>
+</section>
+
+<!-- ======================= PART II ======================= -->
+<section class="chapter" id="p2">
+<div class="wrap">
+  <div class="part"><h2 style="border:0;margin-top:0">PART II. Inside the city in conflict or civil war</h2>
+  <p>In a city the disasters are layered: power and water fail, shops empty, police and armed groups compete for control, shelling or gunfire reaches residential blocks, and rumours spread faster than facts. Your priorities change: <b>avoid being targeted, get reliable information, keep your family together, and keep basic services running</b>.</p></div>
+
+  <h3 id="p2-threat">2.1 Read the threat: a map is a decision tool</h3>
+  <p>Conflict is not uniform. Districts differ by hour. Ask neighbours, aid workers and reliable local media what is happening, then classify your route and your neighbourhood. The map below is a demonstration: click each zone to see the response it calls for.</p>
+  <div class="cmap">
+    <button class="zone safe" data-zone="safe"><span class="dot"></span>Old town<br><small>no recent incidents</small></button>
+    <button class="zone contest" data-zone="contest"><span class="dot"></span>Market road<br><small>checkpoints, looting</small></button>
+    <button class="zone danger" data-zone="danger"><span class="dot"></span>Station square<br><small>shelling reported</small></button>
+    <button class="zone safe" data-zone="safe"><span class="dot"></span>Hillside homes<br><small>water trucks daily</small></button>
+  </div>
+  <div class="card" id="zoneInfo"><b>Click a zone.</b></div>
+
+  <h3 id="p2-info">2.2 Information hygiene</h3>
+  <p>In civil wars, false alarms and deliberate disinformation are weapons. Videos are re-labelled; old footage is presented as new; "evacuation" messages are sent to lure people into ambushes. Build a source ladder:</p>
+  <ol class="steps">
+    <li><b>Primary official channels:</b> local emergency authority, hospital, the municipal water utility, and humanitarian bodies such as the ICRC and UN OCHA (via ReliefWeb)<sup><a class="cite" href="#ref-16">[16]</a></sup>.</li>
+    <li><b>Independent local reporters</b> who name specific places, times and sources, and who correct themselves.</li>
+    <li><b>Your own eyes and your neighbours</b>, confirmed by two independent people before you act.</li>
+    <li><b>Social media</b> is the last step, never the first. Check whether an account is new, whether it posts constantly in several conflicts, and whether the image appears in older reports (reverse-image search).</li>
+  </ol>
+  <div class="bad"><b>Bad decision: moving on a single viral message.</b> A message that says "water truck at the stadium, go now" can be a rumour, a lure, or simply old news. Before moving, confirm with two independent sources and at least one official one. <b>Better:</b> wait 20 minutes, ask a neighbour who went out, and go in a group with a plan.</div>
+
+  <h3 id="p2-shelter">2.3 Shelter inside buildings</h3>
+  <p>The most common injuries in urban shelling are from glass, falling masonry and fragments. The safest location is the lowest level you can reach, in a room without windows or exterior walls, away from the side facing the threat. A basement or interior corridor with several walls between you and the outside is better than a sunny upper floor. Keep shoes, a torch and documents within reach. Do not stand at the top of stairs or on balconies to watch.</p>
+  <ul>
+    <li>Tape or cover windows with mattresses or heavy cloth; move beds and furniture away from glass.</li>
+    <li>Keep a gap in the corridor for quick exit, and avoid crowding.</li>
+    <li>Know two exits from your building and a meeting point for the family.</li>
+  </ul>
+  <div class="bad"><b>Bad decision: going to the roof or the window to look.</b> Curiosity about the sound of a blast gets people exposed. Curiosity is one of the most common reasons civilians are hurt by fragments and secondary blasts. Stay low, stay inside, listen to the radio.</div>
+
+  <h3 id="p2-utilities">2.4 Water, power and cooking in a city</h3>
+  <p>When the network fails, water is still the first priority: store water before the crisis (bathtubs, clean food-grade containers), find the nearest distribution point, and use the same treatment steps as Part I. Electricity is rarely restored on a predictable schedule, so plan for <b>no grid for at least 2 weeks</b>. Cook on a stove only in ventilated spaces, and never bring generators, grills or gas heaters inside.</p>
+  <div class="good"><b>Good practice: the family water rota.</b> Assign one adult per day to collect water from the distribution point, recording litres and the time. Use two containers that can be carried by hand. Keep a reserve for children and the sick. Share the rota with neighbours; a shared water rota is more reliable than a private one.</div>
+
+  <h3 id="p2-movement">2.5 Movement and checkpoints</h3>
+  <p>Checkpoints are dangerous because you are stressed and because the people controlling them are often frightened and under pressure. The safest approach is calm and predictable:</p>
+  <ol class="steps">
+    <li>Slow down well before the checkpoint. Do not rush toward it or try to turn around sharply.</li>
+    <li>Keep your hands visible, on the wheel or in plain sight. Do not reach into pockets or bags without warning.</li>
+    <li>Switch off the radio and lights as instructed, and tell the operator calmly what you are doing: "I am going to get my ID from the glove box."</li>
+    <li>Have ID, the purpose of travel and a list of family members ready. Answer briefly and honestly.</li>
+    <li>Do not photograph armed personnel or equipment, and do not argue. Follow instructions and leave when permitted.</li>
+    <li>Carry nothing that could be mistaken for a weapon or a tool of a party to the conflict.</li>
+  </ol>
+  <div class="bad"><b>Bad decision: taking photos for social media at a checkpoint.</b> Filming a checkpoint can be read as surveillance and can lead to detention, confiscation or worse. It also tells the people controlling it that you are a target. <b>Better:</b> document later, from a safe place, and share only with trusted contacts.</div>
+
+  <h3 id="p2-law">2.6 Civilian protection: know your rights and the limits</h3>
+  <p>International humanitarian law protects civilians and civilian objects in armed conflict. Under the Fourth Geneva Convention and its Additional Protocols, civilians who are not taking a direct part in hostilities must be treated humanely; medical personnel, hospitals and ambulances have specific protection; and attacks must distinguish between military and civilian targets<sup><a class="cite" href="#ref-8">[8]</a></sup>. In practice: protection is not automatic, enforcement is weak, and the law applies to the parties, not to you. Your best protections are distance, documentation and contact with humanitarian organisations.</p>
+  <p>If family members are separated, the ICRC's <b>Restoring Family Links</b> service can help trace and reconnect them<sup><a class="cite" href="#ref-9">[9]</a></sup>. Register names with the Red Cross or Red Crescent in your region.</p>
+
+  <h3 id="p2-comms">2.7 Communications when networks fail</h3>
+  <p>Mobile networks get overloaded or cut. Use layered options:</p>
+  <table>
+    <tr><th>Tool</th><th>What it does</th><th>Caveat</th></tr>
+    <tr><td><a href="https://signal.org/" target="_blank" rel="noopener">Signal</a><sup><a class="cite" href="#ref-15">[15]</a></sup></td><td>End-to-end encrypted messages and calls over the internet.</td><td>Needs data. Set a PIN and disable link previews on sensitive devices.</td></tr>
+    <tr><td><a href="https://briarproject.org/" target="_blank" rel="noopener">Briar</a><sup><a class="cite" href="#ref-11">[11]</a></sup></td><td>Peer-to-peer encrypted messaging that can sync over Bluetooth or Wi-Fi with nearby contacts, without a central server.</td><td>Needs the other person within range; you must exchange contacts in advance.</td></tr>
+    <tr><td><a href="https://meshtastic.org/" target="_blank" rel="noopener">Meshtastic</a><sup><a class="cite" href="#ref-10">[10]</a></sup></td><td>Open-source LoRa mesh radios that relay short text messages across kilometres without cell towers.</td><td>Hardware cost; range depends on terrain; not built for secrecy.</td></tr>
+    <tr><td><a href="https://kiwix.org/en/" target="_blank" rel="noopener">Kiwix</a><sup><a class="cite" href="#ref-12">[12]</a></sup></td><td>Offline copies of Wikipedia, medical guides and manuals on a phone or laptop.</td><td>Download before the crisis; keep copies on two devices.</td></tr>
+    <tr><td><a href="https://www.openstreetmap.org/" target="_blank" rel="noopener">OpenStreetMap</a><sup><a class="cite" href="#ref-14">[14]</a></sup></td><td>Free map data that can be stored for offline navigation.</td><td>Download map tiles for your region in advance.</td></tr>
+    <tr><td><a href="https://www.ushahidi.com/" target="_blank" rel="noopener">Ushahidi</a><sup><a class="cite" href="#ref-13">[13]</a></sup></td><td>Crowdsourced crisis reporting and mapping used by responders in many emergencies.</td><td>Reports are unverified until cross-checked.</td></tr>
+    <tr><td>Amateur (ham) radio</td><td>Long-range voice and data without infrastructure.</td><td>Requires a licence in most countries; encryption is generally prohibited on amateur bands.</td></tr>
+  </table>
+  <div class="bad"><b>Bad decision: relying on one channel.</b> Phones die, towers fall and encryption apps are blocked. Keep a paper contact list, agree on a check-in point and time, and keep at least one channel that does not depend on the internet.</div>
+
+  <h3 id="p2-social">2.8 Community: the strongest survival tool in a city</h3>
+  <p>Across the disaster and siege accounts that humanitarian agencies document, families tend to fare better when they are connected: they shared water rotas, child care, medicine, information and warnings. Isolation is the most dangerous posture. Organise a building or street group with a list of who is vulnerable (elderly, pregnant, disabled, children), who has medical training, who has water and who has power.</p>
+</div>
+</section>
+
+<!-- ======================= PART III ======================= -->
+<section class="chapter" id="p3">
+<div class="wrap">
+  <div class="part"><h2 style="border:0;margin-top:0">PART III. Production and new ideas for safety</h2>
+  <p>Surviving is not only avoiding loss. It is producing the things you need, safely, repeatedly and with the people around you.</p></div>
+
+  <h3 id="p3-rain">3.1 Rain catchment (produce water)</h3>
+  <p>Rainfall is measured in millimetres. One millimetre of rain over one square metre of roof collects about <b>1 litre</b>. A 50 m² roof therefore yields roughly 50 litres per 1 mm of rain, and 20 mm of rain can give about 1,000 litres. Use gutters, a first-flush diverter that discards the first few litres (which carry roof dirt and bird droppings), a food-grade tank with a lid and a mosquito screen, and disinfect before drinking.</p>
+  <div class="card">
+    <p><b>Calculator:</b> litres = roof area (m²) × rainfall (mm) × 0.8 (typical collection efficiency for corrugated roofs). Example: 60 m² × 15 mm × 0.8 = 720 litres.</p>
+  </div>
+
+  <h3 id="p3-solar">3.2 Solar and low-power light</h3>
+  <p>A small 50 to 100 W solar panel with a charge controller and a 12 V battery powers LED lights, a radio and phone charging. Size the battery with: watt-hours needed per day ÷ battery voltage = amp-hours. Use lithium-iron-phosphate (LiFePO4) batteries where safe, or sealed lead-acid batteries that are well-ventilated. Never charge lithium cells in a sealed room, and never leave them in a hot car.</p>
+  <div class="good"><b>Good practice: passive cooling and a solar oven.</b> A solar box oven built from cardboard, foil and glass can reach 120 to 150 °C in full sun and pasteurise water and cook beans. Passive cooling (shade, cross-ventilation, wet cloth on windows, bedding at night) cuts heat stress without power.</div>
+
+  <h3 id="p3-food">3.3 Food and micronutrients</h3>
+  <p>Sprouting, container gardening, seed saving and fermentation keep your family fed with few inputs. Combine staples with fats and protein: beans and rice, oats with nuts, eggs or fish where available. Rotate crops, keep compost, and track yield per square metre so you know how much land feeds your household.</p>
+
+  <h3 id="p3-ideas">3.4 New ideas to stay safe</h3>
+  <div class="grid2">
+    <div class="card"><h3 style="margin-top:0">Neighbourhood mesh</h3><p>Pair a Meshtastic node with a neighbour's node and a shared hall or mosque, church or school radio. Test it weekly; a dead network is a rumour machine.</p></div>
+    <div class="card"><h3 style="margin-top:0">Cooperative water bank</h3><p>Each household stores 40 litres. A shared tank in the courtyard covers people who cannot store water, managed by a rota and logged in a notebook.</p></div>
+    <div class="card"><h3 style="margin-top:0">Medical kit sharing</h3><p>Pool tourniquets, dressings, oral rehydration salts, antibiotics prescribed for the household, and a trained first-aider on each block.</p></div>
+    <div class="card"><h3 style="margin-top:0">Digital offline library</h3><p>Keep Kiwix with medical and repair guides, offline maps and language dictionaries on two devices plus a printed copy of the essentials.</p></div>
+    <div class="card"><h3 style="margin-top:0">Family plan and safe words</h3><p>Pick two meeting points (one near, one far), an out-of-area contact everyone calls, and a check-in time. Teach children their home address and the contact number by heart.</p></div>
+    <div class="card"><h3 style="margin-top:0">Bike or hand-crank power</h3><p>A bicycle with a dynamo or alternator can charge a battery in a few hours of pedalling and doubles as transport and exercise for the whole family.</p></div>
+  </div>
+
+  <div class="bad"><b>Bad decision: stockpiling weapons instead of water and medicine.</b> Weapons do not solve dehydration, infection, cold or disease, and they make your family a target and a risk. Most survival deaths come from the first three rows of the Rule of Threes, not from crime.</div>
+  <div class="bad"><b>Bad decision: "I'll buy it when it happens".</b> Supply chains close first. Prices spike, shops empty and transport stops. Buy water, rice, medicines and batteries in small amounts continuously, and rotate stock.</div>
+  <div class="bad"><b>Bad decision: refusing to leave when officials order evacuation.</b> Evacuation orders often come after the risk has grown beyond the ability to rescue. Leave early, with the go-bag, and with your neighbours.</div>
+</div>
+</section>
+
+<!-- ======================= DECISION LAB ======================= -->
+<section class="chapter" id="decisions">
+<div class="wrap">
+  <h2>4. Decision Lab: test your judgement</h2>
+  <p>Each scenario reflects a common pattern in accidents and conflict situations. Pick the option you think is right. The lab tells you why.</p>
+  <div id="scenarios"></div>
+</div>
+</section>
+
+<!-- ======================= CALCULATOR ======================= -->
+<section class="chapter" id="calc">
+<div class="wrap">
+  <h2>5. Survival calculator</h2>
+  <p>Enter your household, the climate and the duration to estimate water and calorie needs. The model uses the Sphere emergency water minimum of 15 litres per person per day, and an energy baseline of 2,200 kcal per adult per day, scaled for cold, labour and children. Results are planning figures; adjust them for your own medical needs.</p>
+  <div class="card">
+    <div class="calc">
+      <div><label for="cPeople">People</label><input type="number" id="cPeople" min="1" max="500" value="4"></div>
+      <div><label for="cDays">Days to cover</label><input type="number" id="cDays" min="1" max="365" value="14"></div>
+      <div><label for="cClimate">Climate</label><select id="cClimate"><option value="1">Temperate</option><option value="1.2">Hot / dry (more drinking)</option><option value="0.9">Humid & cool</option></select></div>
+      <div><label for="cActivity">Activity</label><select id="cActivity"><option value="1">Mostly at rest</option><option value="1.2">Moderate labour</option><option value="1.4">Heavy labour / cold</option></select></div>
+      <div><label for="cChildren">Children under 12 (count)</label><input type="number" id="cChildren" min="0" max="500" value="1"></div>
+      <div><label for="cRoof">Roof area for rain (m²)</label><input type="number" id="cRoof" min="0" value="60"></div>
+      <div><label for="cRain">Expected rain (mm, total)</label><input type="number" id="cRain" min="0" value="20"></div>
+    </div>
+    <div style="margin-top:14px"><button class="btn primary" id="calcBtn">Calculate</button></div>
+    <div class="out" id="calcOut">Press Calculate.</div>
+  </div>
+</div>
+</section>
+
+<!-- ======================= REFERENCES ======================= -->
+<section class="chapter refs" id="references">
+<div class="wrap">
+  <h2>6. References and external sources</h2>
+  <p>Every external source was checked for availability. Read them: the guidance changes, and official pages are updated faster than any book.</p>
+  <ol>
+    <li id="ref-1">CDC, Emergency water treatment: <a href="https://www.cdc.gov/water-emergency/about/index.html" target="_blank" rel="noopener">cdc.gov/water-emergency</a></li>
+    <li id="ref-2">Ready.gov, Water and emergency preparedness: <a href="https://www.ready.gov/water" target="_blank" rel="noopener">ready.gov/water</a></li>
+    <li id="ref-3">Sphere Handbook, humanitarian standards (water supply): <a href="https://interactive.spherestandards.org/" target="_blank" rel="noopener">interactive.spherestandards.org</a></li>
+    <li id="ref-4">SODIS, solar water disinfection method: <a href="https://www.sodis.ch/methode/index_EN.html" target="_blank" rel="noopener">sodis.ch</a></li>
+    <li id="ref-5">CDC, Carbon monoxide poisoning: <a href="https://www.cdc.gov/carbon-monoxide/about/index.html" target="_blank" rel="noopener">cdc.gov/carbon-monoxide</a></li>
+    <li id="ref-6">National Center for Home Food Preservation, recommended canners and low-acid processing: <a href="https://nchfp.uga.edu/how/can/general-information/recommended-canners/" target="_blank" rel="noopener">nchfp.uga.edu</a></li>
+    <li id="ref-7">Stop the Bleed (American College of Surgeons): <a href="https://www.stopthebleed.org/" target="_blank" rel="noopener">stopthebleed.org</a></li>
+    <li id="ref-8">ICRC, Geneva Convention IV (civilian protection): <a href="https://ihl-databases.icrc.org/en/ihl-treaties/gciv-1949" target="_blank" rel="noopener">ihl-databases.icrc.org</a></li>
+    <li id="ref-9">ICRC, Reconnecting families (Restoring Family Links): <a href="https://www.icrc.org/en/what-we-do/reconnecting-families" target="_blank" rel="noopener">icrc.org</a></li>
+    <li id="ref-10">Meshtastic, open-source off-grid mesh messaging: <a href="https://meshtastic.org/" target="_blank" rel="noopener">meshtastic.org</a></li>
+    <li id="ref-11">Briar Project, decentralised secure messaging: <a href="https://briarproject.org/" target="_blank" rel="noopener">briarproject.org</a></li>
+    <li id="ref-12">Kiwix, offline access to Wikipedia and other content: <a href="https://kiwix.org/en/" target="_blank" rel="noopener">kiwix.org</a></li>
+    <li id="ref-13">Ushahidi, crowdsourced crisis mapping: <a href="https://www.ushahidi.com/" target="_blank" rel="noopener">ushahidi.com</a></li>
+    <li id="ref-14">OpenStreetMap, free map data: <a href="https://www.openstreetmap.org/" target="_blank" rel="noopener">openstreetmap.org</a></li>
+    <li id="ref-15">Signal, end-to-end encrypted messaging: <a href="https://signal.org/" target="_blank" rel="noopener">signal.org</a></li>
+    <li id="ref-16">ReliefWeb (UN OCHA), humanitarian situation reports: <a href="https://reliefweb.int/" target="_blank" rel="noopener">reliefweb.int</a></li>
+  </ol>
+</div>
+</section>
+</main>
+
+<!-- ======================= MANUAL ======================= -->
+<div id="manual" class="view hidden">
+<section class="chapter">
+<div class="wrap">
+  <h2>Technical Manual: Survival Certification</h2>
+  <p>The manual is organised in five levels. Each level contains numbered modules and a quiz. <b>You need at least 80% on a quiz to unlock the next level.</b> Progress is saved in this browser. Read the modules, then answer the quiz. Each module cites references in the article.</p>
+  <div class="progressbar"><span id="progressFill"></span></div>
+  <div class="manual">
+    <aside class="toc" id="toc"><h3>Levels</h3></aside>
+    <article class="manual-page" id="manualPage"></article>
+  </div>
+  <div style="text-align:center"><button class="btn" id="resetProgress">Reset manual progress</button> <a class="btn" href="#article" data-go="article">Back to the article</a></div>
+</div>
+</section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p><a href="index.html">Home (index.html)</a> &middot; Single-file dossier, vanilla HTML/CSS/JavaScript, no external scripts, fonts or images are loaded. Links above open external sites only when you click them.</p>
+    <p>This guide is for education and preparedness. In any real emergency, follow local authorities, emergency services and qualified medical advice first.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- view switching (article / manual) ---------- */
+  var article = document.getElementById("article");
+  var manual = document.getElementById("manual");
+  function showView(name) {
+    var isManual = name === "manual";
+    article.classList.toggle("hidden", isManual);
+    manual.classList.toggle("hidden", !isManual);
+    document.querySelectorAll(".topbar nav a[data-go]").forEach(function (a) {
+      a.classList.toggle("active", a.getAttribute("data-go") === name);
+    });
+  }
+  function routeFromHash() {
+    var h = (location.hash || "").replace("#", "");
+    if (h === "manual") { showView("manual"); return; }
+    showView("article");
+    if (h && document.getElementById(h)) {
+      setTimeout(function () { document.getElementById(h).scrollIntoView({ behavior: "smooth" }); }, 30);
     }
-    
-    // Reveal on scroll
-    document.addEventListener('DOMContentLoaded', function() {
-      const reveals = document.querySelectorAll('.reveal');
-      
-      const revealObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('active');
-          }
-        });
-      }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-      });
-      
-      reveals.forEach(element => {
-        revealObserver.observe(element);
-      });
+  }
+  window.addEventListener("hashchange", routeFromHash);
+  routeFromHash();
+
+  /* ---------- reveal on scroll ---------- */
+  var revealEls = document.querySelectorAll(".chapter .wrap > h2, .part, .card, .bad, .good, .note, .warn");
+  revealEls.forEach(function (el) { el.classList.add("reveal"); });
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.08 });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add("in"); });
+  }
+
+  /* ---------- fire triangle ---------- */
+  var flame = document.getElementById("flame");
+  var smoke = document.getElementById("smoke");
+  var fireState = document.getElementById("fireState");
+  var fireLabels = { heat: "heat", fuel: "fuel", oxygen: "oxygen" };
+  var removed = {};
+  function renderFire() {
+    var missing = Object.keys(removed).filter(function (k) { return removed[k]; });
+    var sides = document.querySelectorAll("[data-side]");
+    sides.forEach(function (s) { s.classList.toggle("off", !!removed[s.getAttribute("data-side")]); });
+    if (missing.length) {
+      flame.classList.add("out");
+      smoke.classList.add("on");
+      fireState.innerHTML = "<b>Status:</b> <span style='color:#ff4d5e'>extinguished</span>. Missing: " + missing.map(function (m) { return fireLabels[m]; }).join(", ") + ". Restore a side to relight.";
+    } else {
+      flame.classList.remove("out");
+      smoke.classList.remove("on");
+      fireState.innerHTML = "<b>Status:</b> burning. Click a side (the coloured lines) to remove it.";
+    }
+  }
+  document.querySelectorAll("[data-side]").forEach(function (s) {
+    s.addEventListener("click", function () {
+      var k = s.getAttribute("data-side");
+      removed[k] = !removed[k];
+      renderFire();
     });
-    
-    // Progress bar update
-    document.addEventSelector('change', 'input[type="radio"]', function() {
-      const answered = document.querySelectorAll('input[type="radio"]:checked').length;
-      const total = document.querySelectorAll('input[type="radio"]').length;
-      const progress = (answered / total) * 100;
-      document.querySelector('.progress-fill').style.width = `${progress}%`;
+  });
+  document.getElementById("fireReset").addEventListener("click", function () { removed = {}; renderFire(); });
+
+  /* ---------- heat loss toggle ---------- */
+  var house = document.getElementById("house");
+  var insulateBtn = document.getElementById("insulateBtn");
+  insulateBtn.addEventListener("click", function () {
+    var on = house.classList.toggle("insulated");
+    document.querySelectorAll(".heat .arrow").forEach(function (a) { a.classList.toggle("hide", on); });
+    insulateBtn.textContent = on ? "Remove insulation (watch heat escape)" : "Toggle insulation (ground pad, wall, roof)";
+  });
+
+  /* ---------- conflict map ---------- */
+  var zoneText = {
+    safe: "<b>Low risk.</b> Keep normal precautions: store water, keep documents ready, stay informed through two sources. Move with a plan, avoid crowds.",
+    contest: "<b>Contested.</b> Checkpoints and looting. Travel only if essential, in daylight, in a group, with your ID and a route agreed in advance. Do not stop to film or argue.",
+    danger: "<b>High risk.</b> Recent shelling. Do not approach. Move to the lowest, most interior room of the nearest safe building, away from windows, and wait for confirmed all-clear from official sources."
+  };
+  document.querySelectorAll(".zone").forEach(function (z) {
+    z.addEventListener("click", function () {
+      document.getElementById("zoneInfo").innerHTML = zoneText[z.getAttribute("data-zone")];
     });
-  </script>
+  });
+
+  /* ---------- decision lab ---------- */
+  var scenarios = [
+    {
+      q: "A winter storm cuts power. The apartment is at 8 °C and falling. What do you do?",
+      opts: [
+        { t: "Light the charcoal grill on the balcony and close the door to keep the heat in.", good: false, why: "Charcoal and gas produce carbon monoxide. Closing the door traps it. This kills people every winter. Cook and heat only with ventilation, and use a CO alarm." },
+        { t: "Put on dry layers, close off unused rooms, use sleeping bags and a battery lantern, and check neighbours.", good: true, why: "Reduce heat loss first (layers, fewer rooms, insulation from the floor). Community checks catch the elderly and the ill early." },
+        { t: "Run the car engine in the garage for heat.", good: false, why: "Exhaust in a closed garage is a fast route to fatal carbon monoxide poisoning." }
+      ]
+    },
+    {
+      q: "You are 12 km from home in a flood zone. The river is brown and fast, but the water in the side stream looks clear and cold.",
+      opts: [
+        { t: "Drink from the clear side stream; it looks cleanest.", good: false, why: "Clarity says nothing about pathogens. Clear water can carry Giardia, E. coli and viruses. Treat all unknown water." },
+        { t: "Use only treated water; if you need more, boil it for 1 minute (3 minutes above about 2,000 m) or use a filter plus disinfection.", good: true, why: "Boiling kills pathogens without requiring any test. Filters remove most protozoa and bacteria; chlorine or boiling deals with viruses." },
+        { t: "Drink the river water quickly before it gets dark.", good: false, why: "Flood water carries sewage, chemicals and debris. Fast water also drowns people who try to cross it." }
+      ]
+    },
+    {
+      q: "Gunfire is heard two streets away. A neighbour says he will film the scene from the roof for social media.",
+      opts: [
+        { t: "Go up with him to film; you want evidence too.", good: false, why: "Being on a roof or near a shelling area exposes you to fragments and snipers. Filming also draws attention from armed groups." },
+        { t: "Move to an inner room away from windows, stay low, and keep the family together.", good: true, why: "Distance, walls and staying low are the most effective protections in the first minutes." },
+        { t: "Run out to the street to see where it is coming from.", good: false, why: "Moving through open ground during an active attack is the most common way civilians are hit." }
+      ]
+    },
+    {
+      q: "A bleeding leg: the cloth is soaked through and blood is pulsing. You have a commercial tourniquet.",
+      opts: [
+        { t: "Apply the tourniquet 5 to 7 cm above the wound, tighten until bleeding stops, note the time.", good: true, why: "This is the standard instruction for severe limb bleeding. Note the time so the surgical team knows how long the limb was without flow." },
+        { t: "Wrap a loose bandage and check it in 20 minutes.", good: false, why: "Pulsing or spreading bleeding needs a tourniquet, not a loose bandage. Minutes matter." },
+        { t: "Apply the tourniquet, loosen it after 5 minutes to 'save the leg'.", good: false, why: "Loosening a working tourniquet can restart fatal bleeding. Do not remove it yourself." }
+      ]
+    },
+    {
+      q: "A viral video says a water truck is at the stadium 'right now, go'. Your children are thirsty and the route crosses a main road where checkpoints have been reported.",
+      opts: [
+        { t: "Go immediately with the children.", good: false, why: "A single unverified message, plus a route known for checkpoints, is the combination that gets families hurt." },
+        { t: "Check two independent sources (a neighbour who went out, the local authority, a humanitarian site), and go with an adult group and a plan if it's confirmed.", good: true, why: "Verification is the cheapest safety tool you have. Going in a group with a plan reduces risk at every step." },
+        { t: "Send the children alone; they are less suspicious at checkpoints.", good: false, why: "Using children as cover or sending them alone exposes them to direct danger and breaks the rules of protection." }
+      ]
+    }
+  ];
+  var scen = document.getElementById("scenarios");
+  scenarios.forEach(function (s, idx) {
+    var box = document.createElement("div");
+    box.className = "scenario";
+    var h = document.createElement("div");
+    h.innerHTML = "<b>Scenario " + (idx + 1) + ":</b> " + s.q;
+    box.appendChild(h);
+    var opts = document.createElement("div");
+    opts.className = "opts";
+    var res = document.createElement("div");
+    res.className = "result";
+    s.opts.forEach(function (o) {
+      var b = document.createElement("button");
+      b.className = "opt";
+      b.textContent = o.t;
+      b.addEventListener("click", function () {
+        res.className = "result " + (o.good ? "good" : "bad");
+        res.style.background = o.good ? "#0e1d15" : "#1d1217";
+        res.style.border = "1px solid " + (o.good ? "#4ade80" : "#ff4d5e");
+        res.innerHTML = "<b>" + (o.good ? "Right call." : "Bad decision.") + "</b> " + o.why;
+      });
+      opts.appendChild(b);
+    });
+    box.appendChild(opts);
+    box.appendChild(res);
+    scen.appendChild(box);
+  });
+
+  /* ---------- calculator ---------- */
+  function num(id) { return Math.max(0, parseFloat(document.getElementById(id).value) || 0); }
+  document.getElementById("calcBtn").addEventListener("click", function () {
+    var people = Math.max(1, num("cPeople"));
+    var days = Math.max(1, num("cDays"));
+    var climate = parseFloat(document.getElementById("cClimate").value);
+    var activity = parseFloat(document.getElementById("cActivity").value);
+    var children = Math.min(people, num("cChildren"));
+    var adults = people - children;
+    var waterPerDay = people * 15 * climate;
+    var drinkPerDay = (adults * 2.5 + children * 1.5) * climate;
+    var kcalPerDay = (adults * 2200 + children * 1400) * activity;
+    var totalWater = waterPerDay * days;
+    var totalKcal = kcalPerDay * days;
+    var riceKg = totalKcal / 3600;
+    var roof = num("cRoof");
+    var rain = num("cRain");
+    var collected = roof * rain * 0.8;
+    var out = document.getElementById("calcOut");
+    out.innerHTML =
+      "<div>Water (drinking, cooking, hygiene): <strong>" + waterPerDay.toFixed(1) + " L/day</strong> &rarr; <strong>" + totalWater.toFixed(0) + " L</strong> for " + days + " days</div>" +
+      "<div>of which drinking alone: <strong>" + drinkPerDay.toFixed(1) + " L/day</strong></div>" +
+      "<div>Energy: <strong>" + Math.round(kcalPerDay).toLocaleString() + " kcal/day</strong> &rarr; <strong>" + Math.round(totalKcal).toLocaleString() + " kcal</strong> total</div>" +
+      "<div>Equivalent dry rice: <strong>" + riceKg.toFixed(1) + " kg</strong> (about 3,600 kcal/kg; mix with beans and fats for balance)</div>" +
+      "<div>Rain collection from your roof: <strong>" + Math.round(collected) + " L</strong> (roof " + roof + " m², rain " + rain + " mm, 80% efficiency)</div>" +
+      "<div style='margin-top:8px;color:#facc15'>Water shortfall after rain: <strong>" + Math.max(0, Math.round(totalWater - collected)) + " L</strong> still needed from stored or distributed sources.</div>";
+  });
+  document.getElementById("calcBtn").click();
+
+  /* ---------- manual: levels, modules, quizzes ---------- */
+  var LEVELS = [
+    {
+      name: "Level 1: Foundations",
+      modules: [
+        { t: "1.1 Priorities (Rule of Threes)", b: "Air in minutes, shelter in hours, water in days, food in weeks. Order your actions by the shortest time-to-harm. Reference: article section 1, Ready.gov [2]." },
+        { t: "1.2 Hazard assessment", b: "Write down the three most likely hazards for your place (flood, fire, conflict, storm, power outage). For each: what fails first, what it costs, who you need. Reference: [2]." },
+        { t: "1.3 Go-bag and stay-kit", b: "Go-bag: 72 hours, documents, medicines, light, radio. Stay-kit: 14 days of water (15 L per person per day in emergencies, per Sphere [3]), food, sanitation, batteries." }
+      ],
+      quiz: [
+        { q: "Which resource is usually the most urgent to fix first in a disaster?", o: ["Food", "Air and shelter from harsh conditions", "Entertainment", "Money"], a: 1, e: "Minutes and hours matter before days and weeks." },
+        { q: "What is the Sphere emergency minimum per person per day for drinking, cooking and hygiene?", o: ["2 litres", "5 litres", "15 litres", "50 litres"], a: 2, e: "Sphere sets 15 litres as the emergency standard [3]." },
+        { q: "A go-bag is designed for:", o: ["A two-week stay in place", "Leaving within minutes with 72 hours of essentials", "Hunting", "Storing weapons"], a: 1, e: "Go-bags are for fast departure; stay-kits are for sheltering in place." }
+      ]
+    },
+    {
+      name: "Level 2: Water & Fire",
+      modules: [
+        { t: "2.1 Water treatment", b: "Boil 1 minute (3 minutes above about 2,000 m). Unscented bleach: 2 drops per litre, double for cloudy water, wait 30 minutes [1]. SODIS: 6 hours in full sun, or 2 days if overcast [4]." },
+        { t: "2.2 Fire triangle and tetrahedron", b: "Heat, fuel and oxygen. Remove one and the fire stops. The chain reaction makes it a tetrahedron. Use the animation in Part I to demonstrate." },
+        { t: "2.3 Safe heating and cooking", b: "Never use charcoal, gas or generators in enclosed spaces. Install battery-backed CO alarms. Carbon monoxide is odourless and can kill within hours [5]." }
+      ],
+      quiz: [
+        { q: "How long should you boil water at altitude above about 2,000 m (6,500 ft)?", o: ["10 seconds", "1 minute", "3 minutes", "It does not matter"], a: 2, e: "Lower boiling point at altitude means a longer boil is needed [1]." },
+        { q: "Bleach dosing for clear water (5-9% sodium hypochlorite):", o: ["2 drops per litre, wait 30 minutes", "10 drops per litre, wait 1 minute", "Any amount, wait 5 minutes", "Scented bleach is fine"], a: 0, e: "CDC guidance [1]. Scented or splash-less products are not appropriate." },
+        { q: "Which is a safe response to 'the clear stream looks clean'?", o: ["Drink it straight away", "Treat it, because clarity does not indicate pathogens", "Drink only at night", "Use it for drinking if you add salt"], a: 1, e: "Pathogens are invisible; treat every unknown source." },
+        { q: "A charcoal grill is run indoors to warm a room. What is the main risk?", o: ["Burnt food", "Carbon monoxide poisoning", "Excess humidity only", "Light pollution"], a: 1, e: "Carbon monoxide is colourless and odourless and can kill [5]." }
+      ]
+    },
+    {
+      name: "Level 3: Shelter, Food & Navigation",
+      modules: [
+        { t: "3.1 Heat loss", b: "Conduction (ground), convection (wind), radiation (cold sky), evaporation (wet clothes). Insulate from the ground first, then keep clothing dry." },
+        { t: "3.2 Calories and storage", b: "Adults need about 2,000-2,500 kcal per day, more in cold or heavy labour. Rice about 3,600 kcal/kg; cooking oil about 8,800 kcal/kg. Store dry, sealed, pest-proof." },
+        { t: "3.3 Preservation safety", b: "Low-acid foods (vegetables, meat, beans) require a pressure canner. A boiling water bath cannot destroy botulism spores [6]." },
+        { t: "3.4 Navigation", b: "Map north with a compass (correct for declination), take bearings on landmarks, use a shadow-stick method for rough east-west, and carry a whistle (three blasts = distress)." }
+      ],
+      quiz: [
+        { q: "The main reason ground contact is dangerous for heat loss is:", o: ["It makes shadows", "Conduction draws heat out of the body", "It attracts animals", "It increases wind"], a: 1, e: "Conduction is a major heat-loss route; insulate beneath." },
+        { q: "Why must low-acid canned foods be processed in a pressure canner?", o: ["To make them taste better", "To reach a temperature that destroys botulism spores", "Because jars must be pressurised for storage", "To remove sugar"], a: 1, e: "Boiling water does not reach the required temperature [6]." },
+        { q: "You find a mushroom in a field that looks like a known edible species. What is the right action?", o: ["Eat a small piece to test", "Eat it if your friend says it is fine", "Do not eat it unless identified with certainty by two sources and a local expert", "Boil it first, then eat"], a: 2, e: "Deadly lookalikes exist; boiling does not remove amatoxins." },
+        { q: "Your compass reads a bearing that differs from the map. What should you check?", o: ["The weather", "Magnetic declination for your location", "Your shoe size", "The phase of the moon"], a: 1, e: "Magnetic north and true north can differ significantly." }
+      ]
+    },
+    {
+      name: "Level 4: First Aid & Urban Conflict",
+      modules: [
+        { t: "4.1 Severe bleeding", b: "Direct pressure first. Tourniquet 5-7 cm above a limb wound, tighten until bleeding stops, write the time, do not loosen [7]." },
+        { t: "4.2 Hypothermia and heat illness", b: "Hypothermia: shivering, confusion, clumsiness; insulate, dry clothes, handle gently. Heat stroke: confusion, collapse; cool aggressively and evacuate." },
+        { t: "4.3 Civilian protection", b: "Civilians not taking part in hostilities must be treated humanely under the Fourth Geneva Convention [8]. Medical personnel and ambulances have specific protection. Protection is not automatic and enforcement is weak." },
+        { t: "4.4 Checkpoints", b: "Slow down early. Hands visible. Announce movements. ID ready. No photos of armed personnel. Do not argue." },
+        { t: "4.5 Information hygiene", b: "Source ladder: official authorities and humanitarian bodies [16], independent local reporters, your own confirmed observations, then social media last. Reverse-image-search suspicious videos." }
+      ],
+      quiz: [
+        { q: "What is the correct first step for severe, spurting bleeding from a limb?", o: ["Wait for a doctor", "Apply direct pressure and, if needed, a tourniquet", "Give the person water", "Massage the wound"], a: 1, e: "Pressure first; tourniquet if bleeding continues [7]." },
+        { q: "After a tourniquet has stopped the bleeding, what should you do?", o: ["Loosen it after 5 minutes", "Remove it to check the wound", "Note the time and leave it in place until medical care", "Cover it with a wet cloth and rub it"], a: 2, e: "Removing a working tourniquet can restart fatal bleeding." },
+        { q: "At a checkpoint, the best practice is:", o: ["Film the soldiers for evidence", "Keep hands visible, follow instructions, have ID ready", "Run the car through the barrier", "Reach into your pocket to find your phone"], a: 1, e: "Predictable, calm behaviour reduces risk for everyone." },
+        { q: "A viral message tells you to evacuate now. What should you do?", o: ["Go immediately", "Verify with two independent sources before moving, and move in a group with a plan", "Ignore all messages", "Post the message to confirm it"], a: 1, e: "Verification and planning reduce ambush and crowd risks." }
+      ]
+    },
+    {
+      name: "Level 5: Production & Community",
+      modules: [
+        { t: "5.1 Rain catchment", b: "1 mm of rain over 1 m² = about 1 litre. Use a first-flush diverter, food-grade tank with lid, and treat before drinking. Collection efficiency about 80% for typical roofs." },
+        { t: "5.2 Solar power", b: "Size battery storage: daily watt-hours ÷ battery voltage = amp-hours. Use LiFePO4 where appropriate; never charge lithium cells in a sealed room or hot car." },
+        { t: "5.3 Food production", b: "Sprouts in 3-5 days. Container gardening in 60-120 days. Seed saving with dry, labelled, open-pollinated seeds. Combine staples with fats and protein." },
+        { t: "5.4 Community systems", b: "Neighbourhood mesh (Meshtastic [10]), offline library (Kiwix [12]), cooperative water rota, medical kit sharing, vulnerable-person list, family plan with two meeting points." }
+      ],
+      quiz: [
+        { q: "A 40 m² roof receives 10 mm of rain. Approximately how many litres can you collect (at 100% efficiency)?", o: ["40 litres", "400 litres", "4,000 litres", "10 litres"], a: 1, e: "1 mm over 1 m² is about 1 litre; 40 × 10 = 400 litres." },
+        { q: "What does a first-flush diverter do?", o: ["Adds minerals", "Discards the dirtiest first water from the roof", "Heats the water", "Filters out viruses completely"], a: 1, e: "It diverts the first flow, which carries dust and droppings, away from the tank." },
+        { q: "Why is a weapons stockpile a poor survival investment compared to water and medicine?", o: ["Weapons are heavy", "It addresses rare threats while ignoring the leading causes of death in disasters", "Weapons expire faster", "Governments forbid it everywhere"], a: 1, e: "Dehydration, cold and infection cause most early deaths." },
+        { q: "What is the most useful community tool in a long crisis?", o: ["A single strong individual", "A shared list of vulnerable people, water rota, and a medical responder per block", "Isolation", "Social media followers"], a: 1, e: "Connection and planning outperform isolation in documented crises." }
+      ]
+    }
+  ];
+
+  var STORE = "survival-manual-progress-v1";
+  var progress = { level: 0, scores: {} };
+  try { progress = Object.assign(progress, JSON.parse(localStorage.getItem(STORE) || "{}")); } catch (e) {}
+  var current = 0;
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(progress)); } catch (e) {} }
+  function unlockedMax() { return Math.min(LEVELS.length - 1, progress.level); }
+
+  function renderTOC() {
+    var toc = document.getElementById("toc");
+    toc.innerHTML = "<h3>Levels</h3>";
+    LEVELS.forEach(function (lv, i) {
+      var b = document.createElement("button");
+      var locked = i > unlockedMax();
+      var passed = progress.scores[i] !== undefined;
+      b.disabled = locked;
+      b.className = i === current ? "current" : "";
+      b.innerHTML = "<span>" + lv.name + "</span><span class='st " + (passed ? "done" : "") + "'>" +
+        (locked ? "locked" : passed ? progress.scores[i] + "%" : "open") + "</span>";
+      b.addEventListener("click", function () { current = i; renderLevel(); });
+      toc.appendChild(b);
+    });
+    var done = Object.keys(progress.scores).length;
+    document.getElementById("progressFill").style.width = Math.round(done / LEVELS.length * 100) + "%";
+  }
+
+  function renderLevel() {
+    renderTOC();
+    var page = document.getElementById("manualPage");
+    if (current > unlockedMax()) {
+      page.innerHTML = "<div class='lockedmsg'><div class='lockicon'>&#128274;</div><h3>Level locked</h3><p>Pass the quiz for the previous level with at least 80% to unlock this one.</p></div>";
+      return;
+    }
+    var lv = LEVELS[current];
+    var html = "<div class='mhead'>MANUAL // LEVEL " + (current + 1) + " OF " + LEVELS.length + " // " + lv.name.toUpperCase() + "</div>";
+    html += "<h2 style='border:0;margin-top:0'>" + lv.name + "</h2>";
+    lv.modules.forEach(function (m) { html += "<div class='mod'><h4>" + m.t + "</h4><p>" + m.b + "</p></div>"; });
+    html += "<div class='quiz'><h3>Validation quiz</h3><p>Answer all questions, then press <b>Check answers</b>. You need 80% to unlock the next level.</p><form id='quizForm'>";
+    lv.quiz.forEach(function (q, qi) {
+      html += "<div class='q'><div><b>Q" + (qi + 1) + ".</b> " + q.q + "</div>";
+      q.o.forEach(function (o, oi) {
+        html += "<label class='opt'><input type='radio' name='q" + qi + "' value='" + oi + "'>" + o + "</label>";
+      });
+      html += "<div class='fb' id='fb" + qi + "'></div></div>";
+    });
+    html += "<button type='submit' class='btn primary'>Check answers</button> <span class='score' id='scoreOut'></span></form></div>";
+    page.innerHTML = html;
+
+    if (progress.scores[current] !== undefined) {
+      document.getElementById("scoreOut").textContent = "Previous score: " + progress.scores[current] + "%";
+    }
+
+    document.getElementById("quizForm").addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var correct = 0;
+      lv.quiz.forEach(function (q, qi) {
+        var sel = document.querySelector("input[name='q" + qi + "']:checked");
+        var fb = document.getElementById("fb" + qi);
+        if (!sel) { fb.className = "fb no"; fb.textContent = "No answer selected."; return; }
+        var ok = parseInt(sel.value, 10) === q.a;
+        if (ok) correct++;
+        fb.className = "fb " + (ok ? "ok" : "no");
+        fb.textContent = (ok ? "Correct. " : "Incorrect. Correct answer: " + q.o[q.a] + ". ") + q.e;
+      });
+      var pct = Math.round(correct / lv.quiz.length * 100);
+      var prev = progress.scores[current];
+      if (prev === undefined || pct > prev) progress.scores[current] = pct;
+      if (pct >= 80 && progress.level <= current) progress.level = current + 1;
+      save();
+      document.getElementById("scoreOut").textContent = "Score: " + pct + "%" +
+        (pct >= 80 ? (current + 1 < LEVELS.length ? " - next level unlocked." : " - manual complete.") : " - 80% needed to unlock the next level.");
+      renderTOC();
+    });
+  }
+
+  document.getElementById("resetProgress").addEventListener("click", function () {
+    if (!confirm("Reset all manual progress in this browser?")) return;
+    progress = { level: 0, scores: {} };
+    current = 0;
+    save();
+    renderLevel();
+  });
+
+  renderLevel();
+})();
+</script>
 </body>
 </html>
