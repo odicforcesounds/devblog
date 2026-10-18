@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101312">
+  <meta name="description" content="Um ensaio sobre consciência, liberdade de associação, privacidade e limites da violência.">
+  <title>Consciência, liberdade e clandestinidade</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101312;
+      --surface: #171c1a;
+      --surface-2: #1d2421;
+      --text: #e8eee9;
+      --muted: #a8b4ac;
+      --accent: #a8e6bd;
+      --accent-strong: #c5f3d3;
+      --line: #303a34;
+      --measure: 72ch;
+      --scale: 1;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 50% -25%, #26352c 0, var(--bg) 48rem);
+      color: var(--text);
+      font: calc(1rem * var(--scale))/1.75 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--accent-strong); text-underline-offset: .2em; }
+    a:hover { color: white; }
+    button {
+      min-height: 2.75rem;
+      border: 1px solid var(--line);
+      border-radius: .65rem;
+      padding: .55rem .85rem;
+      background: var(--surface-2);
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .skip-link { position: absolute; left: -9999px; top: 1rem; z-index: 2; padding: .7rem; background: var(--surface); }
+    .skip-link:focus { left: 1rem; }
+    .wrap { width: min(100% - 2rem, 1100px); margin-inline: auto; }
+    header { padding: 1.25rem 0; border-bottom: 1px solid var(--line); }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .brand { color: var(--text); font-size: .9rem; font-weight: 700; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
+    .controls { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .hero { padding: clamp(3.5rem, 9vw, 7rem) 0 3rem; }
+    .eyebrow { color: var(--accent); font-size: .8rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1, h2, h3 { line-height: 1.2; text-wrap: balance; }
+    h1 { max-width: 16ch; margin: .7rem 0 1.2rem; font-size: clamp(2.5rem, 8vw, 5.6rem); letter-spacing: -.055em; }
+    .dek { max-width: 60ch; color: var(--muted); font-size: clamp(1.1rem, 2.4vw, 1.35rem); }
+    .statement { margin-top: 2rem; padding: 1rem 1.25rem; border-left: 3px solid var(--accent); background: #a8e6bd0b; color: var(--accent-strong); }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 16rem; gap: clamp(2rem, 6vw, 5rem); align-items: start; padding: 1rem 0 5rem; }
+    article { min-width: 0; }
+    article section { max-width: var(--measure); padding: 1.5rem 0 1rem; border-top: 1px solid var(--line); }
+    h2 { margin: 0 0 1rem; font-size: clamp(1.5rem, 4vw, 2.15rem); letter-spacing: -.025em; }
+    h3 { margin: 1.5rem 0 .45rem; font-size: 1.15rem; }
+    p { margin: .8rem 0; }
+    .muted { color: var(--muted); }
+    .toc { position: sticky; top: 1.25rem; padding: 1rem; border: 1px solid var(--line); border-radius: .9rem; background: #171c1ae8; }
+    .toc h2 { margin: 0 0 .65rem; font-size: .9rem; letter-spacing: .06em; text-transform: uppercase; }
+    .toc ol { margin: 0; padding-left: 1.2rem; color: var(--muted); font-size: .9rem; }
+    .toc li { padding: .22rem 0; }
+    .toc a { color: var(--muted); text-decoration: none; }
+    .toc a:hover, .toc a[aria-current="location"] { color: var(--accent-strong); }
+    .principles { display: grid; gap: .75rem; margin: 1.2rem 0; padding: 0; list-style: none; counter-reset: principle; }
+    .principles li { counter-increment: principle; display: grid; grid-template-columns: 2.25rem 1fr; gap: .75rem; padding: 1rem; border: 1px solid var(--line); border-radius: .8rem; background: var(--surface); }
+    .principles li::before { content: counter(principle, decimal-leading-zero); color: var(--accent); font-weight: 800; }
+    .callout { margin: 1.25rem 0; padding: 1rem 1.15rem; border: 1px solid #a8e6bd55; border-radius: .8rem; background: var(--surface); }
+    .callout strong { color: var(--accent-strong); }
+    .closing { padding: 1.2rem; border-radius: .8rem; background: var(--surface-2); font-size: 1.08em; }
+    footer { padding: 1.5rem 0 3rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+    @media (max-width: 760px) {
+      .layout { grid-template-columns: 1fr; }
+      .toc { position: static; grid-row: 1; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media print {
+      :root { color-scheme: light; --bg: white; --surface: white; --surface-2: #f2f2f2; --text: #111; --muted: #444; --line: #bbb; --accent: #174d2d; --accent-strong: #174d2d; }
+      body { background: white; color: #111; font-size: 11pt; }
+      header, .controls, .toc, footer { display: none; }
+      .wrap { width: 100%; }
+      .hero { padding: 1rem 0; }
+      .layout { display: block; padding: 0; }
+      article section { break-inside: avoid; }
+      a { color: inherit; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Saltar para o conteúdo</a>
+  <header>
+    <div class="wrap topbar">
+      <a class="brand" href="#inicio">Consciência e liberdade</a>
+      <div class="controls" aria-label="Controlos de leitura">
+        <button type="button" id="diminuir" aria-label="Diminuir tamanho do texto">A−</button>
+        <button type="button" id="aumentar" aria-label="Aumentar tamanho do texto">A+</button>
+        <button type="button" id="imprimir">Imprimir</button>
+      </div>
+    </div>
+  </header>
+  <main id="conteudo" class="wrap">
+    <div class="hero" id="inicio">
+      <p class="eyebrow">Ensaio · liberdade de consciência</p>
+      <h1>O direito de não viver sob vigilância</h1>
+      <p class="dek">Uma sociedade livre protege a associação, a privacidade e a experimentação social — sem transformar a discrição em suspeita automática, nem a crítica política em licença para causar dano.</p>
+      <p class="statement">Defender espaços reservados para movimentos pacíficos não é defender o crime: é defender que a liberdade de consciência também inclui escolher quando, como e perante quem se tornam públicas as nossas ideias.</p>
+    </div>
+    <div class="layout">
+      <article>
+        <section id="tese">
+          <h2>1. Consciência, escolha e senso comum</h2>
+          <p>A consciência é a capacidade de formar juízos, rever convicções e orientar a própria vida. Dela decorrem liberdades fundamentais: pensar, expressar opiniões, associar-se, recusar uma participação e procurar modos diferentes de organizar a comunidade. O senso comum acrescenta uma regra prática: a liberdade de cada pessoa deve coexistir com a segurança e a liberdade das outras.</p>
+          <p>Por isso, proteger a autonomia não significa aceitar qualquer conduta. Significa exigir razões concretas antes de restringir escolhas e distinguir uma ideia incómoda de um dano demonstrável. Uma alternativa económica ou social pode desafiar interesses instalados e, ainda assim, ser pacífica e legítima.</p>
+        </section>
+        <section id="discricao">
+          <h2>2. Discrição não é sinónimo de crime</h2>
+          <p>Um grupo pode optar por não divulgar a identidade dos seus membros, as suas conversas ou todos os pormenores da sua organização. Pode fazê-lo para evitar assédio, discriminação, represálias ou apropriação das suas ideias. A reserva — e até uma forma de clandestinidade entendida como existência fora da exposição pública — não prova, por si só, qualquer atividade ilícita.</p>
+          <p>O princípio deve ser o mesmo para todos: julgar atos e provas, não presumir culpa a partir da falta de publicidade. A exposição pública pode colocar pessoas e iniciativas em risco, pelo que a transparência não deve ser imposta sem ponderar necessidade, proporcionalidade e salvaguardas. Isso não equivale a afirmar que toda a divulgação termina necessariamente com um movimento; significa reconhecer que ela pode ter custos reais.</p>
+          <div class="callout"><strong>Uma fronteira necessária:</strong> defender o direito à privacidade e à associação pacífica não é fornecer meios para escapar à investigação, esconder violência ou impedir a responsabilização por danos.</div>
+        </section>
+        <section id="alternativas">
+          <h2>3. Espaço para alternativas sociais e económicas</h2>
+          <p>Cooperativas, redes de apoio mútuo, escolas livres e outras experiências comunitárias podem propor respostas diferentes às hierarquias do mercado e do Estado. O seu valor deve ser avaliado pelo que fazem: se respeitam o consentimento, se protegem quem participa e se não prejudicam terceiros — não apenas por desafiarem o grande capital, um governo ou a norma dominante.</p>
+          <p>Uma Escola Livre que não agride nem explora terceiros merece debate e avaliação justa, não suspeição automática. A liberdade de criar alternativas inclui o direito de as organizar com discrição, respeitando os deveres legais aplicáveis e os direitos de crianças, famílias, trabalhadores e comunidade.</p>
+        </section>
+        <section id="drogas">
+          <h2>4. Política de drogas: reduzir dano e proteger consentimento</h2>
+          <p>A palavra “tráfico” agrega realidades distintas e, por si só, não descreve consentimento, composição do produto ou violência. Como proposta de reforma — e não como descrição da lei em vigor — é possível defender que a resposta penal se concentre prioritariamente em danos concretos, coerção e violência, em vez de punir automaticamente o consumo ou toda a circulação de substâncias.</p>
+          <p>Nesta perspetiva, três linhas de gravidade merecem atenção especial:</p>
+          <ol class="principles">
+            <li><span><strong>Consumo forçado:</strong> administrar ou impor uma substância sem consentimento viola a autonomia e exige proteção da pessoa afetada.</span></li>
+            <li><span><strong>Produto adulterado de forma perigosa ou fraudulenta:</strong> ocultar a composição ou criar risco sério para a saúde justifica uma resposta firme e proporcional.</span></li>
+            <li><span><strong>Armas e violência letal:</strong> o uso de armas, ameaças ou homicídio transforma uma transação ou conflito numa ameaça direta à vida e à segurança de terceiros.</span></li>
+          </ol>
+          <p>Esta proposta não resolve, por si só, questões de saúde pública, proteção de menores, qualidade e informação sobre produtos, dependência ou exploração económica. Uma política responsável teria de as enfrentar com evidência, prevenção, redução de danos e acesso a cuidados, sem fingir que a simples descriminalização elimina todos os riscos.</p>
+        </section>
+        <section id="forca">
+          <h2>5. Armas, consciência e responsabilidade</h2>
+          <p>Quem empunha uma arma de fogo sabe — ou tem o dever de saber — que o seu uso pode ferir ou matar. A consciência previsível das consequências aumenta o dever de contenção; não torna, por si só, todo o uso da arma um crime. A avaliação depende do contexto, da lei aplicável, da necessidade, da proporcionalidade e dos factos.</p>
+          <p>Esse critério deve valer também para agentes policiais, que recebem autoridade e acesso a armas em nome da proteção pública. Uma utilização injustificada ou desproporcionada pode constituir uma violação grave e deve ser investigada de forma independente, com responsabilização e reparação quando devidas. A autoridade não apaga a responsabilidade individual.</p>
+          <p>Mas dizer que qualquer disparo policial é homicídio seria trocar uma análise racional por uma generalização: há situações excepcionais em que a força letal pode ser legalmente justificada para proteger vidas. O ponto decisivo é outro: a arma não é legítima apenas porque está disponível, e a força só pode ser admitida sob limites estritos, escrutínio e prestação de contas. O mesmo princípio protege a população contra violência estatal e contra violência privada.</p>
+        </section>
+        <section id="conclusao">
+          <h2>6. Uma liberdade com limites claros</h2>
+          <p class="closing">Uma sociedade democrática não deve exigir que todas as pessoas vivam permanentemente expostas ao controlo económico, político ou social para provar que nada têm a esconder. Deve proteger a associação pacífica, a privacidade e o direito de experimentar outras formas de vida. E deve, ao mesmo tempo, impedir coerção, fraude perigosa e violência, aplicando regras justas a cidadãos, empresas, movimentos e autoridades.</p>
+          <p>O equilíbrio racional não é “tudo é permitido” nem “tudo o que é reservado é suspeito”. É liberdade como ponto de partida; evidência, consentimento, prevenção do dano e responsabilidade como limites.</p>
+        </section>
+      </article>
+      <nav class="toc" aria-label="Índice do ensaio">
+        <h2>Neste ensaio</h2>
+        <ol>
+          <li><a href="#tese">Consciência e escolha</a></li>
+          <li><a href="#discricao">Discrição e crime</a></li>
+          <li><a href="#alternativas">Alternativas sociais</a></li>
+          <li><a href="#drogas">Política de drogas</a></li>
+          <li><a href="#forca">Armas e responsabilidade</a></li>
+          <li><a href="#conclusao">Conclusão</a></li>
+        </ol>
+      </nav>
+    </div>
+  </main>
+  <footer>
+    <div class="wrap">Ensaio de opinião sobre liberdade, consentimento e responsabilidade. Não substitui aconselhamento jurídico nem descreve a legislação de qualquer país.</div>
+  </footer>
+  <script>
+    (() => {
+      const root = document.documentElement;
+      let scale = 1;
+      const setScale = (next) => {
+        scale = Math.min(1.25, Math.max(0.9, next));
+        root.style.setProperty('--scale', scale);
+      };
+      document.getElementById('aumentar').addEventListener('click', () => setScale(scale + 0.1));
+      document.getElementById('diminuir').addEventListener('click', () => setScale(scale - 0.1));
+      document.getElementById('imprimir').addEventListener('click', () => window.print());
+
+      const links = [...document.querySelectorAll('.toc a')];
+      const sections = links.map((link) => document.querySelector(link.getAttribute('href'))).filter(Boolean);
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            for (const link of links) {
+              if (link.getAttribute('href') === `#${entry.target.id}`) {
+                link.setAttribute('aria-current', 'location');
+              } else {
+                link.removeAttribute('aria-current');
+              }
+            }
+          }
+        }, { rootMargin: '-15% 0px -70% 0px' });
+        sections.forEach((section) => observer.observe(section));
+      }
+    })();
+  </script>
+</body>
+</html>
