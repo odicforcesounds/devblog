@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Documentação técnica e institucional do CitizenHelper: utilidade pública, funcionamento, segurança e limitações.">
+  <meta name="theme-color" content="#0b3d91">
+  <title>Documentação — CitizenHelper</title>
+  <style>
+    :root {
+      --cor: #0b3d91;
+      --cor-clara: #e8eefb;
+      --perigo: #c62828;
+      --sucesso: #2e7d32;
+      --aviso: #b26a00;
+      --fundo: #f5f7fb;
+      --superficie: #ffffff;
+      --texto: #1b1f2a;
+      --texto-suave: #55607a;
+      --borda: #d6dceb;
+      --raio: 12px;
+      --sombra: 0 1px 3px rgba(16, 24, 40, 0.08), 0 4px 12px rgba(16, 24, 40, 0.04);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --cor: #8fb3ff;
+        --cor-clara: #1a2640;
+        --fundo: #0f1420;
+        --superficie: #161d2e;
+        --texto: #e7ebf5;
+        --texto-suave: #a7b0c6;
+        --borda: #2a3450;
+        --sombra: none;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 72px; -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 17px;
+      line-height: 1.65;
+      background: var(--fundo);
+      color: var(--texto);
+    }
+
+    /* ---------- Barra de progresso de leitura ---------- */
+    .progresso {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0;
+      background: var(--cor);
+      z-index: 20;
+    }
+
+    /* ---------- Cabeçalho ---------- */
+    .topo {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--cor);
+      color: #fff;
+      padding: calc(12px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 12px calc(16px + env(safe-area-inset-left));
+    }
+    .topo .marca { font-weight: 700; font-size: 1.1rem; color: #fff; text-decoration: none; }
+    .topo nav { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; }
+    .topo nav a { color: #fff; font-size: 0.92rem; text-decoration: none; opacity: 0.9; }
+    .topo nav a:hover, .topo nav a:focus-visible, .topo nav a.ativo { opacity: 1; text-decoration: underline; }
+
+    /* ---------- Estrutura ---------- */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      max-width: 1120px;
+      margin: 0 auto;
+      gap: 24px;
+      padding: 16px calc(16px + env(safe-area-inset-right)) 48px calc(16px + env(safe-area-inset-left));
+    }
+    @media (min-width: 960px) {
+      .layout { grid-template-columns: 240px minmax(0, 1fr); }
+      .indice { position: sticky; top: 90px; align-self: start; }
+    }
+
+    .indice {
+      background: var(--superficie);
+      border: 1px solid var(--borda);
+      border-radius: var(--raio);
+      padding: 16px;
+      box-shadow: var(--sombra);
+    }
+    .indice h2 { font-size: 0.95rem; margin: 0 0 8px; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.04em; }
+    .indice ol { margin: 0; padding: 0; list-style: none; }
+    .indice li { margin: 2px 0; }
+    .indice a {
+      display: block;
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: var(--texto);
+      text-decoration: none;
+      font-size: 0.95rem;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+    }
+    .indice a:hover, .indice a:focus-visible { background: var(--cor-clara); }
+    .indice a.ativo { background: var(--cor-clara); color: var(--cor); font-weight: 600; }
+
+    main { min-width: 0; }
+    section.capitulo {
+      background: var(--superficie);
+      border: 1px solid var(--borda);
+      border-radius: var(--raio);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--sombra);
+    }
+    @media (max-width: 480px) { section.capitulo { padding: 18px; } }
+
+    h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 8px; }
+    h2 { font-size: 1.45rem; margin: 0 0 12px; line-height: 1.3; color: var(--cor); }
+    h3 { font-size: 1.1rem; margin: 20px 0 8px; }
+    p, li { max-width: 72ch; }
+    .lead { font-size: 1.12rem; color: var(--texto-suave); }
+    .sub { color: var(--texto-suave); font-size: 0.95rem; }
+
+    .capa {
+      background: linear-gradient(135deg, var(--cor) 0%, #1f5fc4 100%);
+      color: #fff;
+      border-radius: var(--raio);
+      padding: 28px 24px;
+      margin-bottom: 24px;
+    }
+    .capa h1 { color: #fff; }
+    .capa .lead { color: #e6eeff; }
+    .capa .sub { color: #cfdcff; }
+
+    /* ---------- Cartões de destaque ---------- */
+    .numeros {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin: 16px 0;
+    }
+    @media (min-width: 640px) { .numeros { grid-template-columns: repeat(3, 1fr); } }
+    .numero {
+      border: 1px solid var(--borda);
+      border-left: 4px solid var(--cor);
+      border-radius: 10px;
+      padding: 14px;
+      background: var(--superficie);
+    }
+    .numero strong { display: block; font-size: 1.6rem; color: var(--cor); line-height: 1.2; }
+    .numero span { font-size: 0.9rem; color: var(--texto-suave); }
+    .numero small { display: block; margin-top: 6px; font-size: 0.8rem; color: var(--texto-suave); }
+
+    .nota {
+      border-left: 4px solid var(--aviso);
+      background: color-mix(in srgb, var(--aviso) 10%, transparent);
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin: 16px 0;
+    }
+    .nota.importante { border-color: var(--perigo); background: color-mix(in srgb, var(--perigo) 9%, transparent); }
+    .nota.ok { border-color: var(--sucesso); background: color-mix(in srgb, var(--sucesso) 9%, transparent); }
+
+    /* ---------- Fluxo visual (CSS puro) ---------- */
+    .fluxo {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 20px 0;
+      padding: 0;
+      list-style: none;
+    }
+    .fluxo li {
+      position: relative;
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 12px;
+      padding-bottom: 18px;
+      max-width: none;
+    }
+    .fluxo li:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 21px;
+      top: 44px;
+      bottom: 0;
+      width: 2px;
+      background: var(--borda);
+    }
+    .fluxo .passo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--cor);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+    }
+    .fluxo h3 { margin: 6px 0 4px; font-size: 1rem; }
+    .fluxo p { margin: 0; color: var(--texto-suave); font-size: 0.95rem; }
+
+    /* ---------- Tabelas ---------- */
+    .tabela-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 12px 0; border: 1px solid var(--borda); border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; min-width: 520px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--borda); vertical-align: top; }
+    th { background: var(--cor-clara); color: var(--texto); font-weight: 600; }
+    tr:last-child td { border-bottom: 0; }
+
+    /* ---------- Código ---------- */
+    .bloco-codigo { position: relative; margin: 16px 0; }
+    pre {
+      margin: 0;
+      background: #0d1322;
+      color: #e6edf9;
+      padding: 16px;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+    code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace; }
+    :not(pre) > code { background: var(--cor-clara); color: var(--cor); padding: 1px 6px; border-radius: 6px; font-size: 0.9em; }
+    .copiar {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      min-height: 36px;
+      padding: 6px 12px;
+      font: inherit;
+      font-size: 0.8rem;
+      border: 1px solid #3a4766;
+      border-radius: 8px;
+      background: #1a2338;
+      color: #e6edf9;
+      cursor: pointer;
+    }
+    .copiar:focus-visible { outline: 2px solid #8fb3ff; }
+
+    /* ---------- Arquitetura (blocos CSS) ---------- */
+    .arquitetura { display: grid; gap: 12px; grid-template-columns: 1fr; margin: 16px 0; }
+    @media (min-width: 640px) { .arquitetura { grid-template-columns: 1fr 1fr; } }
+    .camada {
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      padding: 14px;
+      background: var(--superficie);
+    }
+    .camada h3 { margin: 0 0 6px; font-size: 1rem; }
+    .camada p { margin: 0; font-size: 0.93rem; color: var(--texto-suave); }
+
+    /* ---------- Acordeões nativos (details/summary) ---------- */
+    details {
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin: 10px 0;
+      background: var(--superficie);
+    }
+    details summary {
+      cursor: pointer;
+      font-weight: 600;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      list-style: none;
+    }
+    details summary::-webkit-details-marker { display: none; }
+    details summary::after { content: "+"; margin-left: auto; font-size: 1.2rem; color: var(--cor); }
+    details[open] summary::after { content: "−"; }
+    details > *:not(summary) { margin-top: 8px; }
+
+    ul.lista { padding-left: 1.2em; }
+    ul.lista li { margin: 6px 0; }
+
+    .fontes ol { padding-left: 1.4em; }
+    .fontes li { margin: 8px 0; font-size: 0.93rem; }
+    .fontes a { color: var(--cor); word-break: break-word; }
+
+    a { color: var(--cor); }
+    a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--cor); outline-offset: 2px; }
+
+    footer { text-align: center; color: var(--texto-suave); font-size: 0.88rem; padding: 16px; }
+
+    @media print {
+      .topo, .indice, .progresso, .copiar { display: none !important; }
+      .layout { display: block; }
+      section.capitulo { box-shadow: none; break-inside: avoid-page; }
+      body { background: #fff; color: #000; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progresso" id="progresso" aria-hidden="true"></div>
+
+  <header class="topo">
+    <a class="marca" href="index.html">Página Principal</a>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <aside class="indice" aria-label="Índice">
+      <h2>Índice</h2>
+      <ol>
+        <li><a href="#resumo">1. Resumo</a></li>
+        <li><a href="#problema">2. O problema</a></li>
+        <li><a href="#utilidade">3. Utilidade pública</a></li>
+        <li><a href="#funcionamento">4. Funcionamento</a></li>
+        <li><a href="#instituicoes">5. Para as instituições</a></li>
+        <li><a href="#arquitetura">6. Arquitetura técnica</a></li>
+        <li><a href="#seguranca">7. Segurança e privacidade</a></li>
+        <li><a href="#limitacoes">8. Limitações e riscos</a></li>
+        <li><a href="#estado">9. Estado e roteiro</a></li>
+        <li><a href="#fontes">10. Fontes</a></li>
+      </ol>
+    </aside>
+
+    <main>
+      <div class="capa">
+        <h1>CitizenHelper</h1>
+        <p class="lead">Documentação técnica e institucional: um canal digital de apoio ao cidadão que aproxima a denúncia de crimes online do momento em que o crime acontece.</p>
+        <p class="sub">Documento de apresentação para instituições públicas portuguesas. Versão 1.0 · Protótipo em fase de testes.</p>
+      </div>
+
+      <!-- ========== 1. RESUMO ========== -->
+      <section class="capitulo" id="resumo" aria-labelledby="t-resumo">
+        <h2 id="t-resumo">1. Resumo</h2>
+        <p class="lead">Grande parte da vida social dos portugueses decorre em redes como o Facebook e o Instagram. É aí que circulam ameaças, burlas, perseguições, vandalismo e conteúdos ilícitos, e é também aí que existem as provas: fotografias, vídeos e publicações com data e identificação. O CitizenHelper liga estes dois mundos: o cidadão indica a publicação, a localização e a descrição, e uma equipa institucional verificada consulta a denúncia numa lista atualizada em tempo real.</p>
+        <p>A aplicação não substitui o 112, nem as queixas formais junto da PSP, GNR ou Polícia Judiciária. Funciona como um canal complementar, de baixa fricção, que pode encaminhar informação útil para as autoridades competentes.</p>
+        <div class="nota ok">
+          <strong>Em síntese:</strong> menos barreiras para denunciar, provas mais fáceis de identificar, acesso restrito a profissionais verificados e um registo técnico que pode ser auditado.
+        </div>
+      </section>
+
+      <!-- ========== 2. PROBLEMA ========== -->
+      <section class="capitulo" id="problema" aria-labelledby="t-problema">
+        <h2 id="t-problema">2. O problema</h2>
+        <p>Há três obstáculos recorrentes na denúncia de crimes praticados ou divulgados online:</p>
+        <ul class="lista">
+          <li><strong>Fragmentação de canais.</strong> O cidadão tem de perceber qual o canal certo (112, Queixa Eletrónica, Polícia Judiciária, email, redes sociais das forças de segurança), cada um com regras próprias.</li>
+          <li><strong>Provas efémeras.</strong> Publicações podem ser apagadas, editadas ou tornadas privadas em minutos. Quanto mais tarde chega a denúncia, mais difícil é localizar o conteúdo.</li>
+          <li><strong>Barreira de formalidade.</strong> Uma queixa formal exige identificação e tempo. Muitas pessoas desistem antes de começar, sobretudo quando o incidente é recente ou ainda está a decorrer.</li>
+        </ul>
+
+        <div class="numeros" role="list">
+          <div class="numero" role="listitem">
+            <strong>81,9%</strong>
+            <span>dos utilizadores de internet em Portugal usam redes sociais.</span>
+            <small>DataReportal, outubro de 2025 (ver fontes).</small>
+          </div>
+          <div class="numero" role="listitem">
+            <strong>24%</strong>
+            <span>dos inquiridos na UE afirmam já ter sido vítimas de fraude online.</span>
+            <small>FRA, 2026. Dado europeu, não português.</small>
+          </div>
+          <div class="numero" role="listitem">
+            <strong>15%</strong>
+            <span>das vítimas de fraude online na UE denunciaram à polícia.</span>
+            <small>FRA, 2026. Mostra o fosso entre vitimização e denúncia.</small>
+          </div>
+        </div>
+
+        <p>Os números europeus indicam que a maioria das vítimas de fraude online não chega às autoridades. Não é possível atribuir estes valores à população portuguesa, mas a tendência é suficientemente relevante para justificar um canal que reduza esse fosso.</p>
+      </section>
+
+      <!-- ========== 3. UTILIDADE ========== -->
+      <section class="capitulo" id="utilidade" aria-labelledby="t-utilidade">
+        <h2 id="t-utilidade">3. Utilidade pública</h2>
+        <h3>Para o cidadão</h3>
+        <ul class="lista">
+          <li>Um único lugar para denunciar a partir do telemóvel, sem instalar nada.</li>
+          <li>Partilha de localização e de uma ligação à publicação, sem necessidade de descarregar ou reenviar ficheiros.</li>
+          <li>Contactos oficiais sempre à mão, incluindo o 112, a PSP, a GNR, a Polícia Judiciária, a APAV e linhas de apoio.</li>
+          <li>Possibilidade de pedir uma videochamada com uma autoridade, quando a situação exige contacto direto.</li>
+        </ul>
+
+        <h3>Para a sociedade</h3>
+        <ul class="lista">
+          <li><strong>Ponte entre a vida digital e a segurança física.</strong> A denúncia é feita onde o incidente aconteceu, sem obrigar o cidadão a trocar de contexto.</li>
+          <li><strong>Redução do tempo entre incidente e registo.</strong> A informação chega com data, localização e ligação à publicação, o que facilita a triagem.</li>
+          <li><strong>Encorajamento à denúncia.</strong> Quem hesita em fazer uma queixa formal pode começar por um formulário curto.</li>
+          <li><strong>Transparência do canal.</strong> Todos os passos e critérios de acesso estão documentados nesta página.</li>
+        </ul>
+
+        <h3>Para as instituições</h3>
+        <ul class="lista">
+          <li>Triagem mais rápida, com dados estruturados em vez de mensagens dispersas.</li>
+          <li>Acesso restrito a emails institucionais verificados, o que reduz o risco de uso indevido.</li>
+          <li>Registo auditável: cada denúncia tem código, data de criação e estado de tratamento.</li>
+          <li>Complemento aos canais existentes, sem os substituir nem competir com eles.</li>
+        </ul>
+
+        <div class="nota importante">
+          <strong>Nota de rigor.</strong> Uma denúncia na aplicação não tem, por si, valor de queixa criminal. Os crimes públicos e semipúblicos continuam a exigir os procedimentos legais próprios. A aplicação serve para registar e encaminhar informação.
+        </div>
+      </section>
+
+      <!-- ========== 4. FUNCIONAMENTO ========== -->
+      <section class="capitulo" id="funcionamento" aria-labelledby="t-funcionamento">
+        <h2 id="t-funcionamento">4. Funcionamento</h2>
+        <p>O percurso típico de uma denúncia, do ponto de vista do cidadão:</p>
+
+        <ol class="fluxo" aria-label="Passos de uma denúncia">
+          <li>
+            <span class="passo" aria-hidden="true">1</span>
+            <div>
+              <h3>Escolha o tipo de denúncia</h3>
+              <p>Mensagem de texto, ou foto/vídeo através da ligação da publicação no Facebook ou Instagram.</p>
+            </div>
+          </li>
+          <li>
+            <span class="passo" aria-hidden="true">2</span>
+            <div>
+              <h3>Descreva a situação</h3>
+              <p>Categoria (furto, violência, vandalismo, fraude online e outras), descrição e etiqueta opcional. A etiqueta #CitizenHelper é sempre acrescentada.</p>
+            </div>
+          </li>
+          <li>
+            <span class="passo" aria-hidden="true">3</span>
+            <div>
+              <h3>Partilhe a localização (opcional)</h3>
+              <p>O navegador pede autorização. A localização só é obtida no momento do envio, e o cidadão pode desativá-la.</p>
+            </div>
+          </li>
+          <li>
+            <span class="passo" aria-hidden="true">4</span>
+            <div>
+              <h3>Envie e guarde o código</h3>
+              <p>A denúncia recebe um código identificador, que o cidadão pode usar em contactos posteriores com as autoridades.</p>
+            </div>
+          </li>
+          <li>
+            <span class="passo" aria-hidden="true">5</span>
+            <div>
+              <h3>Pedir videochamada (opcional)</h3>
+              <p>Quando há urgência, o cidadão pede uma videochamada. Uma conta institucional verificada atende o pedido.</p>
+            </div>
+          </li>
+        </ol>
+
+        <h3>Ligações de redes sociais: o que é aceite</h3>
+        <p>Por decisão de desenho, a aplicação não recebe ficheiros. Só aceita a <strong>ligação HTTPS</strong> de uma publicação do Facebook (incluindo fb.watch) ou do Instagram, e apenas para denúncias de foto ou vídeo. Esta regra é aplicada tanto no navegador como nas regras do servidor, o que evita dados que não sejam da rede social indicada.</p>
+        <details>
+          <summary>Porque não aceitar ficheiros?</summary>
+          <p>Armazenar fotografias e vídeos de terceiros levanta questões sérias de privacidade, de conservação e de direitos de imagem. Além disso, o ficheiro original continua na rede social, onde tem metadados e contexto. Ao registar a ligação, a aplicação aponta para a fonte sem duplicar conteúdo sensível.</p>
+        </details>
+      </section>
+
+      <!-- ========== 5. INSTITUIÇÕES ========== -->
+      <section class="capitulo" id="instituicoes" aria-labelledby="t-instituicoes">
+        <h2 id="t-instituicoes">5. Para as instituições</h2>
+        <p>O valor institucional do CitizenHelper depende de três garantias: quem acede, quando acede e o que fica registado.</p>
+
+        <h3>Quem acede</h3>
+        <ul class="lista">
+          <li>Apenas contas com <strong>email verificado</strong> de domínio institucional (<code>psp.pt</code>, <code>pj.pt</code>, <code>gnr.pt</code>, <code>gov.pt</code> e subdomínios).</li>
+          <li>Emails pessoais, como Gmail ou Hotmail, são recusados no registo e no início de sessão.</li>
+          <li>A verificação é feita em duas camadas: no navegador (para dar feedback imediato) e no servidor (funções de bloqueio do Firebase e regras de segurança), que é a camada que conta.</li>
+        </ul>
+
+        <h3>Quando acede: tempo real</h3>
+        <p>As listas de pedidos de videochamada e, na fase seguinte, a lista de denúncias são <strong>subscrições em tempo real</strong>. O servidor envia cada alteração ao painel do profissional assim que é gravada, sem recarregar a página. Isto é tecnicamente feito com <code>onSnapshot</code> do Cloud Firestore.</p>
+        <div class="nota">
+          <strong>Estado atual:</strong> a subscrição em tempo real já está implementada para os pedidos de videochamada. O painel de triagem de denúncias ainda não existe; é o próximo passo do roteiro (secção 9).
+        </div>
+
+        <h3>O que fica registado</h3>
+        <div class="tabela-wrap">
+          <table>
+            <thead>
+              <tr><th>Campo</th><th>Conteúdo</th><th>Finalidade</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Código</td><td>Identificador único da denúncia</td><td>Referência em contactos posteriores</td></tr>
+              <tr><td>Tipo e categoria</td><td>Mensagem, foto ou vídeo; tipo de ocorrência</td><td>Triagem e estatística</td></tr>
+              <tr><td>Descrição</td><td>Texto livre até 2000 caracteres</td><td>Conteúdo principal da denúncia</td></tr>
+              <tr><td>Ligação</td><td>URL HTTPS do Facebook ou Instagram</td><td>Localizar a publicação original</td></tr>
+              <tr><td>Localização</td><td>Coordenadas e precisão, se autorizadas</td><td>Contexto geográfico</td></tr>
+              <tr><td>Data e estado</td><td>Data de criação e estado (nova, em tratamento, etc.)</td><td>Auditoria e prazos</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== 6. ARQUITETURA ========== -->
+      <section class="capitulo" id="arquitetura" aria-labelledby="t-arquitetura">
+        <h2 id="t-arquitetura">6. Arquitetura técnica</h2>
+        <p>A solução foi desenhada para ser simples de auditar e de manter. O frontend não tem etapa de compilação nem dependências locais: é um único ficheiro HTML com CSS e JavaScript, servido como página estática.</p>
+
+        <div class="arquitetura">
+          <div class="camada">
+            <h3>Cliente (navegador)</h3>
+            <p>HTML5, CSS3 e JavaScript em módulos ES. Sem frameworks e sem bibliotecas externas além do SDK oficial do Firebase, carregado por ligação direta.</p>
+          </div>
+          <div class="camada">
+            <h3>Hospedagem</h3>
+            <p>GitHub Pages, com HTTPS obrigatório. As funções de geolocalização e de câmara exigem contexto seguro.</p>
+          </div>
+          <div class="camada">
+            <h3>Autenticação</h3>
+            <p>Firebase Authentication: email e palavra-passe para instituições, e sessão anónima para cidadãos que denunciam sem conta.</p>
+          </div>
+          <div class="camada">
+            <h3>Dados</h3>
+            <p>Cloud Firestore, com regras de segurança que definem quem lê e quem escreve, campo a campo.</p>
+          </div>
+          <div class="camada">
+            <h3>Lógica de servidor</h3>
+            <p>Funções de bloqueio (Identity Platform) que recusam contas não institucionais antes de qualquer sessão ser criada.</p>
+          </div>
+          <div class="camada">
+            <h3>Videochamada</h3>
+            <p>WebRTC ponto a ponto, com sinalização através do Firestore. Recomenda-se um servidor TURN para redes móveis restritivas.</p>
+          </div>
+        </div>
+
+        <h3>Excerto das regras de segurança</h3>
+        <p>As regras do Firestore validam o formato da ligação no servidor, mesmo que o navegador seja alterado:</p>
+        <div class="bloco-codigo">
+          <button class="copiar" type="button" data-copiar="regra-ligacao">Copiar</button>
+          <pre><code id="regra-ligacao">// Só ligações HTTPS do Facebook ou Instagram, e apenas em denúncias de foto ou vídeo
+&amp;&amp; (request.resource.data.tipo == 'mensagem' &amp;&amp; request.resource.data.linkRede == null)
+|| (request.resource.data.tipo != 'mensagem'
+    &amp;&amp; request.resource.data.linkRede is string
+    &amp;&amp; request.resource.data.linkRede.matches('^https://(([a-z0-9-]+\\.)*(facebook|instagram)\\.com|fb\\.watch)(/.*)?$'))</code></pre>
+        </div>
+
+        <h3>Controlo de acesso ao acesso</h3>
+        <p>A regra que define quem é institucional é a mesma em todo o sistema: email verificado, não anónimo, com domínio autorizado. Assim, uma alteração num único ponto não cria brechas noutros:</p>
+        <div class="bloco-codigo">
+          <button class="copiar" type="button" data-copiar="regra-institucional">Copiar</button>
+          <pre><code id="regra-institucional">function institucional() {
+  return autenticado()
+    &amp;&amp; request.auth.token.email_verified == true
+    &amp;&amp; request.auth.token.email.lower().matches(
+         '^[^@]+@(([a-z0-9-]+\\.)*(psp|pj|gnr)\\.pt|([a-z0-9-]+\\.)*gov\\.pt)$');
+}</code></pre>
+        </div>
+
+        <details>
+          <summary>Porque não usar um framework?</summary>
+          <p>Um site sem framework tem menos dependências a atualizar, menos superfície de ataque e um custo de manutenção baixo. Para um serviço público, a previsibilidade pesa mais do que a conveniência de ferramentas de desenvolvimento. O código fica legível por qualquer equipa técnica de uma entidade pública, sem formação específica.</p>
+        </details>
+      </section>
+
+      <!-- ========== 7. SEGURANÇA ========== -->
+      <section class="capitulo" id="seguranca" aria-labelledby="t-seguranca">
+        <h2 id="t-seguranca">7. Segurança e privacidade</h2>
+        <ul class="lista">
+          <li><strong>Mínimo de dados.</strong> Não são pedidos nome, morada nem número de telefone ao cidadão que denuncia.</li>
+          <li><strong>Sem ficheiros.</strong> Não há armazenamento de fotografias ou vídeos, o que reduz o risco de difusão indevida.</li>
+          <li><strong>Localização voluntária.</strong> É pedida ao navegador apenas com a intenção do cidadão, e pode ser recusada.</li>
+          <li><strong>Acesso por função.</strong> Só contas institucionais verificadas leem denúncias e pedidos de chamada.</li>
+          <li><strong>Sem segredos no código.</strong> As chaves de configuração do Firebase são públicas por design; a proteção está nas regras e nas funções de bloqueio.</li>
+          <li><strong>Sem rastreadores.</strong> Não há ferramentas de análise nem publicidade na página.</li>
+        </ul>
+
+        <div class="nota importante">
+          <strong>Antes de uso real, é obrigatório:</strong> avaliação de impacto sobre a proteção de dados (RGPD), aviso de privacidade ao cidadão, definição de prazos de conservação e de quem é o responsável pelo tratamento. Esta documentação não substitui parecer jurídico.
+        </div>
+      </section>
+
+      <!-- ========== 8. LIMITAÇÕES ========== -->
+      <section class="capitulo" id="limitacoes" aria-labelledby="t-limitacoes">
+        <h2 id="t-limitacoes">8. Limitações e riscos</h2>
+        <p>Um documento de utilidade pública deve ser claro sobre o que não faz:</p>
+        <details open>
+          <summary>Não substitui emergências</summary>
+          <p>Em perigo imediato, a resposta é o 112. A aplicação apresenta este aviso em todas as páginas.</p>
+        </details>
+        <details>
+          <summary>Depende da disponibilidade das publicações</summary>
+          <p>A denúncia guarda a ligação, não o conteúdo. Se a publicação for apagada ou tornada privada, a equipa deixa de a ver. Por isso, é importante que o cidadão preserve o contexto (data, descrição, código da denúncia).</p>
+        </details>
+        <details>
+          <summary>Videochamada sem garantia de atendimento</summary>
+          <p>A chamada só é atendida se houver um profissional disponível. A aplicação informa o cidadão sobre esta condição e mantém o 112 como alternativa visível.</p>
+        </details>
+        <details>
+          <summary>Conectividade móvel</summary>
+          <p>A videochamada usa ligação ponto a ponto. Em algumas redes móveis, sem servidor TURN, a ligação pode falhar. Recomenda-se a sua instalação antes de uso operacional.</p>
+        </details>
+        <details>
+          <summary>Abuso do canal</summary>
+          <p>Um canal aberto pode receber denúncias falsas ou maliciosas. Mitigações previstas: validação de formato, limites de tamanho, regras de segurança e, no roteiro, verificação de integridade das sessões (Firebase App Check). A triagem humana continua a ser indispensável.</p>
+        </details>
+      </section>
+
+      <!-- ========== 9. ESTADO E ROTEIRO ========== -->
+      <section class="capitulo" id="estado" aria-labelledby="t-estado">
+        <h2 id="t-estado">9. Estado e roteiro</h2>
+        <div class="tabela-wrap">
+          <table>
+            <thead>
+              <tr><th>Componente</th><th>Estado</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Página inicial, localização e contactos oficiais</td><td>Implementado</td></tr>
+              <tr><td>Formulário de denúncia com ligação de rede social</td><td>Implementado</td></tr>
+              <tr><td>Registo e início de sessão institucionais</td><td>Implementado; requer configuração Firebase</td></tr>
+              <tr><td>Videochamada com pedidos em tempo real</td><td>Implementado; requer TURN para redes restritivas</td></tr>
+              <tr><td>Regras de segurança do Firestore</td><td>Escritas; por testar no emulador</td></tr>
+              <tr><td>Funções de bloqueio de email</td><td>Escritas; requer Identity Platform e plano Blaze</td></tr>
+              <tr><td>Painel de triagem de denúncias em tempo real</td><td>Por implementar</td></tr>
+              <tr><td>Testes em dispositivos Android e iPhone</td><td>Por realizar</td></tr>
+              <tr><td>Aviso de privacidade e avaliação RGPD</td><td>Por realizar</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Próximos passos recomendados</h3>
+        <ol>
+          <li>Testar regras e funções no emulador do Firebase.</li>
+          <li>Construir o painel de triagem de denúncias, com subscrição em tempo real e alteração de estado.</li>
+          <li>Realizar testes com utilizadores reais em Android e iPhone.</li>
+          <li>Acordar com as entidades um protocolo de receção e tratamento das denúncias.</li>
+        </ol>
+      </section>
+
+      <!-- ========== 10. FONTES ========== -->
+      <section class="capitulo fontes" id="fontes" aria-labelledby="t-fontes">
+        <h2 id="t-fontes">10. Fontes</h2>
+        <p class="sub">Todos os valores foram consultados nas páginas indicadas. Quando um dado é europeu e não português, está assinalado.</p>
+        <ol>
+          <li>DataReportal, <em>Digital 2026: Portugal</em> — 81,9% dos utilizadores de internet usam redes sociais (outubro de 2025). Leitura parcial da página. <a href="https://datareportal.com/reports/digital-2026-portugal" rel="noopener">datareportal.com/reports/digital-2026-portugal</a></li>
+          <li>Marktest, resultados de 2025 — penetração do Facebook de 89,4% entre utilizadores de redes sociais; Instagram mais acedido, com mais de 32% das respostas. <a href="https://www.marktest.com/wap/a/n/id~2c34.aspx" rel="noopener">marktest.com/wap/a/n/id~2c34.aspx</a></li>
+          <li>Marktest, resultados de 2024 — Instagram com 82,1% e Facebook perto de 90% entre utilizadores de redes sociais dos 15 aos 64 anos. <a href="https://www.marktest.com/wap/a/n/id~2b2d.aspx" rel="noopener">marktest.com/wap/a/n/id~2b2d.aspx</a></li>
+          <li>Agência dos Direitos Fundamentais da UE (FRA), <em>Online fraud – people’s experiences across the EU</em>, 2026 — 24% de vitimização; 15% das vítimas denunciaram à polícia; 44% denunciaram a alguma organização. Dados europeus. <a href="https://fra.europa.eu/en/publication/2026/victims-online-fraud" rel="noopener">fra.europa.eu/en/publication/2026/victims-online-fraud</a></li>
+          <li>Gabinete de Cibercrime do Ministério Público, <em>Cybercrime in 2024 – complaints received</em> — aumento de 36,25% de queixas recebidas entre 2023 e 2024. Mede queixas recebidas, não vitimização. <a href="https://cibercrime.ministeriopublico.pt/en/destaque/cybercrime-2024-complaints-received" rel="noopener">cibercrime.ministeriopublico.pt</a></li>
+          <li>Comissão Europeia, relatório de 2024 sobre a implementação do número 112 — 112 representa 62% das chamadas de emergência na UE. Dado europeu. <a href="https://digital-strategy.ec.europa.eu/en/library/2024-report-implementation-eu-emergency-number-112" rel="noopener">digital-strategy.ec.europa.eu</a></li>
+          <li>Ministério Público, perguntas frequentes sobre queixas — a Queixa Eletrónica aceita queixas online para tipos de crime determinados. <a href="https://www.ministeriopublico.pt/perguntas-frequentes/queixa" rel="noopener">ministeriopublico.pt/perguntas-frequentes/queixa</a></li>
+          <li>Gabinete de Cibercrime, página de denúncia — requisitos de identificação e assinatura do denunciante para denúncias criminais. <a href="https://cibercrime.ministeriopublico.pt/pagina/denuncia-0" rel="noopener">cibercrime.ministeriopublico.pt/pagina/denuncia-0</a></li>
+        </ol>
+        <p class="sub">Os contactos da PSP e da GNR devem ser confirmados nos sites oficiais antes de publicação.</p>
+      </section>
+    </main>
+  </div>
+
+  <footer>CitizenHelper — documentação de apresentação. Protótipo para testes. Não substitui o 112 nem os canais oficiais.</footer>
+
+  <script>
+    (function () {
+      // Barra de progresso de leitura.
+      var barra = document.getElementById("progresso");
+      function atualizarProgresso() {
+        var total = document.documentElement.scrollHeight - window.innerHeight;
+        var percentagem = total > 0 ? (window.scrollY / total) * 100 : 0;
+        barra.style.width = Math.min(100, Math.max(0, percentagem)) + "%";
+      }
+      window.addEventListener("scroll", atualizarProgresso, { passive: true });
+      atualizarProgresso();
+
+      // Destacar a secção atual no índice.
+      var ligacoes = document.querySelectorAll(".indice a");
+      var secoes = document.querySelectorAll("section.capitulo[id]");
+      if ("IntersectionObserver" in window) {
+        var observador = new IntersectionObserver(function (entradas) {
+          entradas.forEach(function (entrada) {
+            if (!entrada.isIntersecting) return;
+            ligacoes.forEach(function (a) {
+              a.classList.toggle("ativo", a.getAttribute("href") === "#" + entrada.target.id);
+            });
+          });
+        }, { rootMargin: "-40% 0px -55% 0px" });
+        secoes.forEach(function (s) { observador.observe(s); });
+      }
+
+      // Copiar blocos de código para a área de transferência.
+      document.querySelectorAll("button.copiar").forEach(function (botao) {
+        botao.addEventListener("click", function () {
+          var alvo = document.getElementById(botao.getAttribute("data-copiar"));
+          if (!alvo || !navigator.clipboard) return;
+          navigator.clipboard.writeText(alvo.textContent).then(function () {
+            botao.textContent = "Copiado";
+            setTimeout(function () { botao.textContent = "Copiar"; }, 1500);
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
