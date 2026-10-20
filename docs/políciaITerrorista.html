@@ -1,0 +1,2504 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>O uniforme não é um álibi — dossiê sobre ordem pública, anonimato e habitação</title>
+<meta name="description" content="Ensaio e dossiê de dados sobre polícia de choque sem identificação, impunidade, despejos e o direito à habitação em Portugal, Espanha e França.">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0b0d">
+<style>
+/* ==========================================================================
+   Dossiê Ordem Pública — folha de estilo única, sem dependências externas
+   ========================================================================== */
+
+/* ---------- 1. Tokens ---------- */
+:root {
+  --bg:          #0a0b0d;
+  --bg-soft:     #0e1014;
+  --surface:     #12151a;
+  --surface-2:   #171b21;
+  --line:        #252a32;
+  --line-soft:   #1b1f25;
+
+  --ink:         #ece9e3;
+  --ink-dim:     #a9adb5;
+  --ink-faint:   #767b84;
+
+  --amber:       #e3b25c;
+  --amber-deep:  #b3822f;
+  --alert:       #e0564f;
+  --alert-soft:  rgba(224, 86, 79, 0.12);
+  --steel:       #7fa6c9;
+  --moss:        #7fae93;
+
+  --radius:      4px;
+  --radius-lg:   10px;
+
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --sans:  system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --measure: 68ch;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- 2. Reset enxuto ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  font-size: 100%;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+html.large-text { font-size: 113%; }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1100px 600px at 78% -8%, rgba(227, 178, 92, 0.07), transparent 62%),
+    radial-gradient(900px 500px at 4% 12%, rgba(127, 166, 201, 0.055), transparent 60%),
+    var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  line-height: 1.65;
+  letter-spacing: 0.005em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.016) 1px, transparent 1px);
+  background-size: 96px 100%;
+}
+
+img, svg, video { max-width: 100%; display: block; }
+
+h1, h2, h3, h4 {
+  font-family: var(--serif);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.08;
+  margin: 0 0 0.5em;
+}
+
+p { margin: 0 0 1.1em; }
+p:last-child { margin-bottom: 0; }
+
+a { color: var(--ink); text-decoration-color: rgba(227, 178, 92, 0.5); text-underline-offset: 3px; }
+a:hover { color: var(--amber); }
+
+strong { font-weight: 600; color: #fff; }
+em { font-style: italic; }
+
+::selection { background: var(--amber); color: #14100a; }
+
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ---------- 3. Utilitários ---------- */
+.wrap {
+  width: min(1180px, 100%);
+  margin-inline: auto;
+  padding-inline: clamp(1.1rem, 5vw, 2.5rem);
+  position: relative;
+  z-index: 1;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -100px;
+  z-index: 200;
+  padding: 0.7rem 1.1rem;
+  background: var(--amber);
+  color: #14100a;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--radius);
+  transition: top 0.2s var(--ease);
+}
+.skip-link:focus { top: 0.8rem; color: #14100a; }
+
+.kicker {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin: 0 0 1.1rem;
+}
+
+.fine {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  line-height: 1.6;
+  max-width: 62ch;
+}
+.fine-wide { max-width: 78ch; margin-top: 2rem; }
+
+.tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.32rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+.tag-solid {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #17120a;
+  font-weight: 600;
+}
+
+/* ---------- 4. Barra de progresso ---------- */
+.progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: transparent;
+  z-index: 120;
+}
+.progress span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--amber-deep), var(--amber));
+  box-shadow: 0 0 14px rgba(227, 178, 92, 0.5);
+  transition: width 0.1s linear;
+}
+
+/* ---------- 5. Cabeçalho ---------- */
+.site-head {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: rgba(10, 11, 13, 0.72);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s var(--ease), background 0.3s var(--ease);
+}
+.site-head.is-stuck {
+  border-bottom-color: var(--line-soft);
+  background: rgba(10, 11, 13, 0.92);
+}
+
+.head-inner {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  min-height: 66px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  color: var(--ink);
+  margin-right: auto;
+}
+.brand-mark {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  background: var(--amber);
+  border-radius: 2px;
+  box-shadow: 0 0 0 3px rgba(227, 178, 92, 0.15);
+  transform: rotate(45deg);
+}
+.brand-text {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+.brand-text em {
+  display: block;
+  font-style: normal;
+  color: var(--ink-faint);
+  font-size: 0.66rem;
+  letter-spacing: 0.24em;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+.nav a {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink-dim);
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius);
+  position: relative;
+  transition: color 0.2s var(--ease);
+}
+.nav a:hover { color: var(--ink); }
+.nav a.is-current { color: var(--amber); }
+.nav a.is-current::after {
+  content: "";
+  position: absolute;
+  left: 0.6rem; right: 0.6rem; bottom: 0.1rem;
+  height: 1px;
+  background: var(--amber);
+}
+
+.text-btn {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  background: transparent;
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.42rem 0.55rem;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.text-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+.text-btn[aria-pressed="true"] {
+  background: var(--amber);
+  color: #17120a;
+  border-color: var(--amber);
+}
+
+.nav-toggle {
+  display: none;
+  align-items: center;
+  gap: 0.55rem;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-dim);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.7rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.nav-toggle-bars,
+.nav-toggle-bars::before,
+.nav-toggle-bars::after {
+  display: block;
+  width: 16px;
+  height: 1.5px;
+  background: currentColor;
+  content: "";
+  position: relative;
+}
+.nav-toggle-bars::before { position: absolute; top: -5px; }
+.nav-toggle-bars::after  { position: absolute; top: 5px; }
+
+.nav-toggle[aria-expanded="true"] .nav-toggle-bars { background: transparent; }
+.nav-toggle[aria-expanded="true"] .nav-toggle-bars::before {
+  top: 0;
+  transform: rotate(45deg);
+}
+.nav-toggle[aria-expanded="true"] .nav-toggle-bars::after {
+  top: 0;
+  transform: rotate(-45deg);
+}
+
+/* ---------- 6. Hero ---------- */
+.hero {
+  padding-block: clamp(3.5rem, 10vw, 7.5rem) clamp(3rem, 7vw, 5.5rem);
+  max-width: 1180px;
+}
+
+.hero-title {
+  font-size: clamp(2.9rem, 9.2vw, 7rem);
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+  margin: 0 0 1.6rem;
+  max-width: 15ch;
+}
+.hero-title .strike {
+  color: var(--ink-faint);
+  text-decoration: line-through;
+  text-decoration-thickness: 0.06em;
+  text-decoration-color: var(--alert);
+}
+
+.hero-lead {
+  max-width: 56ch;
+  font-size: clamp(1.05rem, 1.5vw, 1.28rem);
+  color: var(--ink-dim);
+  line-height: 1.62;
+}
+.hero-lead strong { color: var(--ink); }
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 2.6rem 0 2rem;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  max-width: 760px;
+}
+.meta-item {
+  padding: 0.9rem 1.6rem 0.9rem 0;
+  margin-right: 1.6rem;
+  flex: 1 1 160px;
+}
+.meta-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 0.25rem;
+}
+.meta-value {
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 0.85rem 1.35rem;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  transition: transform 0.2s var(--ease), background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-primary { background: var(--amber); color: #17120a; font-weight: 600; }
+.btn-primary:hover { background: #f0c477; color: #17120a; }
+.btn-ghost { border-color: var(--line); color: var(--ink-dim); }
+.btn-ghost:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+.hero-quote {
+  margin: clamp(3rem, 7vw, 5rem) 0 0;
+  padding: 1.6rem 0 0;
+  border-top: 1px solid var(--line-soft);
+  max-width: 34ch;
+}
+.hero-quote p {
+  font-family: var(--serif);
+  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+  font-style: italic;
+  line-height: 1.3;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+.hero-quote cite {
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ---------- 7. Secções ---------- */
+.section {
+  padding-block: clamp(3.5rem, 8vw, 6.5rem);
+  border-top: 1px solid var(--line-soft);
+  scroll-margin-top: 76px;
+}
+
+.section-head {
+  margin-bottom: clamp(2rem, 4vw, 3.2rem);
+  max-width: 66ch;
+}
+.section-head h2 {
+  font-size: clamp(1.9rem, 4.4vw, 3.1rem);
+  margin-bottom: 0.7rem;
+}
+.section-sub {
+  color: var(--ink-dim);
+  font-size: 1.02rem;
+  max-width: 62ch;
+}
+
+/* ---------- 8. Tese ---------- */
+.thesis {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(227, 178, 92, 0.055), transparent 42%),
+    var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--amber);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.4rem, 3.5vw, 2.8rem);
+  max-width: 80ch;
+  box-shadow: 0 30px 80px -50px rgba(0, 0, 0, 0.9);
+}
+
+.thesis-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.6rem;
+}
+
+.thesis-body {
+  font-family: var(--serif);
+  font-size: clamp(1.08rem, 1.5vw, 1.22rem);
+  line-height: 1.78;
+  color: #ded9d0;
+  letter-spacing: 0.002em;
+}
+.thesis-body p::first-letter {
+  float: left;
+  font-size: 3.9em;
+  line-height: 0.82;
+  padding: 0.06em 0.14em 0 0;
+  color: var(--amber);
+  font-weight: 500;
+}
+
+.thesis-foot {
+  margin-top: 1.8rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.pull-list {
+  list-style: none;
+  margin: clamp(1.6rem, 4vw, 2.6rem) 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1px;
+  background: var(--line-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.pull-list li {
+  background: var(--bg-soft);
+  padding: clamp(1.2rem, 2.6vw, 1.8rem);
+}
+.pull-list p {
+  font-family: var(--serif);
+  font-size: clamp(1rem, 1.5vw, 1.14rem);
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--ink);
+  margin: 0;
+}
+.pull-list .fine { margin-top: 0.6rem; display: block; font-style: normal; }
+
+@media (min-width: 760px) {
+  .pull-list { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ---------- 9. Duelo ---------- */
+.duel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+  margin-bottom: 1.8rem;
+}
+@media (min-width: 820px) {
+  .duel { grid-template-columns: 1fr auto 1fr; align-items: stretch; gap: 0; }
+}
+
+.duel-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.3rem, 3vw, 2rem);
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+.duel-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2px;
+  background: var(--line);
+}
+.duel-a::after { background: linear-gradient(90deg, transparent, var(--amber), transparent); }
+.duel-b::after { background: linear-gradient(90deg, transparent, var(--alert), transparent); }
+
+.duel-kicker {
+  font-family: var(--mono);
+  font-size: 0.63rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 0.7rem;
+}
+.duel-card h3 { font-size: clamp(1.3rem, 2.3vw, 1.65rem); margin-bottom: 0.7rem; }
+.duel-desc { color: var(--ink-dim); font-size: 0.94rem; margin: 0; }
+
+.duel-vs {
+  display: grid;
+  place-items: center;
+  padding: 0.4rem 1.1rem;
+}
+.duel-vs span {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+/* ---------- 10. Matriz ---------- */
+.matrix {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+  background: var(--surface);
+}
+.matrix table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.matrix th, .matrix td {
+  text-align: left;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+}
+.matrix thead th {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 500;
+  background: var(--surface-2);
+}
+.matrix tbody th {
+  font-weight: 500;
+  color: var(--ink);
+  width: 38%;
+}
+.matrix tbody tr:last-child th,
+.matrix tbody tr:last-child td { border-bottom: 0; }
+.matrix tbody tr:hover { background: rgba(255, 255, 255, 0.022); }
+
+.matrix td.no { color: #f08b84; }
+.matrix td.yes { color: var(--moss); }
+.matrix td.maybe { color: var(--amber); }
+.matrix td.same {
+  color: var(--ink);
+  font-weight: 600;
+  background: rgba(224, 86, 79, 0.07);
+}
+
+.duel-note {
+  margin-top: 1.6rem;
+  border-left: 2px solid var(--amber);
+  padding: 0.3rem 0 0.3rem 1.3rem;
+  max-width: 72ch;
+  color: var(--ink-dim);
+}
+.duel-note strong { color: var(--ink); }
+
+/* ---------- 11. Números ---------- */
+.stat-grid {
+  display: grid;
+  gap: 1px;
+  background: var(--line-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+@media (min-width: 640px)  { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .stat-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.stat {
+  background: var(--surface);
+  padding: clamp(1.2rem, 2.4vw, 1.7rem);
+  display: flex;
+  flex-direction: column;
+  transition: background 0.25s var(--ease);
+}
+.stat:hover { background: var(--surface-2); }
+
+.stat-label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  line-height: 1.5;
+  margin-bottom: 0.9rem;
+  min-height: 2.5em;
+}
+
+.stat-num {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0 0 0.7rem;
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  line-height: 1;
+  color: var(--amber);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+.stat-unit {
+  font-family: var(--mono);
+  font-size: 0.63rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  letter-spacing: 0.12em;
+}
+
+.stat-desc {
+  font-size: 0.86rem;
+  color: var(--ink-dim);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+.stat-desc strong { color: var(--ink); }
+
+.stat-src {
+  margin-top: auto;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line-soft);
+}
+.stat-src a { color: var(--ink-faint); text-decoration: none; border-bottom: 1px dotted var(--line); }
+.stat-src a:hover { color: var(--amber); border-color: var(--amber); }
+
+.callout {
+  margin-top: 1.6rem;
+  padding: clamp(1.2rem, 3vw, 1.8rem);
+  border: 1px solid rgba(224, 86, 79, 0.28);
+  background: linear-gradient(180deg, var(--alert-soft), transparent 70%), var(--surface);
+  border-radius: var(--radius-lg);
+  max-width: 84ch;
+}
+.callout-kicker {
+  font-family: var(--mono);
+  font-size: 0.63rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--alert);
+  margin-bottom: 0.7rem;
+}
+.callout p { color: var(--ink-dim); font-size: 0.94rem; }
+.callout strong { color: var(--ink); }
+.callout-src { font-family: var(--mono); font-size: 0.65rem; }
+.callout-src a { color: var(--ink-faint); }
+
+/* ---------- 12. Filtros ---------- */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+.chip {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.5rem 0.85rem;
+  border-radius: 100px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-dim);
+  cursor: pointer;
+  transition: all 0.18s var(--ease);
+}
+.chip:hover { color: var(--ink); border-color: var(--ink-faint); }
+.chip.is-active {
+  background: var(--ink);
+  color: #0a0b0d;
+  border-color: var(--ink);
+  font-weight: 600;
+}
+.filters-count {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  color: var(--ink-faint);
+  margin: 0 0 0 auto;
+  letter-spacing: 0.08em;
+}
+
+/* ---------- 13. Cronologia ---------- */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 clamp(1rem, 3vw, 2rem);
+  border-left: 1px solid var(--line);
+  position: relative;
+}
+
+.tl-item {
+  position: relative;
+  padding: 0 0 clamp(1.8rem, 4vw, 2.8rem) clamp(1.1rem, 3vw, 2rem);
+  display: grid;
+  gap: 0.2rem;
+}
+.tl-item::before {
+  content: "";
+  position: absolute;
+  left: calc(clamp(1rem, 3vw, 2rem) * -1 - 4.5px);
+  top: 0.55rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--amber);
+  transition: background 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.tl-item:hover::before {
+  background: var(--amber);
+  box-shadow: 0 0 0 5px rgba(227, 178, 92, 0.12);
+}
+
+@media (min-width: 780px) {
+  .tl-item {
+    grid-template-columns: 190px 1fr;
+    gap: 2rem;
+  }
+}
+
+.tl-year {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--amber);
+  margin: 0.15rem 0 0;
+  white-space: nowrap;
+}
+.tl-body h3 {
+  font-size: clamp(1.15rem, 1.9vw, 1.4rem);
+  margin-bottom: 0.45rem;
+}
+.tl-body p {
+  color: var(--ink-dim);
+  font-size: 0.92rem;
+  max-width: 66ch;
+}
+.tl-src {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.9rem;
+  margin: 0.5rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.63rem;
+}
+.tl-src a {
+  color: var(--ink-faint);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--line);
+  padding-bottom: 1px;
+}
+.tl-src a:hover { color: var(--amber); border-color: var(--amber); }
+
+.tl-item.is-hidden { display: none; }
+
+/* ---------- 14. Tabs / comparação ---------- */
+.tabs {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.tab-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.tab {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 1rem 1.2rem;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--ink-dim);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.tab:hover { color: var(--ink); background: rgba(255, 255, 255, 0.02); }
+.tab[aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--amber);
+  background: rgba(227, 178, 92, 0.05);
+}
+.tab-flag {
+  font-size: 0.6rem;
+  padding: 0.15rem 0.32rem;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  opacity: 0.75;
+}
+
+.tab-panel { padding: clamp(1.1rem, 3vw, 1.9rem); }
+.tab-panel[hidden] { display: none; }
+
+.data-list { margin: 0; }
+.data-row {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.data-row:first-child { padding-top: 0; }
+.data-row:last-child { border-bottom: 0; padding-bottom: 0; }
+
+@media (min-width: 720px) {
+  .data-row {
+    grid-template-columns: 190px 1fr;
+    gap: 1.5rem;
+    align-items: baseline;
+  }
+}
+
+.data-row dt {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.data-row dd {
+  margin: 0;
+  font-size: 0.94rem;
+  color: var(--ink-dim);
+  max-width: 72ch;
+}
+.data-row dd strong { color: var(--ink); }
+.caveat {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  border-left: 1px solid var(--line);
+  padding-left: 0.7rem;
+}
+
+/* ---------- 15. Exigências ---------- */
+.demands {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1px;
+  background: var(--line-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+@media (min-width: 860px) { .demands { grid-template-columns: repeat(2, 1fr); } }
+
+.demands li {
+  background: var(--bg-soft);
+  padding: clamp(1.3rem, 3vw, 1.9rem);
+  display: flex;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  transition: background 0.25s var(--ease);
+}
+.demands li:hover { background: var(--surface-2); }
+.demands li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+.demand-num {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--amber);
+  letter-spacing: 0.05em;
+  padding-top: 0.35rem;
+  flex: 0 0 auto;
+}
+.demands h3 {
+  font-size: clamp(1.1rem, 1.8vw, 1.3rem);
+  margin-bottom: 0.5rem;
+}
+.demands p {
+  font-size: 0.9rem;
+  color: var(--ink-dim);
+  margin: 0;
+  max-width: 46ch;
+}
+
+/* ---------- 16. Notas ---------- */
+.notes {
+  display: grid;
+  gap: 1px;
+  background: var(--line-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+@media (min-width: 800px) { .notes { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .notes { grid-template-columns: repeat(3, 1fr); } }
+
+.notes article {
+  background: var(--surface);
+  padding: clamp(1.2rem, 2.6vw, 1.7rem);
+}
+.notes h3 {
+  font-size: 1.06rem;
+  font-family: var(--sans);
+  font-weight: 600;
+  letter-spacing: 0;
+  margin-bottom: 0.55rem;
+  color: var(--ink);
+}
+.notes p {
+  font-size: 0.87rem;
+  color: var(--ink-dim);
+  line-height: 1.62;
+  margin: 0;
+}
+
+/* ---------- 17. Fontes ---------- */
+.sources {
+  display: grid;
+  gap: clamp(1.6rem, 4vw, 2.8rem);
+}
+@media (min-width: 940px) { .sources { grid-template-columns: repeat(3, 1fr); } }
+
+.source-group h3 {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  padding-bottom: 0.7rem;
+  margin-bottom: 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+.source-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.source-group li {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--line-soft);
+  display: grid;
+  gap: 0.15rem;
+}
+.source-group li:last-child { border-bottom: 0; }
+.source-group a {
+  font-size: 0.86rem;
+  line-height: 1.45;
+  text-decoration: none;
+  color: var(--ink);
+  border-bottom: 1px solid transparent;
+  transition: color 0.18s var(--ease), border-color 0.18s var(--ease);
+}
+.source-group a:hover { color: var(--amber); border-bottom-color: rgba(227, 178, 92, 0.4); }
+.source-group span {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.06em;
+}
+
+/* ---------- 18. Fecho ---------- */
+.closing {
+  padding-block: clamp(3rem, 7vw, 5.5rem);
+  border-top: 1px solid var(--line-soft);
+}
+.closing blockquote {
+  margin: 0 0 1.6rem;
+  max-width: 46rem;
+}
+.closing blockquote p {
+  font-family: var(--serif);
+  font-size: clamp(1.55rem, 3.4vw, 2.4rem);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
+}
+.closing blockquote p::before { content: "“"; color: var(--amber); }
+.closing blockquote p::after  { content: "”"; color: var(--amber); }
+
+/* ---------- 19. Rodapé ---------- */
+.site-foot {
+  border-top: 1px solid var(--line-soft);
+  padding-block: 2rem;
+  background: var(--bg-soft);
+}
+.foot-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem 1.6rem;
+}
+.foot-inner p { margin: 0; }
+.foot-inner p:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.foot-inner .brand-mark { width: 9px; height: 9px; flex-basis: 9px; }
+.to-top {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
+  padding: 0.5rem 0.8rem;
+  border-radius: var(--radius);
+  transition: all 0.2s var(--ease);
+}
+.to-top:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+/* ---------- 20. Revelação ao scroll ---------- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- 21. Responsivo ---------- */
+@media (max-width: 900px) {
+  .nav-toggle { display: inline-flex; }
+  .nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0.6rem clamp(1.1rem, 5vw, 2.5rem) 1rem;
+    background: #0a0b0e;
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 24px 40px -20px #000;
+    display: none;
+  }
+  .nav.is-open { display: flex; }
+  .nav a {
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 0.76rem;
+  }
+  .nav a.is-current::after { display: none; }
+  .text-btn {
+    margin: 0.9rem 0 0;
+    align-self: flex-start;
+  }
+  .head-inner { position: relative; flex-wrap: wrap; }
+  .filters-count { margin: 0.4rem 0 0; flex-basis: 100%; }
+  .hero-title { max-width: 100%; }
+  .hero-meta { gap: 0.2rem 0; }
+}
+
+@media (max-width: 560px) {
+  .hero-title { font-size: clamp(2.6rem, 13vw, 3.6rem); }
+  .hero-meta { display: grid; grid-template-columns: 1fr 1fr; }
+  .meta-item { margin-right: 0; padding: 0.75rem 0; }
+  .meta-item:last-child { grid-column: 1 / -1; }
+  .meta-value { font-size: 0.82rem; }
+  .thesis-body p::first-letter { font-size: 3.2em; }
+  .stat-num { font-size: 2.5rem; }
+  .tab { padding: 0.85rem 0.7rem; font-size: 0.68rem; }
+  .duel-vs { padding: 0.7rem 0; }
+  .closing blockquote { max-width: 100%; }
+  .to-top { margin-left: 0; }
+}
+
+/* ---------- 22. Movimento reduzido / impressão ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  [data-reveal] { opacity: 1; transform: none; }
+}
+
+@media print {
+  body { background: #fff; color: #000; }
+  body::before, .site-head, .progress, .hero-actions, .to-top, .filters, .nav-toggle { display: none !important; }
+  .thesis, .stat, .duel-card, .matrix, .tabs, .notes article, .demands li { background: #fff; border-color: #ccc; box-shadow: none; }
+  .kicker, .stat-num, .tl-year, .tag-solid { color: #000; }
+  .stat-num { font-size: 2rem; }
+  a { color: #000; }
+  .tab-panel[hidden] { display: block !important; }
+  [data-reveal] { opacity: 1; transform: none; }
+}
+
+</style>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0b0d'/%3E%3Crect x='11' y='11' width='10' height='10' fill='%23e3b25c' transform='rotate(45 16 16)'/%3E%3C/svg%3E">
+<noscript><style>[data-reveal]{opacity:1 !important;transform:none !important}</style></noscript>
+</head>
+<body>
+<a class="skip-link" href="#tese">Saltar para o texto</a>
+
+<div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+
+<header class="site-head" id="topo">
+  <div class="wrap head-inner">
+    <a class="brand" href="#topo" aria-label="Início">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text">Dossiê<em>Ordem Pública</em></span>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="nav">
+      <span class="nav-toggle-bars" aria-hidden="true"></span>
+      <span class="nav-toggle-label">Menu</span>
+    </button>
+
+    <nav class="nav" id="nav" aria-label="Secções">
+      <a href="#tese">Tese</a>
+      <a href="#pergunta">A pergunta</a>
+      <a href="#numeros">Números</a>
+      <a href="#cronologia">Cronologia</a>
+      <a href="#comparacao">Comparação</a>
+      <a href="#exigencias">Exigências</a>
+      <a href="#fontes">Fontes</a>
+      <button class="text-btn" id="fontToggle" type="button" aria-pressed="false" title="Aumentar o tamanho do texto">A+</button>
+    </nav>
+  </div>
+</header>
+
+<main id="conteudo">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <p class="kicker" data-reveal>Ensaio · Dados · Outubro de 2026</p>
+
+    <h1 id="hero-title" class="hero-title" data-reveal>
+      O uniforme<br>
+      não é um <span class="strike">álibi</span>.
+    </h1>
+
+    <p class="hero-lead" data-reveal>
+      Uma crítica à tática, não à existência da polícia. O texto que se segue é do autor,
+      reproduzido <strong>sem uma única alteração</strong>. À volta dele, os números que
+      permitem discutir a crítica em vez de a abafar.
+    </p>
+
+    <div class="hero-meta" data-reveal>
+      <div class="meta-item">
+        <span class="meta-label">Texto</span>
+        <span class="meta-value">Original, sem correções</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Dados</span>
+        <span class="meta-value">36 fontes datadas</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Âmbito</span>
+        <span class="meta-value">PT · ES · FR</span>
+      </div>
+    </div>
+
+    <div class="hero-actions" data-reveal>
+      <a class="btn btn-primary" href="#tese">Ler a tese</a>
+      <a class="btn btn-ghost" href="#numeros">Ver os números</a>
+    </div>
+
+    <blockquote class="hero-quote" data-reveal>
+      <p>“A diferença estará na roupa.”</p>
+      <cite>— do texto do autor</cite>
+    </blockquote>
+  </section>
+
+  <!-- ============ TESE ============ -->
+  <section class="section wrap" id="tese" aria-labelledby="tese-title">
+    <div class="section-head">
+      <p class="kicker" data-reveal>01 — A tese</p>
+      <h2 id="tese-title" data-reveal>O texto, tal como foi escrito</h2>
+      <p class="section-sub" data-reveal>
+        Reprodução integral. Grafia, pontuação, concordâncias e repetições mantidas de propósito:
+        o documento serve para apontar o que está mal, não para ser polido.
+      </p>
+    </div>
+
+    <article class="thesis" data-reveal>
+      <header class="thesis-head">
+        <span class="tag tag-solid">Texto original</span>
+        <span class="tag">Sem alterações</span>
+        <span class="tag">Sem cortes</span>
+      </header>
+
+      <div class="thesis-body" id="thesisBody">
+        <p>A Polícia de Choque, apresenta-se sem estar devidamente identificada e como tal, este artigo poderá ser lido como uma espécie de provocação e ao mesmo tempo, com um realismo que chama à razão. Qual a diferença entre um  polícia não identificado e de cara tapada com um Islâmico Radical de cara tapada, sabendo que ambos irão agredir os inocentes, sejam eles mulheres, grávidas, crianças, cães, adultos pacíficos e idosos? A diferença estará na roupa, pois põe-se em causa se os valores serão os mesmos ou não, pois o terrorista bombista suicída, aceitará explodir-se e matar qualquer um dos vários exemplos de pessoas inocentes que foram mencionados anteriormente como os alvos dos polícias de choque. Tal como um cão treinado para morder, sem questionar e sem verificar a diferença entre o que é potencialmente perigoso ou o que é realmente perigo e o que não é em nada perigoso, ataca sem exclusão, sem diferenciação. Tanto faz se é criança bebé ou adulto idoso. O cão, ao ouvir a Ordem, ataca e só pára quando existe a Ordem para parar. Aqui não há uma intenção de denegrir o corpo policial, mas sim de chama-lo à atenção dos erros que produz há vários séculos, sem demonstrar sensibilidade em melhorar os aspecto de ação e intervenção. É uma crítica explicita e bem concreta. Há mudanças de táticas que devem ser consideradas, pois caso não sejam, não há diferença entre um polícia de Choque e um Islâmico Radical. O mesmo acontece em todos os membros das Forças Militares. Exemplo são actuais e diários, mas repetem-se há mais de 40 séculos, isto é, 20 séculos antes de Cristo. Esse homem que foi cruxificado por falar uma verdade qualquer, pois é a lição que a Biblia quer oferecer, apontando para o problema judicial de quem quer fazer justiça e por consequência lógica, torna-se diabólico e injusto. A ação policial na cidade do Porto, Portugal, tiveram o cuidado de falar com os cidadões pacificos que estavam a manifestar-se (de forma solidária com quem não tem casa) e por isso foi possível retirar as tendas da Praça D. João I sem uma intervenção Terrorista, mas em Lisboa o mesmo não aconteceu. Mesmo assim, nada que se compare à Espanha ou à França, no que toca às manifestações pelo direito à habitação e pelo aumento dos salários, de forma a garantirem que todas as pessoas podem subsistir sem serem obrigadas a serem expulsas das suas casas arrendadas, por falta de dinheiro e de tempo para gerar mais dinheiro.</p>
+      </div>
+
+      <footer class="thesis-foot">
+        <p class="fine">
+          O texto acima é a íntegra da posição do autor. As secções seguintes não o reescrevem:
+          acrescentam datas, números e fontes para que a crítica possa ser verificada ponto por ponto.
+        </p>
+      </footer>
+    </article>
+
+    <ul class="pull-list" aria-label="Passagens em destaque">
+      <li data-reveal>
+        <p>“Aqui não há uma intenção de denegrir o corpo policial, mas sim de chama-lo à atenção dos erros…”</p>
+      </li>
+      <li data-reveal>
+        <p>“Há mudanças de táticas que devem ser consideradas…”</p>
+      </li>
+      <li data-reveal>
+        <p>“Criticar é necessário, para quem pode alterar o que está mal e melhorar o que está mal.”</p>
+        <span class="fine">— nota de enquadramento do autor</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ============ PERGUNTA ============ -->
+  <section class="section wrap" id="pergunta" aria-labelledby="pergunta-title">
+    <div class="section-head">
+      <p class="kicker" data-reveal>02 — A pergunta</p>
+      <h2 id="pergunta-title" data-reveal>Dois anonimatos, uma diferença</h2>
+      <p class="section-sub" data-reveal>
+        O texto compara dois rostos tapados. A comparação não é sobre uma religião nem sobre
+        muçulmanos: é sobre o que acontece quando quem exerce violência não pode ser nomeado.
+      </p>
+    </div>
+
+    <div class="duel" data-reveal>
+      <article class="duel-card duel-a">
+        <p class="duel-kicker">Figura A</p>
+        <h3>Agente de choque não identificado</h3>
+        <p class="duel-desc">
+          Farda sem número visível, capacete e viseira. Age em nome do Estado, ao abrigo da lei,
+          e tem uma hierarquia, um regulamento e um serviço de inspeção.
+        </p>
+      </article>
+
+      <div class="duel-vs" aria-hidden="true"><span>vs</span></div>
+
+      <article class="duel-card duel-b">
+        <p class="duel-kicker">Figura B</p>
+        <h3>Radical de rosto tapado</h3>
+        <p class="duel-desc">
+          Rosto coberto, sem insígnia, sem Estado por trás. Age em nome de uma ideologia e
+          responde apenas perante o seu grupo. É a figura que o texto convoca.
+        </p>
+      </article>
+    </div>
+
+    <div class="matrix" data-reveal tabindex="0" role="region" aria-label="Tabela comparativa — deslizar horizontalmente em ecrãs pequenos">
+      <table>
+        <caption class="visually-hidden">Comparação entre as duas figuras usadas no texto</caption>
+        <thead>
+          <tr>
+            <th scope="col">Critério</th>
+            <th scope="col">Agente não identificado</th>
+            <th scope="col">Radical de rosto tapado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Rosto visível</th>
+            <td class="no">Não</td>
+            <td class="no">Não</td>
+          </tr>
+          <tr>
+            <th scope="row">Nome ou número verificável</th>
+            <td class="no">Não visível</td>
+            <td class="no">Não</td>
+          </tr>
+          <tr>
+            <th scope="row">Distingue o alvo de quem não é alvo</th>
+            <td class="no">Não, quando a ordem é “carregar”</td>
+            <td class="no">Não</td>
+          </tr>
+          <tr>
+            <th scope="row">Age por ordem de outro</th>
+            <td class="yes">Sim</td>
+            <td class="yes">Sim</td>
+          </tr>
+          <tr>
+            <th scope="row">Responde a uma lei escrita</th>
+            <td class="yes">Sim, em teoria</td>
+            <td class="no">Não</td>
+          </tr>
+          <tr>
+            <th scope="row">Pode ser responsabilizado</th>
+            <td class="maybe">Só se for identificado</td>
+            <td class="no">Raramente</td>
+          </tr>
+          <tr>
+            <th scope="row">Efeito sobre a criança que está à frente</th>
+            <td class="same">O mesmo</td>
+            <td class="same">O mesmo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="duel-note" data-reveal>
+      <p>
+        <strong>O que o texto afirma:</strong> para quem é atingido, a diferença entre as duas
+        figuras é a roupa. <strong>O que o texto exige:</strong> que a roupa passe a significar
+        alguma coisa — isto é, que traga um número, uma câmara, um regulamento e alguém com
+        poder para punir. É esta a distinção que separa uma crítica à tática de uma condenação
+        da polícia enquanto instituição.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ NÚMEROS ============ -->
+  <section class="section wrap" id="numeros" aria-labelledby="numeros-title">
+    <div class="section-head">
+      <p class="kicker" data-reveal>03 — Os números</p>
+      <h2 id="numeros-title" data-reveal>O que é verificável</h2>
+      <p class="section-sub" data-reveal>
+        Cada valor indica o ano, o que mede e a fonte. Onde a contagem é de uma organização e
+        não do Estado, está dito. Onde os números não são comparáveis entre países, também.
+      </p>
+    </div>
+
+    <div class="stat-grid">
+      <article class="stat" data-reveal>
+        <p class="stat-label">Queixas contra a polícia · IGAI · Portugal</p>
+        <p class="stat-num"><span data-count="1511">0</span><span class="stat-unit">em 2024</span></p>
+        <p class="stat-desc">
+          Maior valor da década. Eram <strong>711</strong> em 2014: um aumento de cerca de
+          <strong>112%</strong> em dez anos. Inclui 331 certidões remetidas por autoridades judiciais.
+        </p>
+        <p class="stat-src"><a href="https://www.rtp.pt/noticias/pais/inspecao-recebeu-1511-queixas-contra-atuacao-dos-policias-em-2024-maior-numero-da-decada" target="_blank" rel="noopener">RTP / Lusa, 23 mai. 2025</a></p>
+      </article>
+
+      <article class="stat" data-reveal>
+        <p class="stat-label">Feridos na carga do Porto · segundo o movimento</p>
+        <p class="stat-num"><span data-count="37">0</span><span class="stat-unit">15 out. 2026</span></p>
+        <p class="stat-desc">
+          Dois em estado grave, segundo o Movimento pela Habitação. A PSP confirmou um agente
+          ferido e não indicou, no momento, o número de manifestantes feridos. A IGAI abriu processo.
+        </p>
+        <p class="stat-src"><a href="https://observador.pt/especiais/das-tendas-a-carga-policial-o-que-aconteceu-no-porto-e-o-que-diz-a-lei-sobre-a-atuacao-da-policia/" target="_blank" rel="noopener">Observador, 15 out. 2026</a></p>
+      </article>
+
+      <article class="stat" data-reveal>
+        <p class="stat-label">Detidos no Rossio · Lisboa</p>
+        <p class="stat-num"><span data-count="55">0</span><span class="stat-unit">20 out. 2026</span></p>
+        <p class="stat-desc">
+          Detenções por desobediência e dois feridos ligeiros na retirada das tendas da Acampada
+          de Lisboa, na Praça D. Pedro IV. No Porto, a mesma operação não registou detenções.
+        </p>
+        <p class="stat-src"><a href="https://www.rtp.pt/noticias/pais/policia-retirou-tendas-dos-manifestantes-em-lisboa-e-no-porto_e1772823" target="_blank" rel="noopener">RTP, 20 out. 2026</a></p>
+      </article>
+
+      <article class="stat" data-reveal>
+        <p class="stat-label">Processos de despejo · tribunais · Portugal</p>
+        <p class="stat-num"><span data-count="2724">0</span><span class="stat-unit">em 2024</span></p>
+        <p class="stat-desc">
+          Entradas em primeira instância. Em 2023, o Balcão Nacional do Arrendamento recebeu
+          2.672 pedidos e emitiu 1.072 títulos de desocupação. Entre janeiro e maio de 2025
+          saíram 659 títulos: <strong>+14%</strong> face ao mesmo período do ano anterior.
+        </p>
+        <p class="stat-src"><a href="https://www.jornaldenegocios.pt/economia/habitacao/detalhe/despejos-sobem-14-e-ha-milhares-de-processos-em-tribunal" target="_blank" rel="noopener">Jornal de Negócios, 2025</a></p>
+      </article>
+
+      <article class="stat" data-reveal>
+        <p class="stat-label">Expulsões com força policial · França</p>
+        <p class="stat-num"><span data-count="24000">0</span><span class="stat-unit">em 2024</span></p>
+        <p class="stat-desc">
+          Recorde da série acompanhada pela Fundação para o Alojamento. Em 2023 tinham sido
+          19.023. A Fundação estima que outras duas a três vezes mais famílias saem antes de a
+          força chegar.
+        </p>
+        <p class="stat-src"><a href="https://www.fondationpourlelogement.fr/fin-de-la-treve-hivernale-24-000-expulsions-locatives-une-hausse-record/" target="_blank" rel="noopener">Fondation pour le Logement, 2024</a></p>
+      </article>
+
+      <article class="stat" data-reveal>
+        <p class="stat-label">Lançamentos judiciais · Espanha</p>
+        <p class="stat-num"><span data-count="27564">0</span><span class="stat-unit">em 2024</span></p>
+        <p class="stat-desc">
+          Mais 3,4% do que em 2023. É a medida judicial mais próxima do despejo, mas pode
+          incluir imóveis que não são habitação habitual. O comunicado do CGPJ para 2025 tem
+          uma incoerência interna de mil casos entre dois trechos.
+        </p>
+        <p class="stat-src"><a href="https://www.poderjudicial.es/cgpj/es/Temas/Estadistica-Judicial/Estudios-e-Informes/Efecto-de-la-Crisis-en-los-organos-judiciales/" target="_blank" rel="noopener">CGPJ, 2025</a></p>
+      </article>
+    </div>
+
+    <aside class="callout" data-reveal>
+      <p class="callout-kicker">O número que falta</p>
+      <p>
+        Não existe em Portugal uma série nacional pública e comparável de mortos e feridos em
+        intervenções policiais, nem uma contagem oficial de cargas de ordem pública. O caso de
+        <strong>Odair Moniz</strong>, 43 anos, morto a tiro pela PSP na Cova da Moura em 21 de
+        outubro de 2024, é um episódio documentado — não uma estatística. A ausência de
+        contagem é, em si, matéria do dossiê: não se corrige o que não se mede.
+      </p>
+      <p class="callout-src">
+        <a href="https://sicnoticias.pt/pais/2024-10-21-homem-morre-baleado-pela-psp-na-cova-da-moura-0dc86a18" target="_blank" rel="noopener">SIC Notícias, 21 out. 2024</a>
+      </p>
+    </aside>
+  </section>
+
+  <!-- ============ CRONOLOGIA ============ -->
+  <section class="section wrap" id="cronologia" aria-labelledby="cronologia-title">
+    <div class="section-head">
+      <p class="kicker" data-reveal>04 — A longa duração</p>
+      <h2 id="cronologia-title" data-reveal>Quatro milénios de guardar a ordem</h2>
+      <p class="section-sub" data-reveal>
+        O texto diz que os erros se repetem há mais de 40 séculos. Esta é a cronologia
+        documentada — do código babilónico à madrugada do Rossio. Filtre por época.
+      </p>
+    </div>
+
+    <div class="filters" role="group" aria-label="Filtrar cronologia por época" data-reveal>
+      <button class="chip is-active" type="button" data-filter="all" aria-pressed="true">Tudo</button>
+      <button class="chip" type="button" data-filter="antiguidade" aria-pressed="false">Antiguidade</button>
+      <button class="chip" type="button" data-filter="s19" aria-pressed="false">Século XIX</button>
+      <button class="chip" type="button" data-filter="s20" aria-pressed="false">Século XX</button>
+      <button class="chip" type="button" data-filter="s21" aria-pressed="false">Século XXI</button>
+      <p class="filters-count" id="filtersCount" aria-live="polite"></p>
+    </div>
+
+    <ol class="timeline" id="timeline">
+      <li class="tl-item" data-era="antiguidade" data-reveal>
+        <p class="tl-year">c. 1750 a.C.</p>
+        <div class="tl-body">
+          <h3>Código de Hammurabi</h3>
+          <p>
+            A estela babilónica reúne <strong>282 decisões jurídicas</strong> sobre família,
+            propriedade, comércio e trabalho. O Louvre ressalva que não era um código moderno,
+            mas uma compilação de jurisprudência: já aí a sentença dependede quem julgava.
+          </p>
+          <p class="tl-src"><a href="https://www.louvre.fr/en/the-code-of-hammurabi" target="_blank" rel="noopener">Musée du Louvre</a></p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="antiguidade" data-reveal>
+        <p class="tl-year">c. 2040–1069 a.C.</p>
+        <div class="tl-body">
+          <h3>Egito: as primeiras funções policiais</h3>
+          <p>
+            No Reino Médio surgem funções policiais profissionalizadas ligadas ao aparelho
+            judicial; no Novo Reino, os <em>Medjay</em> — inicialmente guerreiros núbios —
+            formam o núcleo de uma força mais organizada. Não havia polícia estatal no sentido
+            moderno, e é importante não confundir categorias.
+          </p>
+          <p class="tl-src"><a href="https://www.worldhistory.org/article/1104/police-in-ancient-egypt/" target="_blank" rel="noopener">World History Encyclopedia</a></p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="antiguidade" data-reveal>
+        <p class="tl-year">27 a.C. / 6 d.C.</p>
+        <div class="tl-body">
+          <h3>Roma: pretorianos e <em>vigiles</em></h3>
+          <p>
+            Augusto cria a Guarda Pretoriana (nove coortes de 500 a 1.000 homens) — guarda
+            imperial com funções de vigilância política e controlo de multidões. Em 6 d.C.,
+            depois de incêndios graves, cria os <em>vigiles</em>: 3.500 homens em sete coortes,
+            bombeiros e patrulha noturna. A força que protege é a mesma que vigia.
+          </p>
+          <p class="tl-src">
+            <a href="https://ancient-history-blog.mq.edu.au/cityOfRome/Vigiles" target="_blank" rel="noopener">Macquarie University</a>
+            <a href="https://www.worldhistory.org/Vigiles/" target="_blank" rel="noopener">World History Encyclopedia</a>
+          </p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="s19" data-reveal>
+        <p class="tl-year">1801</p>
+        <div class="tl-body">
+          <h3>Guarda Real de Polícia</h3>
+          <p>
+            Antecedente institucional da Guarda Nacional Republicana. A GNR só será criada com
+            esse nome em 1911 — a distinção entre tradição e fundação importa quando se fala de
+            séculos de prática.
+          </p>
+          <p class="tl-src"><a href="https://www.fiep.org/member-forces/portugese-national-republican-guard/" target="_blank" rel="noopener">FIEP</a></p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="s19" data-reveal>
+        <p class="tl-year">1829</p>
+        <div class="tl-body">
+          <h3>Londres: a polícia profissional</h3>
+          <p>
+            A lei de Robert Peel cria a Metropolitan Police: força permanente, profissional e
+            centralizada. É o modelo que vai circular pela Europa — incluindo a ideia de que a
+            polícia deve ser identificável e responsável perante a lei.
+          </p>
+          <p class="tl-src"><a href="https://www.parliament.uk/about/living-heritage/transformingsociety/laworder/policeprisons/overview/metropolitanpolice/" target="_blank" rel="noopener">Parlamento do Reino Unido</a></p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="s19" data-reveal>
+        <p class="tl-year">2 de julho de 1867</p>
+        <div class="tl-body">
+          <h3>Polícia Civil em Lisboa e no Porto</h3>
+          <p>
+            Criação dos corpos de Polícia Civil nas duas cidades. É a origem institucional da
+            força urbana que, em 1910, passa a Polícia Cívica e, em 1927, adota a designação
+            Polícia de Segurança Pública.
+          </p>
+          <p class="tl-src"><a href="https://historiadapolicia.fcsh.unl.pt/page.aspx?lang=pt&amp;pid=1154&amp;cid=1120" target="_blank" rel="noopener">História da Polícia (FCSH/NOVA)</a></p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="s20" data-reveal>
+        <p class="tl-year">3 de maio de 1911</p>
+        <div class="tl-body">
+          <h3>É criada a GNR</h3>
+          <p>
+            Corpo especial de tropas, com natureza militar e competências de policiamento geral.
+            Hoje é a força que intervém em boa parte do território fora das cidades — e a que
+            partilha com a PSP as unidades de intervenção e o problema da identificação.
+          </p>
+          <p class="tl-src"><a href="https://diariodarepublica.pt/dr/detalhe/decreto/1911-595731" target="_blank" rel="noopener">Diário da República</a></p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="s20" data-reveal>
+        <p class="tl-year">29 de agosto de 1974</p>
+        <div class="tl-body">
+          <h3>Decreto-Lei n.º 406/74</h3>
+          <p>
+            Regula o direito de reunião e manifestação e fixa que as manifestações em lugares
+            públicos não podem prolongar-se para além das 00h30. Meio século depois, é este o
+            artigo invocado pela PSP para intervir às 3h00 da madrugada na Praça D. João I.
+          </p>
+          <p class="tl-src"><a href="https://observador.pt/especiais/das-tendas-a-carga-policial-o-que-aconteceu-no-porto-e-o-que-diz-a-lei-sobre-a-atuacao-da-policia/" target="_blank" rel="noopener">Observador, 15 out. 2026</a></p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="s21" data-reveal>
+        <p class="tl-year">1 de julho de 2015</p>
+        <div class="tl-body">
+          <h3>Espanha: a “Lei Mordaza”</h3>
+          <p>
+            A Lei Orgânica 4/2015, de 30 de março, entra em vigor com multas por infrações
+            administrativas que vão de <strong>100 € a 600.000 €</strong> — incluindo condutas
+            ligadas a reuniões e manifestações. Organizações de direitos humanos associam-na a
+            uma redução do espaço de protesto.
+          </p>
+          <p class="tl-src"><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2015-3442" target="_blank" rel="noopener">BOE</a></p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="s21" data-reveal>
+        <p class="tl-year">1 de outubro de 2017</p>
+        <div class="tl-body">
+          <h3>Catalunha: 761 feridos num dia</h3>
+          <p>
+            No referendo declarado ilegal pelo Tribunal Constitucional, a Polícia Nacional e a
+            Guardia Civil tentaram impedir a votação. Os serviços de emergência catalães
+            registaram 761 feridos; o Ministério do Interior espanhol contou 12 agentes feridos.
+            A Human Rights Watch documentou uso excessivo da força em três locais.
+          </p>
+          <p class="tl-src">
+            <a href="https://www.bbc.com/news/world-europe-41461032" target="_blank" rel="noopener">BBC</a>
+            <a href="https://www.hrw.org/news/2017/10/12/spain-police-used-excessive-force-in-catalonia" target="_blank" rel="noopener">HRW</a>
+          </p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="s21" data-reveal>
+        <p class="tl-year">2018–2019</p>
+        <div class="tl-body">
+          <h3>França: os <em>gilets jaunes</em> e o LBD 40</h3>
+          <p>
+            A Amnesty International contabilizou, com base em estatísticas oficiais, mais de
+            2.200 manifestantes e 1.500 agentes feridos até maio de 2019. Em março desse ano,
+            a IGPN e a IGGN tratavam de 83 queixas de manifestantes por lesões provocadas por
+            projéteis de LBD 40 — arma classificada como de “letalidade reduzida”.
+          </p>
+          <p class="tl-src"><a href="https://www.amnesty.org/en/documents/eur21/0304/2019/en/" target="_blank" rel="noopener">Amnesty International, 2019</a></p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="s21" data-reveal>
+        <p class="tl-year">27 de junho de 2023</p>
+        <div class="tl-body">
+          <h3>Nahel M., 17 anos, Nanterre</h3>
+          <p>
+            Morto a tiro por um agente num controlo de trânsito. Foi a terceira morte do género
+            em França só em 2023; em 2022 tinham sido 13. A Amnesty liga o aumento ao quadro
+            legal de 2017 sobre uso de armas de fogo — uma análise da organização, não uma
+            decisão judicial.
+          </p>
+          <p class="tl-src"><a href="https://www.france24.com/en/europe/20230629-why-deadly-police-shootings-are-on-the-rise-on-france-s-roads" target="_blank" rel="noopener">France 24</a></p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="s21" data-reveal>
+        <p class="tl-year">18 de janeiro de 2024</p>
+        <div class="tl-body">
+          <h3>IGAI recomenda identificação visível</h3>
+          <p>
+            A Recomendação n.º 1/2024 pede que os agentes das unidades especiais da PSP e da
+            GNR usem identificação <strong>visível e frontal</strong>, nominal ou por código
+            numérico único. Não é vinculativa. Em outubro de 2025, a PSP dizia ainda estar a
+            trabalhar na sua implementação.
+          </p>
+          <p class="tl-src">
+            <a href="https://www.rtp.pt/noticias/pais/igai-recomenda-identificacao-visivel-e-frontal-obrigatoria-para-todos-os-policias_n1544574" target="_blank" rel="noopener">RTP, 2024</a>
+            <a href="https://www.dn.pt/sociedade/polcias-identificam-se-com-farda-e-carteira-profissional-psp-ignora-recomendao-da-igai" target="_blank" rel="noopener">DN, 2025</a>
+          </p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="s21" data-reveal>
+        <p class="tl-year">3 de fevereiro de 2024</p>
+        <div class="tl-body">
+          <h3>Famalicão: 13 cm e nenhum culpado</h3>
+          <p>
+            Um adepto sofreu uma ferida de 13 cm na cabeça, suturada com 10 pontos, após ser
+            atingido por um agente da Unidade Especial de Polícia. O inquérito disciplinar foi
+            arquivado porque não foi possível identificar o agente. A IGAI considerou que cinco
+            agentes praticaram atos merecedores de censura — e também não os conseguiu identificar.
+          </p>
+          <p class="tl-src"><a href="https://www.dn.pt/sociedade/igai-quer-forcas-especiais-da-psp-com-identificacao-sempre-a-vista" target="_blank" rel="noopener">Diário de Notícias, 26 jul. 2024</a></p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="s21" data-reveal>
+        <p class="tl-year">28 de setembro de 2024</p>
+        <div class="tl-body">
+          <h3>Milhares contra o preço da casa</h3>
+          <p>
+            Manifestações em Lisboa e noutras cidades contra rendas e preços de compra
+            inacessíveis. Nos cartazes, a escolha que o texto descreve: pagar a casa ou comprar
+            comida. Em Madrid, a 13 de outubro, a marcha teve 22.000 pessoas segundo o Governo
+            e 150.000 segundo os organizadores.
+          </p>
+          <p class="tl-src">
+            <a href="https://www.euronews.com/2024/09/29/thousands-protest-across-portugal-against-unaffordable-house-prices-and-rents" target="_blank" rel="noopener">Euronews</a>
+            <a href="https://www.rtve.es/noticias/20241013/miles-personas-se-manifiestan-madrid-para-pedir-bajada-precio-alquileres/16285885.shtml" target="_blank" rel="noopener">RTVE</a>
+          </p>
+        </div>
+      </li>
+
+      <li class="tl-item" data-era="s21" data-reveal>
+        <p class="tl-year">19–20 de outubro de 2026</p>
+        <div class="tl-body">
+          <h3>Do pedido à carga, em 24 horas</h3>
+          <p>
+            A 19 de outubro, a PSP apela em Lisboa a que as tendas sejam desmontadas por falta
+            de licenciamento. Na madrugada de 20, o Corpo de Intervenção retira as tendas do
+            Rossio: <strong>55 detidos por desobediência</strong> e dois feridos ligeiros. No
+            Porto, a desmobilização não registou detenções.
+          </p>
+          <p class="tl-src">
+            <a href="https://www.publico.pt/2026/10/19/sociedade/noticia/manifestacoes-habitacao-psp-pede-retirada-tendas-falta-licenciamento-2191799" target="_blank" rel="noopener">Público, 19 out. 2026</a>
+            <a href="https://www.rtp.pt/noticias/pais/policia-retirou-tendas-dos-manifestantes-em-lisboa-e-no-porto_e1772823" target="_blank" rel="noopener">RTP, 20 out. 2026</a>
+          </p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ============ COMPARAÇÃO ============ -->
+  <section class="section wrap" id="comparacao" aria-labelledby="comparacao-title">
+    <div class="section-head">
+      <p class="kicker" data-reveal>05 — Comparação</p>
+      <h2 id="comparacao-title" data-reveal>Três países, a mesma pressão</h2>
+      <p class="section-sub" data-reveal>
+        Portugal, Espanha e França não vivem a mesma crise com a mesma intensidade — e não a
+        medem da mesma maneira. Escolha o país. As ressalvas metodológicas estão em cada linha.
+      </p>
+    </div>
+
+    <div class="tabs" data-reveal>
+      <div class="tab-list" role="tablist" aria-label="País">
+        <button class="tab is-active" id="tab-pt" role="tab" aria-selected="true" aria-controls="panel-pt" data-tab="pt" type="button">
+          <span class="tab-flag" aria-hidden="true">PT</span> Portugal
+        </button>
+        <button class="tab" id="tab-es" role="tab" aria-selected="false" aria-controls="panel-es" data-tab="es" tabindex="-1" type="button">
+          <span class="tab-flag" aria-hidden="true">ES</span> Espanha
+        </button>
+        <button class="tab" id="tab-fr" role="tab" aria-selected="false" aria-controls="panel-fr" data-tab="fr" tabindex="-1" type="button">
+          <span class="tab-flag" aria-hidden="true">FR</span> França
+        </button>
+      </div>
+
+      <div class="tab-panel is-active" id="panel-pt" role="tabpanel" aria-labelledby="tab-pt" tabindex="0">
+        <dl class="data-list">
+          <div class="data-row">
+            <dt>Despejos</dt>
+            <dd>
+              <strong>2.724</strong> processos entrados em primeira instância em 2024;
+              <strong>659</strong> títulos de desocupação entre janeiro e maio de 2025 (+14%).
+              <span class="caveat">Pedido, título e despejo executado não são a mesma coisa.</span>
+            </dd>
+          </div>
+          <div class="data-row">
+            <dt>Renda pedida</dt>
+            <dd>
+              Lisboa <strong>22,2 €/m²/mês</strong>; Porto <strong>17,7 €/m²/mês</strong>
+              <span class="caveat">Preços de anúncios, junho de 2025 — não rendas contratadas.</span>
+            </dd>
+          </div>
+          <div class="data-row">
+            <dt>Renda mediana</dt>
+            <dd>
+              <strong>16 €/m²</strong> nos novos contratos do município de Lisboa, 1.º trimestre
+              de 2025 (INE). A distância para os 22,2 €/m² pedidos mede o fosso entre quem entra
+              agora no mercado e quem já tem contrato.
+            </dd>
+          </div>
+          <div class="data-row">
+            <dt>Sobrecarga da habitação</dt>
+            <dd>
+              <strong>6,9%</strong> da população vive em agregados em que a habitação consome 40%
+              ou mais do rendimento disponível (Eurostat, 2024). É uma taxa de sobrecarga, não a
+              percentagem média do rendimento.
+            </dd>
+          </div>
+          <div class="data-row">
+            <dt>Sem-abrigo</dt>
+            <dd><strong>14.476</strong> pessoas no fim de 2024: 9.403 sem teto e 5.073 sem casa (ENIPSSA).</dd>
+          </div>
+          <div class="data-row">
+            <dt>Salário mínimo</dt>
+            <dd><strong>870 €</strong> desde 1 de janeiro de 2025 (era 820 € em 2024: +6,1%).</dd>
+          </div>
+          <div class="data-row">
+            <dt>Tática policial</dt>
+            <dd>
+              Identificação visível e frontal recomendada pela IGAI em janeiro de 2024, mas
+              <strong>não vinculativa</strong> e sem implementação confirmada pela PSP em outubro
+              de 2025. Em outubro de 2026, duas operações de retirada de tendas em cinco dias.
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="tab-panel" id="panel-es" role="tabpanel" aria-labelledby="tab-es" tabindex="0" hidden>
+        <dl class="data-list">
+          <div class="data-row">
+            <dt>Despejos</dt>
+            <dd>
+              <strong>27.564</strong> lançamentos judiciais em 2024, +3,4% face a 2023. O
+              comunicado do CGPJ para 2025 indica 24.540 num trecho e 25.540 noutro — e os
+              componentes somam 24.540.
+              <span class="caveat">Pode incluir imóveis que não são habitação habitual.</span>
+            </dd>
+          </div>
+          <div class="data-row">
+            <dt>Renda pedida</dt>
+            <dd>
+              Madrid <strong>22,0 €/m²/mês</strong>; Barcelona <strong>23,9 €/m²/mês</strong>
+              <span class="caveat">Anúncios, junho de 2025.</span>
+            </dd>
+          </div>
+          <div class="data-row">
+            <dt>Sobrecarga da habitação</dt>
+            <dd><strong>7,8%</strong> da população com custos de habitação ≥40% do rendimento (Eurostat, 2024).</dd>
+          </div>
+          <div class="data-row">
+            <dt>Sem-abrigo</dt>
+            <dd>
+              <strong>34.145</strong> adultos alojados por dia em centros de apoio, em média, em
+              2024: +57,5% face a 2022.
+              <span class="caveat">Ocupação de centros, não contagem de quem dorme na rua.</span>
+            </dd>
+          </div>
+          <div class="data-row">
+            <dt>Salário mínimo</dt>
+            <dd><strong>1.184 €</strong> por mês em 14 pagamentos, em 2025 (+4,4%; cerca de 2,5 milhões de trabalhadores).</dd>
+          </div>
+          <div class="data-row">
+            <dt>Protesto</dt>
+            <dd>
+              13 de outubro de 2024, Madrid: <strong>22.000</strong> segundo a Delegação do
+              Governo, <strong>150.000</strong> segundo os organizadores. Palavra de ordem:
+              “Acabou. Baixemos as rendas.”
+            </dd>
+          </div>
+          <div class="data-row">
+            <dt>Tática policial</dt>
+            <dd>
+              Lei Orgânica 4/2015 (“Ley Mordaza”): multas de <strong>100 € a 600.000 €</strong>,
+              incluindo condutas ligadas a manifestações. No referendo de 1 de outubro de 2017,
+              <strong>761</strong> feridos num dia, segundo os serviços de emergência catalães.
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="tab-panel" id="panel-fr" role="tabpanel" aria-labelledby="tab-fr" tabindex="0" hidden>
+        <dl class="data-list">
+          <div class="data-row">
+            <dt>Expulsões</dt>
+            <dd>
+              <strong>24.000</strong> agregados expulsos com auxílio da força policial em 2024,
+              recorde da série (19.023 em 2023). A fundação estima que outras duas a três vezes
+              mais famílias saem antes da execução.
+            </dd>
+          </div>
+          <div class="data-row">
+            <dt>Renda mediana</dt>
+            <dd>
+              Paris <strong>27,3 €/m²/mês</strong>, sem encargos, em 2025.
+              <span class="caveat">Mediana de rendas observadas: não é comparável aos preços de anúncios ibéricos.</span>
+            </dd>
+          </div>
+          <div class="data-row">
+            <dt>Sobrecarga da habitação</dt>
+            <dd><strong>7,0%</strong> da população com custos ≥40% do rendimento (Eurostat, 2024).</dd>
+          </div>
+          <div class="data-row">
+            <dt>Sem domicílio pessoal</dt>
+            <dd>
+              <strong>350.000</strong> pessoas estimadas em 2025, incluindo alojamento e rua.
+              <span class="caveat">Estimativa de fundação, não censo.</span>
+            </dd>
+          </div>
+          <div class="data-row">
+            <dt>Salário mínimo</dt>
+            <dd>
+              Sem aumento em 1 de janeiro de 2025; <strong>+1,18%</strong> em 1 de janeiro de
+              2026, depois de +2% em novembro de 2024.
+            </dd>
+          </div>
+          <div class="data-row">
+            <dt>Protesto</dt>
+            <dd>
+              1 de abril de 2024, Paris: manifestação pelo direito à habitação no fim da trégua
+              de inverno, integrada nos Housing Action Days (27 de março a 7 de abril).
+            </dd>
+          </div>
+          <div class="data-row">
+            <dt>Tática policial</dt>
+            <dd>
+              <strong>13</strong> mortes em recusas de paragem em 2022, recorde à época. O LBD 40
+              deixou <strong>83</strong> queixas de manifestantes por lesões só até março de 2019.
+              Em abril de 2026, o Défenseur des droits concluiu que duas técnicas de estrangulamento
+              e pressão ventral foram uso manifestamente desproporcionado da força.
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <p class="fine fine-wide" data-reveal>
+      Comparar países exige desconfiar da comparação: “despejo”, “lançamento” e “expulsão” não
+      são a mesma operação estatística, e as rendas medidas por anúncio, por contrato ou por
+      mediana observada não são a mesma grandeza. Os números servem para localizar a pressão,
+      não para a somar.
+    </p>
+  </section>
+
+  <!-- ============ EXIGÊNCIAS ============ -->
+  <section class="section wrap" id="exigencias" aria-labelledby="exigencias-title">
+    <div class="section-head">
+      <p class="kicker" data-reveal>06 — A saída</p>
+      <h2 id="exigencias-title" data-reveal>Mudanças de tática que se podem exigir</h2>
+      <p class="section-sub" data-reveal>
+        O texto não pede o fim da polícia. Pede que a polícia deixe de ser indistinguível
+        daquilo que combate. Isto é traduzível em sete medidas concretas, várias delas já
+        recomendadas por organismos do Estado.
+      </p>
+    </div>
+
+    <ol class="demands">
+      <li data-reveal>
+        <p class="demand-num">01</p>
+        <div>
+          <h3>Identificação visível e frontal, sempre</h3>
+          <p>
+            Nome ou código numérico único, legível a dois metros, em todas as unidades de
+            intervenção. A IGAI já o recomendou em janeiro de 2024; falta tornar a recomendação
+            vinculativa e verificar o seu cumprimento.
+          </p>
+        </div>
+      </li>
+      <li data-reveal>
+        <p class="demand-num">02</p>
+        <div>
+          <h3>Câmaras corporais com gravação automática</h3>
+          <p>
+            Em operações de ordem pública, a gravação não pode depender de quem está a ser
+            filmado nem de quem filma. Sem registo, cada carga produz duas versões e nenhuma prova.
+          </p>
+        </div>
+      </li>
+      <li data-reveal>
+        <p class="demand-num">03</p>
+        <div>
+          <h3>Diálogo antes da força, com prazo e registo</h3>
+          <p>
+            Mediação identificada, aviso gravado, tempo documentado para desmontar. A diferença
+            entre pedir e carregar tem de ficar escrita — com hora, nome e responsável.
+          </p>
+        </div>
+      </li>
+      <li data-reveal>
+        <p class="demand-num">04</p>
+        <div>
+          <h3>Formação obrigatória em desescalada</h3>
+          <p>
+            Proporcionalidade não se improvisa às 3h00. A formação tem de ser contínua,
+            avaliada por entidade externa e assente em cenários com crianças, grávidas, idosos e
+            pessoas com deficiência — os alvos que o texto enumera.
+          </p>
+        </div>
+      </li>
+      <li data-reveal>
+        <p class="demand-num">05</p>
+        <div>
+          <h3>Supervisão independente com poder de decidir</h3>
+          <p>
+            Uma inspeção que recomenda e não vincula produz relatórios, não consequências. A
+            IGAI precisa de prazos, de meios e de competência decisória — e os inquéritos não
+            podem morrer por “agente não identificado”.
+          </p>
+        </div>
+      </li>
+      <li data-reveal>
+        <p class="demand-num">06</p>
+        <div>
+          <h3>Fim das armas de “letalidade reduzida” em multidões</h3>
+          <p>
+            O LBD 40 e equivalentes continuam a ferir gravemente em Portugal, Espanha e França.
+            “Reduzida” descreve a probabilidade estatística, não a lesão de quem a recebe.
+          </p>
+        </div>
+      </li>
+      <li data-reveal>
+        <p class="demand-num">07</p>
+        <div>
+          <h3>Dados públicos de ordem pública</h3>
+          <p>
+            Número de cargas, feridos, detenções, queixas e resultados, por força e por distrito,
+            publicados todos os anos. Não se corrige o que não se mede — e hoje não se mede.
+          </p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ============ NOTA ============ -->
+  <section class="section wrap" id="nota" aria-labelledby="nota-title">
+    <div class="section-head">
+      <p class="kicker" data-reveal>07 — Nota de verificação</p>
+      <h2 id="nota-title" data-reveal>O que esta página faz e não faz</h2>
+    </div>
+
+    <div class="notes">
+      <article data-reveal>
+        <h3>Sobre o texto</h3>
+        <p>
+          A íntegra da posição do autor é reproduzida sem correções de grafia, sintaxe ou
+          pontuação. As secções de dados são adição editorial: não substituem, não resumem e não
+          reinterpretam o argumento.
+        </p>
+      </article>
+      <article data-reveal>
+        <h3>Sobre o contraste Porto / Lisboa</h3>
+        <p>
+          O texto descreve uma retirada de tendas no Porto feita com diálogo e, em Lisboa, o
+          contrário. A cronologia documentada de outubro de 2026 é mais dura do que essa
+          distinção: a 15 de outubro, às 3h00, a intervenção na Praça D. João I deixou 37
+          feridos segundo o movimento, e a 20 de outubro o Rossio foi desimpedido com 55
+          detidos. Isso não desmente a tese do autor — retira-lhe o exemplo geográfico e
+          devolve-lhe o argumento central: o problema não é a cidade, é a tática.
+        </p>
+      </article>
+      <article data-reveal>
+        <h3>Sobre a comparação com o “islâmico radical”</h3>
+        <p>
+          A página reproduz a comparação do autor e não a suaviza. Convém ser explícito quanto ao
+          seu alcance: não é uma tese sobre uma religião, nem sobre muçulmanos, que são as
+          primeiras vítimas desse tipo de violência. É uma tese sobre o anonimato de quem exerce
+          força sem responder por ela. O que se compara são duas impunidades, não duas fés.
+        </p>
+      </article>
+      <article data-reveal>
+        <h3>Sobre os dados</h3>
+        <p>
+          Todos os valores têm ano, definição e fonte. Onde a contagem é de uma organização e não
+          do Estado, está assinalado. Onde há séries incompatíveis, está dito. Onde não existe
+          série — mortos e feridos em intervenções policiais em Portugal —, a ausência é
+          apresentada como parte do problema, não preenchida com estimativas.
+        </p>
+      </article>
+      <article data-reveal>
+        <h3>Sobre a longa duração</h3>
+        <p>
+          A cronologia usa datas convencionais e distingue tradição institucional de fundação
+          formal — 1801 e 1911 para a GNR, 1867 e 1927 para a PSP. O Código de Hammurabi é
+          datado de cerca de 1750 a.C. pela instituição que guarda a estela.
+        </p>
+      </article>
+      <article data-reveal>
+        <h3>Sobre as palavras</h3>
+        <p>
+          O vocabulário do autor é mantido, incluindo maiúsculas e repetições: alterá-lo seria
+          alterar o documento. Reproduzir uma expressão não é subscrever uma generalização. A
+          crítica que esta página organiza é dirigida a táticas, mandos e cadeias de
+          responsabilidade — nunca a uma comunidade ou a uma fé.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ FONTES ============ -->
+  <section class="section wrap" id="fontes" aria-labelledby="fontes-title">
+    <div class="section-head">
+      <p class="kicker" data-reveal>08 — Fontes</p>
+      <h2 id="fontes-title" data-reveal>Onde isto pode ser verificado</h2>
+      <p class="section-sub" data-reveal>
+        Ligações consultadas em outubro de 2026. As datas indicam a publicação do dado, não a
+        data do facto noticiado.
+      </p>
+    </div>
+
+    <div class="sources" data-reveal>
+      <div class="source-group">
+        <h3>Portugal · polícia e habitação</h3>
+        <ul>
+          <li><a href="https://www.rtp.pt/noticias/pais/inspecao-recebeu-1511-queixas-contra-atuacao-dos-policias-em-2024-maior-numero-da-decada" target="_blank" rel="noopener">RTP / Lusa — 1.511 queixas contra a polícia em 2024</a><span>23 mai. 2025</span></li>
+          <li><a href="https://www.rtp.pt/noticias/pais/igai-recomenda-identificacao-visivel-e-frontal-obrigatoria-para-todos-os-policias_n1544574" target="_blank" rel="noopener">RTP — IGAI recomenda identificação visível e frontal</a><span>19 jan. 2024</span></li>
+          <li><a href="https://www.dn.pt/sociedade/igai-quer-forcas-especiais-da-psp-com-identificacao-sempre-a-vista" target="_blank" rel="noopener">Diário de Notícias — inquérito arquivado em Famalicão</a><span>26 jul. 2024</span></li>
+          <li><a href="https://www.dn.pt/sociedade/polcias-identificam-se-com-farda-e-carteira-profissional-psp-ignora-recomendao-da-igai" target="_blank" rel="noopener">Diário de Notícias — PSP sem implementar a recomendação</a><span>31 out. 2025</span></li>
+          <li><a href="https://observador.pt/especiais/das-tendas-a-carga-policial-o-que-aconteceu-no-porto-e-o-que-diz-a-lei-sobre-a-atuacao-da-policia/" target="_blank" rel="noopener">Observador — o que aconteceu na Praça D. João I</a><span>15 out. 2026</span></li>
+          <li><a href="https://expresso.pt/multimedia/video/2026-10-15-dezenas-de-feridos-na-intervencao-da-psp-na-manifestacao-pelo-direito-a-habitacao-no-porto-veja-o-video-2da48c82" target="_blank" rel="noopener">Expresso — dezenas de feridos no Porto</a><span>15 out. 2026</span></li>
+          <li><a href="https://www.rtp.pt/noticias/pais/igai-abre-processo-sobre-carga-policial-contra-protesto-pela-habitacao-no-porto_n1772069" target="_blank" rel="noopener">RTP — IGAI abre processo sobre a carga no Porto</a><span>15 out. 2026</span></li>
+          <li><a href="https://www.publico.pt/2026/10/19/sociedade/noticia/manifestacoes-habitacao-psp-pede-retirada-tendas-falta-licenciamento-2191799" target="_blank" rel="noopener">Público — PSP pede retirada de tendas por falta de licenciamento</a><span>19 out. 2026</span></li>
+          <li><a href="https://www.rtp.pt/noticias/pais/policia-retirou-tendas-dos-manifestantes-em-lisboa-e-no-porto_e1772823" target="_blank" rel="noopener">RTP — 55 detidos no Rossio, dois feridos</a><span>20 out. 2026</span></li>
+          <li><a href="https://sicnoticias.pt/pais/2024-10-21-homem-morre-baleado-pela-psp-na-cova-da-moura-0dc86a18" target="_blank" rel="noopener">SIC Notícias — morte de Odair Moniz na Cova da Moura</a><span>21 out. 2024</span></li>
+          <li><a href="https://www.jornaldenegocios.pt/economia/habitacao/detalhe/despejos-sobem-14-e-ha-milhares-de-processos-em-tribunal" target="_blank" rel="noopener">Jornal de Negócios — despejos sobem 14%</a><span>2025</span></li>
+          <li><a href="https://www.ine.pt/xportal/xmain?xpid=INE&amp;xpgid=ine_destaques&amp;DESTAQUESdest_boui=706289573&amp;DESTAQUESmodo=2&amp;xlang=pt" target="_blank" rel="noopener">INE — rendas medianas de novos contratos</a><span>2025</span></li>
+          <li><a href="https://www.enipssa.pt/documents/10180/11876/S%C3%ADntese+de+resultados+2024+-+Inqu%C3%A9rito+de+caracteriza%C3%A7%C3%A3o+das+pessoas+em+situa%C3%A7%C3%A3o+de+sem-abrigo/b9db6b38-3edf-4f8c-bce6-ad02c9a55534" target="_blank" rel="noopener">ENIPSSA — inquérito 2024 a pessoas sem-abrigo</a><span>2025</span></li>
+          <li><a href="https://www.portugal.gov.pt/en/gc24/communication/news/minimum-wage-rises-from-820-to-870-euros-on-1-january-2025" target="_blank" rel="noopener">Governo de Portugal — salário mínimo 2025</a><span>2024</span></li>
+        </ul>
+      </div>
+
+      <div class="source-group">
+        <h3>Europa · habitação e protesto</h3>
+        <ul>
+          <li><a href="https://www.poderjudicial.es/cgpj/es/Temas/Estadistica-Judicial/Estudios-e-Informes/Efecto-de-la-Crisis-en-los-organos-judiciales/" target="_blank" rel="noopener">CGPJ — lançamentos judiciais em Espanha</a><span>2024–2025</span></li>
+          <li><a href="https://www.fondationpourlelogement.fr/fin-de-la-treve-hivernale-24-000-expulsions-locatives-une-hausse-record/" target="_blank" rel="noopener">Fondation pour le Logement — 24.000 expulsões</a><span>2024</span></li>
+          <li><a href="https://www.idealista.com/en/news/property-for-sale-in-spain/2025/08/18/853219-buying-or-renting-in-southern-europe-prices-in-italy-spain-and-portugal" target="_blank" rel="noopener">Idealista — preços de renda em Lisboa, Porto, Madrid e Barcelona</a><span>jun. 2025</span></li>
+          <li><a href="https://www.observatoires-des-loyers.org/connaitre-les-loyers/carte-des-niveaux-de-loyers/paris-intra-muros" target="_blank" rel="noopener">Observatoires des loyers — Paris intra-muros</a><span>2025</span></li>
+          <li><a href="https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Living_conditions_in_Europe_-_housing" target="_blank" rel="noopener">Eurostat — sobrecarga dos custos da habitação</a><span>2024</span></li>
+          <li><a href="https://www.ine.es/dyngs/Prensa/en/ECAPSH2024.htm" target="_blank" rel="noopener">INE Espanha — centros de apoio a pessoas sem-abrigo</a><span>2024</span></li>
+          <li><a href="https://www.euronews.com/2024/09/29/thousands-protest-across-portugal-against-unaffordable-house-prices-and-rents" target="_blank" rel="noopener">Euronews — manifestações em Portugal</a><span>29 set. 2024</span></li>
+          <li><a href="https://www.rtve.es/noticias/20241013/miles-personas-se-manifiestan-madrid-para-pedir-bajada-precio-alquileres/16285885.shtml" target="_blank" rel="noopener">RTVE — marcha em Madrid</a><span>13 out. 2024</span></li>
+          <li><a href="https://www.lamoncloa.gob.es/lang/en/gobierno/councilministers/paginas/2025/20250211-council-press-conference.aspx" target="_blank" rel="noopener">La Moncloa — salário mínimo 2025</a><span>11 fev. 2025</span></li>
+          <li><a href="https://www.service-public.gouv.fr/particuliers/actualites/A17008?lang=en" target="_blank" rel="noopener">Service-Public.fr — evolução do SMIC</a><span>2026</span></li>
+        </ul>
+      </div>
+
+      <div class="source-group">
+        <h3>História, lei e uso da força</h3>
+        <ul>
+          <li><a href="https://www.louvre.fr/en/the-code-of-hammurabi" target="_blank" rel="noopener">Musée du Louvre — Código de Hammurabi</a><span>c. 1750 a.C.</span></li>
+          <li><a href="https://www.worldhistory.org/article/1104/police-in-ancient-egypt/" target="_blank" rel="noopener">World History Encyclopedia — polícia no Egito antigo</a><span>síntese</span></li>
+          <li><a href="https://ancient-history-blog.mq.edu.au/cityOfRome/Vigiles" target="_blank" rel="noopener">Macquarie University — os <em>vigiles</em> de Roma</a><span>6 d.C.</span></li>
+          <li><a href="https://www.parliament.uk/about/living-heritage/transformingsociety/laworder/policeprisons/overview/metropolitanpolice/" target="_blank" rel="noopener">Parlamento do Reino Unido — Metropolitan Police</a><span>1829</span></li>
+          <li><a href="https://historiadapolicia.fcsh.unl.pt/page.aspx?lang=pt&amp;pid=1154&amp;cid=1120" target="_blank" rel="noopener">História da Polícia (FCSH/NOVA) — da Polícia Civil à PSP</a><span>1867–1927</span></li>
+          <li><a href="https://diariodarepublica.pt/dr/detalhe/decreto/1911-595731" target="_blank" rel="noopener">Diário da República — criação da GNR</a><span>1911</span></li>
+          <li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2015-3442" target="_blank" rel="noopener">BOE — Lei Orgânica 4/2015</a><span>2015</span></li>
+          <li><a href="https://www.bbc.com/news/world-europe-41461032" target="_blank" rel="noopener">BBC — referendo catalão, 761 feridos</a><span>1 out. 2017</span></li>
+          <li><a href="https://www.hrw.org/news/2017/10/12/spain-police-used-excessive-force-in-catalonia" target="_blank" rel="noopener">Human Rights Watch — uso excessivo da força na Catalunha</a><span>12 out. 2017</span></li>
+          <li><a href="https://www.amnesty.org/en/documents/eur21/0304/2019/en/" target="_blank" rel="noopener">Amnesty International — LBD 40 e os <em>gilets jaunes</em></a><span>2019</span></li>
+          <li><a href="https://www.france24.com/en/europe/20230629-why-deadly-police-shootings-are-on-the-rise-on-france-s-roads" target="_blank" rel="noopener">France 24 — mortes em controlos de trânsito</a><span>29 jun. 2023</span></li>
+          <li><a href="https://www.defenseurdesdroits.fr/deces-dun-homme-lors-dun-controle-de-police-la-defenseure-des-droits-conclut-des-manquements-graves" target="_blank" rel="noopener">Défenseur des droits — uso desproporcionado da força</a><span>abr. 2026</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing wrap">
+    <blockquote data-reveal>
+      <p>
+        Uma polícia que não pode ser nomeada não pode ser corrigida. E uma instituição que não
+        pode ser corrigida não é uma instituição de segurança: é uma promessa por cumprir.
+      </p>
+    </blockquote>
+    <p class="fine" data-reveal>
+      Página estática, sem librarias externas, sem rastreadores e sem pedidos a terceiros.
+      HTML, CSS e JavaScript apenas.
+    </p>
+  </section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap foot-inner">
+    <p><span class="brand-mark" aria-hidden="true"></span> Dossiê Ordem Pública</p>
+    <p class="fine">Outubro de 2026 · Texto do autor reproduzido sem alterações · Dados com fonte e ano</p>
+    <a class="to-top" href="index.html">Página Principal</a>
+  </div>
+</footer>
+
+<script>
+/* ==========================================================================
+   Dossiê Ordem Pública — comportamento da página
+   Vanilla JavaScript. Sem dependências, sem pedidos externos.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var nf = new Intl.NumberFormat('pt-PT');
+
+  /* ---------- 1. Barra de progresso de leitura ---------- */
+  var progressBar = document.getElementById('progressBar');
+
+  function updateProgress() {
+    if (!progressBar) return;
+    var doc = document.documentElement;
+    var max = doc.scrollHeight - window.innerHeight;
+    var ratio = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    progressBar.style.width = (ratio * 100).toFixed(2) + '%';
+  }
+
+  /* ---------- 2. Cabeçalho fixo ---------- */
+  var head = document.querySelector('.site-head');
+
+  function updateHead() {
+    if (!head) return;
+    head.classList.toggle('is-stuck', window.scrollY > 8);
+  }
+
+  /* ---------- 3. Menu em ecrãs pequenos ---------- */
+  var nav = document.getElementById('nav');
+  var navToggle = document.getElementById('navToggle');
+
+  var navLabel = navToggle ? navToggle.querySelector('.nav-toggle-label') : null;
+
+  function setNavLabel(open) {
+    if (navLabel) navLabel.textContent = open ? 'Fechar' : 'Menu';
+  }
+
+  function closeNav() {
+    if (!nav || !navToggle) return;
+    nav.classList.remove('is-open');
+    navToggle.setAttribute('aria-expanded', 'false');
+    setNavLabel(false);
+  }
+
+  if (navToggle && nav) {
+    navToggle.addEventListener('click', function () {
+      var open = nav.classList.toggle('is-open');
+      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      setNavLabel(open);
+    });
+
+    nav.addEventListener('click', function (e) {
+      if (e.target.closest('a')) closeNav();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && nav.classList.contains('is-open')) {
+        closeNav();
+        navToggle.focus();
+      }
+    });
+  }
+
+  /* ---------- 4. Secção ativa na navegação ---------- */
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.nav a[href^="#"]'));
+  var sections = navLinks
+    .map(function (link) {
+      return document.querySelector(link.getAttribute('href'));
+    })
+    .filter(Boolean);
+
+  function markCurrent(id) {
+    navLinks.forEach(function (link) {
+      link.classList.toggle('is-current', link.getAttribute('href') === '#' + id);
+    });
+  }
+
+  function updateCurrentSection() {
+    if (!sections.length) return;
+
+    var marker = window.innerHeight * 0.35;
+    var current = '';
+
+    sections.forEach(function (section) {
+      if (section.getBoundingClientRect().top <= marker) current = section.id;
+    });
+
+    var atBottom =
+      window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+    if (atBottom) current = sections[sections.length - 1].id;
+
+    markCurrent(current);
+  }
+
+  /* ---------- 5. Revelação ao scroll ---------- */
+  var revealItems = Array.prototype.slice.call(document.querySelectorAll('[data-reveal]'));
+
+  if (!('IntersectionObserver' in window) || reduceMotion) {
+    revealItems.forEach(function (el) { el.classList.add('is-visible'); });
+  } else {
+    var revealObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-visible');
+          revealObserver.unobserve(entry.target);
+        });
+      },
+      { rootMargin: '0px 0px -8% 0px', threshold: 0.08 }
+    );
+    revealItems.forEach(function (el) { revealObserver.observe(el); });
+  }
+
+  /* ---------- 6. Contagem animada dos números ---------- */
+  var counters = Array.prototype.slice.call(document.querySelectorAll('[data-count]'));
+
+  function setFinal(el) {
+    var target = parseFloat(el.getAttribute('data-count'));
+    el.textContent = nf.format(target);
+  }
+
+  if (reduceMotion || !('requestAnimationFrame' in window)) {
+    counters.forEach(setFinal);
+  } else {
+    var countObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          countObserver.unobserve(entry.target);
+          animateCount(entry.target);
+        });
+      },
+      { threshold: 0.4 }
+    );
+
+    function animateCount(el) {
+      var target = parseFloat(el.getAttribute('data-count'));
+      var duration = 1100;
+      var start = null;
+
+      function step(now) {
+        if (start === null) start = now;
+        var t = Math.min(1, (now - start) / duration);
+        var eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = nf.format(Math.round(target * eased));
+        if (t < 1) {
+          requestAnimationFrame(step);
+        } else {
+          el.textContent = nf.format(target);
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+
+    counters.forEach(function (el) {
+      el.textContent = nf.format(0);
+      countObserver.observe(el);
+    });
+  }
+
+  /* ---------- 7. Filtros da cronologia ---------- */
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip[data-filter]'));
+  var timelineItems = Array.prototype.slice.call(
+    document.querySelectorAll('#timeline .tl-item')
+  );
+  var filtersCount = document.getElementById('filtersCount');
+
+  function applyFilter(filter) {
+    var shown = 0;
+
+    timelineItems.forEach(function (item) {
+      var match = filter === 'all' || item.getAttribute('data-era') === filter;
+      item.classList.toggle('is-hidden', !match);
+      if (match) shown += 1;
+    });
+
+    chips.forEach(function (chip) {
+      var active = chip.getAttribute('data-filter') === filter;
+      chip.classList.toggle('is-active', active);
+      chip.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    if (filtersCount) {
+      filtersCount.textContent =
+        shown + (shown === 1 ? ' entrada visível' : ' entradas visíveis');
+    }
+  }
+
+  if (chips.length && timelineItems.length) {
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        applyFilter(chip.getAttribute('data-filter'));
+      });
+    });
+    applyFilter('all');
+  }
+
+  /* ---------- 8. Separadores de país ---------- */
+  var tabButtons = Array.prototype.slice.call(document.querySelectorAll('.tab[data-tab]'));
+  var tabPanels = Array.prototype.slice.call(document.querySelectorAll('.tab-panel'));
+
+  function selectTab(button, focus) {
+    var id = button.getAttribute('data-tab');
+
+    tabButtons.forEach(function (btn) {
+      var selected = btn === button;
+      btn.setAttribute('aria-selected', selected ? 'true' : 'false');
+      btn.classList.toggle('is-active', selected);
+      btn.tabIndex = selected ? 0 : -1;
+    });
+
+    tabPanels.forEach(function (panel) {
+      var match = panel.id === 'panel-' + id;
+      panel.hidden = !match;
+      panel.classList.toggle('is-active', match);
+    });
+
+    if (focus) button.focus();
+  }
+
+  if (tabButtons.length) {
+    tabButtons.forEach(function (button, index) {
+      button.addEventListener('click', function () { selectTab(button, false); });
+
+      button.addEventListener('keydown', function (e) {
+        var next = null;
+
+        if (e.key === 'ArrowRight') next = (index + 1) % tabButtons.length;
+        if (e.key === 'ArrowLeft') next = (index - 1 + tabButtons.length) % tabButtons.length;
+        if (e.key === 'Home') next = 0;
+        if (e.key === 'End') next = tabButtons.length - 1;
+
+        if (next !== null) {
+          e.preventDefault();
+          selectTab(tabButtons[next], true);
+        }
+      });
+    });
+  }
+
+  /* ---------- 9. Tamanho do texto ---------- */
+  var fontToggle = document.getElementById('fontToggle');
+  var STORAGE_KEY = 'dop-large-text';
+
+  function setLargeText(on) {
+    document.documentElement.classList.toggle('large-text', on);
+    if (fontToggle) fontToggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+    try {
+      window.localStorage.setItem(STORAGE_KEY, on ? '1' : '0');
+    } catch (err) { /* armazenamento indisponível: ignora */ }
+  }
+
+  if (fontToggle) {
+    var stored = null;
+    try { stored = window.localStorage.getItem(STORAGE_KEY); } catch (err) { stored = null; }
+
+    if (stored === '1') {
+      document.documentElement.classList.add('large-text');
+      fontToggle.setAttribute('aria-pressed', 'true');
+    }
+
+    fontToggle.addEventListener('click', function () {
+      setLargeText(!document.documentElement.classList.contains('large-text'));
+    });
+  }
+
+  /* ---------- 10. Ciclo de scroll ---------- */
+  var ticking = false;
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(function () {
+      updateProgress();
+      updateHead();
+      updateCurrentSection();
+      ticking = false;
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', function () {
+    updateProgress();
+    if (window.innerWidth > 900) closeNav();
+  }, { passive: true });
+
+  updateProgress();
+  updateHead();
+  updateCurrentSection();
+})();
+
+</script>
+</body>
+</html>
