@@ -1,0 +1,2124 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A farda que ninguém consegue identificar — violência policial e impunidade</title>
+<meta name="description" content="Dossiê documentado sobre letalidade policial, anonimato dos agentes e impunidade: Brasil, Estados Unidos, Portugal e o resto do mundo. Com fontes primárias.">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#07080a">
+<style>
+/* ==========================================================================
+   A FARDA QUE NINGUÉM CONSEGUE IDENTIFICAR
+   Folha de estilos única. Vanilla CSS3, zero dependências externas.
+   ========================================================================== */
+
+/* ---------- 1. Tokens ---------------------------------------------------- */
+:root {
+  --ink:        #07080a;
+  --ink-2:      #0c0e11;
+  --panel:      #101318;
+  --panel-2:    #161a20;
+  --line:       #24282f;
+  --line-soft:  #1a1e24;
+
+  --paper:      #ece9e4;
+  --paper-dim:  #c3bfb8;
+  --muted:      #8b9099;
+  --muted-dim:  #838994;
+
+  --red:        #e8322c;
+  --red-deep:   #a1140f;
+  --red-glow:   rgba(232, 50, 44, 0.14);
+  --amber:      #d9a441;
+
+  --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino,
+           Georgia, "Times New Roman", serif;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas,
+          "Liberation Mono", monospace;
+
+  --measure: 68ch;
+  --gutter: clamp(1.15rem, 4vw, 4.5rem);
+  --max: 1240px;
+  --radius: 2px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* ---------- 2. Reset ----------------------------------------------------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+img, canvas, svg { display: block; max-width: 100%; }
+
+h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.08; letter-spacing: -0.018em; }
+p { margin: 0 0 1.15em; }
+ul, ol { margin: 0 0 1.2em; padding-left: 1.15em; }
+li { margin-bottom: 0.45em; }
+
+a {
+  color: var(--paper);
+  text-decoration-color: var(--red);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 0.18s var(--ease), background-color 0.18s var(--ease);
+}
+a:hover { color: #fff; background-color: var(--red-glow); }
+
+::selection { background: var(--red); color: #fff; }
+
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+
+/* ---------- 3. Utilitários ---------------------------------------------- */
+.wrap {
+  width: 100%;
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.mono {
+  font-family: var(--mono);
+  font-size: 0.72em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 999;
+  background: var(--red);
+  color: #fff;
+  padding: 0.8rem 1.2rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.skip-link:focus { left: 0; }
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- 4. Barra de progresso + topbar ------------------------------- */
+#progress {
+  position: fixed;
+  inset: 0 auto auto 0;
+  height: 2px;
+  width: 0%;
+  background: var(--red);
+  z-index: 120;
+  box-shadow: 0 0 12px var(--red);
+}
+
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem var(--gutter);
+  background: rgba(7, 8, 10, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.topbar__mark { color: var(--paper); display: flex; align-items: center; gap: 0.6rem; }
+.topbar__dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 0 3px var(--red-glow);
+  animation: pulse 2.4s var(--ease) infinite;
+}
+.topbar nav { display: flex; gap: 1.4rem; }
+.topbar nav a { color: var(--muted); text-decoration: none; }
+.topbar nav a:hover { color: var(--paper); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+/* ---------- 5. Cabeçalho / capa ----------------------------------------- */
+.masthead {
+  position: relative;
+  padding: clamp(6rem, 12vh, 9rem) 0 clamp(2.5rem, 6vw, 5rem);
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+
+/* grelha de fundo, tipo sala de vigilância */
+.masthead::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 60% at 70% 20%, #000 0%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 70% 20%, #000 0%, transparent 75%);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.masthead::after {
+  content: "";
+  position: absolute;
+  width: 46rem; height: 46rem;
+  right: -14rem; top: -18rem;
+  background: radial-gradient(circle, var(--red-glow), transparent 62%);
+  pointer-events: none;
+}
+
+.masthead > .wrap { position: relative; z-index: 1; }
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 1.6rem;
+}
+.kicker::before {
+  content: "";
+  width: 34px; height: 1px;
+  background: var(--red);
+}
+
+.masthead h1 {
+  font-family: var(--serif);
+  font-size: clamp(2.6rem, 7.4vw, 6.2rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+  margin-bottom: 1.4rem;
+  max-width: 18ch;
+}
+.masthead h1 em {
+  font-style: italic;
+  color: var(--red);
+}
+
+.deck {
+  font-family: var(--serif);
+  font-size: clamp(1.08rem, 1.9vw, 1.42rem);
+  line-height: 1.5;
+  color: var(--paper-dim);
+  max-width: 60ch;
+  margin-bottom: 2.2rem;
+}
+
+.byline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  max-width: 60ch;
+}
+.byline strong { color: var(--paper); font-weight: 400; }
+
+/* ---------- 6. Grelha de números ---------------------------------------- */
+.stats {
+  margin-top: clamp(2.5rem, 4vw, 4rem);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line-soft);
+  border: 1px solid var(--line-soft);
+}
+
+.stat {
+  background: var(--ink);
+  padding: 1.5rem 1.4rem 1.6rem;
+  position: relative;
+  transition: background 0.25s var(--ease);
+}
+.stat:hover { background: var(--ink-2); }
+
+.stat__num {
+  font-family: var(--serif);
+  font-size: clamp(2.1rem, 4.2vw, 3.1rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper);
+  display: block;
+}
+.stat--red .stat__num { color: var(--red); }
+
+.stat__label {
+  display: block;
+  margin-top: 0.7rem;
+  font-size: 0.83rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.stat__src {
+  display: block;
+  margin-top: 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted-dim);
+}
+
+/* ---------- 7. Corpo ---------------------------------------------------- */
+main { display: block; }
+
+.chapter {
+  padding: clamp(3.4rem, 7vw, 6.5rem) 0;
+  border-bottom: 1px solid var(--line-soft);
+  scroll-margin-top: 3.5rem;
+}
+
+.chapter__head {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  gap: 1rem 2rem;
+  align-items: start;
+  margin-bottom: 2.2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+.chapter__num {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  color: var(--red);
+  padding-top: 0.7rem;
+  white-space: nowrap;
+}
+.chapter h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(1.65rem, 3.6vw, 2.9rem);
+  letter-spacing: -0.03em;
+  max-width: 26ch;
+}
+
+.prose { max-width: var(--measure); }
+.prose > p + h3 { margin-top: 2.2rem; }
+.prose > h3 {
+  font-family: var(--sans);
+  font-size: 1.02rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--paper);
+  margin: 2.4rem 0 0.9rem;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--red);
+}
+
+.prose > p:first-child::first-letter {
+  float: left;
+  font-family: var(--serif);
+  font-size: 3.7em;
+  line-height: 0.82;
+  padding: 0.08em 0.12em 0 0;
+  color: var(--red);
+}
+
+.lead-in { font-size: 1.12rem; color: var(--paper-dim); }
+
+/* ligação interna entre capítulos */
+.crossref {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--red);
+  background: var(--red-glow);
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--red-deep);
+  text-decoration: none;
+}
+
+/* ---------- 8. Citação / teste de dados --------------------------------- */
+.pullquote {
+  margin: 2.6rem 0;
+  padding: 1.6rem 0 1.6rem 1.6rem;
+  border-left: 3px solid var(--red);
+  font-family: var(--serif);
+  font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+  line-height: 1.32;
+  letter-spacing: -0.02em;
+  color: var(--paper);
+  max-width: 44ch;
+}
+.pullquote cite {
+  display: block;
+  margin-top: 1rem;
+  font-family: var(--mono);
+  font-size: 0.63rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  font-style: normal;
+  color: var(--muted);
+}
+
+.callout {
+  margin: 2rem 0;
+  padding: 1.4rem 1.5rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--amber);
+  font-size: 0.95rem;
+  color: var(--paper-dim);
+}
+.callout strong { color: var(--paper); }
+.callout p:last-child { margin-bottom: 0; }
+
+.callout--red { border-left-color: var(--red); }
+
+/* ---------- 9. Blocos de dados / gráficos -------------------------------- */
+.figure {
+  margin: 2.6rem 0;
+  padding: 1.5rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+.figure__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.4rem 1rem;
+  margin-bottom: 1.3rem;
+}
+.figure__title {
+  font-family: var(--sans);
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--paper);
+}
+.figure__unit {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-dim);
+}
+.figure canvas {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1000 / 380; /* reserva o espaço antes do JS medir */
+}
+.figure__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  margin-top: 1rem;
+  font-family: var(--mono);
+  font-size: 0.63rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.figure__legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
+.swatch { width: 10px; height: 10px; background: var(--red); display: inline-block; }
+.swatch--muted { background: var(--muted-dim); }
+.figure figcaption {
+  margin-top: 1.1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--line-soft);
+  font-size: 0.76rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.figure figcaption a { color: var(--paper-dim); }
+
+/* Barras horizontais em CSS (funil de impunidade) */
+.bars { display: grid; gap: 1.15rem; margin-top: 0.4rem; }
+.bar__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.84rem;
+  color: var(--paper-dim);
+}
+.bar__val {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--paper);
+  font-variant-numeric: tabular-nums;
+}
+.bar__track {
+  height: 9px;
+  background: var(--panel-2);
+  border: 1px solid var(--line-soft);
+  overflow: hidden;
+}
+.bar__fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--red-deep), var(--red));
+  transition: width 1.2s var(--ease);
+}
+.bar--muted .bar__fill { background: var(--muted-dim); }
+.bar--amber .bar__fill { background: linear-gradient(90deg, #7a5a17, var(--amber)); }
+
+/* Tabela de dados */
+.table-wrap { overflow-x: auto; margin: 2rem 0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.87rem;
+  min-width: 520px;
+}
+caption {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 0.63rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-dim);
+  padding-bottom: 0.8rem;
+}
+th, td {
+  padding: 0.7rem 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+}
+thead th {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+tbody tr:hover { background: var(--ink-2); }
+td.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--paper);
+}
+td.dim { color: var(--muted); }
+
+/* ---------- 10. Cartões de casos ---------------------------------------- */
+.cases {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1px;
+  background: var(--line-soft);
+  border: 1px solid var(--line-soft);
+  margin: 2.4rem 0;
+}
+.case {
+  background: var(--ink);
+  padding: 1.5rem;
+  transition: background 0.25s var(--ease);
+}
+.case:hover { background: var(--panel); }
+.case__tag {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--red);
+  display: block;
+  margin-bottom: 0.7rem;
+}
+.case h3 {
+  font-family: var(--serif);
+  font-size: 1.18rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  margin-bottom: 0.6rem;
+}
+.case p { font-size: 0.9rem; color: var(--paper-dim); margin-bottom: 0.7rem; }
+.case p:last-child { margin-bottom: 0; }
+.case__meta {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-dim);
+  border-top: 1px solid var(--line-soft);
+  padding-top: 0.7rem;
+  margin-top: 0.9rem;
+}
+
+/* ---------- 11. Comparação lado a lado -------------------------------- */
+.split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.6rem;
+  margin: 2.4rem 0;
+}
+.split > div {
+  padding: 1.4rem 1.5rem;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.split h3 {
+  font-size: 0.74rem;
+  font-family: var(--mono);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 0.9rem;
+}
+.split p, .split li { font-size: 0.92rem; color: var(--paper-dim); }
+.split p:last-child { margin-bottom: 0; }
+
+/* ---------- 12. Fontes -------------------------------------------------- */
+.sources {
+  padding: clamp(3rem, 5vw, 5rem) 0;
+  background: var(--ink-2);
+  border-top: 1px solid var(--line);
+}
+.sources h2 {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 1.8rem;
+}
+.sources ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 0.1rem 2.5rem;
+  counter-reset: src;
+}
+.sources li {
+  counter-increment: src;
+  padding: 0.85rem 0 0.85rem 2.4rem;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 0.83rem;
+  line-height: 1.5;
+  color: var(--muted);
+  position: relative;
+  margin: 0;
+}
+.sources li::before {
+  content: counter(src, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--muted-dim);
+}
+.sources li strong { color: var(--paper-dim); font-weight: 500; }
+.sources a { color: var(--muted); word-break: break-word; }
+
+/* ---------- 13. Rodapé / manifesto ------------------------------------- */
+.close {
+  padding: clamp(3.5rem, 7vw, 6rem) 0;
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+}
+.close::before {
+  content: "";
+  position: absolute;
+  left: 50%; bottom: -22rem;
+  transform: translateX(-50%);
+  width: 60rem; height: 30rem;
+  background: radial-gradient(ellipse, var(--red-glow), transparent 70%);
+  pointer-events: none;
+}
+.close > .wrap { position: relative; z-index: 1; }
+.close blockquote {
+  margin: 0 0 2rem;
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 4vw, 2.7rem);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  max-width: 30ch;
+  font-weight: 400;
+}
+.close blockquote em { color: var(--red); font-style: italic; }
+.close blockquote p:last-child { margin-bottom: 0; }
+.close blockquote p::before { content: "“"; }
+.close blockquote p::after  { content: "”"; }
+
+.manifesto {
+  max-width: var(--measure);
+  color: var(--paper-dim);
+  font-size: 0.98rem;
+}
+.manifesto strong { color: var(--paper); }
+
+.footer-meta {
+  margin-top: 2.5rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 2rem;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-dim);
+}
+
+/* ---------- 14. Revelação no scroll ----------------------------------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  will-change: opacity, transform;
+}
+.reveal.is-in { opacity: 1; transform: none; }
+
+/* ---------- 15. Responsivo -------------------------------------------- */
+@media (max-width: 980px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 860px) {
+  body { font-size: 16.5px; }
+  .chapter__head { grid-template-columns: 1fr; gap: 0.6rem; }
+  .chapter__num { padding-top: 0; }
+  .topbar nav { display: none; }
+  .pullquote {
+    padding-left: 1rem;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .stat { padding: 1.1rem 1rem 1.2rem; }
+  .stat__num { font-size: 1.75rem; }
+  .stat__label { font-size: 0.76rem; }
+  .figure { padding: 1rem; margin-inline: -0.4rem; }
+  .prose > p:first-child::first-letter { font-size: 3em; }
+  .sources ol { grid-template-columns: 1fr; }
+}
+
+/* ---------- 16. Acessibilidade: movimento reduzido -------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+  .bar__fill { transition: none; }
+}
+
+/* ---------- 17. Impressão --------------------------------------------- */
+@media print {
+  .topbar, #progress { display: none; }
+  body { background: #fff; color: #111; font-size: 11pt; }
+  .masthead::before, .masthead::after, .close::before { display: none; }
+  .stat, .figure, .case, .split > div, .callout {
+    background: #fff;
+    border-color: #bbb;
+    break-inside: avoid;
+  }
+  .stat__num, .masthead h1 em, .case__tag { color: #a00; }
+  .reveal { opacity: 1; transform: none; }
+}
+
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%2307080a'/><rect x='4' y='4' width='8' height='8' fill='%23e8322c'/></svg>">
+</head>
+<body>
+
+<a class="skip-link" href="#conteudo">Saltar para o conteúdo</a>
+<div id="progress" role="presentation"></div>
+
+<header class="topbar">
+  <span class="topbar__mark"><span class="topbar__dot" aria-hidden="true"></span> Dossiê · Violência de Estado</span>
+  <nav aria-label="Secções">
+    <a href="#anonimato">O rosto</a>
+    <a href="#numeros">Os números</a>
+    <a href="#portugal">Portugal</a>
+    <a href="#ordens">As ordens</a>
+    <a href="#mundo">O mundo</a>
+    <a href="#remedio">O remédio</a>
+  </nav>
+</header>
+
+<!-- ===================== CAPA ===================== -->
+<div class="masthead">
+  <div class="wrap">
+    <p class="kicker">Investigação documental · Outubro de 2026</p>
+
+    <h1>A farda que ninguém consegue <em>identificar</em></h1>
+
+    <p class="deck">
+      Um homem morre com um tiro disparado por um agente que não tem nome visível na farda.
+      O inquérito abre, procura o rosto, não encontra o rosto, arquiva. Repete-se seis mil
+      vezes por ano no Brasil, mil e trezentas nos Estados Unidos, e — em escala mais
+      pequena mas com a mesma lógica — em Portugal. Este dossiê documenta o mecanismo,
+      não a exceção.
+    </p>
+
+    <div class="byline">
+      <span><strong>Base documental</strong> · 12 fontes primárias</span>
+      <span><strong>Âmbito</strong> · Brasil · EUA · Portugal · Global</span>
+      <span><strong>Atualizado</strong> · Out. 2026</span>
+    </div>
+
+    <!-- Números-chave -->
+    <div class="stats" aria-label="Números-chave do dossiê">
+      <div class="stat stat--red reveal">
+        <span class="stat__num" data-count="6243" data-decimals="0">0</span>
+        <span class="stat__label">pessoas mortas pela polícia no Brasil em 2024</span>
+        <span class="stat__src">Anuário Bras. Seg. Pública · 2025</span>
+      </div>
+      <div class="stat reveal">
+        <span class="stat__num" data-count="82" data-suffix="%">0</span>
+        <span class="stat__label">das vítimas brasileiras eram negras</span>
+        <span class="stat__src">Anuário Bras. Seg. Pública · 2025</span>
+      </div>
+      <div class="stat reveal">
+        <span class="stat__num" data-count="1314">0</span>
+        <span class="stat__label">pessoas mortas pela polícia nos EUA em 2025</span>
+        <span class="stat__src">Mapping Police Violence</span>
+      </div>
+      <div class="stat reveal">
+        <span class="stat__num" data-count="1511">0</span>
+        <span class="stat__label">queixas contra agentes da PSP e da GNR em Portugal, em 2024</span>
+        <span class="stat__src">Relatório IGAI · 2024</span>
+      </div>
+      <div class="stat stat--red reveal">
+        <span class="stat__num" data-count="23">0</span>
+        <span class="stat__label">processos disciplinares abertos a partir dessas 1.511 queixas</span>
+        <span class="stat__src">Relatório IGAI · 2024</span>
+      </div>
+      <div class="stat reveal">
+        <span class="stat__num" data-count="8.9" data-decimals="1" data-suffix="%">0</span>
+        <span class="stat__label">dos inquéritos por letalidade policial em São Paulo chegam a acusação</span>
+        <span class="stat__src">Pesquisas sobre inquéritos · SP · RJ</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main id="conteudo">
+
+<!-- ===================== 01 · ANONIMATO ===================== -->
+<section class="chapter" id="anonimato" aria-labelledby="h-anonimato">
+  <div class="wrap">
+    <div class="chapter__head reveal">
+      <span class="chapter__num">01 — O rosto</span>
+      <h2 id="h-anonimato">O anonimato não é um detalhe: é a tecnologia que produz a impunidade</h2>
+    </div>
+
+    <div class="prose">
+      <p class="lead-in">
+        Há uma pergunta que costuma ser feita como provocação e que, levada a sério, descreve
+        exatamente o problema: o que distingue um agente de segurança que atua de cara tapada
+        e sem identificação de qualquer outro grupo armado que age sem responder a ninguém?
+      </p>
+
+      <p>
+        A resposta não está na intenção de quem está dentro da farda. Está numa coisa muito mais
+        simples e muito mais grave: <strong>a possibilidade de ser identificado e obrigado a responder</strong>.
+        Um agente com número na farda, nome no processo e câmara ligada está sujeito a consequências.
+        Um agente cujo rosto é uma viseira espelhada e cuja farda não tem número não está sujeito
+        a nada. É a mesma força física, aplicada pela mesma pessoa, com a mesma arma — e um
+        resultado jurídico completamente diferente.
+      </p>
+
+      <p>
+        O anonimato é, por isso, o ponto exato onde a violência policial deixa de ser um desvio
+        individual e passa a ser um sistema. Não é preciso conspirar. Basta não haver nome.
+      </p>
+
+      <h3>O que acontece quando não há nome</h3>
+
+      <p>
+        Em Portugal, a Inspeção-Geral da Administração Interna (IGAI) — o organismo que fiscaliza
+        a PSP, a GNR e o SEF — emitiu em 2024 uma recomendação específica para que a PSP garantisse
+        a identificação visível dos agentes que operam com viseira levantada em policiamento de
+        manifestações. A recomendação existia porque o problema existia: agentes com o rosto coberto,
+        sem número visível, em contexto de carga policial. <strong>A PSP recusou-se a aplicar a
+        recomendação</strong>, alegando razões operacionais e de segurança dos próprios agentes.
+        A IGAI voltou a insistir. O número continua a não estar onde devia estar.
+      </p>
+
+      <p>
+        Isto tem consequências judiciais concretas. Em Guimarães, em 2014, um adepto ficou com
+        lesões graves num olho depois de um disparo de arma de projéteis em contexto de policiamento
+        de um jogo. O processo morreu por uma razão técnica devastadora: <strong>não foi possível
+        determinar qual dos agentes presentes disparou</strong>. Não faltaram queixas. Não faltou
+        perícia médica. Faltou um número na farda.
+      </p>
+
+      <div class="pullquote reveal">
+        Um crime sem autor identificável não é um crime sem autor. É um crime com autor protegido.
+        <cite>O mecanismo central deste dossiê</cite>
+      </div>
+
+      <h3>O mesmo desenho, do Rio a Los Angeles</h3>
+
+      <p>
+        No Brasil, a questão é estrutural e antiga. Operações policiais no Rio de Janeiro
+        tornaram-se conhecidas pelo uso de agentes encapuzados, fardas sem número de identificação
+        e veículos sem matrícula. Em 2017, o Tribunal de Justiça do Rio determinou que as forças de
+        segurança identificassem os agentes e os veículos em operações — uma decisão que precisou
+        de existir precisamente porque a regra não era cumprida. Em 2020, o Supremo Tribunal
+        Federal proibiu operações policiais em favelas durante a pandemia, com exceções
+        "absolutamente excecionais" — e a decisão teve de ser reiterada várias vezes porque
+        continuava a ser desobedecida.
+      </p>
+
+      <p>
+        Nos Estados Unidos, o movimento foi o inverso, e é instrutivo. Durante os protestos de 2020,
+        agentes federais em Portland apareceram com fardas sem identificação — e a prática foi
+        amplamente criticada por tornar impossível responsabilizar quem quer que fosse. Em 2025,
+        a Califórnia aprovou legislação que proíbe que agentes das forças de segurança usem máscaras
+        que escondam a identidade, com exceções estreitas para operações encobertas e equipamento
+        tático específico. A lição é clara: <strong>quando o legislador quis, a identificação foi
+        possível</strong>. O anonimato nunca foi uma necessidade operacional. É uma escolha política.
+      </p>
+
+      <div class="callout callout--red">
+        <p>
+          <strong>O detalhe que muda tudo.</strong> Os Princípios Básicos da ONU sobre o Uso da Força
+          e o Código de Conduta para Funcionários Responsáveis pela Aplicação da Lei (Resolução 34/169
+          da Assembleia Geral, 1979) assumem, como pressuposto de todo o edifício, que cada agente
+          é identificável e responsável individualmente. Sem identificação, o resto do direito
+          internacional sobre uso da força é literatura.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 02 · NÚMEROS ===================== -->
+<section class="chapter" id="numeros" aria-labelledby="h-numeros">
+  <div class="wrap">
+    <div class="chapter__head reveal">
+      <span class="chapter__num">02 — Os números</span>
+      <h2 id="h-numeros">Brasil e Estados Unidos: os dois laboratórios onde a letalidade foi medida</h2>
+    </div>
+
+    <div class="prose">
+      <p>
+        Não é preciso recorrer a adjetivos. Estes dois países publicam, todos os anos, o número de
+        pessoas que as suas polícias matam. São os dois casos mais bem documentados do mundo — e,
+        não por coincidência, os dois onde o debate sobre violência policial é mais intenso.
+      </p>
+
+      <h3>Brasil: seis mil mortes por ano, e uma curva que subiu 180% numa década</h3>
+
+      <p>
+        Em 2024, as polícias brasileiras mataram <strong>6.243 pessoas</strong>. Em 2023 tinham sido
+        6.393; em 2013, 2.212. Em pouco mais de dez anos, o número quase triplicou. Estes dados
+        vêm do Anuário Brasileiro de Segurança Pública, produzido pelo Fórum Brasileiro de Segurança
+        Pública a partir de registos oficiais das secretarias estaduais — não de organizações
+        militantes, mas do próprio Estado brasileiro a contar os seus mortos.
+      </p>
+
+      <figure class="figure reveal">
+        <div class="figure__head">
+          <span class="figure__title">Mortes por intervenção policial — Brasil, 2013–2024</span>
+          <span class="figure__unit">n.º absoluto / ano</span>
+        </div>
+        <canvas id="chart-brasil" width="1000" height="380" role="img"
+                aria-label="Gráfico de linha: mortes por intervenção policial no Brasil sobem de 2.212 em 2013 para 6.243 em 2024, com pico de 6.429 em 2022."></canvas>
+        <div class="figure__legend">
+          <span><i class="swatch"></i> Mortes por intervenção policial</span>
+          <span><i class="swatch swatch--muted"></i> Média do período</span>
+        </div>
+        <figcaption>
+          Fonte: Anuário Brasileiro de Segurança Pública, edições 2014–2025 (Fórum Brasileiro de
+          Segurança Pública). Os valores referem-se a mortes classificadas como "intervenção policial"
+          e não incluem mortes em que a autoria estatal não foi registada como tal — pelo que devem
+          ser lidos como <em>piso</em>, não como total.
+        </figcaption>
+      </figure>
+
+      <p>
+        O perfil das vítimas é a parte que o número agregado esconde. <strong>Cerca de 82% das pessoas
+        mortas pela polícia no Brasil são negras</strong>. Num país onde a população negra é
+        aproximadamente 56%, a taxa de letalidade entre pessoas negras é <strong>cerca de 1,5 vezes
+        superior</strong> à das restantes — uma diferença que se mantém ano após ano e que nenhuma
+        política de segurança conseguiu eliminar. E a maioria das mortes ocorre em abordagens por
+        suspeita de crime patrimonial ou em operações em bairros periféricos — não em confrontos
+        com grupos armados organizados.
+      </p>
+
+      <h3>Estados Unidos: mil e trezentas mortes por ano, todos os anos</h3>
+
+      <p>
+        Os Estados Unidos não têm um sistema nacional obrigatório de registo. Têm algo pior e mais
+        revelador: a contagem teve de ser feita por jornalistas e investigadores civis, porque o
+        Estado federal não a fazia. O projeto <em>Mapping Police Violence</em> e a base
+        <em>Fatal Force</em> do <em>Washington Post</em> — que recolhem casos a partir de notícias
+        locais, registos de médicos-legistas e comunicados policiais — mostram uma estabilidade
+        brutal: entre <strong>1.100 e 1.400 pessoas mortas por ano</strong>, sem variação
+        significativa ao longo de uma década.
+      </p>
+
+      <figure class="figure reveal">
+        <div class="figure__head">
+          <span class="figure__title">Mortes por ação policial — Estados Unidos, 2015–2025</span>
+          <span class="figure__unit">n.º absoluto / ano</span>
+        </div>
+        <canvas id="chart-eua" width="1000" height="380" role="img"
+                aria-label="Gráfico de barras: mortes por ação policial nos Estados Unidos entre 1.071 e 1.365 por ano, de 2015 a 2025."></canvas>
+        <div class="figure__legend">
+          <span><i class="swatch"></i> Mortes por ação policial</span>
+        </div>
+        <figcaption>
+          Fonte: Mapping Police Violence (dados anuais 2015–2025); Washington Post Fatal Force para
+          o período anterior. Cerca de 1 em cada 4 casos não tem vídeo; em 2025, a maioria das
+          vítimas foi morta a tiro. Os valores são considerados <em>subestimações</em> pelos próprios
+          autores, porque dependem de notícia local.
+        </figcaption>
+      </figure>
+
+      <p>
+        A proporção racial norte-americana é igualmente consistente: pessoas negras são mortas pela
+        polícia a uma taxa <strong>cerca de 2,6 a 3 vezes superior</strong> à das pessoas brancas,
+        apesar de cometerem crimes violentos a taxas semelhantes. Um estudo amplamente citado
+        publicado no <em>American Journal of Public Health</em> estimou que cerca de 1 em cada
+        1.000 homens e rapazes negros americanos será morto pela polícia ao longo da vida —
+        um risco várias vezes superior ao das mulheres brancas.
+      </p>
+
+      <div class="callout">
+        <p>
+          <strong>O que os dois países provam.</strong> Brasil e Estados Unidos têm histórias
+          diferentes, polícias diferentes e sistemas políticos opostos. Têm em comum uma coisa:
+          a letalidade policial não baixa sozinha. Não baixou com a transição democrática brasileira,
+          não baixou com a reforma policial americana, não baixou com a mudança de governo em lado
+          nenhum. <strong>Só baixa quando muda o desenho institucional</strong> — e o capítulo 07
+          mostra o que acontece quando isso é tentado.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 03 · PORTUGAL ===================== -->
+<section class="chapter" id="portugal" aria-labelledby="h-portugal">
+  <div class="wrap">
+    <div class="chapter__head reveal">
+      <span class="chapter__num">03 — Portugal</span>
+      <h2 id="h-portugal">O país onde quase ninguém morre e quase ninguém é responsabilizado</h2>
+    </div>
+
+    <div class="prose">
+      <p>
+        Portugal tem, por ano, uma média de <strong>cerca de três mortes</strong> causadas por agentes
+        das forças de segurança. Entre 1996 e 2023, a contagem documentada é de <strong>80 mortes:
+        49 causadas por agentes da PSP, 30 por militares da GNR e uma pelo SEF</strong>. Comparado com
+        as 6.243 do Brasil, é um número pequeno — e é por isso que o caso português é importante.
+        <strong>Porque a impunidade não é proporcional à violência. É proporcional ao desenho da
+        fiscalização.</strong>
+      </p>
+
+      <h3>1.511 queixas. 23 processos. 11 sanções propostas.</h3>
+
+      <p>
+        Em 2024, a IGAI recebeu <strong>1.511 queixas</strong> contra agentes da PSP e da GNR — um
+        recorde. Dessas queixas resultaram <strong>23 processos disciplinares</strong> abertos.
+        Em 11 casos houve proposta de sanção. Nos restantes, o processo foi arquivado ou está
+        pendente. A aritmética é obscena na sua simplicidade: <strong>aparece uma sanção proposta
+        por cada 137 queixas</strong> — cerca de 0,7%.
+      </p>
+
+      <figure class="figure reveal">
+        <div class="figure__head">
+          <span class="figure__title">Do queixume à consequência — Portugal, 2024</span>
+          <span class="figure__unit">funil de responsabilização</span>
+        </div>
+        <div class="bars">
+          <div class="bar">
+            <div class="bar__top"><span>Queixas apresentadas à IGAI</span><span class="bar__val">1.511</span></div>
+            <div class="bar__track"><div class="bar__fill" data-w="100"></div></div>
+          </div>
+          <div class="bar">
+            <div class="bar__top"><span>Processos disciplinares abertos</span><span class="bar__val">23</span></div>
+            <div class="bar__track"><div class="bar__fill" data-w="1.5"></div></div>
+          </div>
+          <div class="bar bar--amber">
+            <div class="bar__top"><span>Propostas de sanção</span><span class="bar__val">11</span></div>
+            <div class="bar__track"><div class="bar__fill" data-w="0.7"></div></div>
+          </div>
+        </div>
+        <figcaption>
+          Fonte: Relatório de atividades da IGAI, 2024. As barras são proporcionais ao número de casos;
+          a última corresponde a 0,73% das queixas iniciais. Uma queixa não é uma condenação — mas
+          uma taxa de 0,7% diz mais sobre o filtro do que sobre a conduta.
+        </figcaption>
+      </figure>
+
+      <h3>Odair Moniz, 21 de outubro de 2024</h3>
+
+      <p>
+        Na madrugada de 21 de outubro de 2024, Odair Moniz, 43 anos, cabo-verdiano, pai de dois
+        filhos, foi morto a tiro por um agente da PSP na Cova da Moura, na Amadora. Segundo a versão
+        policial, terá desobedecido a uma ordem de paragem e embatido com a viatura em que seguia
+        contra carros da polícia; o agente disparou. O agente foi identificado. O caso seguiu para
+        investigação e o agente foi constituído arguido.
+      </p>
+
+      <p>
+        O que veio depois diz tanto como o tiro. Nos dias seguintes, bairros da área metropolitana
+        de Lisboa foram palco dos maiores distúrbios das últimas décadas: autocarros ardidos, carros
+        da polícia destruídos, dezenas de detenções. E uma frase passou de boca em boca nas
+        periferias com uma clareza que nenhum relatório oficial tem:
+        <strong>"morreu mais um e não vai dar nada"</strong>.
+      </p>
+
+      <div class="pullquote reveal">
+        A violência policial não produz apenas vítimas. Produz uma convicção profunda, partilhada por
+        quem vive nos bairros onde ela acontece, de que o Estado não é um árbitro. É uma das partes.
+        <cite>Sobre a rutura de legitimidade nas periferias portuguesas</cite>
+      </div>
+
+      <h3>O argumento da exceção portuguesa</h3>
+
+      <p>
+        Em Portugal costuma dizer-se que a polícia é das menos violentas da Europa, que os casos são
+        residuais, que não há problema estrutural. Há uma parte verdadeira nisto: não há, em Portugal,
+        nada comparável à letalidade brasileira ou americana. Mas o argumento é usado para encerrar
+        a conversa, quando devia abri-la, porque esconde três factos incómodos:
+      </p>
+
+      <ul>
+        <li>
+          <strong>A fiscalização é interna e hierárquica.</strong> A IGAI inspeciona, mas a
+          instrução dos processos disciplinares e a decisão final ficam dentro da própria estrutura
+          policial. Quem investiga o agente é a corporação a que o agente pertence.
+        </li>
+        <li>
+          <strong>Não há dados públicos sistemáticos sobre uso da força.</strong> Não existe, em
+          Portugal, um registo público anual, desagregado e auditável de quantas vezes a polícia
+          disparou, quantos bastonadas, quantas pessoas ficaram feridas. Sem esse registo, cada
+          caso é uma ilha e não há como provar tendências.
+        </li>
+        <li>
+          <strong>As câmaras corporais não são obrigatórias.</strong> Portugal discutiu o assunto
+          durante anos sem o generalizar. O resultado é que, na maioria dos incidentes, a única
+          descrição dos factos é a de quem disparou.
+        </li>
+      </ul>
+
+      <div class="callout callout--red">
+        <p>
+          <strong>Três mortes por ano não é pouco. É 80 pessoas em 28 anos.</strong> E o número que
+          realmente importa não é o das mortes: é o das mortes em que alguém respondeu por elas.
+          Em Portugal, esse número nunca foi publicado de forma completa. Isso, por si, é o
+          diagnóstico.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 04 · ORDENS ===================== -->
+<section class="chapter" id="ordens" aria-labelledby="h-ordens">
+  <div class="wrap">
+    <div class="chapter__head reveal">
+      <span class="chapter__num">04 — As ordens</span>
+      <h2 id="h-ordens">"Apenas cumpria ordens" não é uma defesa. É uma confissão.</h2>
+    </div>
+
+    <div class="prose">
+      <p>
+        É a frase mais repetida em todos os escândalos de violência de Estado desde 1945. E é,
+        juridicamente, a mais mal compreendida. Porque o direito — internacional, português e
+        brasileiro — diz exatamente o contrário do que a frase sugere: <strong>a ordem ilegal não
+        protege quem a cumpre. Obriga a desobedecer.</strong>
+      </p>
+
+      <h3>Nuremberg, Princípio IV (1950)</h3>
+
+      <div class="callout">
+        <p>
+          «O facto de uma pessoa ter agido em cumprimento de ordem do seu Governo ou de um superior
+          não a exonera de responsabilidade perante o direito internacional, desde que uma escolha
+          moral lhe fosse efetivamente possível.»
+        </p>
+        <p class="mono" style="color:var(--muted);margin-top:.8rem;">
+          Princípios de Nuremberg, formulados pela Comissão de Direito Internacional da ONU, 1950
+        </p>
+      </div>
+
+      <p>
+        A cláusula final é a chave, e é a que os manuais de formação policial raramente citam:
+        <em>"desde que uma escolha moral lhe fosse efetivamente possível"</em>. Um agente armado,
+        treinado, rodeado de colegas, com um supervisor a dar a ordem — tinha escolha? A resposta
+        do direito internacional, em dezenas de julgamentos desde então, tem sido quase sempre sim.
+        A escolha podia ser terrível, podia custar a carreira, podia custar o posto. Mas existia.
+      </p>
+
+      <h3>O direito português é ainda mais explícito</h3>
+
+      <p>
+        O Código Penal português não deixa margem para interpretação. O <strong>artigo 36.º, n.º 2</strong>
+        é uma frase de nove palavras que deveria estar afixada em todas as esquadras do país:
+      </p>
+
+      <div class="callout callout--red">
+        <p><strong>«O dever de obediência hierárquica cessa quando conduzir à prática de um crime.»</strong></p>
+        <p class="mono" style="color:var(--muted);margin-top:.8rem;">Código Penal português, art. 36.º, n.º 2</p>
+      </div>
+
+      <p>
+        Cessa. Não "pode ser avaliado". Não "depende do contexto". <strong>Cessa.</strong> A partir do
+        momento em que a ordem implica um crime, o dever de obediência desaparece — e o que resta é
+        um agente que pratica um crime por sua conta. O artigo 37.º prevê a única escusa possível:
+        o funcionário que cumpre a ordem <em>sem saber</em> que ela conduz a um crime, e quando isso
+        não era evidente nas circunstâncias. É uma escusa estreita, desenhada para o engano, não
+        para a conveniência.
+      </p>
+
+      <h3>No Brasil, a mesma regra, com um século de atraso na prática</h3>
+
+      <p>
+        O Código Penal Militar brasileiro, no <strong>artigo 38, § 2.º</strong>, é igualmente claro:
+        se a ordem tem por objeto a prática de ato <em>manifestamente criminoso</em>, ou se há excesso
+        na execução, <strong>o inferior hierárquico também é punível</strong>. E o artigo 163 tipifica
+        a recusa de obediência — o que revela a tensão real do sistema: o mesmo código que pune quem
+        desobedece pune quem obedece a uma ordem criminosa. Não é uma contradição. É uma escolha:
+        <strong>o agente tem de julgar</strong>. E quem tem de julgar, responde.
+      </p>
+
+      <h3>O Código de Conduta da ONU vai mais longe: exige iniciativa</h3>
+
+      <div class="callout">
+        <p>
+          «Os funcionários responsáveis pela aplicação da lei respeitarão a lei e o presente Código.
+          Devem também, na medida das suas capacidades, <strong>prevenir e opor-se rigorosamente a
+          qualquer violação</strong> dos mesmos.»
+        </p>
+        <p>
+          «Os funcionários que tenham razões para crer que uma violação do presente Código ocorreu
+          ou está prestes a ocorrer <strong>comunicarão o facto às suas autoridades superiores</strong>
+          e, quando necessário, a outras autoridades competentes.»
+        </p>
+        <p class="mono" style="color:var(--muted);margin-top:.8rem;">Código de Conduta para Funcionários Responsáveis pela Aplicação da Lei, art. 8.º — Res. 34/169 da AG/ONU, 1979</p>
+      </div>
+
+      <p>
+        Leia-se bem: não é "não participe". É <strong>prevenir, opor-se rigorosamente e denunciar</strong>.
+        Um agente que assiste a uma agressão e não faz nada não está a cumprir o código — está a
+        violá-lo. E é por isso que a impunidade não se combate apenas julgando quem dispara: combate-se
+        julgando quem assistiu, quem encobriu, quem assinou o relatório que sabia ser falso.
+      </p>
+
+      <div class="callout callout--red">
+        <p>
+          <strong>A consequência jurídica disto é imensa, e quase nunca é dita.</strong> Se "cumpria
+          ordens" não é defesa, então cada agente presente é potencialmente responsável. O problema
+          não é a falta de leis. As leis existem, são claras e são antigas.
+          <strong>O problema é que ninguém as aplica a quem tem uma farda.</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 05 · MUNDO ===================== -->
+<section class="chapter" id="mundo" aria-labelledby="h-mundo">
+  <div class="wrap">
+    <div class="chapter__head reveal">
+      <span class="chapter__num">05 — O mundo</span>
+      <h2 id="h-mundo">Não é um país com um problema. É um modelo com muitos países.</h2>
+    </div>
+
+    <div class="prose">
+      <p>
+        A tentação é tratar Brasil e Estados Unidos como aberrações. Não são. São os dois casos
+        onde a contagem existe — e é por isso que parecem os piores. Em dezenas de países, o número
+        de pessoas mortas por forças de segurança não é alto porque a violência é baixa;
+        <strong>é alto porque ninguém conta</strong>.
+      </p>
+
+      <div class="cases">
+        <article class="case reveal">
+          <span class="case__tag">Filipinas · 2016–2022</span>
+          <h3>A guerra às drogas como política de Estado</h3>
+          <p>
+            A campanha lançada por Rodrigo Duterte produziu, segundo a polícia filipina,
+            mais de 6.000 mortos em "operações anti-droga". A Amnistia Internacional e a Human
+            Rights Watch estimam entre 12.000 e 30.000, incluindo execuções sumárias sem qualquer
+            operação. Em 2023, o Tribunal Penal Internacional autorizou a retoma da investigação.
+          </p>
+          <p class="case__meta">Fonte: PNP · Amnistia Internacional · HRW · TPI</p>
+        </article>
+
+        <article class="case reveal">
+          <span class="case__tag">Nigéria · 2020</span>
+          <h3>EndSARS e o pelotão que ninguém identificou</h3>
+          <p>
+            Em outubro de 2020, durante os protestos contra a unidade policial SARS, forças de
+            segurança abriram fogo contra manifestantes no portão de pedágio de Lekki, em Lagos.
+            A Amnistia documentou pelo menos 12 mortos só nessa noite; as autoridades negaram
+            durante meses. Uma comissão de inquérito concluiu depois que houve execuções.
+          </p>
+          <p class="case__meta">Fonte: Amnistia Internacional · Painel de Inquérito de Lagos</p>
+        </article>
+
+        <article class="case reveal">
+          <span class="case__tag">Venezuela · 2017–</span>
+          <h3>As "operações de libertação" e os mortos sem nome</h3>
+          <p>
+            O Observatório Venezuelano de Violência e o Foro Penal documentaram milhares de mortes
+            em operações de segurança, muitas classificadas oficialmente como "resistência à
+            autoridade". A maioria das vítimas é jovem, pobre e de bairros periféricos.
+          </p>
+          <p class="case__meta">Fonte: Foro Penal · OVV</p>
+        </article>
+
+        <article class="case reveal">
+          <span class="case__tag">Quénia · 2014–</span>
+          <h3>Operações antiterroristas como licença para matar</h3>
+          <p>
+            A HRW e a Amnistia documentaram execuções extrajudiciais em operações policiais em
+            Nairobi e Mombaça, incluindo casos de homens detidos e depois encontrados mortos.
+            A resposta oficial foi quase sempre a mesma: fuga, resistência, confronto.
+          </p>
+          <p class="case__meta">Fonte: HRW · Amnistia Internacional</p>
+        </article>
+
+        <article class="case reveal">
+          <span class="case__tag">Egito · 2013–</span>
+          <h3>Forças de segurança contra praças públicas</h3>
+          <p>
+            O desmantelamento dos acampamentos de Rabaa e Nahda, no Cairo, em agosto de 2013,
+            produziu centenas de mortos numa única operação — a HRW descreveu-o como um dos
+            maiores massacres de manifestantes da história recente. Não houve responsabilização
+            individual significativa.
+          </p>
+          <p class="case__meta">Fonte: Human Rights Watch</p>
+        </article>
+
+        <article class="case reveal">
+          <span class="case__tag">Índia · contínuo</span>
+          <h3>Custódia, tortura e a estatística que falta</h3>
+          <p>
+            Organizações de direitos humanos documentam mortes sob custódia e em "encontros"
+            policiais, com responsabilização rara. O próprio organismo nacional de direitos
+            humanos registou milhares de queixas de violações por agentes do Estado em poucos anos.
+          </p>
+          <p class="case__meta">Fonte: NHRC · Amnistia Internacional</p>
+        </article>
+      </div>
+
+      <h3>O denominador comum não é a cultura. É a arquitetura.</h3>
+
+      <p>
+        Estes países não partilham religião, regime político, nível de desenvolvimento nem
+        história colonial. Partilham uma arquitetura institucional específica:
+      </p>
+
+      <ol>
+        <li><strong>A polícia investiga a polícia.</strong> O órgão que apura os factos pertence à mesma cadeia de comando que o suspeito.</li>
+        <li><strong>O agente não é identificável no momento do ato.</strong> Sem nome, sem número, sem câmara — sem autor.</li>
+        <li><strong>A versão policial é a versão oficial.</strong> "Resistência à autoridade", "fuga", "confronto" encerram o inquérito antes de ele começar.</li>
+        <li><strong>A vítima tem de provar a sua própria inocência.</strong> O ónus da prova inverte-se: quem morreu é que estava armado, quem sobreviveu é que agrediu.</li>
+      </ol>
+
+      <p>
+        Onde estes quatro elementos coexistem, a letalidade é alta e a responsabilização é baixa.
+        Onde um deles é removido, os números mudam — como o capítulo seguinte demonstra com
+        evidência quantificada. <strong>Isto não é cultura. É engenharia institucional. E o que é
+        construído pode ser desconstruído.</strong>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 06 · REMÉDIO ===================== -->
+<section class="chapter" id="remedio" aria-labelledby="h-remedio">
+  <div class="wrap">
+    <div class="chapter__head reveal">
+      <span class="chapter__num">06 — O remédio</span>
+      <h2 id="h-remedio">O que já foi testado — e funcionou</h2>
+    </div>
+
+    <div class="prose">
+      <p>
+        A crítica só tem valor se apontar o que pode ser mudado. E aqui a evidência é rara na sua
+        clareza: uma das intervenções mais simples já reduziu mortes em mais de metade, num dos
+        contextos mais violentos do mundo.
+      </p>
+
+      <h3>Câmaras corporais: menos 51,8% de mortes em São Paulo</h3>
+
+      <p>
+        Um estudo sobre a implementação de câmaras corporais em batalhões da Polícia Militar de
+        São Paulo mediu o efeito durante três anos: <strong>queda de 51,8% nas mortes por intervenção
+        policial</strong> e <strong>queda de 71,8% nas mortes de pessoas negras</strong>, com uma
+        estimativa de <strong>144 a 183 mortes evitadas</strong> no período. Estudos semelhantes
+        no Rio de Janeiro apontaram no mesmo sentido.
+      </p>
+
+      <p>
+        Vale a pena ler estes números com atenção, porque derrubam dois mitos ao mesmo tempo.
+        Primeiro: a letalidade não é o preço inevitável do policiamento — é uma variável que se
+        pode manipular. Segundo: o efeito foi <em>maior</em> sobre as vítimas negras, o que
+        significa que a disparidade racial não é um reflexo passivo da criminalidade, mas algo
+        que a presença de uma câmara altera.
+      </p>
+
+      <p>
+        E o mecanismo é o mesmo deste dossiê inteiro: <strong>a câmara não muda a arma, muda a
+        identificabilidade</strong>. Quem sabe que está a ser filmado sabe que vai ter de responder.
+        O anonimato, mais uma vez, era a variável.
+      </p>
+
+      <figure class="figure reveal">
+        <div class="figure__head">
+          <span class="figure__title">Efeito das câmaras corporais em São Paulo (3 anos)</span>
+          <span class="figure__unit">variação percentual</span>
+        </div>
+        <div class="bars">
+          <div class="bar">
+            <div class="bar__top"><span>Mortes por intervenção policial</span><span class="bar__val">−51,8%</span></div>
+            <div class="bar__track"><div class="bar__fill" data-w="51.8"></div></div>
+          </div>
+          <div class="bar">
+            <div class="bar__top"><span>Mortes de pessoas negras</span><span class="bar__val">−71,8%</span></div>
+            <div class="bar__track"><div class="bar__fill" data-w="71.8"></div></div>
+          </div>
+          <div class="bar bar--muted">
+            <div class="bar__top"><span>Mortes evitadas (estimativa)</span><span class="bar__val">144–183</span></div>
+            <div class="bar__track"><div class="bar__fill" data-w="100"></div></div>
+          </div>
+        </div>
+        <figcaption>
+          Fonte: estudo sobre a implementação de câmaras corporais na Polícia Militar de São Paulo,
+          com dados de três anos de operação. A última barra é uma contagem absoluta, não uma
+          percentagem, e é apresentada a cheio apenas para efeitos de leitura.
+        </figcaption>
+      </figure>
+
+      <h3>Quatro mudanças que não custam uma reforma constitucional</h3>
+
+      <div class="split">
+        <div>
+          <h3>1. Identificação obrigatória</h3>
+          <p>
+            Número visível na farda, em ambos os ombros e nas costas, legível a cinco metros e em
+            vídeo. Viseira levantada em policiamento de multidões. Proibição de fardas sem
+            identificação, com exceção estreita e registada para operações encobertas.
+          </p>
+          <p>
+            Não é uma proposta radical: é a lei que a Califórnia aprovou em 2025 e a recomendação
+            que a IGAI fez em Portugal e que a PSP recusou cumprir.
+          </p>
+        </div>
+        <div>
+          <h3>2. Câmaras com regra de conservação</h3>
+          <p>
+            Obrigatórias, com ativação automática, e — o ponto decisivo — <strong>proibição legal de
+            apagar</strong>, com cópia externa automática e conservação mínima de 90 dias. Uma câmara
+            que pode ser desligada ou apagada pelo agente filmado não é fiscalização. É decoração.
+          </p>
+        </div>
+        <div>
+          <h3>3. Investigação independente</h3>
+          <p>
+            Todas as mortes causadas por agentes do Estado investigadas por um órgão exterior à
+            corporação, com procuradores dedicados e prazo máximo. É o modelo que existe, com
+            resultados desiguais, em vários países europeus — e a razão pela qual a comparação
+            europeia é possível.
+          </p>
+        </div>
+        <div>
+          <h3>4. Dever de denunciar, com consequência</h3>
+          <p>
+            O art. 8.º do Código de Conduta da ONU já impõe o dever de se opor e denunciar. Falta
+            torná-lo sanção efetiva: o agente que encobre é responsável como o agente que age.
+            Sem isto, a cultura de silêncio é racional — e continuará a ser.
+          </p>
+        </div>
+      </div>
+
+      <h3>E a punição?</h3>
+
+      <p>
+        A indignação legítima pede castigo, e é importante dizê-lo sem eufemismos: quem mata sem
+        justificação deve ser julgado por homicídio; quem tortura deve ser julgado por tortura;
+        quem falsifica um relatório para proteger um colega deve ser julgado por falsificação e
+        por favorecimento pessoal. Quem comanda uma unidade que sistematicamente não identifica os
+        seus agentes deve responder por isso — não em abstracto, mas em concreto, com provas e
+        num tribunal.
+      </p>
+
+      <p>
+        O que a evidência deste dossiê <strong>não</strong> sustenta é a punição de uma classe
+        inteira de pessoas por aquilo que alguns dos seus membros fazem, nem a ideia de que a
+        severidade da pena substitui a eficácia da investigação. A razão é prática, não moral:
+        <strong>em nenhum país do mundo a impunidade policial foi resolvida por penas mais duras.
+        Foi resolvida por investigações que acontecem.</strong> Uma pena de prisão perpétua que
+        nunca é aplicada não intimida ninguém — é apenas a forma mais confortável de não fazer nada.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 07 · MÉTODO ===================== -->
+<section class="chapter" id="metodo" aria-labelledby="h-metodo">
+  <div class="wrap">
+    <div class="chapter__head reveal">
+      <span class="chapter__num">07 — Método</span>
+      <h2 id="h-metodo">Os limites deste dossiê — declarados, não escondidos</h2>
+    </div>
+
+    <div class="prose">
+      <p>
+        Uma acusação documentada vale pelo que consegue provar, e perde todo o valor no dia em que
+        exagera. Por isso, e porque a crítica à violência de Estado só é útil se for verificável,
+        ficam aqui explicitados os limites do que este trabalho afirma.
+      </p>
+
+      <div class="split">
+        <div>
+          <h3>O que este dossiê demonstra</h3>
+          <ul>
+            <li>A letalidade policial é elevada, medida e racialmente enviesada no Brasil e nos EUA.</li>
+            <li>O anonimato dos agentes impede, na prática, a responsabilização — com casos concretos em Portugal, Brasil e EUA.</li>
+            <li>Em Portugal, a distância entre queixas e sanções é de duas ordens de grandeza.</li>
+            <li>O direito internacional, português e brasileiro já obriga a desobedecer a ordens criminosas.</li>
+            <li>Câmaras corporais reduziram mortes em mais de metade num contexto medido.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>O que este dossiê não afirma</h3>
+          <ul>
+            <li>
+              <strong>Não afirma</strong> que os agentes policiais, como grupo, cometem mais crimes
+              do que os restantes cidadãos. Não existe nenhum conjunto de dados, em nenhum país,
+              que sustente essa comparação — e inventá-la destruiria a credibilidade de tudo o resto.
+            </li>
+            <li>
+              <strong>Não equipara</strong> agentes policiais a grupos armados religiosos ou a animais.
+              A desumanização de um grupo não é crítica: é o mesmo mecanismo que a violência policial
+              usa contra as suas vítimas.
+            </li>
+            <li>
+              <strong>Não defende</strong> punição coletiva de uma profissão, nem penas aplicadas sem
+              julgamento. Defende julgamento — para todos.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <p>
+        Isto não é moderação. É a única forma de a indignação servir para alguma coisa. Um insulto
+        é fácil de descartar em trinta segundos num comunicado de três linhas. Um número com fonte
+        e um artigo de lei citado obrigam a responder — e é isso que quem tem poder para mudar o
+        que está mal não consegue fazer desaparecer.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FONTES ===================== -->
+<section class="sources" aria-labelledby="h-fontes">
+  <div class="wrap">
+    <h2 id="h-fontes">Fontes</h2>
+    <ol>
+      <li><strong>Fórum Brasileiro de Segurança Pública</strong> — Anuário Brasileiro de Segurança Pública, edições 2014–2025. <a href="https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/" rel="noopener">forumseguranca.org.br</a></li>
+      <li><strong>Mapping Police Violence</strong> — base de dados anual de mortes por ação policial nos EUA (2013–2025). <a href="https://mappingpoliceviolence.org/" rel="noopener">mappingpoliceviolence.org</a></li>
+      <li><strong>The Washington Post</strong> — Fatal Force, base de dados de tiroteios policiais fatais. <a href="https://www.washingtonpost.com/graphics/investigations/police-shootings-database/" rel="noopener">washingtonpost.com</a></li>
+      <li><strong>IGAI — Inspeção-Geral da Administração Interna</strong> — Relatório de atividades e Recomendação n.º 1/2024 sobre identificação de agentes. <a href="https://www.igai.pt/" rel="noopener">igai.pt</a></li>
+      <li><strong>Código Penal português</strong> — artigos 36.º (conflito de deveres) e 37.º (obediência indevida desculpante). <a href="https://www.pgdlisboa.pt/leis/lei_mostra_articulado.php?nid=109&amp;tabela=leis" rel="noopener">pgdlisboa.pt</a></li>
+      <li><strong>Código Penal Militar brasileiro</strong> — artigos 38.º (obediência hierárquica) e 163.º (recusa de obediência). <a href="https://www.planalto.gov.br/ccivil_03/decreto-lei/del1001compilado.htm" rel="noopener">planalto.gov.br</a></li>
+      <li><strong>ONU — Comissão de Direito Internacional</strong> — Princípios de Nuremberg, 1950, Princípio IV. <a href="https://legal.un.org/ilc/texts/instruments/english/draft_articles/7_1_1950.pdf" rel="noopener">legal.un.org</a></li>
+      <li><strong>ONU — Resolução 34/169 (1979)</strong> — Código de Conduta para Funcionários Responsáveis pela Aplicação da Lei, art. 8.º. <a href="https://www.ohchr.org/en/instruments-mechanisms/instruments/code-conduct-law-enforcement-officials" rel="noopener">ohchr.org</a></li>
+      <li><strong>Amnistia Internacional</strong> — relatórios sobre Filipinas, Nigéria, Quénia e Índia. <a href="https://www.amnesty.org/" rel="noopener">amnesty.org</a></li>
+      <li><strong>Human Rights Watch</strong> — relatórios sobre Egito, Quénia, Venezuela e Filipinas. <a href="https://www.hrw.org/" rel="noopener">hrw.org</a></li>
+      <li><strong>Agência dos Direitos Fundamentais da UE (FRA)</strong> — inquéritos sobre maus-tratos policiais e subnotificação. <a href="https://fra.europa.eu/" rel="noopener">fra.europa.eu</a></li>
+      <li><strong>Tribunal Europeu dos Direitos Humanos</strong> — jurisprudência sobre violência policial e dever de investigação efetiva (art. 3.º da CEDH). <a href="https://hudoc.echr.coe.int/" rel="noopener">hudoc.echr.coe.int</a></li>
+    </ol>
+  </div>
+</section>
+
+</main>
+
+<!-- ===================== FECHO ===================== -->
+<footer class="close">
+  <div class="wrap">
+    <blockquote class="reveal">
+      <p>Criticar não é insultar. <em>É exigir contas a quem tem o poder de mudar o que está mal.</em></p>
+    </blockquote>
+
+    <div class="manifesto">
+      <p>
+        Nenhuma das vítimas contadas neste dossiê escolheu ser contada. Todas foram mortas por
+        alguém que o Estado armou, treinou e pagou — e, na esmagadora maioria dos casos, por alguém
+        cujo nome nunca chegou a constar de um processo. <strong>É esse anonimato, e não a violência
+        em si, que este trabalho se recusa a aceitar.</strong>
+      </p>
+      <p>
+        A exigência é simples e não precisa de metáforas: que cada agente seja identificável, que
+        cada morte seja investigada por quem não deve favores à corporação, que cada ordem ilegal
+        seja desobedecida como a lei já manda, e que cada responsável — de quem dispara a quem
+        assina o relatório que o protege — responda num tribunal. Não é vingança. É o mínimo que
+        distingue uma polícia de um grupo armado.
+      </p>
+      <p>
+        Quem pode alterar o que está mal tem, a partir daqui, os números, as leis e as fontes.
+        <strong>A partir daqui, a ignorância deixa de ser uma desculpa.</strong>
+      </p>
+    </div>
+
+    <div class="footer-meta">
+      <span>Dossiê documental · Vanilla JS · Sem dependências externas</span>
+      <span>Última atualização · Outubro de 2026</span>
+      <span>Dados sujeitos a revisão das fontes primárias</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ==========================================================================
+   A FARDA QUE NINGUÉM CONSEGUE IDENTIFICAR
+   Comportamento da página. Vanilla JS. Zero dependências.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var locale = 'pt-PT';
+
+  /* ------------------------------------------------------------------ *
+   * 1. Barra de progresso de leitura
+   * ------------------------------------------------------------------ */
+  var progress = document.getElementById('progress');
+
+  function updateProgress() {
+    if (!progress) return;
+    var doc = document.documentElement;
+    var max = doc.scrollHeight - window.innerHeight;
+    var pct = max > 0 ? (window.scrollY / max) * 100 : 0;
+    progress.style.width = Math.min(100, Math.max(0, pct)) + '%';
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 2. Contadores animados
+   * ------------------------------------------------------------------ */
+  function formatNumber(value, decimals) {
+    return value.toLocaleString(locale, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+  }
+
+  function animateCounter(el) {
+    if (el.dataset.done === '1') return;
+    el.dataset.done = '1';
+
+    var target = parseFloat(el.dataset.count || '0');
+    var decimals = parseInt(el.dataset.decimals || '0', 10);
+    var suffix = el.dataset.suffix || '';
+
+    if (reduceMotion) {
+      el.textContent = formatNumber(target, decimals) + suffix;
+      return;
+    }
+
+    var duration = 1300;
+    var start = null;
+
+    function step(ts) {
+      if (start === null) start = ts;
+      var t = Math.min(1, (ts - start) / duration);
+      // easeOutCubic
+      var eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = formatNumber(target * eased, decimals) + suffix;
+      if (t < 1) {
+        requestAnimationFrame(step);
+      } else {
+        el.textContent = formatNumber(target, decimals) + suffix;
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 3. Barras horizontais (funil de impunidade)
+   * ------------------------------------------------------------------ */
+  function fillBar(bar) {
+    var w = bar.dataset.w;
+    if (w === undefined) return;
+    bar.style.width = Math.max(0.6, parseFloat(w)) + '%';
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 4. Gráficos em canvas
+   * ------------------------------------------------------------------ */
+  var COLORS = {
+    red: '#e8322c',
+    redDeep: '#a1140f',
+    paper: '#ece9e4',
+    muted: '#8b9099',
+    faint: '#5a606a',
+    grid: '#1e2229',
+    panel: '#101318'
+  };
+
+  var ASPECT = 380 / 1000; // altura / largura, igual para os dois gráficos
+
+  var BRASIL = {
+    years: [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+    values: [2212, 3009, 3320, 4224, 5144, 6160, 5804, 6416, 6145, 6429, 6393, 6243]
+  };
+
+  var EUA = {
+    years: [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025],
+    values: [1143, 1071, 1147, 1140, 1099, 1126, 1136, 1176, 1232, 1365, 1314]
+  };
+
+  // A largura é sempre lida do layout (nunca dos atributos do canvas, que o
+  // próprio código reescreve). Se ainda não houver layout, usa a largura do
+  // contentor e, em último recurso, um valor fixo — nunca zero, para não
+  // produzir gradientes com coordenadas não finitas.
+  function measureWidth(canvas) {
+    var w = canvas.clientWidth;
+    if (!w && canvas.parentElement) w = canvas.parentElement.clientWidth;
+    if (!w || !isFinite(w)) w = 640;
+    return Math.round(w);
+  }
+
+  function setupCanvas(canvas) {
+    var ratio = Math.min(window.devicePixelRatio || 1, 2);
+    var w = measureWidth(canvas);
+    var h = Math.round(w * ASPECT);
+    canvas.width = Math.round(w * ratio);
+    canvas.height = Math.round(h * ratio);
+    canvas.style.height = h + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  function niceMax(max) {
+    if (!isFinite(max) || max <= 0) return 1;
+    var step = Math.pow(10, Math.floor(Math.log10(max)));
+    return Math.ceil(max / step) * step;
+  }
+
+  function drawLineChart(canvas, data, progressT) {
+    var c = setupCanvas(canvas);
+    var ctx = c.ctx, W = c.w, H = c.h;
+
+    var pad = { top: 26, right: 16, bottom: 34, left: 46 };
+    var plotW = W - pad.left - pad.right;
+    var plotH = H - pad.top - pad.bottom;
+
+    var max = niceMax(Math.max.apply(null, data.values) * 1.08);
+    var avg = data.values.reduce(function (a, b) { return a + b; }, 0) / data.values.length;
+
+    function x(i) {
+      return pad.left + (plotW / (data.values.length - 1)) * i;
+    }
+    function y(v) {
+      return pad.top + plotH - (v / max) * plotH;
+    }
+
+    ctx.clearRect(0, 0, W, H);
+
+    // grelha horizontal
+    ctx.strokeStyle = COLORS.grid;
+    ctx.lineWidth = 1;
+    ctx.font = '10px ui-monospace, Menlo, monospace';
+    ctx.fillStyle = COLORS.faint;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+
+    var ticks = 4;
+    for (var t = 0; t <= ticks; t++) {
+      var val = (max / ticks) * t;
+      var yy = Math.round(y(val)) + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, yy);
+      ctx.lineTo(W - pad.right, yy);
+      ctx.stroke();
+      ctx.fillText(Math.round(val).toLocaleString(locale), pad.left - 10, yy);
+    }
+
+    // média
+    var ya = Math.round(y(avg)) + 0.5;
+    ctx.save();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = COLORS.muted;
+    ctx.globalAlpha = 0.55;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, ya);
+    ctx.lineTo(W - pad.right, ya);
+    ctx.stroke();
+    ctx.restore();
+
+    // área + linha (animada)
+    var visible = Math.max(2, Math.ceil(data.values.length * progressT));
+
+    ctx.beginPath();
+    ctx.moveTo(x(0), y(data.values[0]));
+    for (var i = 1; i < visible; i++) {
+      ctx.lineTo(x(i), y(data.values[i]));
+    }
+
+    // área
+    var grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
+    grad.addColorStop(0, 'rgba(232, 50, 44, 0.30)');
+    grad.addColorStop(1, 'rgba(232, 50, 44, 0.00)');
+
+    ctx.save();
+    ctx.lineTo(x(visible - 1), pad.top + plotH);
+    ctx.lineTo(x(0), pad.top + plotH);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.restore();
+
+    // linha
+    ctx.beginPath();
+    ctx.moveTo(x(0), y(data.values[0]));
+    for (var j = 1; j < visible; j++) {
+      ctx.lineTo(x(j), y(data.values[j]));
+    }
+    ctx.strokeStyle = COLORS.red;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // pontos
+    for (var k = 0; k < visible; k++) {
+      ctx.beginPath();
+      ctx.arc(x(k), y(data.values[k]), k === visible - 1 ? 4.5 : 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = k === visible - 1 ? COLORS.paper : COLORS.red;
+      ctx.fill();
+    }
+
+    // rótulo do último ponto
+    if (visible === data.values.length) {
+      var lastVal = data.values[data.values.length - 1].toLocaleString(locale);
+      ctx.fillStyle = COLORS.paper;
+      ctx.font = '600 12px ui-monospace, Menlo, monospace';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(lastVal, x(data.values.length - 1) - 2, y(data.values[data.values.length - 1]) - 10);
+    }
+
+    // eixo dos anos: anos alternados, garantindo sempre o último sem
+    // colidir com o penúltimo rótulo
+    ctx.fillStyle = COLORS.faint;
+    ctx.font = '10px ui-monospace, Menlo, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    yearLabelIndices(data.years.length).forEach(function (idx) {
+      ctx.fillText(String(data.years[idx]), x(idx), pad.top + plotH + 12);
+    });
+  }
+
+  // Índices dos anos a rotular: um a cada dois, substituindo o penúltimo
+  // pelo último quando este ficaria encostado a ele.
+  function yearLabelIndices(len) {
+    var labels = [];
+    for (var i = 0; i < len; i += 2) labels.push(i);
+    var last = len - 1;
+    if (labels[labels.length - 1] !== last) {
+      labels.pop();
+      labels.push(last);
+    }
+    return labels;
+  }
+
+  function drawBarChart(canvas, data, progressT) {
+    var c = setupCanvas(canvas);
+    var ctx = c.ctx, W = c.w, H = c.h;
+
+    var pad = { top: 28, right: 12, bottom: 34, left: 46 };
+    var plotW = W - pad.left - pad.right;
+    var plotH = H - pad.top - pad.bottom;
+
+    var max = niceMax(Math.max.apply(null, data.values) * 1.1);
+    var slot = plotW / data.values.length;
+    var barW = Math.max(6, slot * 0.56);
+
+    function y(v) {
+      return pad.top + plotH - (v / max) * plotH;
+    }
+
+    ctx.clearRect(0, 0, W, H);
+
+    ctx.strokeStyle = COLORS.grid;
+    ctx.lineWidth = 1;
+    ctx.font = '10px ui-monospace, Menlo, monospace';
+    ctx.fillStyle = COLORS.faint;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+
+    var ticks = 4;
+    for (var t = 0; t <= ticks; t++) {
+      var val = (max / ticks) * t;
+      var yy = Math.round(y(val)) + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, yy);
+      ctx.lineTo(W - pad.right, yy);
+      ctx.stroke();
+      ctx.fillText(Math.round(val).toLocaleString(locale), pad.left - 10, yy);
+    }
+
+    data.values.forEach(function (v, i) {
+      var cx = pad.left + slot * i + slot / 2;
+      var full = y(v);
+      var base = pad.top + plotH;
+      // animação de crescimento a partir da base
+      var localT = Math.min(1, Math.max(0, (progressT - i * 0.05) / 0.5));
+      var top = base - (base - full) * (localT < 0 ? 0 : localT);
+
+      ctx.fillStyle = i === data.values.length - 1 ? COLORS.red : 'rgba(232, 50, 44, 0.62)';
+      ctx.fillRect(cx - barW / 2, top, barW, base - top);
+
+      // valor por cima da barra
+      if (localT > 0.98) {
+        ctx.fillStyle = COLORS.paper;
+        ctx.font = '10px ui-monospace, Menlo, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(String(v), cx, full - 6);
+      }
+    });
+
+    // eixo dos anos
+    ctx.fillStyle = COLORS.faint;
+    ctx.font = '10px ui-monospace, Menlo, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    yearLabelIndices(data.years.length).forEach(function (idx) {
+      var cx = pad.left + slot * idx + slot / 2;
+      ctx.fillText(String(data.years[idx]), cx, pad.top + plotH + 12);
+    });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 5. Gráficos: estado e animação
+   * ------------------------------------------------------------------ */
+  var charts = [];
+
+  function initCharts() {
+    var brCanvas = document.getElementById('chart-brasil');
+    var uaCanvas = document.getElementById('chart-eua');
+
+    if (brCanvas) {
+      var brState = { canvas: brCanvas, draw: drawLineChart, data: BRASIL, t: 0, hinted: false };
+      charts.push({ state: brState, kind: 'line' });
+    }
+    if (uaCanvas) {
+      var uaState = { canvas: uaCanvas, draw: drawBarChart, data: EUA, t: 0, hinted: false };
+      charts.push({ state: uaState, kind: 'bar' });
+    }
+  }
+
+  function paint(state, t, kind) {
+    if (kind === 'line') drawLineChart(state.canvas, state.data, t);
+    else drawBarChart(state.canvas, state.data, t);
+  }
+
+  function animateChart(entry) {
+    var state = entry.state;
+    if (state.done) return;
+    state.done = true;
+
+    if (reduceMotion) {
+      paint(state, 1, entry.kind);
+      return;
+    }
+
+    var duration = 1200;
+    var start = null;
+    function step(ts) {
+      if (start === null) start = ts;
+      var t = Math.min(1, (ts - start) / duration);
+      var eased = 1 - Math.pow(1 - t, 3);
+      paint(state, eased, entry.kind);
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function redrawAll() {
+    charts.forEach(function (entry) {
+      paint(entry.state, entry.state.done ? 1 : 0, entry.kind);
+    });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 6. Observadores
+   * ------------------------------------------------------------------ */
+  function initObservers() {
+    var revealEls = document.querySelectorAll('.reveal');
+    var counters = document.querySelectorAll('[data-count]');
+    var bars = document.querySelectorAll('.bar__fill');
+
+    if (!('IntersectionObserver' in window)) {
+      // fallback: mostra tudo
+      revealEls.forEach(function (el) { el.classList.add('is-in'); });
+      counters.forEach(animateCounter);
+      bars.forEach(fillBar);
+      charts.forEach(function (entry) { paint(entry.state, 1, entry.kind); });
+      return;
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var el = entry.target;
+        el.classList.add('is-in');
+
+        el.querySelectorAll('[data-count]').forEach(animateCounter);
+        el.querySelectorAll('.bar__fill').forEach(fillBar);
+
+        // gráficos dentro do bloco
+        charts.forEach(function (c) {
+          if (el.contains(c.state.canvas)) animateChart(c);
+        });
+
+        io.unobserve(el);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+
+    revealEls.forEach(function (el) { io.observe(el); });
+
+    // contadores e barras que não estejam dentro de .reveal
+    var lone = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        if (entry.target.hasAttribute('data-count')) animateCounter(entry.target);
+        else fillBar(entry.target);
+        lone.unobserve(entry.target);
+      });
+    }, { threshold: 0.4 });
+
+    counters.forEach(function (el) {
+      if (!el.closest('.reveal')) lone.observe(el);
+    });
+    bars.forEach(function (el) {
+      if (!el.closest('.reveal')) lone.observe(el);
+    });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 7. Scroll espelhado (topbar) + redimensionamento
+   * ------------------------------------------------------------------ */
+  var ticking = false;
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      updateProgress();
+      ticking = false;
+    });
+  }
+
+  var resizeTimer;
+  function onResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(redrawAll, 150);
+  }
+
+  // Redesenho fiável quando a largura do gráfico muda (rotação, painel, etc.)
+  function watchSizes() {
+    if (!('ResizeObserver' in window)) return;
+    var ro = new ResizeObserver(function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(redrawAll, 120);
+    });
+    charts.forEach(function (entry) { ro.observe(entry.state.canvas); });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 8. Arranque
+   * ------------------------------------------------------------------ */
+  function boot() {
+    initCharts();
+    initObservers();
+    watchSizes();
+    updateProgress();
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize);
+
+    // redesenha quando as fontes acabam de carregar
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(redrawAll);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+
+</script>
+</body>
+</html>
