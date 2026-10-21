@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monkey Blog - Monkey Thoughts</title>
+  <style>
+    :root {
+      --bg-base: #090d12;
+      --bg-card: rgba(16, 24, 36, 0.88);
+      --bg-card-hover: rgba(24, 36, 54, 0.95);
+      --border-color: #1e293b;
+      --border-glow: #00e5ff;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-cyan: #00e5ff;
+      --accent-emerald: #10b981;
+      --accent-gold: #f59e0b;
+      --accent-rose: #f43f5e;
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-stack);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      min-height: 100vh;
+      background-position: center;
+      background-size: cover;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .top-nav {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.9rem 2rem;
+      background: rgba(9, 13, 18, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-home-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.4rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      transition: all 0.25s ease;
+    }
+
+    .nav-home-link:hover {
+      color: #fff;
+      border-color: var(--accent-cyan);
+      background: rgba(0, 229, 255, 0.1);
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+    }
+
+    .prime-link-wrapper {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .prime-top-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      font-size: 1.85rem;
+      font-weight: bold;
+      color: var(--accent-gold);
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, rgba(16, 24, 36, 0.9) 100%);
+      border: 1.5px solid var(--accent-gold);
+      border-radius: 50%;
+      text-decoration: none;
+      box-shadow: 0 0 18px rgba(245, 158, 11, 0.4);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .prime-top-link:hover {
+      transform: scale(1.15) rotate(6deg);
+      box-shadow: 0 0 28px rgba(245, 158, 11, 0.8);
+      background-color: var(--accent-gold);
+      color: #000;
+    }
+
+    .header-wrapper {
+      max-width: 1100px;
+      margin: 2.2rem auto 1rem;
+      padding: 0 1.5rem;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2.75rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header h3 {
+      font-size: 1.15rem;
+      font-weight: 400;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    .quotes-bar {
+      max-width: 900px;
+      margin: 1.75rem auto;
+      padding: 1.1rem 1.6rem;
+      background: rgba(16, 24, 36, 0.7);
+      border-left: 3px solid var(--accent-cyan);
+      border-right: 3px solid var(--accent-gold);
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
+      text-align: center;
+    }
+
+    .quotes-text {
+      font-style: italic;
+      font-size: 1.05rem;
+      color: #e2e8f0;
+      min-height: 1.6em;
+      transition: opacity 0.4s ease;
+    }
+
+    .quotes-counter {
+      display: block;
+      margin-top: 0.35rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .wisdom-drawer {
+      max-width: 1100px;
+      margin: 1.5rem auto 0;
+      padding: 1.25rem 1.5rem;
+      background: rgba(16, 24, 36, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      text-align: left;
+    }
+
+    .wisdom-drawer summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--accent-gold);
+      outline: none;
+      user-select: none;
+    }
+
+    .wisdom-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 0.65rem;
+      margin-top: 1rem;
+    }
+
+    .wisdom-item {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      padding: 0.5rem 0.75rem;
+      border-left: 2px solid rgba(245, 158, 11, 0.4);
+      background: rgba(9, 13, 18, 0.4);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .content-area {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+      flex: 1;
+    }
+
+    .controls-panel {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding: 1rem 1.4rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 270px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.65rem 1rem;
+      background: rgba(9, 13, 18, 0.85);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+    }
+
+    .toggle-buttons {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .btn {
+      background: rgba(16, 24, 36, 0.9);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-cyan);
+      color: #fff;
+    }
+
+    .categories-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .category-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .category-card:hover {
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .category-card summary {
+      list-style: none;
+      outline: none;
+    }
+
+    .category-card summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .category-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.1rem 1.4rem;
+      background: rgba(9, 13, 18, 0.55);
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      user-select: none;
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .category-header:hover {
+      background: rgba(9, 13, 18, 0.75);
+    }
+
+    .category-title-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .category-icon {
+      font-size: 1.35rem;
+    }
+
+    .badge-count {
+      font-size: 0.8rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: 20px;
+      background: rgba(148, 163, 184, 0.15);
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .toggle-indicator {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      transition: transform 0.25s ease;
+    }
+
+    .category-card[open] .toggle-indicator {
+      transform: rotate(0deg);
+    }
+
+    .category-card:not([open]) .toggle-indicator {
+      transform: rotate(-90deg);
+    }
+
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 0.85rem;
+      padding: 1.25rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .link-item {
+      display: flex;
+      flex-direction: column;
+      padding: 0.85rem 1.1rem;
+      background: rgba(9, 13, 18, 0.55);
+      border: 1px solid rgba(30, 41, 59, 0.8);
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .link-item:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-cyan);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    }
+
+    .item-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #67e8f9;
+      margin-bottom: 0.25rem;
+    }
+
+    .item-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .special-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: bold;
+      color: var(--accent-rose);
+      border: 1px solid var(--accent-rose);
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      margin-bottom: 0.35rem;
+      width: fit-content;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .go-to-top {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1000;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(16, 24, 36, 0.9);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      font-size: 1.25rem;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      transition: all 0.25s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .go-to-top.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .go-to-top:hover {
+      background: var(--accent-cyan);
+      color: #000;
+      border-color: var(--accent-cyan);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 229, 255, 0.5);
+    }
+
+    .floating-social-widget {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .social-trigger-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(16, 24, 36, 0.9);
+      border: 1.5px solid var(--border-color);
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      transition: all 0.25s ease;
+    }
+
+    .social-trigger-btn:hover {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .social-drawer {
+      background: rgba(16, 24, 36, 0.96);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0.75rem;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      min-width: 220px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: bottom left;
+    }
+
+    .social-drawer.hidden {
+      opacity: 0;
+      transform: scale(0.85) translateY(12px);
+      pointer-events: none;
+      position: absolute;
+    }
+
+    .social-drawer-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      padding: 0.2rem 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 0.2rem;
+    }
+
+    .social-link {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.45rem 0.65rem;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.88rem;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .social-link:hover {
+      background: rgba(0, 229, 255, 0.12);
+      color: var(--accent-cyan);
+    }
+
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 2.5rem 1.5rem;
+      background: rgba(9, 13, 18, 0.95);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 3.5rem;
+    }
+
+    footer a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 2rem;
+      }
+      header h3 {
+        font-size: 0.95rem;
+      }
+      .prime-link-wrapper {
+        position: static;
+        transform: none;
+      }
+      .top-nav {
+        justify-content: space-between;
+      }
+      .items-grid {
+        grid-template-columns: 1fr;
+      }
+      .floating-social-widget {
+        bottom: 16px;
+        left: 16px;
+      }
+      .go-to-top {
+        bottom: 16px;
+        right: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <div class="header-wrapper">
+   <nav class="top-nav">
+      <div class="prime-link-wrapper">
+        <a href="https://blog.odicforcesounds.com/dreampath.html" data-local="dreampath.html" class="prime-top-link" title="The Path (dreampath.html)">道</a>
+      </div>
+      <div style="width: 70px;"></div>
+    </nav>
+
+      <header>
+        <h1>Monkey Blog - Monkey Thoughts</h1>
+        <h3>Technology, Philosophy, Psychology, Spirituality, Logic, Creativity and Music</h3>
+      </header>
+
+      <div class="quotes-bar">
+        <div class="quotes-text" id="quoteRotator">“The Monkey who doesn’t listen, is speaking”</div>
+        <span class="quotes-counter" id="quoteCounter">Monkey Quote 1 of 26</span>
+      </div>
+
+      <details class="wisdom-drawer">
+        <summary>📜 Discover More Monkey Thoughts</summary>
+        <div class="wisdom-grid" id="wisdomListContainer"></div>
+      </details>
+    </div>
+
+    <main class="content-area">
+      <div class="controls-panel">
+        <div class="search-box">
+          <input type="text" id="searchFilter" placeholder="Filter articles by title or description..." autocomplete="off">
+        </div>
+        <div class="toggle-buttons">
+          <button type="button" class="btn" id="expandAllBtn">Expand All</button>
+          <button type="button" class="btn" id="collapseAllBtn">Collapse All</button>
+        </div>
+      </div>
+
+      <div class="categories-stack" id="categoriesContainer"></div>
+    </main>
+
+    <div class="floating-social-widget">
+      <div class="social-drawer hidden" id="socialDrawer">
+        <div class="social-drawer-title">Social Networks</div>
+        <a href="https://github.com/odicforcesounds" class="social-link" target="_blank" rel="noopener">
+          <span>🐙</span> GitHub
+        </a>
+        <a href="https://github.com/orgs/odicforcesounds/discussions" class="social-link" target="_blank" rel="noopener">
+          <span>💬</span> Forum / Discussions
+        </a>
+        <a href="https://mastodon.social/@TaoExpression" class="social-link" target="_blank" rel="noopener">
+          <span>🐘</span> Mastodon
+        </a>
+        <a href="https://art.odicforcesounds.com/pages/Data/Videos/index.html" class="social-link" target="_blank" rel="noopener">
+          <span>▶️</span> YouTube (+1200 Videos)
+        </a>
+        <a href="https://instagram.com/Rakzhodekams" class="social-link" target="_blank" rel="noopener">
+          <span>📸</span> Instagram
+        </a>
+        <a href="https://facebook.com/odicforcesounds" class="social-link" target="_blank" rel="noopener">
+          <span>👥</span> Facebook
+        </a>
+      </div>
+      <button type="button" class="social-trigger-btn" id="socialToggleBtn" title="Social Networks">
+        <span>🌐</span>
+      </button>
+    </div>
+
+    <a href="#" class="go-to-top" id="goToTopBtn" title="Go to Top">↑</a>
+
+    <footer>
+      <p>Monkey Blog — Continuous Flow of Reflections, Code, and Music.</p>
+
+    </footer>
+
+  </div>
+
+  <script id="blog-data" type="text/plain">
+# 🐡 FreeBSD & BSD Systems
+Original Index	index.html	because I remember
+Best Super Dumb 1	BestSuperDumb_1.html	Because people get bored, and do something...
+Best Super Dumb 2	BestSuperDumb_2.html	Because people get bored, and do something...
+FreeBSD	FreeBSDReference.html	Manual Reference
+OpenBSD Services	OpenBSDServices.html	Manual Reference to HTTPD, Relayd, VMMs and OpenSMTPD
+OpenBSD	OpenBSDTribute.html	Tribute
+BSD	bsdguide.html	Guide
+IT Lovers	FBSD.html	Boring Services Daemons for Free
+Freedom	politicsOnOpenBSD.html	When someone try to block our way, we always find new ways. Like water.
+Hmm	brutalBSD.html	For long in history, knowledge is seen as something Evil, but it really is?
+Mistake	omanFix.html	The result of not RTFM...
+RTM	openMan.html	Your best friend that is not a living being.
+BSD Links	OBSDLinks.html	Some articles about BSD distros..
+Bee	bhyveBSDandLinux.html	Not the Sound of Bees..
+Dive Deep	preparingFreeBSD.html	Just trying to document, documents..
+Bad BSD	hardenBSD.html	When the service is not good enought
+How Hard is that?	hardenerBSD.html	Not a good Example is what I see
+RCM	bsdAlternatives.html	The Rights to [Read,Copy and Modify]
+BSD	FreeBSD.html	Just another indept BSD review
+Jails Festival	jailsAreFree.html	A big Party to those who live inside Jails...
+SysUpgrade	sysupgradeAndFix.html	OpenBSD Simplicity
+Controversial	OpenBSD_Head.html	But interesting at the same time, which means, balance.
+Code Party	openbsdDevelopers.html	Is not intented to be competitive, while it is
+a Mini Tribute	openSecurity.html	I fall in love with this project. I feel safe. My Monkey Friends!
+One Site to Rule them All	oneSite2ruleThemAll.html	Everything that OpenBSD community needs...
+VMM and VMCTL	nativeVMMs.html	This guys are always surpreending me...
+The Guy	theBSDguy.html	Look to his picture. He is a Rock Star!
+Is not water	bsdResources.html	But is the source of..
+A fair competition	jailVSvms.html	Is not sport or nacionalism. That is the reason I like it.
+Review of the Free and Open	bsdReview.html	More notes about BSD
+The God of Jails	bsdSystemInDept.html	Process isolation is always a good choice, for applications and persons.
+The Best Jail in the World	selfJail.html	Some Jails are better than others. Think for your self
+Notes	obsdLearning.html	I feel am repeating myself, but that is the process of learning anything else
+# 🐧 Linux & Operating Systems
+Red Hat	redhatCert.html	Certification
+Linux	lfs.html	From Scratch
+Install	installGentoo.html	Gentoo Linux
+Forever	debianForever.html	After several years of testing Linux distros
+Connections Problems	moreLinuxReviews.html	If I cannot connect I cannot test
+AI Mighty Linux	lastDistrosReview.html	Kali Linux Brother/Sister
+The Experience	testingLinuxDistros.html	Give us alternatives to use in the future
+No More	Nentoo.html	After understanding the different Levels of...
+Hell	shityGentoo.html	The Most Diabolical Linux Distro on the Planet
+More about Gentoo Linux	gentloo.html	Taking Notes from their Notes with Criticism Updates
+Gen Too	gentooD.html	Bad Handbook organization, results in bad changes
+Time Transformation	xorgLife.html	We say that Time change, but only what exist in time, can change.
+Life is about Memories	theBestLinuxDistro.html	Which is the problem of functionality and faster activity..
+Creativity at it's best	creativeLinux.html	The beauty of irregularities and differences
+Bad Linux with AI	makulu.html	Makulu is the name of this distro full of AI features..
+A Strange but Logic choice	ChristianLinux.html	There is a Priest that is DJ. Now this Linux distro.
+IPSet	ipset.html	A Linux tool to block big groups of IPs.
+Debian Upgrade	debian_upgrade.html	The simplicity of Debian Upgrade.
+The Beauty of the Ugly	the_beauty_of_the_ugly.html	Just the best documentation about Linux.
+The Good, the Bad and the Ugly	linux_comparation.html	Small Linux Distros Review
+Thinking Linux	think_linux.html	Some notes about the OS I use (Linux).
+Contradictions	digestingUnix.html	The Good and the Bad at the same time.
+Think again	LinuxTUI.html	S of Source. Reference is not correct.
+Open	notHackers.html	Open Source is what define this Operating System guide lines.
+Food	pot.html	More Tasty Software
+# 🛡️ Cyber Security & Hacking
+Metasploit	metasploit.html	Manual Game Reference
+FireJail	fireJail.html	Learn Firejail for Fun
+SELinux	SELinux.html	Beeing Paranoid with Security on Linux
+Debian	DebianSecurity.html	Security
+Learn	Security.html	Hacking by Examples
+Learn	learnHacking.html	About Hacking
+NodeJS	nodeSecurity.html	Security
+Server Security	secureYourServer.html	Securing Your Server using Cloudflare
+The Union of Onions	securityOnion.html	Pretty interesting Oracle Linux Distro
+Noobies	hackingChallenge.html	Like I am but Worst...
+Red Files	evilFiles.html	Files hidden from those whos favorite colors are Blue like the Sky Should be to You!.
+Learning	noFunDefendingAgainstAttackers.html	About my Own Choices.
+False	2FA.html	But useful.
+Security	secretFiles.html	Topics related to Security that you may wish to read and explore
+Hacking	defcom2026.html	Hacking Technology and Society is part of how the Future will Flow .
+Shield	cloudflareFeatures.html	The tool used to reflect attacks to some other direction
+Waste of Time	SecurityChoices.html	You can feel and see attack attempts against you but you don't need to fight them
+Playing for Fun	securityFans.html	Not all games are fun, but if you like to learn, then all can be fun
+PHP Nightmare	preteanSecurity.html	The most common language for dummies and dreamers
+Missing Old Friends	hackersClubs.html	From old Good Times where everyone Learn together while having Fun
+Static List	TopAttackerIPs.html	A List of IPs that you may wish to exploit and have fun. Daily Updates
+Stupid	motivatingAttackers.html	Because there is not better definition to define this people
+Security	weLoveSecurity.html	I don't Love security, since make systems a bit Slow and disfunctional, but sometimes is needed
+FALSE Results	iDontBelieve.html	Cloudflare is getting crazy results
+Kiss	hackingJustice.html	Keep doing the mistakes you always did, but change the condition, so you are Free from stupidity
+Select Target	pentestingSociety.html	Load payload and Run Script.. On accepted, exploit!
+Scan Party	notIllegal.html	You can try to play a lucky game, or try your luck for this one..
+Paranoid	shitySites.html	Because we understand that choice. Because is insane and stupid..
+Wanna Be Hacker	beingProvocative.html	Without studying, without reading the Manual!
+Mind problems	securityParanoid.html	The brain can solve problems and create them.
+Secure Shell Security	ssh_config.html	Don’t worry. Their best will fail. :)
+Crazy Life	crazyLife.html	More rules to block ssh attempts.
+A selfhosted site	banthemall.html	More security problems, solved.
+All Botnets are welcome	bots.html	Someone sharing my sites is always good!
+Thank You Red Team	blueteam_learning.html	“The art of fighting without fighting”
+Clubs and Hacks	hackclub.html	Because hacking is not only pentesting.
+How evasive this site is?	because_we_care.html	If privacy is a concern, you should read.
+Wordpress Attacks	wordpress_attacks.html	Suggestions to those who use Cloudflare services.
+Hard Decisions	hard_decisions.html	Tired of seeing more than 20k request per day of (nothing)
+Malicious Activities Report	mar.html	Some notes about malicious activities in this domain.
+Protect	survival.html	Your Self from
+# 🌐 Networking & Protocols
+Network Certifications	ccna_ccnp.html	Dive into CCNA and CCNP
+Networking	networking.html	From Zero to Hero, with some CCNA Tips
+IP	tcpudp.html	Packets
+Mail	smtpd.html	Protocols for Dummies
+DNS	dnsProtocol.html	Protocol for Dummies
+HTTP	httpProtocol.html	Protocol for Dummies
+TCP	tcpPackets.html	Packets in Detail
+Curl	curlManual.html	Manual
+Dump	tcpdump.html	Your TCP Connections
+# ⚡ Programming & System Tools
+Python	pythonCert.html	Certification
+Learn	git.html	to Use Git
+Android	androidStudio.html	Studio
+Docker	docker.html	For Dummies
+TypeScript	typescript.html	For Dummies
+0FX1	assemblyC.html	Assembly and C coding
+Web Security	sysVars.html	Securing Your Web Apps
+TUIs	tuisILove.html	Rust TUI applications that I use.
+Shell Manager	tmux.html	Or as everyone like to call them, Terminal Manager
+Minimal	w3m.html	Because the Web should be Minimal, Application shouldn't consume too much resources
+GXS	sedawk.html	Faster than you think
+Improved Vi	vim.html	Maybe the best editor
+Guide	YourVimGuide.html	Your Vim usability with Practices
+For Children	JS4Children.html	Who wish to Learn JavaScript from Scratch
+Aprender	JsParaMiudosEGraudos.html	JavaScript Básico
+Rational Humor	aboutCoding.html	A Outsider Perspective of Insiders Work
+Dev Creativity	strangeNaming.html	Is Creativity or Simplicity? Maybe only Rationality
+Mitigating Developers	withDevelopers.html	Forcing Developers to be Organized
+Jira	jira.html	Platform for Your Team
+Social Tool Kit Promo	STK.html	Promoting my Application that is almost ready. .
+Social Tool Kit	promote_app.html	Made for children, while all have a child inside.
+Conf	myConfigs.html	Super basic Configs for this sites maintaince.
+Tips	developerTips.html	Developers should do something better. Try to improve your Skills.
+Be Free	dontBeLazy.html	Can Developers be Creative? Is all about Security.
+JS, TS, what ever S	jsGuy.html	The computer will feel like 'this one speak my language'...
+Github Challenge	github_challenge.html	I like when people contribute. I guess is a common feeling.
+The High Way to Hell	codingPath.html	Is not AC/DC Music, but is Heavy as Metal.
+NChat	nchat.html	A TUI application that is helpful for my daily use.
+Just another Post	posting.html	A Python Framework to test any API.
+Application Development	app_dev.html	Describing what I need to develop Website application.
+Mongo	mongodb.html	DB
+Old Times & Good Times	apache2.html	From IRC servers to Apache. Good Memories.
+Serving HTML only	apacheIssues.html	Some bad news can be seen as good
+Docs	unbound.html	Holy Documentation is the Salvation...
+# 🧠 Logic, Science & Artificial Intelligence
+How	howAIworks.html	Pure Energy my Friend, Pure Energy
+Minimal	gemini4You.html	Gemini Promotional Guide
+Improve	ImproveAI.html	Artificial Intelligence
+Duck.ai	duckai.html	Taking with AI about Justice Systems that are Criminal
+Dr. Duck	ducksWithAI.html	Please talk with me about your traveling around the globe.
+Love it	lolAI.html	Truth is... Is what repeats... Common is?
+Question	interestingPerspective.html	Can AI do that? I doubt it.
+AI Mirror	criticalAI.html	Speaking with AI
+Science	ScientificPapers.html	Unable to ignore papers content
+Second Brain	aiCanHelpIf.html	AI can be used for everything we wish to. Like all brains are.
+Validation	SchemaValidations.html	I don't know if you know, but if you know, you should tell me, so I can validate your knowledge
+Maybe	possiblyTrue.html	If Pi is irregular, what is not, is static and cannot change
+Logic without Numbers	stupidPolice.html	The hilarious of Justice Systems.
+Social Logic	stupidPolitics.html	I have this idea in my mind to build something with you. Can you see it?...
+Mad	theProblemOfAI.html	Since you are so sensible to what others express, here is the Best...
+Condition	BooBoo.html	The proposition that explain, to create balance and understanding is part of Evolution
+# ☯️ Philosophy, Tao & Metaphysics
+道	dreampath.html	The Path and the Dream (Prime Link)
+A Escolha	consciencia.html	Consciente
+A Livre	escolha.html	Escolha com Consciência
+Liberdade	liberdade.html	e Consciência
+Clandestino	clandestinidade.html	Os benefícios da Clandestinidade
+The Style of God	style_of_god.html	Rational text that describe the 道.
+Your	absolute.html	Dream
+Continuidade Histórica	oDragaoMacaco.html	A Função do Tempo tem continuidade no Tempo
+Signals of Time	taoExpression.html	Understand the Past to Understand the Present and the Future
+Dragon	dragonObcession.html	Obcessive with Perfecionism
+Monkey	SkyMonkey.html	On the Sky
+Reflexão	continuidade.html	Em estado de apreciação e aceitação
+Three Simple Lessons	3wiseMonkeys.html	Within the 3 Wise Monkeys
+Common	whatIsCommon.html	You can deny if You deny Yourself, else, you cannot!
+Symbols	religionsSymbolicTime.html	The continuity of Time flows transformation of Time in Time, like symbolic dreams of Time.
+I can Read	signalsFromTheDragon.html	Encrypted Message from the East.
+Listen	kikazaru.html	You cannot tell me what is happening, because I cannot listen to you
+The Duality of Sides	darkInsideLight.html	All depend on the position of each, that create each functionality
+Written Dreams	religions.html	Only what is a 'object' of love, can become better in Time
+Not Very Original	theTransformation.html	The common between many is the link between all
+As simple as choices	simplicity.html	Since you don't care to think, who cares ?
+Like Children	theBrightSideofDarkness.html	Without questioning, just for fun, to win is the objective of playing!
+聞かざる	tryingToFixJustice.html	To those who can Think, because if you cannot, you will learn nothing
+All in One	commonAsia.html	Nothing new. In fact, by condition of existence, everything is!
+Magic Symbolism	culture.html	Can be deeper than you think, can be simple than you think!
+Our Eternal	theSource.html	Source of Knowledge
+Our	CommonCultures.html	Common Cultures
+Continuação	oMaisComum.html	Porque usando exemplos, é mais fácil entender os detalhes que tentam explicar a realidade..
+Validation	historicalEvent.html	Because we need to understand if some information is true or not
+Ethics	EthicalMorals.html	And Morals
+Pense	palavrasSubjectivas.html	Sobre a vericidade das Palavras
+Opcional	palavrasRelativas.html	A Opção permite a diferenciação das escolhas entre os racionais
+Negação	negarme.html	Quando nos separamos do eu
+The Falsehood	false_hood.html	When we believe that 'something is true' but is not.
+Conversas Filosóficas	mistica.html	Portuguese content only - Philosophical Talk
+This is a secret Message?	secretMessage.html	No secrets, You just need to use your brain.
+Freedom	freedom.html	You are always free to make a choice. Is up to you!
+# ⚖️ Justice, Law, Politics & Society
+Terrorismo	terroristasLegais.html	Legal
+Polícia de Choque	políciaITerrorista.html	Qual a diferença?
+Ajudante	citizenHelper.html	Para Cidadões e Forças Oficiais
+Melhorar	improveMilitary.html	a Actividade dos Militares
+Mudança	Military.html	das Operações Militares é possível
+Prova Superior	ExamePolicial.html	Só para Polícias e Militares
+Resolver	habitacao.html	O problema da Habitação
+Police	police.html	Activity and Development Reference
+Criminality	criminality.html	Activity and Development Reference
+Improve	improveNatoONU.html	NATO and ONU
+Capitalism	capitalism.html	Reference Manual
+Anarquism	anarquism.html	Reference Manual
+Communism	communism.html	Manual Game Reference
+Activism	activism.html	Manual Game Reference
+Geo	geoPolitical.html	Politcs Game Quest
+Void	warVoid.html	of Wars
+Stupid	militaryDumbs.html	Military
+Justo	MensagemAoSistemaJudicialMundial.html	!
+Leis	leisPortuguesas.html	De Portugal que deveriam melhorar
+Redefinir	burocraciaPT.html	A Burocracia de Portugal
+Stop	stopWars.html	All Wars
+Police	policeViolence.html	Violence
+Manifesto	warManifesto.html	of War
+Se eu fosse	seFosseDitador.html	Um Ditador
+The Emperor	theEmperor.html	War Strategies Master
+Questionário Público	facebookPolice.html	Entender a posição dos agentes da Polícia Pública
+Estudar sem Pensar	aPoliciaNaoPensa.html	O problema de quem não faz uso do cérebro
+Justice	aFairJusticeSystem.html	The ideal Justice System
+Education for Prisons	prisons.html	A Fair approach
+Reporting Police Abuse	policeThePolice.html	By those who are Police too. I Like that!
+Using Text Only	taggingForChange.html	Educating and promoting Justice without using Criminal Tools like Justice Do.
+Ser Justo	comportamentoJudicial.html	Algo que pede alguma reflexão, caso o objectivo seja o de melhorar...
+A Comparative Mental Exercise	Iran.html	It should make you laugth, but since I try to explain...
+Liers	americanLies.html	Because they are Crimninal, they Lie
+Being a Police	lapalice.html	Report what is Wrong, what is Unfair and by that, You are a Police.
+Racismo	racismo.html	O Racismo não é Comparativo, pois o que é Comparativo é somente Criativo.
+Monkey Justice	beingFair.html	Monkey Style Teaching, using those Tools I like to change someone else mind.
+Sense	goodSenseofJustice.html	Christmas Gift. Because Flowers are better than Gold and Gold is not a Flower.
+Rights	policeAgainstHumanRights.html	Your Rights are possible with my Duty. My Rights are possible with Your Duty.
+Justice Flaws	legalPoliceCorrption.html	The probability of Security Holes are Everywhere, not only in IT
+Authorities	policeFreedom.html	Those who think that they can do anything without a consequence against them
+Non-Sense Laws	portugueseStupidLaws.html	To create Laws without thinking, is what some countries do (let us laught)
+We are the Law	inTheNameOfJustice.html	And the Law can do everything without Your Permissions!
+What to do?	EthicalLawsOnIT.html	Is a difficult decision, since the worst is already implemented
+Goverments Job	criminalMasters.html	The Dream You always Imagine to be for You and Me.
+Activist Projects	dontMeshWithMe.html	Is not always easy, but is always possible.
+Your Rights	youRights.html	You have the Rights to do what ever You wish to.
+Food for Cats	thePlateOfNato.html	If the taste is good, we don't know, but if the smell is good, we will eat it..
+Anti Law	lawNaziCreativity.html	Because those who define Laws, contradict and violate all the laws they define to others....
+Slaves	MuslinLaws.html	A practice that exist before Christ, and inspire many others to copy and repeat the same, without questioning...
+Fly	ryanair.html	The Worst choice, based on being cheap
+Nada de Novo	novadireita.html	Mas interessante de Pensar...
+# 👁️ Psychology, Mind & Consciousness
+Briliant	unhappy.html	Touching You
+Romantic	loveStories.html	Experiences
+Hard	love.html	No parties, no fun, no sex no rock'n'roll all the time...
+Love	romanticAsia.html	Care to deal with the good and the bad on others, mainly the ones we love
+Love Story	badAndGoodTogether.html	The Perfect Relationship that is Older than You can Think
+Monkey Love	monkey_love.html	Because Monkeys like other Monkeys.
+Psicologia Básica	educarBulling.html	Lições para Crianças e não só.
+Disfunções Lógicas	outrasPsicopatias.html	Comportamentos naturalmente psíquicos.
+Emoções	psicopatia.html	Corportamento expontâneo que é reflexo da envolvência harmoniosa.
+Zero	nervous.html	Tolerance and Patience. Getting Mad
+Brain Functions	sacredMasturbation.html	Recognization is the result of auto-validation of information, to create action.
+Broken Feelings	iFeelSad.html	I will not expose a video to show you how sad I am, but read me if you can
+Blind People	refusing2Learn.html	With all respect to the Blind, there are some others that can see without seeing
+Don't Hate me	youAreSoWeek.html	Hate your inability to learn and become better, which is all that matters
+Non-Sense	understandingHaters.html	If they don't learn how to deal with subjectivity, what would they do when something is objective?
+Teachers Patience	violentTeachers.html	Understand the Limits of those who can teach, after several repetitions
+Understand	phpLovers.html	Some people reject evolution and reject learning something new
+Impulsive and Irracional	isNotWeekness.html	Like animals do, behaviors without thinking, since they are not Humans, make sense to me
+Social Monsters	educateMonsters.html	Become for Society, Monsters.
+Beauty	educatingTheMonster.html	Because the Ugly can become better by the Will of the Beauty
+Without Punishment	monkeyEducationStyle.html	The technique that let you learn from your mistakes without punish you from doing
+Discipline	chinesEducation.html	Self discipline is a discipline, but few did learn it, even less, master it.
+Education can be Wrong	unfairLearning.html	Be to others, what you would like that others would be to you!
+Become Mad	no2Madness.html	Is good to do mistakes and say false and wrong things
+Maybe I am a Chicken	basicPsychology.html	While I didn't become a Chicken... Why?
+Lessons from the East	offensiveMessage.html	Demonstrations of the Lessons from the West!
+Brain Problems	justAnotherOffendedChinese.html	Even if the brain is working very well..
+Offended Chinese	offended_chinese.html	Sometimes we need to change what we know to improve what we do.
+# ✨ Spirituality & Sacred Traditions
+Grapes	fromBlood2Wine.html	In the Morning, at Afternoon, at Night. Like the Bright Side of Life
+Light	brightSideofChristianity.html	If You Fear Darkness, You will Never Know what Light can do.
+Growing the Soul	theGoodOnChristianity.html	Each Soul have a purpose that only the Self can Find.
+Espírito	grandeEspirito.html	Se a condição é Absoluta, então todos os diferentes nomes, referem essa unicidade Absoluta.
+Church	theEvilOnChurch.html	If Spirituality was about Corruption, the Church would be like a God of that Dark Desire to Rule.
+Hub	BibleHub.html	A Hub can be about several subjects, but this one only focus one subject....
+Divine	GodDesire.html	Everything and Nothing at the same Time
+Against the Plan	whatGodLikes.html	Because humanity always try to define a plan to create something
+Holy Papers	theHolyMan.html	All papers can be sacred and all papers can be holy.
+Islão	islamismo.html	Um povo que vive em negação é um povo que irá criar conflitos e confusão...
+Criminal Religion	cruel_Islam.html	Because they refuse to become better and fair...
+Isoteric	jews.html	A common attitude from almost all groups in the world...
+Romance	romantismOnReligions.html	Dreaming about what is not, but what it is. A possibility of a better world
+Alchemy	AlternativeMedicine.html	Because Alchemy can be much more than mixing materials.
+La Muerte	diaDeLosMuertos.html	Los cores de la Muerte.
+The Apple of Adam	isForbidden.html	If Is Forbidden to Eat, We Will Eat!!
+O Incontrolável	deusSemCulpa.html	Não tem princípio na vontade dos indivíduos...
+Os Culpados	semCulpa.html	Portuguese content only. Who is the guilty?
+Obrigado	agradecidoADeus.html	Estou agradecido...
+Evil	denyEvilLearning.html	Society is Evil and very few times Angelic...
+# 🎵 Music, Art & Interactive Quests
+Music	MusicQuest.html	Quest Game
+Learn	MusicAnimation.html	Music Theory
+More Music	moreMusicTheory.html	Theories and the Effect in the Brain
+Amatour	notaDJ.html	Not the best, not the worst
+Musical Body	changeWithin.html	Vibration between bodies happen, and with them, choice.
+The Art	ArtOfCreation.html	of Creation
+Open Street Maps	osmAndGD.html	and Game Designing Quest
+React	reactNative.html	Native Game Quest
+Web	WebDesign.html	Design Game Quest
+How	Mechanics.html	Mechanics Works Game Quest
+Android	AndroidDevelopment.html	Google and Android Development Game Guide
+Business	business.html	How it Works Game Quest
+Magic?	Chemistry.html	Maybe is just Chemistry - Game Quest
+Physics	Physics.html	A Game of Physics
+Electronics	Voltage.html	Animated Tutorial
+Chess	learnChess.html	Learn to Move around
+The Perfect War	lichess.html	Since the Perfect Bomb is only Music.
+Find the Key	wordGame.html	Check the Clues
+The Map	sharkMap.html	of Sharks
+if	ifPoem.html	Poem
+Movement Skills	dreamsVSreality.html	We Dance, between other persons that are dancing...
+Lição Antiga	seresPacificosEOfensivos.html	Um Poema que descreve uma Lição muito antiga, sobre dois amigos (o professor e o aluno)
+Flowers	theGardener.html	Fragile, colorful, beautiful, delicate, relaxing
+Fire	DragonFire.html	Simple Words from who can speak, showing No Mercy in all Human History
+# 🌱 Life, Health, Culture & Society
+Guns	gunsVSdrugs.html	and Drugs
+Evitar	naoComer.html	Comer
++ Receitas	frutasVegetais.html	Saudáveis
+Receitas	receitas.html	Saudáveis
+Médicos	rotinaMedica.html	O que esperar?
+Commercial	drugTraffic.html	By being legalized, is and was the solution
+Sex Workers	prositution.html	If you like it is not so Hard to be your Work
+Haxixe	atividadeIlicita.html	Um Concentrado de Canabis
+Change	drugsSalvation.html	Because something change, some others don't, while what change create corruption..
+About Self Discipline	drugsEffect.html	An very important skill that everyone should train..
+Drugs	pharmacDrugs.html	Because some drugs are better than others...
+Dream Big	big_repo.html	Read a lot smoking Pot. Weed Party!
+Saúde	sns24.html	Crítica ao Serviço Nacional de Saúde.
+Like Water	tea.html	but better, since it has some flavor to regenerate the lavor of the Soul
+Lights	eyeSaving.html	Entering the Eyes
+Always Caring	darkReader.html	Because We already know, we change the default
+Selling Books	books.html	I Wish to sell some books. Are You interested?
+Clicks vs Numbers	clicksVSnumbers.html	Numbers that represent Clicks of this domains.
+Domain Statistics II	visits.html	I don’t know what you think about this domains. But keep attacking!
+Domain Statistics	domain_statistics.html	Comments about the last Statistics of this site.
+About me	about_me.html	A “small” description about who I am and why I am what I am.
+My Favorite	rssSites.html	RSS Sources
+Mobile World Congress	4yfn.html	Barcelona 2026 Event
+# 🐒 Critical Observations & Monkey Thoughts
+Solidariedade	solidarityCollectives.html	Uma Solidariedade Obscura
+Remember	theLastChild.html	Children could create a better world!
+BAD	droneShow.html	Chinese 'Artistic' Crap
+Inesperado	umaSurpresa.html	Algo que não sabia que existia
+Mix	conceptMix.html	Mixing Concepts
+Asian Monkey	asianMonkey.html	Outside Asia
+Cultural Moods	theMoodOnLanguages.html	Make all the difference!
+Let it Be	anInterestingPerspective.html	Not what you expect
+Business	hardwareInsider.html	Insider
+It happens	theFreeDocs.html	Accepting what is Obvious
+Yes	naturally.html	Should be Obvious
+Naturally	shadowCat.html	So natural that I cannot explain...
+Is that True?	roomProblem.html	I don't know, then I ask or try to explain some probability of what Truth is..
+Google Abuse	betterThanGoogle.html	Because they don't care about You, but about Your Money!
+Fix	fixingApproach.html	Recognizing the Errors
+Failure	born2Fail.html	Dreamers Problem.
+Real Man	forRealManOnly.html	Those who do what should be done.
+Imagination	whereMagicHappens.html	Just another Divine Characteristic if You believe it
+More Bla Bla	theories.html	Concepts and Theories
+Bad Choice	notWhoButHow.html	Is not Who, but How
+Mudança Inesperada	transformacao.html	Porque tudo muda, também sinto necessidade de mudança...
+Teorias	teoricamente.html	Possivelmente verdadeiro ou falso...
+Obvious?	probably.html	I am not special and I need to face reality
+Antiguidades	tradicional.html	Aspectos da intervenção física.
+Tips for Business	teleMetting.html	If you wish to create Unicity for Your business, Expect.
+Self Investment	becauseIsFunny.html	Is like long walks or gyms. Reapiting the same exercises over and over again
+You can be	herois.html	A hero all days of your life, to someone else life. (portuguese content only)
+Forever	eternal.html	You will be redirected to the below article called 'Monkey Justice'...
+Easy	graphicalEffects.html	As simple as Learning to Walk...
+Birth	newYear.html	Happy Celebrations of...
+Lands	myCountry.html	A common propriety of reality that everyone own in Time
+Investments	chinaGarden.html	Another Critical Review about China Investments.
+Sorry	regret.html	Being Sorry is not enought. You need to demonstrate you are sorry.
+Bones	united.html	Something common between all humans, no mater what origins..
+Eternal Leaders	amazingUSA.html	Those who win the Hearts of many, without using Violent techniques to conquer..
+I cannot believe	isThisTrue.html	I am surprised and I feel good! My 'Christmas Gifts'
+Brutal	FascismEducation.html	Education like this, can only create the same answer to all others who like the technique
+Bla Bla Bla	FreeSpeech.html	I can say whatever I wish and you can do the same. If we are many, create a musical band, to Scream...
+Just Imagine	funnyReactions.html	How they would feel after they try to reach this site again...
+Losing Time	wastingOpportunities.html	The worst choice in the world that anyone can do. (without exceptions)
+Next Please	strangeCelebrations.html	Cultural Psychology can make the difference in Society
+Natural Alerts	monkeyDuty.html	Because you only need a signal to be aware of what danger is around you
+Expeculation	manipulatingPoliticalProbabilities.html	What can be probably true, can be probably false
+Platonic Sex	PoliticalLoveLesson.html	The art of making sex without making sex
+Orders	questionOrders.html	You shall do something I demand you to do without questioning what I ask you to do
+Explaining	twoDaysAfter.html	SysAdmin Notes - Because I wish to explain, so you can make a choice
+Magic	usedTechniqueIsGood.html	Better few and real, than many and artificial.
+Plin	theBestApproach.html	A Simple Touch of Magic that will change everything.
+Goodness	theBadBeingGood.html	The Good is Good because the Good chose to help someone else
+Unfair Networks	stupidMastodonLaws.html	A Good Exemple of how much people don't think about what they are doing
+LIFE	myCulture.html	The Simplicity of being Human is in accepting the Child that is Inside each one Mind
+Be Thankful	theNecessaryAttitude.html	Or Go away from those who enable you to be away from everything you run away
+National Pride	nationalPride.html	I Never Understand National Pride and I Never Understand Ethnical Pride
+Not a Debian Command	apt.html	But a Simplification of what some folks do in Reality or on Internet
+New Approach	letUsSee.html	Maybe is not new. Maybe is obsolete. Maybe I am losing my time on this. Maybe...
+Recommended	usingTheBrain.html	You should use your best tool, but you can deny to use it. Free Will of Choice
+Who is who	theKing.html	Just another story for Children, to understand what Fantasy Aims to Give
+Blarg	wp-stupid.html	I just feel I need to INSULT this people to feel better
+Test	testingSubjectivity.html	Because we always need to understand persons behaviors before declaring something as true
+Licenses	drewDevaulsBlog.html	Texts that describe something that don't depend on the description but in Your Choice
+Be Kind	learningFromExperience.html	I am almost in Shock and I don't know how I can fix this, since there is no possible fix :/
+Learning from the Best	behindTheScenes.html	I must admit that I didn't learn anything. I just copy and repeat BAD examples that may be funny
+The Easier way	blockingMyEvilCreativity.html	Being creative in the positive way, is not easy, but in the Evil way, super easy!
+Sacred Children	memoriesFromOldTimes.html	The Monkey is the Symbol of Children and the Edge Symbol of Humanity
+Lazy Choices	becauseIsPopular.html	Because is Easy, simple and I don't need to understand what is going on
+Motivating Students	logicProvocation.html	Using that old and Bad technique, that declare students unable to do something
+Dig Deep	websitesInformation.html	The Holes can be deep, while the notes, superficial
+Persons	whoTheyAre.html	Normal Living beings not better than anyone
+Use Your Nose	leadersOfHistory.html	If you have difficult to use the Brain.
+Be aware	poison.html	And Think, since without that ability, you are just an animal
+Dream Big	WorldWideBusiness.html	Little solutions for Big Countries
+Little Fix	ChinaBusiness.html	You always find new ways to fix problems, and create a business
+Warning	readingBooks.html	Can change the way you see reality
+No Lie	confession.html	Only Facts. Learn from them. Understand Your functionality in society
+Cocks	superiorGender.html	God create Man and Woman, and some other in between.
+I Deny it	againstPatterns.html	I will not follow the recommendations the way you expect!
+Looking Back	postsReview.html	A Retrospective Analysis of this Blog History!
+Wow	excitedMoments.html	This is amazing.. look.. isn't awesome, I love it
+Boring Life	lowLevel.html	Does Your Mother Loves You? Love Your Mother back and Go away!
+Choices	learningbyteaching.html	I am not sure if I know, but I will confirm and validate it!
+Dreamers and Builders	respectful.html	Both do mistakes, and both will learn with them!
+No Luck for me	anotherIllusion.html	I am sure you can do better than me.
+Transparency	clearAsWater.html	Because is Obvious and Simple..
+Oh...	ohFAQ.html	Just another 'fack' using Questions!
+Stupid Question	aboutPolitics.html	Does people think about the questions they are doing?
+Two Holes	byHackers.html	Rabits Paradise. Deep Holes. Deep.
+Non-Sense Ideas	helpThem.html	Why people would ever care about?
+I don't care	sexual.html	Is up to you. Keep it for you!
+Asian Culture	messageToAsia.html	Asking Asian people to try to answer me this little doubt I have..
+The Source of Information	hidenDocumentation.html	Somewhere else outside of it's origin.
+Click here	madebyMilitary.html	Carefully, or else everything can be destroyed.
+You are not the Only One	dreamer.html	Even non rational living beings can.
+I cannot explain why	catStories.html	But I can explain how.
+Which One?	difficultChoice.html	As many say, just make a choice and explore the world with it.
+Japanese Dog	japaneseDog.html	Could be English, Brasilian, German or from any other nacionality
+What Race?	racialDifference.html	Reading History we learn that Humanity, and Human Race..
+Communities Dreams	communityMurder.html	What communities like most above of being the self?
+How does it Smell?	menIntheMiddle.html	Is not food, perfume, flowers or any other flavor..
+"I don't have Time"	noTime.html	Is what people say, even if life is about Time..
+The Devil Inside	evilForums.html	Some notes about a 'small' group of persons.
+Did you ask permissions?	permissionProblems.html	I am not sure if you need them, but you should ask.
+Don't be offended	theObviousDiscrimination.html	By nature of all languages, we discriminate information.
+Life connections	friendly.html	and all depend on something deep.
+I Will arrest You, because I Love You	beingSafe.html	Contradictions are the Meaning of Life.
+Node Reactions	nodeReact.html	Sometimes the best lesson is to not react.
+Hail to the Stupid	stupid.html	Because everyone can be stupid. Ones more than others.
+The Great Sky	greatsky.html	My Personal Self-Hosted Site. Contribute to the Cause (not alive)
+Google Problems	google_and_banks.html	Some problems can be solved with easy.
+La Perla Negra y la SAR	sar_pn.html	Spanish content only. Be a Good Pirate.
+A Bondade	bondade.html	Portuguese only. How good each can be, or not.
+The Awesome Story	awesome_story.html	Not a awesome story, but full of awesome stories.
+Leng	let.html	The sound of 'Leng' remember Chinese Words
+Beautiful	facebook.html	Is like... What?
+# 🌌 Odicforce Ecosystem & External Blogs
+Art Sub-Domain	https://art.odicforcesounds.com	Main sub-domain. “The Monkey who doesn’t listen, is speaking”
+Book Sub-Domain	https://book.odicforcesounds.com	Simplification of the main sub-domain. “The Monkey who doesn’t listen, is writing”
+Wiki Sub-Domain	https://wiki.odicforcesounds.com	Application Wiki & The Challenge. “The Monkey who doesn’t listen, is asking”
+Critica Sem Piedade	https://criticasempiedade.blogspot.com	Portuguese content only about several topics (Blogspot)
+Macaco Preguiçoso	https://macacopreguicoso.blogspot.com	Portuguese content only about learning Technologies (Blogspot)
+Odicforcesounds (Old)	https://odicforcesounds.blogspot.com	The first odicforcesounds webpage, before having a dedicated domain.
+  </script>
+
+  <script>
+    const monkeyQuotes = [
+      "The Monkey who doesn’t listen, is speaking",
+      "The Monkey who doesn’t listen, is writing",
+      "The Monkey who doesn’t listen, is learning",
+      "The Monkey who doesn’t listen, is teaching",
+      "The Monkey who doesn’t listen, is asking",
+      "The Monkey who doesn’t listen, is questioning",
+      "The Monkey who doesn’t listen, is observing",
+      "The Monkey who doesn’t listen, is dreaming",
+      "The Monkey who doesn’t listen, is meditating",
+      "The Monkey who doesn’t listen, is coding",
+      "The Monkey who doesn’t listen, is compiling",
+      "The Monkey who doesn’t listen, is hacking",
+      "The Monkey who doesn’t listen, is defending",
+      "The Monkey who doesn’t listen, is isolating in FreeBSD jails",
+      "The Monkey who doesn’t listen, is seeking the Dao",
+      "The Monkey who doesn’t listen, is breaking the illusion",
+      "The Monkey who doesn’t listen, is laughing at stupidity",
+      "The Monkey who doesn’t listen, is demanding justice",
+      "The Monkey who doesn’t listen, is refusing dogmas",
+      "The Monkey who doesn’t listen, is composing music",
+      "The Monkey who doesn’t listen, is flying across the sky",
+      "The Monkey who doesn’t listen, is dancing with the dragon",
+      "The Monkey who doesn’t listen, is embracing silence",
+      "The Monkey who doesn’t listen, is reading the man page",
+      "The Monkey who doesn’t listen, is walking the solitary path",
+      "The Monkey who doesn’t listen, is mastering his own mind"
+    ];
+
+    function renderWisdom() {
+      const container = document.getElementById("wisdomListContainer");
+      container.innerHTML = monkeyQuotes.map(quote => '<div class="wisdom-item">“' + quote + '”</div>').join('');
+    }
+
+    let currentQuoteIndex = 0;
+    const rotatorElem = document.getElementById("quoteRotator");
+    const counterElem = document.getElementById("quoteCounter");
+
+    function rotateQuote() {
+      rotatorElem.style.opacity = '0';
+      setTimeout(() => {
+        currentQuoteIndex = (currentQuoteIndex + 1) % monkeyQuotes.length;
+        rotatorElem.textContent = '“' + monkeyQuotes[currentQuoteIndex] + '”';
+        counterElem.textContent = 'Monkey Quote ' + (currentQuoteIndex + 1) + ' of ' + monkeyQuotes.length;
+        rotatorElem.style.opacity = '1';
+      }, 400);
+    }
+    setInterval(rotateQuote, 4500);
+
+    function buildBlog() {
+      const rawText = document.getElementById("blog-data").textContent.trim();
+      const lines = rawText.split('\n');
+      const categories = [];
+      let currentCat = null;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        if (line.startsWith('#')) {
+          const header = line.substring(1).trim();
+          const firstSpace = header.indexOf(' ');
+          const icon = header.substring(0, firstSpace);
+          const name = header.substring(firstSpace + 1);
+          currentCat = { name: name, icon: icon, items: [] };
+          categories.push(currentCat);
+        } else if (currentCat) {
+          const parts = line.split('\t');
+          if (parts.length >= 3) {
+            currentCat.items.push({
+              title: parts[0].trim(),
+              url: parts[1].trim(),
+              desc: parts[2].trim()
+            });
+          }
+        }
+      }
+
+      const isLocal = window.location.protocol === 'file:';
+      const originBase = isLocal ? '' : 'https://blog.odicforcesounds.com/';
+
+      const container = document.getElementById("categoriesContainer");
+      container.innerHTML = '';
+
+      categories.forEach((cat) => {
+        const details = document.createElement("details");
+        details.className = "category-card";
+        details.open = true;
+
+        const summary = document.createElement("summary");
+        summary.className = "category-header";
+        summary.innerHTML = `
+          <div class="category-title-left">
+            <span class="category-icon">${cat.icon}</span>
+            <span>${cat.name}</span>
+            <span class="badge-count">${cat.items.length}</span>
+          </div>
+          <span class="toggle-indicator">▼</span>
+        `;
+        details.appendChild(summary);
+
+        const grid = document.createElement("div");
+        grid.className = "items-grid";
+
+        cat.items.forEach((item) => {
+          const a = document.createElement("a");
+          a.className = "link-item";
+
+          let resolvedHref = item.url;
+          if (!resolvedHref.startsWith("http://") && !resolvedHref.startsWith("https://")) {
+            resolvedHref = originBase + resolvedHref;
+          }
+          a.href = resolvedHref;
+          a.setAttribute("data-search", (item.title + ' ' + item.desc).toLowerCase());
+
+          if (item.url.toLowerCase().includes("bestsuperdumb")) {
+            const badge = document.createElement("span");
+            badge.className = "special-badge";
+            badge.textContent = "FreeBSD";
+            a.appendChild(badge);
+          } else if (item.url === "dreampath.html") {
+            const badge = document.createElement("span");
+            badge.className = "special-badge";
+            badge.textContent = "Prime Link";
+            a.appendChild(badge);
+          }
+
+          const titleSpan = document.createElement("span");
+          titleSpan.className = "item-title";
+          titleSpan.textContent = item.title;
+          a.appendChild(titleSpan);
+
+          const descSpan = document.createElement("span");
+          descSpan.className = "item-desc";
+          descSpan.textContent = item.desc;
+          a.appendChild(descSpan);
+
+          grid.appendChild(a);
+        });
+
+        details.appendChild(grid);
+        container.appendChild(details);
+      });
+    }
+
+    document.getElementById("expandAllBtn").addEventListener("click", () => {
+      document.querySelectorAll(".category-card").forEach(c => c.open = true);
+    });
+
+    document.getElementById("collapseAllBtn").addEventListener("click", () => {
+      document.querySelectorAll(".category-card").forEach(c => c.open = false);
+    });
+
+    const searchInput = document.getElementById("searchFilter");
+    searchInput.addEventListener("input", (e) => {
+      const val = e.target.value.toLowerCase().trim();
+      const cards = document.querySelectorAll(".category-card");
+
+      cards.forEach(card => {
+        const links = card.querySelectorAll(".link-item");
+        let visibleCount = 0;
+
+        links.forEach(link => {
+          const match = link.getAttribute("data-search").includes(val);
+          if (match) {
+            link.style.display = "flex";
+            visibleCount++;
+          } else {
+            link.style.display = "none";
+          }
+        });
+
+        if (visibleCount > 0) {
+          card.style.display = "block";
+          if (val.length > 0) {
+            card.open = true;
+          }
+        } else {
+          card.style.display = "none";
+        }
+      });
+    });
+
+    const socialToggleBtn = document.getElementById("socialToggleBtn");
+    const socialDrawer = document.getElementById("socialDrawer");
+
+    socialToggleBtn.addEventListener("click", () => {
+      socialDrawer.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!socialToggleBtn.contains(e.target) && !socialDrawer.contains(e.target)) {
+        socialDrawer.classList.add("hidden");
+      }
+    });
+
+    const goToTopBtn = document.getElementById("goToTopBtn");
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 300) {
+        goToTopBtn.classList.add("visible");
+      } else {
+        goToTopBtn.classList.remove("visible");
+      }
+    });
+
+    goToTopBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    renderWisdom();
+    buildBlog();
+  </script>
+</body>
+</html>
