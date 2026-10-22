@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<meta name="X-Content-Type-Options" content="nosniff">
+<meta name="X-Frame-Options" content="DENY">
+<meta name="Referrer-Policy" content="no-referrer">
+<meta name="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+<title>Linux Distributions, Compared — A Field Manual</title>
+<meta name="description" content="A manual-style comparison of Linux distributions: Debian, Ubuntu, Mint, Fedora, RHEL, openSUSE, Arch, Gentoo, NixOS, Alpine, Void and more — what each one does and how they differ.">
+<style>
+:root {
+  --bg: #06060c;
+  --ink: #e7e9ee;
+  --ink-soft: #c3ccd6;
+  --muted: #8b96a5;
+  --accent: #0aaaaa;
+  --accent-soft: #54e3c4;
+  --warm: #ffbe6b;
+  --pink: #ff7fa6;
+  --line: rgba(255, 255, 255, 0.12);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding-bottom: 5rem;
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.7;
+  position: relative;
+  overflow-x: hidden;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1000px 520px at 80% -10%, rgba(10, 170, 170, 0.10), transparent 60%),
+    radial-gradient(800px 420px at 10% 5%, rgba(255, 190, 107, 0.05), transparent 65%);
+}
+#progress {
+  position: fixed;
+  top: 0; left: 0;
+  width: 0;
+  height: 3px;
+  z-index: 60;
+  background: linear-gradient(90deg, var(--accent-soft), var(--warm));
+  box-shadow: 0 0 12px rgba(84, 227, 196, 0.45);
+}
+header {
+  position: relative;
+  z-index: 1;
+  max-width: 80ch;
+  margin: 1.2rem auto 0.6rem;
+  padding: 0 1.1rem;
+  text-align: center;
+}
+.kicker {
+  margin: 0 0 0.45rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--warm);
+}
+h1 {
+  display: inline;
+  padding: 0.08em 0.34em;
+  color: #d9dde4;
+  background: #000;
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  line-height: 1.22;
+}
+.lead {
+  position: relative;
+  z-index: 1;
+  max-width: 92ch;
+  margin: 1.2rem auto 1.6rem;
+  padding: 0 1.1rem;
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+  text-align: justify;
+}
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 96ch;
+  margin: 0 auto;
+  padding: 0 1.1rem 4rem;
+}
+.panel {
+  margin: 1.6rem auto;
+  padding: 1.5rem 1.6rem 1.8rem;
+  background: rgba(8, 9, 13, 0.94);
+  border: 2px solid #ff4500;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #2ff, 0 -8px 22px #90f, 0 -18px 32px #990, 0 -26px 40px #0f0;
+  animation: flicker 1.2s infinite alternate ease-in-out;
+}
+@keyframes flicker {
+  0% { box-shadow: 0 0 8px #0ff, 0 -6px 18px #6a00, 0 -16px 28px #ae00, 0 -24px 34px #0f0; }
+  50% { box-shadow: 0 0 14px #09f, 0 -12px 26px #5fa, 0 -22px 36px #f0f, 0 -32px 46px #fdf; }
+  100% { box-shadow: 0 0 10px #2ff, 0 -8px 22px #90f, 0 -18px 32px #990, 0 -28px 40px #0f0; }
+}
+.panel p { margin: 0 0 1rem; color: #d7dbe2; text-align: justify; }
+.panel ul, .panel ol { padding-left: 1.25rem; color: #d7dbe2; }
+.panel li { margin: 0.35rem 0; }
+h2 {
+  margin: 2.4rem 0 0.7rem;
+  color: #7fe8e8;
+  font-size: 1.32rem;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+}
+h3 {
+  margin: 1.9rem 0 0.5rem;
+  color: var(--accent-soft);
+  font-size: 1.07rem;
+}
+h3 .tag {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.08rem 0.35rem;
+  margin-left: 0.45rem;
+  vertical-align: middle;
+}
+a { color: var(--accent-soft); text-decoration: none; border-bottom: 1px dotted rgba(10, 170, 170, 0.4); }
+a:hover { color: #8ff0e0; }
+a.external { color: var(--pink); border-bottom-color: rgba(255, 79, 134, 0.4); }
+a.external:hover { color: #ff9fbb; }
+b, strong { color: #8fe388; font-weight: 600; }
+i, em { color: #ffb066; }
+u { background: gold; color: #000; text-decoration: none; padding: 0 0.18em; }
+code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: #10161d;
+  border: 1px solid #24303c;
+  border-radius: 4px;
+  padding: 0.05em 0.35em;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1.4rem 0 0.4rem;
+}
+.controls input[type="search"] {
+  flex: 1 1 260px;
+  min-width: 200px;
+  font-family: var(--mono);
+  font-size: 0.86rem;
+  padding: 0.6rem 0.8rem;
+  color: var(--ink);
+  background: #0b0f14;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+}
+.controls input[type="search"]:focus { outline: none; border-color: rgba(84, 227, 196, 0.6); }
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.3rem 0 0.8rem; }
+.chips button {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.38rem 0.65rem;
+  border-radius: 999px;
+  cursor: pointer;
+  color: #b9c0cc;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.14);
+}
+.chips button:hover { color: #fff; border-color: var(--accent-soft); }
+.chips button[aria-pressed="true"] {
+  color: var(--accent-soft);
+  border-color: rgba(84, 227, 196, 0.55);
+  background: rgba(84, 227, 196, 0.09);
+}
+.result { font-family: var(--mono); font-size: 0.74rem; color: var(--muted); margin: 0 0 1rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.85rem; }
+.distro {
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(255,255,255,0.11);
+  border-radius: 9px;
+  background: rgba(8, 11, 15, 0.74);
+}
+.distro h3 { margin: 0 0 0.35rem; font-size: 1rem; }
+.distro p { margin: 0 0 0.55rem; font-size: 0.9rem; line-height: 1.55; color: #c3ccd6; text-align: left; }
+.distro .meta { margin: 0; font-family: var(--mono); font-size: 0.67rem; letter-spacing: 0.04em; color: var(--muted); }
+.tbl-wrap { overflow-x: auto; margin: 1.2rem 0; border: 1px solid var(--line); border-radius: 8px; }
+table.tbl { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 0.85rem; }
+table.tbl th, table.tbl td {
+  padding: 0.5rem 0.65rem;
+  border-bottom: 1px solid rgba(255,255,255,0.09);
+  text-align: left;
+  vertical-align: top;
+}
+table.tbl td { color: #d7dbe2; }
+table.tbl tbody tr:nth-child(even) td { background: rgba(255,255,255,0.025); }
+table.tbl th {
+  background: #0f151b;
+  color: #b9c0cc;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+table.tbl tr:last-child td { border-bottom: 0; }
+.note {
+  margin: 1.1rem 0;
+  padding: 0.8rem 1rem;
+  border-left: 3px solid var(--accent);
+  background: rgba(10, 170, 170, 0.07);
+  color: #c3ccd6;
+  font-size: 0.95rem;
+}
+.empty {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.84rem;
+  padding: 0.5rem 0;
+}
+footer {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 30;
+  padding: 0.15rem;
+  background: darkblue;
+  text-align: center;
+}
+footer a {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.25rem;
+  border: 0;
+}
+footer a:hover { color: var(--warm); }
+.totop {
+  position: fixed;
+  right: 1.1rem;
+  bottom: 3.4rem;
+  z-index: 40;
+  width: 2.3rem;
+  height: 2.3rem;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--warm);
+  background: rgba(8, 10, 14, 0.86);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease, border-color 180ms ease;
+}
+.totop.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.totop:hover { border-color: var(--warm); color: #fff; }
+@media (max-width: 640px) {
+  .panel { padding: 1.1rem 1rem; }
+  table.tbl { font-size: 0.8rem; }
+}
+@media print {
+  body { background: #fff; color: #111; }
+  .panel { border-color: #999; background: #fff; box-shadow: none; animation: none; }
+  footer, .totop, #progress, .controls, .chips { display: none; }
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<header>
+  <p class="kicker">Linux Field Manual · Distribution Atlas</p>
+  <h1>Linux Distributions, Compared</h1>
+</header>
+
+<p class="lead">Every Linux distribution ships the same kernel and runs the same applications, and yet the experience of using Debian, Fedora, Arch and NixOS is completely different. The differences are not in the programs: they are in <b>who decides what gets installed</b>, <b>when the system changes</b>, and <b>what happens when it breaks</b>. This is a reference to what each family actually does, what it is for, and how the distros inside a family differ from each other.</p>
+
+<div class="wrap">
+<div class="panel">
+
+<p>Before the catalogue, one definition worth carrying: a distribution is kernel + userland + package manager + release policy + installer + support model. The desktop environment is a layer on top (GNOME, KDE Plasma and Xfce are available almost everywhere), and the C library and init system are quietly decisive for compatibility. If you remember the four questions — <i>fixed or rolling, who packages, what breaks, who supports</i> — most of the distro debate answers itself. For a broader tour of reviews and experiments on this blog, see <a href="./testingLinuxDistros.html">Some Distros that look different</a>, <a href="./theBestLinuxDistro.html">Hard to maintain</a>, <a href="./lastDistrosReview.html">Almighty Linux Short Review</a> and <a href="./moreLinuxReviews.html">Overkill &amp; HardenWing</a>.</p>
+
+<h2>The two axes that explain everything</h2>
+<p><b>Release model.</b> A <i>fixed</i> distribution freezes a set of package versions, tests them together, and ships a release you can keep for years. A <i>rolling</i> distribution updates continuously: you install once and receive new versions as they are packaged. Fixed means predictable and slow to change; rolling means current and occasionally surprising. There is no third option that escapes this trade-off — every "curated rolling" distro is just rolling with an extra delay.</p>
+<p><b>Package policy.</b> The second axis is who decides what enters the system and how. Binary package managers (APT, DNF, pacman, zypper, xbps, apk) install pre-built packages. Source-based systems (Portage) compile locally and let you choose options per package. Declarative systems (Nix) build the whole system from a description and keep every previous generation on disk. A distribution is, more than anything else, a policy about change.</p>
+<p>Two technical layers matter downstream: <b>libc</b> (glibc almost everywhere, musl on Alpine and optional on Void/Gentoo) and <b>init</b> (systemd almost everywhere, OpenRC on Alpine and Gentoo by default, runit on Void, sysvinit-style scripts on Devuan and Slackware). Most incompatibilities people blame on "the distro" are really glibc/musl or systemd assumptions.</p>
+
+<div class="controls">
+  <input type="search" id="q" placeholder="Search a distribution, package manager, or feature…" aria-label="Search distributions">
+</div>
+<div class="chips" id="chips" aria-label="Filter by profile"></div>
+<p class="result" id="result"></p>
+
+<h2>Debian and its children</h2>
+<p>The Debian family is the largest ecosystem in Linux, and its defining property is patience. Debian's <code>stable</code> branch freezes for roughly two years, receives security support for about three, and can be extended further by the LTS team. Packages are built against a single policy document, the social contract keeps the system free, and the result is the distro people install on servers they intend to forget about. Ubuntu, Mint, Kali, MX and dozens of others are variations on this base.</p>
+
+<div class="grid">
+  <article class="distro" data-name="debian stable apt server" data-tags="server beginner">
+    <h3>Debian</h3>
+    <p>The reference implementation of stable Linux. Three branches — stable, testing, unstable (sid) — with APT on top. Conservative versions, excellent documentation, no corporate owner, and a community that argues about governance for sport.</p>
+    <p class="meta">APT · fixed · systemd · glibc</p>
+  </article>
+  <article class="distro" data-name="ubuntu lts snap canonical" data-tags="beginner server">
+    <h3>Ubuntu</h3>
+    <p>Debian-based, six-month releases and a two-year LTS cadence with five years of standard support (extendable commercially). Adds Snaps, PPAs and its own tooling. The default choice for cloud images and third-party software instructions.</p>
+    <p class="meta">APT + Snap · fixed · systemd · glibc</p>
+  </article>
+  <article class="distro" data-name="linux mint cinnamon lmde" data-tags="beginner">
+    <h3>Linux Mint</h3>
+    <p>Ubuntu LTS base (or Debian, in LMDE) with Cinnamon, MATE or Xfce. Removes Snaps by default, ships a cautious update manager and tools that assume the user should not have to read a wiki to install a printer.</p>
+    <p class="meta">APT · fixed · systemd · glibc</p>
+  </article>
+  <article class="distro" data-name="pop os system76 cosmic" data-tags="beginner">
+    <h3>Pop!_OS</h3>
+    <p>System76's Ubuntu LTS derivative, built for their hardware and for people who want a polished desktop without configuration. Adds a recovery partition and its own COSMIC desktop work.</p>
+    <p class="meta">APT · fixed · systemd · glibc</p>
+  </article>
+  <article class="distro" data-name="kali security pentest debian" data-tags="advanced">
+    <h3>Kali Linux</h3>
+    <p>Debian-based rolling release with hundreds of security tools. It is a toolkit, not a daily driver: the default configuration is deliberately permissive for testing, and using it as a main system trades stability for tool availability.</p>
+    <p class="meta">APT · rolling · systemd · glibc</p>
+  </article>
+  <article class="distro" data-name="mx linux xfce debian systemd" data-tags="beginner">
+    <h3>MX Linux</h3>
+    <p>Debian stable with Xfce, its own MX Tools and systemd optional by default. A pragmatic desktop for older hardware and for users who want Debian without assembling the pieces.</p>
+    <p class="meta">APT · fixed · sysvinit/systemd · glibc</p>
+  </article>
+</div>
+
+<div class="note">Debian's children differ mostly in <b>defaults and support politics</b>: Ubuntu brings commercial support and newer software; Mint removes Snaps and targets desktop users; Kali inverts the security defaults; MX preserves Debian's stability with a friendlier toolset. The package manager is identical, which is why skills transfer. For the Debian view on this blog, see <a href="./debianForever.html">Debian Forever</a>, <a href="./debian_upgrade.html">Debian, simple and fast</a>, an introduction to <a href="./apt.html">APT</a>, and the <a href="./DebianSecurity.html">Debian technical manual</a> for the boot-to-security walkthrough.</div>
+
+<h2>The Red Hat family</h2>
+<p>Red Hat's world is defined by enterprise support and by SELinux. Fedora is the fast-moving community project where the technology is developed; RHEL is the slow, certified, subscription product; Rocky and Alma rebuild RHEL without the subscription; CentOS Stream sits upstream of RHEL as its rolling preview. All use RPM packaging with DNF and default to SELinux enforcing — the single biggest practical difference from the Debian family after corporate support. Both halves of that stack have a manual on this blog: the <a href="./redhatCert.html">RHEL technical manual</a> walks the administration track from install to automation, and <a href="./SELinux.html">SELinux, zero to hero</a> goes through contexts, type enforcement and the policy tools.</p>
+
+<div class="grid">
+  <article class="distro" data-name="fedora workstation dnf selinux wayland" data-tags="beginner developer">
+    <h3>Fedora</h3>
+    <p>Six-month releases with about thirteen months of support each. New kernels, new GNOME, new Wayland — first. SELinux enforcing, DNF5, and atomic variants (Silverblue) that treat the OS as an image.</p>
+    <p class="meta">DNF · fixed · systemd · SELinux</p>
+  </article>
+  <article class="distro" data-name="rhel red hat enterprise subscription" data-tags="server">
+    <h3>RHEL</h3>
+    <p>The commercial distribution: ten-year life cycles, certifications, vendor support and predictable backports. You pay for the support contract, not for the software bits.</p>
+    <p class="meta">DNF · fixed · systemd · SELinux</p>
+  </article>
+  <article class="distro" data-name="rocky linux rhel rebuild" data-tags="server">
+    <h3>Rocky Linux</h3>
+    <p>A community, bug-for-bug rebuild of RHEL, created after CentOS pivoted to Stream. Same ABI, same packages, no subscription.</p>
+    <p class="meta">DNF · fixed · systemd · SELinux</p>
+  </article>
+  <article class="distro" data-name="alma linux rhel rebuild" data-tags="server">
+    <h3>AlmaLinux</h3>
+    <p>The other RHEL rebuild, backed by CloudLinux. Functionally interchangeable with Rocky for most workloads; the choice usually comes down to governance and funding.</p>
+    <p class="meta">DNF · fixed · systemd · SELinux</p>
+  </article>
+  <article class="distro" data-name="centos stream rhel upstream rolling" data-tags="server">
+    <h3>CentOS Stream</h3>
+    <p>Rolling preview of the next RHEL minor release. Good for testing and CI against what RHEL will become; not a drop-in replacement for the old stable CentOS people remember.</p>
+    <p class="meta">DNF · rolling · systemd · SELinux</p>
+  </article>
+</div>
+
+<h2>openSUSE and SUSE</h2>
+<p>openSUSE is the community arm of SUSE, and its distinguishing features are YaST (a system administration tool that predates most of the competition), the zypper package manager, and Btrfs snapshots wired into the bootloader. Leap is the fixed, enterprise-aligned release; Tumbleweed is a rolling distribution with automated testing before each snapshot. When an upgrade goes wrong, the rollback is a boot menu entry — the most underrated safety net in the Linux world.</p>
+
+<div class="grid">
+  <article class="distro" data-name="opensuse leap yast zypper fixed" data-tags="server beginner">
+    <h3>openSUSE Leap</h3>
+    <p>Fixed releases built from SUSE Linux Enterprise sources. Excellent for workstations and small servers where you want stability plus YaST's centralised configuration.</p>
+    <p class="meta">zypper · fixed · systemd · glibc</p>
+  </article>
+  <article class="distro" data-name="opensuse tumbleweed rolling btrfs snapshots" data-tags="rolling developer">
+    <h3>openSUSE Tumbleweed</h3>
+    <p>Rolling, but with openQA testing every snapshot and automatic Btrfs snapshots. The most conservative way to run a rolling distribution.</p>
+    <p class="meta">zypper · rolling · systemd · glibc</p>
+  </article>
+</div>
+
+<h2>Arch and its derivatives</h2>
+<p>Arch is a philosophy as much as a distribution: minimal base install, no defaults you did not choose, rolling packages, and the Arch Wiki — arguably the best Linux documentation ever written, useful even on other distros. pacman is fast and simple; the AUR supplies user-maintained build scripts for almost everything else. The cost is that you assemble the system and you own the breakage. Manjaro and EndeavourOS package the same base with different amounts of hand-holding.</p>
+
+<div class="grid">
+  <article class="distro" data-name="arch linux pacman aur rolling wiki" data-tags="advanced rolling">
+    <h3>Arch Linux</h3>
+    <p>Rolling, minimal, and explicit: you install what you need, read the wiki, and learn how the system fits together. <code>archinstall</code> now provides a guided installer without changing the philosophy.</p>
+    <p class="meta">pacman · rolling · systemd · glibc</p>
+  </article>
+  <article class="distro" data-name="manjaro arch derivative delayed" data-tags="beginner rolling">
+    <h3>Manjaro</h3>
+    <p>Arch packages held back for extra testing, plus its own tools for kernels, drivers and updates. A friendlier on-ramp that occasionally creates its own compatibility puzzles.</p>
+    <p class="meta">pacman + pamac · rolling · systemd · glibc</p>
+  </article>
+  <article class="distro" data-name="endeavouros arch installer vanilla" data-tags="beginner rolling">
+    <h3>EndeavourOS</h3>
+    <p>An Arch installer and a sensible default setup with a small theme layer. Nearly vanilla Arch, without the manual partitioning ritual.</p>
+    <p class="meta">pacman · rolling · systemd · glibc</p>
+  </article>
+</div>
+
+<h2>The independents</h2>
+<p>These distributions do not share a base with the families above, and that is the point: each one is an argument about how a system should be built. Gentoo argues for compilation and choice; NixOS argues for reproducibility and rollback; Slackware argues for simplicity and tradition; Void argues for minimalism without systemd; Alpine argues for small and secure, which is why it runs inside so many containers. Below all of them sits <a href="./lfs.html">Linux From Scratch</a>, which is not a distribution at all but the recipe distributions are made from: it builds the toolchain, the C library and the kernel by hand, and it is the fastest way to see what every entry in the table below is actually hiding.</p>
+
+<div class="grid">
+  <article class="distro" data-name="gentoo portage source use flags compile" data-tags="advanced">
+    <h3>Gentoo</h3>
+    <p>Source-based: Portage compiles packages with the options you select in USE flags. Maximum control and optimisation, paid for in compile time and maintenance attention. OpenRC by default, systemd optional, musl supported.</p>
+    <p class="meta">Portage · rolling · OpenRC · glibc/musl</p>
+  </article>
+  <article class="distro" data-name="nixos declarative reproducible generations" data-tags="advanced">
+    <h3>NixOS</h3>
+    <p>The entire system is a declarative configuration. Upgrades are atomic, every generation stays bootable, and rolling back is selecting an older entry. The learning curve is the price of never having a half-upgraded machine.</p>
+    <p class="meta">Nix · rolling · systemd · glibc</p>
+  </article>
+  <article class="distro" data-name="slackware stable bsd init pkgtools" data-tags="advanced">
+    <h3>Slackware</h3>
+    <p>The oldest maintained distribution, still shipping a clean, traditional system with BSD-style init scripts and no dependency resolution. You learn what every package does because you install every package.</p>
+    <p class="meta">slackpkg · fixed · sysvinit · glibc</p>
+  </article>
+  <article class="distro" data-name="void linux runit xbps musl" data-tags="advanced minimal">
+    <h3>Void Linux</h3>
+    <p>Rolling, lightweight, with runit instead of systemd and the xbps package manager. A clean middle ground between Arch's freshness and a minimal init.</p>
+    <p class="meta">xbps · rolling · runit · glibc/musl</p>
+  </article>
+  <article class="distro" data-name="alpine linux musl busybox containers apk" data-tags="server minimal">
+    <h3>Alpine Linux</h3>
+    <p>musl libc, BusyBox userland, OpenRC, and a whole system measured in megabytes. The default base image for containers; usable as a desktop, unusual as one.</p>
+    <p class="meta">apk · fixed/edge · OpenRC · musl</p>
+  </article>
+</div>
+
+<h2>One table to compare them all</h2>
+<div class="tbl-wrap">
+<table class="tbl">
+  <thead>
+    <tr><th>Distribution</th><th>Base</th><th>Package manager</th><th>Release</th><th>Init</th><th>Libc</th><th>Best for</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Debian</td><td>independent</td><td>APT</td><td>fixed</td><td>systemd</td><td>glibc</td><td>servers, stability</td></tr>
+    <tr><td>Ubuntu LTS</td><td>Debian</td><td>APT, Snap</td><td>fixed</td><td>systemd</td><td>glibc</td><td>general use, cloud</td></tr>
+    <tr><td>Linux Mint</td><td>Ubuntu/Debian</td><td>APT</td><td>fixed</td><td>systemd</td><td>glibc</td><td>desktop beginners</td></tr>
+    <tr><td>Pop!_OS</td><td>Ubuntu</td><td>APT</td><td>fixed</td><td>systemd</td><td>glibc</td><td>creators, System76</td></tr>
+    <tr><td>Kali</td><td>Debian</td><td>APT</td><td>rolling</td><td>systemd</td><td>glibc</td><td>security testing</td></tr>
+    <tr><td>MX Linux</td><td>Debian</td><td>APT</td><td>fixed</td><td>sysvinit/systemd</td><td>glibc</td><td>older hardware</td></tr>
+    <tr><td>Fedora</td><td>independent</td><td>DNF</td><td>fixed (short)</td><td>systemd</td><td>glibc</td><td>new tech, developers</td></tr>
+    <tr><td>RHEL</td><td>independent</td><td>DNF</td><td>fixed (10 y)</td><td>systemd</td><td>glibc</td><td>enterprise</td></tr>
+    <tr><td>Rocky / Alma</td><td>RHEL</td><td>DNF</td><td>fixed (10 y)</td><td>systemd</td><td>glibc</td><td>free RHEL</td></tr>
+    <tr><td>CentOS Stream</td><td>RHEL upstream</td><td>DNF</td><td>rolling preview</td><td>systemd</td><td>glibc</td><td>CI for RHEL</td></tr>
+    <tr><td>openSUSE Leap</td><td>SUSE</td><td>zypper</td><td>fixed</td><td>systemd</td><td>glibc</td><td>workstations, servers</td></tr>
+    <tr><td>Tumbleweed</td><td>openSUSE</td><td>zypper</td><td>rolling</td><td>systemd</td><td>glibc</td><td>safe rolling</td></tr>
+    <tr><td>Arch</td><td>independent</td><td>pacman</td><td>rolling</td><td>systemd</td><td>glibc</td><td>control, learning</td></tr>
+    <tr><td>Manjaro</td><td>Arch</td><td>pacman/pamac</td><td>rolling (delayed)</td><td>systemd</td><td>glibc</td><td>easy Arch</td></tr>
+    <tr><td>EndeavourOS</td><td>Arch</td><td>pacman</td><td>rolling</td><td>systemd</td><td>glibc</td><td>near-vanilla Arch</td></tr>
+    <tr><td>Gentoo</td><td>independent</td><td>Portage</td><td>rolling</td><td>OpenRC/systemd</td><td>glibc/musl</td><td>control, compilation</td></tr>
+    <tr><td>NixOS</td><td>independent</td><td>Nix</td><td>rolling</td><td>systemd</td><td>glibc</td><td>reproducibility</td></tr>
+    <tr><td>Slackware</td><td>independent</td><td>slackpkg</td><td>fixed</td><td>sysvinit</td><td>glibc</td><td>tradition</td></tr>
+    <tr><td>Void</td><td>independent</td><td>xbps</td><td>rolling</td><td>runit</td><td>glibc/musl</td><td>minimalism</td></tr>
+    <tr><td>Alpine</td><td>independent</td><td>apk</td><td>fixed/edge</td><td>OpenRC</td><td>musl</td><td>containers</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>The differences that actually bite</h2>
+<h3>Upgrades</h3>
+<p>A fixed distribution upgrades in steps: <code>do-release-upgrade</code>, <code>dnf system-upgrade</code>, or a new ISO and a migration plan. A rolling distribution upgrades continuously, which means a broken update can arrive on a Tuesday. Arch and NixOS both make rollback practical — snapshots or generations — and that safety net changes the risk calculus more than the version numbers do.</p>
+<h3>Security models</h3>
+<p>Fedora, RHEL and friends default to SELinux enforcing (the <a href="./SELinux.html">SELinux manual</a> covers what that means in practice). Debian and Ubuntu default to AppArmor, enabled for common services. Alpine and Gentoo are minimal by default and leave the hardening to you. This matters far more than the wallpaper: two systems with the same applications can have completely different mandatory access controls.</p>
+<h3>Stability versus freshness</h3>
+<p>Debian stable and RHEL will not give you the newest compiler, and that is a feature: the system is tested as a whole. Arch and Tumbleweed will give you the newest everything, with the understanding that you are part of the testing. Fedora sits in the middle: new technology, predictable short lifecycles. The honest question is not "which is better" but "how much change can my workflow absorb this month".</p>
+<h3>The same runtime, packaged differently</h3>
+<p>Python ships on nearly every distribution, and it is the clearest case of packaging policy reaching the user. Debian and Ubuntu mark the system interpreter as externally managed (PEP&nbsp;668), so <code>pip install</code> refuses to touch it and points you at a virtual environment; Fedora tracks recent versions closely and expects the same discipline; Arch is normally on the newest release; Alpine builds against musl, where many binary wheels do not exist and packages get compiled locally. None of this is a Python problem — it is the distribution's policy surfacing in your terminal. For the long version, from installing Python without wrecking the system to running it in production, see the <a href="./pythonCert.html">Python 3 field manual</a>.</p>
+
+<h3>Licensing, governance and money</h3>
+<p>Debian is a community project with a constitution. Ubuntu, RHEL and SUSE have commercial parents whose interests sometimes diverge from users' (Snaps, subscriptions, licensing changes). Rocky and Alma exist precisely because a licensing decision changed a community's plans. Choose a distro with a governance model you are willing to live with, because that model decides what happens in a decade.</p>
+<h3>musl versus glibc</h3>
+<p>Alpine's small size comes from musl, and musl is not binary-compatible with glibc. Some pre-built software — including some proprietary tools and language runtimes — simply will not run. This is fine for containers and Go binaries; it is a daily annoyance on a desktop. Void and Gentoo expose the choice explicitly, which is the honest way to present it.</p>
+
+<h2>Which one should you install?</h2>
+<div class="tbl-wrap">
+<table class="tbl">
+  <thead>
+    <tr><th>Profile</th><th>Reasonable choice</th><th>Why</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>First Linux desktop</td><td>Linux Mint or Ubuntu LTS</td><td>Hardware support, documentation, and a desktop that behaves.</td></tr>
+    <tr><td>Developer who wants current tools</td><td>Fedora or Arch</td><td>Recent compilers and runtimes; Fedora with more guardrails, Arch with more control.</td></tr>
+    <tr><td>Server that must not surprise you</td><td>Debian stable or RHEL/Rocky</td><td>Long support, conservative updates, boring in the best sense.</td></tr>
+    <tr><td>Enterprise with vendor contracts</td><td>RHEL or SUSE</td><td>Certification and support are the product.</td></tr>
+    <tr><td>Rolling with a safety net</td><td>openSUSE Tumbleweed</td><td>Snapshots and automated testing around a rolling base.</td></tr>
+    <tr><td>Reproducible infrastructure</td><td>NixOS</td><td>Declarative configuration and atomic rollback.</td></tr>
+    <tr><td>Containers and tiny images</td><td>Alpine</td><td>Small, secure defaults, musl trade-off accepted.</td></tr>
+    <tr><td>Learning how Linux works</td><td>Arch or Gentoo</td><td>You build it, therefore you understand it.</td></tr>
+    <tr><td>Old laptop, limited RAM</td><td>MX Linux, Void or Alpine</td><td>Lightweight defaults without a modern desktop tax.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p class="empty" id="empty" hidden>No distribution matches that search. Try a shorter term or another profile.</p>
+
+<p>One honest caveat to finish: <b>the distro matters less than the internet believes</b>. The same Firefox, the same Python, the same Flatpak applications and the same containers run everywhere. What changes is package policy, support horizon, defaults and the community you will ask for help. Pick the policy you can live with, learn its package manager properly, and stop distro-hopping when the system starts working. That is usually the moment the operating system becomes boring — and boring is the goal.</p>
+
+<p><b>Official doors, for when you want the primary source:</b> <a class="external" href="https://www.debian.org/" target="_blank" rel="noopener noreferrer">Debian</a>, <a class="external" href="https://ubuntu.com/" target="_blank" rel="noopener noreferrer">Ubuntu</a>, <a class="external" href="https://linuxmint.com/" target="_blank" rel="noopener noreferrer">Linux Mint</a>, <a class="external" href="https://pop.system76.com/" target="_blank" rel="noopener noreferrer">Pop!_OS</a>, <a class="external" href="https://www.kali.org/" target="_blank" rel="noopener noreferrer">Kali Linux</a>, <a class="external" href="https://mxlinux.org/" target="_blank" rel="noopener noreferrer">MX Linux</a>, <a class="external" href="https://fedoraproject.org/" target="_blank" rel="noopener noreferrer">Fedora</a>, <a class="external" href="https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux" target="_blank" rel="noopener noreferrer">RHEL</a>, <a class="external" href="https://rockylinux.org/" target="_blank" rel="noopener noreferrer">Rocky Linux</a>, <a class="external" href="https://almalinux.org/" target="_blank" rel="noopener noreferrer">AlmaLinux</a>, <a class="external" href="https://www.centos.org/" target="_blank" rel="noopener noreferrer">CentOS</a>, <a class="external" href="https://www.opensuse.org/" target="_blank" rel="noopener noreferrer">openSUSE</a>, <a class="external" href="https://archlinux.org/" target="_blank" rel="noopener noreferrer">Arch Linux</a>, <a class="external" href="https://manjaro.org/" target="_blank" rel="noopener noreferrer">Manjaro</a>, <a class="external" href="https://endeavouros.com/" target="_blank" rel="noopener noreferrer">EndeavourOS</a>, <a class="external" href="https://www.gentoo.org/" target="_blank" rel="noopener noreferrer">Gentoo</a>, <a class="external" href="https://nixos.org/" target="_blank" rel="noopener noreferrer">NixOS</a>, <a class="external" href="http://www.slackware.com/" target="_blank" rel="noopener noreferrer">Slackware</a>, <a class="external" href="https://voidlinux.org/" target="_blank" rel="noopener noreferrer">Void Linux</a>, <a class="external" href="https://alpinelinux.org/" target="_blank" rel="noopener noreferrer">Alpine Linux</a>. For cross-distro news and rankings, <a class="external" href="https://distrowatch.com/" target="_blank" rel="noopener noreferrer">DistroWatch</a> remains the traditional reference, and the kernel itself lives at <a class="external" href="https://www.kernel.org/" target="_blank" rel="noopener noreferrer">kernel.org</a>.</p>
+
+<p>For a wider set of opinions and experiments on this blog: <a href="./testingLinuxDistros.html">Some Distros that look different</a>, <a href="./theBestLinuxDistro.html">Hard to maintain</a>, <a href="./linux_comparation.html">Just another Funky Linux Review</a>, <a href="./lastDistrosReview.html">Almighty Linux Short Review</a>, the Gentoo saga in <a href="./installGentoo.html">Gentoo Zero to Hardened Desktop</a>, <a href="./gentloo.html">Gentle Gentoo</a>, <a href="./gentooD.html">Gentoo Handbook Anomaly</a>, <a href="./Nentoo.html">No More Gentoo for Me Too</a> and <a href="./shityGentoo.html">Gentoo Linux (Hell no)</a>, the oddities in <a href="./ChristianLinux.html">Mauna: A Linux with Religion</a>, and a quarter century of personal use in <a href="./think_linux.html">Using Linux for that last 25 years</a>.</p>
+
+</div>
+</div>
+
+<footer>
+  <a href="index.html">
+    Home
+  </a>
+</footer>
+
+<button class="totop" id="totop" type="button" aria-label="Back to top">↑</button>
+
+<script>
+(function () {
+  var progress = document.getElementById("progress");
+  var totop = document.getElementById("totop");
+  var cards = Array.prototype.slice.call(document.querySelectorAll(".distro"));
+  var chips = document.getElementById("chips");
+  var input = document.getElementById("q");
+  var result = document.getElementById("result");
+  var empty = document.getElementById("empty");
+  var activeTag = "all";
+
+  var tags = ["all", "beginner", "server", "rolling", "minimal", "advanced"];
+  tags.forEach(function (tag) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.textContent = tag;
+    button.dataset.tag = tag;
+    button.setAttribute("aria-pressed", tag === "all" ? "true" : "false");
+    chips.appendChild(button);
+  });
+
+  function apply() {
+    var query = (input.value || "").trim().toLowerCase();
+    var shown = 0;
+    cards.forEach(function (card) {
+      var text = (card.dataset.name + " " + card.textContent).toLowerCase();
+      var tagsList = (card.dataset.tags || "").split(/\s+/);
+      var matchesTag = activeTag === "all" || tagsList.indexOf(activeTag) !== -1;
+      var matchesText = !query || text.indexOf(query) !== -1;
+      card.hidden = !(matchesTag && matchesText);
+      if (!card.hidden) shown += 1;
+    });
+    empty.hidden = shown !== 0;
+    result.textContent = shown + " of " + cards.length + " distributions shown";
+  }
+
+  chips.addEventListener("click", function (event) {
+    var button = event.target.closest("button");
+    if (!button) return;
+    activeTag = button.dataset.tag;
+    Array.prototype.forEach.call(chips.querySelectorAll("button"), function (other) {
+      other.setAttribute("aria-pressed", other === button ? "true" : "false");
+    });
+    apply();
+  });
+
+  input.addEventListener("input", apply);
+
+  function onScroll() {
+    var doc = document.documentElement;
+    var full = doc.scrollHeight - window.innerHeight;
+    var done = full > 0 ? (window.scrollY / full) * 100 : 0;
+    progress.style.width = done + "%";
+    totop.classList.toggle("is-visible", window.scrollY > 400);
+  }
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  totop.addEventListener("click", function () {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  apply();
+})();
+</script>
+</body>
+</html>

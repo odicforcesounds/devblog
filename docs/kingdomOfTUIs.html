@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="article.css">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+    <meta name="X-Content-Type-Options" content="nosniff">
+    <meta name="X-Frame-Options" content="DENY">
+    <meta name="Referrer-Policy" content="no-referrer">
+    <meta name="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+    <title>Kingdom of TUIs — Linux applications you can live in</title>
+    <meta name="description" content="A catalogue of terminal user interface applications for Linux: file managers, monitors, Git clients, container dashboards, editors and more, with their GitHub projects.">
+    <style>
+      #progress {
+        position: fixed;
+        top: 0; left: 0;
+        width: 0;
+        height: 3px;
+        z-index: 60;
+        background: linear-gradient(90deg, #54e3c4, #ffbe6b);
+        box-shadow: 0 0 12px rgba(84, 227, 196, 0.5);
+      }
+      body.monkey {
+        position: relative;
+        width: 100%;
+        min-height: 100vh;
+        margin: 0;
+        color: #d7dbe2;
+        background-color: #06060c;
+        background-image:
+          radial-gradient(circle at 20% 15%, rgba(16, 185, 129, 0.18), transparent 46%),
+          linear-gradient(180deg, rgba(6, 6, 12, 0.86), rgba(6, 6, 12, 0.94)),
+          url("./images/peace.jpg");
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+        background-attachment: fixed;
+        overflow-x: hidden;
+        padding-bottom: 5rem;
+      }
+      .heading {
+        max-width: 78ch;
+        margin: 1rem auto;
+        padding: 0 1.1rem;
+        text-align: center;
+      }
+      .heading h1 {
+        display: inline;
+        padding: 0.08em 0.34em;
+        color: #d9dde4;
+        background: #000;
+      }
+      .kicker {
+        margin: 0 0 0.45rem;
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.78rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: #ffbe6b;
+      }
+      .lead {
+        display: block;
+        max-width: 92ch;
+        margin: 1.2rem auto 2rem;
+        padding: 0 1.1rem;
+        color: #cfd6df;
+        font-size: 1.05rem;
+        text-align: justify;
+      }
+      .wrap {
+        max-width: 96ch;
+        margin: 0 auto;
+        padding: 0 1.1rem 4rem;
+      }
+      .panel {
+        margin: 2rem auto;
+        padding: 1.3rem 1.5rem 1.6rem;
+        background: rgba(8, 9, 13, 0.93);
+        border: 2px solid #ff4500;
+        border-radius: 10px;
+        color: #d7dbe2;
+      }
+      .panel p { margin: 0 0 1rem; color: #d7dbe2; text-align: justify; }
+      .panel li { color: #d7dbe2; }
+      .panel b, .lead b { color: #8fe388; font-weight: 600; }
+      .panel i, .lead i { color: #ffb066; }
+      .panel a, .lead a { text-decoration: none; }
+      .panel a {
+        color: #4fd6d6;
+        border-bottom: 1px dotted rgba(10, 170, 170, 0.45);
+      }
+      .panel a:hover { color: #8ff0e0; }
+      .panel a.external, .lead a.external {
+        color: #ff7fa6;
+        border-bottom-color: rgba(255, 79, 134, 0.4);
+      }
+      .panel a.external:hover { color: #ff9fbb; }
+      h2 {
+        margin: 2.4rem 0 0.5rem;
+        color: #7fe8e8;
+        font-size: 1.3rem;
+        letter-spacing: 0.01em;
+      }
+      h2 .count {
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.68rem;
+        letter-spacing: 0.06em;
+        color: #8b96a5;
+        margin-left: 0.55rem;
+        vertical-align: middle;
+      }
+      h3 {
+        margin: 0 0 0.35rem;
+        color: #54e3c4;
+        font-size: 1rem;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        align-items: center;
+        margin: 1.6rem 0 0.6rem;
+      }
+      .controls input[type="search"] {
+        flex: 1 1 260px;
+        min-width: 200px;
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.88rem;
+        padding: 0.6rem 0.8rem;
+        color: #e7e9ee;
+        background: #0b0f14;
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 6px;
+      }
+      .controls input[type="search"]:focus {
+        outline: none;
+        border-color: rgba(84, 227, 196, 0.6);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin: 0.4rem 0 1rem;
+      }
+      .chips button {
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.72rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 0.4rem 0.65rem;
+        border-radius: 999px;
+        cursor: pointer;
+        color: #b9c0cc;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.14);
+      }
+      .chips button:hover { color: #fff; border-color: #54e3c4; }
+      .chips button[aria-pressed="true"] {
+        color: #54e3c4;
+        border-color: rgba(84, 227, 196, 0.55);
+        background: rgba(84, 227, 196, 0.09);
+      }
+      .result {
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.75rem;
+        color: #8b96a5;
+        margin: 0 0 1.2rem;
+      }
+      section.cat { margin-top: 1.8rem; }
+      .apps {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+        gap: 0.85rem;
+      }
+      .app {
+        padding: 0.85rem 0.95rem;
+        border: 1px solid rgba(255,255,255,0.11);
+        border-radius: 9px;
+        background: rgba(8, 11, 15, 0.72);
+      }
+      .app h3 a { color: #ff7fa6; }
+      .app p {
+        margin: 0 0 0.55rem;
+        font-size: 0.9rem;
+        line-height: 1.55;
+        color: #c3ccd6;
+        text-align: left;
+      }
+      .app .meta {
+        margin: 0;
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.68rem;
+        letter-spacing: 0.05em;
+        color: #8593a5;
+      }
+      .app .pop {
+        display: inline-block;
+        margin-left: 0.4rem;
+        padding: 0 0.35rem;
+        border-radius: 4px;
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.6rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #06060c;
+        background: #ffbe6b;
+        vertical-align: middle;
+      }
+      .empty {
+        color: #8b96a5;
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.85rem;
+        padding: 0.6rem 0;
+      }
+      footer {
+        padding: 0.3rem;
+      }
+      .totop {
+        position: fixed;
+        right: 1.1rem;
+        bottom: 3.4rem;
+        z-index: 40;
+        width: 2.3rem;
+        height: 2.3rem;
+        display: grid;
+        place-items: center;
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.9rem;
+        color: #ffbe6b;
+        background: rgba(8, 10, 14, 0.86);
+        border: 1px solid rgba(255,255,255,0.14);
+        border-radius: 999px;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(8px);
+        pointer-events: none;
+        transition: opacity 180ms ease, transform 180ms ease, border-color 180ms ease;
+      }
+      .totop.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+      .totop:hover { border-color: #ffbe6b; color: #fff; }
+      @media (max-width: 640px) {
+        .panel { padding: 1rem; }
+      }
+      @media print {
+        body { background: #fff; color: #111; }
+        .panel { border-color: #999; background: #fff; }
+        footer, .totop, #progress, .controls, .chips { display: none; }
+      }
+    </style>
+  </head>
+
+  <body class="monkey">
+    <div id="progress"></div>
+
+    <div class="heading">
+      <p class="kicker">Terminal Handbook · Application Atlas</p>
+      <h1>Kingdom of TUIs</h1>
+    </div>
+
+    <p class="lead">A terminal user interface is a program that owns the screen of your terminal and behaves like an application: a file manager with panels, a monitor with graphs, a Git client with staging, a database browser. No window manager, no mouse required, no browser engine — just cells, keys and colour. This page is a field guide to the <b>applications</b> you can actually install on Linux today, with their GitHub projects, so you can jump straight to the source and the README.</p>
+
+    <div class="wrap">
+      <div class="panel">
+
+        <p>Everything below runs inside a plain terminal on Linux. Most are single binaries or small packages; a few need a helper service (music players that speak MPD, for example). The lists are organised by what you are trying to get done, not by language or framework, because that is how you will look for them. If a project is marked <span class="pop">popular</span>, it is one of the ones with the largest GitHub communities — a proxy for documentation, issues answered, and years of bug reports.</p>
+
+        <div class="controls">
+          <input type="search" id="q" placeholder="Search applications, languages, or what they do…" aria-label="Search applications">
+        </div>
+        <div class="chips" id="chips">
+          <button type="button" data-cat="all" aria-pressed="true">All</button>
+        </div>
+        <p class="result" id="result"></p>
+
+        <section class="cat" data-cat="files">
+          <h2>File managers <span class="count">9</span></h2>
+          <div class="apps">
+            <article class="app" data-name="yazi file manager rust preview">
+              <h3><a class="external" href="https://github.com/sxyazi/yazi" target="_blank" rel="noopener noreferrer">Yazi</a><span class="pop">popular</span></h3>
+              <p>Async file manager in Rust with image, video and archive previews. Extremely fast on huge directories and pleasant to theme.</p>
+              <p class="meta">Rust · Linux, macOS</p>
+            </article>
+            <article class="app" data-name="ranger file manager python columns">
+              <h3><a class="external" href="https://github.com/ranger/ranger" target="_blank" rel="noopener noreferrer">ranger</a></h3>
+              <p>The classic three-column, vi-inspired file manager. Python, previews, bookmarks, and a plugin ecosystem that has aged well.</p>
+              <p class="meta">Python · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="lf file manager go ranger">
+              <h3><a class="external" href="https://github.com/gokcehan/lf" target="_blank" rel="noopener noreferrer">lf</a></h3>
+              <p>Ranger's spirit written in Go: one binary, configurable keybindings, shell integration, and no Python runtime to carry around.</p>
+              <p class="meta">Go · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="nnn file manager c tiny">
+              <h3><a class="external" href="https://github.com/jarun/nnn" target="_blank" rel="noopener noreferrer">nnn</a></h3>
+              <p>Very small C file manager with a plugin system, session handling and batch operations. The one to install on a rescue system.</p>
+              <p class="meta">C · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="vifm file manager dual pane vi">
+              <h3><a class="external" href="https://github.com/vifm/vifm" target="_blank" rel="noopener noreferrer">Vifm</a></h3>
+              <p>Dual-pane file manager with genuine Vim keybindings, registers and a command line. Feels like editing a filesystem.</p>
+              <p class="meta">C · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="broot tree navigation rust fuzzy">
+              <h3><a class="external" href="https://github.com/Canop/broot" target="_blank" rel="noopener noreferrer">broot</a></h3>
+              <p>Not a manager but a navigator: fuzzy search across the tree, preview panels, and a language for composing filesystem queries.</p>
+              <p class="meta">Rust · Linux, macOS</p>
+            </article>
+            <article class="app" data-name="superfile file manager go two pane">
+              <h3><a class="external" href="https://github.com/yorukot/superfile" target="_blank" rel="noopener noreferrer">Superfile</a></h3>
+              <p>A modern-looking two-pane manager with themes and a friendly default keymap. Aimed at people who find ranger too spartan.</p>
+              <p class="meta">Go · Linux, macOS</p>
+            </article>
+            <article class="app" data-name="joshuto file manager rust ranger">
+              <h3><a class="external" href="https://github.com/kamiyaa/joshuto" target="_blank" rel="noopener noreferrer">joshuto</a></h3>
+              <p>Ranger-like columns and previews in Rust, with a configuration file you can actually read in one sitting.</p>
+              <p class="meta">Rust · Linux, macOS</p>
+            </article>
+            <article class="app" data-name="xplr file manager rust hackable">
+              <h3><a class="external" href="https://github.com/sayanarijit/xplr" target="_blank" rel="noopener noreferrer">xplr</a></h3>
+              <p>A hackable file explorer built around piping and Lua configuration. More of a toolkit than a fixed application.</p>
+              <p class="meta">Rust · Linux, macOS</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="cat" data-cat="system">
+          <h2>System monitoring <span class="count">7</span></h2>
+          <div class="apps">
+            <article class="app" data-name="btop resource monitor c++ graphs">
+              <h3><a class="external" href="https://github.com/aristocratos/btop" target="_blank" rel="noopener noreferrer">btop++</a><span class="pop">popular</span></h3>
+              <p>CPU, memory, disks, network and processes with real graphs and themes. The modern replacement for top in most setups.</p>
+              <p class="meta">C++ · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="bottom monitor rust graphs">
+              <h3><a class="external" href="https://github.com/ClementTsang/bottom" target="_blank" rel="noopener noreferrer">bottom</a></h3>
+              <p>Cross-platform monitor with configurable widgets, temperature and battery support, and a clean TOML configuration.</p>
+              <p class="meta">Rust · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="htop process monitor c">
+              <h3><a class="external" href="https://github.com/htop-dev/htop" target="_blank" rel="noopener noreferrer">htop</a></h3>
+              <p>The dependable classic: process tree, per-core load, kill and renice. Still the default answer to "what is eating my CPU".</p>
+              <p class="meta">C · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="glances all in one monitor python">
+              <h3><a class="external" href="https://github.com/nicolargo/glances" target="_blank" rel="noopener noreferrer">Glances</a></h3>
+              <p>Everything-in-one monitor with containers, sensors and a web mode. Useful when you want one tool that covers the whole host.</p>
+              <p class="meta">Python · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="zenith monitor rust gpu disk">
+              <h3><a class="external" href="https://github.com/bvaisvil/zenith" target="_blank" rel="noopener noreferrer">Zenith</a></h3>
+              <p>Historical graphs for CPU, memory, disks and GPU. Good for spotting trends rather than staring at instant numbers.</p>
+              <p class="meta">Rust · Linux, macOS</p>
+            </article>
+            <article class="app" data-name="nvtop gpu monitor nvidia amd">
+              <h3><a class="external" href="https://github.com/Syllo/nvtop" target="_blank" rel="noopener noreferrer">nvtop</a></h3>
+              <p>GPU processes and utilisation for NVIDIA, AMD and Intel. Indispensable when a training job eats the wrong card.</p>
+              <p class="meta">C · Linux</p>
+            </article>
+            <article class="app" data-name="s-tui cpu stress thermal python">
+              <h3><a class="external" href="https://github.com/amanusk/s-tui" target="_blank" rel="noopener noreferrer">s-tui</a></h3>
+              <p>CPU temperature, frequency and stress testing in one screen. A quick way to find out whether the fan curve is lying.</p>
+              <p class="meta">Python · Linux, macOS</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="cat" data-cat="git">
+          <h2>Git and GitHub <span class="count">4</span></h2>
+          <div class="apps">
+            <article class="app" data-name="lazygit git client go staging">
+              <h3><a class="external" href="https://github.com/jesseduffield/lazygit" target="_blank" rel="noopener noreferrer">lazygit</a><span class="pop">popular</span></h3>
+              <p>Stage hunks, rebase, stash, resolve conflicts and browse branches without typing a single command. The gateway drug of Git TUIs.</p>
+              <p class="meta">Go · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="gitui git client rust fast">
+              <h3><a class="external" href="https://github.com/extrawurst/gitui" target="_blank" rel="noopener noreferrer">GitUI</a></h3>
+              <p>A fast Rust Git client with staging, diff review and log browsing. Written for large repositories and slow laptops.</p>
+              <p class="meta">Rust · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="tig git browser c ncurses">
+              <h3><a class="external" href="https://github.com/jonas/tig" target="_blank" rel="noopener noreferrer">tig</a></h3>
+              <p>An ncurses interface to Git as a repository browser: commits, trees, blame and diffs, with keys that resemble Git's own commands.</p>
+              <p class="meta">C · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="gh-dash github dashboard pull requests go">
+              <h3><a class="external" href="https://github.com/dlvhdr/gh-dash" target="_blank" rel="noopener noreferrer">gh-dash</a></h3>
+              <p>A dashboard for your GitHub pull requests and issues, built on the official CLI. Triage without opening a browser tab.</p>
+              <p class="meta">Go · Linux, macOS, Windows</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="cat" data-cat="containers">
+          <h2>Containers and Kubernetes <span class="count">5</span></h2>
+          <div class="apps">
+            <article class="app" data-name="k9s kubernetes dashboard go">
+              <h3><a class="external" href="https://github.com/derailed/k9s" target="_blank" rel="noopener noreferrer">k9s</a><span class="pop">popular</span></h3>
+              <p>A Kubernetes dashboard that replaces a pile of kubectl commands: pods, logs, shells, port-forwards and events, all with keyboard navigation.</p>
+              <p class="meta">Go · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="lazydocker docker manager go">
+              <h3><a class="external" href="https://github.com/jesseduffield/lazydocker" target="_blank" rel="noopener noreferrer">lazydocker</a></h3>
+              <p>Containers, images, volumes and logs in one screen, with restart and shell actions on a keystroke. Docker without the typing.</p>
+              <p class="meta">Go · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="dive docker image layers go">
+              <h3><a class="external" href="https://github.com/wagoodman/dive" target="_blank" rel="noopener noreferrer">dive</a></h3>
+              <p>Inspect Docker image layers and see exactly which files each step added, changed or wasted. A diet tool for fat images.</p>
+              <p class="meta">Go · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="ctop container metrics go">
+              <h3><a class="external" href="https://github.com/bcicen/ctop" target="_blank" rel="noopener noreferrer">ctop</a></h3>
+              <p>Top for containers: CPU, memory and network per container, with the same instinctive keys as the classic process monitor.</p>
+              <p class="meta">Go · Linux, macOS</p>
+            </article>
+            <article class="app" data-name="podman-tui podman containers go">
+              <h3><a class="external" href="https://github.com/containers/podman-tui" target="_blank" rel="noopener noreferrer">podman-tui</a></h3>
+              <p>The Podman project's own terminal interface: pods, containers, images, networks and volumes, for rootless workflows.</p>
+              <p class="meta">Go · Linux</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="cat" data-cat="data">
+          <h2>Databases and HTTP <span class="count">4</span></h2>
+          <div class="apps">
+            <article class="app" data-name="lazysql database client go mysql postgres">
+              <h3><a class="external" href="https://github.com/jorgerojas26/lazysql" target="_blank" rel="noopener noreferrer">LazySQL</a></h3>
+              <p>Browse MySQL, PostgreSQL, SQLite and SQL Server databases, run queries and edit rows in place. A GUI client without the GUI.</p>
+              <p class="meta">Go · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="harlequin sql ide duckdb python">
+              <h3><a class="external" href="https://github.com/tconbeer/harlequin" target="_blank" rel="noopener noreferrer">Harlequin</a></h3>
+              <p>A SQL IDE for the terminal with a schema browser, autocomplete and result export. Particularly good with DuckDB and SQLite.</p>
+              <p class="meta">Python · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="dblab database client go postgres">
+              <h3><a class="external" href="https://github.com/danvergara/dblab" target="_blank" rel="noopener noreferrer">dblab</a></h3>
+              <p>An interactive client for PostgreSQL, MySQL and SQLite with table navigation and query history. Small and focused.</p>
+              <p class="meta">Go · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="posting http api client python">
+              <h3><a class="external" href="https://github.com/darrenburns/posting" target="_blank" rel="noopener noreferrer">Posting</a></h3>
+              <p>An HTTP client that feels like a good editor: collections, environments, request history and syntax-highlighted bodies. A terminal answer to heavyweight API tools.</p>
+              <p class="meta">Python · Linux, macOS, Windows</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="cat" data-cat="network">
+          <h2>Network analysis <span class="count">5</span></h2>
+          <div class="apps">
+            <article class="app" data-name="termshark wireshark terminal go packets">
+              <h3><a class="external" href="https://github.com/gcla/termshark" target="_blank" rel="noopener noreferrer">termshark</a></h3>
+              <p>A terminal UI for tshark: capture, filter, inspect packets and follow streams without leaving the shell. The closest thing to Wireshark in a TUI.</p>
+              <p class="meta">Go · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="bandwhich bandwidth per process rust">
+              <h3><a class="external" href="https://github.com/imsnif/bandwhich" target="_blank" rel="noopener noreferrer">bandwhich</a></h3>
+              <p>Shows which process, connection and remote host is using your bandwidth, live. The fastest answer to "why is the network slow".</p>
+              <p class="meta">Rust · Linux, macOS</p>
+            </article>
+            <article class="app" data-name="trippy traceroute rust network diagnostics">
+              <h3><a class="external" href="https://github.com/fujiapple852/trippy" target="_blank" rel="noopener noreferrer">Trippy</a></h3>
+              <p>A modern traceroute with live latency, jitter and loss per hop, plus maps and reports. Replaces the ancient traceroute ritual.</p>
+              <p class="meta">Rust · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="nethogs per process network c++">
+              <h3><a class="external" href="https://github.com/raboof/nethogs" target="_blank" rel="noopener noreferrer">nethogs</a></h3>
+              <p>Bandwidth grouped by process rather than by socket. Old, tiny and still the quickest way to catch a rogue daemon.</p>
+              <p class="meta">C++ · Linux</p>
+            </article>
+            <article class="app" data-name="wavemon wifi signal monitor c">
+              <h3><a class="external" href="https://github.com/wavemon/wavemon" target="_blank" rel="noopener noreferrer">wavemon</a></h3>
+              <p>Wi-Fi signal strength, noise, bitrate and channel usage over time. For when the connection drops and the graph explains why.</p>
+              <p class="meta">C · Linux</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="cat" data-cat="media">
+          <h2>Music, video and reading <span class="count">9</span></h2>
+          <div class="apps">
+            <article class="app" data-name="cmus music player c audio">
+              <h3><a class="external" href="https://github.com/cmus/cmus" target="_blank" rel="noopener noreferrer">cmus</a></h3>
+              <p>A small, fast music player with a library, playlists, gapless playback and a keymap that becomes muscle memory in a week.</p>
+              <p class="meta">C · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="ncmpcpp mpd client c++ music">
+              <h3><a class="external" href="https://github.com/ncmpcpp/ncmpcpp" target="_blank" rel="noopener noreferrer">ncmpcpp</a></h3>
+              <p>The most complete MPD client: library, playlists, visualiser, lyrics and tag editing. Needs an MPD server, rewards the setup.</p>
+              <p class="meta">C++ · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="termusic music player rust download">
+              <h3><a class="external" href="https://github.com/tramhao/termusic" target="_blank" rel="noopener noreferrer">termusic</a></h3>
+              <p>A Rust music player with built-in YouTube download support, album art in some terminals, and a modern keymap.</p>
+              <p class="meta">Rust · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="spotify_player spotify rust music">
+              <h3><a class="external" href="https://github.com/aome510/spotify_player" target="_blank" rel="noopener noreferrer">spotify_player</a></h3>
+              <p>Spotify in the terminal: search, playlists, devices and lyrics. Requires a Spotify account and its own API setup.</p>
+              <p class="meta">Rust · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="castero podcast player python">
+              <h3><a class="external" href="https://github.com/xgi/castero" target="_blank" rel="noopener noreferrer">castero</a></h3>
+              <p>A podcast client with subscriptions, playback queue and variable speed. Simple, and it keeps your feeds local.</p>
+              <p class="meta">Python · Linux, macOS</p>
+            </article>
+            <article class="app" data-name="newsboat rss reader c++">
+              <h3><a class="external" href="https://github.com/newsboat/newsboat" target="_blank" rel="noopener noreferrer">Newsboat</a></h3>
+              <p>The RSS and Atom reader that refuses to die: OPML import, killfiles, macros and a search that reads like a query language.</p>
+              <p class="meta">C++ · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="ytfzf youtube search play shell">
+              <h3><a class="external" href="https://github.com/pystardust/ytfzf" target="_blank" rel="noopener noreferrer">ytfzf</a></h3>
+              <p>Search YouTube from the terminal and play the result in mpv. A shell script that turns a browser habit into a command.</p>
+              <p class="meta">Shell · Linux, macOS</p>
+            </article>
+            <article class="app" data-name="chafa image viewer terminal c">
+              <h3><a class="external" href="https://github.com/hpjansson/chafa" target="_blank" rel="noopener noreferrer">chafa</a></h3>
+              <p>Renders images as text or as real terminal graphics where supported. The reliable way to look at a PNG without leaving the shell.</p>
+              <p class="meta">C · Linux, macOS</p>
+            </article>
+            <article class="app" data-name="viu image viewer rust">
+              <h3><a class="external" href="https://github.com/atanunq/viu" target="_blank" rel="noopener noreferrer">viu</a></h3>
+              <p>A tiny Rust image viewer for terminals with true colour and kitty/iTerm graphics support. One command, instant preview.</p>
+              <p class="meta">Rust · Linux, macOS, Windows</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="cat" data-cat="comms">
+          <h2>Chat and mail <span class="count">5</span></h2>
+          <div class="apps">
+            <article class="app" data-name="irssi irc client c">
+              <h3><a class="external" href="https://github.com/irssi/irssi" target="_blank" rel="noopener noreferrer">Irssi</a></h3>
+              <p>The IRC client that entire generations configured once and never again. Scriptable in Perl, stable, and still maintained.</p>
+              <p class="meta">C · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="weechat chat irc matrix c">
+              <h3><a class="external" href="https://github.com/weechat/weechat" target="_blank" rel="noopener noreferrer">WeeChat</a></h3>
+              <p>Multi-protocol chat with IRC at its core and plugins for Matrix and more. Scriptable in several languages, with relay support.</p>
+              <p class="meta">C · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="neomutt email client c">
+              <h3><a class="external" href="https://github.com/neomutt/neomutt" target="_blank" rel="noopener noreferrer">NeoMutt</a></h3>
+              <p>Email with PGP, threading, colour rules and a config file that is practically a programming language. The power-user's mailbox.</p>
+              <p class="meta">C · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="matterhorn slack matrix chat haskell">
+              <h3><a class="external" href="https://github.com/matterhorn-chat/matterhorn" target="_blank" rel="noopener noreferrer">Matterhorn</a></h3>
+              <p>A terminal client for Mattermost and Slack-style teams, with threads, notifications and file uploads. Niche but well built.</p>
+              <p class="meta">Haskell · Linux, macOS</p>
+            </article>
+            <article class="app" data-name="discordo discord chat go">
+              <h3><a class="external" href="https://github.com/ayn2op/discordo" target="_blank" rel="noopener noreferrer">discordo</a></h3>
+              <p>A lightweight Discord client: guilds, channels, messages and attachments, without Electron eating a gigabyte of RAM.</p>
+              <p class="meta">Go · Linux, macOS, Windows</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="cat" data-cat="editors">
+          <h2>Editors <span class="count">4</span></h2>
+          <div class="apps">
+            <article class="app" data-name="helix editor rust modal">
+              <h3><a class="external" href="https://github.com/helix-editor/helix" target="_blank" rel="noopener noreferrer">Helix</a><span class="pop">popular</span></h3>
+              <p>A modal editor with multiple selections and treesitter built in. Sensible defaults, no plugin ceremony, works out of the box.</p>
+              <p class="meta">Rust · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="kakoune editor c++ modal">
+              <h3><a class="external" href="https://github.com/mawww/kakoune" target="_blank" rel="noopener noreferrer">Kakoune</a></h3>
+              <p>Modal editing built around selections and a client-server model. The design that inspired several newer editors.</p>
+              <p class="meta">C++ · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="micro editor go simple">
+              <h3><a class="external" href="https://github.com/zyedidia/micro" target="_blank" rel="noopener noreferrer">micro</a></h3>
+              <p>A modern terminal editor with familiar shortcuts, mouse support and a plugin manager. The answer for people who do not want Vim.</p>
+              <p class="meta">Go · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="neovim editor lua vim">
+              <h3><a class="external" href="https://github.com/neovim/neovim" target="_blank" rel="noopener noreferrer">Neovim</a><span class="pop">popular</span></h3>
+              <p>Vim's successor: Lua configuration, built-in LSP, treesitter and an enormous plugin ecosystem. A terminal editor that became a platform.</p>
+              <p class="meta">C, Lua · Linux, macOS, Windows</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="cat" data-cat="productivity">
+          <h2>Tasks, notes and documents <span class="count">6</span></h2>
+          <div class="apps">
+            <article class="app" data-name="taskwarrior-tui task manager rust">
+              <h3><a class="external" href="https://github.com/kdheepak/taskwarrior-tui" target="_blank" rel="noopener noreferrer">taskwarrior-tui</a></h3>
+              <p>A terminal UI for Taskwarrior: task list, filters, context and reports. Turns a powerful CLI into something you can browse.</p>
+              <p class="meta">Rust · Linux, macOS</p>
+            </article>
+            <article class="app" data-name="vit taskwarrior curses python">
+              <h3><a class="external" href="https://github.com/vit-project/vit" target="_blank" rel="noopener noreferrer">VIT</a></h3>
+              <p>Visual Interactive Taskwarrior: a curses front end with projects, tags and urgency, for people who think in Taskwarrior.</p>
+              <p class="meta">Python · Linux, macOS</p>
+            </article>
+            <article class="app" data-name="calcurse calendar todo c">
+              <h3><a class="external" href="https://github.com/lfos/calcurse" target="_blank" rel="noopener noreferrer">calcurse</a></h3>
+              <p>Calendar, appointments and todo lists in one screen, with iCal import and export. Offline by design.</p>
+              <p class="meta">C · Linux, macOS, BSD</p>
+            </article>
+            <article class="app" data-name="glow markdown reader go">
+              <h3><a class="external" href="https://github.com/charmbracelet/glow" target="_blank" rel="noopener noreferrer">Glow</a></h3>
+              <p>Read Markdown in the terminal with headings, tables, code blocks and syntax highlighting. Also works as a file browser for READMEs.</p>
+              <p class="meta">Go · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="slides presentations go">
+              <h3><a class="external" href="https://github.com/maaslalani/slides" target="_blank" rel="noopener noreferrer">Slides</a></h3>
+              <p>Present a Markdown file in the terminal, with code highlighting and a clean full-screen mode. Very good for technical talks.</p>
+              <p class="meta">Go · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="presenterm presentations rust">
+              <h3><a class="external" href="https://github.com/mfontanini/presenterm" target="_blank" rel="noopener noreferrer">presenterm</a></h3>
+              <p>A Rust presentation tool with themes, images, code execution and speaker notes. More features than you expect from a terminal.</p>
+              <p class="meta">Rust · Linux, macOS, Windows</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="cat" data-cat="system-tools">
+          <h2>System, packages and hardware <span class="count">8</span></h2>
+          <div class="apps">
+            <article class="app" data-name="gdu disk usage go">
+              <h3><a class="external" href="https://github.com/dundee/gdu" target="_blank" rel="noopener noreferrer">gdu</a></h3>
+              <p>Fast disk usage analyser with parallel scanning and a browsable tree. Sorts out a full disk in seconds.</p>
+              <p class="meta">Go · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="dua-cli disk usage rust">
+              <h3><a class="external" href="https://github.com/Byron/dua-cli" target="_blank" rel="noopener noreferrer">dua-cli</a></h3>
+              <p>Interactive disk usage with deletion from the interface and hard-link aware counting. A careful tool for a destructive job.</p>
+              <p class="meta">Rust · Linux, macOS, Windows</p>
+            </article>
+            <article class="app" data-name="systemctl-tui systemd rust">
+              <h3><a class="external" href="https://github.com/rgwood/systemctl-tui" target="_blank" rel="noopener noreferrer">systemctl-tui</a></h3>
+              <p>Browse units, start and stop services, inspect logs and timers with keyboard navigation. systemd without remembering every verb.</p>
+              <p class="meta">Rust · Linux</p>
+            </article>
+            <article class="app" data-name="sysz systemctl shell">
+              <h3><a class="external" href="https://github.com/joehillen/sysz" target="_blank" rel="noopener noreferrer">sysz</a></h3>
+              <p>A tiny fzf-based systemctl interface: pick a unit, pick an action. Less a framework, more a very good shell function.</p>
+              <p class="meta">Shell · Linux</p>
+            </article>
+            <article class="app" data-name="pacseek arch packages go">
+              <h3><a class="external" href="https://github.com/moson-mo/pacseek" target="_blank" rel="noopener noreferrer">pacseek</a></h3>
+              <p>Search and install Arch packages, AUR included, with dependency information. The pacman companion that should ship with it.</p>
+              <p class="meta">Go · Arch Linux</p>
+            </article>
+            <article class="app" data-name="pkgtop package monitor go">
+              <h3><a class="external" href="https://github.com/orhun/pkgtop" target="_blank" rel="noopener noreferrer">pkgtop</a></h3>
+              <p>Interactive package manager monitor: installed packages, sizes and update status in one screen.</p>
+              <p class="meta">Go · Linux</p>
+            </article>
+            <article class="app" data-name="bluetuith bluetooth go">
+              <h3><a class="external" href="https://github.com/darkhz/bluetuith" target="_blank" rel="noopener noreferrer">bluetuith</a></h3>
+              <p>Bluetooth device management, pairing and audio profiles without a desktop applet. Useful on minimal window managers.</p>
+              <p class="meta">Go · Linux</p>
+            </article>
+            <article class="app" data-name="pulsemixer audio python pulseaudio pipewire">
+              <h3><a class="external" href="https://github.com/GeorgeFilipkin/pulsemixer" target="_blank" rel="noopener noreferrer">pulsemixer</a></h3>
+              <p>Mixer for PulseAudio and PipeWire: volumes, devices, profiles and muting, with keys and mouse. A volume applet for the terminal.</p>
+              <p class="meta">Python · Linux</p>
+            </article>
+          </div>
+        </section>
+
+        <p class="empty" id="empty" hidden>No application matches that search. Try a shorter word or another category.</p>
+
+        <h2>Where to find thousands more</h2>
+        <p>No page can list them all. The community maintains large, curated indexes: <a class="external" href="https://github.com/rothgar/awesome-tuis" target="_blank" rel="noopener noreferrer">rothgar/awesome-tuis</a> is the best starting point, organised by category and kept current. The <a class="external" href="https://github.com/ratatui/awesome-ratatui" target="_blank" rel="noopener noreferrer">awesome-ratatui</a> list is a good second door if you want to see what the Rust ecosystem alone has produced. Search GitHub for the topics <code>tui</code>, <code>terminal-ui</code> and <code>curses</code>, sort by stars, and read the last release date before you commit to anything.</p>
+        <p>Two related pieces on this blog: <a href="./tuisILove.html">Rust TUIs that I love</a>, a personal tour of applications built with the Rust ecosystem, and <a href="./LinuxTUI.html">The correct name should be SUIs</a>, an argument about how these interfaces should be classified. If you want a terminal browser in the same spirit, <a href="./w3m.html">W3M Browser</a> is the classic example.</p>
+
+      </div>
+    </div>
+
+    <footer>
+      <a href="index.html">
+        Home
+      </a>
+    </footer>
+
+    <button class="totop" id="totop" type="button" aria-label="Back to top">↑</button>
+
+    <script>
+      (function () {
+        var progress = document.getElementById("progress");
+        var totop = document.getElementById("totop");
+        var input = document.getElementById("q");
+        var chips = document.getElementById("chips");
+        var result = document.getElementById("result");
+        var empty = document.getElementById("empty");
+        var sections = Array.prototype.slice.call(document.querySelectorAll("section.cat"));
+        var cards = Array.prototype.slice.call(document.querySelectorAll(".app"));
+        var activeCat = "all";
+
+        function buildChips() {
+          sections.forEach(function (section) {
+            var heading = section.querySelector("h2");
+            var label = heading ? heading.firstChild.textContent.trim() : section.dataset.cat;
+            var button = document.createElement("button");
+            button.type = "button";
+            button.textContent = label;
+            button.dataset.cat = section.dataset.cat;
+            button.setAttribute("aria-pressed", "false");
+            chips.appendChild(button);
+          });
+        }
+
+        function apply() {
+          var query = input.value.trim().toLowerCase();
+          var visible = 0;
+          cards.forEach(function (card) {
+            var haystack = (card.dataset.name + " " + card.textContent).toLowerCase();
+            var matchesText = !query || haystack.indexOf(query) !== -1;
+            var section = card.closest("section.cat");
+            var matchesCat = activeCat === "all" || section.dataset.cat === activeCat;
+            var show = matchesText && matchesCat;
+            card.hidden = !show;
+            if (show) visible += 1;
+          });
+          sections.forEach(function (section) {
+            var any = section.querySelectorAll(".app:not([hidden])").length > 0;
+            section.hidden = !any;
+          });
+          empty.hidden = visible !== 0;
+          result.textContent = visible + " of " + cards.length + " applications shown";
+        }
+
+        chips.addEventListener("click", function (event) {
+          var button = event.target.closest("button");
+          if (!button) return;
+          activeCat = button.dataset.cat;
+          Array.prototype.forEach.call(chips.querySelectorAll("button"), function (other) {
+            other.setAttribute("aria-pressed", other === button ? "true" : "false");
+          });
+          apply();
+        });
+
+        input.addEventListener("input", apply);
+
+        function onScroll() {
+          var doc = document.documentElement;
+          var full = doc.scrollHeight - window.innerHeight;
+          var done = full > 0 ? (window.scrollY / full) * 100 : 0;
+          progress.style.width = done + "%";
+          totop.classList.toggle("is-visible", window.scrollY > 400);
+        }
+
+        window.addEventListener("scroll", onScroll, { passive: true });
+        onScroll();
+
+        totop.addEventListener("click", function () {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+
+        buildChips();
+        apply();
+      })();
+    </script>
+  </body>
+</html>

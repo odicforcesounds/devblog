@@ -20,7 +20,7 @@ table{border-collapse:collapse;width:100%;margin:1em 0}th,td{border:1px solid #2
 <div class="wrap">
 <h1 class="center">Mail: How SMTP/POP/IMAP Work + OpenSMTPD Setup</h1>
 <div class="textbox black">
-<p>Mail = send (SMTP) + store + retrieve (IMAP/POP). Specs: <a href="https://www.rfc-editor.org/rfc/rfc5321.html">RFC 5321 SMTP</a>, <a href="https://www.rfc-editor.org/rfc/rfc1939.html">RFC 1939 POP3</a>, <a href="https://www.rfc-editor.org/rfc/rfc9051.html">RFC 9051 IMAP4rev2</a>. OpenSMTPD: <a href="https://www.opensmtpd.org/">opensmtpd.org</a>, <a href="https://man.openbsd.org/smtpd.conf">smtpd.conf man</a>.</p>
+<p>Mail = send (SMTP) + store + retrieve (IMAP/POP). Specs: <a href="https://www.rfc-editor.org/rfc/rfc5321.html" target="_blank" rel="noopener noreferrer" class="external">RFC 5321 SMTP</a>, <a href="https://www.rfc-editor.org/rfc/rfc1939.html" target="_blank" rel="noopener noreferrer" class="external">RFC 1939 POP3</a>, <a href="https://www.rfc-editor.org/rfc/rfc9051.html" target="_blank" rel="noopener noreferrer" class="external">RFC 9051 IMAP4rev2</a>. OpenSMTPD: <a href="https://www.opensmtpd.org/" target="_blank" rel="noopener noreferrer" class="external">opensmtpd.org</a>, <a href="https://man.openbsd.org/smtpd.conf" target="_blank" rel="noopener noreferrer" class="external">smtpd.conf man</a>.</p>
 
 <h2>0 — Roles In One Picture</h2>
 <pre>MUA (Thunderbird/mutt) --[SMTP :587 submit]--&gt; MSA/MTA (OpenSMTPD/Postfix)
@@ -49,7 +49,7 @@ QUIT
 <tr><td>Try</td><td><code>openssl s_client -connect mail.example.com:993</code> → <code>a LOGIN user pass</code> → <code>a LIST "" "*"</code> → <code>a SELECT INBOX</code></td><td><code>openssl s_client -connect mail.example.com:995</code> → <code>USER u</code> → <code>PASS p</code> → <code>LIST/RETR 1/QUIT</code></td></tr>
 <tr><td>Use when</td><td>Multi-device, server sieve/filter, shared folders.</td><td>Single offline box, tiny server, backup-and-purge.</td></tr>
 </table>
-<p>Retrieval server: <b>Dovecot</b> (<a href="https://www.dovecot.org/">dovecot.org</a>). Spam/filter: <b>rspamd</b> (<a href="https://rspamd.com/">rspamd.com</a>). OpenSMTPD sends; Dovecot serves IMAP.</p>
+<p>Retrieval server: <b>Dovecot</b> (<a href="https://www.dovecot.org/" target="_blank" rel="noopener noreferrer" class="external">dovecot.org</a>). Spam/filter: <b>rspamd</b> (<a href="https://rspamd.com/" target="_blank" rel="noopener noreferrer" class="external">rspamd.com</a>). OpenSMTPD sends; Dovecot serves IMAP.</p>
 
 <h2>3 — DNS Mail Must-Haves (Before You Configure)</h2>
 <pre>example.com.      300 IN MX 10 mail.example.com.
@@ -75,7 +75,7 @@ match from auth for any action "relay"
 # check + reload:
 smtpd -n; systemctl restart opensmtpd; smtpctl show stats; tail -f /var/log/maillog
 # cert: certbot certonly --standalone -d mail.example.com (https://certbot.eff.org/)</pre>
-<div class="tip">Debian's <b>opensmtpd</b> package + <a href="https://man.openbsd.org/smtpd.conf">smtpd.conf</a> syntax (OpenBSD-portable). Keep lingo: <code>pki/listen/action/match</code>. Test with <code>swaks</code> (<a href="https://github.com/jetmore/swaks">swaks</a>): <code>swaks --to you@example.com --from you@example.com -tls -au user</code>.</div>
+<div class="tip">Debian's <b>opensmtpd</b> package + <a href="https://man.openbsd.org/smtpd.conf" target="_blank" rel="noopener noreferrer" class="external">smtpd.conf</a> syntax (OpenBSD-portable). Keep lingo: <code>pki/listen/action/match</code>. Test with <code>swaks</code> (<a href="https://github.com/jetmore/swaks" target="_blank" rel="noopener noreferrer" class="external">swaks</a>): <code>swaks --to you@example.com --from you@example.com -tls -au user</code>.</div>
 
 <h2>5 — Pair With Dovecot IMAP (Receive Path)</h2>
 <pre>sudo apt install -y dovecot-imapd
@@ -84,7 +84,7 @@ smtpd -n; systemctl restart opensmtpd; smtpctl show stats; tail -f /var/log/mail
 systemctl restart dovecot
 # Thunderbird (https://www.thunderbird.net/) → IMAP mail.example.com:993 SSL, SMTP mail.example.com:587 STARTTLS+auth</pre>
 <div class="warn">Anti-abuse before first mail: SPF+DKIM+DMARC valid, rDNS matches HELO, no open relay (<code>nmap -p 25 --script smtp-open-relay YOU</code> in lab), rate-limit auth + fail2ban, backups of <code>/var/mail + /etc/smtpd.conf + keys</code> encrypted.</div>
-<p>Refs: <a href="https://www.opensmtpd.org/">OpenSMTPD</a>, <a href="https://man.openbsd.org/smtpd">smtpd man</a>, <a href="https://www.dovecot.org/documentation/">Dovecot docs</a>, <a href="https://rspamd.com/doc/">rspamd docs</a>, <a href="https://mxtoolbox.com/">mxtoolbox.com (MX/SPF/DKIM check)</a>.</p>
+<p>Refs: <a href="https://www.opensmtpd.org/" target="_blank" rel="noopener noreferrer" class="external">OpenSMTPD</a>, <a href="https://man.openbsd.org/smtpd" target="_blank" rel="noopener noreferrer" class="external">smtpd man</a>, <a href="https://www.dovecot.org/documentation/" target="_blank" rel="noopener noreferrer" class="external">Dovecot docs</a>, <a href="https://rspamd.com/doc/" target="_blank" rel="noopener noreferrer" class="external">rspamd docs</a>, <a href="https://mxtoolbox.com/" target="_blank" rel="noopener noreferrer" class="external">mxtoolbox.com (MX/SPF/DKIM check)</a>.</p>
 <p><i>SMTP pushes, IMAP syncs, POP takes. OpenSMTPD routes with two verbs: listen + match.</i></p>
 </div></div>
 <footer>

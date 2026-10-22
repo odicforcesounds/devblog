@@ -296,7 +296,7 @@ sysctl kern.securelevel security.bsd.see_other_uids`)},
 service -e             # enabled rc services
 last -n 20             # recent logins
 tail -n 50 /var/log/auth.log`)},
-  {h:'Brute force and nightly reports', html:`<p>Internet-facing SSH gets scanned within minutes. <a href="https://www.sshguard.net/" target="_blank" rel="noopener noreferrer">sshguard</a> watches authentication logs and adds offenders to a pf table (Chapter 4). <code>periodic</code> runs the nightly reports and the security summary.</p>` + code('conf — /etc/periodic.conf', `daily_status_security_enable="YES"
+  {h:'Brute force and nightly reports', html:`<p>Internet-facing SSH gets scanned within minutes. <a href="https://www.sshguard.net/" target="_blank" rel="noopener noreferrer" class="external">sshguard</a> watches authentication logs and adds offenders to a pf table (Chapter 4). <code>periodic</code> runs the nightly reports and the security summary.</p>` + code('conf — /etc/periodic.conf', `daily_status_security_enable="YES"
 daily_clean_tmps_enable="YES"`) + note('bad','Bad decision: "PermitRootLogin yes until keys are ready"','<p>Bots begin trying root within minutes of a new public address, and the "temporary" setting lives for years. Set up keys first, then disable password login.</p>')}
   ],
   refs:[['FreeBSD Handbook: Security','https://docs.freebsd.org/en/books/handbook/security/'],['FreeBSD security advisories','https://www.freebsd.org/security/advisories/'],['VuXML vulnerability database','https://vuxml.freebsd.org/freebsd/'],['sshd_config(5)','https://man.freebsd.org/cgi/man.cgi?query=sshd_config'],['securelevel(7)','https://man.freebsd.org/cgi/man.cgi?query=securelevel'],['sshguard','https://www.sshguard.net/']],
@@ -375,7 +375,7 @@ jexec www /bin/sh        # shell inside the jail`)},
 rdr on vtnet0 proto tcp to (vtnet0) port 80 -> 10.0.0.20`) + note('warn','Redirects open paths','<p>Every <code>rdr</code> is an exposed service. Add the matching <code>pass</code> rule deliberately and nothing else.</p>')},
   {h:'Limit the blast radius with rctl', html:`<p>Resource limits need RACCT support in the kernel, enabled at boot. Then cap what one jail can consume.</p>` + code('conf — /boot/loader.conf', `kern.racct.enable="1"`) + code('sh', `rctl -a jail:www:memoryuse:deny=2G
 rctl -l jail:www`) + note('bad','Bad decision: one jail per service, all as root, all with raw sockets','<p>A root process inside a jail with broad privileges and no caps makes one compromised service a host-wide problem. Run services unprivileged and cap memory per jail.</p>')},
-  {h:'Jail managers', html:`<p>Hand-written jail.conf works well for a handful of jails. For many jails, use a manager: <a href="https://bastillebsd.org/" target="_blank" rel="noopener noreferrer">Bastille</a>, iocage or ezjail from the ports tree. They automate exactly the steps above.</p>`}
+  {h:'Jail managers', html:`<p>Hand-written jail.conf works well for a handful of jails. For many jails, use a manager: <a href="https://bastillebsd.org/" target="_blank" rel="noopener noreferrer" class="external">Bastille</a>, iocage or ezjail from the ports tree. They automate exactly the steps above.</p>`}
   ],
   refs:[['FreeBSD Handbook: Jails and containers','https://docs.freebsd.org/en/books/handbook/jails/'],['jail(8)','https://man.freebsd.org/cgi/man.cgi?query=jail'],['jail.conf(5)','https://man.freebsd.org/cgi/man.cgi?query=jail.conf'],['rctl(8)','https://man.freebsd.org/cgi/man.cgi?query=rctl'],['Bastille jail manager','https://bastillebsd.org/']],
   quiz:[

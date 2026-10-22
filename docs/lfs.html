@@ -18,7 +18,7 @@ table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}th,td{bor
   </head><body><div class="wrap">
 <h1 class="center">LFS — Linux From Scratch: From Zero to a Booted OS</h1>
 <div class="textbox black">
-<p>You start with a running Linux host and an empty partition. You end with <b>your own compiled Linux system</b> that boots without the host. No installer, no package manager — every binary built by you, in order. Based on <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/">LFS 13.1-systemd (2026, kernel 7.1.8, GCC 16.2, glibc 2.44, Binutils 2.47)</a>. Older stable: <a href="https://www.linuxfromscratch.org/lfs/view/12.4/">12.4</a>. News: <a href="https://www.linuxfromscratch.org/lfs/news.html">lfs/news</a>. Overview: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter01/how.html">how LFS builds</a>.</p>
+<p>You start with a running Linux host and an empty partition. You end with <b>your own compiled Linux system</b> that boots without the host. No installer, no package manager — every binary built by you, in order. Based on <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/" target="_blank" rel="noopener noreferrer" class="external">LFS 13.1-systemd (2026, kernel 7.1.8, GCC 16.2, glibc 2.44, Binutils 2.47)</a>. Older stable: <a href="https://www.linuxfromscratch.org/lfs/view/12.4/" target="_blank" rel="noopener noreferrer" class="external">12.4</a>. News: <a href="https://www.linuxfromscratch.org/lfs/news.html" target="_blank" rel="noopener noreferrer" class="external">lfs/news</a>. Overview: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter01/how.html" target="_blank" rel="noopener noreferrer" class="external">how LFS builds</a>.</p>
 <div class="warn"><b>Rules:</b> follow ONE book version exactly — never mix versions. Backup the host. Disk names below (<code>/dev/sda</code>) are examples — use <code>lsblk</code> for yours. Full build takes 4–12h depending on CPU. 4 cores + 8GB RAM recommended.</div>
 
 <h2>1. What LFS Is (and Is Not)</h2>
@@ -28,10 +28,10 @@ table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}th,td{bor
 <tr><td>Minimal bootable systemd Linux, sources + patches</td><td>Package manager, desktop, wifi wizard</td></tr>
 <tr><td>Deep understanding of toolchain</td><td>Security updates automatically (you rebuild)</td></tr>
 <tr><td>Base for BLFS (desktop, server on top)</td><td>Shortcuts — every package compiled in order</td></tr></table>
-<p>After LFS comes <a href="https://www.linuxfromscratch.org/blfs/">BLFS (Beyond LFS)</a> for X, desktop, network services.</p></div>
+<p>After LFS comes <a href="https://www.linuxfromscratch.org/blfs/" target="_blank" rel="noopener noreferrer" class="external">BLFS (Beyond LFS)</a> for X, desktop, network services.</p></div>
 
 <h2>2. Host Preparation</h2>
-<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter02/hostreqs.html">host requirements</a>. Host kernel ≥ 5.10, bash, gcc, binutils, bison, coreutils, make, perl, python3, etc.</p>
+<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter02/hostreqs.html" target="_blank" rel="noopener noreferrer" class="external">host requirements</a>. Host kernel ≥ 5.10, bash, gcc, binutils, bison, coreutils, make, perl, python3, etc.</p>
 <pre># Run the book's version-check script (download from book ch.2), then:
 bash version-check.sh
 # Must all pass. On Debian/Ubuntu, roughly:
@@ -41,7 +41,7 @@ ls -l /bin/sh   # must point to bash, NOT dash: sudo dpkg-reconfigure dash</pre>
 <div class="note">Host GCC newer than the book's (16.2) or binutils newer than 2.47 = <b>untested</b>. Prefer a host close to the book. First-timers: do NOT add custom CFLAGS — chapter 8 warns optimizations break builds.</div>
 
 <h2>3. Partition, Filesystem, Mount</h2>
-<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter02/creatingpartition.html">partitioning</a>, <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter02/creatingfilesystem.html">filesystems</a>. Need ≥10GB, 30GB comfortable, ~20GB sweet spot. ext4 default. UEFI needs ESP 128–256MB; BIOS+GPT needs BIOS Boot partition; optional 200MB /boot.</p>
+<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter02/creatingpartition.html" target="_blank" rel="noopener noreferrer" class="external">partitioning</a>, <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter02/creatingfilesystem.html" target="_blank" rel="noopener noreferrer" class="external">filesystems</a>. Need ≥10GB, 30GB comfortable, ~20GB sweet spot. ext4 default. UEFI needs ESP 128–256MB; BIOS+GPT needs BIOS Boot partition; optional 200MB /boot.</p>
 <pre>lsblk                 # IDENTIFY your empty disk/partition first!
 sudo cfdisk /dev/sdb  # example: sdb1 512M EFI (if UEFI), sdb2 30G Linux, sdb3 swap
 sudo mkfs.ext4 /dev/sdb2
@@ -69,10 +69,10 @@ PATH=$LFS/tools/bin:$PATH; CONFIG_SITE=$LFS/usr/share/config.site
 export LFS LC_ALL LFS_TGT PATH CONFIG_SITE MAKEFLAGS=-j$(nproc)
 EOF
 source ~/.bash_profile; echo $LFS_TGT   # e.g. x86_64-lfs-linux-gnu</pre>
-<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter04/addinguser.html">lfs user</a>. Building as <code>lfs</code> protects the host; root only where the book says.</p>
+<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter04/addinguser.html" target="_blank" rel="noopener noreferrer" class="external">lfs user</a>. Building as <code>lfs</code> protects the host; root only where the book says.</p>
 
 <h2>5. Cross-Toolchain (Chapter 5) — Isolation From Host</h2>
-<p>Goal: compiler that outputs for <code>$LFS</code> without linking host libs. Order matters: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter05/binutils-pass1.html">Binutils pass 1</a> → <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter05/gcc-pass1.html">GCC pass 1 (limited, no full libc yet)</a> → Linux headers → <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter05/glibc.html">glibc</a> → libstdc++.</p>
+<p>Goal: compiler that outputs for <code>$LFS</code> without linking host libs. Order matters: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter05/binutils-pass1.html" target="_blank" rel="noopener noreferrer" class="external">Binutils pass 1</a> → <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter05/gcc-pass1.html" target="_blank" rel="noopener noreferrer" class="external">GCC pass 1 (limited, no full libc yet)</a> → Linux headers → <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter05/glibc.html" target="_blank" rel="noopener noreferrer" class="external">glibc</a> → libstdc++.</p>
 <pre># Pattern for EVERY package (exact flags in book — copy them, don't improvise):
 tar xf binutils-2.47.tar.xz; cd binutils-2.47
 mkdir -v build; cd build
@@ -86,7 +86,7 @@ echo 'int main(){}' | $LFS_TGT-gcc -xc - -v -o /tmp/a.out 2>&1 | grep -i sysroot
 <div class="note"><b>Why two passes?</b> Pass 1 builds with host help. Later (ch.6) Binutils/GCC pass 2 rebuild using the new libc inside $LFS — cutting the cord to the host.</div>
 
 <h2>6. Temporary Tools (Chapter 6) + Enter Chroot (Chapter 7)</h2>
-<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter06/introduction.html">ch.6 intro</a>. Cross-compile m4, ncurses, bash, coreutils, diffutils, file, findutils, gawk, grep, gzip, make, patch, sed, tar, xz, binutils pass 2, gcc pass 2 — installed under <code>$LFS/tools</code> and <code>$LFS/usr</code>.</p>
+<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter06/introduction.html" target="_blank" rel="noopener noreferrer" class="external">ch.6 intro</a>. Cross-compile m4, ncurses, bash, coreutils, diffutils, file, findutils, gawk, grep, gzip, make, patch, sed, tar, xz, binutils pass 2, gcc pass 2 — installed under <code>$LFS/tools</code> and <code>$LFS/usr</code>.</p>
 <pre># As root (exit lfs user), mount virtual filesystems:
 sudo mount -v --bind /dev $LFS/dev
 sudo mount -vt devpts devpts $LFS/dev/pts -o gid=5,mode=0620
@@ -100,7 +100,7 @@ sudo chroot "$LFS" /usr/bin/env -i HOME=/root TERM="$TERM" \
 # Inside: ch.7 temp tools + cleanup /tools.</pre>
 
 <h2>7. Final System (Chapter 8) — The Real Build</h2>
-<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter08/introduction.html">ch.8 intro</a>, <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/">contents</a>. ~70 packages in strict order: glibc (final) → binutils → gcc → … → systemd → grub. Each follows configure/make/test/install; run tests where book says (GCC/glibc tests take long but catch breakage).</p>
+<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter08/introduction.html" target="_blank" rel="noopener noreferrer" class="external">ch.8 intro</a>, <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/" target="_blank" rel="noopener noreferrer" class="external">contents</a>. ~70 packages in strict order: glibc (final) → binutils → gcc → … → systemd → grub. Each follows configure/make/test/install; run tests where book says (GCC/glibc tests take long but catch breakage).</p>
 <pre># Inside chroot, example rhythm (READ book flags per package!):
 tar xf glibc-2.44.tar.xz; cd glibc-2.44
 mkdir -v build; cd build
@@ -135,7 +135,7 @@ ln -sfv /usr/share/zoneinfo/Europe/Lisbon /etc/localtime
 # systemd-networkd .network file per book; systemctl enable systemd-networkd systemd-resolved</pre>
 
 <h2>9. Kernel + Bootloader (Chapter 10) → First Boot (Ch.11)</h2>
-<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter10/kernel.html">kernel</a>, <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter10/grub.html">grub</a>. Disable Secure Boot (book procedure doesn't support it).</p>
+<p>Ref: <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter10/kernel.html" target="_blank" rel="noopener noreferrer" class="external">kernel</a>, <a href="https://www.linuxfromscratch.org/lfs/view/13.1-systemd/chapter10/grub.html" target="_blank" rel="noopener noreferrer" class="external">grub</a>. Disable Secure Boot (book procedure doesn't support it).</p>
 <pre># In chroot, /sources:
 tar xf linux-7.1.8.tar.xz; cd linux-7.1.8
 make mrproper
