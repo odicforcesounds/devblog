@@ -43,7 +43,7 @@
         header h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
-            animation: fadeIn 0.8s ease-out;
+            
         }
 
         header p {
@@ -53,8 +53,7 @@
             margin: 0 auto;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+        
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -104,8 +103,7 @@
             animation: slideIn 0.5s ease-out;
         }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
+        
             to { opacity: 1; transform: translateX(0); }
         }
 
@@ -200,8 +198,7 @@
             animation: flowLine 2s linear infinite;
         }
 
-        @keyframes flowLine {
-            from { transform: scaleX(0); }
+        
             to { transform: scaleX(1); }
         }
 
@@ -452,13 +449,13 @@
         <div class="level-gate" id="levelGate1">
             <h3>🔐 Level 1 Locked</h3>
             <p>Complete the foundations section to unlock the next level</p>
-            <button class="btn" onclick="showSection('section2')">Continue Learning</button>
+            <button class="btn" data-go="section2">Continue Learning</button>
         </div>
 
         <div class="level-gate" id="levelGate2" style="display:none;">
             <h3>🔐 Level 2 Locked</h3>
             <p>Complete the organization section to unlock the next level</p>
-            <button class="btn" onclick="showSection('section3')">Continue Learning</button>
+            <button class="btn" data-go="section3">Continue Learning</button>
         </div>
 
         <div class="level-gate" id="levelGate3" style="display:none;">
@@ -515,16 +512,16 @@
             <p>Criminal groups vary significantly in structure, scope, and specialization:</p>
 
             <div class="pyramid-visual">
-                <div class="pyramid-level level-1" onclick="explainLevel(1)">
+                <div class="pyramid-level level-1" data-action="explain-level-1">
                     Level 1: Street-Level Operations
                 </div>
-                <div class="pyramid-level level-2" onclick="explainLevel(2)">
+                <div class="pyramid-level level-2" data-action="explain-level-2">
                     Level 2: Regional Criminal Networks
                 </div>
-                <div class="pyramid-level level-3" onclick="explainLevel(3)">
+                <div class="pyramid-level level-3" data-action="explain-level-3">
                     Level 3: Transnational Syndicates
                 </div>
-                <div class="pyramid-level level-4" onclick="explainLevel(4)">
+                <div class="pyramid-level level-4" data-action="explain-level-4">
                     Level 4: Global Criminal Enterprises
                 </div>
             </div>
@@ -1005,13 +1002,13 @@
                     <div id="quizMessage" style="text-align:center; margin-top:20px;"></div>
                     
                     <div style="text-align:center; margin-top:30px;">
-                        <button class="btn" onclick="resetQuiz()">Retake Quiz</button>
-                        <button class="btn" onclick="showSection('section4')" id="advancedBtn" style="display:none;">Access Advanced Materials</button>
+                        <button class="btn" data-action="reset-quiz">Retake Quiz</button>
+                        <button class="btn" data-go="section4" id="advancedBtn" style="display:none;">Access Advanced Materials</button>
                     </div>
                 </div>
 
                 <div id="quizNext" style="text-align:right; margin-top:20px;">
-                    <button class="btn" onclick="nextQuestion()" id="nextBtn">Next Question →</button>
+                    <button class="btn" data-action="next-question" id="nextBtn">Next Question →</button>
                 </div>
             </div>
         </section>
@@ -1070,350 +1067,6 @@
         </div>
     </footer>
 
-    <script>
-        // Knowledge State Management
-        let knowledgeState = {
-            sectionsCompleted: [],
-            quizScore: 0,
-            quizTaken: false
-        };
-
-        // Section navigation
-        function showSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            if (section) {
-                section.style.display = 'block';
-                section.scrollIntoView({ behavior: 'smooth' });
-                
-                // Update knowledge state
-                if (!knowledgeState.sectionsCompleted.includes(sectionId)) {
-                    knowledgeState.sectionsCompleted.push(sectionId);
-                    updateProgress();
-                }
-            }
-        }
-
-        // Update progress bar
-        function updateProgress() {
-            const totalSections = 5; // sections 1-5
-            const completed = knowledgeState.sectionsCompleted.length;
-            const percentage = Math.min((completed / totalSections) * 100, 100);
-            
-            document.getElementById('progressFill').style.width = percentage + '%';
-            document.getElementById('progressText').textContent = Math.round(percentage) + '%';
-            
-            document.getElementById('knowledge-status').style.display = 'block';
-            
-            // Check level gates
-            checkLevelGates();
-        }
-
-        function checkLevelGates() {
-            const gate1 = document.getElementById('levelGate1');
-            const gate2 = document.getElementById('levelGate2');
-            const gate3 = document.getElementById('levelGate3');
-            
-            if (knowledgeState.sectionsCompleted.includes('section1')) {
-                gate1.style.display = 'none';
-                document.getElementById('section2').style.display = 'block';
-            }
-            
-            if (knowledgeState.sectionsCompleted.includes('section2')) {
-                gate2.style.display = 'none';
-                document.getElementById('section3').style.display = 'block';
-            }
-            
-            if (knowledgeState.sectionsCompleted.includes('section3')) {
-                gate3.style.display = 'none';
-                document.getElementById('section4').style.display = 'block';
-                document.getElementById('quiz').style.display = 'block';
-            }
-        }
-
-        // Animated network visualization
-        function createNetworkAnimation() {
-            const container = document.getElementById('networkNodes');
-            if (!container) return;
-            
-            const nodes = [
-                { id: 'Leadership', x: 50, y: 10 },
-                { id: 'Finance', x: 20, y: 35 },
-                { id: 'Operations', x: 80, y: 35 },
-                { id: 'Logistics', x: 10, y: 60 },
-                { id: 'Enforcement', x: 90, y: 60 },
-                { id: 'External Contacts', x: 50, y: 80 }
-            ];
-            
-            container.innerHTML = '';
-            
-            nodes.forEach((node, index) => {
-                const el = document.createElement('div');
-                el.className = 'network-node';
-                el.style.left = node.x + '%';
-                el.style.top = node.y + '%';
-                el.style.transform = 'translate(-50%, -50%)';
-                el.textContent = node.id;
-                el.style.animation = `fadeIn 0.5s ease-out ${index * 0.15}s both`;
-                container.appendChild(el);
-            });
-            
-            // Create connections
-            const connections = [
-                [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 5], [1, 4], [2, 3]
-            ];
-            
-            connections.forEach(([from, to], index) => {
-                const line = document.createElement('div');
-                line.className = 'network-connection';
-                
-                const fromNode = nodes[from];
-                const toNode = nodes[to];
-                
-                const x1 = fromNode.x;
-                const y1 = fromNode.y;
-                const x2 = toNode.x;
-                const y2 = toNode.y;
-                
-                // Calculate position and rotation
-                const dx = (x2 - x1) * 1.5;
-                const dy = (y2 - y1) * 2;
-                const length = Math.sqrt(dx * dx + dy * dy);
-                const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-                
-                line.style.left = x1 + '%';
-                line.style.top = y1 + '%';
-                line.style.width = '150px';
-                line.style.transform = `rotate(${angle}deg)`;
-                line.style.animation = `flowLine 2s linear infinite ${index * 0.2}s`;
-                line.style.transformOrigin = 'left center';
-                
-                container.appendChild(line);
-            });
-        }
-
-        // Pyramid level explanation
-        function explainLevel(level) {
-            const explanations = {
-                1: "Street-level operations involve direct criminal activities like drug sales, petty theft, and local extortion. Members at this level face the highest risks and typically have limited organizational knowledge.",
-                2: "Regional networks coordinate multiple street-level operations across a geographic area. They manage supply chains, recruitment, and local enforcement while maintaining connections to higher levels.",
-                3: "Transnational syndicates operate across national borders, managing international drug trafficking, money laundering networks, and corruption of multiple governments. They have significant resources and sophisticated logistics.",
-                4: "Global criminal enterprises represent the highest level, with worldwide reach, massive financial resources, and the ability to corrupt governments and influence international affairs. These organizations can challenge state authority in some regions."
-            };
-            
-            alert(explanations[level]);
-        }
-
-        // Quiz System
-        const quizData = [
-            {
-                question: "What is the primary distinction between a criminal organization and a legitimate political party?",
-                options: [
-                    "Both are equally illegal",
-                    "Political parties are legitimate, legal entities operating within democratic frameworks, while criminal organizations operate outside the law",
-                    "They are the same thing with different names",
-                    "Criminal organizations are always larger than political parties"
-                ],
-                correct: 1,
-                explanation: "Political parties operate legally within democratic systems with accountability to voters. Criminal organizations operate illegally outside legal frameworks."
-            },
-            {
-                question: "Which of the following is a common hierarchical structure used by criminal organizations?",
-                options: [
-                    "Random and unstructured groups",
-                    "Traditional pyramid structure with clear chain of command",
-                    "Only democratic assemblies",
-                    "No organization at all"
-                ],
-                correct: 1,
-                explanation: "Criminal organizations often use pyramid structures for clear command chains, though modern groups also use cell-based and network structures for operational security."
-            },
-            {
-                question: "What are the three stages of money laundering?",
-                options: [
-                    "Planning, Execution, Cleanup",
-                    "Placement, Layering, Integration",
-                    "Collection, Storage, Spending",
-                    "Input, Processing, Output"
-                ],
-                correct: 1,
-                explanation: "Money laundering typically involves Placement (introducing illegal funds into the system), Layering (separating money from its source through transactions), and Integration (making money appear legitimate)."
-            },
-            {
-                question: "Which country's criminal organization is known as 'Cosa Nostra'?",
-                options: [
-                    "Colombia",
-                    "Mexico",
-                    "Italy (Sicily)",
-                    "Japan"
-                ],
-                correct: 2,
-                explanation: "Cosa Nostra is the Sicilian Mafia, one of Italy's major organized crime groups, known for its strict code of silence (omertà) and family-based structure."
-            },
-            {
-                question: "Why do criminal groups often recruit members from economically disadvantaged communities?",
-                options: [
-                    "They prefer criminals from wealthy backgrounds",
-                    "Economic desperation creates vulnerabilities that criminal groups exploit",
-                    "They only recruit through random selection",
-                    "Economic status has no impact on recruitment"
-                ],
-                correct: 1,
-                explanation: "Criminal groups often exploit economic vulnerability and lack of legitimate opportunities, which is why community development and economic opportunity are important for crime prevention."
-            }
-        ];
-
-        let currentQuestionIndex = 0;
-        let answers = [];
-
-        function initQuiz() {
-            const container = document.getElementById('quizQuestions');
-            container.innerHTML = '';
-            
-            quizData.forEach((q, index) => {
-                const questionDiv = document.createElement('div');
-                questionDiv.className = 'quiz-question';
-                questionDiv.style.display = index === 0 ? 'block' : 'none';
-                questionDiv.id = `question-${index}`;
-                
-                questionDiv.innerHTML = `
-                    <h3 style="margin-bottom:15px;">Question ${index + 1}</h3>
-                    <p>${q.question}</p>
-                    <div class="quiz-options">
-                        ${q.options.map((opt, optIndex) => `
-                            <div class="quiz-option" data-question="${index}" data-option="${optIndex}" onclick="checkAnswer(${index}, ${optIndex})">
-                                ${String.fromCharCode(65 + optIndex)}. ${opt}
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="quiz-feedback" id="feedback-${index}"></div>
-                `;
-                
-                container.appendChild(questionDiv);
-            });
-            
-            document.getElementById('totalQuestions').textContent = quizData.length;
-        }
-
-        function checkAnswer(questionIndex, optionIndex) {
-            const q = quizData[questionIndex];
-            const options = document.querySelectorAll(`#question-${questionIndex} .quiz-option`);
-            const feedback = document.getElementById(`feedback-${questionIndex}`);
-            
-            // Disable all options
-            options.forEach(opt => {
-                opt.style.pointerEvents = 'none';
-            });
-            
-            // Show correct/wrong styling
-            options.forEach((opt, idx) => {
-                if (idx === q.correct) {
-                    opt.classList.add('correct');
-                } else if (idx === optionIndex && idx !== q.correct) {
-                    opt.classList.add('wrong');
-                }
-            });
-            
-            // Show feedback
-            if (optionIndex === q.correct) {
-                feedback.className = 'quiz-feedback show correct';
-                feedback.innerHTML = `<strong>✓ Correct!</strong> ${q.explanation}`;
-                if (!answers[questionIndex]) {
-                    answers[questionIndex] = true;
-                    knowledgeState.quizScore++;
-                }
-            } else {
-                feedback.className = 'quiz-feedback show incorrect';
-                feedback.innerHTML = `<strong>✗ Not quite.</strong> ${q.explanation}`;
-            }
-            
-            // Update quiz progress
-            const correctAnswers = answers.filter(a => a === true).length;
-            document.getElementById('quizProgressFill').style.width = (correctAnswers / quizData.length * 100) + '%';
-        }
-
-        function nextQuestion() {
-            if (currentQuestionIndex < quizData.length - 1) {
-                currentQuestionIndex++;
-                document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
-                
-                // Hide current, show next
-                document.getElementById(`question-${currentQuestionIndex - 1}`).style.display = 'none';
-                document.getElementById(`question-${currentQuestionIndex}`).style.display = 'block';
-            } else {
-                // Quiz complete
-                document.getElementById('quizQuestions').style.display = 'none';
-                document.getElementById('quizNext').style.display = 'none';
-                document.getElementById('quizResults').style.display = 'block';
-                
-                document.getElementById('finalScore').textContent = knowledgeState.quizScore;
-                document.getElementById('finalTotal').textContent = quizData.length;
-                const percentage = Math.round((knowledgeState.quizScore / quizData.length) * 100);
-                document.getElementById('finalPercentage').textContent = percentage;
-                
-                const message = document.getElementById('quizMessage');
-                if (percentage >= 80) {
-                    message.innerHTML = `
-                        <div class="highlight-box">
-                            <h3>Excellent! You've demonstrated strong understanding.</h3>
-                            <p>You may now access the advanced materials. Congratulations on completing this level!</p>
-                        </div>
-                    `;
-                    document.getElementById('advancedBtn').style.display = 'inline-block';
-                } else if (percentage >= 60) {
-                    message.innerHTML = `
-                        <div class="info-box">
-                            <h3>Good effort!</h3>
-                            <p>You have a basic understanding. Consider reviewing the material and retaking the quiz to strengthen your knowledge.</p>
-                        </div>
-                    `;
-                } else {
-                    message.innerHTML = `
-                        <div class="warning-box">
-                            <h3>More study needed</h3>
-                            <p>Please review the educational materials carefully and retake the quiz to proceed.</p>
-                        </div>
-                    `;
-                }
-            }
-        }
-
-        function resetQuiz() {
-            currentQuestionIndex = 0;
-            answers = [];
-            knowledgeState.quizScore = 0;
-            
-            document.getElementById('quizQuestions').style.display = 'block';
-            document.getElementById('quizNext').style.display = 'block';
-            document.getElementById('quizResults').style.display = 'none';
-            document.getElementById('advancedBtn').style.display = 'none';
-            
-            document.getElementById('currentQuestion').textContent = '1';
-            document.getElementById('quizProgressFill').style.width = '0%';
-            
-            // Reset questions
-            quizData.forEach((_, index) => {
-                document.getElementById(`question-${index}`).style.display = index === 0 ? 'block' : 'none';
-                document.getElementById(`question-${index}`).querySelectorAll('.quiz-option').forEach(opt => {
-                    opt.classList.remove('correct', 'wrong');
-                    opt.style.pointerEvents = 'auto';
-                });
-                document.getElementById(`feedback-${index}`).className = 'quiz-feedback';
-                document.getElementById(`feedback-${index}`).innerHTML = '';
-            });
-        }
-
-        // Initialize animations on load
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(createNetworkAnimation, 500);
-            initQuiz();
-            updateProgress();
-        });
-
-        // Handle home link
-        document.querySelector('.nav-home').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    </script>
+    
 </body>
 </html>
