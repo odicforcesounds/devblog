@@ -261,9 +261,7 @@ header::after {
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.recent-list li {
+}  .recent-list li {
   display: flex;
   align-items: baseline;
   gap: 0.75rem;
@@ -282,6 +280,21 @@ header::after {
   color: var(--ink);
   text-decoration: none;
   transition: color 140ms ease;
+}
+
+.recent-cat {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-right: 0.25rem;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.85;
 }
 
 .recent-list a:hover,
@@ -2089,6 +2102,10 @@ a:focus-visible {
     return tag ? tag.textContent.trim() : "";
   }
 
+  function catTitle(section) {
+    return section.getAttribute && section.getAttribute("data-title") || "";
+  }
+
   var total = sections.reduce(function (sum, section) {
     return sum + items(section).length;
   }, 1);
@@ -2359,6 +2376,7 @@ a:focus-visible {
     var seen = {};
 
     sections.forEach(function (section) {
+      var category = catTitle(section);
       items(section).forEach(function (item) {
         var file = fileOf(item);
         if (!file || !/\.html$/i.test(file) || seen[file] || !dates[file]) {
@@ -2370,6 +2388,7 @@ a:focus-visible {
         entries.push({
           title: link ? link.textContent.trim() : file,
           href: link ? link.getAttribute("href") : "./" + file,
+          category: category,
           stamp: String(dates[file])
         });
       });
@@ -2379,7 +2398,7 @@ a:focus-visible {
       var left = Date.parse(a.stamp);
       var right = Date.parse(b.stamp);
       if (isNaN(left) || isNaN(right)) {
-        return b.stamp.localeCompare(a.stamp);
+        return right - left || b.category.localeCompare(a.category) || b.title.localeCompare(a.title);
       }
       return right - left;
     });
@@ -2389,14 +2408,18 @@ a:focus-visible {
     entries.slice(0, 5).forEach(function (entry) {
       var li = document.createElement("li");
       var link = document.createElement("a");
+      var cat = document.createElement("span");
       var time = document.createElement("time");
 
       link.href = entry.href;
       link.textContent = entry.title;
+      cat.className = "recent-cat";
+      cat.textContent = entry.category;
       time.dateTime = entry.stamp;
       time.textContent = prettyStamp(entry.stamp);
 
       li.appendChild(link);
+      li.appendChild(cat);
       li.appendChild(time);
       recentList.appendChild(li);
     });
