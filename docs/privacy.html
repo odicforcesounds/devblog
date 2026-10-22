@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="The TUI Privacy Manual — a gated, hands-on reference for hardening Windows, Linux and FreeBSD from first boot to terminal-user-interface development.">
+<meta name="description" content="The TUI Privacy Manual — a gated, hands-on reference for hardening Windows, Linux and FreeBSD from first boot to opsec and forensics.">
 <title>The TUI Privacy Manual — Windows · Linux · FreeBSD</title>
 <style>
 /* ============================================================
@@ -845,8 +845,8 @@ pre .good{color:#7ce8b6}
   </div>
   <div class="topbar-sep"></div>
   <div class="top-progress" aria-live="polite">
-    <span id="progressLabel">0 / 14 validated</span>
-    <span class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="14" aria-valuenow="0" id="progressBarWrap"><i id="progressBar" style="width: 0%;"></i></span>
+    <span id="progressLabel">0 / 13 validated</span>
+    <span class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="13" aria-valuenow="0" id="progressBarWrap"><i id="progressBar" style="width: 0%;"></i></span>
   </div>
   <button class="icon-btn" id="searchBtn" aria-label="Search the manual" title="Search ( / )">⌕</button>
   <a class="home-link" href="index.html"><span class="arrow" aria-hidden="true">←</span> Home</a>
@@ -886,8 +886,7 @@ pre .good{color:#7ce8b6}
   <ul class="nav-list">
     <li class="nav-item locked" data-nav="L10"><a href="#level-10"><span class="num">11</span> Keys &amp; encryption<span class="tick">✓</span></a></li>
     <li class="nav-item locked" data-nav="L11"><a href="#level-11"><span class="num">12</span> Browsing &amp; comms<span class="tick">✓</span></a></li>
-    <li class="nav-item locked" data-nav="L12"><a href="#level-12"><span class="num">13</span> TUI development<span class="tick">✓</span></a></li>
-    <li class="nav-item locked" data-nav="L13"><a href="#level-13"><span class="num">14</span> OpSec &amp; forensics<span class="tick">✓</span></a></li>
+    <li class="nav-item locked" data-nav="L13"><a href="#level-13"><span class="num">13</span> OpSec &amp; forensics<span class="tick">✓</span></a></li>
   </ul>
 
   <div class="nav-label">Reference</div>
@@ -910,7 +909,7 @@ pre .good{color:#7ce8b6}
     LOCAL-ONLY · NO ANALYTICS<br>
     NO COOKIES · NO FONTS<br>
     STORAGE: localStorage<br>
-    REV 2026.10 / 15 LEVELS
+    REV 2026.10 / 14 LEVELS
   </div>
 </nav>
 
@@ -931,14 +930,14 @@ pre .good{color:#7ce8b6}
     <h1>Privacy from zero to hero,<br>one <em>terminal</em> at a time.</h1>
     <p class="sub">
       A technical manual for people who want to own their machine: install it, harden it,
-      encrypt it, quiet it, and then build tools for it. Three operating systems, one
+      encrypt it, quiet it. Three operating systems, one
       discipline — <strong>Windows</strong>, <strong>Linux</strong> and <strong>FreeBSD</strong> —
-      taught in fifteen gated levels with real commands, real failure modes, and a check
+      taught in fourteen gated levels with real commands, real failure modes, and a check
       at the end of each level that you must pass before the next one opens.
     </p>
     <div class="meta-grid">
       <div class="meta-cell"><b>Scope</b><span>Host + network + terminal</span></div>
-      <div class="meta-cell"><b>Levels</b><span>14 validated · 1 appendix</span></div>
+      <div class="meta-cell"><b>Levels</b><span>13 validated · 1 appendix</span></div>
       <div class="meta-cell"><b>Prereqs</b><span>Computer literacy only</span></div>
       <div class="meta-cell"><b>Revision</b><span>2026.10 (autumn)</span></div>
     </div>
@@ -1160,7 +1159,7 @@ pre .good{color:#7ce8b6}
       <div class="lab">
         <h4>Lab 00 · Write your model</h4>
         <p>Fill this in before Level 01. It is saved locally and you will be asked to revisit it
-        at Level 14. Keep it short enough to remember.</p>
+        at Level 13. Keep it short enough to remember.</p>
         <textarea id="threatModel" spellcheck="false" placeholder="ASSETS: ...
 ADVERSARY (A1–A5): ...
 IMPACT IF LEAKED: ...
@@ -5761,730 +5760,6 @@ user_pref("browser.helperApps.deleteTempFileOnExit", true);
     </div>
   </section>
 
-    <!-- ======================= LEVEL 12 ======================= -->
-  <section class="level is-locked" id="level-12" data-level="L12" data-title="TUI development">
-    <div class="level-head">
-      <div class="level-num">12</div>
-      <div>
-        <div class="level-kicker">Level 12 · Cross-platform · ~200 min</div>
-        <h2>Build the tools you have been configuring</h2>
-        <p class="lede">A terminal user interface is a render loop, a parser and a state machine.
-        Get those three right and you can build software that has no browser engine, no telemetry
-        SDK and no cloud dependency — and that runs over SSH on a machine with 32 MB of RAM.</p>
-        <div class="level-meta">
-          <span>Prereq: Level 11</span><span>C · Rust · Go · Python</span><span class="hot">Gate: 6 questions</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="lock-panel">
-      <div class="lp-top"><span>◆</span> Level locked</div>
-      <h3>Validate Level 11 to open this</h3>
-      <p>You cannot write a trustworthy TUI until you understand the terminal as an attack
-      surface. Level 07 and Level 11 cover that ground.</p>
-      <div class="lock-actions"><button class="btn primary" data-jump="prev">Go to the prerequisite</button></div>
-    </div>
-
-    <div class="level-body">
-      <h3 id="l12-1"><span class="h3n">12.1</span> Why a TUI, and what it costs</h3>
-      <div class="grid2">
-        <div class="mini-card"><span class="k">Wins</span><h4>Small surface, long life</h4><p>No HTML renderer, no JavaScript runtime, no auto-update service. A static binary can run for a decade and still work over a serial console.</p></div>
-        <div class="mini-card"><span class="k">Costs</span><h4>You build everything</h4><p>Layout, focus, scrolling, text input, accessibility, clipboard, notifications. The browser gives you these for free; the terminal does not.</p></div>
-        <div class="mini-card"><span class="k">Wins</span><h4>Composability</h4><p>Pipes, exit codes, stdin/stdout, `--json` output. A TUI can be a library for scripts and a UI for humans at the same time.</p></div>
-        <div class="mini-card"><span class="k">Costs</span><h4>Fragmentation</h4><p>Every terminal, multiplexer and OS has a slightly different idea of what a key press, a width or a color is. Test on more than one.</p></div>
-      </div>
-
-      <h3 id="l12-2"><span class="h3n">12.2</span> The terminal is a device, not a canvas</h3>
-      <p>By default, the terminal driver buffers a line, echoes it, and interprets control characters
-      (<span class="kbd">Ctrl</span>+<span class="kbd">C</span> sends SIGINT, <span class="kbd">Ctrl</span>+<span class="kbd">Z</span>
-      sends SIGTSTP). A full-screen app must turn all of that off and read raw bytes.</p>
-      <div class="code">
-        <div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="lang">c</span><span class="file">raw mode with termios</span><button class="code-copy">copy</button></div>
-<pre><code>#include &lt;termios.h&gt;
-#include &lt;unistd.h&gt;
-#include &lt;stdlib.h&gt;
-
-static struct termios saved;
-
-void restore_terminal(void) {
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &amp;saved);
-}
-
-void enter_raw_mode(void) {
-    struct termios raw;
-
-    if (tcgetattr(STDIN_FILENO, &amp;saved) == -1) exit(1);
-    atexit(restore_terminal);          /* never leave the user's shell broken */
-
-    raw = saved;
-    raw.c_iflag &amp;= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-    raw.c_oflag &amp;= ~(OPOST);
-    raw.c_cflag |= (CS8);
-    raw.c_lflag &amp;= ~(ECHO | ICANON | IEXTEN | ISIG);
-    raw.c_cc[VMIN]  = 0;              /* read returns after … */
-    raw.c_cc[VTIME] = 1;              /* … 100 ms, or as soon as bytes arrive */
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &amp;raw);
-}
-</code></pre>
-      </div>
-      <div class="callout danger">
-        <span class="ct">Always restore the terminal</span>
-        If your program panics, segfaults or is killed while in raw mode, the user's shell is left
-        with no echo and no line editing. Register the restore with <code>atexit</code>, install
-        signal handlers for <code>SIGINT</code>/<code>SIGTERM</code>/<code>SIGHUP</code>, and in
-        Rust use a drop guard. A TUI that bricks the terminal is a TUI nobody runs twice.
-      </div>
-      <div class="code">
-        <div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="lang">c</span><span class="file">window size and SIGWINCH</span><button class="code-copy">copy</button></div>
-<pre><code>#include &lt;sys/ioctl.h&gt;
-#include &lt;signal.h&gt;
-#include &lt;unistd.h&gt;
-
-static volatile sig_atomic_t resized = 0;
-static int sig_pipe[2];
-
-static void on_winch(int sig) {
-    (void)sig;
-    if (write(sig_pipe[1], "w", 1) == -1) { /* nothing useful to do */ }
-}
-
-void watch_resize(void) {
-    struct winsize ws;
-    if (pipe(sig_pipe) == -1) return;
-    signal(SIGWINCH, on_winch);
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &amp;ws);
-}
-</code></pre>
-      </div>
-      <p>The self-pipe trick turns a signal into a readable byte, so your <code>poll</code>/
-      <code>select</code>/<code>epoll</code>/<code>kqueue</code> loop wakes up without doing real
-      work inside a signal handler. Everything else — reading the new <code>TIOCGWINSZ</code>,
-      recomputing layout, redrawing — happens in normal code.</p>
-
-      <h3 id="l12-3"><span class="h3n">12.3</span> Escape sequences you will actually use</h3>
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <caption>ECMA-48 / DEC sequences by job</caption>
-          <thead><tr><th>Job</th><th>Sequence</th><th>Notes</th></tr></thead>
-          <tbody>
-            <tr><td>Clear screen</td><td><code>\x1b[2J</code></td><td>Prefer redrawing regions; full clears flicker</td></tr>
-            <tr><td>Cursor home</td><td><code>\x1b[H</code></td><td>Combine with clear for a full repaint</td></tr>
-            <tr><td>Move cursor</td><td><code>\x1b[{row};{col}H</code></td><td>1-based, not 0-based</td></tr>
-            <tr><td>Hide / show cursor</td><td><code>\x1b[?25l</code> / <code>\x1b[?25h</code></td><td>Restore on exit, always</td></tr>
-            <tr><td>Alternate screen</td><td><code>\x1b[?1049h</code> / <code>\x1b[?1049l</code></td><td>Preserves the shell scrollback</td></tr>
-            <tr><td>Bracketed paste</td><td><code>\x1b[?2004h</code> / <code>\x1b[?2004l</code></td><td>Distinguishes typed from pasted input</td></tr>
-            <tr><td>Mouse reporting</td><td><code>\x1b[?1000h</code>, <code>\x1b[?1006h</code></td><td>Opt-in; many users hate it</td></tr>
-            <tr><td>Synchronized output</td><td><code>\x1b[?2026h</code> … <code>\x1b[?2026l</code></td><td>Batches a frame; supported by modern terminals</td></tr>
-            <tr><td>Set title</td><td><code>\x1b]0;text\x07</code></td><td>Do not reflect untrusted input into it</td></tr>
-            <tr><td>Hyperlink</td><td><code>\x1b]8;;url\x1b\\text\x1b]8;;\x1b\\</code></td><td>URL is attacker-controlled if the text is</td></tr>
-            <tr><td>Clipboard write</td><td><code>\x1b]52;c;base64\x07</code></td><td>Never emit from untrusted data; make it opt-in</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="callout warn">
-        <span class="ct">Alternate screen is a UX contract</span>
-        Entering it tells the user “this is a full-screen app, my scrollback is safe”. Do not enter
-        it for a command that prints a short report and exits. Do not leave it on exit. And do not
-        use it to hide a crash — print the error to the normal screen, then restore.
-      </div>
-
-      <h3 id="l12-4"><span class="h3n">12.4</span> Color: degrade, never assume</h3>
-      <p>Terminals support 16, 256 or 16 million colors, and the environment variables that
-      advertise this are inconsistent. Probe, then fall back.</p>
-      <div class="code">
-        <div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="lang">sh</span><span class="file">capability probe</span><button class="code-copy">copy</button></div>
-<pre><code>tput colors                  # 8, 16, 256 or -1
-printf '%s\n' "$COLORTERM"   # "truecolor" or "24bit" if advertised
-printf '%s\n' "$TERM"        # xterm-256color, screen-256color, dumb …
-printf '%s\n' "$NO_COLOR"    # if set, emit no color at all
-</code></pre>
-      </div>
-      <ul>
-        <li><b>Respect <code>NO_COLOR</code></b> (any non-empty value) and <code>TERM=dumb</code>. This is a user preference, not a suggestion.</li>
-        <li><b>Do not encode meaning in color alone.</b> Use a marker, a label or a symbol as well; color-blind users and monochrome terminals exist.</li>
-        <li><b>Check contrast</b> against both dark and light backgrounds. A TUI that assumes black is unreadable for half its users.</li>
-        <li><b>Truecolor is not universally supported</b>; 256-color approximations of your palette are worth writing.</li>
-      </ul>
-
-      <h3 id="l12-5"><span class="h3n">12.5</span> Width is not length</h3>
-      <p>Bytes ≠ characters ≠ display cells. A CJK ideograph occupies two cells; an emoji may
-      occupy two; a combining accent occupies none; a ZWJ emoji sequence is several code points
-      that render as one glyph. Layout code that slices by byte index produces broken frames.</p>
-      <div class="code">
-        <div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><span class="file">wcwidth behavior</span><button class="code-copy">copy</button></div>
-<pre><code>from wcwidth import wcswidth, wcwidth
-
-for s in ["abc", "日本語", "e\u0301", "👩‍💻"]:
-    print(repr(s), "cells:", wcswidth(s), "codepoints:", len(s))
-
-# 'abc'     cells: 3  codepoints: 3
-# '日本語'   cells: 6  codepoints: 3
-# 'é'       cells: 1  codepoints: 2
-# '👩‍💻'     cells: 2  codepoints: 3
-</code></pre>
-      </div>
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <caption>Rules for string handling in a TUI</caption>
-          <thead><tr><th>Do</th><th>Do not</th></tr></thead>
-          <tbody>
-            <tr><td>Truncate by display width, then append an ellipsis within budget</td><td>Slice at a byte offset and hope it lands on a boundary</td></tr>
-            <tr><td>Sanitize control characters before rendering</td><td>Print raw filenames from the filesystem</td></tr>
-            <tr><td>Use grapheme clusters for cursor movement</td><td>Move “one char” at a time through combining marks</td></tr>
-            <tr><td>Test with CJK, emoji, RTL and combining accents</td><td>Test only with ASCII and call it done</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h3 id="l12-6"><span class="h3n">12.6</span> Input is a parser, and parsers have bugs</h3>
-      <p>A key press is a byte sequence. <code>a</code> is one byte; an arrow key is
-      <code>\x1b[A</code>; <code>Alt+x</code> is often <code>\x1b x</code>; a paste is a stream
-      bounded by bracketed-paste markers. Ambiguity is inherent: a lone <code>ESC</code> and the
-      start of a sequence look identical until time passes.</p>
-      <div class="term">
-        <div class="bar">See what your terminal actually sends</div>
-        <div class="body">
-<span class="ln cmd">cat -v</span>
-<span class="ln cmt"># press arrows, Home, End, F1, Alt+x, Ctrl+arrow; then Ctrl+C</span>
-<span class="ln out">^[[A^[[B^[[H^[[F^[OP^[x^[[1;5C</span>
-<span class="ln cmd">infocmp -1 xterm-256color | grep -E 'kcuu1|khome|kf1'</span>
-<span class="ln out">	kcuu1=\EOA,</span>
-        </div>
-      </div>
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <caption>Keyboard protocols, oldest to newest</caption>
-          <thead><tr><th>Protocol</th><th>What it adds</th><th>Support</th></tr></thead>
-          <tbody>
-            <tr><td>Legacy terminfo</td><td>Fixed sequences per terminal type</td><td>Universal, ambiguous</td></tr>
-            <tr><td>xterm <code>modifyOtherKeys</code></td><td>Modifier combinations for ordinary keys</td><td>Wide</td></tr>
-            <tr><td>Kitty keyboard protocol</td><td>Unambiguous key events, key release, repeat</td><td>Kitty, WezTerm, foot, Ghostty, recent others</td></tr>
-            <tr><td>Win32 input mode (ConPTY)</td><td>Windows key events transcoded</td><td>Windows Terminal</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="callout note">
-        <span class="ct">Escape-sequence injection is your bug too</span>
-        If your TUI renders a filename, a chat message or a mail subject that contains
-        <code>\x1b]52;…</code>, the terminal may interpret it. Strip or escape C0/C1 control
-        characters from every untrusted string before it reaches the screen. Your renderer is a
-        security boundary whether you planned for it or not.
-      </div>
-
-        <h3 id="l12-7"><span class="h3n">12.7</span> Architecture: model, update, view, diff</h3>
-      <p>The pattern that scales is boring: keep all state in one model, express input as
-      messages, update the model in one function, render the model into an off-screen buffer, then
-      write only the cells that changed. This is the same architecture as Elm, Redux and Bubble
-      Tea, and it makes testing possible without a terminal.</p>
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <caption>The loop, decomposed</caption>
-          <thead><tr><th>Stage</th><th>Responsibility</th><th>Testable without a PTY?</th></tr></thead>
-          <tbody>
-            <tr><td>Input parser</td><td>Bytes → semantic key events</td><td class="good">Yes, with a byte corpus</td></tr>
-            <tr><td>Update</td><td>State + message → new state + side effects</td><td class="good">Yes, pure function</td></tr>
-            <tr><td>View</td><td>State → buffer of cells</td><td class="good">Yes, snapshot the buffer</td></tr>
-            <tr><td>Diff / flush</td><td>Buffer diff → escape sequences → stdout</td><td class="mid">Yes, with a fake writer</td></tr>
-            <tr><td>Event loop</td><td>poll input, timers, resize, async results</td><td class="bad">Needs a PTY or an abstraction</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <ul>
-        <li><b>Double buffer.</b> Keep <code>previous</code> and <code>next</code> grids; emit cursor moves only for changed cells. Full repaints are for resize and corruption.</li>
-        <li><b>Frame budget.</b> 16 ms is a game budget; a TUI can live at 30 fps and should idle at 0 fps. Redraw on events, not on a timer, unless you are animating.</li>
-        <li><b>Bounded work per frame.</b> If scanning a million files takes 4 seconds, show progress and keep the UI responsive; never block the event loop on I/O.</li>
-        <li><b>Backpressure.</b> Batch high-frequency events (scroll, resize) and coalesce redraws.</li>
-        <li><b>Cancellation.</b> A search that is superseded must stop; otherwise typing becomes slower the longer you type.</li>
-      </ul>
-      <div class="callout note">
-        <span class="ct">Sanitize at the boundary, not at the renderer</span>
-        Convert untrusted strings into a “safe text” type when they enter the model — strip
-        control characters, normalize newlines, cap length. If every widget has to remember to
-        sanitize, one will forget. Make the unsafe path impossible to represent.
-      </div>
-
-      <h3 id="l12-8"><span class="h3n">12.8</span> Four implementations, one shape</h3>
-      <h4>Rust — ratatui + crossterm</h4>
-      <div class="code">
-        <div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="lang">rust</span><span class="file">src/main.rs</span><button class="code-copy">copy</button></div>
-<pre><code>use std::io;
-
-use ratatui::{
-    backend::CrosstermBackend,
-    crossterm::{
-        event::{self, Event, KeyCode},
-        execute,
-        terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-    },
-    widgets::Paragraph,
-    Terminal,
-};
-
-fn main() -&gt; io::Result&lt;()&gt; {
-    enable_raw_mode()?;
-    let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen)?;
-
-    let backend = CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend)?;
-    let mut count: i64 = 0;
-
-    loop {
-        terminal.draw(|frame| {
-            let text = format!("count: {count}\n\nj/k change · q quit");
-            frame.render_widget(Paragraph::new(text), frame.area());
-        })?;
-
-        if let Event::Key(key) = event::read()? {
-            match key.code {
-                KeyCode::Char('q') =&gt; break,
-                KeyCode::Char('j') =&gt; count += 1,
-                KeyCode::Char('k') =&gt; count -= 1,
-                _ =&gt; {}
-            }
-        }
-    }
-
-    disable_raw_mode()?;
-    execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
-    terminal.show_cursor()?;
-    Ok(())
-}
-</code></pre>
-      </div>
-      <p><code>Cargo.toml</code> needs <code>ratatui = "0.29"</code> and
-      <code>crossterm = "0.28"</code>. Note the drop guard problem: if <code>draw</code> returns an
-      error and you use <code>?</code>, the terminal is left in raw mode. Wrap the loop in a
-      function and restore in a <code>Drop</code> implementation or a scope guard.</p>
-
-      <h4>Go — Bubble Tea</h4>
-      <div class="code">
-        <div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="lang">go</span><span class="file">main.go</span><button class="code-copy">copy</button></div>
-<pre><code>package main
-
-import (
-    "fmt"
-    "os"
-
-    tea "github.com/charmbracelet/bubbletea"
-)
-
-type model struct{ count int }
-
-func (m model) Init() tea.Cmd { return nil }
-
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-    switch msg := msg.(type) {
-    case tea.KeyMsg:
-        switch msg.String() {
-        case "q", "ctrl+c":
-            return m, tea.Quit
-        case "j", "up":
-            m.count++
-        case "k", "down":
-            m.count--
-        }
-    }
-    return m, nil
-}
-
-func (m model) View() string {
-    return fmt.Sprintf("count: %d\n\nj/k change · q quit\n", m.count)
-}
-
-func main() {
-    p := tea.NewProgram(model{}, tea.WithAltScreen())
-    if _, err := p.Run(); err != nil {
-        fmt.Fprintln(os.Stderr, err)
-        os.Exit(1)
-    }
-}
-</code></pre>
-      </div>
-      <p><code>go mod init example/tui &amp;&amp; go get github.com/charmbracelet/bubbletea</code>.
-      Bubble Tea handles raw mode, the alternate screen and restore-on-exit; your code is the
-      <code>Update</code> function.</p>
-
-      <h4>Python — Textual</h4>
-      <div class="code">
-        <div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><span class="file">counter.py</span><button class="code-copy">copy</button></div>
-<pre><code>from textual.app import App, ComposeResult
-from textual.containers import Center, Middle
-from textual.widgets import Footer, Header, Static
-
-
-class Counter(App):
-    BINDINGS = [
-        ("q", "quit", "Quit"),
-        ("j", "inc", "+1"),
-        ("k", "dec", "-1"),
-    ]
-
-    count = 0
-
-    def compose(self) -&gt; ComposeResult:
-        yield Header()
-        with Middle():
-            with Center():
-                yield Static("0", id="value")
-        yield Footer()
-
-    def action_inc(self) -&gt; None:
-        self.count += 1
-        self.query_one("#value", Static).update(str(self.count))
-
-    def action_dec(self) -&gt; None:
-        self.count -= 1
-        self.query_one("#value", Static).update(str(self.count))
-
-
-if __name__ == "__main__":
-    Counter().run()
-</code></pre>
-      </div>
-      <p>Textual gives you CSS-like styling, widgets and a dev console (<code>textual run --dev</code>).
-      It is heavier than a hand-written renderer but dramatically faster to build with, and it
-      runs over SSH.</p>
-
-      <h4>C — ncurses, the baseline</h4>
-      <div class="code">
-        <div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="lang">c</span><span class="file">demo.c</span><button class="code-copy">copy</button></div>
-<pre><code>#include &lt;ncurses.h&gt;
-
-int main(void) {
-    int ch;
-
-    initscr();              /* allocate the screen and enter alternate mode */
-    raw();                  /* no line buffering, no signal keys */
-    noecho();               /* do not print what the user types */
-    keypad(stdscr, TRUE);   /* decode arrow/function keys */
-    curs_set(0);            /* hide the cursor */
-
-    printw("count: 0\n\nj/k change, q quit");
-    refresh();
-
-    int count = 0;
-    while ((ch = getch()) != 'q') {
-        if (ch == 'j' || ch == 'k') {
-            count += (ch == 'j') ? 1 : -1;
-            clear();
-            printw("count: %d\n\nj/k change, q quit", count);
-            refresh();
-        } else if (ch == KEY_RESIZE) {
-            clear();
-            printw("resized: %dx%d", COLS, LINES);
-            refresh();
-        }
-    }
-
-    endwin();               /* restore the terminal — mandatory */
-    return 0;
-}
-</code></pre>
-      </div>
-      <div class="term">
-        <div class="bar">Build and link</div>
-        <div class="body">
-<span class="ln cmd">cc -Wall -Wextra -o demo demo.c -lncurses</span>
-<span class="ln cmd">./demo</span>
-<span class="ln cmd">ldd ./demo</span>
-<span class="ln out">linux-vdso.so.1 … libncurses.so.6 … libc.so.6</span>
-<span class="ln cmt"># static build for a rescue image:</span>
-<span class="ln cmd">cc -static -O2 -o demo-static demo.c -lncurses</span>
-        </div>
-      </div>
-      <div class="callout note">
-        <span class="ct">Same shape, different ergonomics</span>
-        All four programs: parse input → update state → render. Rust gives you compile-time
-        safety and a large widget library; Go gives you a tiny binary and a great concurrency
-        story; Python gives you speed of iteration; C gives you the smallest dependency surface
-        and the most control over what the terminal sees. Pick per constraint, not per fashion.
-      </div>
-
-      <h3 id="l12-9"><span class="h3n">12.9</span> Security for TUI authors</h3>
-      <p>Your program runs with the user's privileges, reads their files and renders text from
-      hostile sources. The threat model is closer to a browser than to a CLI calculator.</p>
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <caption>Failure modes and controls</caption>
-          <thead><tr><th>Risk</th><th>Example</th><th>Control</th></tr></thead>
-          <tbody>
-            <tr><td>Escape injection</td><td>A filename contains OSC 52 and writes the clipboard</td><td>Sanitize all untrusted text; escape C0/C1; never emit OSC 52 by default</td></tr>
-            <tr><td>Terminal escape via logs</td><td>Chat message moves the cursor and spoofs a prompt</td><td>Strip control chars at ingestion; render with a safe text wrapper</td></tr>
-            <tr><td>Secret exposure in argv</td><td>Launching <code>gpg --passphrase …</code></td><td>Use file descriptors, agent protocols, <code>--passphrase-fd</code></td></tr>
-            <tr><td>Config permissions</td><td>A token in <code>~/.config/app/config</code> mode 0644</td><td>Create with 0600, refuse to run if permissions are loose</td></tr>
-            <tr><td>Symlink / temp races</td><td>Writing <code>/tmp/app.lock</code> predictably</td><td><code>mkstemp</code>, <code>O_NOFOLLOW</code>, per-user runtime dir</td></tr>
-            <tr><td>Subprocess injection</td><td>Passing a filename to a shell</td><td><code>execv</code> with an argument vector, never <code>system()</code></td></tr>
-            <tr><td>URI handler injection</td><td>Opening an untrusted <code>file://</code> or <code>smb://</code> link</td><td>Allow-list schemes; confirm before launching a handler</td></tr>
-            <tr><td>Crash dumps</td><td>A panic writes memory to disk</td><td>Disable core dumps; scrub secrets from panic messages</td></tr>
-            <tr><td>Telemetry</td><td>“Anonymous usage stats” in a privacy tool</td><td>Do not ship it. If you must, make it opt-in, documented and auditable</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="code">
-        <div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="lang">rust</span><span class="file">sanitising untrusted text</span><button class="code-copy">copy</button></div>
-<pre><code>/// Make a string safe to place in a terminal cell grid.
-/// Keeps printable characters, drops every C0/C1 control except space,
-/// and replaces the escape character outright.
-pub fn sanitize(input: &amp;str) -&gt; String {
-    input
-        .chars()
-        .filter_map(|c| {
-            let cp = c as u32;
-            let control = cp &lt; 0x20 || (0x7f..=0x9f).contains(&amp;cp);
-            if !control {
-                Some(c)
-            } else if c == '\t' {
-                Some(' ')
-            } else {
-                None
-            }
-        })
-        .collect()
-}
-</code></pre>
-      </div>
-      <div class="callout warn">
-        <span class="ct">Do not phone home</span>
-        The fastest way to destroy trust in a privacy-oriented TUI is a hidden analytics endpoint.
-        Ship with zero network calls, document every outbound connection, and make update checks
-        explicit and optional. If your binary links a crash reporter, say so in the README.
-      </div>
-      <div class="callout note">
-        <span class="ct">Privilege separation, if you need it</span>
-        A TUI that reads sensitive data should do the privileged part in a small helper and pass
-        results over a pipe. On FreeBSD, apply Capsicum to the helper (Level 09). On Linux,
-        <code>seccomp</code> + <code>no_new_privs</code> + a systemd sandbox (Level 05) give you a
-        similar reduction without changing the UI code.
-      </div>
-
-        <h3 id="l12-10"><span class="h3n">12.10</span> Testing a program whose output is a terminal</h3>
-      <p>You cannot unit-test “it looks right”, but you can test the three things that produce the
-      look: the model, the buffer and the escape stream. Then you test the integration in a real
-      PTY.</p>
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <caption>Test layers</caption>
-          <thead><tr><th>Layer</th><th>Tool</th><th>What it catches</th></tr></thead>
-          <tbody>
-            <tr><td>Pure update function</td><td>Native unit tests</td><td>State bugs, key handling, edge cases</td></tr>
-            <tr><td>Rendered buffer</td><td>ratatui <code>TestBackend</code>, Textual pilot</td><td>Layout regressions, truncation, missing labels</td></tr>
-            <tr><td>Snapshot</td><td><code>insta</code>, golden files</td><td>Unintended visual changes across refactors</td></tr>
-            <tr><td>PTY integration</td><td><code>expectrl</code>, <code>pexpect</code>, <code>portable-pty</code></td><td>Raw mode, alternate screen, resize, exit restore</td></tr>
-            <tr><td>Terminal recording</td><td><code>vhs</code>, <code>asciinema</code></td><td>What a human actually sees (and a README asset)</td></tr>
-            <tr><td>Input fuzzing</td><td><code>cargo fuzz</code>, <code>afl</code></td><td>Parser panics on malformed escape sequences</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="code">
-        <div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="lang">rust</span><span class="file">tests/render.rs — buffer assertions without a terminal</span><button class="code-copy">copy</button></div>
-<pre><code>use ratatui::{backend::TestBackend, Terminal};
-
-#[test]
-fn renders_the_counter() {
-    let backend = TestBackend::new(40, 10);
-    let mut terminal = Terminal::new(backend).unwrap();
-
-    terminal
-        .draw(|frame| {
-            frame.render_widget("count: 3", frame.area());
-        })
-        .unwrap();
-
-    let buffer = terminal.backend().buffer();
-    let mut text = String::new();
-    for y in 0..buffer.area.height {
-        for x in 0..buffer.area.width {
-            text.push_str(buffer[(x, y)].symbol());
-        }
-        text.push('\n');
-    }
-
-    assert!(text.contains("count: 3"));
-}
-</code></pre>
-      </div>
-      <div class="code">
-        <div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><span class="file">test_pty.py — drive the real binary</span><button class="code-copy">copy</button></div>
-<pre><code>import pexpect
-
-def test_quit_restores_screen():
-    child = pexpect.spawn("./target/release/demo", dimensions=(24, 80))
-    child.expect("count: 0")
-    child.send("jj")
-    child.expect("count: 2")
-    child.send("q")
-    child.expect(pexpect.EOF)
-    child.close()
-    assert child.exitstatus == 0
-</code></pre>
-      </div>
-      <div class="code">
-        <div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="lang">tape</span><span class="file">demo.tape — VHS</span><button class="code-copy">copy</button></div>
-<pre><code>Output demo.gif
-
-Set FontSize 14
-Set Width 900
-Set Height 500
-Set Theme "Catppuccin Mocha"
-
-Type "./demo"
-Enter
-Sleep 800ms
-Type "jjjj"
-Sleep 500ms
-Type "q"
-Sleep 800ms
-</code></pre>
-      </div>
-      <div class="term">
-        <div class="bar">Record and replay</div>
-        <div class="body">
-<span class="ln cmd">vhs demo.tape</span>
-<span class="ln out">[info] recording demo.gif</span>
-<span class="ln cmd">asciinema rec session.cast</span>
-<span class="ln cmd">asciinema play session.cast</span>
-<span class="ln cmd">tmux new -d -s t './demo'</span>
-<span class="ln cmd">tmux capture-pane -pt t | head -5</span>
-<span class="ln out">count: 0</span>
-<span class="ln cmd">tmux kill-session -t t</span>
-        </div>
-      </div>
-      <div class="callout verify">
-        <span class="ct">The exit test is the one people skip</span>
-        Run your TUI, press <span class="kbd">Ctrl</span>+<span class="kbd">C</span>, and check that
-        the shell still echoes, still has line editing, and still shows the cursor. Then kill your
-        process with <code>SIGKILL</code> and check again — you cannot restore from a signal you
-        cannot catch, which is why the alternate screen and raw mode should be exited as early as
-        possible and why a wrapper that resets the terminal is a reasonable safety net.
-      </div>
-
-      <h3 id="l12-11"><span class="h3n">12.11</span> Shipping it: static binaries, man pages, signatures</h3>
-      <div class="term">
-        <div class="bar">Cross-compile</div>
-        <div class="body">
-<span class="ln cmt"># Linux, fully static (musl)</span>
-<span class="ln cmd">rustup target add x86_64-unknown-linux-musl</span>
-<span class="ln cmd">cargo build --release --target x86_64-unknown-linux-musl</span>
-<span class="ln cmd">file target/x86_64-unknown-linux-musl/release/demo</span>
-<span class="ln out">ELF 64-bit LSB executable, statically linked, stripped</span>
-<span class="ln cmt"># Go: Linux, FreeBSD, Windows from one machine</span>
-<span class="ln cmd">CGO_ENABLED=0 GOOS=linux   GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o demo-linux .</span>
-<span class="ln cmd">CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o demo-freebsd .</span>
-<span class="ln cmd">CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o demo.exe .</span>
-        </div>
-      </div>
-      <div class="code">
-        <div class="code-head"><span class="dots"><i></i><i></i><i></i></span><span class="lang">mdoc</span><span class="file">demo.1 — a real man page</span><button class="code-copy">copy</button></div>
-<pre><code>.Dd October 21, 2026
-.Dt DEMO 1
-.Os
-.Sh NAME
-.Nm demo
-.Nd a minimal terminal counter
-.Sh SYNOPSIS
-.Nm
-.Op Fl -plain
-.Op Fl -version
-.Sh DESCRIPTION
-.Nm
-increments and decrements a counter in the alternate screen.
-It never opens a network socket and writes no files.
-.Pp
-The options are:
-.Bl -tag -width Ds
-.It Fl -plain
-Print one line per key press instead of taking over the screen.
-.It Fl -version
-Print the version and exit.
-.El
-.Sh KEYS
-.Bl -tag -width Ds -compact
-.It Ic j
-Increment.
-.It Ic k
-Decrement.
-.It Ic q
-Quit and restore the terminal.
-.El
-.Sh EXIT STATUS
-.Ex -std
-.Sh SEE ALSO
-.Xr tput 1 ,
-.Xr termios 3 ,
-.Xr capsicum 4
-</code></pre>
-      </div>
-      <div class="term">
-        <div class="bar">Verify and sign the artifact</div>
-        <div class="body">
-<span class="ln cmd">man -l demo.1 | col -b | head -20</span>
-<span class="ln cmd">minisign -G -p demo.pub -s demo.key</span>
-<span class="ln cmd">minisign -Sm demo-linux -s demo.key</span>
-<span class="ln cmd">minisign -Vm demo-linux -p demo.pub</span>
-<span class="ln out">Signature and comment signature verified</span>
-<span class="ln cmd">sha256sum demo-linux &gt; demo-linux.sha256</span>
-<span class="ln cmt"># reproducible builds: pin the timestamp and strip paths</span>
-<span class="ln cmd">SOURCE_DATE_EPOCH=1700000000 cargo build --release --target x86_64-unknown-linux-musl</span>
-        </div>
-      </div>
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <caption>Distribution checklist</caption>
-          <thead><tr><th>Item</th><th>Why it matters</th></tr></thead>
-          <tbody>
-            <tr><td><code>--version</code>, <code>--help</code>, <code>--json</code></td><td>Humans, scripts and bug reports all need a stable interface</td></tr>
-            <tr><td><code>--plain</code> / <code>NO_COLOR</code></td><td>Accessibility, logging, CI, screen readers</td></tr>
-            <tr><td>Man page</td><td>The only documentation that survives a package manager</td></tr>
-            <tr><td>Shell completions</td><td>Discoverability without a GUI</td></tr>
-            <tr><td>Reproducible build + signature</td><td>Lets a distributor verify what you shipped</td></tr>
-            <tr><td>No telemetry, no auto-update</td><td>The update channel is the most valuable attack surface you could add</td></tr>
-            <tr><td>Pin license and security contact</td><td>A privacy tool with no disclosure path is a liability</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="callout note">
-        <span class="ct">FreeBSD and Linux packaging</span>
-        A FreeBSD port is a <code>Makefile</code> plus <code>distinfo</code> and
-        <code>pkg-descr</code> under <code>ports/</code>; a Debian package is
-        <code>debian/control</code>, <code>rules</code> and <code>changelog</code>; an Arch package
-        is a <code>PKGBUILD</code>. All three want a pinned source hash and a reproducible build.
-        If you cannot maintain three, ship a signed static tarball and let distributors package
-        it.
-      </div>
-
-      <h3 id="l12-12"><span class="h3n">12.12</span> Verification and references</h3>
-      <div class="checklist" data-list="L12">
-        <div class="ci"><input type="checkbox" id="c12-1"><label for="c12-1">Raw mode is restored on normal exit, panic, SIGINT and SIGTERM</label></div>
-        <div class="ci"><input type="checkbox" id="c12-2"><label for="c12-2">A buffer-level test asserts layout without a real terminal</label></div>
-        <div class="ci"><input type="checkbox" id="c12-3"><label for="c12-3">A PTY test drives the real binary and checks the exit code</label></div>
-        <div class="ci"><input type="checkbox" id="c12-4"><label for="c12-4">Untrusted strings are sanitized before rendering; no OSC 52 by default</label></div>
-        <div class="ci"><input type="checkbox" id="c12-5"><label for="c12-5">CJK, emoji and combining marks render without breaking the layout</label></div>
-        <div class="ci"><input type="checkbox" id="c12-6"><label for="c12-6">Static build produced and signed; man page installs</label></div>
-      </div>
-      <ul>
-        <li><a href="#bad-escape">§15.24 “Terminal output is just text”</a></li>
-        <li><a href="#bad-telemetry">§15.04 “A privacy tool can have analytics”</a></li>
-      </ul>
-
-      <div class="refs">
-        <h4>Reference shelf</h4>
-        <ul>
-          <li><a href="https://ratatui.rs/" rel="noopener noreferrer">Ratatui — documentation and examples</a><span class="src">ratatui.rs</span></li>
-          <li><a href="https://github.com/charmbracelet/bubbletea" rel="noopener noreferrer">Bubble Tea</a><span class="src">github.com/charmbracelet</span></li>
-          <li><a href="https://textual.textualize.io/" rel="noopener noreferrer">Textual</a><span class="src">textual.textualize.io</span></li>
-          <li><a href="https://invisible-island.net/ncurses/" rel="noopener noreferrer">ncurses</a><span class="src">invisible-island.net</span></li>
-          <li><a href="https://invisible-island.net/xterm/ctlseqs/ctlseqs.html" rel="noopener noreferrer">XTerm control sequences</a><span class="src">invisible-island.net</span></li>
-          <li><a href="https://unicode.org/reports/tr11/" rel="noopener noreferrer">Unicode Standard Annex #11 — East Asian Width</a><span class="src">unicode.org</span></li>
-          <li><a href="https://github.com/charmbracelet/vhs" rel="noopener noreferrer">VHS — terminal recordings as code</a><span class="src">github.com/charmbracelet</span></li>
-          <li><a href="https://man.freebsd.org/cgi/man.cgi?query=termios&amp;sektion=4" rel="noopener noreferrer">termios(4)</a><span class="src">man.freebsd.org</span></li>
-        </ul>
-      </div>
-
-      <div class="gate" data-quiz="L12" id="gate-L12"><div class="gate-head"><span class="lamp" aria-hidden="true"></span><h4>Validation · L12</h4><span class="gsub">75% to unlock the next level</span></div><div class="gate-body"><p class="gate-intro">Answer every question, then validate. You need 6 of 7 correct. Explanations appear after you submit — read them even when you pass.</p><div class="q" data-qi="0"><span class="qn">Q1 · single choice</span><p class="qt">Which sequence enters the alternate screen buffer?</p><div class="opts"><label class="opt"><input type="radio" name="L12-0" value="0"><span>ESC [ ? 1 0 4 9 h</span></label><label class="opt"><input type="radio" name="L12-0" value="1"><span>ESC [ 2 J</span></label><label class="opt"><input type="radio" name="L12-0" value="2"><span>ESC [ ? 2 5 l</span></label><label class="opt"><input type="radio" name="L12-0" value="3"><span>ESC [ ? 2 0 0 4 h</span></label></div><p class="qexplain"><b>Why:</b> CSI ? 1049 h saves the normal screen and switches to the alternate one; CSI ? 1049 l restores it. Always restore on exit, including on errors.</p></div><div class="q" data-qi="1"><span class="qn">Q2 · single choice</span><p class="qt">Why must a TUI restore termios settings before exiting?</p><div class="opts"><label class="opt"><input type="radio" name="L12-1" value="0"><span>Otherwise the shell is left without echo or line editing</span></label><label class="opt"><input type="radio" name="L12-1" value="1"><span>Otherwise the terminal resets its colors</span></label><label class="opt"><input type="radio" name="L12-1" value="2"><span>Otherwise the process cannot exit</span></label><label class="opt"><input type="radio" name="L12-1" value="3"><span>Otherwise the kernel panics</span></label></div><p class="qexplain"><b>Why:</b> Raw mode turns off canonical input and echo. A crash that skips restoration leaves the user typing blind, which usually requires a new terminal or `stty sane`.</p></div><div class="q" data-qi="2"><span class="qn">Q3 · type the command</span><p class="qt">Type the command that compiles demo.c against ncurses into an executable called demo.</p><div class="cmdline"><span class="prompt" aria-hidden="true">$</span><input type="text" data-cmd="2" placeholder="type the command…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Answer for question 3"></div><p class="qhint">Hint: cc -o demo demo.c -lncurses</p><p class="qexplain"><b>Why:</b> Link order matters: the library comes after the source that uses it. Add -static for a rescue binary that does not depend on shared ncurses.</p></div><div class="q" data-qi="3"><span class="qn">Q4 · select all that apply</span><p class="qt">Which are legitimate security controls for a TUI that renders untrusted text?</p><div class="opts"><label class="opt"><input type="checkbox" name="L12-3" value="0"><span>Strip C0/C1 control characters before rendering</span></label><label class="opt"><input type="checkbox" name="L12-3" value="1"><span>Disable or opt-in OSC 52 clipboard writes</span></label><label class="opt"><input type="checkbox" name="L12-3" value="2"><span>Sanitize before the text enters the model, not only at draw time</span></label><label class="opt"><input type="checkbox" name="L12-3" value="3"><span>Pass filenames through a shell for convenience</span></label></div><p class="qexplain"><b>Why:</b> Sanitizing at ingestion prevents every downstream widget from forgetting. Shelling out with untrusted filenames is a command-injection vector; use an argument vector.</p></div><div class="q" data-qi="4"><span class="qn">Q5 · single choice</span><p class="qt">How many terminal cells does the string 日本語 occupy?</p><div class="opts"><label class="opt"><input type="radio" name="L12-4" value="0"><span>6</span></label><label class="opt"><input type="radio" name="L12-4" value="1"><span>3</span></label><label class="opt"><input type="radio" name="L12-4" value="2"><span>9</span></label><label class="opt"><input type="radio" name="L12-4" value="3"><span>12</span></label></div><p class="qexplain"><b>Why:</b> Three code points, each two cells wide under East Asian Width. Layout code that assumes one cell per code point will draw a broken frame.</p></div><div class="q" data-qi="5"><span class="qn">Q6 · type the command</span><p class="qt">Type the tmux command that prints the contents of the pane in session t.</p><div class="cmdline"><span class="prompt" aria-hidden="true">$</span><input type="text" data-cmd="5" placeholder="type the command…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Answer for question 6"></div><p class="qhint">Hint: tmux capture-pane -p …</p><p class="qexplain"><b>Why:</b> capture-pane is how you assert on a real TUI in CI without a PNG. Add -S -100 to include scrollback.</p></div><div class="q" data-qi="6"><span class="qn">Q7 · single choice</span><p class="qt">What does the synchronized-output sequence ESC [ ? 2 0 2 6 h do?</p><div class="opts"><label class="opt"><input type="radio" name="L12-6" value="0"><span>Batches a frame so the terminal does not render a partial update</span></label><label class="opt"><input type="radio" name="L12-6" value="1"><span>Enables mouse reporting</span></label><label class="opt"><input type="radio" name="L12-6" value="2"><span>Clears the scrollback</span></label><label class="opt"><input type="radio" name="L12-6" value="3"><span>Hides the cursor</span></label></div><p class="qexplain"><b>Why:</b> The terminal buffers writes until the matching reset, avoiding tearing during a multi-widget redraw. It is an optimization, not a substitute for diffing.</p></div><div class="gate-actions"><button class="btn primary" data-submit="L12">Validate answers</button><span class="gate-score" data-score="L12">Not submitted</span></div><div class="gate-feedback" data-feedback="L12" role="status"></div></div></div>
-    </div>
-  </section>
-
     <!-- ======================= LEVEL 13 ======================= -->
   <section class="level is-locked" id="level-13" data-level="L13" data-title="OpSec &amp; forensics">
     <div class="level-head">
@@ -7668,20 +6943,6 @@ Quit and restore the terminal.
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API" rel="noopener noreferrer">WebAuthn API</a></li>
         </ul>
       </div>
-      <h4>Terminal and TUI development</h4>
-      <div class="refs">
-        <ul>
-          <li><a href="https://ratatui.rs/" rel="noopener noreferrer">Ratatui</a></li>
-          <li><a href="https://github.com/charmbracelet/bubbletea" rel="noopener noreferrer">Bubble Tea</a></li>
-          <li><a href="https://textual.textualize.io/" rel="noopener noreferrer">Textual</a></li>
-          <li><a href="https://invisible-island.net/ncurses/" rel="noopener noreferrer">ncurses</a></li>
-          <li><a href="https://invisible-island.net/xterm/ctlseqs/ctlseqs.html" rel="noopener noreferrer">XTerm control sequences</a></li>
-          <li><a href="https://sw.kovidgoyal.net/kitty/keyboard-protocol/" rel="noopener noreferrer">Kitty keyboard protocol</a></li>
-          <li><a href="https://unicode.org/reports/tr11/" rel="noopener noreferrer">Unicode East Asian Width</a></li>
-          <li><a href="https://github.com/charmbracelet/vhs" rel="noopener noreferrer">VHS</a></li>
-          <li><a href="https://asciinema.org/" rel="noopener noreferrer">asciinema</a></li>
-        </ul>
-      </div>
       <div class="callout note">
         <span class="ct">Link rot is a privacy feature</span>
         This page loads nothing from those domains until you click. If a link dies, search for the
@@ -7698,15 +6959,15 @@ Quit and restore the terminal.
       <h2 id="certTitle">Field certificate</h2>
       <p style="color:var(--dim);font-size:13.5px;max-width:62ch">
         Awarded for validating every gated level of this manual — from threat modeling through
-        TUI development and operational security. Keep a copy; it is worth exactly what you can
+        operational security. Keep a copy; it is worth exactly what you can
         demonstrate.
       </p>
-      <p id="certLocked" style="display: block;">Locked: validate all 14 gated levels to activate this record. Your progress is stored in this browser only.</p>
+      <p id="certLocked" style="display: block;">Locked: validate all 13 gated levels to activate this record. Your progress is stored in this browser only.</p>
       <input type="text" id="certName" placeholder="Name to print on the certificate" maxlength="60" aria-label="Name on certificate">
       <div class="cert-name" id="certNameOut">—</div>
       <div class="cert-meta">
         <span id="certDate">Not yet earned</span>
-        <span id="certScore">0 / 14 validated</span>
+        <span id="certScore">0 / 13 validated</span>
         <span>rev 2026.10</span>
       </div>
       <p style="color:var(--dim-2);font-family:var(--mono);font-size:10px;margin-top:18px;max-width:70ch">
@@ -7746,7 +7007,7 @@ Quit and restore the terminal.
 
 const STORE_KEY = "tpm.manual.v1";
 const PASS_RATIO = 0.75;
-const LEVELS = ["L0","L1","L2","L3","L4","L5","L6","L7","L8","L9","L10","L11","L12","L13"];
+const LEVELS = ["L0","L1","L2","L3","L4","L5","L6","L7","L8","L9","L10","L11","L13"];
 
 const QUIZZES = {
 
@@ -8147,46 +7408,6 @@ L11: [
     o: ["The subject line", "The recipient addresses", "The timestamp", "The message body"],
     a: [0,1,2],
     e: "Standard PGP/MIME encrypts the body and attachments. Headers remain readable by every relay, which is why sensitive subjects belong in the body." }
-],
-
-L12: [
-  { q: "Which sequence enters the alternate screen buffer?",
-    type: "single",
-    o: ["ESC [ ? 1 0 4 9 h", "ESC [ 2 J", "ESC [ ? 2 5 l", "ESC [ ? 2 0 0 4 h"],
-    a: 0,
-    e: "CSI ? 1049 h saves the normal screen and switches to the alternate one; CSI ? 1049 l restores it. Always restore on exit, including on errors." },
-  { q: "Why must a TUI restore termios settings before exiting?",
-    type: "single",
-    o: ["Otherwise the shell is left without echo or line editing", "Otherwise the terminal resets its colors", "Otherwise the process cannot exit", "Otherwise the kernel panics"],
-    a: 0,
-    e: "Raw mode turns off canonical input and echo. A crash that skips restoration leaves the user typing blind, which usually requires a new terminal or `stty sane`." },
-  { q: "Type the command that compiles demo.c against ncurses into an executable called demo.",
-    type: "cmd",
-    hint: "cc -o demo demo.c -lncurses",
-    a: [/^cc\s+-o\s+demo\s+demo\.c\s+-lncurses$/i, /^gcc\s+-o\s+demo\s+demo\.c\s+-lncurses$/i],
-    show: "cc -o demo demo.c -lncurses",
-    e: "Link order matters: the library comes after the source that uses it. Add -static for a rescue binary that does not depend on shared ncurses." },
-  { q: "Which are legitimate security controls for a TUI that renders untrusted text?",
-    type: "multi",
-    o: ["Strip C0/C1 control characters before rendering", "Disable or opt-in OSC 52 clipboard writes", "Sanitize before the text enters the model, not only at draw time", "Pass filenames through a shell for convenience"],
-    a: [0,1,2],
-    e: "Sanitizing at ingestion prevents every downstream widget from forgetting. Shelling out with untrusted filenames is a command-injection vector; use an argument vector." },
-  { q: "How many terminal cells does the string 日本語 occupy?",
-    type: "single",
-    o: ["6", "3", "9", "12"],
-    a: 0,
-    e: "Three code points, each two cells wide under East Asian Width. Layout code that assumes one cell per code point will draw a broken frame." },
-  { q: "Type the tmux command that prints the contents of the pane in session t.",
-    type: "cmd",
-    hint: "tmux capture-pane -p …",
-    a: [/^tmux\s+capture-pane\s+-pt\s+t$/i, /^tmux\s+capture-pane\s+-p\s+-t\s+t$/i],
-    show: "tmux capture-pane -pt t",
-    e: "capture-pane is how you assert on a real TUI in CI without a PNG. Add -S -100 to include scrollback." },
-  { q: "What does the synchronized-output sequence ESC [ ? 2 0 2 6 h do?",
-    type: "single",
-    o: ["Batches a frame so the terminal does not render a partial update", "Enables mouse reporting", "Clears the scrollback", "Hides the cursor"],
-    a: 0,
-    e: "The terminal buffers writes until the matching reset, avoiding tearing during a multi-widget redraw. It is an optimization, not a substitute for diffing." }
 ],
 
 L13: [
