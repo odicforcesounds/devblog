@@ -163,7 +163,7 @@
     </div>
     <p class="kicker">Sequential Master Path</p>
     <h1><span class="title-gradient">Archive Master Exam</span></h1>
-    <p class="subtitle">Step by step. Only the current level is visible. READ first, then answer the three questions for this publication. Advance only after all three are correct.</p>
+    <p class="subtitle">Step by step. Only the current level is visible. READ first, then answer the three questions for this publication. Advance only after all three are correct. The publications and their questions are shuffled on every reload.</p>
   </header>
   <main>
     <div class="level-container">
@@ -25733,6 +25733,58 @@
     <p class="footer-text">Archive Master Exam • Sequential Path</p>
     <p class="footer-text"><a class="footer-home" href="./index.html">Return To Index</a> • One Level Visible • 3 Questions Per Publication</p>
   </footer>
+  <script>
+    /* ---------- ordem aleatória das perguntas a cada carregamento ---------- */
+    (function () {
+      "use strict";
+      var container = document.querySelector(".level-container");
+      if (!container) { return; }
+
+      function shuffle(list) {
+        for (var i = list.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = list[i];
+          list[i] = list[j];
+          list[j] = tmp;
+        }
+        return list;
+      }
+
+      var levels = Array.prototype.slice.call(container.querySelectorAll(".level"));
+      if (!levels.length) { return; }
+
+      /* baralha a ordem dos níveis e reinsere-os no contentor */
+      shuffle(levels).forEach(function (level) { container.appendChild(level); });
+
+      levels.forEach(function (level, index) {
+        level.classList.toggle("active", index === 0);
+
+        /* renumera o cabeçalho para a nova posição */
+        var kicker = level.querySelector(".level-kicker");
+        if (kicker && kicker.lastElementChild) {
+          kicker.lastElementChild.textContent =
+            "Level " + (index + 1) + " of " + levels.length + " • Step By Step";
+        }
+
+        /* baralha as perguntas dentro do nível e renumera os passos */
+        var panel = level.querySelector(".exam-panel");
+        if (!panel) { return; }
+        var cards = Array.prototype.slice.call(panel.querySelectorAll(".exam-card"));
+        var advance = panel.querySelector(".advance-btn");
+        shuffle(cards).forEach(function (card) {
+          if (advance) { panel.insertBefore(card, advance); } else { panel.appendChild(card); }
+        });
+        cards.forEach(function (card, qIndex) {
+          card.setAttribute("data-q", String(qIndex + 1));
+          var tag = card.querySelector(".exam-kicker");
+          if (tag) {
+            tag.textContent = "STEP " + (qIndex + 2) + " — QUESTION " + (qIndex + 1) + " / " + cards.length;
+          }
+        });
+      });
+    })();
+  </script>
+
   <script>
     const levels = document.querySelectorAll(".level");
     const currentLevelEl = document.getElementById("current-level");
