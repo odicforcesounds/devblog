@@ -261,9 +261,14 @@ Object.defineProperty(Error, 'captureStackTrace', { value:function(){ }, writabl
 Object.defineProperty(global, 'setTimeout', { value:setTimeout, writable:true, configurable:true });
 Object.defineProperty(global, 'clearTimeout', { value:clearTimeout, writable:true, configurable:true });
 Object.defineProperty(global, 'setInterval', { value:setInterval, writable:true, configurable:true });
-Object.defineProperty(global, 'clearInterval', { value:clearInterval, writable:true, configurable:true });
-Object.defineProperty(global, 'queueMicrotask', { value:queueMicrotask, writable:true, configurable:true });
+Object.defineProperty(global, 'clearInterval', { value:clearInterval, writable:true, configurable:true });Object.defineProperty(global, 'queueMicrotask', { value:queueMicrotask, writable:true, configurable:true });
 
+
+var globalNode = null;
+function setTextContentOfGlobalRootNode(html){
+  globalNode = globalNode || { nodeType:3, textContent:'' };
+  globalNode.textContent = html;
+}
 function noop(){ }
 function rtFrame(){ rtFrameScheduled = false; try{ cb(); }catch(e){ } }
 function poll(cb){ if(rtFrameScheduled) return; rtFrameScheduled = true; global.setTimeout(rtFrame, 0); }
@@ -275,8 +280,10 @@ try {
   eval(js);
 } catch(e){
   console.error('runtime error', e && e.message ? e.message : String(e));
-  if(e && e.stack){ console.error(e.stack.split('\n').slice(0,8).join('\n')); }
-  process.exit(3);
+  if(e && e.stack){ console.error(e.stack.split('\n').slice(0,10).join('\n')); }
+  const errLine = (e && e.stack && e.stack.split('\n')[1]) || '';
+  console.error('near line in eval:', errLine);
+  process.process.process.exit(3);
 }
 
 const search = doc.body.querySelector('.search input');
