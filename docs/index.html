@@ -2776,18 +2776,49 @@ width: min(1120px, calc(100% - 9rem));
     return slot;
   }
 
-  function paint(item, iso) {
-    var slot = slotOf(item);
-    var day = String(iso).slice(0, 10);
-    slot.textContent = day;
-    slot.setAttribute("data-created", String(iso));
-    slot.title = "Creation date: " + prettyStamp(iso);
+  var MONTH_INDEX = {
+    jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
+    jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12"
+  };
+
+  // Every stamp in the archive is printed as "2026-10-24 16:12". Two shapes
+  // reach this point: ISO 8601 ("2026-10-24T16:12:00+01:00") and RFC 2822
+  // ("Sat, 24 Oct 2026 18:17:23 +0100"). Both are read as written, so no
+  // time zone can shift the printed minute.
+  function readStamp(stamp) {
+    var value = String(stamp == null ? "" : stamp).trim();
+
+    var iso = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(?::\d{2})?(Z|[+-]\d{2}:?\d{2})?$/i.exec(value);
+    if (iso) {
+      var zone = iso[3] ? iso[3].toUpperCase() : "";
+      if (zone !== "Z" && zone.length === 5) {
+        zone = zone.slice(0, 3) + ":" + zone.slice(3);
+      }
+      return { date: iso[1], clock: iso[2], machine: iso[1] + "T" + iso[2] + ":00" + zone };
+    }
+
+    var rfc = /^[A-Za-z]{3},?\s+(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})\s+(\d{2}:\d{2})(?::\d{2})?\s*(?:([+-])(\d{2})(\d{2}))?$/.exec(value);
+    var month = rfc ? MONTH_INDEX[rfc[2].toLowerCase()] : "";
+    if (rfc && month) {
+      var date = rfc[3] + "-" + month + "-" + (rfc[1].length < 2 ? "0" + rfc[1] : rfc[1]);
+      var offset = rfc[5] ? rfc[5] + rfc[6] + ":" + rfc[7] : "";
+      return { date: date, clock: rfc[4], machine: date + "T" + rfc[4] + ":00" + offset };
+    }
+
+    var clock = /T(\d{2}:\d{2})/.exec(value);
+    return { date: value.slice(0, 10), clock: clock ? clock[1] : "", machine: value };
   }
 
   function prettyStamp(stamp) {
-    var value = String(stamp);
-    var clock = /T(\d{2}:\d{2})/.exec(value);
-    return value.slice(0, 10) + (clock ? " " + clock[1] : "");
+    var parts = readStamp(stamp);
+    return parts.clock ? parts.date + " " + parts.clock : parts.date;
+  }
+
+  function paint(item, iso) {
+    var slot = slotOf(item);
+    slot.textContent = prettyStamp(iso);
+    slot.setAttribute("data-created", readStamp(iso).machine);
+    slot.title = "Creation date: " + prettyStamp(iso);
   }
 
   function files() {
@@ -2903,7 +2934,7 @@ width: min(1120px, calc(100% - 9rem));
       link.textContent = entry.title;
       cat.className = "recent-cat";
       cat.textContent = entry.category;
-      time.dateTime = entry.stamp;
+      time.dateTime = readStamp(entry.stamp).machine;
       time.textContent = prettyStamp(entry.stamp);
 
       li.appendChild(link);
