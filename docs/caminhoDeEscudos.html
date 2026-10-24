@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>O Caminho de Escudos — Caminhada Xamânica em Tempo Real</title>
+<meta name="description" content="Ritual interactivo do Macaco: nove escudos, três animais — Dragão, Tigre e Serpente — e um caminho que muda a cada hora dupla. Relógio real, fase da lua, diário e selo gerado no fim.">
+<meta property="og:title" content="O Caminho de Escudos — Caminhada Xamânica em Tempo Real">
+<meta property="og:description" content="O Macaco guia as escolhas do Dragão, do Tigre e da Serpente num caminho de nove escudos. Tempo real, lua, sigilo e diário.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="">
+<meta property="og:site_name" content="Monkey Blog">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="O Caminho de Escudos — Caminhada Xamânica em Tempo Real">
+<meta name="twitter:description" content="Nove escudos, três animais, um caminho que muda a cada hora dupla. Relógio real, lua e sigilo.">
+<meta name="date" content="2026-10-24T06:10:00+01:00">
+<style>
+:root{
+  --night:#06060a;
+  --night-2:#0a0a10;
+  --panel:#101018;
+  --panel-2:#14141d;
+  --bone:#f3eee4;
+  --muted:#b8b1a4;
+  --faint:#7e786c;
+  --ember:#ff9d57;
+  --gold:#e8c887;
+  --gold-2:#ffe3b0;
+  --jade:#69cfb9;
+  --blood:#e0796c;
+  --violet:#a98bff;
+  --line:rgba(243,238,228,.11);
+  --line-2:rgba(243,238,228,.055);
+  --serif:"Charter","Bitstream Charter","Georgia","Iowan Old Style","Palatino Linotype","Book Antiqua",serif;
+  --sans:"Inter","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  --mono:"JetBrains Mono","Cascadia Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,"DejaVu Sans Mono",monospace;
+  --cjk:"Noto Serif CJK SC","Source Han Serif SC","Songti SC","Microsoft YaHei","PingFang SC",serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:96px;-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--night);
+  color:var(--bone);
+  font-family:var(--sans);
+  font-size:clamp(16px,.25vw + 15.5px,17px);
+  line-height:1.7;
+  letter-spacing:.003em;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:
+    radial-gradient(900px 620px at 78% -12%, rgba(255,157,87,.13), transparent 62%),
+    radial-gradient(760px 560px at 8% 22%, rgba(105,207,185,.07), transparent 60%),
+    radial-gradient(1000px 700px at 52% 118%, rgba(169,139,255,.09), transparent 66%);
+}
+#embers{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.7}
+main,header,footer{position:relative;z-index:1}
+::selection{background:rgba(255,157,87,.3);color:#fff}
+a{color:var(--gold);text-decoration:none}
+a:focus-visible,button:focus-visible{outline:2px solid var(--ember);outline-offset:3px;border-radius:6px}
+p{margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding:0 26px}
+
+/* ---------- bar ---------- */
+.sky{position:sticky;top:0;z-index:40;background:rgba(6,6,10,.72);backdrop-filter:blur(16px) saturate(1.1);border-bottom:1px solid var(--line-2)}
+.sky-inner{max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 26px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand-mark{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-family:var(--cjk);font-size:1.15rem;color:var(--ember);border:1px solid rgba(255,157,87,.4);background:radial-gradient(circle at 35% 30%,rgba(255,157,87,.2),rgba(255,157,87,.03));box-shadow:0 0 26px rgba(255,157,87,.12)}
+.brand-text{color:var(--bone);font-weight:650;font-size:.92rem;line-height:1.2;letter-spacing:-.005em}
+.brand-text small{display:block;font-family:var(--mono);font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);font-weight:400;margin-top:3px}
+.nowchip{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:99px;padding:6px 12px 6px 10px;background:rgba(16,16,24,.72);font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;color:var(--muted);white-space:nowrap}
+.nowchip .dot{width:7px;height:7px;border-radius:50%;background:var(--jade);box-shadow:0 0 10px var(--jade);animation:breathe 2.8s ease-in-out infinite}
+.nowchip b{color:var(--bone);font-weight:500;font-variant-numeric:tabular-nums}
+@keyframes breathe{0%,100%{opacity:.45;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;padding:clamp(48px,7vw,86px) 0 clamp(44px,6vw,68px);border-bottom:1px solid var(--line-2);overflow:hidden}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,157,87,.45),transparent)}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(280px,.88fr);gap:clamp(32px,5vw,64px);align-items:center}
+.kicker{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ember);margin-bottom:20px}
+.kicker::before{content:"";width:36px;height:1px;background:linear-gradient(90deg,var(--ember),transparent)}
+.title{font-family:var(--serif);font-weight:600;font-size:clamp(2.7rem,6.3vw,4.9rem);line-height:1;letter-spacing:-.02em;margin:0 0 22px;color:#fbf7ef;text-wrap:balance}
+.title span{display:block;color:var(--ember);font-style:italic;letter-spacing:-.012em}
+.lede{font-family:var(--serif);font-size:clamp(1.05rem,1.4vw,1.2rem);line-height:1.7;color:#d4cdbf;max-width:60ch;margin:0 0 28px}
+.lede strong{color:#fff;font-weight:600}
+.dreamline{display:flex;align-items:center;gap:9px;margin:16px 0 0;font-family:var(--serif);font-style:italic;font-size:.95rem;color:rgba(232,200,135,.82)}
+.dreamline .zh{font-family:var(--cjk);font-size:1.15rem;font-style:normal;color:var(--gold);opacity:.9}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:8px;font-size:.83rem;font-weight:650;border:1px solid rgba(255,157,87,.55);background:linear-gradient(160deg,var(--gold-2),var(--ember));color:#160b03;cursor:pointer;text-decoration:none;transition:transform .18s,box-shadow .18s,filter .18s;font-family:var(--sans)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(255,157,87,.18);filter:brightness(1.03);text-decoration:none}
+.btn.ghost{background:transparent;color:var(--ember);border-color:rgba(255,157,87,.3)}
+.btn.ghost:hover{background:rgba(255,157,87,.08);box-shadow:none}
+.btn svg{width:16px;height:16px}
+
+/* constellation */
+.constellation{position:relative;display:flex;align-items:center;justify-content:center;min-height:320px}
+.constellation::before{content:"";position:absolute;width:78%;aspect-ratio:1;border-radius:50%;border:1px dashed rgba(243,238,228,.09);animation:spin 90s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.medals{display:flex;gap:6px;align-items:flex-end;justify-content:center;position:relative}
+.medal{display:flex;flex-direction:column;align-items:center;gap:8px;width:104px;text-decoration:none;color:var(--muted);transition:transform .22s,color .22s}
+.medal:hover{transform:translateY(-6px);color:var(--bone);text-decoration:none}
+.medal svg{width:76px;height:78px;filter:drop-shadow(0 10px 18px rgba(0,0,0,.55))}
+.medal .glyph{font-family:var(--cjk);font-size:1.36rem;fill:var(--bone)}
+.medal .label{font-family:var(--mono);font-size:.53rem;letter-spacing:.12em;text-transform:uppercase;text-align:center;line-height:1.5}
+.medal.dragao svg{color:var(--gold)}
+.medal.tigre svg{color:var(--ember)}
+.medal.serpente svg{color:var(--jade)}
+.monkey-core{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:var(--cjk);font-size:.95rem;color:rgba(243,238,228,.55);border:1px solid var(--line);border-radius:99px;padding:5px 12px;background:rgba(10,10,16,.7);letter-spacing:.1em}
+.constellation-caption{position:absolute;bottom:-26px;font-family:var(--mono);font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);text-align:center;width:100%}
+
+/* ---------- altar ---------- */
+.ritual{padding:clamp(44px,6vw,72px) 0 24px}
+.sec-head{max-width:70ch;margin-bottom:26px}
+.sec-num{font-family:var(--mono);font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--jade);display:block;margin-bottom:8px}
+.sec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.7rem,2.8vw,2.3rem);line-height:1.15;letter-spacing:-.012em;margin:0 0 10px;color:#f7f2e9}
+.sec-head p{color:var(--muted);font-size:.9rem;line-height:1.7;margin:0}
+.altar{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:16px;margin:24px 0 30px}
+.panel{border:1px solid var(--line);border-radius:16px;background:linear-gradient(165deg,var(--panel-2),var(--panel));padding:22px 24px;position:relative;overflow:hidden}
+.panel::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(440px 160px at 88% -30%,rgba(255,157,87,.1),transparent 70%)}
+.panel h3{font-family:var(--mono);font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);font-weight:500;margin:0 0 14px}
+.clock{display:flex;align-items:baseline;gap:10px;font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:#fff8ed;font-size:clamp(2.4rem,5vw,3.4rem);line-height:1}
+.clock .sep{color:var(--ember);animation:breathe 1s steps(1) infinite}
+.clock small{font-size:.4em;color:var(--faint);letter-spacing:.06em}
+.live-line{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.live-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:99px;padding:5px 11px;font-family:var(--mono);font-size:.6rem;letter-spacing:.05em;color:var(--muted);background:rgba(255,255,255,.02)}
+.live-pill b{color:var(--bone);font-weight:500}
+.live-pill .zh{font-family:var(--cjk);color:var(--gold-2);font-size:.85rem;line-height:1}
+.moon-row{display:flex;align-items:center;gap:14px;margin-top:18px;border-top:1px solid var(--line-2);padding-top:16px}
+.moon-svg{width:46px;height:46px;flex:none}
+.moon-meta{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;color:var(--faint);line-height:1.6}
+.moon-meta b{display:block;color:var(--bone);font-family:var(--sans);font-size:.82rem;font-weight:600;letter-spacing:0;margin-bottom:2px}
+.altar-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.mini-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:rgba(255,255,255,.025);color:var(--muted);border-radius:7px;padding:7px 11px;font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:color .15s,border-color .15s,background .15s}
+.mini-btn:hover{color:var(--bone);border-color:rgba(255,157,87,.35);background:rgba(255,157,87,.06)}
+.mini-btn svg{width:14px;height:14px}
+
+/* meters */
+.meters{display:grid;gap:11px;margin-top:4px}
+.meter{display:grid;grid-template-columns:82px minmax(0,1fr) 34px;gap:10px;align-items:center}
+.meter-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.meter-track{height:7px;border-radius:99px;background:rgba(255,255,255,.05);overflow:hidden}
+.meter-fill{display:block;height:100%;width:0;border-radius:99px;transition:width .5s cubic-bezier(.2,.7,.2,1)}
+.meter-fill.lei{background:linear-gradient(90deg,rgba(232,200,135,.3),var(--gold))}
+.meter-fill.coragem{background:linear-gradient(90deg,rgba(255,157,87,.3),var(--ember))}
+.meter-fill.silencio{background:linear-gradient(90deg,rgba(105,207,185,.3),var(--jade))}
+.meter-count{font-family:var(--mono);font-size:.6rem;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.journal{margin-top:18px;border-top:1px solid var(--line-2);padding-top:14px}
+.journal h4{font-family:var(--mono);font-size:.53rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);font-weight:500;margin:0 0 8px}
+.journal ol{list-style:none;margin:0;padding:0;max-height:150px;overflow:auto;scrollbar-width:thin}
+.journal li{font-family:var(--mono);font-size:.58rem;line-height:1.6;color:var(--muted);padding:5px 0;border-bottom:1px dashed rgba(243,238,228,.07);display:flex;gap:8px}
+.journal li:last-child{border-bottom:0}
+.journal time{color:var(--ember);flex:none}
+.journal .empty{color:var(--faint);font-style:italic;border:0}
+
+/* ---------- path ---------- */
+.path{position:relative;margin:10px 0 0}
+.path::before{content:"";position:absolute;left:31px;top:20px;bottom:20px;width:1px;background:linear-gradient(180deg,rgba(255,157,87,.4),rgba(105,207,185,.35),rgba(169,139,255,.3),transparent)}
+.station{display:grid;grid-template-columns:64px minmax(0,1fr);gap:20px;padding-bottom:22px;position:relative}
+.node{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;position:relative;border:1px solid var(--line);background:radial-gradient(circle at 36% 30%,rgba(255,255,255,.06),rgba(8,8,12,.9));color:var(--faint);transition:border-color .3s,color .3s,box-shadow .3s,transform .3s}
+.node .num{font-family:var(--mono);font-size:.62rem;letter-spacing:.04em;color:inherit}
+.node .zh{font-family:var(--cjk);font-size:1.2rem;line-height:1}
+.node .zh{display:none}
+.station.done .node{border-color:rgba(232,200,135,.5);color:var(--gold-2);box-shadow:0 0 0 4px rgba(232,200,135,.06),0 0 22px rgba(232,200,135,.16)}
+.station.done .node .num{display:none}
+.station.done .node .zh{display:block}
+.station.current .node{border-color:rgba(255,157,87,.7);color:var(--ember);box-shadow:0 0 0 5px rgba(255,157,87,.08),0 0 28px rgba(255,157,87,.22);transform:scale(1.04)}
+.station.current .node::after{content:"";position:absolute;inset:-7px;border-radius:50%;border:1px solid rgba(255,157,87,.35);animation:halo 2.6s ease-out infinite}
+@keyframes halo{0%{transform:scale(.9);opacity:.9}70%{transform:scale(1.22);opacity:0}100%{opacity:0}}
+.station.locked{opacity:.55}
+.station.locked .card{filter:saturate(.75)}
+.card{border:1px solid var(--line);border-radius:14px;background:linear-gradient(165deg,var(--panel-2),var(--panel));padding:20px 22px;position:relative}
+.station.current .card{border-color:rgba(255,157,87,.3);background:linear-gradient(165deg,rgba(255,157,87,.05),var(--panel) 55%)}
+.tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);border:1px solid var(--line);border-radius:99px;padding:3px 9px;margin-bottom:10px}
+.tag .zh{font-family:var(--cjk);font-size:.85rem;color:var(--gold-2)}
+.tag.tigre .zh{color:var(--ember)}
+.tag.serpente .zh{color:var(--jade)}
+.card h3{font-family:var(--serif);font-weight:600;font-size:1.22rem;line-height:1.3;letter-spacing:-.005em;margin:0 0 8px;color:#f7f2e8}
+.voice{display:flex;align-items:center;gap:7px;margin:8px 0 2px;font-family:var(--sans);font-size:.63rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.voice .zh{font-family:var(--cjk);font-size:.9rem;letter-spacing:0;color:var(--gold)}
+.whisper{font-family:var(--serif);font-style:italic;font-size:.9rem;line-height:1.65;color:var(--muted);margin:0 0 16px}
+.options{display:grid;gap:9px}
+.option{display:flex;align-items:flex-start;gap:10px;text-align:left;border:1px solid var(--line);border-radius:9px;padding:11px 13px;background:rgba(255,255,255,.02);color:#ddd6c9;font-size:.86rem;line-height:1.55;cursor:pointer;transition:border-color .15s,background .15s,transform .15s;font-family:var(--sans)}
+.option:hover{border-color:rgba(255,157,87,.4);background:rgba(255,157,87,.06);transform:translateX(3px)}
+.option:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.option .mark{font-family:var(--mono);font-size:.58rem;color:var(--ember);flex:none;padding-top:3px}
+.choice-line{display:flex;align-items:baseline;gap:10px;margin:0 0 10px;font-size:.9rem;color:#efe7d9}
+.choice-line .mark{font-family:var(--mono);font-size:.58rem;color:var(--jade);letter-spacing:.08em;text-transform:uppercase}
+.lesson{border-left:2px solid rgba(255,157,87,.5);padding:2px 0 2px 12px;margin:10px 0 12px;font-size:.84rem;line-height:1.65;color:var(--muted);font-style:italic}
+.echo{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.56rem;letter-spacing:.06em;color:var(--faint);border-bottom:1px solid rgba(243,238,228,.15);padding-bottom:2px}
+.echo:hover{color:var(--gold);border-color:rgba(232,200,135,.5);text-decoration:none}
+.sealed-note{font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.gate{border:1px dashed rgba(255,157,87,.35);border-radius:14px;padding:18px 20px;background:rgba(255,157,87,.04);margin-bottom:20px;font-size:.9rem;color:var(--muted);display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.gate b{color:var(--bone);font-weight:600}
+
+/* ---------- sigil ---------- */
+.sigil-panel{margin:26px 0 0;border:1px solid rgba(232,200,135,.28);border-radius:18px;background:radial-gradient(600px 260px at 50% 0%,rgba(232,200,135,.09),transparent 70%),linear-gradient(165deg,var(--panel-2),var(--panel));padding:26px;display:none}
+.sigil-panel.open{display:block;animation:rise .6s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.sigil-grid{display:grid;grid-template-columns:240px minmax(0,1fr);gap:26px;align-items:center}
+.sigil-art{width:100%;max-width:250px;height:auto;filter:drop-shadow(0 12px 30px rgba(0,0,0,.5))}
+.verdict-kicker{font-family:var(--mono);font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.verdict-title{font-family:var(--serif);font-size:clamp(1.5rem,2.4vw,1.95rem);line-height:1.2;margin:0 0 10px;color:#fff7e9;letter-spacing:-.01em}
+.verdict-text{font-size:.9rem;line-height:1.7;color:var(--muted);margin:0 0 14px}
+.verdict-text strong{color:var(--bone)}
+.code-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+.code{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;color:var(--gold-2);border:1px solid rgba(232,200,135,.3);border-radius:7px;padding:7px 11px;background:rgba(232,200,135,.06)}
+.sigil-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+/* ---------- codex ---------- */
+.codex{padding:clamp(40px,6vw,64px) 0}
+.codex-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px}
+.codex-card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(165deg,var(--panel-2),var(--panel));padding:22px 20px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:10px;transition:transform .2s,border-color .2s}
+.codex-card:hover{transform:translateY(-4px);border-color:rgba(232,200,135,.3)}
+.codex-card .crest{width:46px;height:48px;color:var(--gold)}
+.codex-card.tigre .crest{color:var(--ember)}
+.codex-card.serpente .crest{color:var(--jade)}
+.codex-card h3{font-family:var(--serif);font-size:1.18rem;margin:0;color:#f6f1e7;font-weight:600}
+.codex-card p{font-size:.82rem;line-height:1.65;color:var(--muted);margin:0;flex:1}
+.codex-card .link{font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);display:inline-flex;align-items:center;gap:6px;margin-top:6px}
+.codex-card .link:hover{color:var(--gold-2);text-decoration:none}
+.monkey-card{border-style:dashed;background:linear-gradient(165deg,rgba(169,139,255,.06),var(--panel))}
+.monkey-card .crest{color:var(--violet)}
+
+/* ---------- method ---------- */
+.method{padding:8px 0 60px}
+.method-box{border:1px solid var(--line);border-radius:14px;padding:22px 24px;background:rgba(12,12,18,.6);font-size:.83rem;line-height:1.75;color:var(--muted)}
+.method-box strong{color:var(--bone);font-weight:600}
+.method-box a{text-decoration:underline;text-decoration-color:rgba(232,200,135,.3);text-underline-offset:3px}
+.footer{border-top:1px solid var(--line);background:#040407;padding:34px 0 42px}
+.footer p{font-size:.72rem;line-height:1.7;color:var(--faint);max-width:70ch;margin:0}
+.footer a{color:var(--muted)}
+.nojs{max-width:1120px;margin:14px auto 0;padding:12px 17px;border:1px solid rgba(232,200,135,.35);border-radius:10px;background:rgba(232,200,135,.06);font-family:var(--sans);font-size:.82rem;color:var(--bone);line-height:1.6}
+.nojs a{color:var(--gold)}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);z-index:60;background:rgba(12,12,18,.95);border:1px solid rgba(232,200,135,.35);color:var(--bone);padding:10px 16px;border-radius:8px;font-family:var(--mono);font-size:.62rem;letter-spacing:.05em;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.reduced .node::after,.reduced .nowchip .dot,.reduced .clock .sep{animation:none}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .nowchip .dot,.clock .sep,.station.current .node::after,.constellation::before{animation:none}
+}
+@media (max-width:980px){
+  .hero-grid{grid-template-columns:1fr;gap:40px}
+  .constellation{min-height:250px}
+  .medal{width:92px}
+  .medal svg{width:66px;height:68px}
+  .altar{grid-template-columns:1fr}
+  .codex-grid{grid-template-columns:1fr}
+  .sigil-grid{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .sigil-art{max-width:210px}
+  .sigil-links{justify-content:center}
+}
+@media (max-width:700px){
+  .sky-inner{padding:10px 16px}
+  .wrap{padding:0 17px}
+  .nowchip{display:none}
+  .title{font-size:clamp(2.4rem,12vw,3.4rem)}
+  .constellation-caption{display:none}
+  .station{grid-template-columns:50px minmax(0,1fr);gap:14px}
+  .node{width:50px;height:50px}
+  .path::before{left:24px}
+  .card{padding:16px 16px}
+  .option{font-size:.83rem}
+  .panel{padding:18px}
+  .clock{font-size:clamp(2.2rem,10vw,2.8rem)}
+}
+</style>
+</head>
+<body>
+<canvas id="embers" aria-hidden="true"></canvas>
+<noscript><p class="nojs">O ritual precisa de JavaScript ativo. Os três dossiês — <a href="./gnrDragao.html">Dragão</a>, <a href="./pspTigre.html">Tigre</a> e <a href="./pjSerpente.html">Serpente</a> — continuam acessíveis sem ele.</p></noscript>
+
+<header class="sky">
+  <div class="sky-inner">
+    <a class="brand" href="./index.html" aria-label="Monkey Blog — índice">
+      <span class="brand-mark" aria-hidden="true">猴</span>
+      <span class="brand-text">Monkey Blog <small>caminho de escudos</small></span>
+    </a>
+    <div class="nowchip" aria-live="off">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="chipTime">--:--:--</span>
+      <span aria-hidden="true">·</span>
+      <b id="chipHour">—</b>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="kicker">Ritual interactivo · nove escudos · tempo real</div>
+        <h1 class="title">O Caminho de <span>Escudos</span></h1>
+        <p class="lede">O Macaco acende a fogueira e abre o mapa. Três animais emprestam-lhe os escudos: o <strong>Dragão</strong> guarda a lei, o <strong>Tigre</strong> empresta a coragem, a <strong>Serpente</strong> oferece o silêncio. Em cada estação escolhe-se um gesto — e o caminho responde em tempo real: a hora dupla chinesa roda a ordem dos escudos, a lua ilumina o selo, o diário regista cada passo.</p>
+        <p class="dreamline"><span class="zh" aria-hidden="true">道</span> O sonho cria o caminho; o caminho cria o sonho.</p>
+        <div class="actions">
+          <button class="btn" id="startBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 3l16 9-16 9z"/></svg>
+            Começar a caminhada
+          </button>
+          <a class="btn ghost" href="#escudos">Ver os escudos</a>
+        </div>
+      </div>
+
+      <div class="constellation" aria-label="Os três escudos do caminho">
+        <div class="medals">
+          <a class="medal dragao" href="./gnrDragao.html">
+            <svg viewBox="0 0 64 66" aria-hidden="true"><path d="M32 4 58 14v20c0 14-12 24-26 29C18 58 6 48 6 34V14z" fill="rgba(232,200,135,.07)" stroke="currentColor" stroke-width="1.3"/><path d="M32 11 51 18v16c0 10-8 18-19 23-11-5-19-13-19-23V18z" fill="none" stroke="currentColor" stroke-width=".7" opacity=".5"/><text class="glyph" x="32" y="39" text-anchor="middle">龍</text></svg>
+            <span class="label">Dragão<br>lei &amp; grei</span>
+          </a>
+          <a class="medal tigre" href="./pspTigre.html">
+            <svg viewBox="0 0 64 66" aria-hidden="true"><path d="M32 4 58 14v20c0 14-12 24-26 29C18 58 6 48 6 34V14z" fill="rgba(255,157,87,.07)" stroke="currentColor" stroke-width="1.3"/><path d="M32 11 51 18v16c0 10-8 18-19 23-11-5-19-13-19-23V18z" fill="none" stroke="currentColor" stroke-width=".7" opacity=".5"/><text class="glyph" x="32" y="39" text-anchor="middle">虎</text></svg>
+            <span class="label">Tigre<br>coragem</span>
+          </a>
+          <a class="medal serpente" href="./pjSerpente.html">
+            <svg viewBox="0 0 64 66" aria-hidden="true"><path d="M32 4 58 14v20c0 14-12 24-26 29C18 58 6 48 6 34V14z" fill="rgba(105,207,185,.07)" stroke="currentColor" stroke-width="1.3"/><path d="M32 11 51 18v16c0 10-8 18-19 23-11-5-19-13-19-23V18z" fill="none" stroke="currentColor" stroke-width=".7" opacity=".5"/><text class="glyph" x="32" y="39" text-anchor="middle">蛇</text></svg>
+            <span class="label">Serpente<br>silêncio</span>
+          </a>
+        </div>
+        <span class="monkey-core" aria-hidden="true">猴 · guia</span>
+        <span class="constellation-caption">três escudos · um macaco · nenhuma certeza</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="ritual" id="ritual">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="sec-num">01 · a mesa</span>
+        <h2>O altar do tempo presente</h2>
+        <p>A caminhada não começa à hora que escolhes: começa à hora em que estás. A hora dupla chinesa decide que animal abre o caminho; a lua decide a luz do selo. Nada disto sai do teu dispositivo — o ritual acontece no navegador.</p>
+      </div>
+
+      <div class="altar">
+        <div class="panel">
+          <h3>Agora · relógio local</h3>
+          <div class="clock"><span id="clockHM">--:--</span><span class="sep" aria-hidden="true">:</span><span id="clockS">--</span><small id="clockZone">UTC</small></div>
+          <div class="live-line">
+            <span class="live-pill"><span class="zh" id="hourZh" aria-hidden="true">辰</span><span>Hora do <b id="hourName">Dragão</b></span></span>
+            <span class="live-pill" id="hourRange">07h–09h</span>
+            <span class="live-pill">caminho <b id="pathRotation">—</b></span>
+          </div>
+          <div class="moon-row">
+            <svg class="moon-svg" viewBox="0 0 40 40" aria-hidden="true">
+              <circle cx="20" cy="20" r="15" fill="#12121a" stroke="rgba(243,238,228,.18)"/>
+              <circle cx="20" cy="20" r="14" fill="#e8c887" opacity=".92" id="moonLit"/>
+              <circle cx="20" cy="20" r="14" fill="#0c0c12" id="moonShadow"/>
+            </svg>
+            <div class="moon-meta"><b id="moonName">Lua —</b><span id="moonDetail">fase calculada no teu dispositivo</span></div>
+          </div>
+          <div class="altar-actions">
+            <button class="mini-btn" id="drumBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v9c0 1.7 3.1 3 7 3s7-1.3 7-3V7M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg>
+              Bater o tambor
+            </button>
+            <button class="mini-btn" id="restartBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+              Recomeçar
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>O corpo do Macaco · três pesos</h3>
+          <div class="meters" aria-live="polite">
+            <div class="meter"><span class="meter-label">Lei</span><span class="meter-track"><span class="meter-fill lei" id="mLei" role="progressbar" aria-label="Peso de Lei" aria-valuemin="0" aria-valuemax="27" aria-valuenow="0"></span></span><span class="meter-count" id="cLei">0</span></div>
+            <div class="meter"><span class="meter-label">Coragem</span><span class="meter-track"><span class="meter-fill coragem" id="mCoragem" role="progressbar" aria-label="Peso de Coragem" aria-valuemin="0" aria-valuemax="27" aria-valuenow="0"></span></span><span class="meter-count" id="cCoragem">0</span></div>
+            <div class="meter"><span class="meter-label">Silêncio</span><span class="meter-track"><span class="meter-fill silencio" id="mSilencio" role="progressbar" aria-label="Peso de Silêncio" aria-valuemin="0" aria-valuemax="27" aria-valuenow="0"></span></span><span class="meter-count" id="cSilencio">0</span></div>
+          </div>
+          <div class="journal">
+            <h4>Diário da caminhada</h4>
+            <ol id="journal" aria-live="polite"><li class="empty">Ainda não há passos. O tambor espera.</li></ol>
+          </div>
+        </div>
+      </div>
+
+      <div class="gate" id="gate">
+        <span><b>O caminho está selado.</b> Carrega em «Começar a caminhada» — a primeira estação acende-se.</span>
+        <button class="btn ghost" id="startBtn2" type="button">Abrir o caminho</button>
+      </div>
+
+      <div class="path" id="path"></div>
+
+      <div class="sigil-panel" id="sigilPanel">
+        <div class="sigil-grid">
+          <svg class="sigil-art" id="sigilArt" viewBox="0 0 240 240" role="img" aria-label="Selo gerado pela tua caminhada"></svg>
+          <div>
+            <div class="verdict-kicker">Selo da caminhada</div>
+            <h3 class="verdict-title" id="verdictTitle">—</h3>
+            <p class="verdict-text" id="verdictText">—</p>
+            <div class="code-row">
+              <code class="code" id="passportCode">ESC·0000·猴</code>
+              <button class="mini-btn" id="copyBtn" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                Copiar selo
+              </button>
+            </div>
+            <div class="sigil-links" id="sigilLinks"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="codex" id="escudos">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="sec-num">02 · os escudos</span>
+        <h2>Três animais, três dossiês</h2>
+        <p>Cada escudo é uma leitura longa — e nenhuma delas é uma certeza. A caminhada só faz sentido se voltares aos textos de onde vêm as perguntas.</p>
+      </div>
+      <div class="codex-grid">
+        <a class="codex-card dragao" href="./gnrDragao.html">
+          <svg class="crest" viewBox="0 0 64 66" aria-hidden="true"><path d="M32 4 58 14v20c0 14-12 24-26 29C18 58 6 48 6 34V14z" fill="none" stroke="currentColor" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-size="26" fill="currentColor" font-family="serif">龍</text></svg>
+          <h3>Dragão · GNR</h3>
+          <p>A Guarda que guarda a grei: 225 anos, dois dragões no brasão, a tensão entre a espada e o discernimento. O escudo da lei que se quer legítima.</p>
+          <span class="link">Ler o dossiê →</span>
+        </a>
+        <a class="codex-card tigre" href="./pspTigre.html">
+          <svg class="crest" viewBox="0 0 64 66" aria-hidden="true"><path d="M32 4 58 14v20c0 14-12 24-26 29C18 58 6 48 6 34V14z" fill="none" stroke="currentColor" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-size="26" fill="currentColor" font-family="serif">虎</text></svg>
+          <h3>Tigre · PSP</h3>
+          <p>A força pública que vive na rua: presença, trânsito, proximidade e o limite invisível entre coragem e brutalidade. O escudo da coragem com régua.</p>
+          <span class="link">Ler o dossiê →</span>
+        </a>
+        <a class="codex-card serpente" href="./pjSerpente.html">
+          <svg class="crest" viewBox="0 0 64 66" aria-hidden="true"><path d="M32 4 58 14v20c0 14-12 24-26 29C18 58 6 48 6 34V14z" fill="none" stroke="currentColor" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-size="26" fill="currentColor" font-family="serif">蛇</text></svg>
+          <h3>Serpente · PJ</h3>
+          <p>A polícia do processo: silêncio, perícia, sigilo e a memória dos arquivos. O escudo da inteligência que também pode envenenar.</p>
+          <span class="link">Ler o dossiê →</span>
+        </a>
+        <a class="codex-card monkey-card" href="./index.html">
+          <svg class="crest" viewBox="0 0 64 66" aria-hidden="true"><path d="M32 4 58 14v20c0 14-12 24-26 29C18 58 6 48 6 34V14z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 4"/><text x="32" y="41" text-anchor="middle" font-size="25" fill="currentColor" font-family="serif">猴</text></svg>
+          <h3>Macaco · o arquivo</h3>
+          <p>O Macaco não tem escudo: tem o caminho e a mania de escrever. Todos os dossiês, todas as dúvidas, na mesma página.</p>
+          <span class="link">Voltar ao índice →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="method">
+    <div class="wrap">
+      <div class="method-box">
+        <strong>Nota de método.</strong> Este é um ritual metafórico, não um serviço oficial nem um conselho operacional. Os pesos, escudos e selos são uma leitura simbólica dos dossiês do blog — <a href="./gnrDragao.html">Dragão</a>, <a href="./pspTigre.html">Tigre</a>, <a href="./pjSerpente.html">Serpente</a> — e não substituem os textos nem as fontes primárias. A hora dupla, a lua e o relógio são calculados localmente no teu dispositivo; nada é enviado. Inspirado na página <a href="./dreampath.html">The Path and the Dream</a>: o sonho cria o caminho e o caminho cria o sonho. Fecho do ritual: quando terminares, volta ao <a href="./index.html">índice</a> e lê um dossiê inteiro — o Macaco insiste.
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p><strong>Monkey Blog — OdicforceSounds</strong> · Caminho de Escudos, caminhada xamânica em tempo real. Feito com HTML, CSS3 e JavaScript puro; sem fontes externas, sem bibliotecas, sem servidores. O selo é teu; o caminho muda quando a hora muda.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+  document.documentElement.classList.add("js");
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) document.documentElement.classList.add("reduced");
+
+  var $ = function(id){ return document.getElementById(id); };
+  var STORE_KEY = "monkeyblog.caminhoEscudos.v1";
+
+  var BESTIARY = {
+    dragao:  { zh:"龍", name:"Dragão",   dossier:"./gnrDragao.html",  axis:"lei",      title:"O Escudo do Dragão" },
+    tigre:   { zh:"虎", name:"Tigre",    dossier:"./pspTigre.html",   axis:"coragem",  title:"O Escudo do Tigre" },
+    serpente:{ zh:"蛇", name:"Serpente", dossier:"./pjSerpente.html", axis:"silencio", title:"O Escudo da Serpente" },
+    macaco:  { zh:"猴", name:"Macaco",   dossier:"./index.html",      axis:null,       title:"O Escudo do Macaco" }
+  };
+
+  var STATIONS = [
+    { animal:"dragao", title:"A ordem antes da pergunta",
+      whisper:"O Dragão chega com o regulamento na mão e a grei à porta.",
+      options:[
+        { text:"Ouvir antes de mandar", w:{lei:1,coragem:2,silencio:0},
+          lesson:"A legitimidade começa por ouvir: uma ordem explicada é uma ordem que pode ser contestada." },
+        { text:"Agir antes de explicar", w:{lei:3,coragem:0,silencio:0},
+          lesson:"A eficácia ganha minutos e perde confiança — e a confiança também é segurança." }
+      ]},
+    { animal:"dragao", title:"O nome na farda",
+      whisper:"Uma farda sem nome é uma parede; uma parede não pode ser chamada a responder.",
+      options:[
+        { text:"Assinar cada acto", w:{lei:2,coragem:1,silencio:0},
+          lesson:"Um nome visível torna o poder verificável — e a verificação é o preço da farda." },
+        { text:"Dissolver-se no número", w:{lei:0,coragem:0,silencio:3},
+          lesson:"O anonimato protege o agente; em excesso, protege o abuso." }
+      ]},
+    { animal:"dragao", title:"Dois senhores, uma espada",
+      whisper:"A lei e o governo raramente chegam à mesma hora. A espada tem de escolher.",
+      options:[
+        { text:"Servir a lei contra o governo", w:{lei:1,coragem:2,silencio:0},
+          lesson:"Uma instituição que só obedece nunca chega a guardar a grei." },
+        { text:"Servir quem governa", w:{lei:2,coragem:0,silencio:1},
+          lesson:"A ordem mantém-se; a pergunta sobre quem a manda fica para depois — e os depois acumulam-se." }
+      ]},
+
+    { animal:"tigre", title:"A coragem de avançar",
+      whisper:"A rua não espera pelo relatório. O Tigre sente o cheiro do conflito.",
+      options:[
+        { text:"Entrar no conflito", w:{lei:0,coragem:3,silencio:0},
+          lesson:"A presença resolve o que o relatório não resolve; também pode criar o problema que julga resolver." },
+        { text:"Esperar o momento certo", w:{lei:1,coragem:1,silencio:1},
+          lesson:"Chegar tarde também é uma escolha — e também tem vítimas." }
+      ]},
+    { animal:"tigre", title:"A coragem de parar",
+      whisper:"Ninguém aplaude quem recua. É por isso que recuar é tão difícil.",
+      options:[
+        { text:"Recuar quando a lei manda", w:{lei:2,coragem:1,silencio:0},
+          lesson:"Parar a tempo é a forma mais discreta de coragem." },
+        { text:"Insistir até ao fim", w:{lei:0,coragem:3,silencio:0},
+          lesson:"A obstinação parece coragem até ao instante em que já é só teimosia." }
+      ]},
+    { animal:"tigre", title:"O símbolo e a rua",
+      whisper:"Um tigre no peito pode ser protecção ou aviso. A diferença está em quem olha.",
+      options:[
+        { text:"Mostrar o Tigre como protecção", w:{lei:1,coragem:2,silencio:0},
+          lesson:"Um símbolo que protege não precisa de rugir para ser respeitado." },
+        { text:"Mostrar o Tigre como aviso", w:{lei:0,coragem:2,silencio:1},
+          lesson:"O medo também ordena; mas ordena contra quem o sente." }
+      ]},
+
+    { animal:"serpente", title:"O segredo que protege",
+      whisper:"A Serpente guarda o fio da prova. Às vezes guarda também a própria sombra.",
+      options:[
+        { text:"Guardar a prova até ao julgamento", w:{lei:0,coragem:0,silencio:3},
+          lesson:"O sigilo serve o processo; quando serve a carreira, já é outra coisa." },
+        { text:"Deixar a manchete julgar primeiro", w:{lei:1,coragem:2,silencio:0},
+          lesson:"A pressa da notícia raramente espera pela sentença — e o arquivamento nunca tem a mesma primeira página." }
+      ]},
+    { animal:"serpente", title:"A perícia sem contraprova",
+      whisper:"Um laudo confiante pode dominar um processo inteiro. Desfazê-lo é muito mais difícil.",
+      options:[
+        { text:"Confiar no laudo", w:{lei:1,coragem:0,silencio:2},
+          lesson:"A técnica convence; a contraprova garante que convence pelas razões certas." },
+        { text:"Exigir contraprova", w:{lei:2,coragem:1,silencio:0},
+          lesson:"Duvidar do próprio laudo é a forma mais alta de rigor." }
+      ]},
+    { animal:"serpente", title:"O arquivo que fica",
+      whisper:"Toda a investigação deixa rastos. A pergunta é quanto tempo esses rastos vivem.",
+      options:[
+        { text:"Apagar os dados do inocente", w:{lei:2,coragem:0,silencio:1},
+          lesson:"Um arquivo sem prazo é uma pena sem julgamento." },
+        { text:"Guardar tudo, por segurança", w:{lei:0,coragem:0,silencio:3},
+          lesson:"O excesso de memória também é uma forma de poder." }
+      ]}
+  ];
+
+  var DOUBLE_HOURS = [
+    {zh:"子",name:"Rato",range:"23h–01h"},{zh:"丑",name:"Boi",range:"01h–03h"},
+    {zh:"寅",name:"Tigre",range:"03h–05h"},{zh:"卯",name:"Coelho",range:"05h–07h"},
+    {zh:"辰",name:"Dragão",range:"07h–09h"},{zh:"巳",name:"Serpente",range:"09h–11h"},
+    {zh:"午",name:"Cavalo",range:"11h–13h"},{zh:"未",name:"Cabra",range:"13h–15h"},
+    {zh:"申",name:"Macaco",range:"15h–17h"},{zh:"酉",name:"Galo",range:"17h–19h"},
+    {zh:"戌",name:"Cão",range:"19h–21h"},{zh:"亥",name:"Porco",range:"21h–23h"}
+  ];
+
+  var state = { order:[], choices:{}, started:false, stamp:"", log:[] };
+  var wantScroll = false;
+
+  function pad(n){ return n < 10 ? "0" + n : String(n); }
+  function nowDoubleHour(d){
+    var h = d.getHours();
+    return Math.floor(((h + 1) % 24) / 2);
+  }
+  function stampFor(d){
+    return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()) + "-" + nowDoubleHour(d);
+  }
+
+  function moonInfo(d){
+    var syn = 29.530588853;
+    var ref = Date.UTC(2000,0,6,18,14);
+    var days = (d.getTime() - ref) / 86400000;
+    var phase = ((days % syn) + syn) % syn;
+    var frac = phase / syn;
+    var names = ["Lua nova","Lua crescente","Quarto crescente","Gibosa crescente","Lua cheia","Gibosa minguante","Quarto minguante","Lua minguante"];
+    var idx = Math.floor((frac * 8 + 0.5)) % 8;
+    var illum = (1 - Math.cos(2 * Math.PI * frac)) / 2;
+    return { name:names[idx], illum:illum, frac:frac };
+  }
+
+  function updateSky(){
+    var d = new Date();
+    $("chipTime").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+    $("clockHM").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
+    $("clockS").textContent = pad(d.getSeconds());
+    var off = -new Date().getTimezoneOffset();
+    var offH = Math.floor(Math.abs(off) / 60);
+    var offM = Math.abs(off) % 60;
+    $("clockZone").textContent = "UTC" + (off < 0 ? "−" : "+") + pad(offH) + (offM ? ":" + pad(offM) : "");
+    var dh = DOUBLE_HOURS[nowDoubleHour(d)];
+    $("chipHour").textContent = dh.name;
+    $("hourZh").textContent = dh.zh;
+    $("hourName").textContent = dh.name;
+    $("hourRange").textContent = dh.range;
+
+    var m = moonInfo(d);
+    $("moonName").textContent = m.name;
+    $("moonDetail").textContent = Math.round(m.illum * 100) + "% iluminada · calculada localmente";
+    var shadow = $("moonShadow");
+    if (shadow) {
+      var dir = m.frac < 0.5 ? -1 : 1;
+      var shift = 28 * m.illum;
+      shadow.setAttribute("cx", String(20 + dir * shift));
+    }
+  }
+
+  function fmtTime(d){ return pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+
+  function buildOrder(){
+    var d = new Date();
+    var groups = ["dragao","tigre","serpente"];
+    // Se a hora dupla for de um dos três guardiões, é ele que abre a caminhada.
+    var hourGuardian = { "辰":"dragao", "寅":"tigre", "巳":"serpente" };
+    var rot = groups.indexOf(hourGuardian[DOUBLE_HOURS[nowDoubleHour(d)].zh]);
+    if (rot < 0) rot = nowDoubleHour(d) % 3;
+    var byAnimal = { dragao:[], tigre:[], serpente:[] };
+    STATIONS.forEach(function(st, i){ byAnimal[st.animal].push(i); });
+    var order = [];
+    // Três rondas: em cada uma, os três escudos alternam, começando pelo animal da hora.
+    for (var round = 0; round < 3; round++){
+      for (var g = 0; g < 3; g++){
+        var animal = groups[(g + rot) % 3];
+        var pick = byAnimal[animal][round];
+        if (pick !== undefined) order.push(pick);
+      }
+    }
+    return order;
+  }
+
+  function currentIndex(){
+    for (var k = 0; k < state.order.length; k++){
+      if (!(k in state.choices)) return k;
+    }
+    return -1;
+  }
+
+  function axisTotals(){
+    var t = { lei:0, coragem:0, silencio:0 };
+    Object.keys(state.choices).forEach(function(key){
+      var station = STATIONS[state.order[key]];
+      var opt = station.options[state.choices[key]];
+      t.lei += opt.w.lei; t.coragem += opt.w.coragem; t.silencio += opt.w.silencio;
+    });
+    return t;
+  }
+
+  function computeAxisCaps(){
+    var caps = { lei:0, coragem:0, silencio:0 };
+    (function walk(i, t){
+      if (i === STATIONS.length){
+        caps.lei = Math.max(caps.lei, t.lei);
+        caps.coragem = Math.max(caps.coragem, t.coragem);
+        caps.silencio = Math.max(caps.silencio, t.silencio);
+        return;
+      }
+      STATIONS[i].options.forEach(function(o){
+        walk(i + 1, { lei:t.lei + o.w.lei, coragem:t.coragem + o.w.coragem, silencio:t.silencio + o.w.silencio });
+      });
+    })(0, { lei:0, coragem:0, silencio:0 });
+    return caps;
+  }
+  var AXIS_CAPS = computeAxisCaps();
+
+  function updateMeters(){
+    var t = axisTotals();
+    [["lei","mLei","cLei"],["coragem","mCoragem","cCoragem"],["silencio","mSilencio","cSilencio"]].forEach(function(row){
+      var cap = AXIS_CAPS[row[0]] || 27;
+      var pct = Math.min(100, (t[row[0]] / cap) * 100);
+      var fill = $(row[1]);
+      fill.style.width = pct.toFixed(1) + "%";
+      fill.setAttribute("aria-valuemax", String(cap));
+      fill.setAttribute("aria-valuenow", String(t[row[0]]));
+      $(row[2]).textContent = t[row[0]];
+    });
+  }
+
+  function addLog(text){
+    var d = new Date();
+    state.log.push({ t:fmtTime(d), text:text });
+    var ol = $("journal");
+    ol.innerHTML = "";
+    if (!state.log.length){
+      var empty = document.createElement("li");
+      empty.className = "empty";
+      empty.textContent = "Ainda não há passos. O tambor espera.";
+      ol.appendChild(empty);
+      return;
+    }
+    state.log.slice().reverse().forEach(function(entry){
+      var li = document.createElement("li");
+      var time = document.createElement("time");
+      time.textContent = entry.t;
+      var span = document.createElement("span");
+      span.textContent = entry.text;
+      li.appendChild(time); li.appendChild(span);
+      ol.appendChild(li);
+    });
+  }
+
+  function shieldSvg(animal, size){
+    var colors = { dragao:"#e8c887", tigre:"#ff9d57", serpente:"#69cfb9" };
+    var c = colors[animal] || "#e8c887";
+    var zh = (BESTIARY[animal] || BESTIARY.macaco).zh;
+    return '<svg viewBox="0 0 64 66" width="' + (size||44) + '" height="' + ((size||44)+2) + '" aria-hidden="true">' +
+      '<path d="M32 3 59 13v21c0 15-13 25-27 30C18 59 5 49 5 34V13z" fill="rgba(255,255,255,.03)" stroke="' + c + '" stroke-width="1.4"/>' +
+      '<text x="32" y="41" text-anchor="middle" font-family="serif" font-size="25" fill="' + c + '">' + zh + '</text></svg>';
+  }
+
+  var path = $("path");
+
+  function renderPath(){
+    path.innerHTML = "";
+    var current = currentIndex();
+    state.order.forEach(function(stationIndex, pos){
+      var station = STATIONS[stationIndex];
+      var info = BESTIARY[station.animal];
+      var chosen = state.choices[pos];
+      var isCurrent = state.started && pos === current;
+      var locked = !state.started || (current !== -1 && pos > current);
+
+      var article = document.createElement("article");
+      article.className = "station" + (chosen !== undefined ? " done" : "") + (isCurrent ? " current" : "") + (locked ? " locked" : "");
+      article.setAttribute("data-station", pos);
+
+      var node = document.createElement("div");
+      node.className = "node";
+      node.setAttribute("aria-hidden", "true");
+      node.innerHTML = '<span class="num">' + pad(pos+1) + '</span><span class="zh">' + info.zh + '</span>';
+      article.appendChild(node);
+
+      var card = document.createElement("div");
+      card.className = "card";
+
+      var tag = document.createElement("span");
+      tag.className = "tag " + station.animal;
+      tag.innerHTML = '<span class="zh" aria-hidden="true">' + info.zh + '</span>' + info.name;
+      card.appendChild(tag);
+
+      var h3 = document.createElement("h3");
+      h3.textContent = station.title;
+      card.appendChild(h3);
+
+      if (chosen === undefined){
+        var voice = document.createElement("p");
+        voice.className = "voice";
+        voice.innerHTML = '<span class="zh" aria-hidden="true">猴</span> voz do Macaco';
+        card.appendChild(voice);
+
+        var whisper = document.createElement("p");
+        whisper.className = "whisper";
+        whisper.textContent = station.whisper;
+        card.appendChild(whisper);
+
+        var opts = document.createElement("div");
+        opts.className = "options";
+        station.options.forEach(function(option, idx){
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "option";
+          btn.disabled = !state.started || locked;
+          btn.innerHTML = '<span class="mark">' + (idx === 0 ? "A" : "B") + '</span><span>' + option.text + '</span>';
+          btn.addEventListener("click", function(){ choose(pos, idx); });
+          opts.appendChild(btn);
+        });
+        card.appendChild(opts);
+
+        if (locked && state.started){
+          var lockedNote = document.createElement("p");
+          lockedNote.className = "sealed-note";
+          lockedNote.style.marginTop = "10px";
+          lockedNote.textContent = "Selado até chegares aqui.";
+          card.appendChild(lockedNote);
+        }
+      } else {
+        var option = station.options[chosen];
+        var line = document.createElement("p");
+        line.className = "choice-line";
+        line.innerHTML = '<span class="mark">escolhido</span><span>' + option.text + '</span>';
+        card.appendChild(line);
+
+        var lesson = document.createElement("p");
+        lesson.className = "lesson";
+        lesson.textContent = option.lesson;
+        card.appendChild(lesson);
+
+        var echo = document.createElement("a");
+        echo.className = "echo";
+        echo.href = info.dossier;
+        echo.textContent = "Voltar ao dossiê do " + info.name + " →";
+        card.appendChild(echo);
+      }
+
+      article.appendChild(card);
+      path.appendChild(article);
+    });
+
+    $("pathRotation").textContent = state.order.map(function(i){ return BESTIARY[STATIONS[i].animal].name; }).join(" → ");
+    if (state.started && wantScroll && current !== -1){
+      var cur = path.querySelector(".station.current");
+      if (cur) cur.scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"center"});
+    }
+    wantScroll = false;
+  }
+
+  function choose(pos, optIndex){
+    if (!state.started || state.choices[pos] !== undefined) return;
+    if (pos !== currentIndex()) return;
+    state.choices[pos] = optIndex;
+    var station = STATIONS[state.order[pos]];
+    var info = BESTIARY[station.animal];
+    var option = station.options[optIndex];
+    addLog(info.zh + " " + info.name + " · " + option.text);
+    drum(0.7);
+    updateMeters();
+    save();
+    var complete = Object.keys(state.choices).length === state.order.length;
+    wantScroll = !complete;
+    renderPath();
+    if (complete) finish(false);
+  }
+
+  function finish(silent){
+    var totals = axisTotals();
+    var entries = [["lei",totals.lei],["coragem",totals.coragem],["silencio",totals.silencio]];
+    entries.sort(function(a,b){ return b[1] - a[1]; });
+    var top = entries[0][1], bottom = entries[2][1];
+    var dominantKey = (top - bottom <= 2) ? "macaco" : entries[0][0];
+    var verdict = verdictFor(dominantKey, totals);
+
+    var seedSource = state.stamp + "|" + state.order.join(",") + "|" +
+      Object.keys(state.choices).sort(function(a,b){ return a-b; }).map(function(k){ return k + ":" + state.choices[k]; }).join(",");
+    var hash = fnv(seedSource);
+    // O eixo vencedor traduz-se no guardião que assina o selo; o Macaco assina o equilíbrio.
+    var guardianKey = dominantKey === "macaco" ? "macaco"
+      : ({ lei:"dragao", coragem:"tigre", silencio:"serpente" })[dominantKey];
+    drawSigil(hash, guardianKey, moonInfo(new Date()).illum);
+    $("passportCode").textContent = "ESC·" + hex4(hash >>> 16) + "·" + BESTIARY[guardianKey].zh;
+    $("verdictTitle").textContent = verdict.title;
+    $("verdictText").innerHTML = verdict.text;
+
+    var links = $("sigilLinks");
+    links.innerHTML = "";
+    var primary = BESTIARY[guardianKey === "macaco" ? "dragao" : guardianKey];
+    [primary, BESTIARY.dragao, BESTIARY.tigre, BESTIARY.serpente].filter(function(v,i,arr){
+      return arr.findIndex(function(x){ return x.dossier === v.dossier; }) === i;
+    }).forEach(function(info){
+      var a = document.createElement("a");
+      a.className = "mini-btn";
+      a.href = info.dossier;
+      a.textContent = "Ler o dossiê do " + info.name;
+      links.appendChild(a);
+    });
+    var again = document.createElement("button");
+    again.type = "button";
+    again.className = "mini-btn";
+    again.textContent = "Recomeçar o ritual";
+    again.addEventListener("click", restart);
+    links.appendChild(again);
+
+    var panel = $("sigilPanel");
+    panel.classList.add("open");
+    if (!silent){
+      addLog("O selo foi fechado. " + verdict.title + ".");
+      if (!reduce) setTimeout(function(){ panel.scrollIntoView({behavior:"smooth", block:"center"}); }, 140);
+    }
+  }
+
+  function verdictFor(key, totals){
+    if (key === "macaco"){
+      return {
+        title: "O Escudo do Macaco — o caminho equilibrado",
+        text: "Nenhum escudo mandou sozinho: <strong>lei " + totals.lei + "</strong>, <strong>coragem " + totals.coragem + "</strong> e <strong>silêncio " + totals.silencio + "</strong> dividiram o peso. É o caminho mais difícil de sustentar — porque exige perguntar sempre. O Macaco não guarda a grei, a rua nem o processo: guarda a dúvida que impede cada um de se tornar absoluto."
+      };
+    }
+    if (key === "lei"){
+      return {
+        title: "O Escudo do Dragão — a ordem que se quer legítima",
+        text: "O caminho inclinou-se para a lei: <strong>" + totals.lei + " de 27</strong> pesos. Uma força que se explica, que assina os actos e que serve a grei antes do governo é a melhor versão do Dragão. Mas atenção ao aviso do próprio dossiê: a lei sem grei é só uma espada com bons modos."
+      };
+    }
+    if (key === "coragem"){
+      return {
+        title: "O Escudo do Tigre — a coragem que precisa de régua",
+        text: "O caminho inclinou-se para a coragem: <strong>" + totals.coragem + " de 27</strong> pesos. Entrar no conflito, proteger a rua e recusar a paralisia são virtudes reais. O limite é a proporcionalidade: sem ela, a coragem transforma-se naquilo que jurou combater."
+      };
+    }
+    return {
+      title: "O Escudo da Serpente — o silêncio que serve a prova",
+      text: "O caminho inclinou-se para o silêncio: <strong>" + totals.silencio + " de 27</strong> pesos. Guardar a prova, exigir rigor e não alimentar o espectáculo são formas altas de responsabilidade. Mas o silêncio sem escrutínio é impunidade — a mesma serpente que protege o processo pode proteger o abuso."
+    };
+  }
+
+  function fnv(str){
+    var h = 2166136261;
+    for (var i = 0; i < str.length; i++){
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+  function hex4(n){ return ("0000" + (n >>> 0).toString(16).toUpperCase()).slice(-4); }
+
+  function drawSigil(seed, dominantKey, illum){
+    var svg = $("sigilArt");
+    var colors = { dragao:"#e8c887", tigre:"#ff9d57", serpente:"#69cfb9", macaco:"#a98bff" };
+    var c = colors[dominantKey] || "#e8c887";
+    var rnd = mulberry(seed);
+    var parts = [];
+    parts.push('<circle cx="120" cy="120" r="112" fill="none" stroke="rgba(243,238,228,.12)" stroke-width=".8"/>');
+    parts.push('<circle cx="120" cy="120" r="96" fill="none" stroke="' + c + '" stroke-opacity=".28" stroke-width=".8" stroke-dasharray="2 6"/>');
+    parts.push('<circle cx="120" cy="120" r="104" fill="rgba(255,255,255,.012)"/>');
+    var step = 30, start = 75;
+    var pts = [];
+    for (var row = 0; row < 5; row++){
+      for (var col = 0; col < 3; col++){
+        if (rnd() > 0.52){
+          var x = start + col * step;
+          var y = start + row * step;
+          pts.push([x,y]);
+          if (col < 2) pts.push([240 - x, y]);
+          if (col === 2) pts.push([120, y]);
+        }
+      }
+    }
+    pts.forEach(function(p){
+      parts.push('<circle cx="' + p[0] + '" cy="' + p[1] + '" r="3.1" fill="' + c + '" fill-opacity=".9"/>');
+    });
+    if (pts.length > 2){
+      parts.push('<polyline points="' + pts.slice(0, 6).map(function(p){ return p[0] + "," + p[1]; }).join(" ") + '" fill="none" stroke="' + c + '" stroke-opacity=".22" stroke-width=".7"/>');
+    }
+    // A lua do altar entra no selo: quanto mais cheia, mais luz no canto do escudo.
+    var lit = typeof illum === "number" ? illum : 0.5;
+    var mx = 196, my = 42, mr = 10;
+    parts.push('<g opacity="' + (0.35 + 0.6 * lit).toFixed(2) + '"><circle cx="' + mx + '" cy="' + my + '" r="' + mr + '" fill="#e8c887"/><circle cx="' + (mx + 20 * lit) + '" cy="' + my + '" r="' + mr + '" fill="#0b0b11"/></g>');
+    parts.push('<circle cx="120" cy="120" r="24" fill="#0b0b11" stroke="' + c + '" stroke-opacity=".55"/>');
+    parts.push('<text x="120" y="129" text-anchor="middle" font-family="serif" font-size="24" fill="' + c + '">' + BESTIARY[dominantKey].zh + '</text>');
+    var stamp = state.stamp.replace(/-/g,"·");
+    parts.push('<text x="120" y="216" text-anchor="middle" font-family="monospace" font-size="7.5" letter-spacing="3" fill="rgba(243,238,228,.42)">' + stamp + '</text>');
+    svg.innerHTML = parts.join("");
+  }
+
+  function mulberry(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function save(){
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ stamp: state.stamp, choices: state.choices, started: state.started, log: state.log }));
+    } catch(e){}
+  }
+  function load(){
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return false;
+      var saved = JSON.parse(raw);
+      if (!saved || saved.stamp !== state.stamp) return false;
+      state.choices = saved.choices || {};
+      state.log = saved.log || [];
+      state.started = !!saved.started;
+      return Object.keys(state.choices).length > 0;
+    } catch(e){ return false; }
+  }
+
+  function start(){
+    if (!state.started){
+      state.started = true;
+      addLog("A caminhada começou. O caminho desta hora começa pelo " + BESTIARY[STATIONS[state.order[0]].animal].name + ".");
+      save();
+      updateMeters();
+    }
+    $("gate").style.display = "none";
+    wantScroll = true;
+    renderPath();
+    var cur = path.querySelector(".station.current") || path.querySelector(".station");
+    if (cur) cur.scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"center"});
+    drum(0.5);
+  }
+
+  function restart(){
+    if (!confirm("Recomeçar a caminhada? As escolhas desta hora perdem-se.")) return;
+    state.choices = {};
+    state.log = [];
+    state.started = false;
+    $("sigilPanel").classList.remove("open");
+    $("gate").style.display = "";
+    localStorage.removeItem(STORE_KEY);
+    addLog("O altar foi limpo. O caminho espera nova batida.");
+    updateMeters();
+    renderPath();
+    window.scrollTo({top: $("ritual").offsetTop - 70, behavior: reduce ? "auto" : "smooth"});
+  }
+
+  /* drum */
+  var audioCtx = null;
+  function drum(strength){
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!audioCtx) audioCtx = new AC();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      var t = audioCtx.currentTime;
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(120, t);
+      osc.frequency.exponentialRampToValueAtTime(52, t + 0.22);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.22 * (strength || 1), t + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.34);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.38);
+    } catch(e){}
+  }
+
+  /* embers */
+  var canvas = $("embers");
+  if (canvas && canvas.getContext){
+    var ctx = canvas.getContext("2d");
+    var w = 0, h = 0, dpr = 1, particles = [], raf = null;
+    function resize(){
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = window.innerWidth; h = window.innerHeight;
+      canvas.width = Math.floor(w * dpr); canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + "px"; canvas.style.height = h + "px";
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      var n = Math.max(18, Math.min(54, Math.floor(w / 26)));
+      particles = [];
+      for (var i = 0; i < n; i++){
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: 0.6 + Math.random() * 1.6,
+          vy: 0.12 + Math.random() * 0.45,
+          vx: (Math.random() - 0.5) * 0.12,
+          a: 0.12 + Math.random() * 0.45,
+          warm: Math.random() > 0.35
+        });
+      }
+    }
+    function draw(){
+      ctx.clearRect(0, 0, w, h);
+      for (var i = 0; i < particles.length; i++){
+        var p = particles[i];
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.warm ? "rgba(255,157,87," + p.a + ")" : "rgba(105,207,185," + p.a * 0.8 + ")";
+        ctx.fill();
+        p.y -= p.vy; p.x += p.vx;
+        if (p.y < -8){ p.y = h + 8; p.x = Math.random() * w; }
+        if (p.x < -8) p.x = w + 8;
+        if (p.x > w + 8) p.x = -8;
+      }
+      raf = window.requestAnimationFrame(draw);
+    }
+    resize();
+    window.addEventListener("resize", resize);
+    if (reduce){
+      draw(); window.cancelAnimationFrame(raf);
+    } else {
+      draw();
+    }
+    document.addEventListener("visibilitychange", function(){
+      if (document.hidden && raf){ window.cancelAnimationFrame(raf); raf = null; }
+      else if (!document.hidden && !raf && !reduce) draw();
+    });
+  }
+
+  /* copy */
+  $("copyBtn").addEventListener("click", function(){
+    var code = $("passportCode").textContent;
+    var done = function(){
+      var toast = $("toast");
+      toast.textContent = "Selo copiado · " + code;
+      toast.classList.add("show");
+      setTimeout(function(){ toast.classList.remove("show"); }, 2200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(code).then(done, done);
+    } else {
+      var ta = document.createElement("textarea");
+      ta.value = code; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch(e){}
+      document.body.removeChild(ta); done();
+    }
+  });
+
+  /* init */
+  var d0 = new Date();
+  state.stamp = stampFor(d0);
+  state.order = buildOrder();
+  updateSky();
+  setInterval(updateSky, 1000);
+
+  var resumed = load();
+  $("gate").style.display = resumed ? "none" : "";
+  renderPath();
+  updateMeters();
+  if (resumed){
+    if (Object.keys(state.choices).length === state.order.length){
+      finish(true);
+    } else if (!state.log.length){
+      addLog("Caminhada retomada. A hora dupla ainda é a mesma.");
+    }
+  }
+
+  $("startBtn").addEventListener("click", start);
+  $("startBtn2").addEventListener("click", start);
+  $("restartBtn").addEventListener("click", restart);
+  $("drumBtn").addEventListener("click", function(){ drum(0.45); addLog("Uma batida no tambor. O tempo respondeu."); });
+
+})();
+</script>
+</body>
+</html>
