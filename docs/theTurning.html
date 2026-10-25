@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+    <meta name="X-Content-Type-Options" content="nosniff">
+    <meta name="X-Frame-Options" content="DENY">
+    <meta name="Referrer-Policy" content="no-referrer">
+    <meta name="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+    <title>The Turning — A Wandering Game of Tao, Buddha and the Dark | Monkey Blog</title>
+    <meta name="description" content="A game without levels or points: begin at a gate with three doors — the way, the Buddha, the dark — and wander through sutras, mantras, five phases, trigrams, qi, dragons and dreams. Every choice opens another page from the last three publications and the English essays around them.">
+    <meta property="og:title" content="The Turning — A Wandering Game">
+    <meta property="og:description" content="Three doors, no score: wander from the Tao into a sutra, from a sutra into the five phases, from the five phases into the dark.">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Monkey Blog">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="The Turning — A Wandering Game">
+    <meta name="twitter:description" content="Begin at the gate; the choices are the only rule.">
+    <meta name="fediverse:creator" content="@TaoExpression@mastodon.social">
+    <style>
+      :root{
+        --bg:#06070a;
+        --ink:#ece6d9;
+        --dim:#b8b2a5;
+        --faint:#7e7a70;
+        --gold:#d9b26a;
+        --lotus:#d9899c;
+        --jade:#7cc4ad;
+        --indigo:#96a5d8;
+        --line:rgba(217,178,106,.18);
+        --line-soft:rgba(236,230,217,.07);
+        --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+        --han:"Noto Serif CJK SC","Source Han Serif SC","Songti SC","Noto Serif CJK JP",serif;
+        --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+        --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+      }
+      *{box-sizing:border-box}
+      html{-webkit-text-size-adjust:100%}
+      body{
+        margin:0;
+        min-height:100svh;
+        color:var(--ink);
+        font-family:var(--sans);
+        font-size:17px;
+        line-height:1.7;
+        background:
+          radial-gradient(60rem 40rem at 50% -12%,rgba(217,178,106,.10),transparent 62%),
+          radial-gradient(46rem 32rem at 104% 92%,rgba(150,165,216,.05),transparent 60%),
+          var(--bg);
+      }
+      body::after{
+        content:"";
+        position:fixed;
+        inset:0;
+        z-index:3;
+        pointer-events:none;
+        opacity:.04;
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      ::selection{background:rgba(217,178,106,.3);color:#fff}
+      a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(217,178,106,.25)}
+      a:hover{color:#fff;border-color:var(--gold)}
+      .skip{position:absolute;left:-9999px;padding:.8rem 1.2rem;background:var(--gold);color:#0a0c11;font-family:var(--mono);font-size:.72rem;z-index:99}
+      .skip:focus{left:1rem;top:1rem}
+
+      .top{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:1rem;
+        padding:.8rem clamp(1rem,4vw,2.4rem);
+        border-bottom:1px solid var(--line-soft);
+        font-family:var(--mono);
+        font-size:.62rem;
+        letter-spacing:.18em;
+        text-transform:uppercase;
+        color:var(--faint);
+      }
+      .top__home{border:0;color:var(--gold);white-space:nowrap}
+      .top__home:hover{color:var(--ink)}
+      .top__brand b{font-weight:500;color:var(--dim)}
+      .top__where{color:var(--gold);white-space:nowrap}
+      @media (max-width:600px){ .top__brand{display:none} }
+
+      main{
+        max-width:54rem;
+        margin:0 auto;
+        padding:clamp(1.4rem,4.4vh,2.8rem) clamp(1rem,4vw,2rem) 2.6rem;
+      }
+      .intro{text-align:center;margin-bottom:clamp(1rem,2.6vh,1.6rem)}
+      .intro p.kicker{
+        margin:0 0 .8rem;
+        font-family:var(--mono);
+        font-size:.6rem;
+        letter-spacing:.3em;
+        text-transform:uppercase;
+        color:var(--gold);
+      }
+      .intro h1{
+        margin:0;
+        font-family:var(--serif);
+        font-weight:400;
+        font-size:clamp(1.8rem,5vw,2.9rem);
+        line-height:1.05;
+        letter-spacing:-.02em;
+      }
+      .intro h1 span{
+        display:block;
+        margin-top:.15em;
+        font-family:var(--han);
+        font-size:.46em;
+        letter-spacing:.2em;
+        color:var(--gold);
+      }
+      .intro .sub{
+        margin:.85rem auto 0;
+        max-width:54ch;
+        color:var(--dim);
+        font-size:clamp(.92rem,1.35vw,1rem);
+        line-height:1.6;
+      }
+
+      .game{position:relative}
+      .panel{
+        position:relative;
+        padding:clamp(1.25rem,3.2vw,1.9rem);
+        border:1px solid var(--line);
+        border-radius:18px;
+        background:
+          radial-gradient(34rem 18rem at 90% -10%,rgba(217,178,106,.07),transparent 62%),
+          linear-gradient(160deg,#0d0c11,#08080c 65%);
+        box-shadow:0 26px 60px -42px rgba(0,0,0,.9);
+        min-height:clamp(17rem,40vh,23rem);
+        overflow:hidden;
+      }
+      .panel__meta{
+        display:flex;
+        align-items:baseline;
+        justify-content:space-between;
+        gap:1rem;
+        margin:0 0 .9rem;
+        font-family:var(--mono);
+        font-size:.57rem;
+        letter-spacing:.2em;
+        text-transform:uppercase;
+        color:var(--gold);
+      }
+      .panel__meta .where{color:var(--faint)}
+      .panel__glyph{
+        position:absolute;
+        right:-.5rem;
+        bottom:-1.4rem;
+        font-family:var(--han);
+        font-size:clamp(6.6rem,18vw,11rem);
+        line-height:1;
+        color:rgba(217,178,106,.07);
+        pointer-events:none;
+        user-select:none;
+      }
+      .panel h2{
+        position:relative;
+        margin:0 0 .6rem;
+        max-width:32ch;
+        font-family:var(--serif);
+        font-weight:400;
+        font-size:clamp(1.28rem,3vw,1.75rem);
+        line-height:1.22;
+        letter-spacing:-.01em;
+      }
+      .panel p.text{
+        position:relative;
+        margin:0;
+        max-width:52ch;
+        font-family:var(--serif);
+        font-size:clamp(1rem,1.7vw,1.1rem);
+        line-height:1.72;
+        color:var(--dim);
+      }
+      .panel p.text + p.text{margin-top:.7em}
+      .panel .source{
+        position:relative;
+        margin:1.15rem 0 0;
+        font-family:var(--mono);
+        font-size:.56rem;
+        letter-spacing:.13em;
+        text-transform:uppercase;
+        color:var(--faint);
+        line-height:1.8;
+      }
+      .panel .source a{color:var(--faint);border-bottom:1px solid var(--line-soft)}
+      .panel .source a:hover{color:var(--gold);border-color:var(--gold)}
+      .panel.is-turning{animation:turn .4s cubic-bezier(.2,.7,.2,1)}
+      .panel.is-back{animation:back .4s cubic-bezier(.2,.7,.2,1)}
+      @keyframes turn{from{opacity:.2;transform:translateY(14px)}to{opacity:1;transform:none}}
+      @keyframes back{from{opacity:.2;transform:translateY(-12px)}to{opacity:1;transform:none}}
+
+      .choices{
+        display:grid;
+        gap:.55rem;
+        margin-top:1rem;
+      }
+      .choices.doors{grid-template-columns:repeat(auto-fit,minmax(13rem,1fr))}
+      .choice{
+        display:flex;
+        align-items:center;
+        gap:.75rem;
+        width:100%;
+        text-align:left;
+        appearance:none;
+        border:1px solid var(--line);
+        border-radius:11px;
+        background:rgba(0,0,0,.22);
+        color:var(--dim);
+        font-family:var(--sans);
+        font-size:.95rem;
+        line-height:1.45;
+        padding:.78rem .9rem;
+        cursor:pointer;
+        transition:border-color 160ms ease,color 160ms ease,background 160ms ease,transform 120ms ease;
+      }
+      .choice:hover{border-color:var(--gold);color:var(--ink);background:rgba(217,178,106,.06)}
+      .choice:active{transform:translateY(1px)}
+      .choice:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+      .choice .n{
+        flex:0 0 auto;
+        font-family:var(--mono);
+        font-size:.6rem;
+        letter-spacing:.06em;
+        color:var(--gold);
+        border:1px solid var(--line);
+        border-radius:5px;
+        padding:.12rem .3rem;
+        line-height:1.4;
+      }
+      .choice .door-glyph{
+        flex:0 0 auto;
+        font-family:var(--han);
+        font-size:1.4rem;
+        color:var(--gold);
+        line-height:1;
+      }
+      .choice .lbl{flex:1 1 auto}
+      .choice .go{color:var(--faint);font-family:var(--mono);font-size:.62rem}
+
+      .under{
+        display:flex;
+        flex-wrap:wrap;
+        gap:.55rem;
+        align-items:center;
+        justify-content:space-between;
+        margin-top:.9rem;
+      }
+      .small{
+        appearance:none;
+        border:0;
+        background:none;
+        color:var(--faint);
+        font-family:var(--mono);
+        font-size:.6rem;
+        letter-spacing:.16em;
+        text-transform:uppercase;
+        padding:.35rem .2rem;
+        cursor:pointer;
+      }
+      .small:hover{color:var(--gold)}
+      .small:disabled{opacity:.3;cursor:default}
+      .small:focus-visible{outline:1px solid var(--gold);outline-offset:3px;border-radius:3px}
+
+      .thread{
+        display:flex;
+        flex-wrap:wrap;
+        align-items:center;
+        gap:.3rem;
+        margin-top:1.1rem;
+        min-height:1.8rem;
+        font-family:var(--han);
+        font-size:1.1rem;
+        color:rgba(217,178,106,.55);
+      }
+      .thread span{line-height:1}
+      .thread span:last-child{color:var(--gold)}
+      .thread .lbl{
+        font-family:var(--mono);
+        font-size:.55rem;
+        letter-spacing:.2em;
+        text-transform:uppercase;
+        color:var(--faint);
+        margin-right:.4rem;
+      }
+
+      .legend{
+        margin-top:1.8rem;
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));
+        gap:.6rem;
+        font-family:var(--mono);
+        font-size:.56rem;
+        letter-spacing:.12em;
+        text-transform:uppercase;
+        color:var(--faint);
+      }
+      .legend div{border-top:1px solid var(--line-soft);padding-top:.5rem}
+      .legend b{color:var(--dim);font-weight:500}
+      .legend a{color:var(--faint);border:0}
+      .legend a:hover{color:var(--gold)}
+
+      footer{border-top:1px solid var(--line);margin-top:2rem;padding:1.5rem 0 2.2rem}
+      .foot{
+        max-width:54rem;
+        margin:0 auto;
+        padding:0 clamp(1rem,4vw,2rem);
+        display:flex;
+        flex-wrap:wrap;
+        gap:.8rem;
+        justify-content:space-between;
+        font-family:var(--mono);
+        font-size:.6rem;
+        letter-spacing:.16em;
+        text-transform:uppercase;
+        color:var(--faint);
+      }
+      @media (prefers-reduced-motion:reduce){
+        .panel.is-turning,.panel.is-back{animation:none}
+      }
+      @media print{
+        body{background:#fff;color:#111}
+        .choices,.under,.thread,.legend,.top{display:none}
+        .panel{box-shadow:none;border-color:#bbb;background:#fff}
+        .panel p.text,.panel h2{color:#111}
+      }
+    </style>
+  </head>
+
+  <body>
+    <a class="skip" href="#panel">Skip to the page</a>
+
+    <header class="top">
+      <a class="top__home" href="./index.html">← Home</a>
+      <span class="top__brand"><b>The Turning</b> · 轉</span>
+      <span class="top__where" id="whereTop">The gate</span>
+    </header>
+
+    <main>
+      <div class="intro">
+        <p class="kicker">A wandering game · no levels · no points</p>
+        <h1>The Turning<span>轉</span></h1>
+        <p class="sub">
+          Three doors: the way, the Buddha, the dark. After that every page offers two or
+          three ways on — a sutra, a mantra, the five phases, a trigram, a dragon, a
+          dream. Nothing is scored, nothing is failed; you only choose which door to open
+          next, and the thread below remembers where you have been.
+        </p>
+      </div>
+
+      <div class="game">
+        <article class="panel" id="panel" aria-live="polite">
+          <p class="panel__meta"><span id="world">門 · The gate</span><span class="where" id="place">start</span></p>
+          <span class="panel__glyph" id="glyph" aria-hidden="true">門</span>
+          <h2 id="title">A gate without a sign</h2>
+          <p class="text" id="text"></p>
+          <p class="source" id="source"></p>
+        </article>
+
+        <div class="choices doors" id="choices" role="group" aria-label="Ways on"></div>
+
+        <div class="under">
+          <button class="small" id="back" type="button">← Back</button>
+          <button class="small" id="reset" type="button">Begin again ↺</button>
+          <span class="small" style="cursor:default" id="hint">1–3 to choose · Backspace to go back</span>
+        </div>
+
+        <p class="thread" id="thread" aria-label="Where you have been"><span class="lbl">Thread</span></p>
+      </div>
+
+      <div class="legend">
+        <div><b>Sources</b> — the last three publications and the English pages around them.</div>
+        <div><a href="./buddhismManual.html">The Sound of Emptiness</a> · <a href="./chineseMysticismManual.html">The Dark and the Five</a> · <a href="./daoPoemBook.html">The Sexy Book</a></div>
+        <div><a href="./dreampath.html">The Path and the Dream</a> · <a href="./style_of_god.html">The Style of God</a> · <a href="./taoExpression.html">道 Expression</a></div>
+        <div><a href="./asianMonkey.html">Monkeys in Asia</a> · <a href="./ArtOfCreation.html">Mind Resolution</a> · <a href="./religions.html">What Religions Are</a> · <a href="./CommonCultures.html">One Human Song</a> · <a href="./DragonFire.html">Dragon Fire</a></div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="foot">
+        <span>Monkey Blog · <a href="./index.html">Home</a></span>
+        <span><a href="./index.html">Archive</a> · <a href="#panel">Top of the page</a></span>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var NODES = {
+          start: {
+            w: "門 · The gate", g: "門", t: "A gate without a sign",
+            x: "You are standing where the three books begin. There is no score here, no level to reach, no wrong door — only the one you choose. Behind the first is a road; behind the second, a man sitting under a tree; behind the third, a darkness that is not empty.",
+            s: "daoPoemBook.html", n: "The Sexy Book — Poems of the 道",
+            c: [["道 · Follow the road", "t1"], ["佛 · Sit under the tree", "b1"], ["玄 · Enter the dark", "x1"], ["🐒 · Let the Monkey choose", "@random"]]
+          },
+
+          t1: {
+            w: "道 · The Way", g: "道", t: "The way that does not say its name",
+            x: "You will not find it in the sentence. The sentence is a hand, and the way is not the thing the hand holds. Say it and you have made a fence; keep silent and the fence is yours to walk through. The old book opens with a warning: the way that can be spoken is not the constant way.",
+            s: "daoPoemBook.html", n: "The Sexy Book — poem 1",
+            c: [["Follow the water downhill", "t2"], ["Ask about the uncarved block", "t3"], ["Turn aside into the dark", "d1"]]
+          },
+          t2: {
+            w: "道 · The Way", g: "水", t: "Water keeps the low place",
+            x: "Water has no argument. It wins the stone by staying, not by striking. It takes the shape of the jar and is not owned by it. Men climb to be seen; water goes down and is everywhere. Be the low place — the valley does not chase the river, and the river cannot pass it by.",
+            s: "daoPoemBook.html", n: "The Sexy Book — poem 17",
+            c: [["Sit in the valley", "t4"], ["Climb to the five phases", "x1"]]
+          },
+          t3: {
+            w: "道 · The Way", g: "樸", t: "The uncarved block",
+            x: "Before the block is carved it can become anything. The character is wood plus a sound: timber with no handle yet, no bowl, no name. The Daodejing keeps returning to it — the uncarved block, the plain silk, the valley — because every named thing has already spent some of its possibilities.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — 樸",
+            c: [["Carve a character instead", "x4"], ["Walk down to the valley", "t4"]]
+          },
+          t4: {
+            w: "道 · The Way", g: "谷", t: "The valley answers",
+            x: "Shout at a mountain and it gives your voice back. Shout into a valley and it returns the voice with the sound taken out. The valley is not generous; the valley is empty, and empty is a kind of answer. Keep a room in yourself that no one enters — not a secret, a space.",
+            s: "daoPoemBook.html", n: "The Sexy Book — poem 25",
+            c: [["Climb to the eight trigrams", "x3"], ["Follow the dream instead", "e1"]]
+          },
+
+          b1: {
+            w: "佛 · Buddha", g: "佛", t: "The four sights",
+            x: "A sheltered prince rides out and meets, in order: an old man, a sick man, a corpse, and a wandering ascetic who looks at ease. The first three teach him that the body is a loan; the fourth shows a way of living with that knowledge. He leaves the palace, tries austerity until he is nearly dead, and then sits down under a tree.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 1",
+            c: [["Hear the four truths", "b2"], ["Sit under the tree with him", "b3"]]
+          },
+          b2: {
+            w: "佛 · Buddha", g: "諦", t: "Four truths, eight steps",
+            x: "The first sermon is shaped like a diagnosis: there is suffering; it has a cause; it can end; there is a path. The path has eight factors, from right view to right concentration, grouped into ethics, stillness and wisdom. The order is a spiral, not a ladder — right view guides the rest, and the rest clarifies right view.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 2",
+            c: [["Ask what emptiness means", "b4"], ["Open the sutras", "b5"]]
+          },
+          b3: {
+            w: "佛 · Buddha", g: "定", t: "Sitting under the tree",
+            x: "The night is described as a battle with Māra — armies, daughters, the offer of a kingdom — and by dawn he is awake. The tradition maps what follows as absorptions: applied thought, sustained thought, rapture, happiness, one-pointedness, and then the quieter states where each of these falls away. The body is not the enemy; it is the boat.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 1, 9",
+            c: [["Ask the koan of one hand", "b6"], ["Listen to the chant", "b10"]]
+          },
+          b4: {
+            w: "佛 · Buddha", g: "空", t: "Form is emptiness",
+            x: "Emptiness does not mean nothing exists. It means nothing exists from its own side: every phenomenon depends on conditions, on parts, on designation. The Heart Sutra says it in one line — form is emptiness, emptiness is form — and then negates everything else, not to destroy the world but to loosen the grip that makes suffering possible.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — the Heart Sutra",
+            c: [["Take the mantra gate gate", "b7"], ["Ask about buddha-nature", "b8"]]
+          },
+          b5: {
+            w: "佛 · Buddha", g: "經", t: "The sutras",
+            x: "A sutra opens with “thus have I heard”, then sets a place, an audience and a question. The Heart Sutra fits in twenty-five lines; the Lotus fills twenty-eight chapters with parables; the Diamond ends with a flash of lightning. None of them is an essay. They are scripts for recitation, and the repetitions are the point.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 12",
+            c: [["Enter a parable", "b9"], ["Sit in the silence after it", "b11"]]
+          },
+          b6: {
+            w: "佛 · Buddha", g: "禪", t: "The sound of one hand",
+            x: "Hakuin's question cannot be answered by thinking, which is the point. In Chan and Zen the words are called fingers pointing at the moon: useful until you mistake them for the moon. Dōgen's practice is simpler — just sit, with no object and nothing to gain — and the koan is what remains when even that has been taken away.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 13",
+            c: [["Stay in the silence", "b11"], ["Walk back to the road", "t1"]]
+          },
+          b7: {
+            w: "佛 · Buddha", g: "咒", t: "The mantras",
+            x: "Om mani padme hum — the jewel in the lotus — is the six syllables of compassion. Gate gate paragate takes you across in the Heart Sutra's own close. A mantra is the speech of the deity, recited until reciter and recitation are not two things; the mala counts 108, and the counting frees attention from counting.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 10–11",
+            c: [["Follow the sound into chant", "b10"], ["Ask who has buddha-nature", "b8"]]
+          },
+          b8: {
+            w: "佛 · Buddha", g: "性", t: "Buddha-nature, and a monkey",
+            x: "The Nirvana Sutra says every sentient being has buddha-nature — unborn, undefiled, unnoticed. In China this became the ground of the whole tradition. It is also the joke inside the Monkey King's name: 悟空, Wukong, “awakened to emptiness”. The monkey who cannot sit still is named after the thing he cannot see.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 8, 18",
+            c: [["Meet the Monkeys of Asia", "e2"], ["Return to emptiness", "b4"]]
+          },
+          b9: {
+            w: "佛 · Buddha", g: "喻", t: "A burning house, a jewel in a robe",
+            x: "A father lures his children out of a fire with toy carts, then gives them all one great carriage. A man carries a priceless jewel sewn into his coat for years without knowing. The Lotus Sutra does not argue; it shows you the jewel you already own, and the fire you are already standing in.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — the Lotus Sutra",
+            c: [["Look for the jewel in yourself", "b8"], ["Step into the silence", "b11"]]
+          },
+          b10: {
+            w: "佛 · Buddha", g: "音", t: "Chant, bell and wooden fish",
+            x: "The wooden fish marks the beat; the great bell is struck 108 times for the 108 afflictions; the low Tibetan chant makes one voice sound several pitches. In the Chinese and Japanese halls the text is sung, not read, and the sound does half the teaching. The five tones map onto the five phases, and the whole room becomes the instrument.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 13",
+            c: [["Follow the five tones into the phases", "x1"], ["Let the sound end", "b11"], ["Ask what cultures share", "e6"]]
+          },
+          b11: {
+            w: "佛 · Buddha", g: "默", t: "Vimalakīrti's silence",
+            x: "Thirty-two bodhisattvas explain non-duality, each more subtle than the last. Then Vimalakīrti is asked, and says nothing. Mañjuśrī calls it the true entrance. The Buddha's own silence to the questions that cannot be answered helpfully is the same gesture: not evasion, but the refusal to hand you a finger and call it the moon.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 13",
+            c: [["Return to the gate", "start"], ["Go into the dark", "d1"], ["Ask what a religion is", "e7"]]
+          },
+
+          x1: {
+            w: "玄 · The Dark", g: "五", t: "The five phases",
+            x: "Wood feeds fire, fire makes earth, earth bears metal, metal carries water, water grows wood. Each also restrains another, so nothing runs away with the world. These are stages, not elements: fire is not a stuff but an upward, heating movement. The whole table — seasons, organs, colours, notes, planets — hangs from these five verbs.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — 五行",
+            c: [["Follow the tiger and the dragon", "x2"], ["Turn to yin and yang", "x3"]]
+          },
+          x2: {
+            w: "玄 · The Dark", g: "龍", t: "Tiger in the west, dragon in the east",
+            x: "Four creatures mark the directions: azure dragon in the east, vermilion bird in the south, white tiger in the west, black tortoise in the north. They are also seasons, hours and temperaments. The site's own poem says it plainly: “I am the Monkey, the Monkey who can speak — while I am the Dragon too.”",
+            s: "DragonFire.html", n: "Dragon Fire (龙火)",
+            c: [["Meet the Monkeys of Asia", "e2"], ["Read a landscape", "x5"]]
+          },
+          x3: {
+            w: "玄 · The Dark", g: "卦", t: "Yin, yang, and eight trigrams",
+            x: "Yin is the shaded side of a hill; yang is the sunny side. Stack three lines, solid or broken, and you have a trigram: heaven, earth, thunder, wind, water, fire, mountain, lake. The whole of the Yijing is built from these eight, and the wheel of the year turns on the same polarity.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — 陰陽, 八卦",
+            c: [["Cast the sixty-four", "x6"], ["Turn toward the dark", "d1"]]
+          },
+          x4: {
+            w: "玄 · The Dark", g: "字", t: "The character is a picture of a walk",
+            x: "道 is a road plus a head: the way walked by someone who is paying attention. Most characters are not pictures but compounds — one half meaning, one half sound — and the oldest forms are cuts in bone. Be careful with beautiful etymologies: some are true, many are later moralising, and the bone is the only witness that counts.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — ch. 13",
+            c: [["Return to the way", "t1"], ["Step into the dream", "e1"]]
+          },
+          x5: {
+            w: "玄 · The Dark", g: "風", t: "Reading a landscape",
+            x: "Hide the wind, gather the qi: a ridge behind, a rise to each side, an open bright hall in front, water beyond it. The ideal site is an armchair. Whatever one thinks of the metaphysics, the advice is often just good design — shelter, daylight, drainage — and the compass that finds south is the same instrument that once found the stars.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — 風水",
+            c: [["Descend into the dark", "d1"], ["Return to the gate", "start"]]
+          },
+          x6: {
+            w: "玄 · The Dark", g: "易", t: "The sixty-four",
+            x: "Two trigrams make a hexagram: eight times eight, sixty-four situations, each with six lines read from the bottom up. A changing line turns into its opposite and produces a second figure — the situation inside the situation. No two commentaries quite agree, which is not a bug: the book is a machine for making you look.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — ch. 6",
+            c: [["Read the characters", "x4"], ["Enter the dream", "e1"]]
+          },
+
+          d1: {
+            w: "玄 · The Dark", g: "玄", t: "The dark is not empty",
+            x: "玄 is dark with a red undertone: the colour of a depth you cannot see the bottom of. The Daodejing doubles it — dark and again dark, the gate of all wonders — and calls the source the valley spirit, the mysterious female. Dark is not the absence of light. It is the room the light was given.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — ch. 10",
+            c: [["Sit in the valley", "t4"], ["Turn the light around", "d2"]]
+          },
+          d2: {
+            w: "玄 · The Dark", g: "光", t: "Turning the light around",
+            x: "The meditation manuals speak of 回光返照 — turning the light around and shining it back. Attention, normally spent outward on objects, is turned on its own source. Jung read the Chinese text as individuation and borrowed the word synchronicity for it; the text itself is a Daoist manual of light, not a psychology, and the difference is worth keeping.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — ch. 10",
+            c: [["Go down to the elixir", "d3"], ["Return to the characters", "x4"]]
+          },
+          d3: {
+            w: "玄 · The Dark", g: "丹", t: "The elixir inside",
+            x: "Outer alchemy cooked cinnabar and lead looking for deathlessness, and killed several Tang emperors. Inner alchemy kept the apparatus and moved it inside: the body is the cauldron, the breath the bellows, essence, breath and spirit the ingredients. The orbit rises up the spine and down the front. Do not eat the old recipes; the mercury was real.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — ch. 17",
+            c: [["Return to the way", "t1"], ["Return to the gate", "start"]]
+          },
+
+          e1: {
+            w: "夢 · The Dream", g: "夢", t: "The Path and the Dream",
+            x: "The primordial energy of life is the 道. The primordial sound of earth is the 🕉. Together they create an expression for all. And then the sentence that closes the loop: the dream creates the path, and the path creates the dream. No doubts about the style of God.",
+            s: "dreampath.html", n: "The Path and the Dream",
+            c: [["Ask about the style of God", "e3"], ["Hear the sound it speaks of", "b10"], ["Return to the way", "t1"]]
+          },
+          e2: {
+            w: "猴 · The Monkey", g: "猴", t: "What monkeys symbolize in Asia",
+            x: "In Japan the monkey mediates between humans and the gods, and is also the trickster. In China it is cheerful freedom, inventiveness and sociability — a reminder that duty alone is not a balanced life. In Vietnam it is memory, and the importance of what has actually been lived. Four countries, one animal, four different arguments.",
+            s: "asianMonkey.html", n: "What Monkeys Symbolize on Asian Cultures?",
+            c: [["Meet the Monkey King", "b8"], ["Go back to the tiger and dragon", "x2"]]
+          },
+          e3: {
+            w: "書 · The Book", g: "神", t: "The Style of God",
+            x: "Our ability to imagine is built from what we know; that is how a new idea becomes an image, a text, an object that talks. The page finds the old machinery behind it — Maya, the veil of appearance, and the way Zen schools select students by what they can imagine. Creation is a logic path we choose, and the style is the choice.",
+            s: "style_of_god.html", n: "The Style of God",
+            c: [["Read the dream that precedes it", "e5"], ["Read the equation 1 + 1 = 1", "e4"], ["Go back to the dream path", "e1"]]
+          },
+          e4: {
+            w: "書 · The Book", g: "合", t: "1 + 1 = 1, or 3",
+            x: "Hydrogen plus oxygen is water: one new thing with properties neither gas had. Two ideas fuse into an insight; two cells become one zygote. The essay calls it emergence, and reads it through the old equation. Its sixth chapter has a title worth carrying: “The Monkey and the Buddha Are One Head.”",
+            s: "ArtOfCreation.html", n: "Mind Resolution — Imagination + Logic = Application",
+            c: [["Meet the Monkey", "e2"], ["Return to emptiness", "b4"]]
+          },
+          e5: {
+            w: "書 · The Book", g: "幻", t: "Before anything exists",
+            x: "Before anything exists in reality, it must first be a pure illusion: a skyscraper, a society, or a universe begins as an unrealised vision — a necessary dream that gives rise to the will to create. Without the internal blueprint, there would be no need to build. The 道 Expression page starts there, and so does this game.",
+            s: "taoExpression.html", n: "道 Expression",
+            c: [["Return to the dream", "e1"], ["Walk the road", "t1"]]
+          },
+          e6: {
+            w: "書 · The Book", g: "歌", t: "One human song",
+            x: "Every culture teaches hospitality, honours colour and sings. The page gathers only the constructive side: proverbs that heal, colours that celebrate, music that builds. Different languages, one heart. It is a strange and useful claim to bring back into a game about sutras and trigrams — the same three notes keep turning up.",
+            s: "CommonCultures.html", n: "One Human Song — Sayings, Colors & Music of World Cultures",
+            c: [["Follow the colours into the phases", "x1"], ["Hear the chant", "b10"]]
+          },
+          e7: {
+            w: "書 · The Book", g: "教", t: "What religions are",
+            x: "A book can be loved for what it teaches about reality, and loving it creates the need to see that reality. The page notices that Daoist reading expects the unexpected, while other books define what should be expected and build mechanisms of exclusion around it. It is a warning for every canon, including the ones in this game.",
+            s: "religions.html", n: "What Religions Are?",
+            c: [["Return to the road", "t1"], ["Sit in the silence", "b11"]]
+          }
+        };
+
+        var panel = document.getElementById("panel");
+        var worldEl = document.getElementById("world");
+        var placeEl = document.getElementById("place");
+        var whereTop = document.getElementById("whereTop");
+        var glyphEl = document.getElementById("glyph");
+        var titleEl = document.getElementById("title");
+        var textEl = document.getElementById("text");
+        var sourceEl = document.getElementById("source");
+        var choicesEl = document.getElementById("choices");
+        var threadEl = document.getElementById("thread");
+        var backBtn = document.getElementById("back");
+        var resetBtn = document.getElementById("reset");
+        var hintEl = document.getElementById("hint");
+
+        var current = "start";
+        var history = [];
+        var thread = ["start"];
+        var randomTargets = ["t1", "b1", "x1", "e1", "e2", "d1", "b7"];
+
+        function go(id) {
+          if (id === "@random") {
+            id = randomTargets[Math.floor(Math.random() * randomTargets.length)];
+          }
+          if (!NODES[id]) { return; }
+          history.push(current);
+          current = id;
+          thread.push(id);
+          if (thread.length > 18) { thread = thread.slice(thread.length - 18); }
+          render("turn");
+        }
+
+        function back() {
+          if (!history.length) { return; }
+          current = history.pop();
+          thread.pop();
+          render("back");
+        }
+
+        function reset() {
+          current = "start";
+          history = [];
+          thread = ["start"];
+          render("turn");
+        }
+
+        function render(direction) {
+          var node = NODES[current];
+          worldEl.textContent = node.w;
+          placeEl.textContent = node === NODES.start ? "start" : "you are here";
+          if (whereTop) { whereTop.textContent = node.w.split(" · ")[1] || node.w; }
+          glyphEl.textContent = node.g;
+          titleEl.textContent = node.t;
+          textEl.textContent = node.x;
+
+          sourceEl.textContent = "";
+          sourceEl.appendChild(document.createTextNode("from "));
+          var link = document.createElement("a");
+          link.href = "./" + node.s;
+          link.textContent = node.n + " · " + node.s;
+          sourceEl.appendChild(link);
+
+          choicesEl.textContent = "";
+          choicesEl.classList.toggle("doors", current === "start");
+          node.c.forEach(function (pair, i) {
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "choice";
+            var num = document.createElement("span");
+            num.className = "n";
+            num.textContent = String(i + 1);
+            var lbl = document.createElement("span");
+            lbl.className = "lbl";
+            lbl.textContent = pair[0];
+            var goIcon = document.createElement("span");
+            goIcon.className = "go";
+            goIcon.textContent = "→";
+            btn.appendChild(num);
+            btn.appendChild(lbl);
+            btn.appendChild(goIcon);
+            btn.addEventListener("click", function () { go(pair[1]); });
+            choicesEl.appendChild(btn);
+          });
+
+          if (current === "start") {
+            var picked = choicesEl.querySelectorAll(".choice");
+            if (picked.length === 4) {
+              var doors = ["道", "佛", "玄", "猴"];
+              picked.forEach(function (b, i) {
+                var g = document.createElement("span");
+                g.className = "door-glyph";
+                g.textContent = doors[i] || "·";
+                b.insertBefore(g, b.children[1] || null);
+              });
+            }
+          }
+
+          backBtn.disabled = history.length === 0;
+          hintEl.textContent = "1–" + node.c.length + " to choose · Backspace to go back";
+
+          threadEl.textContent = "";
+          var lab = document.createElement("span");
+          lab.className = "lbl";
+          lab.textContent = "Thread";
+          threadEl.appendChild(lab);
+          thread.forEach(function (id) {
+            var s = document.createElement("span");
+            s.textContent = NODES[id].g;
+            threadEl.appendChild(s);
+          });
+
+          if (direction) {
+            panel.classList.remove("is-turning", "is-back");
+            void panel.offsetWidth;
+            panel.classList.add(direction === "back" ? "is-back" : "is-turning");
+          }
+        }
+
+        backBtn.addEventListener("click", back);
+        resetBtn.addEventListener("click", reset);
+
+        document.addEventListener("keydown", function (event) {
+          if (event.metaKey || event.ctrlKey || event.altKey) { return; }
+          var tag = event.target && event.target.tagName;
+          if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") { return; }
+          if (event.key === "Backspace") {
+            event.preventDefault();
+            back();
+            return;
+          }
+          if (event.key === "r" || event.key === "R") {
+            reset();
+            return;
+          }
+          var n = Number(event.key);
+          if (n >= 1 && n <= 9) {
+            var node = NODES[current];
+            var pair = node.c[n - 1];
+            if (pair) {
+              event.preventDefault();
+              go(pair[1]);
+            }
+          }
+        });
+
+        render(0);
+      })();
+    </script>
+  </body>
+</html>
