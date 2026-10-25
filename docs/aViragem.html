@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+    <meta name="X-Content-Type-Options" content="nosniff">
+    <meta name="X-Frame-Options" content="DENY">
+    <meta name="Referrer-Policy" content="no-referrer">
+    <meta name="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+    <title>A Viragem — Um Jogo Errante do Tao, do Buda e do Escuro | Monkey Blog</title>
+    <meta name="description" content="Um jogo sem níveis nem pontos: começa num portão com três portas — o caminho, o Buda, o escuro — e vagueia por sutras, mantras, cinco fases, trigramas, qi, dragões e sonhos. Cada escolha abre outra página das três últimas publicações e dos ensaios em inglês em redor delas.">
+    <meta property="og:title" content="A Viragem — Um Jogo Errante">
+    <meta property="og:description" content="Três portas, sem pontuação: vagueia do Tao para um sutra, de um sutra para as cinco fases, das cinco fases para o escuro.">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Monkey Blog">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="A Viragem — Um Jogo Errante">
+    <meta name="twitter:description" content="Começa no portão; as escolhas são a única regra.">
+    <meta name="fediverse:creator" content="@TaoExpression@mastodon.social">
+    <style>
+      :root{
+        --bg:#06070a;
+        --ink:#ece6d9;
+        --dim:#b8b2a5;
+        --faint:#7e7a70;
+        --gold:#d9b26a;
+        --lotus:#d9899c;
+        --jade:#7cc4ad;
+        --indigo:#96a5d8;
+        --line:rgba(217,178,106,.18);
+        --line-soft:rgba(236,230,217,.07);
+        --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+        --han:"Noto Serif CJK SC","Source Han Serif SC","Songti SC","Noto Serif CJK JP",serif;
+        --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+        --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+      }
+      *{box-sizing:border-box}
+      html{-webkit-text-size-adjust:100%}
+      body{
+        margin:0;
+        min-height:100svh;
+        color:var(--ink);
+        font-family:var(--sans);
+        font-size:17px;
+        line-height:1.7;
+        background:
+          radial-gradient(60rem 40rem at 50% -12%,rgba(217,178,106,.10),transparent 62%),
+          radial-gradient(46rem 32rem at 104% 92%,rgba(150,165,216,.05),transparent 60%),
+          var(--bg);
+      }
+      body::after{
+        content:"";
+        position:fixed;
+        inset:0;
+        z-index:3;
+        pointer-events:none;
+        opacity:.04;
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      ::selection{background:rgba(217,178,106,.3);color:#fff}
+      a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(217,178,106,.25)}
+      a:hover{color:#fff;border-color:var(--gold)}
+      .skip{position:absolute;left:-9999px;padding:.8rem 1.2rem;background:var(--gold);color:#0a0c11;font-family:var(--mono);font-size:.72rem;z-index:99}
+      .skip:focus{left:1rem;top:1rem}
+
+      .top{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:1rem;
+        padding:.8rem clamp(1rem,4vw,2.4rem);
+        border-bottom:1px solid var(--line-soft);
+        font-family:var(--mono);
+        font-size:.62rem;
+        letter-spacing:.18em;
+        text-transform:uppercase;
+        color:var(--faint);
+      }
+      .top__home{border:0;color:var(--gold);white-space:nowrap}
+      .top__home:hover{color:var(--ink)}
+      .top__brand b{font-weight:500;color:var(--dim)}
+      .top__where{color:var(--gold);white-space:nowrap}
+      @media (max-width:600px){ .top__brand{display:none} }
+
+      main{
+        max-width:54rem;
+        margin:0 auto;
+        padding:clamp(1.4rem,4.4vh,2.8rem) clamp(1rem,4vw,2rem) 2.6rem;
+      }
+      .intro{text-align:center;margin-bottom:clamp(1rem,2.6vh,1.6rem)}
+      .intro p.kicker{
+        margin:0 0 .8rem;
+        font-family:var(--mono);
+        font-size:.6rem;
+        letter-spacing:.3em;
+        text-transform:uppercase;
+        color:var(--gold);
+      }
+      .intro h1{
+        margin:0;
+        font-family:var(--serif);
+        font-weight:400;
+        font-size:clamp(1.8rem,5vw,2.9rem);
+        line-height:1.05;
+        letter-spacing:-.02em;
+      }
+      .intro h1 span{
+        display:block;
+        margin-top:.15em;
+        font-family:var(--han);
+        font-size:.46em;
+        letter-spacing:.2em;
+        color:var(--gold);
+      }
+      .intro .sub{
+        margin:.85rem auto 0;
+        max-width:54ch;
+        color:var(--dim);
+        font-size:clamp(.92rem,1.35vw,1rem);
+        line-height:1.6;
+      }
+
+      .game{position:relative}
+      .panel{
+        position:relative;
+        padding:clamp(1.25rem,3.2vw,1.9rem);
+        border:1px solid var(--line);
+        border-radius:18px;
+        background:
+          radial-gradient(34rem 18rem at 90% -10%,rgba(217,178,106,.07),transparent 62%),
+          linear-gradient(160deg,#0d0c11,#08080c 65%);
+        box-shadow:0 26px 60px -42px rgba(0,0,0,.9);
+        min-height:clamp(17rem,40vh,23rem);
+        overflow:hidden;
+      }
+      .panel__meta{
+        display:flex;
+        align-items:baseline;
+        justify-content:space-between;
+        gap:1rem;
+        margin:0 0 .9rem;
+        font-family:var(--mono);
+        font-size:.57rem;
+        letter-spacing:.2em;
+        text-transform:uppercase;
+        color:var(--gold);
+      }
+      .panel__meta .where{color:var(--faint)}
+      .panel__glyph{
+        position:absolute;
+        right:-.5rem;
+        bottom:-1.4rem;
+        font-family:var(--han);
+        font-size:clamp(6.6rem,18vw,11rem);
+        line-height:1;
+        color:rgba(217,178,106,.07);
+        pointer-events:none;
+        user-select:none;
+      }
+      .panel h2{
+        position:relative;
+        margin:0 0 .6rem;
+        max-width:32ch;
+        font-family:var(--serif);
+        font-weight:400;
+        font-size:clamp(1.28rem,3vw,1.75rem);
+        line-height:1.22;
+        letter-spacing:-.01em;
+      }
+      .panel p.text{
+        position:relative;
+        margin:0;
+        max-width:52ch;
+        font-family:var(--serif);
+        font-size:clamp(1rem,1.7vw,1.1rem);
+        line-height:1.72;
+        color:var(--dim);
+      }
+      .panel p.text + p.text{margin-top:.7em}
+      .panel .source{
+        position:relative;
+        margin:1.15rem 0 0;
+        font-family:var(--mono);
+        font-size:.56rem;
+        letter-spacing:.13em;
+        text-transform:uppercase;
+        color:var(--faint);
+        line-height:1.8;
+      }
+      .panel .source a{color:var(--faint);border-bottom:1px solid var(--line-soft)}
+      .panel .source a:hover{color:var(--gold);border-color:var(--gold)}
+      .panel.is-turning{animation:turn .4s cubic-bezier(.2,.7,.2,1)}
+      .panel.is-back{animation:back .4s cubic-bezier(.2,.7,.2,1)}
+      @keyframes turn{from{opacity:.2;transform:translateY(14px)}to{opacity:1;transform:none}}
+      @keyframes back{from{opacity:.2;transform:translateY(-12px)}to{opacity:1;transform:none}}
+
+      .choices{
+        display:grid;
+        gap:.55rem;
+        margin-top:1rem;
+      }
+      .choices.doors{grid-template-columns:repeat(auto-fit,minmax(13rem,1fr))}
+      .choice{
+        display:flex;
+        align-items:center;
+        gap:.75rem;
+        width:100%;
+        text-align:left;
+        appearance:none;
+        border:1px solid var(--line);
+        border-radius:11px;
+        background:rgba(0,0,0,.22);
+        color:var(--dim);
+        font-family:var(--sans);
+        font-size:.95rem;
+        line-height:1.45;
+        padding:.78rem .9rem;
+        cursor:pointer;
+        transition:border-color 160ms ease,color 160ms ease,background 160ms ease,transform 120ms ease;
+      }
+      .choice:hover{border-color:var(--gold);color:var(--ink);background:rgba(217,178,106,.06)}
+      .choice:active{transform:translateY(1px)}
+      .choice:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+      .choice .n{
+        flex:0 0 auto;
+        font-family:var(--mono);
+        font-size:.6rem;
+        letter-spacing:.06em;
+        color:var(--gold);
+        border:1px solid var(--line);
+        border-radius:5px;
+        padding:.12rem .3rem;
+        line-height:1.4;
+      }
+      .choice .door-glyph{
+        flex:0 0 auto;
+        font-family:var(--han);
+        font-size:1.4rem;
+        color:var(--gold);
+        line-height:1;
+      }
+      .choice .lbl{flex:1 1 auto}
+      .choice .go{color:var(--faint);font-family:var(--mono);font-size:.62rem}
+
+      .under{
+        display:flex;
+        flex-wrap:wrap;
+        gap:.55rem;
+        align-items:center;
+        justify-content:space-between;
+        margin-top:.9rem;
+      }
+      .small{
+        appearance:none;
+        border:0;
+        background:none;
+        color:var(--faint);
+        font-family:var(--mono);
+        font-size:.6rem;
+        letter-spacing:.16em;
+        text-transform:uppercase;
+        padding:.35rem .2rem;
+        cursor:pointer;
+      }
+      .small:hover{color:var(--gold)}
+      .small:disabled{opacity:.3;cursor:default}
+      .small:focus-visible{outline:1px solid var(--gold);outline-offset:3px;border-radius:3px}
+
+      .thread{
+        display:flex;
+        flex-wrap:wrap;
+        align-items:center;
+        gap:.3rem;
+        margin-top:1.1rem;
+        min-height:1.8rem;
+        font-family:var(--han);
+        font-size:1.1rem;
+        color:rgba(217,178,106,.55);
+      }
+      .thread span{line-height:1}
+      .thread span:last-child{color:var(--gold)}
+      .thread .lbl{
+        font-family:var(--mono);
+        font-size:.55rem;
+        letter-spacing:.2em;
+        text-transform:uppercase;
+        color:var(--faint);
+        margin-right:.4rem;
+      }
+
+      .legend{
+        margin-top:1.8rem;
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));
+        gap:.6rem;
+        font-family:var(--mono);
+        font-size:.56rem;
+        letter-spacing:.12em;
+        text-transform:uppercase;
+        color:var(--faint);
+      }
+      .legend div{border-top:1px solid var(--line-soft);padding-top:.5rem}
+      .legend b{color:var(--dim);font-weight:500}
+      .legend a{color:var(--faint);border:0}
+      .legend a:hover{color:var(--gold)}
+
+      footer{border-top:1px solid var(--line);margin-top:2rem;padding:1.5rem 0 2.2rem}
+      .foot{
+        max-width:54rem;
+        margin:0 auto;
+        padding:0 clamp(1rem,4vw,2rem);
+        display:flex;
+        flex-wrap:wrap;
+        gap:.8rem;
+        justify-content:space-between;
+        font-family:var(--mono);
+        font-size:.6rem;
+        letter-spacing:.16em;
+        text-transform:uppercase;
+        color:var(--faint);
+      }
+      @media (prefers-reduced-motion:reduce){
+        .panel.is-turning,.panel.is-back{animation:none}
+      }
+      @media print{
+        body{background:#fff;color:#111}
+        .choices,.under,.thread,.legend,.top{display:none}
+        .panel{box-shadow:none;border-color:#bbb;background:#fff}
+        .panel p.text,.panel h2{color:#111}
+      }
+    </style>
+  </head>
+
+  <body>
+    <a class="skip" href="#panel">Saltar para a página</a>
+
+    <header class="top">
+      <a class="top__home" href="./index.html">← Início</a>
+      <span class="top__brand"><b>A Viragem</b> · 轉</span>
+      <span class="top__where" id="whereTop">O portão</span>
+    </header>
+
+    <main>
+      <div class="intro">
+        <p class="kicker">Um jogo errante · sem níveis · sem pontos</p>
+        <h1>A Viragem<span>轉</span></h1>
+        <p class="sub">
+          Três portas: o caminho, o Buda, o escuro. Depois disso, cada página oferece
+          duas ou três saídas — um sutra, um mantra, as cinco fases, um trigrama, um
+          dragão, um sonho. Nada é pontuado, nada é reprovado; escolhes apenas qual
+          porta abrir a seguir, e o fio lá embaixo guarda por onde já andaste.
+        </p>
+      </div>
+
+      <div class="game">
+        <article class="panel" id="panel" aria-live="polite">
+          <p class="panel__meta"><span id="world">門 · O portão</span><span class="where" id="place">início</span></p>
+          <span class="panel__glyph" id="glyph" aria-hidden="true">門</span>
+          <h2 id="title">Um portão sem letreiro</h2>
+          <p class="text" id="text"></p>
+          <p class="source" id="source"></p>
+        </article>
+
+        <div class="choices doors" id="choices" role="group" aria-label="Caminhos"></div>
+
+        <div class="under">
+          <button class="small" id="back" type="button">← Voltar</button>
+          <button class="small" id="reset" type="button">Começar de novo ↺</button>
+          <span class="small" style="cursor:default" id="hint">1–3 para escolher · Backspace para voltar</span>
+        </div>
+
+        <p class="thread" id="thread" aria-label="Por onde passaste"><span class="lbl">Fio</span></p>
+      </div>
+
+      <div class="legend">
+        <div><b>Fontes</b> — as três últimas publicações e as páginas em inglês em redor delas.</div>
+        <div><a href="./buddhismManual.html">O Som do Vazio</a> · <a href="./chineseMysticismManual.html">O Escuro e os Cinco</a> · <a href="./daoPoemBook.html">O Livro Sexy</a></div>
+        <div><a href="./dreampath.html">O Caminho e o Sonho</a> · <a href="./style_of_god.html">O Estilo de Deus</a> · <a href="./taoExpression.html">道 Expression</a></div>
+        <div><a href="./asianMonkey.html">Macacos na Ásia</a> · <a href="./ArtOfCreation.html">Resolução da Mente</a> · <a href="./religions.html">O que são as Religiões</a> · <a href="./CommonCultures.html">Uma Canção Humana</a> · <a href="./DragonFire.html">Fogo do Dragão</a></div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="foot">
+        <span>Monkey Blog · <a href="./index.html">Início</a></span>
+        <span><a href="./index.html">Arquivo</a> · <a href="#panel">Início da página</a></span>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var NODES = {
+          start: {
+            w: "門 · O portão", g: "門", t: "Um portão sem letreiro",
+            x: "Estás onde os três livros começam. Não há pontuação aqui, nem nível a alcançar, nem porta errada — só aquela que escolheres. Atrás da primeira há uma estrada; atrás da segunda, um homem sentado debaixo de uma árvore; atrás da terceira, uma escuridão que não está vazia.",
+            s: "daoPoemBook.html", n: "O Livro Sexy — Poemas do 道",
+            c: [["道 · Segue a estrada", "t1"], ["佛 · Senta-te debaixo da árvore", "b1"], ["玄 · Entra no escuro", "x1"], ["🐒 · Deixa o Macaco escolher", "@random"]]
+          },
+
+          t1: {
+            w: "道 · O Caminho", g: "道", t: "O caminho que não diz o seu nome",
+            x: "Não o vais encontrar na frase. A frase é uma mão, e o caminho não é a coisa que a mão segura. Diz o nome e levantaste uma cerca; permanece em silêncio e a cerca é tua para atravessar. O livro velho abre-se com um aviso: o caminho que pode ser falado não é o caminho constante.",
+            s: "daoPoemBook.html", n: "O Livro Sexy — poema 1",
+            c: [["Segue a água montanha abaixo", "t2"], ["Pergunta pelo bloco ainda por lapidar", "t3"], ["Desvia-te para o escuro", "d1"]]
+          },
+          t2: {
+            w: "道 · O Caminho", g: "水", t: "A água guarda o lugar baixo",
+            x: "A água não tem argumento. Vence a pedra permanecendo, não golpeando. Toma a forma do vaso e não é dele. As pessoas escalam para serem vistas; a água desce e está em todo lado. Sê o lugar baixo — o vale não persegue o rio, e o rio não o consegue passar ao largo.",
+            s: "daoPoemBook.html", n: "O Livro Sexy — poema 17",
+            c: [["Senta-te no vale", "t4"], ["Escala até às cinco fases", "x1"]]
+          },
+          t3: {
+            w: "道 · O Caminho", g: "樸", t: "O bloco ainda por lapidar",
+            x: "Antes de ser lapidado, o bloco pode tornar-se tudo. O carácter é madeira mais um som: madeira sem cabo, sem tigela, sem nome. O Daodejing volta sempre a ele — o bloco por lapidar, a seda simples, o vale — porque toda a coisa com nome já gastou parte das suas possibilidades.",
+            s: "chineseMysticismManual.html", n: "O Escuro e os Cinco — 樸",
+            c: [["Talha antes um carácter", "x4"], ["Desce até ao vale", "t4"]]
+          },
+          t4: {
+            w: "道 · O Caminho", g: "谷", t: "O vale responde",
+            x: "Grita contra uma montanha e ela devolve a tua voz. Grita para dentro de um vale e ele devolve a voz com o som retirado. O vale não é generoso; o vale está vazio, e vazio é uma forma de resposta. Guarda em ti uma divisão por onde ninguém entra — não um segredo, um espaço.",
+            s: "daoPoemBook.html", n: "O Livro Sexy — poema 25",
+            c: [["Escala até aos oito trigramas", "x3"], ["Segue antes o sonho", "e1"]]
+          },
+
+          b1: {
+            w: "佛 · Buda", g: "佛", t: "As quatro visões",
+            x: "Um príncipe muito protegido sai do palácio e encontra, por ordem: um velho, um doente, um cadáver e um asceta errante com ar sereno. Os três primeiros ensinam-lhe que o corpo é um empréstimo; o quarto mostra uma maneira de viver com esse saber. Sai do palácio, experimenta a ascese até quase morrer, e depois senta-se debaixo de uma árvore.",
+            s: "buddhismManual.html", n: "O Som do Vazio — cap. 1",
+            c: [["Ouve as quatro verdades", "b2"], ["Senta-te debaixo da árvore com ele", "b3"]]
+          },
+          b2: {
+            w: "佛 · Buda", g: "諦", t: "Quatro verdades, oito passos",
+            x: "O primeiro sermão tem a forma de um diagnóstico: há sofrimento; tem uma causa; pode terminar; há um caminho. O caminho tem oito factores, da visão correcta à concentração correcta, agrupados em ética, quietude e sabedoria. A ordem é uma espiral, não uma escada — a visão correcta orienta o resto, e o resto clarifica a visão correcta.",
+            s: "buddhismManual.html", n: "O Som do Vazio — cap. 2",
+            c: [["Pergunta o que significa vazio", "b4"], ["Abre os sutras", "b5"]]
+          },
+          b3: {
+            w: "佛 · Buda", g: "定", t: "Sentado debaixo da árvore",
+            x: "A noite é descrita como uma batalha com Māra — exércitos, filhas, a oferta de um reino — e ao romper do dia ele está desperto. A tradição organiza o que vem depois em absorções: pensamento aplicado, pensamento sustentado, êxtase, felicidade, unidade, e depois os estados mais calmos em que cada uma destas coisas cai. O corpo não é o inimigo; é a embarcação.",
+            s: "buddhismManual.html", n: "O Som do Vazio — cap. 1, 9",
+            c: [["Pergunta o koan de uma só mão", "b6"], ["Ouve o cantochão", "b10"]]
+          },
+          b4: {
+            w: "佛 · Buda", g: "空", t: "A forma é vazio",
+            x: "Vazio não significa que nada exista. Significa que nada existe por si próprio: cada fenómeno depende de condições, de partes, de designação. O Sutra do Coração diz-no numa linha — a forma é vazio, o vazio é forma — e depois nega todo o resto, não para destruir o mundo mas para afrouxar o aperto que torna o sofrimento possível.",
+            s: "buddhismManual.html", n: "O Som do Vazio — o Sutra do Coração",
+            c: [["Segue o mantra gate gate", "b7"], ["Pergunta pela natureza de buda", "b8"]]
+          },
+          b5: {
+            w: "佛 · Buda", g: "經", t: "Os sutras",
+            x: "Um sutra abre com “assim ouvi”, e depois fixa um lugar, uma audiência e uma pergunta. O Sutra do Coração cabe em vinte e cinco linhas; o Lótus enche vinte e oito capítulos de parábolas; o Diamante termina com um lampejo de relâmpago. Nenhum deles é um ensaio. São textos para recitação, e as repetições são o ponto.",
+            s: "buddhismManual.html", n: "O Som do Vazio — cap. 12",
+            c: [["Entra numa parábola", "b9"], ["Fica no silêncio a seguir", "b11"]]
+          },
+          b6: {
+            w: "佛 · Buda", g: "禪", t: "O som de uma só mão",
+            x: "A pergunta de Hakuin não pode ser respondida a pensar, que é justamente o ponto. No Chan e no Zen as palavras chamam-se dedos que apontam à lua: servem até que alguém os confunda com a lua. A prática de Dōgen é mais simples — só sentar, sem objecto e sem ganho —, e o koan é o que resta quando até isso foi tirado.",
+            s: "buddhismManual.html", n: "O Som do Vazio — cap. 13",
+            c: [["Fica no silêncio", "b11"], ["Volta à estrada", "t1"]]
+          },
+          b7: {
+            w: "佛 · Buda", g: "咒", t: "Os mantras",
+            x: "Om mani padme hum — a joia no lótus — são as seis sílabas da compaixão. Gate gate paragate atravessa, no fecho do próprio Sutra do Coração. Um mantra é a fala da divindade, recitado até que recitante e recitação não sejam duas coisas; o mala conta 108, e a contagem liberta a atenção da própria contagem.",
+            s: "buddhismManual.html", n: "O Som do Vazio — cap. 10–11",
+            c: [["Segue o som até ao cantochão", "b10"], ["Pergunta quem tem natureza de buda", "b8"]]
+          },
+          b8: {
+            w: "佛 · Buda", g: "性", t: "Natureza de buda, e um macaco",
+            x: "O Sutra do Nirvana diz que todo o ser sensível tem natureza de buda — não nascida, não manchada, não notada. Na China, isso tornou-se o alicerce de toda a tradição. É também a piada dentro do nome do Rei Macaco: 悟空, Wukong, “desperto para o vazio”. O macaco que não sabe estar quieto chama-se como aquilo que não consegue ver.",
+            s: "buddhismManual.html", n: "O Som do Vazio — cap. 8, 18",
+            c: [["Encontra os Macacos da Ásia", "e2"], ["Volta ao vazio", "b4"]]
+          },
+          b9: {
+            w: "佛 · Buda", g: "喻", t: "Uma casa em chamas, uma joia na túnica",
+            x: "Um pai atrai os filhos para fora de um incêndio com carrinhos de brincar, e depois dá a todos um só grande cocche. Um homem carrega, cosida ao casaco, uma joia sem preço, durante anos, sem saber. O Sutra do Lótus não argumenta; mostra a joia que já possues e o fogo em que já estás metido.",
+            s: "buddhismManual.html", n: "O Som do Vazio — o Sutra do Lótus",
+            c: [["Procura a joia em ti próprio", "b8"], ["Entra no silêncio", "b11"]]
+          },
+          b10: {
+            w: "佛 · Buda", g: "音", t: "Cantochão, sino e peixe de madeira",
+            x: "O peixe de madeira marca o ritmo; o grande sino é batido 108 vezes pelas 108 aflições; o chant tibetano grave faz uma só voz soar em vários tons. Nas salas chinesas e japonesas o texto é cantado, não lido, e o som faz metade do ensino. Os cinco tons mapeiam as cinco fases, e a sala inteira torna-se o instrumento.",
+            s: "buddhismManual.html", n: "O Som do Vazio — cap. 13",
+            c: [["Segue os cinco tons até às fases", "x1"], ["Deixa o som terminar", "b11"], ["Pergunta o que as culturas partilham", "e6"]]
+          },
+          b11: {
+            w: "佛 · Buda", g: "默", t: "O silêncio de Vimalakīrti",
+            x: "Trinta e dois bodhisattvas explicam a não-dualidade, cada um mais subtil que o anterior. Depois perguntam a Vimalakīrti, e ele nada diz. Mañjuśrī chama-lhe a verdadeira entrada. O silêncio do próprio Buda quanto às perguntas que não podem ser respondidas com proveito é o mesmo gesto: não fuga, mas a recusa de dar um dedo e chamá-lo lua.",
+            s: "buddhismManual.html", n: "O Som do Vazio — cap. 13",
+            c: [["Volta ao portão", "start"], ["Entra no escuro", "d1"], ["Pergunta o que é uma religião", "e7"]]
+          },
+
+          x1: {
+            w: "玄 · O Escuro", g: "五", t: "As cinco fases",
+            x: "A madeira alimenta o fogo, o fogo faz a terra, a terra contém o metal, o metal transporta a água, a água faz crescer a madeira. Cada uma também refreia outra, e assim nada foge com o mundo. São fases, não elementos: o fogo não é uma matéria, é um movimento ascendente e aquecedor. A tabela inteira — estações, órgãos, cores, notas, planetas — pende destes cinco verbos.",
+            s: "chineseMysticismManual.html", n: "O Escuro e os Cinco — 五行",
+            c: [["Segue o tigre e o dragão", "x2"], ["Vira para o yin e o yang", "x3"]]
+          },
+          x2: {
+            w: "玄 · O Escuro", g: "龍", t: "Tigre a oeste, dragão a este",
+            x: "Quatro criaturas marcam os pontos cardeais: o dragão azul-céladon no este, a ave vermelhão no sul, o tigre branco no oeste, a tartaruga negra no norte. São também estações, horas e temperamentos. O poema deste sítio diz-o sem rodeios: “Eu sou o Macaco, o Macaco que pode falar — enquanto também sou o Dragão.”",
+            s: "DragonFire.html", n: "Fogo do Dragão (龙火)",
+            c: [["Encontra os Macacos da Ásia", "e2"], ["Lê uma paisagem", "x5"]]
+          },
+          x3: {
+            w: "玄 · O Escuro", g: "卦", t: "Yin, yang, e oito trigramas",
+            x: "Yin é a encosta sombria; yang é a vertente ao sol. Empilha três linhas, contínuas ou rompidas, e tens um trigrama: céu, terra, trovão, vento, água, fogo, montanha, lago. Todo o Yijing se constrói a partir destes oito, e a roda do ano gira na mesma polaridade.",
+            s: "chineseMysticismManual.html", n: "O Escuro e os Cinco — 陰陽, 八卦",
+            c: [["Lança as sessenta e quatro", "x6"], ["Volta-te para o escuro", "d1"]]
+          },
+          x4: {
+            w: "玄 · O Escuro", g: "字", t: "O carácter é a fotografia de uma caminhada",
+            x: "道 é uma estrada mais uma cabeça: o caminho percorrido por quem presta atenção. A maioria dos caracteres não são fotografias mas compostos — metade sentido, metade som —, e as formas mais antigas são incisões em osso. Cuidado com as etimologias bonitas: algumas são verdade, muitas são moralizações posteriores, e o osso é a única testemunha que conta.",
+            s: "chineseMysticismManual.html", n: "O Escuro e os Cinco — cap. 13",
+            c: [["Volta ao caminho", "t1"], ["Entra no sonho", "e1"]]
+          },
+          x5: {
+            w: "玄 · O Escuro", g: "風", t: "Ler uma paisagem",
+            x: "Acolhe o vento, reúne o qi: uma cumeeira atrás, uma elevação a cada lado, um átrio aberto e luminoso à frente, água adiante. O sítio ideal é uma cadeira com braços. Seja o que for que se pense da metafísica, o conselho é com frequência apenas bom desenho — abrigo, luz do dia, drenagem —, e a bússola que acha o sul é o mesmo instrumento que outrora achava as estrelas.",
+            s: "chineseMysticismManual.html", n: "O Escuro e os Cinco — 風水",
+            c: [["Desce ao escuro", "d1"], ["Volta ao portão", "start"]]
+          },
+          x6: {
+            w: "玄 · O Escuro", g: "易", t: "As sessenta e quatro",
+            x: "Dois trigramas fazem um hexagrama: oito vezes oito, sessenta e quatro situações, cada uma com seis linhas lidas de baixo para cima. Uma linha em transformação inverte-se e produz uma segunda figura — a situação dentro da situação. Nenhum par de comentários concorda por inteiro, e isso não é um defeito: o livro é uma máquina para te obrigar a olhar.",
+            s: "chineseMysticismManual.html", n: "O Escuro e os Cinco — cap. 6",
+            c: [["Lê os caracteres", "x4"], ["Entra no sonho", "e1"]]
+          },
+
+          d1: {
+            w: "玄 · O Escuro", g: "玄", t: "O escuro não está vazio",
+            x: "玄 é escuro com um tom de vinho por baixo: a cor de uma profundidade cujo fundo não se vê. O Daodejing duplica-o — escuro e outra vez escuro, o portão de todas as maravilhas — e chama à fonte o espírito do vale, a fêmea misteriosa. O escuro não é a ausência de luz. É a divisão que se deu à luz.",
+            s: "chineseMysticismManual.html", n: "O Escuro e os Cinco — cap. 10",
+            c: [["Senta-te no vale", "t4"], ["Volta a luz ao contrário", "d2"]]
+          },
+          d2: {
+            w: "玄 · O Escuro", g: "光", t: "Virar a luz ao contrário",
+            x: "Os manuais de meditação falam de 回光返照 — virar a luz ao contrário e fazê-la brilhar de volta. A atenção, normalmente gasta para fora sobre objectos, volta-se sobre a própria fonte. Jung leu o texto chinês como individuação e daí retirou a palavra sincronicidade; o texto em si é um manual taoísta da luz, não uma psicologia, e a diferença vale a pena manter.",
+            s: "chineseMysticismManual.html", n: "O Escuro e os Cinco — cap. 10",
+            c: [["Desce ao elixir", "d3"], ["Volta aos caracteres", "x4"]]
+          },
+          d3: {
+            w: "玄 · O Escuro", g: "丹", t: "O elixir interior",
+            x: "A alquimia externa cozinhou cinabre e chumbo à procura da imortalidade, e matou vários imperadores Tang. A alquimia interna guardou o aparelho e trouxe-o para dentro: o corpo é o caldeirão, o sopro o fole, e a essência, o sopro e o espírito os ingredientes. A órbita sobe pela coluna e desce pela frente. Não comas as receitas antigas; o mercúrio era verdadeiro.",
+            s: "chineseMysticismManual.html", n: "O Escuro e os Cinco — cap. 17",
+            c: [["Volta ao caminho", "t1"], ["Volta ao portão", "start"]]
+          },
+
+          e1: {
+            w: "夢 · O Sonho", g: "夢", t: "O Caminho e o Sonho",
+            x: "A energia primordial da vida é o 道. O som primordial da terra é o 🕉. Juntos criam uma Expressão para Todos. E depois a frase que fecha o laço: o sonho cria o caminho, e o caminho cria o sonho. Sem dúvidas quanto ao estilo de Deus.",
+            s: "dreampath.html", n: "O Caminho e o Sonho",
+            c: [["Pergunta pelo estilo de Deus", "e3"], ["Ouve o som de que fala", "b10"], ["Volta ao caminho", "t1"]]
+          },
+          e2: {
+            w: "猴 · O Macaco", g: "猴", t: "O que os macacos simbolizam na Ásia",
+            x: "No Japão, o macaco media entre os humanos e os deuses, e é também o trapaceiro. Na China é a liberdade vistoso, a engenhosidade e a sociabilidade — lembrete de que só o dever não é uma vida em equilíbrio. No Vietname é a memória, e a importância do que de facto foi vivido. Quatro países, um animal, quatro argumentos diferentes.",
+            s: "asianMonkey.html", n: "O que simbolizam os Macacos nas culturas asiáticas?",
+            c: [["Encontra o Rei Macaco", "b8"], ["Volta ao tigre e ao dragão", "x2"]]
+          },
+          e3: {
+            w: "書 · O Livro", g: "神", t: "O Estilo de Deus",
+            x: "A nossa capacidade de imaginar constrói-se com o que conhecemos; é assim que uma ideia nova se torna imagem, texto, um objecto que fala. A página vai buscar-lhe a velha maquinaria por trás — Māyā, o véu da aparência, e o modo de as escolas Zen seleccionarem os estudantes pelo que conseguem imaginar. A criação é um caminho lógico que escolhemos, e o estilo é a escolha.",
+            s: "style_of_god.html", n: "O Estilo de Deus",
+            c: [["Lê o sonho que o antecede", "e5"], ["Lê a equação 1 + 1 = 1", "e4"], ["Volta ao caminho do sonho", "e1"]]
+          },
+          e4: {
+            w: "書 · O Livro", g: "合", t: "1 + 1 = 1, ou 3",
+            x: "Hidrogénio mais oxigénio é água: uma coisa nova com propriedades que nenhum dos gases tinha. Duas ideas fundem-se num descobrimento; duas células tornam-se um zigoto. O ensaio chama-lhe emergência, e lê-o pela equação antiga. O seu sexto capítulo tem um título que há que lembrar: “O Macaco e o Buda São Uma Cabeça.”",
+            s: "ArtOfCreation.html", n: "Resolução da Mente — Imagination + Logic = Application",
+            c: [["Encontra o Macaco", "e2"], ["Volta ao vazio", "b4"]]
+          },
+          e5: {
+            w: "書 · O Livro", g: "幻", t: "Antes que alguma coisa exista",
+            x: "Antes de alguma coisa existir na realidade, precisa primeiro de ser uma ilusão pura: um arranha-céus, uma sociedade, ou um universo começa como uma visão não realizada — um sonho necessário que faz nascer a vontade de criar. Sem o esboço interno, não haveria qualquer necessidade de construir. A página do 道 Expression começa aí, e o jogo também.",
+            s: "taoExpression.html", n: "道 Expression",
+            c: [["Volta ao sonho", "e1"], ["Caminha a estrada", "t1"]]
+          },
+          e6: {
+            w: "書 · O Livro", g: "歌", t: "Uma só canção humana",
+            x: "Toda a cultura ensina hospitalidade, honra a cor e canta. A página reúne apenas o lado construtivo: provérbios que curam, cores que celebram, música que constrói. Línguas diferentes, um só coração. É uma reivindicação estranha e útil para trazer para um jogo de sutras e trigramas — as mesmas três notas vão aparecendo sempre.",
+            s: "CommonCultures.html", n: "Uma Canção Humana — Provérbios, Cores & Música das Culturas do Mundo",
+            c: [["Segue as cores até às fases", "x1"], ["Ouve o cantochão", "b10"]]
+          },
+          e7: {
+            w: "書 · O Livro", g: "教", t: "O que são as religiões",
+            x: "Um livro pode ser amado pelo que ensina sobre a realidade, e amá-lo cria a necessidade de ver essa realidade. A página nota que a leitura taoísta espera o inesperado, enquanto outros livros definem o que deve ser esperado e constroem à volta disso mecanismos de exclusão. É um aviso para cada cânone, incluindo os deste jogo.",
+            s: "religions.html", n: "O que são as Religiões?",
+            c: [["Volta à estrada", "t1"], ["Fica no silêncio", "b11"]]
+          }
+        };
+
+        var panel = document.getElementById("panel");
+        var worldEl = document.getElementById("world");
+        var placeEl = document.getElementById("place");
+        var whereTop = document.getElementById("whereTop");
+        var glyphEl = document.getElementById("glyph");
+        var titleEl = document.getElementById("title");
+        var textEl = document.getElementById("text");
+        var sourceEl = document.getElementById("source");
+        var choicesEl = document.getElementById("choices");
+        var threadEl = document.getElementById("thread");
+        var backBtn = document.getElementById("back");
+        var resetBtn = document.getElementById("reset");
+        var hintEl = document.getElementById("hint");
+
+        var current = "start";
+        var history = [];
+        var thread = ["start"];
+        var randomTargets = ["t1", "b1", "x1", "e1", "e2", "d1", "b7"];
+
+        function go(id) {
+          if (id === "@random") {
+            id = randomTargets[Math.floor(Math.random() * randomTargets.length)];
+          }
+          if (!NODES[id]) { return; }
+          history.push(current);
+          current = id;
+          thread.push(id);
+          if (thread.length > 18) { thread = thread.slice(thread.length - 18); }
+          render("turn");
+        }
+
+        function back() {
+          if (!history.length) { return; }
+          current = history.pop();
+          thread.pop();
+          render("back");
+        }
+
+        function reset() {
+          current = "start";
+          history = [];
+          thread = ["start"];
+          render("turn");
+        }
+
+        function render(direction) {
+          var node = NODES[current];
+          worldEl.textContent = node.w;
+          placeEl.textContent = node === NODES.start ? "início" : "estás aqui";
+          if (whereTop) { whereTop.textContent = node.w.split(" · ")[1] || node.w; }
+          glyphEl.textContent = node.g;
+          titleEl.textContent = node.t;
+          textEl.textContent = node.x;
+
+          sourceEl.textContent = "";
+          sourceEl.appendChild(document.createTextNode("de "));
+          var link = document.createElement("a");
+          link.href = "./" + node.s;
+          link.textContent = node.n + " · " + node.s;
+          sourceEl.appendChild(link);
+
+          choicesEl.textContent = "";
+          choicesEl.classList.toggle("doors", current === "start");
+          node.c.forEach(function (pair, i) {
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "choice";
+            var num = document.createElement("span");
+            num.className = "n";
+            num.textContent = String(i + 1);
+            var lbl = document.createElement("span");
+            lbl.className = "lbl";
+            lbl.textContent = pair[0];
+            var goIcon = document.createElement("span");
+            goIcon.className = "go";
+            goIcon.textContent = "→";
+            btn.appendChild(num);
+            btn.appendChild(lbl);
+            btn.appendChild(goIcon);
+            btn.addEventListener("click", function () { go(pair[1]); });
+            choicesEl.appendChild(btn);
+          });
+
+          if (current === "start") {
+            var picked = choicesEl.querySelectorAll(".choice");
+            if (picked.length === 4) {
+              var doors = ["道", "佛", "玄", "猴"];
+              picked.forEach(function (b, i) {
+                var g = document.createElement("span");
+                g.className = "door-glyph";
+                g.textContent = doors[i] || "·";
+                b.insertBefore(g, b.children[1] || null);
+              });
+            }
+          }
+
+          backBtn.disabled = history.length === 0;
+          hintEl.textContent = "1–" + node.c.length + " para escolher · Backspace para voltar";
+
+          threadEl.textContent = "";
+          var lab = document.createElement("span");
+          lab.className = "lbl";
+          lab.textContent = "Fio";
+          threadEl.appendChild(lab);
+          thread.forEach(function (id) {
+            var s = document.createElement("span");
+            s.textContent = NODES[id].g;
+            threadEl.appendChild(s);
+          });
+
+          if (direction) {
+            panel.classList.remove("is-turning", "is-back");
+            void panel.offsetWidth;
+            panel.classList.add(direction === "back" ? "is-back" : "is-turning");
+          }
+        }
+
+        backBtn.addEventListener("click", back);
+        resetBtn.addEventListener("click", reset);
+
+        document.addEventListener("keydown", function (event) {
+          if (event.metaKey || event.ctrlKey || event.altKey) { return; }
+          var tag = event.target && event.target.tagName;
+          if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") { return; }
+          if (event.key === "Backspace") {
+            event.preventDefault();
+            back();
+            return;
+          }
+          if (event.key === "r" || event.key === "R") {
+            reset();
+            return;
+          }
+          var n = Number(event.key);
+          if (n >= 1 && n <= 9) {
+            var node = NODES[current];
+            var pair = node.c[n - 1];
+            if (pair) {
+              event.preventDefault();
+              go(pair[1]);
+            }
+          }
+        });
+
+        render(0);
+      })();
+    </script>
+  </body>
+</html>
