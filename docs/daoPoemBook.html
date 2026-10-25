@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+    <meta name="X-Content-Type-Options" content="nosniff">
+    <meta name="X-Frame-Options" content="DENY">
+    <meta name="Referrer-Policy" content="no-referrer">
+    <meta name="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+    <title>The Sexy Book — Sixty-Nine Poems of the 道 | Monkey Blog</title>
+    <meta name="description" content="Sixty-nine poems on the 道, read one page at a time: the hollow that holds, water that keeps the low place, the uncarved block, return, and the Monkey who counts one and one to three.">
+    <meta property="og:title" content="The Sexy Book — Sixty-Nine Poems of the 道">
+    <meta property="og:description" content="A book of sixty-nine small doors. One poem per page, no scrolling — turn the page.">
+    <meta property="og:type" content="book">
+    <meta property="og:site_name" content="Monkey Blog">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="The Sexy Book — Sixty-Nine Poems of the 道">
+    <meta name="twitter:description" content="Sixty-nine original poems, one page at a time.">
+    <meta name="fediverse:creator" content="@TaoExpression@mastodon.social">
+    <style>
+      :root{
+        --bg:#06070a;
+        --ink:#ece6d9;
+        --dim:#b6b1a4;
+        --faint:#7d7a70;
+        --gold:#d9b26a;
+        --jade:#63cdb4;
+        --line:rgba(217,178,106,.16);
+        --line-soft:rgba(236,230,217,.07);
+        --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+        --han:"Noto Serif CJK SC","Source Han Serif SC","Songti SC","Noto Serif CJK JP",serif;
+        --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+        --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+      }
+      *{box-sizing:border-box}
+      html{-webkit-text-size-adjust:100%}
+      html,body{height:100%;margin:0}
+      body{
+        overflow:hidden;
+        color:var(--ink);
+        font-family:var(--sans);
+        background:
+          radial-gradient(70rem 46rem at 50% -20%,rgba(217,178,106,.10),transparent 62%),
+          radial-gradient(52rem 36rem at 104% 88%,rgba(99,205,180,.05),transparent 60%),
+          var(--bg);
+      }
+      body::after{
+        content:"";
+        position:fixed;
+        inset:0;
+        z-index:5;
+        pointer-events:none;
+        opacity:.045;
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      ::selection{background:rgba(217,178,106,.30);color:#fff}
+      a{color:inherit}
+      .skip{position:absolute;left:-9999px;padding:.8rem 1.2rem;background:var(--gold);color:#0a0c11;font-family:var(--mono);font-size:.72rem;z-index:90}
+      .skip:focus{left:1rem;top:1rem}
+      button{font:inherit;color:inherit}
+
+      .motes{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+      .reader{
+        position:relative;
+        z-index:2;
+        height:100svh;
+        display:grid;
+        grid-template-rows:auto minmax(0,1fr) auto;
+      }
+
+      .runhead{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:1rem;
+        padding:.75rem clamp(1rem,4vw,2.4rem) .65rem;
+        font-family:var(--mono);
+        font-size:.62rem;
+        letter-spacing:.2em;
+        text-transform:uppercase;
+        color:var(--faint);
+        border-bottom:1px solid var(--line-soft);
+      }
+      .runhead b{font-weight:500;color:var(--dim)}
+      .runhead__left{display:flex;align-items:center;gap:1.1rem;min-width:0}
+      .runhead__home{
+        color:var(--gold);
+        border-bottom:0;
+        white-space:nowrap;
+        transition:color 160ms ease;
+      }
+      .runhead__home:hover{color:var(--ink)}
+      .runhead__home:focus-visible{outline:1px solid var(--gold);outline-offset:3px;border-radius:2px}
+      .runhead__where{color:var(--gold);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+      .runhead__count{white-space:nowrap}
+
+      .bar{position:absolute;left:0;right:0;top:0;height:2px;background:rgba(236,230,217,.05)}
+      .bar span{display:block;height:100%;width:100%;transform:scaleX(0);transform-origin:0 50%;background:linear-gradient(90deg,var(--gold),var(--jade));transition:transform 260ms ease}
+
+      .stage{position:relative;overflow:hidden}
+
+      .page{
+        position:absolute;
+        inset:0;
+        display:none;
+        overflow:auto;
+        overscroll-behavior:contain;
+        scrollbar-width:thin;
+        padding:clamp(1rem,3.5vh,2.6rem) clamp(1.1rem,5vw,3rem);
+      }
+      .page.is-current{display:block}
+      .page.is-current .page__inner{animation:pageIn 460ms cubic-bezier(.2,.7,.2,1) both}
+      .page.back .page__inner{animation:pageBack 460ms cubic-bezier(.2,.7,.2,1) both}
+      @keyframes pageIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+      @keyframes pageBack{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+
+      .page__inner{
+        position:relative;
+        max-width:44rem;
+        margin:0 auto;
+        min-height:100%;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        text-align:center;
+      }
+      .page__glyph{
+        position:absolute;
+        right:-.5rem;
+        top:50%;
+        transform:translateY(-50%);
+        font-family:var(--han);
+        font-size:clamp(9rem,26vh,18rem);
+        line-height:1;
+        color:rgba(217,178,106,.055);
+        pointer-events:none;
+        user-select:none;
+      }
+      .page__label{
+        margin:0 0 1.1rem;
+        font-family:var(--mono);
+        font-size:.62rem;
+        letter-spacing:.3em;
+        text-transform:uppercase;
+        color:var(--gold);
+      }
+      .page h2{
+        margin:0;
+        font-family:var(--serif);
+        font-weight:400;
+        font-size:clamp(1.35rem,1vw + 2.6vh,2.1rem);
+        line-height:1.18;
+        letter-spacing:-.01em;
+        text-wrap:balance;
+      }
+      .page__sub{
+        margin:.85rem auto 0;
+        max-width:46ch;
+        font-family:var(--serif);
+        font-size:clamp(.88rem,.55vw + 1.15vh,.98rem);
+        line-height:1.5;
+        color:var(--faint);
+      }
+      .verse{
+        margin:clamp(1.2rem,3.4vh,2.2rem) auto 0;
+        max-width:40ch;
+        text-align:left;
+        font-family:var(--serif);
+        font-size:clamp(.9rem,.42vw + 1.42vh,1.12rem);
+        line-height:1.8;
+        color:var(--ink);
+      }
+      .verse p{margin:0 0 1.15em}
+      .verse p:last-child{margin-bottom:0}
+      .verse em{font-style:normal;color:var(--gold)}
+
+      .cover .page__inner{align-items:center}
+      .cover__art{
+        position:absolute;
+        inset:0;
+        background:url("./images/three.jpg") center/cover no-repeat;
+        opacity:.28;
+        filter:saturate(.8) brightness(.7) blur(1px);
+        border-radius:18px;
+        mask-image:radial-gradient(70% 70% at 50% 45%,#000 45%,transparent 100%);
+        -webkit-mask-image:radial-gradient(70% 70% at 50% 45%,#000 45%,transparent 100%);
+        pointer-events:none;
+      }
+      .cover__inner{position:relative;z-index:1;padding:clamp(1rem,4vh,2rem) 0}
+      .cover .kicker{
+        margin:0 0 1.4rem;
+        font-family:var(--mono);
+        font-size:.64rem;
+        letter-spacing:.32em;
+        text-transform:uppercase;
+        color:var(--gold);
+      }
+      .cover h1{
+        margin:0;
+        font-family:var(--serif);
+        font-weight:400;
+        font-size:clamp(2rem,1.2vw + 4.2vh,3.6rem);
+        line-height:1.05;
+        letter-spacing:-.02em;
+      }
+      .cover h1 span{
+        display:block;
+        margin-top:.32em;
+        font-family:var(--han);
+        font-size:.5em;
+        letter-spacing:.16em;
+        color:var(--gold);
+      }
+      .cover__sub{
+        margin:1.2rem auto 0;
+        max-width:46ch;
+        color:var(--dim);
+        font-size:clamp(.94rem,.4vw + 1.15vh,1.06rem);
+        line-height:1.65;
+      }
+      .cover__meta{
+        margin:1.5rem 0 0;
+        display:flex;
+        flex-wrap:wrap;
+        gap:.45rem 1.2rem;
+        justify-content:center;
+        font-family:var(--mono);
+        font-size:.6rem;
+        letter-spacing:.2em;
+        text-transform:uppercase;
+        color:var(--faint);
+      }
+      .begin{
+        margin-top:clamp(1.4rem,3.4vh,2.2rem);
+        appearance:none;
+        border:1px solid rgba(217,178,106,.42);
+        border-radius:999px;
+        padding:.72rem 1.6rem;
+        background:rgba(217,178,106,.07);
+        color:var(--gold);
+        font-family:var(--mono);
+        font-size:.68rem;
+        letter-spacing:.22em;
+        text-transform:uppercase;
+        cursor:pointer;
+        transition:background 200ms ease,border-color 200ms ease,color 200ms ease;
+      }
+      .begin:hover,.begin:focus-visible{background:rgba(217,178,106,.14);border-color:var(--gold);color:#fff;outline:none}
+      .hint{
+        margin:1rem 0 0;
+        font-family:var(--mono);
+        font-size:.58rem;
+        letter-spacing:.16em;
+        text-transform:uppercase;
+        color:var(--faint);
+      }
+
+      .plate{padding:0}
+      .plate .page__inner{max-width:none;padding:clamp(.6rem,2vh,1.2rem)}
+      .plate figure{margin:0;display:flex;flex-direction:column;height:100%;justify-content:center;gap:.7rem}
+      .plate img{
+        display:block;
+        width:100%;
+        max-height:calc(100% - 3rem);
+        object-fit:contain;
+        border:1px solid var(--line);
+        border-radius:14px;
+        filter:saturate(.85) brightness(.8);
+      }
+      .plate figcaption{
+        font-family:var(--mono);
+        font-size:.6rem;
+        letter-spacing:.18em;
+        text-transform:uppercase;
+        color:var(--faint);
+      }
+
+      .prose .page__inner{align-items:stretch;text-align:left;max-width:52rem}
+      .prose h2{font-size:clamp(1.2rem,.7vw + 2vh,1.7rem);text-align:center}
+      .prose p{
+        margin:0 0 .85em;
+        font-size:clamp(.86rem,.35vw + 1.3vh,1rem);
+        line-height:1.7;
+        color:var(--dim);
+      }
+      .prose p:last-child{margin-bottom:0}
+      .prose strong{color:var(--ink);font-weight:600}
+      .prose .credits{
+        margin:clamp(1rem,2.6vh,1.6rem) 0 0;
+        font-family:var(--mono);
+        font-size:.58rem;
+        letter-spacing:.16em;
+        text-transform:uppercase;
+        color:var(--faint);
+        line-height:1.8;
+      }
+
+      .end .page__inner{align-items:center}
+      .end .glyph{
+        font-family:var(--han);
+        font-size:clamp(2.4rem,6vh,3.6rem);
+        color:var(--gold);
+        line-height:1;
+        margin-bottom:1.2rem;
+      }
+      .end p{
+        margin:0 auto .9rem;
+        max-width:40ch;
+        font-family:var(--serif);
+        font-size:clamp(1rem,.5vw + 1.5vh,1.22rem);
+        line-height:1.75;
+        color:var(--dim);
+      }
+      .end .close-line{margin-top:1.2rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--faint)}
+
+      .foot{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:.8rem;
+        padding:.7rem clamp(1rem,4vw,2.4rem) calc(.7rem + env(safe-area-inset-bottom));
+        border-top:1px solid var(--line-soft);
+      }
+      .navbtn{
+        appearance:none;
+        border:1px solid var(--line);
+        border-radius:999px;
+        padding:.5rem 1rem;
+        background:rgba(0,0,0,.2);
+        color:var(--dim);
+        font-family:var(--mono);
+        font-size:.64rem;
+        letter-spacing:.16em;
+        text-transform:uppercase;
+        cursor:pointer;
+        transition:color 180ms ease,border-color 180ms ease,opacity 180ms ease;
+      }
+      .navbtn:hover:not(:disabled){color:var(--gold);border-color:rgba(217,178,106,.5)}
+      .navbtn:disabled{opacity:.32;cursor:default}
+      .navbtn:focus-visible{outline:1px solid var(--gold);outline-offset:2px}
+      .folio{
+        font-family:var(--mono);
+        font-size:.62rem;
+        letter-spacing:.24em;
+        text-transform:uppercase;
+        color:var(--faint);
+        white-space:nowrap;
+      }
+      .folio b{color:var(--dim);font-weight:500}
+
+      .turnhint{
+        position:fixed;
+        right:1rem;
+        bottom:4rem;
+        z-index:7;
+        font-family:var(--mono);
+        font-size:.55rem;
+        letter-spacing:.16em;
+        text-transform:uppercase;
+        color:var(--faint);
+        opacity:0;
+        transition:opacity 400ms ease;
+        pointer-events:none;
+      }
+      .turnhint.show{opacity:.8}
+
+      @media (max-height:700px){
+        .page{padding:.7rem clamp(1rem,4vw,2.4rem)}
+        .page__label{margin-bottom:.6rem;font-size:.56rem}
+        .page__sub{margin-top:.55rem;line-height:1.4}
+        .page h2{font-size:clamp(1.12rem,.8vw + 2vh,1.7rem)}
+        .verse{margin-top:.9rem;font-size:clamp(.82rem,.5vw + 1.32vh,1rem);line-height:1.62}
+        .verse p{margin-bottom:.95em}
+      }
+      @media (max-width:700px){
+        .runhead__book{display:none}
+        .runhead{justify-content:space-between;gap:.65rem}
+        .runhead__left{gap:.65rem}
+        .page__glyph{font-size:clamp(7rem,20vh,12rem);right:-1.2rem}
+        .verse{max-width:36ch}
+        .turnhint{display:none}
+      }
+      @media (prefers-reduced-motion:reduce){
+        .page.is-current .page__inner,.page.back .page__inner{animation:none}
+        .bar span{transition:none}
+        .turnhint{transition:none}
+      }
+    </style>
+  </head>
+
+  <body>
+    <a class="skip" href="#stage">Skip to the page</a>
+    <canvas class="motes" id="motes" aria-hidden="true"></canvas>
+    <div class="turnhint" id="turnHint" aria-hidden="true">click · → to turn</div>
+
+    <div class="reader">
+      <header class="runhead">
+        <span class="runhead__left">
+          <a class="runhead__home" href="./index.html">← Home</a>
+          <span class="runhead__book"><b>The Sexy Book</b> · 道</span>
+        </span>
+        <span class="runhead__where" id="runWhere" aria-live="polite">Cover</span>
+        <span class="runhead__count" id="runCount">— / 69</span>
+      </header>
+      <div class="bar" aria-hidden="true"><span id="bar"></span></div>
+
+      <div class="stage" id="stage">
+
+        <section class="page cover is-current" data-kind="cover">
+          <div class="cover__art" aria-hidden="true"></div>
+          <div class="page__inner cover__inner">
+            <p class="kicker">Monkey Blog · 道 Expression</p>
+            <h1>The Sexy Book<span>道 樸 玄</span></h1>
+            <p class="cover__sub">
+              Sixty-nine poems on the way that does not say its name. Written after Laozi
+              and Zhuangzi, beside the Monkey, the Tiger and the Dragon. One poem to a
+              page; the page turns when you do.
+            </p>
+            <div class="cover__meta">
+              <span>OdicforceSounds</span><span>Poems</span><span>No scripture</span>
+            </div>
+            <button class="begin" id="begin" type="button">Begin →</button>
+            <p class="hint">click anywhere · or press →</p>
+          </div>
+        </section>
+
+        <article class="page poem" data-glyph="道" data-section="道 · The Way" data-num="1">
+          <div class="page__inner">
+            <p class="page__label">道 · The Way · I</p>
+            <h2>The Way That Does Not Say Its Name</h2>
+            <p class="page__sub">after the first chapter, in a smaller voice</p>
+            <div class="verse">
+              <p>You will not find it in the sentence.<br>The sentence is a hand.<br>The way is not the thing the hand holds.</p>
+              <p>Say it and you have made a fence.<br>Keep silent and the fence is yours to walk through,<br>whistling, with your hands in your sleeves.</p>
+              <p>It was not born. It borrows birth.<br>It does not rule. It lets the ten thousand things<br>argue themselves into a world.</p>
+              <p>A road is the least of it — a road is what remains<br>after walking. The way is what was never<br>a road at all, and is still under your feet.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">道</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="道" data-section="道 · The Way" data-num="2">
+          <div class="page__inner">
+            <p class="page__label">道 · The Way · II</p>
+            <h2>The Map Has No Author</h2>
+            <p class="page__sub">on the hand that copies and never goes</p>
+            <div class="verse">
+              <p>The map has no author.<br>Someone walked, and the walking made a line,<br>and the line was copied by a hand<br>that never left the house.</p>
+              <p>Fold it and the creases are the only hills.<br>Open it and the weather is wrong.</p>
+              <p>A map with no author is still a map.<br>A way with no author is still the way.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">道</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="道" data-section="道 · The Way" data-num="3">
+          <div class="page__inner">
+            <p class="page__label">道 · The Way · III</p>
+            <h2>Two Roads and Neither</h2>
+            <p class="page__sub">at the fork, the sign was cut elsewhere</p>
+            <div class="verse">
+              <p>At the fork, a sign points left and right.<br>Both signs were cut by the same hand,<br>and the hand was never at the fork.</p>
+              <p>Choose, and the unchosen road<br>keeps walking without you.</p>
+              <p>There is no third road.<br>There is only the ground you stood on<br>while deciding.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">道</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="道" data-section="道 · The Way" data-num="4">
+          <div class="page__inner">
+            <p class="page__label">道 · The Way · IV</p>
+            <h2>The Name on the Gate</h2>
+            <p class="page__sub">a handle is not a welcome</p>
+            <div class="verse">
+              <p>A gate with a name above it<br>invites you to become the name.</p>
+              <p>Walk through without reading<br>and the garden is larger by one gate.</p>
+              <p>The name was a handle for strangers.<br>You were never a stranger to the garden.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">道</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="道" data-section="道 · The Way" data-num="5">
+          <div class="page__inner">
+            <p class="page__label">道 · The Way · V</p>
+            <h2>A Hand Opens; a Hand Closes</h2>
+            <p class="page__sub">on being poor in the useful way</p>
+            <div class="verse">
+              <p>A hand opens: the world arrives.<br>A hand closes: the world is yours.</p>
+              <p>Open longer than you close<br>and you will be poor<br>in the way that leaves room.</p>
+              <p>Nobody will thank you for the room.<br>They will stand in it.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">道</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="道" data-section="道 · The Way" data-num="6">
+          <div class="page__inner">
+            <p class="page__label">道 · The Way · VI</p>
+            <h2>The Road That Forgets You</h2>
+            <p class="page__sub">not cruelty, just maintenance</p>
+            <div class="verse">
+              <p>The road forgets each traveller<br>an inch behind the heel.</p>
+              <p>That is not cruelty.<br>It is how the road stays a road<br>instead of a museum of footsteps.</p>
+              <p>Take the forgetting as a kindness.<br>It lets you come back as someone else.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">道</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="道" data-section="道 · The Way" data-num="7">
+          <div class="page__inner">
+            <p class="page__label">道 · The Way · VII</p>
+            <h2>What the River Knows First</h2>
+            <p class="page__sub">the shape is decided before the question</p>
+            <div class="verse">
+              <p>The river learns the shape of the valley<br>before the valley knows it has a shape.</p>
+              <p>Nothing has been decided.<br>The water is already there.</p>
+              <p>When the rain finally asks,<br>the answer has been waiting in the low ground<br>for a thousand years.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">道</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="道" data-section="道 · The Way" data-num="8">
+          <div class="page__inner">
+            <p class="page__label">道 · The Way · VIII</p>
+            <h2>The Way Is Not Ahead</h2>
+            <p class="page__sub">only the dust behind the step</p>
+            <div class="verse">
+              <p>The way is not ahead of you,<br>waiting to be found.</p>
+              <p>It is behind you,<br>in the dust of the step you have already taken,<br>saying nothing.</p>
+              <p>Turn around and it is still behind you.<br>That is the joke the old men kept<br>from the students.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">道</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="無" data-section="無 · The Hollow" data-num="9">
+          <div class="page__inner">
+            <p class="page__label">無 · The Hollow · I</p>
+            <h2>Thirty Spokes</h2>
+            <p class="page__sub">on the usefulness of what is not there</p>
+            <div class="verse">
+              <p>Thirty spokes, one hub.<br>The wheel turns on the hole you cannot see.</p>
+              <p>Clay is worked into a bowl:<br>it is the hollow that holds the rice.<br>Doors and windows are cut into a wall:<br>it is the emptiness you live in.</p>
+              <p>So the useful is what we shape,<br>and the useful-useful is what we left out.</p>
+              <p>Build a house out of everything you own<br>and you will sleep in the gaps,<br>if you sleep at all.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">無</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="無" data-section="無 · The Hollow" data-num="10">
+          <div class="page__inner">
+            <p class="page__label">無 · The Hollow · II</p>
+            <h2>The Room Without Furniture</h2>
+            <p class="page__sub">let them bring the chair</p>
+            <div class="verse">
+              <p>Move the chairs out.<br>Now the room can be entered<br>without an apology.</p>
+              <p>Wait a day.<br>Someone will bring a chair.<br>Let them. Sit on the floor.</p>
+              <p>The floor is not a protest.<br>It is simply where the room is.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">無</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="無" data-section="無 · The Hollow" data-num="11">
+          <div class="page__inner">
+            <p class="page__label">無 · The Hollow · III</p>
+            <h2>A Cup, a Door, a Window</h2>
+            <p class="page__sub">three teachers with no opinions</p>
+            <div class="verse">
+              <p>A cup is useful because it is empty.<br>A door is useful because it opens.<br>A window is useful because it is not a wall.</p>
+              <p>You are useful for the same reason,<br>on the days you do not insist on being full.</p>
+              <p>Fill the cup and it is only a cup with water in it.<br>Nothing is wrong with that.<br>But the tea is later.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">無</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="無" data-section="無 · The Hollow" data-num="12">
+          <div class="page__inner">
+            <p class="page__label">無 · The Hollow · IV</p>
+            <h2>The Hole in the Argument</h2>
+            <p class="page__sub">the quiet step through</p>
+            <div class="verse">
+              <p>Every argument has a hole.<br>The clever hold it up to the light<br>and call it evidence.</p>
+              <p>The quiet step through it.</p>
+              <p>Outside, the argument is still going,<br>smaller now, and very well lit.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">無</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="無" data-section="無 · The Hollow" data-num="13">
+          <div class="page__inner">
+            <p class="page__label">無 · The Hollow · V</p>
+            <h2>What the Wall Is For</h2>
+            <p class="page__sub">the answer is the sky</p>
+            <div class="verse">
+              <p>The wall is not the house.<br>The wall is the question the house was asked.</p>
+              <p>Cut a window in it.<br>The answer is the sky.</p>
+              <p>Some questions are answered by removing a piece of them<br>and letting the weather in.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">無</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="無" data-section="無 · The Hollow" data-num="14">
+          <div class="page__inner">
+            <p class="page__label">無 · The Hollow · VI</p>
+            <h2>The Silence Between Two Names</h2>
+            <p class="page__sub">the room the thing can stand in</p>
+            <div class="verse">
+              <p>Say a name, and the silence after it<br>is the only room the thing can stand in.</p>
+              <p>Give it a second name and the room is crowded.<br>Give it three and the thing leaves.</p>
+              <p>Leave the first one alone.<br>It is doing more than you think.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">無</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="無" data-section="無 · The Hollow" data-num="15">
+          <div class="page__inner">
+            <p class="page__label">無 · The Hollow · VII</p>
+            <h2>An Unpainted Corner</h2>
+            <p class="page__sub">the painter was wise, or tired</p>
+            <div class="verse">
+              <p>An unpainted corner of the ceiling:<br>the painter was wise, or tired.</p>
+              <p>Either way, the corner has kept<br>a little of the original night.</p>
+              <p>Look up on a bad day.<br>It is still there, and it still does not need you.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">無</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="無" data-section="無 · The Hollow" data-num="16">
+          <div class="page__inner">
+            <p class="page__label">無 · The Hollow · VIII</p>
+            <h2>The Weight of Nothing</h2>
+            <p class="page__sub">what is missing has a body</p>
+            <div class="verse">
+              <p>Nothing weighs nothing until it is missing.<br>Then it weighs the whole afternoon,<br>the chair, the cup,<br>the sentence you were about to say.</p>
+              <p>Put the sentence down carefully.<br>It is heavier than it looks,<br>and it is not yours to carry.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">無</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="水" data-section="水 · Water" data-num="17">
+          <div class="page__inner">
+            <p class="page__label">水 · Water · I</p>
+            <h2>Water Keeps the Low Place</h2>
+            <p class="page__sub">nothing is softer, nothing gets further</p>
+            <div class="verse">
+              <p>Water has no argument.<br>It wins the stone by staying, not by striking.</p>
+              <p>It takes the shape of the jar and is not owned by it.<br>It falls the length of the mountain<br>and arrives without a lesson.</p>
+              <p>Men climb to be seen.<br>Water goes down and is everywhere.</p>
+              <p>Be the low place.<br>The valley does not chase the river;<br>the river cannot pass it by.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">水</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="水" data-section="水 · Water" data-num="18">
+          <div class="page__inner">
+            <p class="page__label">水 · Water · II</p>
+            <h2>The Stone Learns Patience</h2>
+            <p class="page__sub">the same lesson, a million times</p>
+            <div class="verse">
+              <p>The stone is a slow student.<br>Water teaches the same lesson<br>a million times<br>without raising its voice.</p>
+              <p>The stone graduates.</p>
+              <p>You will not be there for the ceremony.<br>That is the tuition.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">水</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="水" data-section="水 · Water" data-num="19">
+          <div class="page__inner">
+            <p class="page__label">水 · Water · III</p>
+            <h2>Rain Does Not Aim</h2>
+            <p class="page__sub">accused of missing nothing</p>
+            <div class="verse">
+              <p>Rain does not aim.<br>It arrives everywhere at once<br>and is accused of missing nothing.</p>
+              <p>Take the umbrella.<br>The rain will not be offended.</p>
+              <p>It has no list of who was grateful.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">水</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="水" data-section="水 · Water" data-num="20">
+          <div class="page__inner">
+            <p class="page__label">水 · Water · IV</p>
+            <h2>The Sea Refuses Nothing</h2>
+            <p class="page__sub">it returns what it is given as weather</p>
+            <div class="verse">
+              <p>The sea refuses nothing<br>and belongs to no one.</p>
+              <p>Bring it your worst.<br>It will return it as weather.</p>
+              <p>Stand on the shore long enough<br>and you will learn the difference<br>between an apology and a tide.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">水</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="水" data-section="水 · Water" data-num="21">
+          <div class="page__inner">
+            <p class="page__label">水 · Water · V</p>
+            <h2>A Cup of River</h2>
+            <p class="page__sub">the thirst was not asking for the whole river</p>
+            <div class="verse">
+              <p>A cup of river<br>is not the river.<br>Drink it anyway.</p>
+              <p>The thirst was never asking<br>for the whole river.</p>
+              <p>The river will not mind.<br>It has been passing this way<br>since before there were cups.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">水</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="水" data-section="水 · Water" data-num="22">
+          <div class="page__inner">
+            <p class="page__label">水 · Water · VI</p>
+            <h2>The Soft Thing Wins</h2>
+            <p class="page__sub">ask the tongue, ask the teeth</p>
+            <div class="verse">
+              <p>The soft thing wins<br>not by being soft<br>but by not having a shape<br>to break.</p>
+              <p>Ask the tongue.<br>Ask the teeth, if any are left.</p>
+              <p>In the end the mouth is a small argument<br>that water settles quietly.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">水</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="水" data-section="水 · Water" data-num="23">
+          <div class="page__inner">
+            <p class="page__label">水 · Water · VII</p>
+            <h2>Water in a Broken Jar</h2>
+            <p class="page__sub">no complaint about the jar</p>
+            <div class="verse">
+              <p>Water in a broken jar<br>does not complain about the jar.</p>
+              <p>It finds the floor,<br>the root, the seed,<br>and is a river by morning.</p>
+              <p>The jar, for its part,<br>has never felt so useful.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">水</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="水" data-section="水 · Water" data-num="24">
+          <div class="page__inner">
+            <p class="page__label">水 · Water · VIII</p>
+            <h2>The Current Under the Ice</h2>
+            <p class="page__sub">do not mistake the surface for the argument</p>
+            <div class="verse">
+              <p>The current under the ice<br>is still a current.</p>
+              <p>Do not mistake the surface<br>for the argument.</p>
+              <p>Winter is a long sentence<br>with the verb held back.<br>It ends the way rivers end:<br>all at once, downhill.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">水</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="谷" data-section="谷 · The Valley" data-num="25">
+          <div class="page__inner">
+            <p class="page__label">谷 · The Valley · I</p>
+            <h2>The Valley Answers</h2>
+            <p class="page__sub">on keeping a room no one enters</p>
+            <div class="verse">
+              <p>Shout at a mountain and it gives your voice back.<br>Shout into a valley and it gives you your voice back<br>with the sound taken out.</p>
+              <p>The valley is not generous.<br>The valley is empty, and empty is a kind of answer.</p>
+              <p>Keep a room in yourself that no one enters.<br>Not a secret — a space.</p>
+              <p>A guest who arrives at midnight<br>should find the lantern already low,<br>the door unlatched, and no one waiting to be thanked.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">谷</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="谷" data-section="谷 · The Valley" data-num="26">
+          <div class="page__inner">
+            <p class="page__label">谷 · The Valley · II</p>
+            <h2>The Echo Has No Owner</h2>
+            <p class="page__sub">the shout is yours</p>
+            <div class="verse">
+              <p>The shout is yours.<br>The echo is the mountain's answer,<br>and it belongs to whoever is standing there.</p>
+              <p>Stand there. Answer nothing.</p>
+              <p>It is the only reply the mountain<br>has ever accepted.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">谷</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="谷" data-section="谷 · The Valley" data-num="27">
+          <div class="page__inner">
+            <p class="page__label">谷 · The Valley · III</p>
+            <h2>The Hollow Between Hills</h2>
+            <p class="page__sub">nobody chose it for the view</p>
+            <div class="verse">
+              <p>The hollow between hills<br>is where the village is built.</p>
+              <p>Nobody chose it for the view.<br>They chose it because the wind goes around,<br>and the water comes down,<br>and neither has to be asked twice.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">谷</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="谷" data-section="谷 · The Valley" data-num="28">
+          <div class="page__inner">
+            <p class="page__label">谷 · The Valley · IV</p>
+            <h2>A Room With One Lantern</h2>
+            <p class="page__sub">two lanterns make an argument about shadows</p>
+            <div class="verse">
+              <p>A room with one lantern<br>is not a dark room.</p>
+              <p>A room with two lanterns<br>is an argument about shadows.</p>
+              <p>Choose the lantern.<br>Then turn it down<br>until the corners come back.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">谷</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="谷" data-section="谷 · The Valley" data-num="29">
+          <div class="page__inner">
+            <p class="page__label">谷 · The Valley · V</p>
+            <h2>What the Mountain Sends Down</h2>
+            <p class="page__sub">water, stone, a rumour</p>
+            <div class="verse">
+              <p>The mountain sends down<br>what it cannot keep:<br>water, stone, a rumour.</p>
+              <p>Be the valley.<br>Take it, and let it pass.</p>
+              <p>The mountain does not come to check<br>what you did with the rumour.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">谷</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="谷" data-section="谷 · The Valley" data-num="30">
+          <div class="page__inner">
+            <p class="page__label">谷 · The Valley · VI</p>
+            <h2>The Guest at Midnight</h2>
+            <p class="page__sub">the lantern already low</p>
+            <div class="verse">
+              <p>A guest at midnight<br>should find the lantern low,<br>the door unlatched,<br>and no one waiting to be thanked.</p>
+              <p>Most hospitality is a performance.<br>This is the other kind:<br>a house that does not need to watch you eat.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">谷</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="谷" data-section="谷 · The Valley" data-num="31">
+          <div class="page__inner">
+            <p class="page__label">谷 · The Valley · VII</p>
+            <h2>The Empty Chair at the Table</h2>
+            <p class="page__sub">the absent behave better than we do</p>
+            <div class="verse">
+              <p>The empty chair at the table<br>is not a failure of company.</p>
+              <p>It is where the absent sit,<br>and they are better behaved than we are.</p>
+              <p>They never interrupt.<br>They never ask for the salt.<br>They are the reason the meal is quiet enough<br>to taste.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">谷</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="谷" data-section="谷 · The Valley" data-num="32">
+          <div class="page__inner">
+            <p class="page__label">谷 · The Valley · VIII</p>
+            <h2>Low Ground, Long Memory</h2>
+            <p class="page__sub">a line of stones that used to be a bank</p>
+            <div class="verse">
+              <p>Low ground keeps the memory of water<br>long after the water has gone:<br>a darker green, a bent reed,<br>a line of stones that used to be a bank.</p>
+              <p>The land remembers what the map forgot,<br>and the map is the one<br>people trust in a drought.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">谷</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="樸" data-section="樸 · The Uncarved" data-num="33">
+          <div class="page__inner">
+            <p class="page__label">樸 · The Uncarved · I</p>
+            <h2>Uncarved</h2>
+            <p class="page__sub">the block before the chisel</p>
+            <div class="verse">
+              <p>Before the chisel, the block.<br>Before the block, the tree.<br>Before the tree, a seed that knew nothing of tables.</p>
+              <p>The uncarved is not a failure of the carving.<br>It is what the carving was for,<br>and what it spends.</p>
+              <p>Sharpen your name and you will need it.<br>Put it down and the wood is still warm.</p>
+              <p>Let the grain decide the shape.<br>The chisel was never the author.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">樸</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="樸" data-section="樸 · The Uncarved" data-num="34">
+          <div class="page__inner">
+            <p class="page__label">樸 · The Uncarved · II</p>
+            <h2>The Grain Decides</h2>
+            <p class="page__sub">the plane is only a witness</p>
+            <div class="verse">
+              <p>The grain decides,<br>and the plane is only a witness.</p>
+              <p>A carpenter who argues with the grain<br>builds a beautiful thing<br>that cracks in March.</p>
+              <p>Listen to the wood.<br>It has been waiting longer than you.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">樸</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="樸" data-section="樸 · The Uncarved" data-num="35">
+          <div class="page__inner">
+            <p class="page__label">樸 · The Uncarved · III</p>
+            <h2>A Block With No Name</h2>
+            <p class="page__sub">a very expensive block</p>
+            <div class="verse">
+              <p>A block with no name<br>can be a table, a boat, a door, a bowl.</p>
+              <p>Give it a name too early<br>and you have made a very expensive block.</p>
+              <p>Names are chisels.<br>Use them when the shape is already there.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">樸</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="樸" data-section="樸 · The Uncarved" data-num="36">
+          <div class="page__inner">
+            <p class="page__label">樸 · The Uncarved · IV</p>
+            <h2>Before the First Cut</h2>
+            <p class="page__sub">measure twice, then put the ruler down</p>
+            <div class="verse">
+              <p>Before the first cut, the whole.</p>
+              <p>After the first cut, the whole<br>and a pile of what the whole was not.</p>
+              <p>Measure twice.<br>Then put the ruler down,<br>and look at the wood again.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">樸</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="樸" data-section="樸 · The Uncarved" data-num="37">
+          <div class="page__inner">
+            <p class="page__label">樸 · The Uncarved · V</p>
+            <h2>The Carpenter Puts Down the Chisel</h2>
+            <p class="page__sub">leave one joint loose</p>
+            <div class="verse">
+              <p>The carpenter puts down the chisel<br>and the room is finished.</p>
+              <p>A finished room is an argument<br>that has stopped moving.</p>
+              <p>Leave one joint loose.<br>Let the house breathe<br>and the next person adjust something.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">樸</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="樸" data-section="樸 · The Uncarved" data-num="38">
+          <div class="page__inner">
+            <p class="page__label">樸 · The Uncarved · VI</p>
+            <h2>A Knot the Plane Refuses</h2>
+            <p class="page__sub">where the tree remembered something</p>
+            <div class="verse">
+              <p>A knot the plane refuses<br>is not an error in the wood.<br>It is where the tree remembered something.</p>
+              <p>Work around it.<br>The table will be honest,<br>and the guests will put their glasses<br>exactly there.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">樸</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="樸" data-section="樸 · The Uncarved" data-num="39">
+          <div class="page__inner">
+            <p class="page__label">樸 · The Uncarved · VII</p>
+            <h2>The Table Remembers the Tree</h2>
+            <p class="page__sub">the rings under the varnish</p>
+            <div class="verse">
+              <p>The table remembers the tree<br>in the rings under the varnish,<br>in the place where the branch was.</p>
+              <p>Guests put their glasses there<br>without knowing why.</p>
+              <p>That is how the past is served:<br>not as a story,<br>as a slightly uneven surface.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">樸</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="樸" data-section="樸 · The Uncarved" data-num="40">
+          <div class="page__inner">
+            <p class="page__label">樸 · The Uncarved · VIII</p>
+            <h2>Sandpaper and Patience</h2>
+            <p class="page__sub">choose the one that does not speak</p>
+            <div class="verse">
+              <p>Sandpaper and patience<br>make the same shape slowly.</p>
+              <p>One of them will outlast you.<br>Choose the one that does not speak.</p>
+              <p>The roughness goes.<br>The board stays a board.<br>You stay the one who waited.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">樸</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="反" data-section="反 · Return" data-num="41">
+          <div class="page__inner">
+            <p class="page__label">反 · Return · I</p>
+            <h2>Return Is the Movement</h2>
+            <p class="page__sub">the moon does not fall upward</p>
+            <div class="verse">
+              <p>What goes out is a breath.<br>What comes back is also a breath,<br>and you did not do either.</p>
+              <p>The moon does not fall upward.<br>It returns, which is the only way it rises.</p>
+              <p>Fold the map when the road is clear.<br>The end of the argument is a door,<br>and the door is where you came in.</p>
+              <p>Do not be ashamed of going back.<br>The tide is not embarrassed by the shore.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">反</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="反" data-section="反 · Return" data-num="42">
+          <div class="page__inner">
+            <p class="page__label">反 · Return · II</p>
+            <h2>The Tide Is Not Ashamed</h2>
+            <p class="page__sub">the road has been holding your place</p>
+            <div class="verse">
+              <p>The tide is not ashamed<br>of the shore it keeps returning to.</p>
+              <p>Go back.<br>The road has been holding your place.</p>
+              <p>It will not ask where you have been.<br>It is a road, not a mother.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">反</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="反" data-section="反 · Return" data-num="43">
+          <div class="page__inner">
+            <p class="page__label">反 · Return · III</p>
+            <h2>The Arrow Comes Back as a Question</h2>
+            <p class="page__sub">the archer comes back as a hand</p>
+            <div class="verse">
+              <p>The arrow comes back as a question.<br>The archer comes back as a hand.</p>
+              <p>Aim at the target<br>and you will need a target forever.</p>
+              <p>The best shot is the one<br>after which no one can say<br>who was shooting.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">反</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="反" data-section="反 · Return" data-num="44">
+          <div class="page__inner">
+            <p class="page__label">反 · Return · IV</p>
+            <h2>The Map in the Pocket</h2>
+            <p class="page__sub">a square of paper with opinions</p>
+            <div class="verse">
+              <p>The map, folded small,<br>is a square of paper with opinions.</p>
+              <p>Carry it, but walk by the ground.<br>The paper will forgive you.</p>
+              <p>Every pocket is a small country<br>where the way rests between walks.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">反</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="反" data-section="反 · Return" data-num="45">
+          <div class="page__inner">
+            <p class="page__label">反 · Return · V</p>
+            <h2>The Door You Came In</h2>
+            <p class="page__sub">the threshold is where you live</p>
+            <div class="verse">
+              <p>Every house has a door<br>you came in by and forgot.</p>
+              <p>Stand there a moment.<br>The room looks different from the threshold,<br>and the threshold is where you live.</p>
+              <p>Not inside. Not outside.<br>In the small weather between.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">反</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="反" data-section="反 · Return" data-num="46">
+          <div class="page__inner">
+            <p class="page__label">反 · Return · VI</p>
+            <h2>The Moon Does Not Fall Upward</h2>
+            <p class="page__sub">a circle is what a return looks like from far away</p>
+            <div class="verse">
+              <p>The moon does not fall upward.<br>It returns, which is the only way it rises.</p>
+              <p>Do not call it a circle.<br>A circle is what a return looks like<br>from far away.</p>
+              <p>Stand closer.<br>Nothing is repeating.<br>Everything is coming back.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">反</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="反" data-section="反 · Return" data-num="47">
+          <div class="page__inner">
+            <p class="page__label">反 · Return · VII</p>
+            <h2>Autumn Does Not Apologise</h2>
+            <p class="page__sub">where the roots can read them</p>
+            <div class="verse">
+              <p>Autumn does not apologise<br>for taking the leaves back.</p>
+              <p>It puts them on the ground,<br>where the roots can read them.</p>
+              <p>You will call it loss for a week.<br>The tree calls it arithmetic.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">反</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="反" data-section="反 · Return" data-num="48">
+          <div class="page__inner">
+            <p class="page__label">反 · Return · VIII</p>
+            <h2>The Wheel's Fourth Turn</h2>
+            <p class="page__sub">the whole of progress, the whole of return</p>
+            <div class="verse">
+              <p>The wheel's fourth turn<br>is the first turn again,<br>except that the cart has moved<br>and the road is a little older.</p>
+              <p>That is the whole of progress.<br>That is the whole of return.</p>
+              <p>Do not ask which one you are doing.<br>The road already knows.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">反</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="德" data-section="德 · Virtue" data-num="49">
+          <div class="page__inner">
+            <p class="page__label">德 · Virtue · I</p>
+            <h2>Virtue Does Not Carry a Lamp</h2>
+            <p class="page__sub">on doing the small thing and forgetting it</p>
+            <div class="verse">
+              <p>A good act that asks for witnesses<br>is a lamp carried at noon.</p>
+              <p>The river does not announce that it is wet.<br>The tree does not keep a record of its shade.</p>
+              <p>Do the small thing and forget the doing.<br>The forgetting is not modesty.<br>It is what keeps the hand light.</p>
+              <p>A full hand cannot take anything.<br>An empty one is always being offered something.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">德</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="德" data-section="德 · Virtue" data-num="50">
+          <div class="page__inner">
+            <p class="page__label">德 · Virtue · II</p>
+            <h2>The Hand That Forgets</h2>
+            <p class="page__sub">light enough to do another</p>
+            <div class="verse">
+              <p>The hand that forgets the good it did<br>stays light enough to do another.</p>
+              <p>The hand that keeps a list<br>is heavy by the third line.</p>
+              <p>Lists are for groceries.<br>They are terrible at gratitude,<br>and worse at hands.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">德</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="德" data-section="德 · Virtue" data-num="51">
+          <div class="page__inner">
+            <p class="page__label">德 · Virtue · III</p>
+            <h2>A Favour Without a Ledger</h2>
+            <p class="page__sub">a strange rate of interest</p>
+            <div class="verse">
+              <p>A favour without a ledger<br>is a gift.</p>
+              <p>A favour with a ledger<br>is a loan at a very strange interest.</p>
+              <p>The borrower always forgets.<br>The ledger never does.<br>That is the whole of the trouble.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">德</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="德" data-section="德 · Virtue" data-num="52">
+          <div class="page__inner">
+            <p class="page__label">德 · Virtue · IV</p>
+            <h2>The Bridge Does Not Ask</h2>
+            <p class="page__sub">neither of them keeps a receipt</p>
+            <div class="verse">
+              <p>The bridge does not ask<br>who is crossing or why.</p>
+              <p>It holds.<br>The river beneath does the same,<br>and neither of them keeps a receipt.</p>
+              <p>Cross.<br>The bridge has already forgotten your name,<br>and that is why it can hold you.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">德</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="德" data-section="德 · Virtue" data-num="53">
+          <div class="page__inner">
+            <p class="page__label">德 · Virtue · V</p>
+            <h2>Bread and No Applause</h2>
+            <p class="page__sub">already doing its work in another room</p>
+            <div class="verse">
+              <p>Bake the bread.<br>Do not stand at the window<br>waiting for the smell to be praised.</p>
+              <p>The bread is already doing its work<br>in another room.</p>
+              <p>Hunger will find it.<br>Hunger is the only honest critic.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">德</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="德" data-section="德 · Virtue" data-num="54">
+          <div class="page__inner">
+            <p class="page__label">德 · Virtue · VI</p>
+            <h2>The Shadow of a Good Deed</h2>
+            <p class="page__sub">step out of the light</p>
+            <div class="verse">
+              <p>The shadow of a good deed<br>is the good deed asking for recognition.</p>
+              <p>Step out of the light<br>and the shadow has nowhere to fall.</p>
+              <p>The deed stays.<br>It was never the shadow's to keep.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">德</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="德" data-section="德 · Virtue" data-num="55">
+          <div class="page__inner">
+            <p class="page__label">德 · Virtue · VII</p>
+            <h2>What the Well Gives</h2>
+            <p class="page__sub">it has never seen the sky</p>
+            <div class="verse">
+              <p>The well gives water<br>to the rope, the bucket, the stranger.</p>
+              <p>It does not ask what the water is for.<br>It has never seen the sky.</p>
+              <p>That is not ignorance.<br>It is the deepest kind of knowledge:<br>enough to keep giving.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">德</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="德" data-section="德 · Virtue" data-num="56">
+          <div class="page__inner">
+            <p class="page__label">德 · Virtue · VIII</p>
+            <h2>The Gift That Leaves No Receipt</h2>
+            <p class="page__sub">which is the point</p>
+            <div class="verse">
+              <p>A gift that leaves no receipt<br>cannot be returned<br>and cannot be invoiced.</p>
+              <p>The receiver will remember it<br>longer than the giver,<br>which is the point.</p>
+              <p>Give like that once.<br>You will not need to practise.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">德</span>
+          </div>
+        </article>
+
+        <section class="page plate" data-kind="plate">
+          <div class="page__inner">
+            <figure>
+              <img src="./images/peace.jpg" alt="Three monkeys at night: one with a peace sign, one with a heart, one with a code symbol" width="1492" height="1004">
+              <figcaption>Peace, love, code — the three that came in peace</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <article class="page poem" data-glyph="猴" data-section="猴 · The Monkey" data-num="57">
+          <div class="page__inner">
+            <p class="page__label">猴 · The Monkey · I</p>
+            <h2>The Monkey Counts to One</h2>
+            <p class="page__sub">1 + 1 = 1, or 3 — the small hands and the unbroken count</p>
+            <div class="verse">
+              <p>One and one is one, or three —<br>the Monkey holds the abacus and the peach,<br>and both are the same afternoon.</p>
+              <p>Tiger came from the west with a white coat and a question.<br>Dragon came from the east with a mouth full of fire and a law.<br>The Monkey sat between them and counted the space.</p>
+              <p>Wukong carried a mountain and called it a hat.<br>The mountain did not mind.<br>Carry what is given; do not call it weight.</p>
+              <p>Nineteen-eighty the metal Monkey came in peace.<br>Twenty-sixteen the fire Monkey lit the fuse.<br>The same small hands. The same unbroken count.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">猴</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="猴" data-section="猴 · The Monkey" data-num="58">
+          <div class="page__inner">
+            <p class="page__label">猴 · The Monkey · II</p>
+            <h2>Tiger at the Western Gate</h2>
+            <p class="page__sub">the question is not the one on the sign</p>
+            <div class="verse">
+              <p>Tiger at the western gate<br>wears white and asks one question,<br>and the question is not the one on the sign.</p>
+              <p>Answer with your eyes.<br>Tiger can hear a lie at forty paces,<br>and forgives one at fifty.</p>
+              <p>Do not bring a better lie.<br>Bring the truth, badly told.<br>Tiger prefers the effort.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">猴</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="猴" data-section="猴 · The Monkey" data-num="59">
+          <div class="page__inner">
+            <p class="page__label">猴 · The Monkey · III</p>
+            <h2>Dragon With a Mouth of Fire</h2>
+            <p class="page__sub">courage is what Dragon eats for lunch</p>
+            <div class="verse">
+              <p>Dragon with a mouth of fire<br>guards the eastern road and the law.</p>
+              <p>Bring water, not courage.<br>Courage is what Dragon eats for lunch.</p>
+              <p>The water does not have to be much.<br>A cup will do.<br>Dragon respects the gesture.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">猴</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="猴" data-section="猴 · The Monkey" data-num="60">
+          <div class="page__inner">
+            <p class="page__label">猴 · The Monkey · IV</p>
+            <h2>The Space Between the Two</h2>
+            <p class="page__sub">exactly the width of a Monkey</p>
+            <div class="verse">
+              <p>The space between Tiger and Dragon<br>is exactly the width of a Monkey.</p>
+              <p>Do not widen it.<br>Do not stand in it.<br>Count, and it holds.</p>
+              <p>When they turn to look at each other,<br>look at the space.<br>That is where the counting lives.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">猴</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="猴" data-section="猴 · The Monkey" data-num="61">
+          <div class="page__inner">
+            <p class="page__label">猴 · The Monkey · V</p>
+            <h2>Wukong's Hat</h2>
+            <p class="page__sub">something about hats</p>
+            <div class="verse">
+              <p>Wukong's hat was a mountain,<br>which tells you something about hats.</p>
+              <p>Wear what you are given.<br>Do not ask the mountain to be lighter,<br>ask your neck to be honest.</p>
+              <p>The mountain will not move.<br>It is not that kind of mountain.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">猴</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="猴" data-section="猴 · The Monkey" data-num="62">
+          <div class="page__inner">
+            <p class="page__label">猴 · The Monkey · VI</p>
+            <h2>The Peach and the Abacus</h2>
+            <p class="page__sub">neither was the point</p>
+            <div class="verse">
+              <p>The peach and the abacus<br>were on the same table.</p>
+              <p>One was counted, one was eaten.<br>Neither was the point.</p>
+              <p>The point was the table,<br>and the afternoon,<br>and the small hands that could reach both.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">猴</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="猴" data-section="猴 · The Monkey" data-num="63">
+          <div class="page__inner">
+            <p class="page__label">猴 · The Monkey · VII</p>
+            <h2>Small Hands, Long Memory</h2>
+            <p class="page__sub">the space is still there in the morning</p>
+            <div class="verse">
+              <p>Small hands, long memory:<br>the Monkey remembers the count<br>after the numbers have gone home.</p>
+              <p>One, and one, and the space.<br>The space is still there in the morning.</p>
+              <p>That is what the Monkey keeps:<br>not the sum,<br>the room where the sum was made.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">猴</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="玄" data-section="玄 · The Dark" data-num="64">
+          <div class="page__inner">
+            <p class="page__label">玄 · The Dark · I</p>
+            <h2>The Dark Is Not Empty</h2>
+            <p class="page__sub">on the part that kept its name</p>
+            <div class="verse">
+              <p>The dark is not the absence of the light.<br>It is the room the light was given.</p>
+              <p>Look at the space between two stars<br>and you have found the larger body.</p>
+              <p>Do not fill the silence to be rid of it.<br>The silence is not waiting for your sentence.</p>
+              <p>What you cannot say<br>is not a failure of your mouth.<br>It is the part of the way<br>that kept its name.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">玄</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="玄" data-section="玄 · The Dark" data-num="65">
+          <div class="page__inner">
+            <p class="page__label">玄 · The Dark · II</p>
+            <h2>Between Two Stars</h2>
+            <p class="page__sub">you have been looking at the sparks</p>
+            <div class="verse">
+              <p>Between two stars<br>is the larger body.</p>
+              <p>You have been looking at the sparks<br>and calling it the sky.</p>
+              <p>Nothing is wrong with sparks.<br>But the sky is where you live,<br>and the sky is mostly between.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">玄</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="玄" data-section="玄 · The Dark" data-num="66">
+          <div class="page__inner">
+            <p class="page__label">玄 · The Dark · III</p>
+            <h2>The Silence That Kept Its Name</h2>
+            <p class="page__sub">the room where someone has just stopped speaking</p>
+            <div class="verse">
+              <p>The silence that kept its name<br>is not the silence of an empty room.<br>It is the silence of a room<br>where someone has just stopped speaking.</p>
+              <p>Stay.<br>It will say it.</p>
+              <p>The room is not waiting for you.<br>It is waiting with you,<br>which is different.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">玄</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="玄" data-section="玄 · The Dark" data-num="67">
+          <div class="page__inner">
+            <p class="page__label">玄 · The Dark · IV</p>
+            <h2>The Unsaid Sentence</h2>
+            <p class="page__sub">the best guest you have</p>
+            <div class="verse">
+              <p>The unsaid sentence<br>sits at the table all evening,<br>eating nothing,<br>and is the best guest you have.</p>
+              <p>It will leave when the plates are cleared.<br>It will not ask to stay the night.</p>
+              <p>Say it in the morning<br>and it will be a different sentence,<br>and the table will be colder.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">玄</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="玄" data-section="玄 · The Dark" data-num="68">
+          <div class="page__inner">
+            <p class="page__label">玄 · The Dark · V</p>
+            <h2>A Door in the Wall of Words</h2>
+            <p class="page__sub">most people knock and call the knocking language</p>
+            <div class="verse">
+              <p>There is a door in the wall of words.<br>It has no sign, and it is not locked.</p>
+              <p>Most people knock on the wall<br>and call the knocking language.</p>
+              <p>The door is beside the knocking.<br>It has always been beside it.<br>Put your hand out.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">玄</span>
+          </div>
+        </article>
+
+        <article class="page poem" data-glyph="玄" data-section="玄 · The Dark" data-num="69">
+          <div class="page__inner">
+            <p class="page__label">玄 · The Dark · VI</p>
+            <h2>The Last Page Is a Door</h2>
+            <p class="page__sub">the book has not changed; you have</p>
+            <div class="verse">
+              <p>The last page is a door<br>that opens on the first page<br>with a little more dust on the handle.</p>
+              <p>Read it again.<br>The book has not changed.<br>You have.</p>
+              <p>That is what a door is for:<br>not to leave the house,<br>but to come back into it<br>from the other side.</p>
+            </div>
+            <span class="page__glyph" aria-hidden="true">玄</span>
+          </div>
+        </article>
+
+        <section class="page end" data-kind="end">
+          <div class="page__inner">
+            <span class="glyph" aria-hidden="true">道</span>
+            <p>Close the book and the doors are still there.<br>You are standing in one of them.</p>
+            <p>Sixty-nine poems. No scripture. The way does not keep attendance.</p>
+            <p class="close-line">The end · or the next turn</p>
+            <button class="begin" id="again" type="button">Read again ↺</button>
+            <p class="hint">click · ← to go back</p>
+          </div>
+        </section>
+
+        <section class="page prose" data-kind="colophon">
+          <div class="page__inner">
+            <h2>Colophon</h2>
+            <p>
+              The poems are mine; the ideas are older than my hands. <strong>Laozi</strong>
+              lent the hollow of the bowl and the hub of the wheel (chapter eleven), water
+              and the low place (eight and seventy-eight), the valley (six and twenty-eight),
+              the uncarved block, <em>pu</em> (fifteen, twenty-eight, thirty-seven), return as
+              the movement of the way (forty), virtue that does not display itself
+              (thirty-eight and fifty-one), and the name that cannot be named (one and
+              thirty-two). <strong>Zhuangzi</strong> lent the useless tree, the butterfly and
+              the fast of the mind.
+            </p>
+            <p>
+              The Monkey, the Tiger and the Dragon are not from the classics. They come from
+              <strong>OdicforceSounds</strong>, where the Monkey is the condition of being the
+              expression of time, the White Tiger stands in the west and the Fire Dragon in
+              the east, and the whole argument is settled by a small equation:
+              <em>1 + 1 = 1, or 3</em>. Two of the years in the fifty-seventh poem are real —
+              1980, the year of the metal Monkey, and 2016, the year of the fire Monkey — and
+              the phrase “we came in peace” is borrowed, not invented.
+            </p>
+            <p>
+              Nothing here is quoted. If a line sounds familiar, it is because the way has
+              been said badly many times, and the older bad sayings are better than the new
+              good ones.
+            </p>
+            <p class="credits">Monkey Blog · 道 Expression · OdicforceSounds · one file, no libraries, no networks</p>
+          </div>
+        </section>
+
+        <section class="page plate" data-kind="plate">
+          <div class="page__inner">
+            <figure>
+              <img src="./images/wood_fire.jpg" alt="A circular diagram of the five phases with yin and yang, the words wood, fire, water, earth, metal, tiger, dragon and monkey" width="1200" height="1140" loading="lazy">
+              <figcaption>The map this book walks around: five phases, two years, one monkey</figcaption>
+            </figure>
+          </div>
+        </section>
+
+      </div>
+
+      <footer class="foot">
+        <button class="navbtn" id="prevBtn" type="button">← Prev</button>
+        <span class="folio" id="folio">Cover</span>
+        <button class="navbtn" id="nextBtn" type="button">Next →</button>
+      </footer>
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var pages = Array.prototype.slice.call(document.querySelectorAll(".page"));
+        var stage = document.getElementById("stage");
+        var where = document.getElementById("runWhere");
+        var count = document.getElementById("runCount");
+        var folio = document.getElementById("folio");
+        var bar = document.getElementById("bar");
+        var prevBtn = document.getElementById("prevBtn");
+        var nextBtn = document.getElementById("nextBtn");
+        var hint = document.getElementById("turnHint");
+        var index = 0;
+        var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        function pageMeta(el) {
+          var kind = el.getAttribute("data-kind");
+          if (kind === "cover") { return { where: "Cover", folio: "Cover", poem: false }; }
+          if (kind === "end") { return { where: "The end", folio: "The end", poem: false }; }
+          if (kind === "colophon") { return { where: "Colophon", folio: "Colophon", poem: false }; }
+          if (kind === "plate") { return { where: "Plate", folio: "Plate", poem: false }; }
+          var num = el.getAttribute("data-num");
+          return {
+            where: el.getAttribute("data-section"),
+            folio: "Poem " + num + " / 69",
+            poem: true,
+            num: Number(num)
+          };
+        }
+
+        function paintBar() {
+          var max = pages.length - 1;
+          bar.style.transform = "scaleX(" + (max > 0 ? index / max : 0) + ")";
+        }
+
+        function show(next, direction) {
+          if (next < 0 || next >= pages.length || next === index) { return; }
+          var current = pages[index];
+          var target = pages[next];
+
+          current.classList.remove("is-current");
+          current.removeAttribute("aria-current");
+          target.classList.add("is-current");
+          target.setAttribute("aria-current", "page");
+          target.classList.remove("back");
+          if (direction < 0) { target.classList.add("back"); }
+          target.scrollTop = 0;
+
+          index = next;
+          var meta = pageMeta(target);
+          where.textContent = meta.where;
+          folio.textContent = meta.folio;
+          count.textContent = meta.poem ? meta.num + " / 69" : "— / 69";
+
+          prevBtn.disabled = index === 0;
+          nextBtn.disabled = index === pages.length - 1;
+          paintBar();
+
+          if (!reduceMotion) {
+            var inner = target.querySelector(".page__inner");
+            if (inner) {
+              inner.style.animation = "none";
+              void inner.offsetWidth;
+              inner.style.animation = "";
+            }
+          }
+          if (hint) { hint.classList.toggle("show", meta.poem && index < pages.length - 1); }
+        }
+
+        function step(delta) {
+          show(index + delta, delta);
+        }
+
+        prevBtn.addEventListener("click", function () { step(-1); });
+        nextBtn.addEventListener("click", function () { step(1); });
+
+        var begin = document.getElementById("begin");
+        if (begin) { begin.addEventListener("click", function () { step(1); }); }
+        var again = document.getElementById("again");
+        if (again) { again.addEventListener("click", function () { show(0, -1); }); }
+
+        stage.addEventListener("click", function (event) {
+          if (event.target.closest("a, button, input, select, textarea")) { return; }
+          if (window.getSelection && String(window.getSelection()).length) { return; }
+          step(1);
+        });
+
+        document.addEventListener("keydown", function (event) {
+          if (event.metaKey || event.ctrlKey || event.altKey) { return; }
+          var key = event.key;
+          var forward = key === "ArrowRight" || key === "PageDown" || key === " " || key === "Enter";
+          var back = key === "ArrowLeft" || key === "PageUp" || key === "Backspace";
+          if (key === "Home") { event.preventDefault(); show(0, -1); return; }
+          if (key === "End") { event.preventDefault(); show(pages.length - 1, 1); return; }
+          if ((key === " " || key === "Enter") && event.target &&
+              event.target.closest && event.target.closest("a, button, input, select, textarea")) {
+            return;
+          }
+          if (forward) {
+            event.preventDefault();
+            step(1);
+          } else if (back) {
+            event.preventDefault();
+            step(-1);
+          }
+        });
+
+        var startX = 0;
+        var startY = 0;
+        var tracking = false;
+        stage.addEventListener("pointerdown", function (event) {
+          if (event.pointerType === "mouse") { return; }
+          tracking = true;
+          startX = event.clientX;
+          startY = event.clientY;
+        });
+        stage.addEventListener("pointerup", function (event) {
+          if (!tracking) { return; }
+          tracking = false;
+          var dx = event.clientX - startX;
+          var dy = event.clientY - startY;
+          if (Math.abs(dx) < 45 && Math.abs(dy) < 45) { return; }
+          if (Math.abs(dx) > Math.abs(dy)) {
+            step(dx < 0 ? 1 : -1);
+          } else {
+            step(dy < 0 ? 1 : -1);
+          }
+        });
+
+        pages[0].classList.add("is-current");
+        pages[0].setAttribute("aria-current", "page");
+        index = 0;
+        where.textContent = "Cover";
+        folio.textContent = "Cover";
+        count.textContent = "— / 69";
+        prevBtn.disabled = true;
+        paintBar();
+
+        var canvas = document.getElementById("motes");
+        if (!canvas || reduceMotion) { return; }
+        var ctx = canvas.getContext("2d");
+        if (!ctx) { return; }
+
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var w = 0;
+        var h = 0;
+        var motes = [];
+
+        function size() {
+          w = window.innerWidth;
+          h = window.innerHeight;
+          canvas.width = Math.round(w * dpr);
+          canvas.height = Math.round(h * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          motes = [];
+          var total = w < 640 ? 20 : 44;
+          for (var i = 0; i < total; i += 1) {
+            motes.push({
+              x: Math.random() * w,
+              y: Math.random() * h,
+              r: 0.6 + Math.random() * 1.5,
+              rise: 0.07 + Math.random() * 0.2,
+              drift: (Math.random() - 0.5) * 0.14,
+              phase: Math.random() * Math.PI * 2,
+              alpha: 0.08 + Math.random() * 0.26
+            });
+          }
+        }
+
+        function frame(t) {
+          ctx.clearRect(0, 0, w, h);
+          for (var i = 0; i < motes.length; i += 1) {
+            var m = motes[i];
+            m.y -= m.rise;
+            m.x += m.drift + Math.sin(t / 2800 + m.phase) * 0.1;
+            if (m.y < -8) { m.y = h + 8; m.x = Math.random() * w; }
+            if (m.x < -8) { m.x = w + 8; }
+            if (m.x > w + 8) { m.x = -8; }
+            ctx.beginPath();
+            ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(217,178,106," + m.alpha + ")";
+            ctx.fill();
+          }
+          window.requestAnimationFrame(frame);
+        }
+
+        size();
+        window.addEventListener("resize", size, { passive: true });
+        window.requestAnimationFrame(frame);
+      })();
+    </script>
+  </body>
+</html>

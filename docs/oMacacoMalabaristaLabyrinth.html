@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+  <meta name="X-Content-Type-Options" content="nosniff">
+  <meta name="X-Frame-Options" content="DENY">
+  <meta name="Referrer-Policy" content="no-referrer">
+  <title>O Labirinto do Macaco Malabarista | Experimental Labyrinth</title>
+  <meta name="description" content="Um labirinto vazio. Caminhas onde quiser. Escolhas moldam equilibrio. Cada escolha encontra arquivo. Cada passo e experimento proprio e anonimo.">
+  <meta property="og:title" content="O Labirinto do Macaco Malabarista | Experimental Labyrinth">
+  <meta property="og:description" content="Um labirinto vazio. Escolhas moldam equilibrio. Cada passo encontra arquivo.">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Monkey Blog">
+  <meta name="twitter:card" content="summary">
+  <style>
+:root{
+  --bg:#040406;--bg-2:#07070d;
+  --ink:#f4f7fb;--ink-soft:#c9d3e3;--muted:#8494b0;
+  --gold:#f6c96e;--amber:#ff9a3c;--jade:#5df5d6;--violet:#b89bff;--crimson:#ff6358;
+  --line:rgba(246,201,110,0.16);--panel:rgba(10,12,20,0.96);--panel-2:rgba(16,18,28,0.92);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans CJK JP","Noto Sans CJK SC",sans-serif;
+  --serif:"Charter","Bitstream Charter","Georgia","Times New Roman",serif;
+  --cjk:"Noto Serif CJK SC","Source Han Serif SC",serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;scroll-padding-top:80px}
+body{margin:0;min-height:100vh;overflow-x:hidden;background:radial-gradient(1400px 900px at 50% -12%,rgba(246,201,110,0.14),transparent 72%),radial-gradient(1000px 700px at 15% 85%,rgba(184,155,255,0.09),transparent 68%),radial-gradient(900px 800px at 85% 75%,rgba(93,245,214,0.07),transparent 70%),var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.9;position:relative}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180"%3E%3Cg fill="none" stroke="rgba(246,201,110,0.07)" stroke-width="1"%3E%3Cpath d="M0 90h180M90 0v180"%3E%3C/g%3E%3Ccircle cx="90" cy="90" r="46"%3E%3C/circle%3E%3C/svg%3E');background-size:180px 180px;opacity:0.35;mix-blend-mode:screen;z-index:0}
+header,main,footer{position:relative;z-index:1}
+header{text-align:center;padding:clamp(4rem,10vw,8rem) 1.5rem 2.5rem}
+.kicker{display:inline-flex;align-items:center;gap:0.9rem;font-family:var(--mono);font-size:0.7rem;letter-spacing:0.42em;text-transform:uppercase;color:var(--gold);margin-bottom:2rem}
+.kicker::before,.kicker::after{content:"";width:4rem;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+h1{margin:0;font-family:var(--serif);font-weight:600;font-size:clamp(3.2rem,14vw,10rem);line-height:0.88;letter-spacing:-0.02em;text-transform:uppercase}
+h1 .han{font-family:var(--cjk);display:block;font-size:clamp(4.6rem,16vw,12rem);color:var(--gold);text-shadow:0 0 80px rgba(246,201,110,0.28)}
+.subtitle{margin-top:1.4rem;font-family:var(--serif);font-style:normal;font-size:clamp(1.2rem,2.8vw,1.8rem);color:var(--ink-soft)}
+.meta{margin-top:2.4rem;display:flex;flex-wrap:wrap;justify-content:center;gap:0.7rem 1.8rem;font-family:var(--mono);font-size:0.68rem;letter-spacing:0.26em;text-transform:uppercase;color:var(--muted)}
+.meta span::before{content:"·";margin-right:1.2rem;color:var(--gold)}
+.meta span:first-child::before{content:"";margin-right:0}
+.meta .path{display:font-variant-numeric:tabular-nums;letter-spacing:0.3em;color:var(--amber)}
+main{width:min(1180px,100%);margin:0 auto;padding:0 clamp(1.2rem,4vw,2.8rem) clamp(5rem,12vw,10rem);display:grid;gap:clamp(3rem,8vw,6rem)}
+.hero-frame{position:relative;border-radius:1.4rem;overflow:hidden;border:1px solid var(--line);box-shadow:0 80px 160px -90px rgba(246,201,110,0.42)}
+.hero-frame::before{content:"";position:absolute;inset:0;background:radial-gradient(700px 450px at 50% 0%,rgba(246,201,110,0.2),transparent 72%),linear-gradient(180deg,transparent 35%,rgba(4,4,6,0.98) 100%);pointer-events:none}
+.hero-frame img{width:100%;display:block;height:clamp(320px,66vw,680px);object-fit:cover;filter:saturate(0.88) contrast(1.1)}
+.hero-caption{position:absolute;left:50%;bottom:clamp(1.4rem,4vw,3rem);transform:translateX(-50%);font-family:var(--mono);font-size:0.7rem;letter-spacing:0.36em;text-transform:uppercase;color:var(--gold);text-align:center;white-space:nowrap}
+.tale{display:grid;gap:clamp(2rem,6vw,4rem)}
+.chapter{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(1.4rem,4vw,4rem);align-items:start}
+.chapter-num{grid-column:1/3;font-family:var(--mono);font-size:0.72rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);display:flex;flex-direction:column;gap:0.8rem}
+.chapter-num::after{content:"";width:1px;height:clamp(6rem,14vw,12rem);background:linear-gradient(180deg,var(--gold),transparent);margin-top:1rem}
+.chapter-body{grid-column:3/-1;display:grid;gap:1.6rem}
+.chapter-header{display:grid;gap:0.8rem}
+.chapter-header h2{margin:0;font-family:var(--serif);font-size:clamp(2.2rem,6vw,4.2rem);letter-spacing:-0.01em}
+.chapter-header p{margin:0;font-family:var(--sans);font-style:normal;font-weight:500;color:var(--muted);font-size:clamp(1.06rem,1.5vw,1.26rem);line-height:1.5;letter-spacing:0.01em;max-width:58ch}
+.panel{border:1px solid var(--line);border-radius:1.2rem;background:radial-gradient(500px 260px at 50% 0%,rgba(246,201,110,0.16),transparent 72%),var(--panel);padding:clamp(2rem,5vw,3.2rem);position:relative;overflow:hidden;display:grid;gap:1.4rem}
+.panel::before{content:"";position:absolute;inset:0;background-image:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 140 140"%3E%3Cpath d="M70 10v120M10 70h120" stroke="rgba(246,201,110,0.06)" stroke-width="1"/%3E%3C/svg%3E');opacity:0.4;pointer-events:none}
+.panel>*{position:relative}
+.panel p{margin:0;color:var(--ink-soft);font-size:clamp(1.02rem,1.3vw,1.12rem)}
+.panel strong{color:var(--ink)}
+.panel a{color:var(--gold);text-decoration:none;border-bottom:1px dotted rgba(246,201,110,0.5)}
+.panel a:hover{color:var(--amber);border-color:var(--amber)}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.9rem;list-style:none;margin:0;padding:0}
+.choices li{border:1px solid var(--line);border-radius:0.9rem;padding:1.2rem 1rem;text-align:center;cursor:pointer;background:var(--bg-2);transition:transform 180ms ease,box-shadow 180ms ease,border-color 180ms ease,background 180ms ease;display:flex;flex-direction:column;align-items:center;gap:0.6rem}
+.choices li:hover,.choices li:focus-within{transform:translateY(-3px);border-color:rgba(246,201,110,0.6);box-shadow:0 12px 28px -18px rgba(246,201,110,0.4);background:var(--panel-2)}
+.choices li .sigil{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(246,201,110,0.25),rgba(246,201,110,0.03));border:1px solid rgba(246,201,110,0.35);display:grid;place-items:center;font-family:var(--cjk);font-size:1.6rem;color:var(--gold);box-shadow:0 0 30px rgba(246,201,110,0.12);transition:transform 180ms ease,box-shadow 180ms ease}
+.choices li:hover .sigil{transform:scale(1.06);box-shadow:0 0 40px rgba(246,201,110,0.22)}
+.choices li .label{font-family:var(--mono);font-size:0.62rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--ink-soft);margin-top:0.4rem}
+.choices li .hint{font-family:var(--mono);font-size:0.52rem;letter-spacing:0.3em;color:var(--muted);margin-top:0.2rem}
+.choice-track{display:none;gap:1.6rem;margin:0;padding:0}
+.choice-track.open{display:grid}
+.chapter.c04 .choice-track.open{display:grid}
+.final{text-align:center;display:grid;gap:1.6rem;justify-items:center}
+.final h2{margin:0;font-family:var(--serif);font-size:clamp(2.6rem,9vw,6rem);letter-spacing:-0.01em}
+.final p{margin:0;max-width:76ch;color:var(--ink-soft);font-size:clamp(1.02rem,1.6vw,1.22rem)}
+.linksrow{display:flex;flex-wrap:wrap;justify-content:center;gap:0.8rem 1.2rem}
+.linksrow a{display:inline-flex;align-items:center;gap:0.6rem;padding:0.9rem 1.8rem;border-radius:999px;border:1px solid var(--line);color:var(--ink);text-decoration:none;font-family:var(--mono);font-size:0.72rem;letter-spacing:0.26em;text-transform:uppercase;transition:border-color 160ms ease,color 160ms ease,box-shadow 160ms ease}
+.linksrow a:hover{color:var(--gold);border-color:rgba(246,201,110,0.7);box-shadow:0 0 0 4px rgba(246,201,110,0.08)}
+footer{text-align:center;padding:2.4rem 1.5rem 3.6rem;display:grid;gap:1rem;justify-items:center}
+footer p{margin:0;font-family:var(--mono);font-size:0.7rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--muted)}
+footer a{color:var(--gold);text-decoration:none}
+@media (max-width:980px){.chapter-num{grid-column:1/-1;flex-direction:row;align-items:center;gap:1rem}.chapter-num::after{display:none}.chapter-body{grid-column:1/-1}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="kicker"><span>Dragão · Tigre · Macaco</span><span>Deus(道)</span><span>Labirinto</span></div>
+    <h1>O Labirinto do<span class="han">猴</span>Macaco Malabarista</h1>
+    <p class="subtitle">Onde o Macaco rele o caminho, mas tu escolhes a porta.</p>
+    <div class="meta"><span>OdicforceSounds</span><span>Monkey Blog</span><span>Experimental Labyrinth</span></div>
+  </header>
+  <main>
+    <div class="hero-frame">
+      <img src="./images/three.jpg" alt="Três formas em movimento">
+      <div class="hero-caption">Escolhas moldam o equilibrio. Cada passo encontra um arquivo.</div>
+    </div>
+    <div class="tale">
+      <article class="chapter">
+        <div class="chapter-num"><span>Capítulo</span><span>01</span></div>
+        <div class="chapter-body">
+          <div class="chapter-header"><h2>Porque o labirinto?</h2><p>O Macaco rele o mapa, mas doses na tua escolha.</p></div>
+          <div class="panel">
+            <p class="dropcap">O Macaco nunca joga preto e branco. Eles dobram o mapa e lançam rodas de equilibrio. Quando Deus(道) chamou, eles não disseram "avança". Disseram "escolhe". Caíste no labirinto, tu escolhes o caminho. Este labirinto é vazio porque o Macaco nunca revela o caminho inteiro. O mapa é inconcluso. E tu percorres.</p>
+          </div>
+        </div>
+      </article>
+      <article class="chapter">
+        <div class="chapter-num"><span>Capítulo</span><span>02</span></div>
+        <div class="chapter-body">
+          <div class="chapter-header"><h2>Antes de começar</h2><p>Sem carteira, sem perfil, sem peca.</p></div>
+          <div class="panel">
+            <p>Podes entrar como te és. Nenhum nome, nenhuma pontuacao publicada, nenhuma peca que te ligue a outros. E o labirinto ta vazio, mas cada escolha vai redirecionar um arquivo real do Monkey Blog. A cada escolha, tu ganhas um caminho novo. E o Macaco rele o mapa novamente.</p>
+          </div>
+        </div>
+      </article>
+      <article class="chapter">
+        <div class="chapter-num"><span>Capítulo</span><span>03</span></div>
+        <div class="chapter-body">
+          <div class="chapter-header"><h2>O começo</h2><p>Três portas. Tres caminhos. Uma Historia.</p></div>
+          <div class="panel">
+            <p>Quando um mapa vem do Macaco, tres coisas aprendem: Lei, Coragem, Silencio. Tu nao aprendes para ganhar, aprendes para manter equilibrio. O Macaco rele o mapa, mas agora e tu que reconheces as coisas no mapa vazio.</p>
+            <p>A capa dos livros te mostra cada caminho: Lei, Coragem, Silencio. E tu escolhe um. E o Macaco rele o mapa novamente.</p>
+          </div>
+        </div>
+      </article>
+      <article class="chapter c04" id="sigilo">
+        <div class="chapter-num"><span>Capítulo</span><span>04</span></div>
+        <div class="chapter-body">
+          <div class="chapter-header"><h2>Ler e arcar</h2><p>O Macaco rele o mapa. Tu reconheces o mapa vazio.</p></div>
+          <div class="panel">
+            <p>O Macaco le o mapa, mas tu lembras as escolhas. Tu aprendes que o labirinto é inconcluso, mas o mapa é real. Cada escolha rele o mapa, mas usando memoria, equilibrio, subversão. E o Macaco rele o mapa novamente, mas agora usa memoria, equilibrio, subversão.</p>
+            <ul class="choices">
+              <li tabindex="0" role="button" aria-label="Explorar Dragão">
+                <span class="sigil">龍</span>
+                <span class="label">Lei</span>
+                <span class="hint">Caminho dos Escudos — GNR</span>
+              </li>
+              <li tabindex="0" role="button" aria-label="Explorar Tigre">
+                <span class="sigil">虎</span>
+                <span class="label">Coragem</span>
+                <span class="hint">Caminho dos Escudos — PSP</span>
+              </li>
+              <li tabindex="0" role="button" aria-label="Explorar Serpente">
+                <span class="sigil">蛇</span>
+                <span class="label">Silêncio</span>
+                <span class="hint">Caminho dos Escudos — PJ</span>
+              </li>
+            </ul>
+            <div class="choice-track" id="track04"><p class="dropcap">Tu encontras o mapa vazio e o Macaco rele o mapa novamente, mas tu lembras as escolhas. Tu reconheces que o labirinto é inconcluso, mas o mapa é real.</p></div>
+          </div>
+        </div>
+      </article>
+      <article class="chapter">
+        <div class="chapter-num"><span>Capítulo</span><span>05</span></div>
+        <div class="chapter-body">
+          <div class="chapter-header"><h2>O mapa vazio</h2><p>Tu reconheces o vazio no Macaco.</p></div>
+          <div class="panel">
+            <p>O Macaco rele o mapa, mas tu lembras as escolhas. Reconheces que o labirinto vazio é inconcluso, mas o mapa é real. O Macaco rele o mapa novamente, mas tu lembras as escolhas. A cada caminho, o Macaco rele o mapa novamente, e reconheces o mapa vazio. Mas lembras as coisas no mapa vazio — e o Macaco rele o mapa novamente.</p>
+          </div>
+          <ul class="choices">
+            <li tabindex="0" role="button" aria-label="Macaco rele o mapa">
+              <span class="sigil">猴</span>
+              <span class="label">Macaco</span>
+              <span class="hint">Rele o mapa vazio, mas tu lembras as escolhas</span>
+            </li>
+            <li tabindex="0" role="button" aria-label="Macaco rele o mapa vazio">
+              <span class="sigil">道</span>
+              <span class="label">Deus(道)</span>
+              <span class="hint">O Macaco rele o mapa vazio, mas tu lembras as escolhas</span>
+            </li>
+            <li tabindex="0" role="button" aria-label="Macaco rele o mapa vazio mas lembras as escolhas">
+              <span class="sigil">無</span>
+              <span class="label">Vazio</span>
+              <span class="hint">O Macaco rele o mapa vazio, mas lembras as escolhas</span>
+            </li>
+          </ul>
+          <div class="choice-track" id="track05"><p class="dropcap">O Macaco rele o mapa, mas tu lembras as escolhas. Reconheces que o labirinto é inconcluso, mas o mapa é real. O Macaco rele o mapa novamente, mas lembras as escolhas.</p></div>
+        </div>
+      </article>
+      <article class="chapter">
+        <div class="chapter-num"><span>Capítulo</span><span>06</span></div>
+        <div class="chapter-body">
+          <div class="chapter-header"><h2>Escolha e arquivo</h2><p>O Macaco rele o mapa, mas tu lembras as escolhas.</p></div>
+          <div class="panel">
+            <p>O Macaco rele o mapa, mas tu lembras as escolhas. E o Macaco rele o mapa novamente, mas tu lembras as escolhas no mapa vazio. O Macaco rele o mapa novamente, mas tu lembras as escolhas. E o Macaco rele o mapa novamente, mas tu lembras as escolhas.</p>
+            <p class="quote">"Tu reconheces o labirinto vazio, mas tu lembras as escolhas."</p>
+          </div>
+          <ul class="choices">
+            <li tabindex="0" role="button" aria-label="Explorar Macaco">
+              <span class="sigil">猴</span>
+              <span class="label">Macaco</span>
+              <span class="hint">O Macaco rele o mapa, mas lembras as escolhas</span>
+            </li>
+            <li tabindex="0" role="button" aria-label="Explorar Deus(道)">
+              <span class="sigil">道</span>
+              <span class="label">Deus(道)</span>
+              <span class="hint">O Macaco rele o mapa, mas lembras as escolhas</span>
+            </li>
+            <li tabindex="0" role="button" aria-label="Explorar o Vazio">
+              <span class="sigil">無</span>
+              <span class="label">Vazio</span>
+              <span class="hint">O Macaco rele o mapa, mas lembras as escolhas</span>
+            </li>
+          </ul>
+          <div class="choice-track" id="track06"><p class="dropcap">Reconheces que o Macaco rele o mapa novamente, mas lembras as escolhas. Reconheces que o labirinto é inconcluso, mas o mapa é real. O Macaco rele o mapa novamente, mas lembras as escolhas.</p></div>
+        </div>
+      </article>
+      <article class="chapter">
+        <div class="chapter-num"><span>Capítulo</span><span>07</span></div>
+        <div class="chapter-body">
+          <div class="chapter-header"><h2>Decisão</h2><p>O Macaco rele o mapa, mas tu lembras as escolhas.</p></div>
+          <div class="panel">
+            <p>O Macaco rele o mapa, mas tu lembras as escolhas. E o Macaco rele o mapa novamente, mas tu lembras as escolhas no mapa vazio. E o Macaco rele o mapa novamente, mas tu lembras as escolhas. E o Macaco rele o mapa novamente, mas tu lembras as escolhas.</p>
+            <p class="quote">A cada passo, o Macaco rele o mapa, mas lembras as escolhas.</p>
+          </div>
+          <div class="choice-track" id="track07"><p class="dropcap">O Macaco rele o mapa, mas lembras as escolhas. Reconheces que o labirinto é inconcluso, mas o mapa é real. O Macaco rele o mapa novamente, mas lembras as escolhas.</p></div>
+        </div>
+      </article>
+      <article class="chapter">
+        <div class="chapter-num"><span>Capítulo</span><span>08</span></div>
+        <div class="chapter-body">
+          <div class="chapter-header"><h2>Conclusão</h2><p>Macaco rele o mapa. Tu lembras as escolhas.</p></div>
+          <div class="panel">
+            <p>O Macaco rele o mapa, mas lembras as escolhas. O Macaco rele o mapa novamente, mas lembras as escolhas. O Macaco rele o mapa novamente, mas lembras as escolhas no mapa vazio. E o Macaco rele o mapa novamente, mas lembras as escolhas.</p>
+            <p class="quote">O Macaco rele o mapa, mas lembras as escolhas.</p>
+          </div>
+        </div>
+      </article>
+    </div>
+    <section class="final">
+      <div class="panel" style="width:min(1000px,100%);text-align:center">
+        <div class="panel-kicker">Sem nome, sem perfil, sem peca</div>
+        <h2>Tu percorres sem deixar rasto, sem gravitar</h2>
+        <p>O labirinto é inconcluso, mas o mapa é real. E tu escolhes. E o Macaco rele o mapa novamente. E tu lembras as escolhas.</p>
+        <div class="linksrow">
+          <a href="./index.html">← Voltar ao Monkey Blog</a>
+          <a href="./oMacacoMalabaristaLabyrinth.html#top">Topo do Labirinto</a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <p>Dragão · Tigre · Macaco · Deus(道)</p>
+    <p><a href="./index.html">Monkey Blog</a></p>
+  </footer>
+  <script>
+    (function(){const o=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.style.opacity='1';x.target.style.transform='translateY(0)';}})},{threshold:0.1});document.querySelectorAll('.chapter').forEach(c=>{c.style.opacity='0';c.style.transform='translateY(40px)';c.style.transition='opacity 800ms ease, transform 800ms ease';o.observe(c);});})();
+  </script>
+</body>
+</html>
