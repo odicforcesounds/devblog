@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'">
+    <meta name="X-Content-Type-Options" content="nosniff">
+    <meta name="X-Frame-Options" content="DENY">
+    <meta name="Referrer-Policy" content="no-referrer">
+    <meta name="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+    <title>O Arquivo como Sistema — manual de operações do blog | Monkey Blog</title>
+    <meta name="description" content="O documento que faltava: o inventário do arquivo medido página a página, a anatomia de uma publicação, os dois relógios das datas, as quinze categorias, o ritual de publicação, a armadilha do Rocket Loader e a lista do que está pendente.">
+    <meta property="og:title" content="O Arquivo como Sistema">
+    <meta property="og:description" content="497 páginas, 494 datas, dois relógios e uma armadilha: como este blog se publica e se mantém.">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Monkey Blog">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="O Arquivo como Sistema">
+    <meta name="twitter:description" content="497 páginas, 494 datas, dois relógios e uma armadilha: como este blog se publica e se mantém.">
+    <meta name="fediverse:creator" content="@TaoExpression@mastodon.social">
+    <style>
+      :root{
+        --bg:#06070a;
+        --bg-2:#0a0c11;
+        --ink:#ece6d9;
+        --dim:#bcb6a8;
+        --faint:#7f7c72;
+        --gold:#d9b26a;
+        --jade:#63cdb4;
+        --cinnabar:#c9604a;
+        --water:#5f8fb0;
+        --metal:#b9c2c9;
+        --wood:#77b07a;
+        --earth:#c3a05a;
+        --line:rgba(217,178,106,.16);
+        --line-soft:rgba(236,230,217,.07);
+        --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+        --han:"Noto Serif CJK SC","Source Han Serif SC","Songti SC","Noto Serif CJK JP","Noto Sans CJK SC",serif;
+        --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+        --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+      }
+      *{box-sizing:border-box}
+      html{scroll-behavior:smooth;scroll-padding-top:5.5rem;-webkit-text-size-adjust:100%}
+      body{
+        margin:0;
+        color:var(--ink);
+        font-family:var(--sans);
+        font-size:17px;
+        line-height:1.7;
+        background:
+          radial-gradient(64rem 42rem at 50% -18%,rgba(217,178,106,.10),transparent 64%),
+          radial-gradient(50rem 34rem at 106% 30%,rgba(99,205,180,.045),transparent 62%),
+          var(--bg);
+      }
+      body::after{
+        content:"";
+        position:fixed;
+        inset:0;
+        z-index:4;
+        pointer-events:none;
+        opacity:.04;
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      ::selection{background:rgba(217,178,106,.3);color:#fff}
+      a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(217,178,106,.25)}
+      a:hover{color:#fff;border-color:var(--gold)}
+      .skip{position:absolute;left:-9999px;padding:.8rem 1.2rem;background:var(--gold);color:#0a0c11;font-family:var(--mono);font-size:.72rem;z-index:99}
+      .skip:focus{left:1rem;top:1rem}
+      .progress{position:fixed;inset:0 0 auto;height:2px;z-index:90;background:rgba(236,230,217,.05)}
+      .progress span{display:block;height:100%;width:100%;transform:scaleX(0);transform-origin:0 50%;background:linear-gradient(90deg,var(--gold),var(--jade));transition:transform 80ms linear}
+
+      .hero{
+        position:relative;
+        padding:clamp(3.4rem,9vh,6.5rem) clamp(1.2rem,5vw,3rem) clamp(2.4rem,6vh,4rem);
+        text-align:center;
+        border-bottom:1px solid var(--line);
+        overflow:hidden;
+      }
+      .hero::before{
+        content:"▤";
+        position:absolute;
+        left:50%;top:52%;
+        transform:translate(-50%,-50%);
+        font-family:var(--han);
+        font-size:clamp(16rem,42vw,30rem);
+        line-height:1;
+        color:rgba(217,178,106,.05);
+        pointer-events:none;
+        user-select:none;
+      }
+      .hero__inner{position:relative;z-index:2;max-width:58rem;margin:0 auto}
+      .kicker{margin:0 0 1.3rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold)}
+      .kicker span{color:var(--faint)}
+      .hero h1{
+        margin:0;
+        font-family:var(--serif);
+        font-weight:400;
+        font-size:clamp(2.2rem,6.4vw,4.6rem);
+        line-height:1.02;
+        letter-spacing:-.02em;
+        text-wrap:balance;
+      }
+      .hero h1 em{display:block;font-style:normal;font-family:var(--han);font-size:.62em;letter-spacing:.08em;color:var(--gold);margin-top:.3em}
+      .hero__sub{margin:1.4rem auto 0;max-width:56ch;color:var(--dim);font-size:clamp(1rem,1.5vw,1.12rem);line-height:1.65;text-wrap:pretty}
+      .hero__meta{margin-top:1.8rem;display:flex;flex-wrap:wrap;gap:.45rem 1.3rem;justify-content:center;font-family:var(--mono);font-size:.63rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+
+      .shell{
+        max-width:84rem;
+        margin:0 auto;
+        padding:0 clamp(1rem,3.4vw,2.6rem) 4rem;
+        display:grid;
+        grid-template-columns:minmax(0,17rem) minmax(0,1fr);
+        gap:clamp(1.6rem,4vw,3.4rem);
+        align-items:start;
+      }
+      @media (max-width:1040px){
+        .shell{grid-template-columns:1fr}
+      }
+
+      .toc{
+        position:sticky;
+        top:1rem;
+        padding:1.1rem 0 1.4rem;
+        border-right:1px solid var(--line-soft);
+        padding-right:1.2rem;
+        max-height:calc(100svh - 2rem);
+        overflow:auto;
+        scrollbar-width:thin;
+      }
+      .toc h2{margin:0 0 .5rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);font-weight:400}
+      .toc__filter{
+        width:100%;
+        margin:.4rem 0 1rem;
+        padding:.45rem .6rem;
+        border:1px solid var(--line);
+        border-radius:8px;
+        background:rgba(0,0,0,.25);
+        color:var(--ink);
+        font-family:var(--mono);
+        font-size:.66rem;
+        letter-spacing:.08em;
+      }
+      .toc__filter:focus{outline:1px solid var(--gold);outline-offset:1px}
+      .toc ol{list-style:none;margin:0;padding:0;display:grid;gap:.1rem}
+      .toc li a{
+        display:block;
+        padding:.3rem .5rem;
+        border:0;
+        border-radius:6px;
+        color:var(--faint);
+        font-family:var(--mono);
+        font-size:.66rem;
+        letter-spacing:.06em;
+        line-height:1.5;
+      }
+      .toc li a:hover{color:var(--ink);background:rgba(236,230,217,.05)}
+      .toc li a[aria-current="true"]{color:var(--gold);background:rgba(217,178,106,.08)}
+      .toc .num{color:rgba(217,178,106,.65);margin-right:.4em}
+      .toc .group{margin:.9rem 0 .3rem;font-family:var(--mono);font-size:.56rem;letter-spacing:.24em;text-transform:uppercase;color:var(--faint)}
+      .toc__foot{margin-top:1.2rem;font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);line-height:1.9}
+      @media (max-width:1040px){
+        .toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding-right:0}
+        .toc ol{grid-template-columns:repeat(auto-fit,minmax(11rem,1fr))}
+      }
+
+      main{min-width:0}
+      .block{padding:clamp(1.6rem,4vw,2.8rem) 0;border-bottom:1px solid var(--line-soft)}
+      .block:last-of-type{border-bottom:0}
+      .block__glyph{
+        float:right;
+        margin:.2rem 0 1rem 1.4rem;
+        font-family:var(--han);
+        font-size:clamp(3.4rem,7vw,5.4rem);
+        line-height:1;
+        color:rgba(217,178,106,.14);
+        user-select:none;
+      }
+      h2{
+        margin:0 0 .9rem;
+        font-family:var(--serif);
+        font-weight:400;
+        font-size:clamp(1.7rem,3.2vw,2.5rem);
+        line-height:1.15;
+        letter-spacing:-.01em;
+        text-wrap:balance;
+      }
+      h2 .han{color:var(--gold);font-family:var(--han);margin-right:.28em}
+      h3{margin:1.9rem 0 .6rem;font-family:var(--sans);font-size:1rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600}
+      h4{margin:1.3rem 0 .4rem;font-family:var(--serif);font-size:1.12rem;color:var(--ink)}
+      p{margin:0 0 1em;color:var(--dim);max-width:74ch}
+      .lead{font-family:var(--serif);font-size:clamp(1.06rem,1.5vw,1.2rem);line-height:1.7;color:var(--ink);max-width:70ch}
+      strong{color:var(--ink);font-weight:600}
+      ul,ol{color:var(--dim);max-width:72ch;padding-left:1.25rem}
+      li{margin:.35rem 0}
+      li::marker{color:var(--gold)}
+      .han{font-family:var(--han)}
+      .pinyin{font-family:var(--mono);font-size:.86em;color:var(--jade);letter-spacing:.02em}
+      .term{color:var(--ink);font-weight:600}
+
+      .note{
+        margin:1.4rem 0;
+        padding:1rem 1.1rem;
+        border-left:3px solid var(--gold);
+        border-radius:0 10px 10px 0;
+        background:linear-gradient(90deg,rgba(217,178,106,.07),rgba(217,178,106,.015));
+        max-width:74ch;
+      }
+      .note p{margin:0;font-size:.95rem}
+      .note p + p{margin-top:.6em}
+      .note .label{display:block;margin-bottom:.4rem;font-family:var(--mono);font-size:.56rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+      .note.warn{border-left-color:var(--cinnabar);background:linear-gradient(90deg,rgba(201,96,74,.08),rgba(201,96,74,.015))}
+      .note.warn .label{color:var(--cinnabar)}
+
+      .figure{margin:1.6rem 0;padding:1rem;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.18)}
+      .figure svg{display:block;width:100%;height:auto;max-width:34rem;margin:0 auto}
+      .figure img{display:block;width:100%;height:auto;max-width:44rem;margin:0 auto;border-radius:8px;filter:saturate(.9) contrast(1.02) brightness(.9)}
+      .figure figcaption{margin-top:.8rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);text-align:center;line-height:1.8}
+
+      .table-wrap{margin:1.4rem 0;overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.16)}
+      table{border-collapse:collapse;width:100%;min-width:34rem;font-size:.88rem}
+      caption{caption-side:top;text-align:left;padding:.8rem 1rem .2rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+      th,td{padding:.55rem .8rem;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:top;color:var(--dim)}
+      th{font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--line)}
+      tbody tr:hover td{background:rgba(236,230,217,.03)}
+      td.han{font-family:var(--han);font-size:1.05rem;color:var(--ink);white-space:nowrap}
+      td.num-cell{font-family:var(--mono);color:var(--faint);white-space:nowrap}
+      td .py{display:block;font-family:var(--mono);font-size:.68rem;color:var(--jade)}
+      .phase-dot{display:inline-block;width:.6rem;height:.6rem;border-radius:50%;margin-right:.45em;vertical-align:.05em}
+      td.tri{white-space:nowrap;line-height:1.15}
+      td.tri span{display:block;font-family:var(--han);font-size:1.1rem;color:var(--gold)}
+      td.tri span + span{color:var(--dim)}
+
+      .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:.8rem;margin:1.4rem 0}
+      details.card{
+        border:1px solid var(--line);
+        border-radius:10px;
+        background:rgba(0,0,0,.16);
+        padding:.8rem .95rem;
+      }
+      details.card summary{cursor:pointer;list-style:none;font-family:var(--serif);font-size:1.02rem;color:var(--ink);display:flex;gap:.6rem;align-items:baseline}
+      details.card summary::-webkit-details-marker{display:none}
+      details.card summary .ch{font-family:var(--han);font-size:1.3rem;color:var(--gold);line-height:1}
+      details.card summary .py{font-family:var(--mono);font-size:.68rem;color:var(--jade)}
+      details.card[open]{background:rgba(217,178,106,.05)}
+      details.card p{margin:.6rem 0 0;font-size:.86rem;line-height:1.65}
+
+      .keyline{
+        margin:1.6rem 0;
+        padding:1.1rem 1.3rem;
+        border:1px solid var(--line);
+        border-radius:12px;
+        text-align:center;
+        font-family:var(--serif);
+        font-size:clamp(1.05rem,1.7vw,1.24rem);
+        line-height:1.6;
+        color:var(--ink);
+        background:radial-gradient(30rem 12rem at 50% 0%,rgba(217,178,106,.07),transparent 70%);
+      }
+      .keyline .han{display:block;font-size:1.5em;color:var(--gold);margin-bottom:.35rem}
+
+      .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem;margin:1.2rem 0}
+      .mini{border:1px solid var(--line-soft);border-radius:10px;padding:.9rem 1rem;background:rgba(0,0,0,.14)}
+      .mini h4{margin:0 0 .3rem;font-size:.98rem}
+      .mini p{margin:0;font-size:.84rem;line-height:1.6}
+
+      footer{border-top:1px solid var(--line);padding:2rem 0 3rem}
+      .foot{max-width:84rem;margin:0 auto;padding:0 clamp(1rem,3.4vw,2.6rem);display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:.63rem;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+      .foot a{border-bottom:1px solid var(--line)}
+      .foot a:hover{color:var(--ink);border-color:var(--gold)}
+
+      .to-top{position:fixed;right:1rem;bottom:1rem;z-index:80;width:2.6rem;height:2.6rem;border-radius:50%;border:1px solid var(--line);background:rgba(6,7,10,.8);color:var(--faint);font-size:1rem;cursor:pointer;opacity:0;pointer-events:none;transition:opacity 200ms ease,color 200ms ease}
+      .to-top.show{opacity:1;pointer-events:auto}
+      .to-top:hover{color:var(--gold);border-color:var(--gold)}
+      .to-top:focus-visible{outline:1px solid var(--gold);outline-offset:2px}
+
+      @media (max-width:640px){
+        body{font-size:16px}
+        .block__glyph{float:none;margin:0 0 .6rem;display:block}
+        h2{font-size:1.6rem}
+      }
+      @media (prefers-reduced-motion:reduce){
+        html{scroll-behavior:auto}
+        .progress span,.to-top{transition:none}
+      }
+      @media print{
+        body{background:#fff;color:#111}
+        .toc,.progress,.to-top,.hero::before,body::after{display:none}
+        .shell{display:block}
+        a{color:#111;border:0}
+        .table-wrap{overflow:visible;border-color:#bbb}
+        th,td{color:#111;border-color:#ccc}
+        .note{background:none;border-color:#999}
+      }
+    </style>
+    <style>.hero h1 em{font-family:var(--mono);font-size:.26em;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-top:.9em;display:block}pre{background:rgba(0,0,0,.38);border:1px solid var(--line);border-radius:10px;padding:1rem 1.1rem;overflow:auto;max-width:74ch;margin:1.2rem 0}pre code{font-family:var(--mono);font-size:.72rem;line-height:1.75;color:var(--dim)}.doc code{font-family:var(--mono);font-size:.82em;color:var(--jade)}code{font-family:var(--mono);font-size:.84em;color:var(--jade)}kbd{font-family:var(--mono);font-size:.78em;border:1px solid var(--line);border-radius:4px;padding:0 .3em;color:var(--ink)}</style>
+  </head>
+
+  <body>
+    <a class="skip" href="#content">Ir para o documento</a>
+    <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+
+    <header class="hero" id="top">
+      <div class="hero__inner">
+        <p class="kicker">Monkey Blog <span>·</span> Manual de Operações <span>·</span> ▤</p>
+        <h1>O Arquivo como Sistema<em>manual de operações</em></h1>
+        <p class="hero__sub">
+          Quase quinhentas páginas e nenhum documento que explicasse como se faz uma. Este é esse documento: o inventário medido, a anatomia de uma página, os dois mapas de datas, as categorias, o ritual de publicação e o incidente que deixou dois jogos parados.
+        </p>
+        <div class="hero__meta">
+          <span>OdicforceSounds</span><span>Em Português</span><span>Doze capítulos</span><span>Medido em outubro de 2026</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="shell">
+      <nav class="toc" aria-label="Índice">
+        <h2>Índice</h2>
+        <input class="toc__filter" id="tocFilter" type="search" placeholder="filtrar… (tecla /)" aria-label="Filtrar capítulos">
+        <ol id="tocList">
+          <li><a href="#oque"><span class="num">00</span>O que este documento é</a></li>
+          <li><a href="#numeros"><span class="num">01</span>O arquivo em números</a></li>
+          <li><a href="#anatomia"><span class="num">02</span>A anatomia de uma página</a></li>
+          <li><a href="#datas"><span class="num">03</span>Os dois relógios das datas</a></li>
+          <li><a href="#categorias"><span class="num">04</span>Categorias e ordenação</a></li>
+          <li><a href="#publicar"><span class="num">05</span>Publicar: nove passos</a></li>
+          <li><a href="#rocket"><span class="num">06</span>A armadilha do Rocket Loader</a></li>
+          <li><a href="#seguranca"><span class="num">07</span>Segurança e cabeçalhos</a></li>
+          <li><a href="#acessibilidade"><span class="num">08</span>Acessibilidade mínima</a></li>
+          <li><a href="#bilingues"><span class="num">09</span>Bilingues e nomenclatura</a></li>
+          <li><a href="#pendente"><span class="num">10</span>O que está pendente</a></li>
+          <li><a href="#fontes"><span class="num">11</span>Fontes internas</a></li>
+        </ol>
+        <p class="toc__foot">Monkey Blog · documento de referência<br>Sem dependências externas</p>
+      </nav>
+
+      <main id="content">
+        <section class="block" id="oque">
+          <span class="block__glyph" aria-hidden="true">▤</span>
+          <h2>O que este documento é</h2>
+          <p class="lead">
+            Este arquivo tem quase quinhentas páginas e nenhum documento que explique como se faz
+            uma. Este é esse documento. Não é um tutorial de HTML: é o manual de operações de um
+            sítio estático feito à mão, com as suas convenções, os seus dois relógios de datas e as
+            suas armadilhas — incluindo a que deixou dois jogos sem funcionar.
+          </p>
+          <p>
+            A regra de ouro deste arquivo é simples: <strong>uma página, um ficheiro, zero
+            dependências</strong>. Sem <em>build</em>, sem <em>framework</em>, sem CDN. Cada página
+            traz o seu CSS e o seu JavaScript dentro do próprio ficheiro. É por isso que o sítio
+            carrega depressa e é por isso que uma alteração errada pode ser invisível durante meses.
+          </p>
+          <div class="note">
+            <span class="label">Medições</span>
+            <p>
+              Todos os números deste documento foram contados em 25 de outubro de 2026 sobre o
+              conteúdo de <code>docs/</code>. Se o arquivo crescer, os números envelhecem — o método
+              para os reconferir está em cada secção.
+            </p>
+          </div>
+        </section>
+
+        <section class="block" id="numeros">
+          <span class="block__glyph" aria-hidden="true">▦</span>
+          <h2>O arquivo em números</h2>
+          <p class="lead">
+            O retrato honesto do estado do sítio, medido e não estimado. A coluna da direita é a
+            parte que dá trabalho.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption>Inventário de 25 de outubro de 2026</caption>
+              <thead><tr><th>Métrica</th><th>Valor</th><th>Leitura</th></tr></thead>
+              <tbody>
+                <tr><td>Páginas HTML em <code>docs/</code></td><td class="num-cell">502</td><td>Arquivo grande, mantido à mão</td></tr>
+                <tr><td>Ligações no <code>index.html</code></td><td class="num-cell">502</td><td>Todas resolvem: zero links mortos</td></tr>
+                <tr><td>Páginas que existem e não estão indexadas</td><td class="num-cell">0</td><td>Foram nove; indexadas nesta passagem</td></tr>
+                <tr><td>Categorias</td><td class="num-cell">15</td><td>Ordenadas por <code>data-title</code></td></tr>
+                <tr><td>Datas no mapa inline</td><td class="num-cell">501</td><td><code>CREATION_DATES</code>, uma por publicação (o índice não conta)</td></tr>
+                <tr><td>Datas no <code>dates.json</code></td><td class="num-cell">11</td><td>Fonte legada; 10 já estão no mapa inline</td></tr>
+                <tr><td>Páginas sem data em lado nenhum</td><td class="num-cell">0</td><td>Foram três; agora nenhuma</td></tr>
+                <tr><td>Títulos em estilo «manual de campo»</td><td class="num-cell">76</td><td>Uma família com regras próprias</td></tr>
+                <tr><td>Páginas com script inline</td><td class="num-cell">101</td><td>Todas vulneráveis ao mesmo problema</td></tr>
+                <tr><td>Páginas com <code>data-cfasync="false"</code></td><td class="num-cell">7</td><td>A correcção aplicada onde o risco é real</td></tr>
+                <tr><td>Páginas sem CSP</td><td class="num-cell">123</td><td>Um quarto do arquivo</td></tr>
+                <tr><td>Páginas sem <code>meta description</code></td><td class="num-cell">62</td><td>Prejudica partilha e pesquisa</td></tr>
+                <tr><td>Páginas sem ligação para o índice</td><td class="num-cell">5</td><td>Beco sem saída</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            O número que mais dizia sobre o arquivo era o terceiro: nove páginas prontas que
+            ninguém conseguia alcançar pelo índice. Não era um problema de escrita — era um
+            problema de manutenção, e resolveu-se com uma linha por página. A tabela acima já
+            reflecte o depois: zero órfãs, zero links mortos, zero páginas sem data.
+          </p>
+<pre><code># reconferir o inventário em qualquer momento
+cd docs
+ls -1 *.html | wc -l                                   # páginas
+grep -o 'href="\./[^"]*\.html"' index.html | sort -u | wc -l   # ligações
+for f in *.html; do grep -q "$f" index.html || echo "órfã: $f"; done
+grep -c "^  \"" index.html                             # entradas de data
+</code></pre>
+        </section>
+
+        <section class="block" id="anatomia">
+          <span class="block__glyph" aria-hidden="true">⌗</span>
+          <h2>A anatomia de uma página</h2>
+          <p class="lead">
+            Todas as páginas recentes seguem a mesma ordem. Quem escreve uma nova copia esta
+            sequência e não inventa outra.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption>Da primeira à última linha</caption>
+              <thead><tr><th>Bloco</th><th>Contém</th><th>Regra</th></tr></thead>
+              <tbody>
+                <tr><td><code>&lt;head&gt;</code> base</td><td>charset, viewport, CSP, headers, título</td><td>O título termina em <code>| Monkey Blog</code></td></tr>
+                <tr><td>Metadados sociais</td><td><code>description</code>, Open Graph, Twitter, fediverso</td><td>Descrição entre 120 e 200 caracteres</td></tr>
+                <tr><td><code>&lt;style&gt;</code></td><td>Todo o CSS da página</td><td>Sem ficheiros externos, sem CDN</td></tr>
+                <tr><td><code>&lt;header class="hero"&gt;</code></td><td>Kicker, título, subtítulo, meta</td><td>O <code>h1</code> é o único da página</td></tr>
+                <tr><td><code>&lt;nav class="toc"&gt;</code></td><td>Índice com filtro e âncoras</td><td>Um item por secção, na ordem</td></tr>
+                <tr><td><code>&lt;main&gt;</code></td><td>Secções <code>.block</code> com <code>id</code></td><td>Cada <code>id</code> é único e está no índice</td></tr>
+                <tr><td><code>&lt;footer&gt;</code></td><td>Link para o índice e para o topo</td><td>Sempre presente — é a saída</td></tr>
+                <tr><td><code>&lt;script&gt;</code></td><td>Progresso, filtro, âncora activa, topo</td><td><code>data-cfasync="false"</code>, sempre</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            As páginas mais antigas não seguem isto — são mais curtas, sem herói nem índice. Não há
+            problema nisso: o arquivo é cronológico e as convenções endureceram com o tempo. O que
+            não pode acontecer é uma página nova nascer fora da norma.
+          </p>
+        </section>
+
+        <section class="block" id="datas">
+          <span class="block__glyph" aria-hidden="true">⌛</span>
+          <h2>Os dois relógios das datas</h2>
+          <p class="lead">
+            Este é o detalhe que mais confusão causa e o que mais depressa se corrige. Existem duas
+            fontes de datas, e só uma manda.
+          </p>
+          <div class="grid2">
+            <div class="mini">
+              <h4><code>CREATION_DATES</code> — manda</h4>
+              <p>Mapa de objetos dentro do <code>index.html</code>, a partir da linha 1985. 501 entradas, uma por publicação. É o que alimenta «últimas publicações» e a ordenação por data.</p>
+            </div>
+            <div class="mini">
+              <h4><code>dates.json</code> — legado</h4>
+              <p>Ficheiro separado com 11 entradas, das quais 10 já estão no mapa inline. É pedido por <code>DATES_URL</code> mas já não decide nada de importante.</p>
+            </div>
+          </div>
+          <p>
+            A regra operacional é curta: <strong>uma publicação nova ganha uma entrada no mapa
+            inline</strong>. O <code>dates.json</code> fica como está até haver uma decisão de
+            consolidar — e essa decisão é de uma linha só, quando for tomada.
+          </p>
+          <div class="note warn">
+            <span class="label">O erro clássico</span>
+            <p>
+              Publicar a página, indexá-la na categoria, esquecer a data — e ficar à espera que ela
+              apareça em «últimas publicações». Não aparece. A página está no índice, mas para o
+              relógio do sítio não existe.
+            </p>
+          </div>
+        </section>
+
+        <section class="block" id="categorias">
+          <span class="block__glyph" aria-hidden="true">▸</span>
+          <h2>Categorias e ordenação</h2>
+          <p class="lead">
+            Há quinze categorias, e nenhuma é escolhida por afinidade: cada página entra na que
+            responde à pergunta «onde é que eu a procuraria?».
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption>As quinze categorias e o seu peso</caption>
+              <thead><tr><th>Categoria</th><th>Entradas</th><th>Nota</th></tr></thead>
+              <tbody>
+                <tr><td>Politics, Law &amp; Justice</td><td class="num-cell">88</td><td>A maior — inclui os dossiês</td></tr>
+                <tr><td>Site, Blog &amp; Reading</td><td class="num-cell">85</td><td>Três listas internas</td></tr>
+                <tr><td>Philosophy &amp; Spirituality</td><td class="num-cell">73</td><td>Manuais, religiões, Tao</td></tr>
+                <tr><td>Programming &amp; Development</td><td class="num-cell">53</td><td></td></tr>
+                <tr><td>Society, Culture &amp; Education</td><td class="num-cell">48</td><td></td></tr>
+                <tr><td>Security &amp; Hacking</td><td class="num-cell">47</td><td></td></tr>
+                <tr><td>Psychology &amp; the Mind</td><td class="num-cell">39</td><td></td></tr>
+                <tr><td>BSD — FreeBSD &amp; OpenBSD</td><td class="num-cell">35</td><td></td></tr>
+                <tr><td>Linux &amp; Open Source</td><td class="num-cell">33</td><td></td></tr>
+                <tr><td>Music, Art &amp; Creativity</td><td class="num-cell">15</td><td></td></tr>
+                <tr><td>Health, Food &amp; Wellbeing</td><td class="num-cell">14</td><td></td></tr>
+                <tr><td>Networking</td><td class="num-cell">11</td><td></td></tr>
+                <tr><td>Business &amp; Economics</td><td class="num-cell">10</td><td></td></tr>
+                <tr><td>Games &amp; Quests</td><td class="num-cell">8</td><td>Os jogos errantes</td></tr>
+                <tr><td>Science &amp; Engineering</td><td class="num-cell">5</td><td>A mais pequena</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            A ordenação é feita no browser: <code>sortCategoryLinks()</code> percorre cada lista e
+            ordena por texto do link, com <code>localeCompare</code> e sensibilidade a maiúsculas
+            desligada. Consequência prática: <strong>a ordem em que se escreve o markup não
+            importa</strong> — mas o texto do link importa, porque é a chave de ordenação. Um link
+            chamado «A Farda e o Papel» cai na letra A, não na F de farda.
+          </p>
+        </section>
+
+        <section class="block" id="publicar">
+          <span class="block__glyph" aria-hidden="true">✓</span>
+          <h2>Publicar: nove passos</h2>
+          <p class="lead">
+            O ritual completo, na ordem em que falha. Dois minutos de trabalho que evitam uma página
+            invisível.
+          </p>
+          <ol>
+            <li>O ficheiro está em <code>docs/</code>, com nome em camelCase e sem espaços.</li>
+            <li>O <code>&lt;title&gt;</code> e a <code>description</code> estão preenchidos.</li>
+            <li>A CSP inclui <code>'self'</code> e o script tem <code>data-cfasync="false"</code>.</li>
+            <li>O HTML está equilibrado — sem <code>div</code> por fechar.</li>
+            <li>Está no índice, na categoria certa, com o texto que se quer usar na ordenação.</li>
+            <li>Está no mapa <code>CREATION_DATES</code>, com data ISO e fuso.</li>
+            <li>Todos os links internos apontam para ficheiros que existem.</li>
+            <li>A página abre com o JavaScript desligado e continua legível.</li>
+            <li>O commit diz o que mudou e porquê.</li>
+          </ol>
+<pre><code># o teste dos links, antes do commit
+python3 - &lt;&lt;'EOF'
+import re, os, glob
+bad = []
+for page in glob.glob("docs/*.html"):
+    html = open(page, encoding="utf-8", errors="replace").read()
+    for href in re.findall(r'href="\./([^"#?]+\.html)"', html):
+        if not os.path.exists("docs/" + href):
+            bad.append((page, href))
+print(bad or "todos os links internos resolvem")
+EOF
+</code></pre>
+        </section>
+
+        <section class="block" id="rocket">
+          <span class="block__glyph" aria-hidden="true">⚡</span>
+          <h2>A armadilha do Rocket Loader</h2>
+          <p class="lead">
+            Este é o incidente que este documento existe para evitar. Dois jogos deixaram de
+            funcionar sem que uma única linha do seu código tivesse mudado.
+          </p>
+          <p>
+            O Rocket Loader da Cloudflare reescreve os scripts das páginas: um
+            <code>&lt;script&gt;</code> inline passa a ter um <code>type</code> inventado — por
+            exemplo <code>type="060db029cfb5fd671c0fa4e0-text/javascript"</code> — que o browser se
+            recusa a executar, e o conteúdo é entregue a um <em>loader</em> em
+            <code>/cdn-cgi/scripts/…/rocket-loader.min.js</code>. Se a CSP da página for
+            <code>script-src 'unsafe-inline'</code>, sem <code>'self'</code>, esse loader é bloqueado.
+            Resultado: nenhum script corre, o painel fica vazio e os botões não respondem.
+          </p>
+<pre><code># diagnóstico em trinta segundos: comparar o que está no servidor com o que está no repo
+curl -s https://blog.odicforcesounds.com/theTurning.html | grep -o '&lt;script[^&gt;]*&gt;'
+grep -o '&lt;script[^&gt;]*&gt;' docs/theTurning.html
+# servidor: &lt;script type="060db029c...-text/javascript"&gt;
+# repo:     &lt;script data-cfasync="false"&gt;
+</code></pre>
+          <p>
+            A correcção tem duas partes: acrescentar <code>'self'</code> (e <code>blob:</code>) ao
+            <code>script-src</code>, para que o loader injetado seja permitido, e marcar o script com
+            <code>data-cfasync="false"</code>, que é a forma documentada de pedir ao Rocket Loader
+            que não lhe toque. A correcção de fundo é desligar o Rocket Loader no painel da
+            Cloudflare: resolve as 101 páginas de uma vez em vez de uma a uma.
+          </p>
+          <div class="note">
+            <span class="label">Como reconhecer</span>
+            <p>
+              Sintoma: «o ficheiro está igual e não funciona». Confirmação: o HTML local e o do
+              servidor são iguais excepto na tag do script. Conclusão: o problema não está no
+              ficheiro.
+            </p>
+          </div>
+        </section>
+
+        <section class="block" id="seguranca">
+          <span class="block__glyph" aria-hidden="true">⛨</span>
+          <h2>Segurança e cabeçalhos</h2>
+          <p class="lead">
+            Uma página estática também tem superfície. O mínimo que este arquivo usa são cinco
+            linhas no <code>&lt;head&gt;</code>.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption>O mínimo por página</caption>
+              <thead><tr><th>Diretiva</th><th>Valor</th><th>Impede</th></tr></thead>
+              <tbody>
+                <tr><td>CSP</td><td><code>default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'</code></td><td>Conteúdo de outras origens</td></tr>
+                <tr><td><code>X-Content-Type-Options</code></td><td><code>nosniff</code></td><td>Interpretação criativa de tipos</td></tr>
+                <tr><td><code>X-Frame-Options</code></td><td><code>DENY</code></td><td>Embutir a página num iframe</td></tr>
+                <tr><td><code>Referrer-Policy</code></td><td><code>no-referrer</code></td><td>Fugas de URL para terceiros</td></tr>
+                <tr><td><code>Strict-Transport-Security</code></td><td><code>max-age=31536000; includeSubDomains</code></td><td>Downgrade para HTTP</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            Cento e vinte e três páginas do arquivo não têm CSP. Não é uma falha dramática — não há
+            formulários nem sessões — mas é uma inconsistência que faz com que a mesma correcção
+            tenha de ser feita duas vezes em sítios diferentes.
+          </p>
+        </section>
+
+        <section class="block" id="acessibilidade">
+          <span class="block__glyph" aria-hidden="true">◍</span>
+          <h2>Acessibilidade mínima</h2>
+          <p class="lead">
+            Cinco coisas, todas baratas, todas já presentes nas páginas recentes. O objectivo não é
+            conformidade formal: é que a página seja usável por quem não usa rato.
+          </p>
+          <ul>
+            <li><strong>Skip link</strong> — <code>&lt;a class="skip" href="#content"&gt;</code> como primeiro elemento do <code>body</code>.</li>
+            <li><strong>Um <code>h1</code> por página</strong> e uma hierarquia de <code>h2</code>/<code>h3</code> sem saltos.</li>
+            <li><strong>Estado no URL</strong> — um filtro ou um jogo que não se possa partilhar por link é um filtro que se perde.</li>
+            <li><strong>Contraste</strong> — texto secundário nunca abaixo de <code>#7f7c72</code> sobre <code>#06070a</code>.</li>
+            <li><strong>Movimento</strong> — <code>prefers-reduced-motion</code> desliga progresso, transições e o botão «topo».</li>
+          </ul>
+          <p>
+            E uma regra de conteúdo: o texto alternativo descreve a função da imagem, não a sua
+            aparência. Num diagrama de cinco fases, o <code>aria-label</code> diz o que o diagrama
+            mostra — o ciclo e as setas — e não «imagem».
+          </p>
+        </section>
+
+        <section class="block" id="bilingues">
+          <span class="block__glyph" aria-hidden="true">文</span>
+          <h2>Bilingues e nomenclatura</h2>
+          <p class="lead">
+            O arquivo é bilingue sem o dizer: há páginas em inglês e em português sobre os mesmos
+            assuntos, e só dois pares partilham a estrutura.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption>Convenções de nome</caption>
+              <thead><tr><th>Padrão</th><th>Exemplo</th><th>Uso</th></tr></thead>
+              <tbody>
+                <tr><td>camelCase descritivo</td><td><code>pspTigre.html</code></td><td>O padrão do arquivo</td></tr>
+                <tr><td>Português quando o tema é português</td><td><code>terroristasLegais.html</code></td><td>Dossiês, leis, instituições</td></tr>
+                <tr><td>Nome técnico em inglês</td><td><code>howAIworks.html</code></td><td>Manuais técnicos</td></tr>
+                <tr><td>Par traduzido com nome próprio</td><td><code>theTurning.html</code> / <code>aViragem.html</code></td><td>Mesma obra, duas línguas</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            Não há regra escrita sobre quando traduzir. Há um hábito: o que é dossiê nasce em
+            português; o que é manual técnico nasce em inglês e, quando vale a pena, ganha versão
+            portuguesa. Um registo de pares resolveria a ambiguidade sem tocar nas páginas.
+          </p>
+        </section>
+
+        <section class="block" id="pendente">
+          <span class="block__glyph" aria-hidden="true">◌</span>
+          <h2>O que está pendente</h2>
+          <p class="lead">
+            A lista de trabalho que este documento produz. Nenhum item exige reescrever uma página
+            antiga — todos são acrescentos de metadados ou de ligações.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption>Pendências medidas, com custo</caption>
+              <thead><tr><th>Item</th><th>Estado</th><th>Custo</th></tr></thead>
+              <tbody>
+                <tr><td>Indexar as 9 páginas órfãs</td><td>Feito nesta passagem</td><td>9 linhas no índice</td></tr>
+                <tr><td>Remover o link morto para <code>elitePolititians.html</code></td><td>Feito nesta passagem</td><td>1 linha</td></tr>
+                <tr><td>Datas para as 3 páginas sem data</td><td>Feito nesta passagem</td><td>3 linhas no mapa</td></tr>
+                <tr><td>Descrições para as 62 páginas sem <code>description</code></td><td>Por fazer</td><td>1 bloco por página</td></tr>
+                <tr><td>CSP nas 123 páginas sem cabeçalho</td><td>Por fazer</td><td>1 linha por página</td></tr>
+                <tr><td><code>dates.json</code> consolidado ou removido</td><td>Decisão pendente</td><td>1 alteração no índice</td></tr>
+                <tr><td>Rocket Loader desligado na Cloudflare</td><td>Decisão pendente</td><td>1 toggle</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="keyline">
+            <span>Um arquivo não se mantém a escrever mais páginas.</span>
+            Mantém-se a indexar as que já existem.
+          </div>
+        </section>
+
+        <section class="block" id="fontes">
+          <span class="block__glyph" aria-hidden="true">§</span>
+          <h2>Fontes internas</h2>
+          <p class="lead">
+            Este documento descreve o repositório, e o repositório descreve-se a si mesmo. Estas são
+            as peças que o fazem.
+          </p>
+          <div class="grid2">
+            <div class="mini"><h4>Documentação</h4><p><code>README.md</code> — o que o repositório contém<br><code>update.sh</code> — o ritual de publicação<br><code>templates/</code> — os modelos de página</p></div>
+            <div class="mini"><h4>O índice</h4><p><a href="./index.html">index.html</a><br><code>CREATION_DATES</code> na linha 1985<br><code>buildRecent()</code> e <code>sortCategoryLinks()</code></p></div>
+            <div class="mini"><h4>Os casos</h4><p><a href="./theTurning.html">The Turning</a> — o jogo que parou<br><a href="./daoPoemBook.html">O Livro Sexy</a> — 69 poemas<br><a href="./oArquivoComoSistema.html">Este documento</a></p></div>
+            <div class="mini"><h4>Documentos irmãos</h4><p><a href="./motorDeQuests.html">O Motor de Quests</a><br><a href="./protocoloDeIA.html">IA: protocolo de verificação</a><br><a href="./aFardaEOPapel.html">A Farda e o Papel</a></p></div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <footer>
+      <div class="foot">
+        <span>Monkey Blog · <a href="./index.html">Início</a></span>
+        <span><a href="#top">Topo</a> · <a href="./motorDeQuests.html">O Motor de Quests</a> · <a href="./protocoloDeIA.html">IA: Protocolo</a> · <a href="./aFardaEOPapel.html">A Farda e o Papel</a></span>
+      </div>
+    </footer>
+
+    <button class="to-top" id="toTop" type="button" aria-label="Voltar ao topo">↑</button>
+
+    <script data-cfasync="false">
+      (function () {
+        "use strict";
+
+        var bar = document.getElementById("progressBar");
+        var top = document.getElementById("toTop");
+        function onScroll() {
+          var doc = document.documentElement;
+          var max = doc.scrollHeight - window.innerHeight;
+          var ratio = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+          if (bar) { bar.style.transform = "scaleX(" + ratio + ")"; }
+          if (top) { top.classList.toggle("show", window.scrollY > 600); }
+        }
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onScroll);
+        onScroll();
+
+        if (top) {
+          top.addEventListener("click", function () {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+        }
+
+        var tocLinks = Array.prototype.slice.call(document.querySelectorAll("#tocList a"));
+        var blocks = Array.prototype.slice.call(document.querySelectorAll(".block"));
+
+        function setActive(id) {
+          tocLinks.forEach(function (link) {
+            var match = link.getAttribute("href") === "#" + id;
+            if (match) { link.setAttribute("aria-current", "true"); }
+            else { link.removeAttribute("aria-current"); }
+          });
+        }
+
+        if ("IntersectionObserver" in window) {
+          var spy = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) { setActive(entry.target.id); }
+            });
+          }, { rootMargin: "-20% 0px -70% 0px" });
+          blocks.forEach(function (block) { spy.observe(block); });
+        }
+
+        var filter = document.getElementById("tocFilter");
+        if (filter) {
+          filter.addEventListener("input", function () {
+            var value = filter.value.trim().toLowerCase();
+            tocLinks.forEach(function (link) {
+              var item = link.parentNode;
+              item.hidden = value !== "" && link.textContent.toLowerCase().indexOf(value) === -1;
+            });
+          });
+          document.addEventListener("keydown", function (event) {
+            if (event.key === "/" && document.activeElement !== filter) {
+              event.preventDefault();
+              filter.focus();
+            }
+          });
+        }
+
+        var hexFilter = document.getElementById("hexFilter");
+        if (hexFilter) {
+          var rows = Array.prototype.slice.call(document.querySelectorAll("#hexTable tbody tr"));
+          hexFilter.addEventListener("input", function () {
+            var value = hexFilter.value.trim().toLowerCase();
+            rows.forEach(function (row) {
+              row.hidden = value !== "" && row.textContent.toLowerCase().indexOf(value) === -1;
+            });
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

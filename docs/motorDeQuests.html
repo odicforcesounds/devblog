@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'">
+    <meta name="X-Content-Type-Options" content="nosniff">
+    <meta name="X-Frame-Options" content="DENY">
+    <meta name="Referrer-Policy" content="no-referrer">
+    <meta name="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+    <title>O Motor de Quests — Manual de autor dos jogos errantes | Monkey Blog</title>
+    <meta name="description" content="O manual que faltava ao arquivo: a anatomia de um nó, o motor mínimo em JavaScript sem dependências, as cinco regras do grafo, um verificador, seis jogos comparados e a checklist de autor dos jogos errantes deste blog.">
+    <meta property="og:title" content="O Motor de Quests — Manual de autor">
+    <meta property="og:description" content="Sete jogos, uma só peça: grafo de nós, fio, voltar, e nenhuma biblioteca externa.">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Monkey Blog">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="O Motor de Quests — Manual de autor">
+    <meta name="twitter:description" content="Sete jogos, uma só peça: grafo de nós, fio, voltar, e nenhuma biblioteca externa.">
+    <meta name="fediverse:creator" content="@TaoExpression@mastodon.social">
+    <style>
+      :root{
+        --bg:#06070a;
+        --bg-2:#0a0c11;
+        --ink:#ece6d9;
+        --dim:#bcb6a8;
+        --faint:#7f7c72;
+        --gold:#d9b26a;
+        --jade:#63cdb4;
+        --cinnabar:#c9604a;
+        --water:#5f8fb0;
+        --metal:#b9c2c9;
+        --wood:#77b07a;
+        --earth:#c3a05a;
+        --line:rgba(217,178,106,.16);
+        --line-soft:rgba(236,230,217,.07);
+        --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+        --han:"Noto Serif CJK SC","Source Han Serif SC","Songti SC","Noto Serif CJK JP","Noto Sans CJK SC",serif;
+        --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+        --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+      }
+      *{box-sizing:border-box}
+      html{scroll-behavior:smooth;scroll-padding-top:5.5rem;-webkit-text-size-adjust:100%}
+      body{
+        margin:0;
+        color:var(--ink);
+        font-family:var(--sans);
+        font-size:17px;
+        line-height:1.7;
+        background:
+          radial-gradient(64rem 42rem at 50% -18%,rgba(217,178,106,.10),transparent 64%),
+          radial-gradient(50rem 34rem at 106% 30%,rgba(99,205,180,.045),transparent 62%),
+          var(--bg);
+      }
+      body::after{
+        content:"";
+        position:fixed;
+        inset:0;
+        z-index:4;
+        pointer-events:none;
+        opacity:.04;
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      ::selection{background:rgba(217,178,106,.3);color:#fff}
+      a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(217,178,106,.25)}
+      a:hover{color:#fff;border-color:var(--gold)}
+      .skip{position:absolute;left:-9999px;padding:.8rem 1.2rem;background:var(--gold);color:#0a0c11;font-family:var(--mono);font-size:.72rem;z-index:99}
+      .skip:focus{left:1rem;top:1rem}
+      .progress{position:fixed;inset:0 0 auto;height:2px;z-index:90;background:rgba(236,230,217,.05)}
+      .progress span{display:block;height:100%;width:100%;transform:scaleX(0);transform-origin:0 50%;background:linear-gradient(90deg,var(--gold),var(--jade));transition:transform 80ms linear}
+
+      .hero{
+        position:relative;
+        padding:clamp(3.4rem,9vh,6.5rem) clamp(1.2rem,5vw,3rem) clamp(2.4rem,6vh,4rem);
+        text-align:center;
+        border-bottom:1px solid var(--line);
+        overflow:hidden;
+      }
+      .hero::before{
+        content:"門";
+        position:absolute;
+        left:50%;top:52%;
+        transform:translate(-50%,-50%);
+        font-family:var(--han);
+        font-size:clamp(16rem,42vw,30rem);
+        line-height:1;
+        color:rgba(217,178,106,.05);
+        pointer-events:none;
+        user-select:none;
+      }
+      .hero__inner{position:relative;z-index:2;max-width:58rem;margin:0 auto}
+      .kicker{margin:0 0 1.3rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold)}
+      .kicker span{color:var(--faint)}
+      .hero h1{
+        margin:0;
+        font-family:var(--serif);
+        font-weight:400;
+        font-size:clamp(2.2rem,6.4vw,4.6rem);
+        line-height:1.02;
+        letter-spacing:-.02em;
+        text-wrap:balance;
+      }
+      .hero h1 em{display:block;font-style:normal;font-family:var(--han);font-size:.62em;letter-spacing:.08em;color:var(--gold);margin-top:.3em}
+      .hero__sub{margin:1.4rem auto 0;max-width:56ch;color:var(--dim);font-size:clamp(1rem,1.5vw,1.12rem);line-height:1.65;text-wrap:pretty}
+      .hero__meta{margin-top:1.8rem;display:flex;flex-wrap:wrap;gap:.45rem 1.3rem;justify-content:center;font-family:var(--mono);font-size:.63rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+
+      .shell{
+        max-width:84rem;
+        margin:0 auto;
+        padding:0 clamp(1rem,3.4vw,2.6rem) 4rem;
+        display:grid;
+        grid-template-columns:minmax(0,17rem) minmax(0,1fr);
+        gap:clamp(1.6rem,4vw,3.4rem);
+        align-items:start;
+      }
+      @media (max-width:1040px){
+        .shell{grid-template-columns:1fr}
+      }
+
+      .toc{
+        position:sticky;
+        top:1rem;
+        padding:1.1rem 0 1.4rem;
+        border-right:1px solid var(--line-soft);
+        padding-right:1.2rem;
+        max-height:calc(100svh - 2rem);
+        overflow:auto;
+        scrollbar-width:thin;
+      }
+      .toc h2{margin:0 0 .5rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);font-weight:400}
+      .toc__filter{
+        width:100%;
+        margin:.4rem 0 1rem;
+        padding:.45rem .6rem;
+        border:1px solid var(--line);
+        border-radius:8px;
+        background:rgba(0,0,0,.25);
+        color:var(--ink);
+        font-family:var(--mono);
+        font-size:.66rem;
+        letter-spacing:.08em;
+      }
+      .toc__filter:focus{outline:1px solid var(--gold);outline-offset:1px}
+      .toc ol{list-style:none;margin:0;padding:0;display:grid;gap:.1rem}
+      .toc li a{
+        display:block;
+        padding:.3rem .5rem;
+        border:0;
+        border-radius:6px;
+        color:var(--faint);
+        font-family:var(--mono);
+        font-size:.66rem;
+        letter-spacing:.06em;
+        line-height:1.5;
+      }
+      .toc li a:hover{color:var(--ink);background:rgba(236,230,217,.05)}
+      .toc li a[aria-current="true"]{color:var(--gold);background:rgba(217,178,106,.08)}
+      .toc .num{color:rgba(217,178,106,.65);margin-right:.4em}
+      .toc .group{margin:.9rem 0 .3rem;font-family:var(--mono);font-size:.56rem;letter-spacing:.24em;text-transform:uppercase;color:var(--faint)}
+      .toc__foot{margin-top:1.2rem;font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);line-height:1.9}
+      @media (max-width:1040px){
+        .toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding-right:0}
+        .toc ol{grid-template-columns:repeat(auto-fit,minmax(11rem,1fr))}
+      }
+
+      main{min-width:0}
+      .block{padding:clamp(1.6rem,4vw,2.8rem) 0;border-bottom:1px solid var(--line-soft)}
+      .block:last-of-type{border-bottom:0}
+      .block__glyph{
+        float:right;
+        margin:.2rem 0 1rem 1.4rem;
+        font-family:var(--han);
+        font-size:clamp(3.4rem,7vw,5.4rem);
+        line-height:1;
+        color:rgba(217,178,106,.14);
+        user-select:none;
+      }
+      h2{
+        margin:0 0 .9rem;
+        font-family:var(--serif);
+        font-weight:400;
+        font-size:clamp(1.7rem,3.2vw,2.5rem);
+        line-height:1.15;
+        letter-spacing:-.01em;
+        text-wrap:balance;
+      }
+      h2 .han{color:var(--gold);font-family:var(--han);margin-right:.28em}
+      h3{margin:1.9rem 0 .6rem;font-family:var(--sans);font-size:1rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600}
+      h4{margin:1.3rem 0 .4rem;font-family:var(--serif);font-size:1.12rem;color:var(--ink)}
+      p{margin:0 0 1em;color:var(--dim);max-width:74ch}
+      .lead{font-family:var(--serif);font-size:clamp(1.06rem,1.5vw,1.2rem);line-height:1.7;color:var(--ink);max-width:70ch}
+      strong{color:var(--ink);font-weight:600}
+      ul,ol{color:var(--dim);max-width:72ch;padding-left:1.25rem}
+      li{margin:.35rem 0}
+      li::marker{color:var(--gold)}
+      .han{font-family:var(--han)}
+      .pinyin{font-family:var(--mono);font-size:.86em;color:var(--jade);letter-spacing:.02em}
+      .term{color:var(--ink);font-weight:600}
+
+      .note{
+        margin:1.4rem 0;
+        padding:1rem 1.1rem;
+        border-left:3px solid var(--gold);
+        border-radius:0 10px 10px 0;
+        background:linear-gradient(90deg,rgba(217,178,106,.07),rgba(217,178,106,.015));
+        max-width:74ch;
+      }
+      .note p{margin:0;font-size:.95rem}
+      .note p + p{margin-top:.6em}
+      .note .label{display:block;margin-bottom:.4rem;font-family:var(--mono);font-size:.56rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+      .note.warn{border-left-color:var(--cinnabar);background:linear-gradient(90deg,rgba(201,96,74,.08),rgba(201,96,74,.015))}
+      .note.warn .label{color:var(--cinnabar)}
+
+      .figure{margin:1.6rem 0;padding:1rem;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.18)}
+      .figure svg{display:block;width:100%;height:auto;max-width:34rem;margin:0 auto}
+      .figure img{display:block;width:100%;height:auto;max-width:44rem;margin:0 auto;border-radius:8px;filter:saturate(.9) contrast(1.02) brightness(.9)}
+      .figure figcaption{margin-top:.8rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);text-align:center;line-height:1.8}
+
+      .table-wrap{margin:1.4rem 0;overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.16)}
+      table{border-collapse:collapse;width:100%;min-width:34rem;font-size:.88rem}
+      caption{caption-side:top;text-align:left;padding:.8rem 1rem .2rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+      th,td{padding:.55rem .8rem;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:top;color:var(--dim)}
+      th{font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--line)}
+      tbody tr:hover td{background:rgba(236,230,217,.03)}
+      td.han{font-family:var(--han);font-size:1.05rem;color:var(--ink);white-space:nowrap}
+      td.num-cell{font-family:var(--mono);color:var(--faint);white-space:nowrap}
+      td .py{display:block;font-family:var(--mono);font-size:.68rem;color:var(--jade)}
+      .phase-dot{display:inline-block;width:.6rem;height:.6rem;border-radius:50%;margin-right:.45em;vertical-align:.05em}
+      td.tri{white-space:nowrap;line-height:1.15}
+      td.tri span{display:block;font-family:var(--han);font-size:1.1rem;color:var(--gold)}
+      td.tri span + span{color:var(--dim)}
+
+      .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:.8rem;margin:1.4rem 0}
+      details.card{
+        border:1px solid var(--line);
+        border-radius:10px;
+        background:rgba(0,0,0,.16);
+        padding:.8rem .95rem;
+      }
+      details.card summary{cursor:pointer;list-style:none;font-family:var(--serif);font-size:1.02rem;color:var(--ink);display:flex;gap:.6rem;align-items:baseline}
+      details.card summary::-webkit-details-marker{display:none}
+      details.card summary .ch{font-family:var(--han);font-size:1.3rem;color:var(--gold);line-height:1}
+      details.card summary .py{font-family:var(--mono);font-size:.68rem;color:var(--jade)}
+      details.card[open]{background:rgba(217,178,106,.05)}
+      details.card p{margin:.6rem 0 0;font-size:.86rem;line-height:1.65}
+
+      .keyline{
+        margin:1.6rem 0;
+        padding:1.1rem 1.3rem;
+        border:1px solid var(--line);
+        border-radius:12px;
+        text-align:center;
+        font-family:var(--serif);
+        font-size:clamp(1.05rem,1.7vw,1.24rem);
+        line-height:1.6;
+        color:var(--ink);
+        background:radial-gradient(30rem 12rem at 50% 0%,rgba(217,178,106,.07),transparent 70%);
+      }
+      .keyline .han{display:block;font-size:1.5em;color:var(--gold);margin-bottom:.35rem}
+
+      .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem;margin:1.2rem 0}
+      .mini{border:1px solid var(--line-soft);border-radius:10px;padding:.9rem 1rem;background:rgba(0,0,0,.14)}
+      .mini h4{margin:0 0 .3rem;font-size:.98rem}
+      .mini p{margin:0;font-size:.84rem;line-height:1.6}
+
+      footer{border-top:1px solid var(--line);padding:2rem 0 3rem}
+      .foot{max-width:84rem;margin:0 auto;padding:0 clamp(1rem,3.4vw,2.6rem);display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:.63rem;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+      .foot a{border-bottom:1px solid var(--line)}
+      .foot a:hover{color:var(--ink);border-color:var(--gold)}
+
+      .to-top{position:fixed;right:1rem;bottom:1rem;z-index:80;width:2.6rem;height:2.6rem;border-radius:50%;border:1px solid var(--line);background:rgba(6,7,10,.8);color:var(--faint);font-size:1rem;cursor:pointer;opacity:0;pointer-events:none;transition:opacity 200ms ease,color 200ms ease}
+      .to-top.show{opacity:1;pointer-events:auto}
+      .to-top:hover{color:var(--gold);border-color:var(--gold)}
+      .to-top:focus-visible{outline:1px solid var(--gold);outline-offset:2px}
+
+      @media (max-width:640px){
+        body{font-size:16px}
+        .block__glyph{float:none;margin:0 0 .6rem;display:block}
+        h2{font-size:1.6rem}
+      }
+      @media (prefers-reduced-motion:reduce){
+        html{scroll-behavior:auto}
+        .progress span,.to-top{transition:none}
+      }
+      @media print{
+        body{background:#fff;color:#111}
+        .toc,.progress,.to-top,.hero::before,body::after{display:none}
+        .shell{display:block}
+        a{color:#111;border:0}
+        .table-wrap{overflow:visible;border-color:#bbb}
+        th,td{color:#111;border-color:#ccc}
+        .note{background:none;border-color:#999}
+      }
+    </style>
+    <style>.hero h1 em{font-family:var(--mono);font-size:.26em;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-top:.9em;display:block}pre{background:rgba(0,0,0,.38);border:1px solid var(--line);border-radius:10px;padding:1rem 1.1rem;overflow:auto;max-width:74ch;margin:1.2rem 0}pre code{font-family:var(--mono);font-size:.72rem;line-height:1.75;color:var(--dim)}.doc code{font-family:var(--mono);font-size:.82em;color:var(--jade)}code{font-family:var(--mono);font-size:.84em;color:var(--jade)}kbd{font-family:var(--mono);font-size:.78em;border:1px solid var(--line);border-radius:4px;padding:0 .3em;color:var(--ink)}</style>
+  </head>
+
+  <body>
+    <a class="skip" href="#content">Ir para o documento</a>
+    <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+
+    <header class="hero" id="top">
+      <div class="hero__inner">
+        <p class="kicker">Monkey Blog <span>·</span> Manual de Autor <span>·</span> 門</p>
+        <h1>O Motor de Quests<em>manual dos jogos errantes</em></h1>
+        <p class="hero__sub">
+          Sete páginas deste arquivo são jogos e todas reinventaram a mesma peça. Este documento escreve-a uma vez: o nó, o motor, as regras do grafo, o verificador, a acessibilidade e a checklist que separa um jogo que abre de um jogo que fica parado.
+        </p>
+        <div class="hero__meta">
+          <span>OdicforceSounds</span><span>Em Português</span><span>Doze capítulos</span><span>Sem bibliotecas</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="shell">
+      <nav class="toc" aria-label="Índice">
+        <h2>Índice</h2>
+        <input class="toc__filter" id="tocFilter" type="search" placeholder="filtrar… (tecla /)" aria-label="Filtrar capítulos">
+        <ol id="tocList">
+          <li><a href="#ambito"><span class="num">00</span>Âmbito deste manual</a></li>
+          <li><a href="#anatomia"><span class="num">01</span>Um nó, campo a campo</a></li>
+          <li><a href="#motor"><span class="num">02</span>O motor mínimo</a></li>
+          <li><a href="#grafo"><span class="num">03</span>As regras do grafo</a></li>
+          <li><a href="#jogos"><span class="num">04</span>Seis jogos, seis temperaturas</a></li>
+          <li><a href="#ritmo"><span class="num">05</span>Ritmo: texto, respiração, movimento</a></li>
+          <li><a href="#acessibilidade"><span class="num">06</span>Acessibilidade e teclado</a></li>
+          <li><a href="#estado"><span class="num">07</span>Estado sem servidor</a></li>
+          <li><a href="#bilingues"><span class="num">08</span>Bilingues: dois ficheiros, um grafo</a></li>
+          <li><a href="#checklist"><span class="num">09</span>Checklist de autor</a></li>
+          <li><a href="#ligacoes"><span class="num">10</span>Ligações e leituras</a></li>
+        </ol>
+        <p class="toc__foot">Monkey Blog · documento de referência<br>Sem dependências externas</p>
+      </nav>
+
+      <main id="content">
+        <section class="block" id="ambito">
+          <span class="block__glyph" aria-hidden="true">◇</span>
+          <h2>Âmbito deste manual</h2>
+          <p class="lead">
+            Este arquivo tem sete páginas que são jogos: um portão com três portas, um labirinto de
+            conhecimento, uma caminhada xamânica, um jogo de palavras e três variações sobre o mesmo
+            tema. Todas foram escritas em HTML e JavaScript sem bibliotecas, e todas reinventaram a
+            mesma peça. Este documento é a peça, escrita uma vez.
+          </p>
+          <p>
+            Não é um tutorial de <em>framework</em>. É o manual de autor do padrão que já existe no
+            arquivo: um grafo de nós, cada nó com um texto, uma fonte e duas a quatro saídas, um fio
+            que registra o caminho e um botão para voltar. Chama-se-lhe <strong>jogo errante</strong>
+            porque não tem pontuação, nem nível, nem derrota — só escolha.
+          </p>
+          <div class="note">
+            <span class="label">Regra zero</span>
+            <p>
+              Se o jogo precisa de explicar as regras antes de começar, as regras estão mal
+              desenhadas. Em todas as peças deste arquivo, a primeira coisa que o leitor vê é uma
+              porta — não um regulamento.
+            </p>
+          </div>
+        </section>
+
+        <section class="block" id="anatomia">
+          <span class="block__glyph" aria-hidden="true">▸</span>
+          <h2>Um nó, campo a campo</h2>
+          <p class="lead">
+            O formato usado em <a href="./theTurning.html">The Turning</a> e na sua gémea
+            <a href="./aViragem.html">A Viragem</a> cabe numa linha de JavaScript. Sete campos, e
+            nenhum deles é decorativo.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption>O objecto de um nó</caption>
+              <thead><tr><th>Campo</th><th>Tipo</th><th>O que é</th><th>Exemplo</th></tr></thead>
+              <tbody>
+                <tr><td class="num-cell">w</td><td>string</td><td>O mundo: «glifo · lugar». A parte antes do ponto médio é o glifo; a parte depois é onde estás.</td><td><code>門 · O portão</code></td></tr>
+                <tr><td class="num-cell">g</td><td>char</td><td>O glifo grande desenhado no painel. Um só caractere.</td><td><code>門</code></td></tr>
+                <tr><td class="num-cell">t</td><td>string</td><td>O título do nó — a frase que o leitor lê como cabeçalho.</td><td><code>Um portão sem letreiro</code></td></tr>
+                <tr><td class="num-cell">x</td><td>string</td><td>O texto. Três a seis frases. Se precisar de mais, o nó está a fazer o trabalho de dois.</td><td><code>Estás onde os três livros começam…</code></td></tr>
+                <tr><td class="num-cell">s</td><td>string</td><td>O ficheiro-fonte deste nó. Obrigatório: é o que impede o jogo de ser ficção sem lastro.</td><td><code>daoPoemBook.html</code></td></tr>
+                <tr><td class="num-cell">n</td><td>string</td><td>O título legível dessa fonte, para o link «de …».</td><td><code>O Livro Sexy — Poemas do 道</code></td></tr>
+                <tr><td class="num-cell">c</td><td>array</td><td>As saídas: pares <code>[etiqueta, destino]</code>. O destino especial <code>@random</code> escolhe outro nó ao acaso.</td><td><code>[["佛 · Sentar", "b1"]]</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            O campo <code>s</code> é a decisão de desenho mais importante de todas: cada nó aponta
+            para um documento real do arquivo. O jogo não é um poema solto — é um índice que se
+            percorre.
+          </p>
+        </section>
+
+        <section class="block" id="motor">
+          <span class="block__glyph" aria-hidden="true">⚙</span>
+          <h2>O motor mínimo</h2>
+          <p class="lead">
+            Cerca de quarenta linhas, nenhuma dependência, um fio que se lembra do caminho e um botão
+            para voltar. Este é o esqueleto que os dois jogos gémeos usam.
+          </p>
+<pre><code>var NODES = { /* … */ };
+var current = "start";
+var thread = [];
+
+function go(id, remember) {
+  if (id === "@random") {
+    var keys = Object.keys(NODES).filter(function (k) { return k !== current; });
+    id = keys[Math.floor(Math.random() * keys.length)];
+  }
+  if (!NODES[id]) { return; }                 // destino inválido: não avança
+  if (remember !== false) { thread.push(current); }
+  current = id;
+  history.replaceState(null, "", "#" + id);   // estado no URL
+  render();
+}
+
+function back() {
+  if (!thread.length) { return; }
+  current = thread.pop();
+  history.replaceState(null, "", "#" + current);
+  render();
+}
+
+function render() {
+  var node = NODES[current];
+  glyph.textContent = node.g;
+  world.textContent = node.w;
+  title.textContent = node.t;
+  text.textContent  = node.x;
+
+  source.textContent = "";
+  var a = document.createElement("a");
+  a.href = "./" + node.s;
+  a.textContent = node.n + " · " + node.s;
+  source.appendChild(document.createTextNode("de "));
+  source.appendChild(a);
+
+  choices.textContent = "";
+  node.c.forEach(function (pair) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.textContent = pair[0];
+    b.addEventListener("click", function () { go(pair[1]); });
+    choices.appendChild(b);
+  });
+  backBtn.disabled = thread.length === 0;
+}
+
+go((location.hash || "#start").slice(1), false);
+</code></pre>
+          <p>
+            Três detalhes que parecem pequenos e não são: o destino é validado antes de avançar; o
+            estado vai para o URL, para que um link partilhe o nó e não o início; e o botão de voltar
+            desactiva-se quando o fio está vazio, em vez de desaparecer.
+          </p>
+        </section>
+
+        <section class="block" id="grafo">
+          <span class="block__glyph" aria-hidden="true">⌗</span>
+          <h2>As regras do grafo</h2>
+          <p class="lead">
+            Um grafo de trinta e dois nós tem trinta e duas oportunidades de estar errado. Estas
+            cinco regras eliminam quase todos os erros antes de o leitor os encontrar.
+          </p>
+          <ul>
+            <li><strong>Sem becos.</strong> Todos os nós têm pelo menos duas saídas, excepto um nó final declarado.</li>
+            <li><strong>Sem órbitas.</strong> Nenhum nó deve ser alcançável apenas por um caminho de comprimento máximo — isso transforma o jogo num corredor.</li>
+            <li><strong>Sem destinos mortos.</strong> Cada alvo em <code>c</code> tem de existir em <code>NODES</code>.</li>
+            <li><strong>Sem ciclos de um passo.</strong> Um nó não aponta para si próprio; ida-e-volta imediata só com o botão de voltar.</li>
+            <li><strong>Fonte obrigatória.</strong> Todos os nós citam um ficheiro que existe em <code>docs/</code>.</li>
+          </ul>
+          <p>
+            As cinco regras cabem num verificador de vinte linhas, que se corre antes de publicar.
+            Foi assim que se encontrou o erro que deixava o painel vazio: o grafo estava bem, o que
+            faltava era o script chegar ao browser.
+          </p>
+<pre><code># python3 quest_check.py docs/theTurning.html
+nodes = NODES               # extraído do &lt;script&gt;
+ids   = set(nodes)
+dead  = [(k, to) for k, n in nodes.items() for _, to in n["c"]
+         if to != "@random" and to not in ids]
+seen, stack = {"start"}, ["start"]
+while stack:
+    for _, to in nodes[stack.pop()]["c"]:
+        if to in ids and to not in seen:
+            seen.add(to); stack.append(to)
+bad_src = [k for k, n in nodes.items() if not os.path.exists("docs/" + n["s"])]
+print("destinos mortos:", dead)
+print("inacessíveis:", sorted(ids - seen))
+print("fontes em falta:", bad_src)
+</code></pre>
+          <div class="note warn">
+            <span class="label">O erro que se repete</span>
+            <p>
+              Em três ocasiões o jogo «não funcionava» e o código estava correcto: o script inline
+              era reescrito pelo Rocket Loader da Cloudflare e a CSP não permitia carregar o
+              substituto. Antes de reescrever o motor, verifica o que o browser recebeu. O caso está
+              documentado em <a href="./oArquivoComoSistema.html">O Arquivo como Sistema</a>.
+            </p>
+          </div>
+        </section>
+
+        <section class="block" id="jogos">
+          <span class="block__glyph" aria-hidden="true">◈</span>
+          <h2>Seis jogos, seis temperaturas</h2>
+          <p class="lead">
+            O mesmo arquivo tem jogos que partilham o grafo e jogos que partilham apenas a ideia. A
+            tabela serve para escolher o molde certo antes de escrever.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption>As peças jogáveis do arquivo</caption>
+              <thead><tr><th>Peça</th><th>Mecânica</th><th>Estado</th><th>Serve para</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><a href="./theTurning.html">The Turning</a> / <a href="./aViragem.html">A Viragem</a></td>
+                  <td>Grafo de 32 nós, três mundos, <code>@random</code></td>
+                  <td>Fio + voltar + URL</td>
+                  <td>Atravessar um arquivo por dentro</td>
+                </tr>
+                <tr>
+                  <td><a href="./knowledgeLabyrinth.html">Knowledge Labyrinth</a></td>
+                  <td>Descida em capítulos, sem escolha</td>
+                  <td>Scroll</td>
+                  <td>Explicar um sistema por camadas</td>
+                </tr>
+                <tr>
+                  <td><a href="./caminhoDeEscudos.html">O Caminho de Escudos</a></td>
+                  <td>Caminhada xamânica em tempo real, altar do presente</td>
+                  <td>Tempo real</td>
+                  <td>Ligar três dossiês a três animais</td>
+                </tr>
+                <tr>
+                  <td><a href="./oMacacoMalabaristaLabyrinth.html">O Labirinto do Macaco</a></td>
+                  <td>Escolha e arquivo, mapa vazio</td>
+                  <td>Nós + registo</td>
+                  <td>Fazer do percurso um documento</td>
+                </tr>
+                <tr>
+                  <td><a href="./wordGame.html">Labyrinth of Echoes</a></td>
+                  <td>Palavras, ecos, câmara de ressonância</td>
+                  <td>Sessão</td>
+                  <td>Jogar com linguagem em vez de lugares</td>
+                </tr>
+                <tr>
+                  <td><a href="./SkyMonkey.html">Monkey Chaos</a></td>
+                  <td>Doze animais, sem destino</td>
+                  <td>Sorte</td>
+                  <td>Contar uma cosmologia sem a fixar</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            A escolha do molde é a decisão mais cara de todas: um jogo de grafo com trinta e dois
+            nós custa trinta e dois textos, um por nó; um jogo de tempo real custa uma animação e
+            quase nenhum texto. Escolhe pelo que o leitor deve fazer, não pelo que é mais divertido
+            de programar.
+          </p>
+        </section>
+
+        <section class="block" id="ritmo">
+          <span class="block__glyph" aria-hidden="true">◒</span>
+          <h2>Ritmo: texto, respiração, movimento</h2>
+          <p class="lead">
+            Um jogo errante vive de uma tensão: o leitor quer chegar, e o desenho quer que ele
+            pare. Três regras de ritmo resolvem-na.
+          </p>
+          <ul>
+            <li><strong>Um nó, uma ideia.</strong> Se um nó tem duas teses, são dois nós ligados.</li>
+            <li><strong>A saída mais longa é a certa.</strong> Escrever as etiquetas antes do destino força a que cada escolha seja uma frase com vontade própria.</li>
+            <li><strong>O escuro é um lugar, não um tema.</strong> Em ambos os jogos, o terceiro mundo é o que não tem letreiro — e é o que dá sentido aos outros dois.</li>
+          </ul>
+          <p>
+            Na tradução, o ritmo é o primeiro a perder-se: um nó de quatro frases em inglês vira
+            seis em português e o painel deixa de respirar. A regra prática é manter o número de
+            frases e cortar adjectivos, não acrescentar orações.
+          </p>
+        </section>
+
+        <section class="block" id="acessibilidade">
+          <span class="block__glyph" aria-hidden="true">◍</span>
+          <h2>Acessibilidade e teclado</h2>
+          <p class="lead">
+            Um jogo de botões é, por sorte, quase acessível de origem. Quatro linhas de cuidado
+            mantêm-no assim.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption>O mínimo exigível</caption>
+              <thead><tr><th>Elemento</th><th>Regra</th></tr></thead>
+              <tbody>
+                <tr><td>Escolhas</td><td><code>&lt;button type="button"&gt;</code> — nunca <code>&lt;div onclick&gt;</code>. Botões recebem foco e <kbd>Enter</kbd> de graça.</td></tr>
+                <tr><td>Anúncio</td><td>O painel que muda leva <code>aria-live="polite"</code>, para que o leitor de ecrã saiba que o nó mudou.</td></tr>
+                <tr><td>Foco</td><td>Depois de avançar, o foco vai para o título do nó novo — não para o topo da página.</td></tr>
+                <tr><td>Movimento</td><td><code>@media (prefers-reduced-motion: reduce)</code> desliga as transições do painel e do progresso.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="block" id="estado">
+          <span class="block__glyph" aria-hidden="true">⌁</span>
+          <h2>Estado sem servidor</h2>
+          <p class="lead">
+            Não há base de dados, nem conta, nem cookies. O estado do jogo cabe em três sítios, e
+            cada um serve uma coisa diferente.
+          </p>
+          <div class="grid2">
+            <div class="mini"><h4>O URL</h4><p><code>#nó</code> guarda onde estás. Partilhar o link partilha o lugar, não o caminho. É o único estado que sobrevive a um marcador.</p></div>
+            <div class="mini"><h4>A memória do separador</h4><p><code>sessionStorage</code> guarda o fio completo, para que um refresh não apague a caminhada. Fecha o separador e desaparece — o que é o comportamento correcto.</p></div>
+            <div class="mini"><h4>O histórico do browser</h4><p><code>history.replaceState</code> evita que o botão «voltar» do browser e o botão «voltar» do jogo entrem em conflito.</p></div>
+            <div class="mini"><h4>O que não guardar</h4><p>Nada que identifique o leitor. Não há analytics no jogo, e não deve haver: o percurso é privado por desenho.</p></div>
+          </div>
+        </section>
+
+        <section class="block" id="bilingues">
+          <span class="block__glyph" aria-hidden="true">文</span>
+          <h2>Bilingues: dois ficheiros, um grafo</h2>
+          <p class="lead">
+            <a href="./theTurning.html">The Turning</a> e <a href="./aViragem.html">A Viragem</a>
+            são o único par do arquivo que partilha os identificadores dos nós, um a um. Isso não é
+            um detalhe de arrumação: é o que permite comparar as duas versões e o que permite testar
+            uma com o verificador da outra.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption>Regras do par bilingue</caption>
+              <thead><tr><th>Regra</th><th>Porquê</th></tr></thead>
+              <tbody>
+                <tr><td>Os <code>id</code> dos nós são iguais nos dois ficheiros</td><td>Um link <code>#t1</code> funciona nas duas línguas</td></tr>
+                <tr><td>O número de nós é igual</td><td>Qualquer nó acrescentado numa língua é uma dívida na outra</td></tr>
+                <tr><td>As fontes (<code>s</code>, <code>n</code>) mudam de língua</td><td>O jogo inglês aponta para os ensaios ingleses; o português para os portugueses</td></tr>
+                <tr><td>O tom pode divergir, a estrutura não</td><td>Traduzir não é copiar palavras; é manter o ritmo</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            Só dois pares de todo o arquivo cumprem esta disciplina. Os restantes traduzem-se
+            reestruturando, o que é legítimo — mas deixa de permitir a comparação. Um registo de
+            pares resolveria isso sem tocar nas páginas antigas.
+          </p>
+        </section>
+
+        <section class="block" id="checklist">
+          <span class="block__glyph" aria-hidden="true">✓</span>
+          <h2>Checklist de autor</h2>
+          <p class="lead">
+            Nove verificações, na ordem em que falham. Se as nove passarem, o jogo abre em qualquer
+            browser sem uma única dependência externa.
+          </p>
+          <ol>
+            <li>O grafo tem um nó <code>start</code> e todos os outros são alcançáveis a partir dele.</li>
+            <li>Nenhum destino em <code>c</code> aponta para um nó inexistente.</li>
+            <li>Todos os nós têm <code>s</code> e <code>n</code>, e o ficheiro citado existe.</li>
+            <li>Nenhum nó tem mais de quatro saídas — mais do que isso é um menu, não uma escolha.</li>
+            <li>O botão de voltar desactiva no primeiro nó.</li>
+            <li>O URL guarda o nó actual e um refresh mantém o lugar.</li>
+            <li>O painel tem <code>aria-live</code> e o foco segue o título.</li>
+            <li>As transições desligam com <code>prefers-reduced-motion</code>.</li>
+            <li>A CSP inclui <code>'self'</code> e o <code>&lt;script&gt;</code> tem <code>data-cfasync="false"</code>.</li>
+          </ol>
+          <div class="keyline">
+            <span>Um jogo sem pontos não pede nada ao leitor.</span>
+            É por isso que ele fica.
+          </div>
+        </section>
+
+        <section class="block" id="ligacoes">
+          <span class="block__glyph" aria-hidden="true">§</span>
+          <h2>Ligações e leituras</h2>
+          <div class="grid2">
+            <div class="mini"><h4>Os jogos</h4><p><a href="./theTurning.html">The Turning</a><br><a href="./aViragem.html">A Viragem</a><br><a href="./wordGame.html">Labyrinth of Echoes</a><br><a href="./SkyMonkey.html">Monkey Chaos</a></p></div>
+            <div class="mini"><h4>Os labirintos</h4><p><a href="./knowledgeLabyrinth.html">Knowledge Labyrinth</a><br><a href="./oMacacoMalabaristaLabyrinth.html">O Labirinto do Macaco</a><br><a href="./caminhoDeEscudos.html">O Caminho de Escudos</a></p></div>
+            <div class="mini"><h4>O sistema</h4><p><a href="./oArquivoComoSistema.html">O Arquivo como Sistema</a><br><a href="./gameReference.html">Archive Master Exam</a></p></div>
+            <div class="mini"><h4>O conteúdo</h4><p><a href="./manualDaMisticaChinesa.html">O Escuro e os Cinco</a><br><a href="./manualDoBudismo.html">O Som da Vacuidade</a><br><a href="./daoPoemBook.html">O Livro Sexy</a></p></div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <footer>
+      <div class="foot">
+        <span>Monkey Blog · <a href="./index.html">Início</a></span>
+        <span><a href="#top">Topo</a> · <a href="./theTurning.html">The Turning</a> · <a href="./aViragem.html">A Viragem</a> · <a href="./oArquivoComoSistema.html">O Arquivo como Sistema</a></span>
+      </div>
+    </footer>
+
+    <button class="to-top" id="toTop" type="button" aria-label="Voltar ao topo">↑</button>
+
+    <script data-cfasync="false">
+      (function () {
+        "use strict";
+
+        var bar = document.getElementById("progressBar");
+        var top = document.getElementById("toTop");
+        function onScroll() {
+          var doc = document.documentElement;
+          var max = doc.scrollHeight - window.innerHeight;
+          var ratio = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+          if (bar) { bar.style.transform = "scaleX(" + ratio + ")"; }
+          if (top) { top.classList.toggle("show", window.scrollY > 600); }
+        }
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onScroll);
+        onScroll();
+
+        if (top) {
+          top.addEventListener("click", function () {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+        }
+
+        var tocLinks = Array.prototype.slice.call(document.querySelectorAll("#tocList a"));
+        var blocks = Array.prototype.slice.call(document.querySelectorAll(".block"));
+
+        function setActive(id) {
+          tocLinks.forEach(function (link) {
+            var match = link.getAttribute("href") === "#" + id;
+            if (match) { link.setAttribute("aria-current", "true"); }
+            else { link.removeAttribute("aria-current"); }
+          });
+        }
+
+        if ("IntersectionObserver" in window) {
+          var spy = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) { setActive(entry.target.id); }
+            });
+          }, { rootMargin: "-20% 0px -70% 0px" });
+          blocks.forEach(function (block) { spy.observe(block); });
+        }
+
+        var filter = document.getElementById("tocFilter");
+        if (filter) {
+          filter.addEventListener("input", function () {
+            var value = filter.value.trim().toLowerCase();
+            tocLinks.forEach(function (link) {
+              var item = link.parentNode;
+              item.hidden = value !== "" && link.textContent.toLowerCase().indexOf(value) === -1;
+            });
+          });
+          document.addEventListener("keydown", function (event) {
+            if (event.key === "/" && document.activeElement !== filter) {
+              event.preventDefault();
+              filter.focus();
+            }
+          });
+        }
+
+        var hexFilter = document.getElementById("hexFilter");
+        if (hexFilter) {
+          var rows = Array.prototype.slice.call(document.querySelectorAll("#hexTable tbody tr"));
+          hexFilter.addEventListener("input", function () {
+            var value = hexFilter.value.trim().toLowerCase();
+            rows.forEach(function (row) {
+              row.hidden = value !== "" && row.textContent.toLowerCase().indexOf(value) === -1;
+            });
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>
