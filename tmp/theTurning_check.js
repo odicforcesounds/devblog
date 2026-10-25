@@ -1,0 +1,413 @@
+      (function () {
+        "use strict";
+
+        var NODES = {
+          start: {
+            w: "門 · The gate", g: "門", t: "A gate without a sign",
+            x: "You are standing where the three books begin. There is no score here, no level to reach, no wrong door — only the one you choose. Behind the first is a road; behind the second, a man sitting under a tree; behind the third, a darkness that is not empty.",
+            s: "daoPoemBook.html", n: "The Sexy Book — Poems of the 道",
+            c: [["道 · Follow the road", "t1"], ["佛 · Sit under the tree", "b1"], ["玄 · Enter the dark", "x1"], ["合 · Walk the crossing", "c1"], ["🐒 · Let the Monkey choose", "@random"]]
+          },
+
+          t1: {
+            w: "道 · The Way", g: "道", t: "The way that does not say its name",
+            x: "You will not find it in the sentence. The sentence is a hand, and the way is not the thing the hand holds. Say it and you have made a fence; keep silent and the fence is yours to walk through. The old book opens with a warning: the way that can be spoken is not the constant way.",
+            s: "daoPoemBook.html", n: "The Sexy Book — poem 1",
+            c: [["Follow the water downhill", "t2"], ["Ask about the uncarved block", "t3"], ["Turn aside into the dark", "d1"]]
+          },
+          t2: {
+            w: "道 · The Way", g: "水", t: "Water keeps the low place",
+            x: "Water has no argument. It wins the stone by staying, not by striking. It takes the shape of the jar and is not owned by it. Men climb to be seen; water goes down and is everywhere. Be the low place — the valley does not chase the river, and the river cannot pass it by.",
+            s: "daoPoemBook.html", n: "The Sexy Book — poem 17",
+            c: [["Sit in the valley", "t4"], ["Climb to the five phases", "x1"], ["Breathe without forcing", "c3"]]
+          },
+          t3: {
+            w: "道 · The Way", g: "樸", t: "The uncarved block",
+            x: "Before the block is carved it can become anything. The character is wood plus a sound: timber with no handle yet, no bowl, no name. The Daodejing keeps returning to it — the uncarved block, the plain silk, the valley — because every named thing has already spent some of its possibilities.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — 樸",
+            c: [["Carve a character instead", "x4"], ["Walk down to the valley", "t4"]]
+          },
+          t4: {
+            w: "道 · The Way", g: "谷", t: "The valley answers",
+            x: "Shout at a mountain and it gives your voice back. Shout into a valley and it returns the voice with the sound taken out. The valley is not generous; the valley is empty, and empty is a kind of answer. Keep a room in yourself that no one enters — not a secret, a space.",
+            s: "daoPoemBook.html", n: "The Sexy Book — poem 25",
+            c: [["Climb to the eight trigrams", "x3"], ["Follow the dream instead", "e1"]]
+          },
+
+          b1: {
+            w: "佛 · Buddha", g: "佛", t: "The four sights",
+            x: "A sheltered prince rides out and meets, in order: an old man, a sick man, a corpse, and a wandering ascetic who looks at ease. The first three teach him that the body is a loan; the fourth shows a way of living with that knowledge. He leaves the palace, tries austerity until he is nearly dead, and then sits down under a tree.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 1",
+            c: [["Hear the four truths", "b2"], ["Sit under the tree with him", "b3"]]
+          },
+          b2: {
+            w: "佛 · Buddha", g: "諦", t: "Four truths, eight steps",
+            x: "The first sermon is shaped like a diagnosis: there is suffering; it has a cause; it can end; there is a path. The path has eight factors, from right view to right concentration, grouped into ethics, stillness and wisdom. The order is a spiral, not a ladder — right view guides the rest, and the rest clarifies right view.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 2",
+            c: [["Ask what emptiness means", "b4"], ["Open the sutras", "b5"], ["Weigh the eight factors against the trigrams", "c8"]]
+          },
+          b3: {
+            w: "佛 · Buddha", g: "定", t: "Sitting under the tree",
+            x: "The night is described as a battle with Māra — armies, daughters, the offer of a kingdom — and by dawn he is awake. The tradition maps what follows as absorptions: applied thought, sustained thought, rapture, happiness, one-pointedness, and then the quieter states where each of these falls away. The body is not the enemy; it is the boat.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 1, 9",
+            c: [["Ask the koan of one hand", "b6"], ["Listen to the chant", "b10"], ["Follow the breath step by step", "c3"]]
+          },
+          b4: {
+            w: "佛 · Buddha", g: "空", t: "Form is emptiness",
+            x: "Emptiness does not mean nothing exists. It means nothing exists from its own side: every phenomenon depends on conditions, on parts, on designation. The Heart Sutra says it in one line — form is emptiness, emptiness is form — and then negates everything else, not to destroy the world but to loosen the grip that makes suffering possible.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — the Heart Sutra",
+            c: [["Take the mantra gate gate", "b7"], ["Ask about buddha-nature", "b8"], ["Open the door of the dark", "c1"]]
+          },
+          b5: {
+            w: "佛 · Buddha", g: "經", t: "The sutras",
+            x: "A sutra opens with “thus have I heard”, then sets a place, an audience and a question. The Heart Sutra fits in twenty-five lines; the Lotus fills twenty-eight chapters with parables; the Diamond ends with a flash of lightning. None of them is an essay. They are scripts for recitation, and the repetitions are the point.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 12",
+            c: [["Enter a parable", "b9"], ["Sit in the silence after it", "b11"]]
+          },
+          b6: {
+            w: "佛 · Buddha", g: "禪", t: "The sound of one hand",
+            x: "Hakuin's question cannot be answered by thinking, which is the point. In Chan and Zen the words are called fingers pointing at the moon: useful until you mistake them for the moon. Dōgen's practice is simpler — just sit, with no object and nothing to gain — and the koan is what remains when even that has been taken away.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 13",
+            c: [["Stay in the silence", "b11"], ["Walk back to the road", "t1"]]
+          },
+          b7: {
+            w: "佛 · Buddha", g: "咒", t: "The mantras",
+            x: "Om mani padme hum — the jewel in the lotus — is the six syllables of compassion. Gate gate paragate takes you across in the Heart Sutra's own close. A mantra is the speech of the deity, recited until reciter and recitation are not two things; the mala counts 108, and the counting frees attention from counting.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 10–11",
+            c: [["Follow the sound into chant", "b10"], ["Ask who has buddha-nature", "b8"]]
+          },
+          b8: {
+            w: "佛 · Buddha", g: "性", t: "Buddha-nature, and a monkey",
+            x: "The Nirvana Sutra says every sentient being has buddha-nature — unborn, undefiled, unnoticed. In China this became the ground of the whole tradition. It is also the joke inside the Monkey King's name: 悟空, Wukong, “awakened to emptiness”. The monkey who cannot sit still is named after the thing he cannot see.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 8, 18",
+            c: [["Meet the Monkeys of Asia", "e2"], ["Return to emptiness", "b4"], ["Watch the wheel turn", "c5"]]
+          },
+          b9: {
+            w: "佛 · Buddha", g: "喻", t: "A burning house, a jewel in a robe",
+            x: "A father lures his children out of a fire with toy carts, then gives them all one great carriage. A man carries a priceless jewel sewn into his coat for years without knowing. The Lotus Sutra does not argue; it shows you the jewel you already own, and the fire you are already standing in.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — the Lotus Sutra",
+            c: [["Look for the jewel in yourself", "b8"], ["Step into the silence", "b11"], ["Read the symbols without reading", "c7"]]
+          },
+          b10: {
+            w: "佛 · Buddha", g: "音", t: "Chant, bell and wooden fish",
+            x: "The wooden fish marks the beat; the great bell is struck 108 times for the 108 afflictions; the low Tibetan chant makes one voice sound several pitches. In the Chinese and Japanese halls the text is sung, not read, and the sound does half the teaching. The five tones map onto the five phases, and the whole room becomes the instrument.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 13",
+            c: [["Follow the five tones into the phases", "x1"], ["Let the sound end", "b11"], ["Ask what cultures share", "e6"], ["Rise to tone and pitch-pipe", "c2"]]
+          },
+          b11: {
+            w: "佛 · Buddha", g: "默", t: "Vimalakīrti's silence",
+            x: "Thirty-two bodhisattvas explain non-duality, each more subtle than the last. Then Vimalakīrti is asked, and says nothing. Mañjuśrī calls it the true entrance. The Buddha's own silence to the questions that cannot be answered helpfully is the same gesture: not evasion, but the refusal to hand you a finger and call it the moon.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — ch. 13",
+            c: [["Return to the gate", "start"], ["Go into the dark", "d1"], ["Ask what a religion is", "e7"], ["Ask what crosses over", "c6"]]
+          },
+
+          x1: {
+            w: "玄 · The Dark", g: "五", t: "The five phases",
+            x: "Wood feeds fire, fire makes earth, earth bears metal, metal carries water, water grows wood. Each also restrains another, so nothing runs away with the world. These are stages, not elements: fire is not a stuff but an upward, heating movement. The whole table — seasons, organs, colours, notes, planets — hangs from these five verbs.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — 五行",
+            c: [["Follow the tiger and the dragon", "x2"], ["Turn to yin and yang", "x3"]]
+          },
+          x2: {
+            w: "玄 · The Dark", g: "龍", t: "Tiger in the west, dragon in the east",
+            x: "Four creatures mark the directions: azure dragon in the east, vermilion bird in the south, white tiger in the west, black tortoise in the north. They are also seasons, hours and temperaments. The site's own poem says it plainly: “I am the Monkey, the Monkey who can speak — while I am the Dragon too.”",
+            s: "DragonFire.html", n: "Dragon Fire (龙火)",
+            c: [["Meet the Monkeys of Asia", "e2"], ["Read a landscape", "x5"]]
+          },
+          x3: {
+            w: "玄 · The Dark", g: "卦", t: "Yin, yang, and eight trigrams",
+            x: "Yin is the shaded side of a hill; yang is the sunny side. Stack three lines, solid or broken, and you have a trigram: heaven, earth, thunder, wind, water, fire, mountain, lake. The whole of the Yijing is built from these eight, and the wheel of the year turns on the same polarity.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — 陰陽, 八卦",
+            c: [["Cast the sixty-four", "x6"], ["Turn toward the dark", "d1"], ["Eight factors beside the trigrams", "c8"]]
+          },
+          x4: {
+            w: "玄 · The Dark", g: "字", t: "The character is a picture of a walk",
+            x: "道 is a road plus a head: the way walked by someone who is paying attention. Most characters are not pictures but compounds — one half meaning, one half sound — and the oldest forms are cuts in bone. Be careful with beautiful etymologies: some are true, many are later moralising, and the bone is the only witness that counts.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — ch. 13",
+            c: [["Return to the way", "t1"], ["Step into the dream", "e1"], ["Open the seals and the wheel", "c7"]]
+          },
+          x5: {
+            w: "玄 · The Dark", g: "風", t: "Reading a landscape",
+            x: "Hide the wind, gather the qi: a ridge behind, a rise to each side, an open bright hall in front, water beyond it. The ideal site is an armchair. Whatever one thinks of the metaphysics, the advice is often just good design — shelter, daylight, drainage — and the compass that finds south is the same instrument that once found the stars.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — 風水",
+            c: [["Descend into the dark", "d1"], ["Return to the gate", "start"]]
+          },
+          x6: {
+            w: "玄 · The Dark", g: "易", t: "The sixty-four",
+            x: "Two trigrams make a hexagram: eight times eight, sixty-four situations, each with six lines read from the bottom up. A changing line turns into its opposite and produces a second figure — the situation inside the situation. No two commentaries quite agree, which is not a bug: the book is a machine for making you look.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — ch. 6",
+            c: [["Read the characters", "x4"], ["Enter the dream", "e1"], ["Ten minutes at the end of the lists", "c9"]]
+          },
+
+          d1: {
+            w: "玄 · The Dark", g: "玄", t: "The dark is not empty",
+            x: "玄 is dark with a red undertone: the colour of a depth you cannot see the bottom of. The Daodejing doubles it — dark and again dark, the gate of all wonders — and calls the source the valley spirit, the mysterious female. Dark is not the absence of light. It is the room the light was given.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — ch. 10",
+            c: [["Sit in the valley", "t4"], ["Turn the light around", "d2"], ["Let the dark become emptiness", "c1"]]
+          },
+          d2: {
+            w: "玄 · The Dark", g: "光", t: "Turning the light around",
+            x: "The meditation manuals speak of 回光返照 — turning the light around and shining it back. Attention, normally spent outward on objects, is turned on its own source. Jung read the Chinese text as individuation and borrowed the word synchronicity for it; the text itself is a Daoist manual of light, not a psychology, and the difference is worth keeping.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — ch. 10",
+            c: [["Go down to the elixir", "d3"], ["Return to the characters", "x4"]]
+          },
+          d3: {
+            w: "玄 · The Dark", g: "丹", t: "The elixir inside",
+            x: "Outer alchemy cooked cinnabar and lead looking for deathlessness, and killed several Tang emperors. Inner alchemy kept the apparatus and moved it inside: the body is the cauldron, the breath the bellows, essence, breath and spirit the ingredients. The orbit rises up the spine and down the front. Do not eat the old recipes; the mercury was real.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — ch. 17",
+            c: [["Return to the way", "t1"], ["Return to the gate", "start"], ["See the body as the boat", "c4"]]
+          },
+
+          e1: {
+            w: "夢 · The Dream", g: "夢", t: "The Path and the Dream",
+            x: "The primordial energy of life is the 道. The primordial sound of earth is the 🕉. Together they create an expression for all. And then the sentence that closes the loop: the dream creates the path, and the path creates the dream. No doubts about the style of God.",
+            s: "dreampath.html", n: "The Path and the Dream",
+            c: [["Ask about the style of God", "e3"], ["Hear the sound it speaks of", "b10"], ["Return to the way", "t1"]]
+          },
+          e2: {
+            w: "猴 · The Monkey", g: "猴", t: "What monkeys symbolize in Asia",
+            x: "In Japan the monkey mediates between humans and the gods, and is also the trickster. In China it is cheerful freedom, inventiveness and sociability — a reminder that duty alone is not a balanced life. In Vietnam it is memory, and the importance of what has actually been lived. Four countries, one animal, four different arguments.",
+            s: "asianMonkey.html", n: "What Monkeys Symbolize on Asian Cultures?",
+            c: [["Meet the Monkey King", "b8"], ["Go back to the tiger and dragon", "x2"]]
+          },
+          e3: {
+            w: "書 · The Book", g: "神", t: "The Style of God",
+            x: "Our ability to imagine is built from what we know; that is how a new idea becomes an image, a text, an object that talks. The page finds the old machinery behind it — Maya, the veil of appearance, and the way Zen schools select students by what they can imagine. Creation is a logic path we choose, and the style is the choice.",
+            s: "style_of_god.html", n: "The Style of God",
+            c: [["Read the dream that precedes it", "e5"], ["Read the equation 1 + 1 = 1", "e4"], ["Go back to the dream path", "e1"]]
+          },
+          e4: {
+            w: "書 · The Book", g: "合", t: "1 + 1 = 1, or 3",
+            x: "Hydrogen plus oxygen is water: one new thing with properties neither gas had. Two ideas fuse into an insight; two cells become one zygote. The essay calls it emergence, and reads it through the old equation. Its sixth chapter has a title worth carrying: “The Monkey and the Buddha Are One Head.”",
+            s: "ArtOfCreation.html", n: "Mind Resolution — Imagination + Logic = Application",
+            c: [["Meet the Monkey", "e2"], ["Return to emptiness", "b4"]]
+          },
+          e5: {
+            w: "書 · The Book", g: "幻", t: "Before anything exists",
+            x: "Before anything exists in reality, it must first be a pure illusion: a skyscraper, a society, or a universe begins as an unrealised vision — a necessary dream that gives rise to the will to create. Without the internal blueprint, there would be no need to build. The 道 Expression page starts there, and so does this game.",
+            s: "taoExpression.html", n: "道 Expression",
+            c: [["Return to the dream", "e1"], ["Walk the road", "t1"]]
+          },
+          e6: {
+            w: "書 · The Book", g: "歌", t: "One human song",
+            x: "Every culture teaches hospitality, honours colour and sings. The page gathers only the constructive side: proverbs that heal, colours that celebrate, music that builds. Different languages, one heart. It is a strange and useful claim to bring back into a game about sutras and trigrams — the same three notes keep turning up.",
+            s: "CommonCultures.html", n: "One Human Song — Sayings, Colors & Music of World Cultures",
+            c: [["Follow the colours into the phases", "x1"], ["Hear the chant", "b10"]]
+          },
+          e7: {
+            w: "書 · The Book", g: "教", t: "What religions are",
+            x: "A book can be loved for what it teaches about reality, and loving it creates the need to see that reality. The page notices that Daoist reading expects the unexpected, while other books define what should be expected and build mechanisms of exclusion around it. It is a warning for every canon, including the ones in this game.",
+            s: "religions.html", n: "What Religions Are?",
+            c: [["Return to the road", "t1"], ["Sit in the silence", "b11"]]
+          },
+
+          c1: {
+            w: "合 · The crossing", g: "冥", t: "Emptiness and the dark",
+            x: "Two traditions arrived at the same door by different roads. The Heart Sutra negates birth and destruction to break the imaginary solidity of things: emptiness does not say nothing exists, it says nothing exists from its own side. The Taoist folding of the dark 玄之又玄，眾妙之門 is not the absence of light, and not evil either: it is the undivided, the state before a figure is cut from the ground, the colour of a depth you cannot see the bottom of.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — 玄",
+            c: [["Back to the emptiness of the Heart Sutra", "b4"], ["Back into the dark", "d1"], ["On to the sound", "c2"]]
+          },
+
+          c2: {
+            w: "合 · The crossing", g: "樂", t: "The wooden fish and the twelve pipes",
+            x: "In both traditions the sound is the teaching itself. In the temple the wooden fish keeps the beat, the great bell is struck 108 times for the 108 afflictions, and the tantric bell rings emptiness. At the Chinese court the five tones 宮商角徵羽 match the five phases, and the twelve pitch-pipes give the year its calendar: lose the tuning, lose the mandate. Both arrive at the same sobriety: 大音希聲, the greatest sound is barely heard.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — 音",
+            c: [["Back to the chant", "b10"], ["Back to the five phases", "x1"], ["Follow the breath", "c3"]]
+          },
+
+          c3: {
+            w: "合 · The crossing", g: "氣", t: "Sixteen steps, four and six",
+            x: "Breath is the smallest practice of both houses. The Anapanasati Sutta gives sixteen steps on the breath alone, from knowing a long breath to contemplating impermanence. The Chinese manual asks for less, in the same coin: 靜坐, sitting in silence, inhale four, exhale six, without forcing; when the mind wanders, note it and come back. That return is the practice. And qi covers all scales of it: steam rising from rice, not a substance but a family of processes, time, air, vitality, the temper of an age.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — meditation",
+            c: [["Sit with him", "b3"], ["See the body as the cauldron", "c4"], ["Back to water that does not force", "t2"]]
+          },
+
+          c4: {
+            w: "合 · The crossing", g: "身", t: "Boat and cauldron",
+            x: "Both traditions give the body the same office. On the night of waking the body is not the enemy: it is the boat, and the memory of calm under a tree teaches it better than austerities. In inner alchemy it is more instrumental still: the body is the cauldron, the breath the bellows, and the three treasures, jing, qi and shen, the ingredients refined in the orbit that rises up the back and down the front. The pair of 性命, nature and life, ends the talk: to train only the nature is blind, to train only the life is empty.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — 內丹",
+            c: [["Cook the elixir", "d3"], ["Back under the tree", "b3"], ["Feel the wheel turn", "c5"]]
+          },
+
+          c5: {
+            w: "合 · The crossing", g: "轉", t: "Everything turns, and the seed travels",
+            x: "The three marks of Buddhism reduce to one: impermanence, all that is conditioned changes, and the wheel of the six realms is that turning drawn, with the three poisons biting each other at the centre. Yin and yang say the same in another grammar: at the extreme each becomes the other, noon turns to evening, and each fish of the diagram carries a point of its opposite, the seed of the other phase at its heart. The name of this game comes from there: 轉 describes no destination, only a turning.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — dependent arising",
+            c: [["Ask what crosses over", "c6"], ["Back to karma and the Monkeys", "b8"], ["Cast the sixty-four", "x6"]]
+          },
+
+          c6: {
+            w: "合 · The crossing", g: "魂", t: "What crosses over death",
+            x: "Neither tradition carries a soul with a passport. China splits the person in two: hun, yang and light, leaves with the breath and must be called or guided by ritual, a lingering hun becomes a ghost; the po, yin, stays with the body and the grave. Buddhism compares rebirth to a flame passing to another flame: nothing material travels, and yet the next flame is not a stranger. The Tibetan bards give the intermediate state forty-nine days, read aloud to its occupant; what continues is a causal pattern, not a passenger.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — death",
+            c: [["Turn the light back inward", "d2"], ["Sit in the silence", "b11"], ["Return to emptiness", "b4"]]
+          },
+
+          c7: {
+            w: "合 · The crossing", g: "印", t: "Symbols read without knowing how to read",
+            x: "Art in both is a technology of memory. The Buddhist compressed the teaching into the eight auspicious symbols, lotus and wheel and endless knot, into the mudra of the hand, and into a stupa whose parts code the five elements. The Chinese cut patterns into oracle bones, ordered the characters into six scripts, and still signs today with the seal script, 篆書. Both give the same warning: distrust the pretty readings, only the oldest attested form counts.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — the wheel",
+            c: [["Back to the character", "x4"], ["Read the wheel in the parables", "b9"], ["Back to the gate", "start"]]
+          },
+
+          c8: {
+            w: "合 · The crossing", g: "八", t: "Two wheels of eight",
+            x: "The eightfold path is not a ladder: it is a spiral grouped in three trainings, ethics, stillness and wisdom, from right view to right concentration. The eight trigrams are not a list either: heaven and earth, thunder and wind, water and fire, mountain and lake pair up into the sixty-four situations of the Yijing. Eight factors keep life from turning blind; eight trigrams let it turn with a name. In both wheels, eight is the number that describes everything without exhausting anything.",
+            s: "chineseMysticismManual.html", n: "The Dark and the Five — 八卦",
+            c: [["Rebuild the Buddha diagnosis", "b2"], ["Back to tiger and dragon", "x2"], ["Sit at the end of the lists", "c9"]]
+          },
+
+          c9: {
+            w: "合 · The crossing", g: "坐", t: "Both manuals end in the same ten minutes",
+            x: "Both manuals close with twelve sober weeks. The Buddhist one: a chapter of the Dhammapada a day, metta for friend and for difficult person, a mantra recited 108 times. The Chinese one: a chapter of the Daodejing aloud, one character a day, sit ten minutes, stand five, 站樁, and once a week do nothing for twenty, 無為, which the modern world calls unbearable. It is the only scale that survives a working day, and the game keeps it: one page, one choice, another page.",
+            s: "buddhismManual.html", n: "The Sound of Emptiness — practice",
+            c: [["Back to the first gate", "start"], ["Back to the way", "t1"], ["Stay in the silence", "b11"]]
+          },
+        };
+
+        var panel = document.getElementById("panel");
+        var worldEl = document.getElementById("world");
+        var placeEl = document.getElementById("place");
+        var whereTop = document.getElementById("whereTop");
+        var glyphEl = document.getElementById("glyph");
+        var titleEl = document.getElementById("title");
+        var textEl = document.getElementById("text");
+        var sourceEl = document.getElementById("source");
+        var choicesEl = document.getElementById("choices");
+        var threadEl = document.getElementById("thread");
+        var backBtn = document.getElementById("back");
+        var resetBtn = document.getElementById("reset");
+        var hintEl = document.getElementById("hint");
+
+        var current = "start";
+        var history = [];
+        var thread = ["start"];
+        var randomTargets = ["t1", "b1", "x1", "e1", "e2", "d1", "b7"];
+
+        function go(id) {
+          if (id === "@random") {
+            id = randomTargets[Math.floor(Math.random() * randomTargets.length)];
+          }
+          if (!NODES[id]) { return; }
+          history.push(current);
+          current = id;
+          thread.push(id);
+          if (thread.length > 18) { thread = thread.slice(thread.length - 18); }
+          render("turn");
+        }
+
+        function back() {
+          if (!history.length) { return; }
+          current = history.pop();
+          thread.pop();
+          render("back");
+        }
+
+        function reset() {
+          current = "start";
+          history = [];
+          thread = ["start"];
+          render("turn");
+        }
+
+        function render(direction) {
+          var node = NODES[current];
+          worldEl.textContent = node.w;
+          placeEl.textContent = node === NODES.start ? "start" : "you are here";
+          if (whereTop) { whereTop.textContent = node.w.split(" · ")[1] || node.w; }
+          glyphEl.textContent = node.g;
+          titleEl.textContent = node.t;
+          textEl.textContent = node.x;
+
+          sourceEl.textContent = "";
+          sourceEl.appendChild(document.createTextNode("from "));
+          var link = document.createElement("a");
+          link.href = "./" + node.s;
+          link.textContent = node.n + " · " + node.s;
+          sourceEl.appendChild(link);
+
+          choicesEl.textContent = "";
+          choicesEl.classList.toggle("doors", current === "start");
+          node.c.forEach(function (pair, i) {
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "choice";
+            var num = document.createElement("span");
+            num.className = "n";
+            num.textContent = String(i + 1);
+            var lbl = document.createElement("span");
+            lbl.className = "lbl";
+            lbl.textContent = pair[0];
+            var goIcon = document.createElement("span");
+            goIcon.className = "go";
+            goIcon.textContent = "→";
+            btn.appendChild(num);
+            btn.appendChild(lbl);
+            btn.appendChild(goIcon);
+            btn.addEventListener("click", function () { go(pair[1]); });
+            choicesEl.appendChild(btn);
+          });
+
+          if (current === "start") {
+            var picked = choicesEl.querySelectorAll(".choice");
+            if (picked.length === 4) {
+              var doors = ["道", "佛", "玄", "猴"];
+              picked.forEach(function (b, i) {
+                var g = document.createElement("span");
+                g.className = "door-glyph";
+                g.textContent = doors[i] || "·";
+                b.insertBefore(g, b.children[1] || null);
+              });
+            }
+          }
+
+          backBtn.disabled = history.length === 0;
+          hintEl.textContent = "1–" + node.c.length + " to choose · Backspace to go back";
+
+          threadEl.textContent = "";
+          var lab = document.createElement("span");
+          lab.className = "lbl";
+          lab.textContent = "Thread";
+          threadEl.appendChild(lab);
+          thread.forEach(function (id) {
+            var s = document.createElement("span");
+            s.textContent = NODES[id].g;
+            threadEl.appendChild(s);
+          });
+
+          if (direction) {
+            panel.classList.remove("is-turning", "is-back");
+            void panel.offsetWidth;
+            panel.classList.add(direction === "back" ? "is-back" : "is-turning");
+          }
+        }
+
+        backBtn.addEventListener("click", back);
+        resetBtn.addEventListener("click", reset);
+
+        document.addEventListener("keydown", function (event) {
+          if (event.metaKey || event.ctrlKey || event.altKey) { return; }
+          var tag = event.target && event.target.tagName;
+          if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") { return; }
+          if (event.key === "Backspace") {
+            event.preventDefault();
+            back();
+            return;
+          }
+          if (event.key === "r" || event.key === "R") {
+            reset();
+            return;
+          }
+          var n = Number(event.key);
+          if (n >= 1 && n <= 9) {
+            var node = NODES[current];
+            var pair = node.c[n - 1];
+            if (pair) {
+              event.preventDefault();
+              go(pair[1]);
+            }
+          }
+        });
+
+        render(0);
+      })();
+    
