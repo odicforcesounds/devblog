@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" sizes="12x12" />
+  <meta name="description" content="A single-file, dark-theme field manual for mutt: configuration files, one box with many mailboxes, colors, IMAP, SMTP, multiple providers and Gmail done properly.">
+  <title>mutt — From Nothing to Hero · Monkey Blog</title>
+  <style>
+    :root {
+      --ink: #eef4f0;
+      --muted: #9aaf9e;
+      --accent: #9fe870;
+      --accent-warm: #ffb38a;
+      --good: #7fe3a8;
+      --line: rgba(150, 200, 160, 0.20);
+      --line-strong: rgba(159, 232, 112, 0.40);
+      --panel: rgba(12, 18, 14, 0.86);
+      --panel-soft: rgba(18, 26, 20, 0.76);
+      --code-bg: rgba(5, 10, 7, 0.88);
+      --radius: 0.9rem;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+        "Noto Sans", "Liberation Sans", sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { padding: 0; margin: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      background:
+        radial-gradient(1000px 470px at 88% -8%, rgba(159, 232, 112, 0.07), transparent 60%),
+        radial-gradient(840px 470px at -8% 25%, rgba(255, 179, 138, 0.06), transparent 55%),
+        linear-gradient(180deg, #070b09 0%, #0b110d 55%, #060907 100%) fixed;
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-color: rgba(159, 232, 112, 0.4);
+      text-underline-offset: 0.2em;
+    }
+
+    a:visited { color: #b3d9a5; }
+
+    code, kbd, pre { font-family: var(--mono); font-size: 0.92em; }
+
+    code {
+      background: rgba(159, 232, 112, 0.1);
+      border: 1px solid var(--line);
+      border-radius: 0.4rem;
+      padding: 0.05em 0.4em;
+      white-space: nowrap;
+    }
+
+    kbd {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      border-radius: 0.35rem;
+      padding: 0.05em 0.45em;
+      font-size: 0.82em;
+    }
+
+    .home {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem clamp(1rem, 3vw, 2rem);
+      background: rgba(7, 11, 9, 0.88);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .home a.back {
+      display: inline-flex;
+      gap: 0.4rem;
+      align-items: center;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      padding: 0.25rem 0.9rem;
+    }
+
+    .home a.back:hover { background: rgba(159, 232, 112, 0.08); }
+
+    .home span.field {
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-family: var(--mono);
+    }
+
+    header.hero {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: clamp(2rem, 6vw, 3.4rem) clamp(1rem, 3vw, 2rem) 1rem;
+      text-align: center;
+    }
+
+    header.hero h1 {
+      margin: 0 0 0.4rem;
+      font-size: clamp(1.6rem, 4.5vw, 2.6rem);
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
+
+    header.hero h1 .mt {
+      font-family: var(--mono);
+      color: var(--accent-warm);
+    }
+
+    header.hero p.lede {
+      margin: 0 auto;
+      max-width: 50rem;
+      color: var(--muted);
+      font-size: clamp(0.95rem, 2vw, 1.06rem);
+    }
+
+    header.hero .meta {
+      margin: 0.9rem auto 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    header.hero .meta span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.15rem 0.7rem;
+      background: var(--panel-soft);
+    }
+
+    header.hero::after {
+      content: "";
+      display: block;
+      width: min(26rem, 70%);
+      height: 1px;
+      margin: 1.2rem auto 0;
+      background-image: linear-gradient(90deg, transparent, var(--line-strong), transparent);
+    }
+
+    .layout {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 0 clamp(1rem, 3vw, 2rem) clamp(2rem, 5vw, 3.5rem);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 980px) {
+      .layout { grid-template-columns: 16rem minmax(0, 1fr); align-items: start; }
+      nav.toc { position: sticky; top: 3.4rem; }
+    }
+
+    nav.toc {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+      padding: 0.9rem 0.9rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    nav.toc h2 {
+      margin: 0 0 0.6rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    nav.toc ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      counter-reset: toc;
+    }
+
+    nav.toc ol li { margin: 0; }
+
+    nav.toc ol a {
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+      padding: 0.28rem 0.45rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      color: var(--ink);
+      counter-increment: toc;
+    }
+
+    nav.toc ol a::before {
+      content: counter(toc, decimal-leading-zero);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+    }
+
+    nav.toc ol a:hover { background: rgba(159, 232, 112, 0.1); }
+
+    nav.toc ol a.active {
+      background: rgba(159, 232, 112, 0.14);
+      box-shadow: inset 2px 0 0 var(--accent);
+    }
+
+    main { min-width: 0; }
+
+    section.entry {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: clamp(1.1rem, 3vw, 1.8rem);
+      margin: 0 0 1.4rem;
+      scroll-margin-top: 3.8rem;
+    }
+
+    section.entry h2 {
+      margin: 0 0 0.7rem;
+      font-size: clamp(1.2rem, 2.6vw, 1.5rem);
+      line-height: 1.3;
+    }
+
+    section.entry h2 .tag {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.55rem;
+      font-family: var(--mono);
+      font-size: 0.62em;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-warm);
+      border: 1px solid rgba(255, 179, 138, 0.4);
+      border-radius: 999px;
+      padding: 0.12rem 0.55rem;
+    }
+
+    section.entry h3 {
+      margin: 1.4rem 0 0.4rem;
+      font-size: 1.05rem;
+      color: var(--accent);
+    }
+
+    section.entry p { margin: 0.55rem 0; }
+
+    section.entry ul.plain,
+    section.entry ol.plain {
+      margin: 0.5rem 0;
+      padding-left: 1.2rem;
+    }
+
+    section.entry ul.plain li,
+    section.entry ol.plain li { margin: 0.3rem 0; }
+
+    .note, .warn {
+      border-radius: 0.7rem;
+      padding: 0.75rem 1rem;
+      margin: 0.8rem 0;
+      font-size: 0.94rem;
+    }
+
+    .note {
+      border: 1px solid var(--line-strong);
+      background: rgba(159, 232, 112, 0.07);
+    }
+
+    .warn {
+      border: 1px solid rgba(255, 179, 138, 0.45);
+      background: rgba(255, 179, 138, 0.07);
+    }
+
+    .note b:first-child, .warn b:first-child { color: var(--accent-warm); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8rem 0;
+      font-size: 0.93rem;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.5rem 0.7rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: rgba(159, 232, 112, 0.08);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    td code { white-space: nowrap; }
+
+    .table-scroll { overflow-x: auto; }
+
+    .code {
+      position: relative;
+      margin: 0.8rem 0;
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      overflow: auto;
+      background: var(--code-bg);
+    }
+
+    .code pre {
+      margin: 0;
+      padding: 0.9rem 3.4rem 0.9rem 1rem;
+      overflow-x: auto;
+      line-height: 1.55;
+      font-size: 0.9rem;
+      color: #e2f0e4;
+      white-space: pre;
+    }
+
+    .code pre .u { color: var(--accent-warm); font-weight: 600; }
+    .code pre .cm { color: var(--muted); font-style: italic; }
+
+    .code .copy {
+      position: absolute;
+      top: 0.55rem;
+      right: 0.55rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      border-radius: 0.4rem;
+      padding: 0.2rem 0.55rem;
+      cursor: pointer;
+    }
+
+    .code .copy:hover,
+    .code .copy:focus-visible {
+      color: var(--ink);
+      border-color: var(--line-strong);
+    }
+
+    .code .copy:active { transform: translateY(1px); }
+
+    details.faq {
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      background: var(--panel-soft);
+      margin: 0.7rem 0;
+    }
+
+    details.faq summary {
+      cursor: pointer;
+      padding: 0.7rem 1rem;
+      font-weight: 600;
+      list-style-position: outside;
+    }
+
+    details.faq summary::marker { color: var(--accent); }
+
+    details.faq .faq-body {
+      padding: 0.7rem 1rem 0.9rem;
+      color: var(--ink);
+      border-top: 1px solid var(--line);
+    }
+
+    .obj-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+      gap: 0.4rem;
+      margin: 0.8rem 0;
+    }
+
+    .obj-strip span {
+      border-radius: 0.45rem;
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      padding: 0.5rem 0.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.92);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+      text-align: center;
+    }
+
+    .checklist {
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      background: var(--panel-soft);
+      padding: 0.9rem 1rem;
+      margin: 0.9rem 0;
+    }
+
+    .checklist .meter {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .checklist .bar {
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .checklist .bar i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+      transition: width 0.25s ease;
+    }
+
+    .checklist label {
+      display: flex;
+      gap: 0.6rem;
+      align-items: baseline;
+      padding: 0.3rem 0;
+      cursor: pointer;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .checklist label:last-of-type { border-bottom: 0; }
+
+    .checklist input {
+      accent-color: var(--accent);
+      width: 1.05rem;
+      height: 1.05rem;
+      flex: none;
+    }
+
+    .checklist input:checked~span {
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-color: rgba(159, 232, 112, 0.5);
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      background: rgba(7, 11, 9, 0.9);
+    }
+
+    footer .foot {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 1.2rem clamp(1rem, 3vw, 2rem);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.4rem;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    footer .foot a { color: var(--accent); }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 0.3rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="home">
+    <a class="back" href="./index.html">&#8630; Home</a>
+    <span class="field">Field Manual MTH-1 · all mail clients suck; this one less</span>
+  </div>
+
+  <header class="hero">
+    <h1><span class="mt">mutt</span> — From Nothing to Hero</h1>
+    <p class="lede">One config file, one key language, IMAP in, SMTP out, several providers at once and
+      colors everywhere. This page is the road: nothing to hero, the four files that matter, and the two
+      hooks (folder-hook, account-hook) that make several mailboxes behave.</p>
+    <div class="meta">
+      <span>muttrc &middot; mailboxes &middot; IMAP &middot; SMTP &middot; Gmail</span>
+      <span>vanilla JS &middot; CSS3 &middot; no dependencies</span>
+      <span>passwords stay out of the page and yours</span>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <nav class="toc" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#nothing">From nothing</a></li>
+        <li><a href="#first">First mail, first keys</a></li>
+        <li><a href="#files">The configuration files</a></li>
+        <li><a href="#boxes">One box, many mailboxes</a></li>
+        <li><a href="#accounts">Many accounts, one muttrc</a></li>
+        <li><a href="#imap">IMAP: reading from a distance</a></li>
+        <li><a href="#smtp">SMTP: sending without fear</a></li>
+        <li><a href="#providers">Providers, Gmail included</a></li>
+        <li><a href="#colors">Colors like a command line deserves</a></li>
+        <li><a href="#patterns">Patterns: the search superpower</a></li>
+        <li><a href="#macros">Keys and macros worth stealing</a></li>
+        <li><a href="#vocab">Hero vocabulary</a></li>
+        <li><a href="#checklist">Your mail, day by day</a></li>
+      </ol>
+    </nav>
+
+    <main>
+
+      <section class="entry" id="nothing">
+        <h2><span class="tag">01</span>From nothing</h2>
+        <p>mutt is a terminal email client with a slogan older than the dot-com bubble and still true:
+          <b>&ldquo;All mail clients suck. This one just sucks less.&rdquo;</b> It was written in 1995 by
+          Michael Elkins, forked decades later into <code>neomutt</code>, and remains the email program
+          people reach for when they finally want to triage their inbox faster than a pointer can move.</p>
+        <ul class="plain">
+          <li><b>It is keyboard-native.</b> Every action is a key; every key is a line in your config.
+            Nothing hidden behind a hamburger.</li>
+          <li><b>It reads anything.</b> Local mbox, local Maildir, remote IMAP; mutt does not care, which is
+            why it works with any provider's storage.</li>
+          <li><b>It sends through anything.</b> A local mail server, its own SMTP client, or your provider's
+            submission port &mdash; same interface, three backends.</li>
+          <li><b>It is composable with the rest of the terminal:</b> <code>mutt</code> + <kbd>w3m</kbd> for
+            HTML, <code>notmuch</code> for corpus-scale search, your real editor for composing.</li>
+        </ul>
+        <div class="code"><pre><span class="u">$</span> doas pkg_add mutt       <span class="cm"># BSD-style package naming</span>
+<span class="cm"># Debian/Ubuntu-style: apt install mutt  (neomutt is the fork with extra patches)</span></pre></div>
+        <div class="note"><b>Note:</b> vanilla <code>mutt</code> and <code>neomutt</code> share the config
+          language; this page exists in both worlds and every line below opens in both. Where a feature is
+          fork-only, the page says so &mdash; and those are extras, not the road.</div>
+      </section>
+
+      <section class="entry" id="first">
+        <h2><span class="tag">02</span>First mail, first keys</h2>
+        <p>Start mutt against something real. If you have mail lying in a local Maildir already:</p>
+        <div class="code"><pre><span class="u">$</span> mutt -f ~/Mail/INBOX   <span class="cm"># open a specific mailbox</span>
+<span class="u">$</span> mutt -y               <span class="cm"># open the mailbox browser (see section 04)</span></pre></div>
+        <p>And the first keyboard vocabulary &mdash; small, and it never changes:</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Key</th><th>Moves</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>j</code> / <code>k</code> (and arrows)</td><td>Down / up through messages or entries.</td></tr>
+              <tr><td><code>&lt;Enter&gt;</code></td><td>Open the message (pager view).</td></tr>
+              <tr><td><code>q</code></td><td>Close current view (pager &rarr; index; index &rarr; quit).</td></tr>
+              <tr><td><code>c</code></td><td>Change mailbox (see <code>=</code> and <code>?</code> expansion below).</td></tr>
+              <tr><td><code>d</code> / <code>u</code></td><td>Mark deleted / undelete (a <code>D</code> in the index; real purge at exit).</td></tr>
+              <tr><td><code>s</code></td><td>Save message to a mailbox (copy+delete in one move).</td></tr>
+              <tr><td><code>r</code> / <code>g</code> / <code>L</code></td><td>Reply / group (all) reply / list reply.</td></tr>
+              <tr><td><code>v</code></td><td>View attachments of the message.</td></tr>
+              <tr><td><code>?</code></td><td>Show the whole key map in this context. Use it; it is a manual living inside the program.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note"><b>Note:</b> in mailbox-name prompts, <code>=</code> expands to your
+          <code>folder</code> value (<code>=Sent</code> is <code>~/Mail/Sent</code>) and <code>!</code> is
+          your <code>spoolfile</code>. That shorthand is why config lines below look so short.</div>
+      </section>
+
+      <section class="entry" id="files">
+        <h2><span class="tag">03</span>The configuration files</h2>
+        <p>mutt reads, in order:</p>
+        <ol class="plain">
+          <li><b>/etc/Muttrc</b> (or <code>/etc/muttrc</code>) &mdash; the system-wide base; you rarely touch it.</li>
+          <li><b>~/.muttrc</b> (or <b>~/.config/mutt/muttrc</b>) &mdash; everything of yours lives here.</li>
+          <li>Any other file you <code>source</code> from those two &mdash; and that is where multi-account
+            life (section&nbsp;05) comes from.</li>
+        </ol>
+        <p>The nothing-to-something core, six lines, no account yet:</p>
+        <div class="code"><pre><span class="cm"># ~/.muttrc — the spine</span>
+set mbox_type  = Maildir          <span class="cm"># maildir &gt; mbox: one file per message</span>
+set folder     = ~/Mail           <span class="cm"># the root all =names expand into</span>
+set spoolfile  = =INBOX           <span class="cm"># the default mailbox mutt opens</span>
+set record     = =Sent            <span class="cm"># copies of what you send</span>
+set postponed  = =Drafts          <span class="cm"># where postponed drafts live</span></pre></div>
+        <p>And create the Maildir directories on disk (a shell line, not a mutt line):</p>
+        <div class="code"><pre><span class="u">$</span> mkdir -p ~/Mail/INBOX ~/Mail/Sent ~/Mail/Drafts ~/Mail/Archive</pre></div>
+        <div class="note"><b>Note:</b> to check your own bindings at any time: <code>?</code> in the
+          compose screen shows that context's key map, and <code>:set ?postponed</code> echoes the value
+          of a variable. Between those two answers, no config question stays unanswered while mutt is
+          open.</div>
+        <div class="warn"><b>Warn:</b> do not copy a stranger's 900-line muttrc before you have your own six
+          lines working. Borrowed configs are how people end up mutt users with no idea why mail moves.
+          Grow yours sideways (sections 04&ndash;09), one block at a time.</div>
+      </section>
+
+      <section class="entry" id="boxes">
+        <h2><span class="tag">04</span>One box, many mailboxes</h2>
+        <p>The multi-email box starts with a declaration: which mailboxes exist and which show in the
+          browser. Then every folder gets its own behaviour:</p>
+        <div class="code"><pre><span class="cm"># ~/.muttrc — declare the landscape</span>
+mailboxes =INBOX =Sent =Drafts =Archive
+mailboxes =lists/mutt                     <span class="cm"># lists live in a subtree, declared like the rest</span>
+
+<span class="cm"># behaviour per folder</span>
+folder-hook .          "set sort=threads"         <span class="cm"># everywhere: threads</span>
+folder-hook =lists.*   "set sort=date-received"   <span class="cm"># lists: pure chronology</span></pre></div>
+        <p>Note the honest limit: mutt does not create folders for you on disk;
+          the <code>mkdir</code> from section 03 done once is why <code>=INBOX</code> resolves.</p>
+        <h3>The browser</h3>
+        <ul class="plain">
+          <li><code>mutt -y</code> opens a list of every <code>mailboxes</code> line with unread counts.</li>
+          <li>Move with <code>j</code>/<code>k</code>, open with <code>Enter</code>; same keys as everywhere.</li>
+          <li>New folders? Add one <code>mailboxes</code> line; the browser follows.</li>
+        </ul>
+        <div class="note"><b>Note:</b> Maildir folders are directories of files, so you can point any
+          plaintext tool at them <em>while</em> mutt has them open. That property is the quiet superpower of
+          the storage format (and the reason <code>mbox</code> gets dropped by everyone who survives a
+          crash once).</div>
+      </section>
+
+      <section class="entry" id="accounts">
+        <h2><span class="tag">05</span>Many accounts, one muttrc</h2>
+        <p>The multi-account pattern is one <b>account-hook</b> (fires when the account is selected) plus
+          per-account files laid out like documents, sourced by the spine:</p>
+        <div class="code"><pre><span class="cm"># ~/.muttrc — the hub</span>
+account-hook $fastmail  "source ~/.mutt/fastmail.conf"
+account-hook $workmail  "source ~/.mutt/work.conf"
+
+folder-hook  fastmail.com.*  "source ~/.mutt/fastmail.hooks"
+folder-hook  work.example.com.*  "source ~/.mutt/work.hooks"
+mailboxes ! "imaps://imap.fastmail.com/INBOX" "imaps://imap.work.example.com/INBOX"</pre></div>
+        <p>Each account file carries its own identity, server pair and signature, and declares its own
+          <code>set</code> lines &mdash; a mini-section-03, plus the network pair of sections 06&ndash;07:</p>
+        <div class="code"><pre><span class="cm"># ~/.mutt/fastmail.conf — account template</span>
+set from       = "you@fastmail.com"
+set realname   = "Your Name"
+set imap_user  = "you@fastmail.com"
+set imap_pass  = ""                        <span class="cm">empty = prompt; see the gpg line below</span>
+set folder     = "imaps://imap.fastmail.com/"
+set smtp_url   = "smtps://you@fastmail.com@mail.messagingengine.com"
+set signature  = "~/.mutt/signature.fm"
+
+<span class="cm"># secrets, decrypted at machine startup — never committed anywhere</span>
+source "gpg -q --for-your-eyes-only --no-tty -d ~/.mutt/fastmail.gpg |"</pre></div>
+        <div class="warn"><b>Warn:</b> <code>account-hook</code> fires on <em>operations</em> (opening a
+          folder, sending), not at startup. If both accounts share secrets in plain <code>set</code> lines,
+          the last file sourced wins at the worst moment. The fix is discipline: per-account files, sourced
+          by hook, never by the spine directly.</div>
+        <details class="faq">
+          <summary>Where do passwords belong?</summary>
+          <div class="faq-body">Not in the file you keep in git. Either way, one thing stays out of the
+            muttrc you keep in git: the password. The classic is a gpg-decrypt-in-flight
+            <code>source "gpg -d ~/.mutt/secrets.gpg |"</code> line that sets <code>imap_pass</code> and
+            <code>smtp_pass</code> at startup; otherwise mutt will simply prompt you, per account,
+            per session..</div>
+        </details>
+      </section>
+
+      <section class="entry" id="imap">
+        <h2><span class="tag">06</span>IMAP: reading from a distance</h2>
+        <p>Point <code>folder</code> at an <code>imap(s)://</code> URL and mutt becomes an IMAP client: the
+          mailbox browser lists folders straight off the server, and <code>=</code> names still expand
+          against it.</p>
+        <div class="code"><pre><span class="cm"># ~/.muttrc — IMAP core</span>
+set imap_user     = "you@example.com"
+set imap_pass     = ""                      <span class="cm"># empty = prompt; or sourced from gpg</span>
+set folder        = "imaps://imap.example.com/"
+mailboxes         =INBOX "imaps://imap.example.com/OtherFolder"</pre></div>
+        <p>The server-politeness knobs, safe as written:</p>
+        <div class="code"><pre>set imap_check_subscribed = yes     <span class="cm"># trust the server's folder list</span>
+set mail_check      = 60            <span class="cm"># imap poll interval, seconds</span>
+set imap_peek       = yes           <span class="cm"># do NOT auto-mark as read on list</span>
+set imap_keepalive  = 300           <span class="cm"># keep NAT/freewalls open during long reads</span></pre></div>
+        <div class="note"><b>Note:</b> first connect to a new server prints a certificate prompt &mdash; read
+          it (fingerprints are the whole point of TLS), accept once, and it is cached. If your provider's
+          certificate chain is normal, this is a once-per-machine moment.</div>
+      </section>
+
+      <section class="entry" id="smtp">
+        <h2><span class="tag">07</span>SMTP: sending without fear</h2>
+        <p>mutt can hand finished mail to your provider directly, skipping any local MTA:</p>
+        <div class="code"><pre><span class="cm"># ~/.muttrc — direct submission</span>
+set smtp_url        = "smtps://you@example.com@mail.example.com:465"
+set smtp_pass       = ""                        <span class="cm"># prompt or gpg, like imap_pass</span>
+set from            = "You &lt;you@example.com&gt;"
+unset write_bcc                       <span class="cm"># do not leak Bcc to the wire; server handles it</span></pre></div>
+        <ul class="plain">
+          <li><code>smtps://</code> = implicit TLS on port <b>465</b>. <code>smtp://...:587</code> = STARTTLS
+            on the submission port. Prefer <code>smtps</code> when a provider offers both; both are fine.</li>
+          <li>If <code>smtp_url</code> is unset, mutt falls back to the local <code>sendmail</code>
+           -compatible binary &mdash; and that is the second, classic route:</li>
+        </ul>
+        <div class="code"><pre><span class="cm"># ~/.muttrc — delegate delivery to msmtp (config lives in ~/.msmtprc)</span>
+set sendmail = "/usr/bin/msmtp"</pre></div>
+        <div class="note"><b>Note:</b> pick one route per account and leave the other unset. When both are
+          configured, debugging "why did this mail take the weird path" becomes a zebra hunt. The direct
+          <code>smtp_url</code> route is the one this page recommends for laptops; the <code>sendmail</code>
+          route belongs on the server that already has an MTA.</div>
+      </section>
+
+      <section class="entry" id="providers">
+        <h2><span class="tag">08</span>Providers, Gmail included</h2>
+        <p>Provider recipes are thin layers over what sections 06&ndash;07 already taught. Three
+          common ones:</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Provider</th><th>IMAP folder</th><th>SMTP</th><th>KVR (ligatório read)</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Gmail</td>
+                <td><code>imaps://imap.gmail.com/INBOX</code></td>
+                <td><code>smtps://smtp.gmail.com:465</code></td>
+                <td>Gmail wraps IMAP in labels; special folders are literally <code>[Gmail]/</code>-prefixed.</td>
+              </tr>
+              <tr>
+                <td>Fastmail</td>
+                <td><code>imaps://imap.fastmail.com/</code></td>
+                <td><code>smtps://mail.messagingengine.com</code></td>
+                <td>Plain IMAP service; server-side Sent tracked by your <code>record</code>.</td>
+              </tr>
+              <tr>
+                <td>Any ISP / work server</td>
+                <td><code>imaps://imap.example.com/INBOX</code></td>
+                <td><code>smtps://mail.example.com</code></td>
+                <td>Same three lines; differences are only the values and the names server-side.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>Gmail, the whole truth</h3>
+        <div class="code"><pre><span class="cm"># ~/.mutt/gmail.conf</span>
+set from              = "you@gmail.com"
+set imap_user         = "you@gmail.com"
+set folder            = "imaps://imap.gmail.com/"
+set spoolfile         = "imaps://imap.gmail.com/INBOX"
+set record             = "imaps://imap.gmail.com/[Gmail]/Sent Mail"
+set trash              = "imaps://imap.gmail.com/[Gmail]/Trash"
+set smtp_url           = "smtps://you@gmail.com@smtp.gmail.com:465"
+set imap_check_subscribed  = yes
+set imap_list_subscribed   = yes</pre></div>
+        <p>And the three truths of the label reality (because Gmail is IMAP-wrapped, not native IMAP):</p>
+        <ul class="plain">
+          <li><b>Labels are not folders.</b> A message lives in <code>[Gmail]/All Mail</code> and <em>may
+            also</em> appear under any label. mutt browses labels as if they were folders, but deleting
+            manipulates labels, not atoms.</li>
+          <li><b>Delete means archive or trash &mdash; your choice.</b> With <code>trash</code> set above,
+            plain <code>d</code> respects the Trash. For real archive behaviour add a macro that saves to
+            <code>[Gmail]/Archive</code> instead. Decide once; both are one line.</li>
+          <li><b>Sent lives server-side.</b> Gmail's web UI auto-files every send; point your
+            <code>record</code> at <code>[Gmail]/Sent Mail</code> and both worlds will agree by pointing at
+            the same place.</li>
+        </ul>
+        <p><b>Authentication</b> is its own paragraph, because Gmail is the most common wall: normal
+          password login requires an <b>app password</b> when 2FA is enabled (it should be). The app
+          password is generated in the provider's security settings and behaves like a normal password
+          string, which makes it a perfect fit for the gpg-sourced file from section 05.</p>
+        <div class="warn"><b>Warn:</b> do not keep 2FA-disabled mail accounts "just for mutt" no matter
+          how convenient; the app password path is the supported one. Also note that a bare
+          <code>mutt</code> without IMAP+SMTP support compiled in (check <code>mutt -v</code>) cannot
+          talk to any provider here &mdash; your package choice matters.</div>
+        <div class="warn"><b>Warn:</b> do not ever keep 2FA-disabled Gmail accounts "just for mutt". The app
+          password path is the supported one; a 2FA-less account is a weaker target, and your inbox is the
+          key to every other account you own.</div>
+      </section>
+
+      <section class="entry" id="colors">
+        <h2><span class="tag">09</span>Colors like a command line deserves</h2>
+        <p>mutt colors <em>objects</em>, not widgets: bundles such as <code>normal</code>,
+          <code>hdrdefault</code>, <code>quoted</code>, <code>signature</code>, <code>indicator</code>,
+          <code>index</code>. Syntax: <code>color OBJECT foreground background [pattern]</code>, with
+          <code>default</code> meaning "terminal's own".</p>
+        <div class="code"><pre><span class="cm"># ~/.muttrc — a complete, calm, dark start</span>
+color normal          white    default
+color hdrdefault      cyan     default
+color quoted          green    default
+color quoted1         brightgreen  default
+color signature       blue     default
+color attachment      yellow   default
+color search          black    brightyellow
+color indicator       black    brightgreen
+color status          white    blue
+color tilde           brightwhite default
+color tree            magenta  default
+color error           red      default
+color message         white    green
+color markers         red      default</pre></div>
+        <p>All of those, as they would land on your dark terminal (CSS speaking for the terminal palette):</p>
+        <div class="obj-strip" aria-label="A calm dark color scheme by object">
+          <span style="background:#0b110d;color:#eef4f0">normal</span>
+          <span style="background:#0b110d;color:#5ab8d4">hdrdefault</span>
+          <span style="background:#0b110d;color:#8de08a">quoted</span>
+          <span style="background:#0b110d;color:#6f81d9">signature</span>
+          <span style="background:#0b110d;color:#e2c25c">attachment</span>
+          <span style="background:#0b110d;color:#0b110d;background:#3ddc84">indicator</span>
+          <span style="background:#2a4d7f;color:#eef4f0">status</span>
+          <span style="background:#0b110d;color:#ff7a76">error</span>
+        </div>
+        <p>And the two object+pattern powers that separate a scheme from decoration:</p>
+        <div class="code"><pre><span class="cm"># unread messages scream softly</span>
+color index  brightwhite  default  "~N"
+<span class="cm"># your own outgoing mail, dimmed</span>
+color index  blue        default  "~P!~F"</pre></div>
+        <div class="note"><b>Note:</b> 256-color identifiers also work
+          (<code>color normal color252 default</code>); <code>default</code> keeps the terminal's own. Test
+          choices by eye, live, with <code>:color ...</code> typed straight into the pager &mdash; no reload
+          ritual required: it is what resource files wish they were.</div>
+      </section>
+
+      <section class="entry" id="patterns">
+        <h2><span class="tag">10</span>Patterns: the search superpower</h2>
+        <p><code>l</code> (limit) collapses the index to a sub-world;Everything else &mdash; color, hook, save,
+          archive &mdash; reuses the same small grammar:</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Pattern</th><th>Means</th><th>Example limit</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>~N</code></td><td>new/unread</td><td><code>l ~N</code> &rarr; only what waits for you</td></tr>
+              <tr><td><code>~f user@host</code></td><td>from</td><td><code>l ~f butter@club.tld</code></td></tr>
+              <tr><td><code>~t user@host</code></td><td>to (you included)</td><td><code>l ~t me@tld</code></td></tr>
+              <tr><td><code>~s words</code></td><td>subject contains</td><td><code>l ~s "invoice"</code></td></tr>
+              <tr><td><code>~F</code> / <code>~D</code></td><td>flagged / deleted</td><td><code>l ~F</code></td></tr>
+              <tr><td><code>!pattern</code></td><td>negation &mdash; "does not match"</td><td><code>l !~s "cron"</code></td></tr>
+              <tr><td><code>&amp;</code>, <code>|</code>, <code>(...)</code></td><td>Boolean and / or / grouping</td><td><code>l (~N &amp; ~f boss@work.tld)</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Where it earns with interest:</p>
+        <ul class="plain">
+          <li><code>color index ... pattern</code> &mdash; the colors in section 09 are pattern-driven.</li>
+          <li><code>T</code> (tag-pattern) + <code>;</code> (apply next command to tagged) turns inbox-zero
+            into arithmetic, not patience: one pattern, everything matching, one key, ruined in bulk or
+            filed in bulk.</li>
+          <li>The same notation is mutt's single search language; there is no second one to learn for
+            hooks, colors, limits and tags &mdash; which is rare and lovely.</li>
+        </ul>
+        <div class="note"><b>Note:</b> the full grammar lives in <code>muttrc(5)</code>, under
+          "Patterns". Keep that man page handy; it is the accidental second manual for the whole
+          program.</div>
+      </section>
+
+      <section class="entry" id="macros">
+        <h2><span class="tag">11</span>Keys and macros worth stealing</h2>
+        <p>mutt has <code>bind</code> (one key, one named function) and <code>macro</code> (one key, a
+          symphony of virtual keypresses). The handful worth more than their line-count:</p>
+        <div class="code"><pre><span class="cm"># ~/.muttrc — quality of life (mutt 1.11+ has the sidebar built in)</span>
+set sidebar_visible     = yes
+set sidebar_width       = 24
+
+<span class="cm"># b toggles the sidebar in both index and pager</span>
+macro index,pager b "&lt;enter-command&gt;set sidebar_visible=!sidebar_visible&lt;enter&gt;"
+
+<span class="cm"># Tab jumps to the next mailbox with unseen mail</span>
+bind index \Ct          &lt;sidebar-next&gt;
+
+<span class="cm"># one key to archive: save to =Archive, mark deleted in place</span>
+macro index,pager a "&lt;save-message&gt;=Archive&lt;enter&gt;&lt;delete-message&gt;"
+
+<span class="cm"># G runs fetchmail-style helpers, if you have one; delete the line if you do not</span>
+macro index G "&lt;shell-escape&gt;fetchmail&lt;/shell-escape&gt;&lt;refresh&gt;"</pre></div>
+        <div class="note"><b>Note:</b> the purpose of the macros above is to teach the shape:
+          <code>macro context keys "actions"</code>, actions as if typed in the interface wrapped in
+          <code>&lt;...&gt;</code> function names. Start by simulating your last three manual actions;
+          that is the macro list you actually need, custom-made by your own hands.</div>
+        <div class="warn"><b>Warn:</b> two macro-writers' hazards: what genuinely bites is shadowing a
+          default key you use without remembering (bind <code>b</code> away and mutt will never warn), and
+          a macro that fires the wrong context because you forgot the <code>index,pager</code> prefix.
+          When odd behaviour appears, suspect your binds before the program's soul.</div>
+      </section>
+
+      <section class="entry" id="vocab">
+        <h2><span class="tag">12</span>Hero vocabulary</h2>
+        <p>The command-line flags and one-liners that finish the road:</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Spell</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>mutt -y</code></td><td>Mailbox browser &mdash; the launcher for your whole declared world.</td></tr>
+              <tr><td><code>mutt -f =Archive/2026/oct</code></td><td>Open one specific mailbox straight away.</td></tr>
+              <tr><td><code>mutt -F ~/.mutt/minimal</code></td><td>Alternate config entirely &mdash; the clean-room test for debugging your own muttrc.</td></tr>
+              <tr><td><code>mutt -n</code></td><td>Skip the system-wide config; isolate user settings only.</td></tr>
+              <tr><td><code>mutt -R</code></td><td>Read-only open; inspect an archive with zero risk of touching it.</td></tr>
+              <tr><td><code>mutt -p</code></td><td>Resume the postponed draft (or bind your own key).</td></tr>
+              <tr><td><code>mutt -s "subject" -a f1.pdf -- dest@host</code></td><td>Send from the shell; the classic receipts-and-scripts companion.</td></tr>
+              <tr><td><code>mutt -H draft.txt</code></td><td>Send a pre-written draft file &mdash; cron and templating fuel.</td></tr>
+              <tr><td><code>mutt -e "set editor=vi"</code></td><td>One-shot config override, like <code>-xrm</code> in xterm.</td></tr>
+              <tr><td><code>mutt -v</code></td><td>Version + features, incl. IMAP/SMTP support; check before cursing a missing compile.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note"><b>Note:</b> the man pages that finish a hero: <code>mutt(1)</code> (flags), <code>muttrc(5)</code>
+          (every variable and every pattern), and the project's own manual page online if you want the full
+          tutorial voice. Between these sections and those, you are set.</div>
+        <div class="note"><b>Note:</b> and the meta-skill this whole page built: mutt rewards dictating the
+          exact <em>two lines</em> that fix today's annoyance, then stopping. Hoarding muttrc folklore is
+          the fastest route to forgetting why anything works.</div>
+      </section>
+
+      <section class="entry" id="checklist">
+        <h2><span class="tag">13</span>Your mail, day by day</h2>
+        <p>Progress below is stored in this browser (<code>localStorage</code>) only.</p>
+        <div class="checklist" id="mtChecklist">
+          <div class="meter">
+            <span id="mtCount">0 / 12</span>
+            <span class="bar"><i id="mtBar"></i></span>
+            <button type="button" id="mtReset" style="all: unset; cursor: pointer; color: var(--muted); border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.08em;">RESET</button>
+          </div>
+          <label><input type="checkbox" data-key="install"><span>mutt installed; <code>mutt -v</code> shows IMAP + SMTP support</span></label>
+          <label><input type="checkbox" data-key="keys"><span>Navigated with only <code>j</code>/<code>k</code>/<code>Enter</code>/<code>q</code> for a full day</span></label>
+          <label><input type="checkbox" data-key="spine"><span>Six-line spine in <code>~/.muttrc</code> working (mbox_type, folder, spoolfile, record, postponed)</span></label>
+          <label><input type="checkbox" data-key="browser"><span><code>mutt -y</code> opens your declared <code>mailboxes</code> with unread counts</span></label>
+          <label><input type="checkbox" data-key="hooks"><span>At least one honest <code>folder-hook</code> live (sort, colours or both)</span></label>
+          <label><input type="checkbox" data-key="imap"><span>Reading over IMAP: <code>folder</code> pointed at <code>imaps://</code> and mail arrives</span></label>
+          <label><input type="checkbox" data-key="smtp"><span>Sending over SMTP (<code>smtp_url</code>) or via <code>sendmail</code>/msmtp &mdash; one route chosen</span></label>
+          <label><input type="checkbox" data-key="secrets"><span>Passwords sourced from gpg (or prompted) &mdash; zero secrets in the muttrc file</span></label>
+          <label><input type="checkbox" data-key="accounts"><span>Two accounts live side by side via <code>account-hook</code> + per-account files</span></label>
+          <label><input type="checkbox" data-key="gmail"><span>Gmail: labels browsed, Trash/Sent configured, app password in use</span></label>
+          <label><input type="checkbox" data-key="colors"><span>Dark scheme applied by objects; <code>~N</code> unread line louder than the rest</span></label>
+          <label><input type="checkbox" data-key="patterns"><span>Limited an inbox with <code>l ~N</code> and friends; macros define your archive one-key</span></label>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <div class="foot">
+      <span>Monkey Blog &middot; <a href="./index.html">Home</a></span>
+      <span><a href="./index.html">Archive</a> &middot; <a href="#nothing">Back to top</a></span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY = "muttHero.progress.v1";
+      var tocLinks = Array.prototype.slice.call(document.querySelectorAll("nav.toc ol a"));
+      var sections = tocLinks.map(function (link) {
+        var anchor = link.getAttribute("href").slice(1);
+        return document.getElementById(anchor);
+      });
+
+      /* ---- active section in the table of contents ---- */
+      function setActive() {
+        var scrollY = window.scrollY + 140;
+        var activeIndex = 0;
+        sections.forEach(function (section, index) {
+          if (section && section.offsetTop <= scrollY) {
+            activeIndex = index;
+          }
+        });
+        tocLinks.forEach(function (link, index) {
+          link.classList.toggle("active", index === activeIndex);
+        });
+      }
+
+      var rafPending = false;
+      window.addEventListener("scroll", function () {
+        if (!rafPending) {
+          rafPending = true;
+          window.requestAnimationFrame(function () {
+            rafPending = false;
+            setActive();
+          });
+        }
+      }, { passive: true });
+      setActive();
+
+      /* ---- copy buttons on every code block ---- */
+      Array.prototype.slice.call(document.querySelectorAll(".code")).forEach(function (block) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "copy";
+        button.textContent = "copy";
+        button.setAttribute("aria-label", "Copy code to clipboard");
+        button.addEventListener("click", function () {
+          var text = block.querySelector("pre").textContent.replace(/\n*$/, "");
+          var done = function () {
+            button.textContent = "copied";
+            window.setTimeout(function () { button.textContent = "copy"; }, 1400);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () {
+              button.textContent = "nope";
+            });
+          } else {
+            var helper = document.createElement("textarea");
+            helper.value = text;
+            helper.setAttribute("readonly", "readonly");
+            helper.style.position = "absolute";
+            helper.style.left = "-9999px";
+            document.body.appendChild(helper);
+            helper.select();
+            try {
+              document.execCommand("copy");
+              done();
+            } catch (error) {
+              button.textContent = "nope";
+            }
+            document.body.removeChild(helper);
+          }
+        });
+        block.appendChild(button);
+      });
+
+      /* ---- inbox checklist, persisted per browser ---- */
+      var box = document.getElementById("mtChecklist");
+      if (box) {
+        var boxes = Array.prototype.slice.call(box.querySelectorAll("input[type=checkbox]"));
+        var count = document.getElementById("mtCount");
+        var bar = document.getElementById("mtBar");
+        var reset = document.getElementById("mtReset");
+
+        function readState() {
+          var state = {};
+          try {
+            state = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}") || {};
+          } catch (error) {
+            state = {};
+          }
+          return state;
+        }
+
+        function paint() {
+          var state = readState();
+          var done = 0;
+          boxes.forEach(function (input) {
+            var on = !!state[input.getAttribute("data-key")];
+            input.checked = on;
+            if (on) { done += 1; }
+          });
+          count.textContent = done + " / " + boxes.length;
+          bar.style.width = Math.round((done / boxes.length) * 100) + "%";
+        }
+
+        function save(input) {
+          var state = readState();
+          state[input.getAttribute("data-key")] = input.checked;
+          try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          } catch (error) {
+            /* storage is a gift, not a right */
+          }
+          paint();
+        }
+
+        boxes.forEach(function (input) {
+          input.addEventListener("change", function () { save(input); });
+        });
+
+        if (reset) {
+          reset.addEventListener("click", function () {
+            try {
+              window.localStorage.removeItem(STORAGE_KEY);
+            } catch (error) { }
+            paint();
+          });
+        }
+
+        paint();
+      }
+    })();
+  </script>
+</body>
+
+</html>

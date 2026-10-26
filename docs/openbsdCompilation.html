@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" sizes="12x12" />
+  <meta name="description" content="A single-file, dark-theme field manual for developers who compile OpenBSD from source: kernels, userland, Xenocara and ports, plus release builds.">
+  <title>OpenBSD Compilation for Developers · Monkey Blog</title>
+  <style>
+    :root {
+      --ink: #e9f2f9;
+      --muted: #94a7bc;
+      --accent: #54e3c4;
+      --accent-warm: #ffbe6b;
+      --danger: #ff7a76;
+      --line: rgba(133, 170, 199, 0.18);
+      --line-strong: rgba(84, 227, 196, 0.45);
+      --panel: rgba(12, 17, 24, 0.86);
+      --panel-soft: rgba(18, 24, 33, 0.76);
+      --code-bg: rgba(4, 8, 12, 0.85);
+      --radius: 0.9rem;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+        "Noto Sans", "Liberation Sans", sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      padding: 0;
+      margin: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      background:
+        radial-gradient(1100px 500px at 85% -10%, rgba(84, 227, 196, 0.09), transparent 60%),
+        radial-gradient(900px 500px at -10% 20%, rgba(255, 190, 107, 0.06), transparent 55%),
+        linear-gradient(180deg, #070b11 0%, #0a1018 55%, #060a0f 100%) fixed;
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-color: rgba(84, 227, 196, 0.4);
+      text-underline-offset: 0.2em;
+    }
+
+    a:visited {
+      color: #9ad9cc;
+    }
+
+    code,
+    kbd,
+    pre {
+      font-family: var(--mono);
+      font-size: 0.92em;
+    }
+
+    code {
+      background: rgba(84, 227, 196, 0.1);
+      border: 1px solid var(--line);
+      border-radius: 0.4rem;
+      padding: 0.05em 0.4em;
+      white-space: nowrap;
+    }
+
+    kbd {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      border-radius: 0.35rem;
+      padding: 0.05em 0.45em;
+      font-size: 0.82em;
+    }
+
+    .home {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem clamp(1rem, 3vw, 2rem);
+      background: rgba(6, 10, 15, 0.88);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .home a.back {
+      display: inline-flex;
+      gap: 0.4rem;
+      align-items: center;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      padding: 0.25rem 0.9rem;
+    }
+
+    .home a.back:hover {
+      background: rgba(84, 227, 196, 0.08);
+    }
+
+    .home span.field {
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-family: var(--mono);
+    }
+
+    header.hero {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: clamp(2rem, 6vw, 3.4rem) clamp(1rem, 3vw, 2rem) 1rem;
+      text-align: center;
+    }
+
+    header.hero h1 {
+      margin: 0 0 0.4rem;
+      font-size: clamp(1.6rem, 4.5vw, 2.6rem);
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
+
+    header.hero h1 .ob {
+      color: var(--accent-warm);
+    }
+
+    header.hero p.lede {
+      margin: 0 auto;
+      max-width: 46rem;
+      color: var(--muted);
+      font-size: clamp(0.95rem, 2vw, 1.06rem);
+    }
+
+    header.hero .meta {
+      margin: 0.9rem auto 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    header.hero .meta span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.15rem 0.7rem;
+      background: var(--panel-soft);
+    }
+
+    header.hero::after {
+      content: "";
+      display: block;
+      width: min(26rem, 70%);
+      height: 1px;
+      margin: 1.2rem auto 0;
+      background-image: linear-gradient(90deg, transparent, var(--line-strong), transparent);
+    }
+
+    .layout {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 0 clamp(1rem, 3vw, 2rem) clamp(2rem, 5vw, 3.5rem);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 980px) {
+      .layout {
+        grid-template-columns: 16rem minmax(0, 1fr);
+        align-items: start;
+      }
+
+      nav.toc {
+        position: sticky;
+        top: 3.4rem;
+      }
+    }
+
+    nav.toc {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+      padding: 0.9rem 0.9rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    nav.toc h2 {
+      margin: 0 0 0.6rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    nav.toc ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      counter-reset: toc;
+    }
+
+    nav.toc ol li {
+      margin: 0;
+    }
+
+    nav.toc ol a {
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+      padding: 0.28rem 0.45rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      color: var(--ink);
+      counter-increment: toc;
+    }
+
+    nav.toc ol a::before {
+      content: counter(toc, decimal-leading-zero);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+    }
+
+    nav.toc ol a:hover {
+      background: rgba(84, 227, 196, 0.1);
+    }
+
+    nav.toc ol a.active {
+      background: rgba(84, 227, 196, 0.14);
+      box-shadow: inset 2px 0 0 var(--accent);
+    }
+
+    main {
+      min-width: 0;
+    }
+
+    section.entry {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: clamp(1.1rem, 3vw, 1.8rem);
+      margin: 0 0 1.4rem;
+      scroll-margin-top: 3.8rem;
+    }
+
+    section.entry h2 {
+      margin: 0 0 0.7rem;
+      font-size: clamp(1.2rem, 2.6vw, 1.5rem);
+      line-height: 1.3;
+    }
+
+    section.entry h2 .tag {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.55rem;
+      font-family: var(--mono);
+      font-size: 0.62em;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-warm);
+      border: 1px solid rgba(255, 190, 107, 0.4);
+      border-radius: 999px;
+      padding: 0.12rem 0.55rem;
+    }
+
+    section.entry h3 {
+      margin: 1.4rem 0 0.4rem;
+      font-size: 1.05rem;
+      color: var(--accent);
+    }
+
+    section.entry p {
+      margin: 0.55rem 0;
+    }
+
+    section.entry ul.plain,
+    section.entry ol.plain {
+      margin: 0.5rem 0;
+      padding-left: 1.2rem;
+    }
+
+    section.entry ul.plain li,
+    section.entry ol.plain li {
+      margin: 0.3rem 0;
+    }
+
+    .note,
+    .warn {
+      border-radius: 0.7rem;
+      padding: 0.75rem 1rem;
+      margin: 0.8rem 0;
+      font-size: 0.94rem;
+    }
+
+    .note {
+      border: 1px solid var(--line-strong);
+      background: rgba(84, 227, 196, 0.07);
+    }
+
+    .warn {
+      border: 1px solid rgba(255, 190, 107, 0.45);
+      background: rgba(255, 190, 107, 0.07);
+    }
+
+    .note b:first-child,
+    .warn b:first-child {
+      color: var(--accent-warm);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8rem 0;
+      font-size: 0.93rem;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 0.5rem 0.7rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: rgba(84, 227, 196, 0.08);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    td code {
+      white-space: nowrap;
+    }
+
+    .code {
+      position: relative;
+      margin: 0.8rem 0;
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      overflow: auto;
+      background: var(--code-bg);
+    }
+
+    .code pre {
+      margin: 0;
+      padding: 0.9rem 3.4rem 0.9rem 1rem;
+      overflow-x: auto;
+      line-height: 1.55;
+      font-size: 0.9rem;
+      color: #dff1ea;
+      white-space: pre;
+    }
+
+    .code pre .u {
+      color: var(--accent-warm);
+      font-weight: 600;
+    }
+
+    .code pre .cm {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .code .copy {
+      position: absolute;
+      top: 0.55rem;
+      right: 0.55rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      border-radius: 0.4rem;
+      padding: 0.2rem 0.55rem;
+      cursor: pointer;
+    }
+
+    .code .copy:hover,
+    .code .copy:focus-visible {
+      color: var(--ink);
+      border-color: var(--line-strong);
+    }
+
+    .code .copy:active {
+      transform: translateY(1px);
+    }
+
+    details.faq {
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      background: var(--panel-soft);
+      margin: 0.7rem 0;
+    }
+
+    details.faq summary {
+      cursor: pointer;
+      padding: 0.7rem 1rem;
+      font-weight: 600;
+      list-style-position: outside;
+    }
+
+    details.faq summary::marker {
+      color: var(--accent);
+    }
+
+    details.faq .faq-body {
+      padding: 0 1rem 0.9rem;
+      color: var(--ink);
+      border-top: 1px solid var(--line);
+      padding-top: 0.7rem;
+    }
+
+    .stepper {
+      display: grid;
+      gap: 0.6rem;
+      margin: 0.9rem 0;
+    }
+
+    .step {
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-start;
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      background: var(--panel-soft);
+      padding: 0.7rem 0.9rem;
+    }
+
+    .step .n {
+      flex: none;
+      width: 2rem;
+      height: 2rem;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line-strong);
+      border-radius: 50%;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 0.95rem;
+    }
+
+    .step h3 {
+      margin: 0 0 0.15rem;
+      font-size: 0.98rem;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .checklist {
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      background: var(--panel-soft);
+      padding: 0.9rem 1rem;
+      margin: 0.9rem 0;
+    }
+
+    .checklist .meter {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .checklist .bar {
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .checklist .bar i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+      transition: width 0.25s ease;
+    }
+
+    .checklist label {
+      display: flex;
+      gap: 0.6rem;
+      align-items: baseline;
+      padding: 0.3rem 0;
+      cursor: pointer;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .checklist label:last-of-type {
+      border-bottom: 0;
+    }
+
+    .checklist input {
+      accent-color: var(--accent);
+      width: 1.05rem;
+      height: 1.05rem;
+      flex: none;
+    }
+
+    .checklist input:checked~span {
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-color: rgba(84, 227, 196, 0.5);
+    }
+
+    .cols {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    @media (min-width: 760px) {
+      .cols.two {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      background: rgba(6, 10, 15, 0.9);
+    }
+
+    footer .foot {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 1.2rem clamp(1rem, 3vw, 2rem);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.4rem;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    footer .foot a {
+      color: var(--accent);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 0.3rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="home">
+    <a class="back" href="./index.html">&#8630; Home</a>
+    <span class="field">Field Manual OBC-5 · compilation from source</span>
+  </div>
+
+  <header class="hero">
+    <h1><span class="ob">OpenBSD</span> Compilation for Developers</h1>
+    <p class="lede">Everything in one page: a tree, an <code>obj</code> directory, a kernel,
+      the whole userland, one X, and all the traps that bite between two good builds.
+      Written for people who read source code on purpose.</p>
+    <div class="meta">
+      <span>kernel &middot; userland &middot; xenocara &middot; ports &middot; release</span>
+      <span>vanilla JS &middot; CSS3 &middot; no dependencies</span>
+      <span>progress lives in this browser</span>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <nav class="toc" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#why">Why compile</a></li>
+        <li><a href="#machine">The machine</a></li>
+        <li><a href="#tree">Get a tree</a></li>
+        <li><a href="#branches">Branches of the same rock</a></li>
+        <li><a href="#order">Order of operations</a></li>
+        <li><a href="#kernel">Build the kernel</a></li>
+        <li><a href="#userland">Build userland</a></li>
+        <li><a href="#xenocara">Build Xenocara</a></li>
+        <li><a href="#ports">Ports: the source of everything else</a></li>
+        <li><a href="#release">Release engineering</a></li>
+        <li><a href="#traps">Traps and their traps</a></li>
+        <li><a href="#reference">Cheat sheet</a></li>
+        <li><a href="#checklist">Your build, day by day</a></li>
+      </ol>
+    </nav>
+
+    <main>
+
+      <section class="entry" id="why">
+        <h2><span class="tag">01</span>Why compile at all</h2>
+        <p>OpenBSD ships binaries and releases every six months, and for most machines
+          <code>sysupgrade</code> is the correct answer. Compiling is the correct answer for other roles:</p>
+        <ul class="plain">
+          <li><b>Tracking fixes between releases:</b> -stable exists precisely so you can build today's
+            stability fixes on top of a released base, without moving to -current.</li>
+          <li><b>-current developers and testers:</b> the snapshot base plus a compiled tree is how the project
+            eats its own food every day. If you compile -current you are implicitly volunteering as the tester.</li>
+          <li><b>Custom-kernel work:</b> drivers, kernel experiments or a smaller <code>GENERIC</code>
+            for an odd machine.</li>
+          <li><b>Ports work:</b> the ports(7) system is designed to be driven from source on your own machine,
+            and the maintainers' workflow (patches, <code>make update-patches</code>, bulk builders) assumes it.</li>
+          <li><b>Building releases:</b> <code>make release</code> produces the install media and the sets you supply
+            to your own machines, the same way the project produces theirs.</li>
+        </ul>
+        <div class="note"><b>Note:</b> compiling is not a security upgrade by itself. A random local build of
+          -current is <em>less</em> trustworthy than a signed release. The difference is that you can
+          <em>read</em> every line you run &mdash; which is the point.</div>
+      </section>
+
+      <section class="entry" id="machine">
+        <h2><span class="tag">02</span>The machine</h2>
+        <p>The complete build (kernel + userland + X + ports infrastructure) is not large by modern standards,
+          but it is the sum of many small machines. Plan like this:</p>
+        <table>
+          <thead>
+            <tr><th>Resource</th><th>Minimum</th><th>Comfortable</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>RAM</td><td>2&ndash;4 GB</td><td>8 GB+</td><td>Kernel link time is the memory peak; big ports can spike hard.</td></tr>
+            <tr><td>Disk &mdash; source trees</td><td>~3 GB</td><td>4&ndash;5 GB</td><td><code>src</code>, <code>xenocara</code>, <code>ports</code> checkouts.</td></tr>
+            <tr><td>Disk &mdash; build + product</td><td>~15 GB</td><td>25&ndash;40 GB</td><td><code>/usr/obj</code>, <code>/usr/xobj</code>, <code>/usr/lobj</code>, DESTDIR, RELEASEDIR, distfiles, packages.</td></tr>
+            <tr><td>CPU</td><td>anything</td><td>&ldquo;more cores&rdquo;</td><td>Base builds are largely serial by design; ports bulk builds parallelise much better.</td></tr>
+          </tbody>
+        </table>
+        <p>Two filesystem decisions pay for themselves immediately:</p>
+        <ol class="plain">
+          <li>Give <code>/usr</code> or, better, a dedicated <code>/usr/obj</code> partition room to breathe.
+            Running out of space during <code>make build</code> is the beginner classic.</li>
+          <li>Put the build output on your fastest disposable storage. <code>obj</code> directories exist to be
+            deleted.</li>
+        </ol>
+        <h3>doas and the shell you will live in</h3>
+        <p>Root does the installing; work can stay interactive. Check your privilege tool:</p>
+        <div class="code"><pre><span class="u">$</span> grep root /etc/doas.conf
+permit persist :wheel</pre></div>
+        <div class="note"><b>Note:</b> <code>make build</code> shells out and expects <code>sudo</code>-style
+          elevation to work non-interactively. With doas, <code>permit persist</code> for your group is the
+          smooth path; otherwise prefix with <code>SUDO=doas</code>.</div>
+      </section>
+
+      <section class="entry" id="tree">
+        <h2><span class="tag">03</span>Get a tree</h2>
+        <p>Everything starts from CVS. Pick an <code>anoncvs</code> server near you from the list on the project
+          website, then check out the trees you need:</p>
+        <div class="code"><pre><span class="cm"># base source, the one everything else depends on</span>
+<span class="u">$</span> cd /usr
+<span class="u">$</span> cvs -qd anoncvs@server/pub/OpenBSD-src checkout -P src
+
+<span class="cm"># X11 sources (Xenocara)</span>
+<span class="u">$</span> cvs -qd anoncvs@server/pub/OpenBSD-xenocara checkout -P xenocara
+
+<span class="cm"># ports for third-party software</span>
+<span class="u">$</span> cvs -qd anoncvs@server/pub/OpenBSD-ports checkout -P ports</pre></div>
+        <p>To update a tree later, move it forward instead of checking out over it:</p>
+        <div class="code"><pre><span class="u">$</span> cd /usr/src
+<span class="u">$</span> cvs -q up -Pd</pre></div>
+        <h3>Three ways to be slightly wrong</h3>
+        <div class="warn"><b>Rule one:</b> install the matching snapshot or release <em>first</em>. A -current
+          tree compiled against an old base mixes header generations and behaves in ways that waste your
+          weekend. <code>sysupgrade</code> to the matching snapshot before touching cvs.</div>
+        <div class="note"><b>Note:</b> on -stable, install each <code>&lt;nn&gt;.patch</code> file for your
+          release before building; the patches are the errata with build instructions attached.</div>
+        <div class="note"><b>Note:</b> keep trees for different flavours separate. A -current workstation and a
+          -stable server can live on one disk if their trees are separate, but they must not share
+          <code>obj</code> output.</div>
+      </section>
+
+      <section class="entry" id="branches">
+        <h2><span class="tag">04</span>Branches of the same rock</h2>
+        <p>One CVS tree, three flavours, and the build steps differ mostly in what you expect from them:</p>
+        <table>
+          <thead>
+            <tr><th>Flavour</th><th>Tag / have</th><th>Wait for it to be</th><th>Get updates by</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>-release</td><td>the install media</td><td>frozen</td><td><code>syspatch</code> only</td></tr>
+            <tr><td>-stable</td><td><code>-rstab</code> from the release tag</td><td>conservative</td><td>cvs pull + recompile</td></tr>
+            <tr><td>-current</td><td>unstable HEAD</td><td>fast-moving</td><td>cvs pull + recompile + read <code>current.html</code></td></tr>
+          </tbody>
+        </table>
+        <ul class="plain">
+          <li><b>-stable:</b> born from the release tag with bug fixes back-ported. API-stable enough that a
+            running host keeps its promises across a rebuild.</li>
+          <li><b>-current:</b> where development happens. Between major ABI changes it <em>will</em> require
+            bootstrapping steps; <code>current.html</code> on the website is the contract, read it before you
+            pull, not after you break.</li>
+          <li><b>Never</b> mix a -current kernel with a -stable userland, or the other way. The libc/kernel ABI
+            pair moves together.</li>
+        </ul>
+      </section>
+
+      <section class="entry" id="order">
+        <h2><span class="tag">05</span>Order of operations</h2>
+        <p>Source build is a dance with a fixed order. Skipping a step produces the famous &ldquo;file not
+          found but everything looks fine&rdquo; classes of failure:</p>
+        <div class="stepper">
+          <div class="step"><span class="n">1</span><div>
+            <h3>Snapshot or release base in place</h3>
+            <p><code>sysupgrade</code> / <code>syspatch</code> first. The tree must match the day's base.</p>
+          </div></div>
+          <div class="step"><span class="n">2</span><div>
+            <h3><code>make obj</code></h3>
+            <p>Symlink mirrors for every object directory into <code>/usr/obj</code>, so binaries never pollute
+              the source tree itself.</p>
+          </div></div>
+          <div class="step"><span class="n">3</span><div>
+            <h3>Kernel</h3>
+            <p>Either the whole <code>make kernel</code> or a configured variant. A KARL-linked kernel comes
+              from the release machinery; a hand-built one gets you to work.</p>
+          </div></div>
+          <div class="step"><span class="n">4</span><div>
+            <h3>Includes and userland</h3>
+            <p><code>make includes</code> (or a straight <code>make build</code>, which does it in order) puts
+              fresh headers into <code>/usr/include</code> before anything else is compiled against them.</p>
+          </div></div>
+          <div class="step"><span class="n">5</span><div>
+            <h3>Xenocara</h3>
+            <p>Same idea, <code>/usr/lobj</code> + <code>/usr/xobj</code>, installed over the old X.</p>
+          </div></div>
+          <div class="step"><span class="n">6</span><div>
+            <h3>Ports / release</h3>
+            <p>Your target ports, or a whole <code>make release</code> run if you are producing install sets.</p>
+          </div></div>
+        </div>
+        <div class="note"><b>Note:</b> <code>make obj</code> is re-runnable and idempotent. When in doubt,
+          <code>rm -rf /usr/obj/*</code> and run it again. It takes seconds; debugging a mixed build takes
+          evenings.</div>
+      </section>
+
+      <section class="entry" id="kernel">
+        <h2><span class="tag">06</span>Build the kernel</h2>
+        <p>The plain path that follows the source tree as written:</p>
+        <div class="code"><pre><span class="cm"># from a clean tree with objects made</span>
+<span class="u">$</span> cd /usr/src
+<span class="u">$</span> make obj
+<span class="u">$</span> make kernel <span class="cm"># builds every kernel flavor for your arch from the shared obj area</span></pre></div>
+        <h3>Installing it by hand</h3>
+        <p><code>make kernel</code> puts the result under <code>/usr/obj/...</code>. Move it into place and keep
+          the old one bootable &mdash; the boot loader understands <code>&gt;</code>-prefixed names like
+          <code>boot&gt; boot #bsd.prev</code>:</p>
+        <div class="code"><pre><span class="u">$</span> doas cp /usr/obj/sys/arch/$(machine -i)/compile/GENERIC/bsd /bsd
+<span class="u">$</span> doas rm -f /obsd &amp;&amp; doas ln /bsd /obsd
+<span class="u">$</span> doas reboot</pre></div>
+        <h3>A custom kernel</h3>
+        <p>Copy the stock config out of the way, edit it, and build the same way the tree does:</p>
+        <div class="code"><pre><span class="u">$</span> cd /usr/src/sys/arch/$(machine -i)/conf
+<span class="u">$</span> cp GENERIC.MP KLUDGE
+<span class="u">$</span> vi KLUDGE        <span class="cm"># keep the diff small and boring</span>
+<span class="u">$</span> config KLUDGE
+<span class="u">$</span> cd ../compile/KLUDGE
+<span class="u">$</span> make clean &amp;&amp; make</pre></div>
+        <div class="warn"><b>Warn:</b> do not blind-delete devices you actually use, and do not remove
+          <code>wd0*</code>/<code>sd0*</code>-style disk nodes or things your filesystem depends on. A
+          &ldquo;lean&rdquo; kernel that cannot read its own disk is a form of modern haiku.</div>
+        <details class="faq">
+          <summary>Why is my kernel bigger / smaller than the stock one?</summary>
+          <div class="faq-body">Options and drivers differ, and KARL (Kernel Address Randomization Link) pads
+            the stock one deliberately. Functionally, a hand-built kernel is fine; release builds do the KARL
+            pass (two links so symbol placement differs between snapshot kernels). If you care about matching
+            the project's randomisation behaviour, build via <code>make release</code> hooks.</div>
+        </details>
+      </section>
+
+      <section class="entry" id="userland">
+        <h2><span class="tag">07</span>Build userland</h2>
+        <p>This is the long loop: <code>libc</code>, <code>/bin</code>, <code>/usr/bin</code>, daemons, the
+          compiler toolchain. Give it hours, not minutes.</p>
+        <div class="code"><pre><span class="u">$</span> cd /usr/src
+<span class="u">$</span> make obj                 <span class="cm"># idempotent; re-run freely</span>
+<span class="u">$</span> make includes            <span class="cm"># headers before things compiled against them</span>
+<span class="u">$</span> doas make build           <span class="cm"># or: $ SUDO=doas make build</span></pre></div>
+        <p>What <code>make build</code> will do to your machine, roughly in order:</p>
+        <ul class="plain">
+          <li><code>make cleandir</code>-adjacent cleanup of built objects,</li>
+          <li><code>make includes</code> into <code>/usr/include</code>,</li>
+          <li>the compiler bootstrap dance,</li>
+          <li>every library, binary and manual page for your host,</li>
+          <li>system configuration updates where needed (run <code>sysmerge</code> if told).</li>
+        </ul>
+        <p>After it finishes with no errors, reboot into the new world and run <code>sysmerge</code> if prompted
+          &mdash; config file differences land outside make's jurisdiction.</p>
+        <div class="warn"><b>Warn:</b> interrupting <code>make build</code> is legal (<code>Ctrl+C</code>) but
+          restarting requires a clean <code>/usr/obj</code> and a fresh <code>make obj</code> at minimum. The
+          tree does not reliably resume mid-flight, and half-installed binaries hide trickier bugs than missing
+          ones.</div>
+      </section>
+
+      <section class="entry" id="xenocara">
+        <h2><span class="tag">08</span>Build Xenocara</h2>
+        <p>X sources follow the same choreography with different directories. The bootstrap target makes the
+          meta-tooling, then the build proceeds:</p>
+        <div class="code"><pre><span class="u">$</span> cd /usr/xenocara
+<span class="u">$</span> make bootstrap
+<span class="u">$</span> make obj
+<span class="u">$</span> doas make build</pre></div>
+        <p>Object output lands in <code>/usr/xobj</code>, intermediate tools in <code>/usr/lobj</code>. Like the
+          base tree, both are disposable.</p>
+        <div class="note"><b>Note:</b> build userland <em>before</em> X. Xenocara links against freshly built
+          libraries; doing it backwards is one of the rare genuine ordering traps left in the flow.</div>
+      </section>
+
+      <section class="entry" id="ports">
+        <h2><span class="tag">09</span>Ports: the source of everything else</h2>
+        <p>ports(7) is the third-party build system. Unlike base, it is <em>designed</em> to be driven on your
+          machine, and it has opinions about tarballs, checksums and privilege separation.</p>
+        <h3>One port, properly</h3>
+        <div class="code"><pre><span class="cm"># find it</span>
+<span class="u">$</span> cd /usr/ports
+<span class="u">$</span> make search key=<span class="u">example</span>
+
+<span class="cm"># download + checksum (this is what verifies against a known digest)</span>
+<span class="u">$</span> cd editors/example
+<span class="u">$</span> doas make fetch
+
+<span class="cm"># build and install; config files ask politely via sysmerge-style dialogs</span>
+<span class="u">$</span> doas make install</pre></div>
+        <p>Everyday knobs that keep your tree clean:</p>
+        <table>
+          <thead>
+            <tr><th>Knob</th><th>Does</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>WRKOBJDIR</code></td><td>Where <code>work</code> directories are created (keep them off the tree disk).</td></tr>
+            <tr><td><code>DISTDIR</code></td><td>Where source tarballs accumulate (share it across machines).</td></tr>
+            <tr><td><code>PKG_PATH</code></td><td>For prebuilt packages, the counterpoint to ports: <code>pkg_add</code> is what <code>make install</code> compares itself against.</td></tr>
+            <tr><td><code>FLAVOR</code></td><td>Build variants declared by the port (<code>make show=FLAVORS</code> lists them).</td></tr>
+          </tbody>
+        </table>
+        <h3>Maintainer tooling</h3>
+        <ul class="plain">
+          <li><code>make update-patches</code> regenerates <code>patches/</code> from your <code>work/</code>
+            volunteer edits &mdash; the polite way to feed fixes upstream.</li>
+          <li><code>portcheck</code>&nbsp;/ <code>port-lib-depends</code>&nbsp;/ <code>make wantlib-args</code>
+            keep the metadata honest.</li>
+          <li><code>dpb</code> (from ports infrastructure) drives parallel dependency-aware builds &mdash; the
+            same engine the bulk builders use. One machine, many cores, correct dependency order for free.</li>
+        </ul>
+        <div class="warn"><b>Warn:</b> never <code>make install</code> untrusted ports as root on your only
+          machine. Port <code>build</code> code is software you have not read yet, running before you install
+          it. Separate VM or builder account is the security advice both from the project and from this page.</div>
+      </section>
+
+      <section class="entry" id="release">
+        <h2><span class="tag">10</span>Release engineering</h2>
+        <p><code>make release</code> walks the whole tree and produces the install sets your <code>install</code>
+          media consumes: <code>base</code>, <code>comp</code>, <code>xbase</code>, <code>man</code>, and the
+          <code>bsd</code>-family kernels. This is where KARL happens too: the kernel is linked twice so each
+          snapshot gets a different memory layout.</p>
+        <div class="code"><pre><span class="u">$</span> cd /usr/src
+<span class="u">$</span> doas env DESTDIR=/dest RELEASEDIR=/rel make release
+
+<span class="cm"># then the two extra passes that verify it</span>
+<span class="u">$</span> doas env DESTDIR=/dest2 make release 'UPDATE=  no' <span class="cm"># see FAQ for exact knobs</span></pre></div>
+        <p>Honest advice: read <code>release(8)</code> before your first run and do the first release in a VM.
+          The knobs (DESTDIR, RELEASEDIR, the check-passes) have changed shape between versions, and your
+          reading of the manual is the only thing guaranteed to match the tree you checked out.</p>
+        <div class="note"><b>Note:</b> ports and xenocara have their own release flows (<code>dpb</code> for
+          ports packages, <code>make release</code> in xenocara). They compose with the base release but are
+          their own documents.</div>
+      </section>
+
+      <section class="entry" id="traps">
+        <h2><span class="tag">11</span>Traps and their traps</h2>
+        <p>The failure modes are boringly repetitive. Recognising them by symptom saves an afternoon each:</p>
+        <table>
+          <thead>
+            <tr><th>Symptom</th><th>Usually</th><th>Fixed by</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Compiler killed, <code>cc1</code> OOM</td><td>Not enough RAM for link time</td><td>More RAM, or build on a machine with swap.</td></tr>
+            <tr><td><code>/usr/obj: No space left</code> mid-build</td><td>Disk arithmetic was optimistic</td><td>Move obj to a bigger fs; clean other obj dirs.</td></tr>
+            <tr><td><code>make build</code> fails in weird template files <em>after</em> a partial edit</td><td>Mixed tree state, stale objects</td><td><code>rm -rf /usr/obj/*</code>, <code>make obj</code>, restart clean.</td></tr>
+            <tr><td>Kernel boots, userland refuses to run</td><td>Kernel/userland age mismatch</td><td>Match with the same tree and the same base.</td></tr>
+            <tr><td><code>make -j N</code> breaks the base build</td><td>Base Makefiles are not parallel</td><td>Run them serially (ports and <code>dpb</code> parallelise instead).</td></tr>
+            <tr><td>Timestamps confused, <code>make</code> loops forever</td><td>Clock skew, NFS with bad timesource</td><td>NTP the build host; local disks built better.</td></tr>
+          </tbody>
+        </table>
+        <div class="warn"><b>The big one:</b> a tree that is halfway between two CVS states is the single most
+          common self-inflicted wound. If you pulled new source, start the build from the top of the ladder
+          (obj &rarr; kernel &rarr; build), not from wherever the last failure stopped.</div>
+      </section>
+
+      <section class="entry" id="reference">
+        <h2><span class="tag">12</span>Cheat sheet</h2>
+        <div class="cols two">
+          <div class="code"><pre><span class="cm"># update a tree (-current)</span>
+<span class="u">$</span> cd /usr/src &amp;&amp; cvs -q up -Pd
+
+<span class="cm"># the daily ladder</span>
+<span class="u">$</span> make obj
+<span class="u">$</span> make kernel
+<span class="u">$</span> <span class="cm">[install bsd]</span>
+<span class="u">$</span> doas make build
+
+<span class="cm"># X</span>
+<span class="u">$</span> make bootstrap &amp;&amp; make obj
+<span class="u">$</span> doas make build</pre></div>
+          <div class="code"><pre><span class="cm"># one port</span>
+<span class="u">$</span> cd /usr/ports/section/name
+<span class="u">$</span> doas make fetch install
+
+<span class="cm"># maintainer round trip</span>
+<span class="u">$</span> make extract
+<span class="u">$</span> make patch
+<span class="u">$</span> <span class="cm">[edit work/]</span>
+<span class="u">$</span> make update-patches
+
+<span class="cm"># release</span>
+<span class="u">$</span> doas env DESTDIR=... RELEASEDIR=... \
+    make release</pre></div>
+        </div>
+        <p>The three man pages worth keeping close:
+          <code>release(8)</code>, <code>ports(7)</code>, <code>afterboot(8)</code>.
+          And, of course, FAQ 5 (building) of the official documentation is the ground truth, written by the
+          people running the builders.</p>
+      </section>
+
+      <section class="entry" id="checklist">
+        <h2><span class="tag">13</span>Your build, day by day</h2>
+        <p>Progress below is stored in this browser (<code>localStorage</code>) only. Uncheck, re-check, close
+          the page; it reopens where you left it.</p>
+        <div class="checklist" id="buildChecklist">
+          <div class="meter">
+            <span id="checkCount">0 / 12</span>
+            <span class="bar"><i id="checkBar"></i></span>
+            <button type="button" id="checkReset" style="all: unset; cursor: pointer; color: var(--muted); border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.08em;">RESET</button>
+          </div>
+          <label><input type="checkbox" data-key="base"><span>Matching snapshot/release installed (<code>sysupgrade</code>/<code>syspatch</code>)</span></label>
+          <label><input type="checkbox" data-key="trees"><span><code>src</code>, <code>xenocara</code>, <code>ports</code> checked out from a mirror that answers</span></label>
+          <label><input type="checkbox" data-key="doas"><span><code>doas</code> configured and tested for the group that builds</span></label>
+          <label><input type="checkbox" data-key="disk"><span>Disk sized: <code>/usr/obj</code>, <code>/usr/xobj</code>, distfiles headroom checked</span></label>
+          <label><input type="checkbox" data-key="obj"><span><code>make obj</code> from a clean <code>/usr/obj</code></span></label>
+          <label><input type="checkbox" data-key="includes"><span><code>make includes</code> (or knowledge that <code>make build</code> covers it)</span></label>
+          <label><input type="checkbox" data-key="kernel"><span>Kernel built and moved into <code>/bsd</code> with the old one kept</span></label>
+          <label><input type="checkbox" data-key="boot"><span>Rebooted; <code>boot&gt; boot #bsd.prev</code> escape hatch known</span></label>
+          <label><input type="checkbox" data-key="build"><span><code>make build</code> completed with zero errors</span></label>
+          <label><input type="checkbox" data-key="merge"><span><code>sysmerge</code> run (or confirmed clean)</span></label>
+          <label><input type="checkbox" data-key="x11"><span>Xenocara: <code>bootstrap &rarr; obj &rarr; build</code> in that order</span></label>
+          <label><input type="checkbox" data-key="ports"><span>First port built on a disposable account or VM</span></label>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <div class="foot">
+      <span>Monkey Blog &middot; <a href="./index.html">Home</a></span>
+      <span><a href="./index.html">Archive</a> &middot; <a href="#why">Back to top</a></span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY = "openbsdCompilation.progress.v1";
+      var tocLinks = Array.prototype.slice.call(document.querySelectorAll("nav.toc ol a"));
+      var sections = tocLinks.map(function (link) {
+        var anchor = link.getAttribute("href").slice(1);
+        return document.getElementById(anchor);
+      });
+
+      /* ---- active section in the table of contents ---- */
+      function setActive() {
+        var scrollY = window.scrollY + 140;
+        var activeIndex = 0;
+        sections.forEach(function (section, index) {
+          if (section && section.offsetTop <= scrollY) {
+            activeIndex = index;
+          }
+        });
+        tocLinks.forEach(function (link, index) {
+          link.classList.toggle("active", index === activeIndex);
+        });
+      }
+
+      var rafPending = false;
+      window.addEventListener("scroll", function () {
+        if (!rafPending) {
+          rafPending = true;
+          window.requestAnimationFrame(function () {
+            rafPending = false;
+            setActive();
+          });
+        }
+      }, { passive: true });
+      setActive();
+
+      /* ---- copy buttons on every code block ---- */
+      Array.prototype.slice.call(document.querySelectorAll(".code")).forEach(function (block) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "copy";
+        button.textContent = "copy";
+        button.setAttribute("aria-label", "Copy code to clipboard");
+        button.addEventListener("click", function () {
+          var text = block.querySelector("pre").textContent;
+          var done = function () {
+            button.textContent = "copied";
+            window.setTimeout(function () { button.textContent = "copy"; }, 1400);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () {
+              button.textContent = "nope";
+            });
+          } else {
+            var helper = document.createElement("textarea");
+            helper.value = text;
+            helper.setAttribute("readonly", "readonly");
+            helper.style.position = "absolute";
+            helper.style.left = "-9999px";
+            document.body.appendChild(helper);
+            helper.select();
+            try {
+              document.execCommand("copy");
+              done();
+            } catch (error) {
+              button.textContent = "nope";
+            }
+            document.body.removeChild(helper);
+          }
+        });
+        block.appendChild(button);
+      });
+
+      /* ---- build checklist, persisted per browser ---- */
+      var box = document.getElementById("buildChecklist");
+      if (box) {
+        var boxes = Array.prototype.slice.call(box.querySelectorAll("input[type=checkbox]"));
+        var count = document.getElementById("checkCount");
+        var bar = document.getElementById("checkBar");
+        var reset = document.getElementById("checkReset");
+
+        function readState() {
+          var state = {};
+          try {
+            state = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}") || {};
+          } catch (error) {
+            state = {};
+          }
+          return state;
+        }
+
+        function paint() {
+          var state = readState();
+          var done = 0;
+          boxes.forEach(function (input) {
+            var on = !!state[input.getAttribute("data-key")];
+            input.checked = on;
+            if (on) { done += 1; }
+          });
+          count.textContent = done + " / " + boxes.length;
+          bar.style.width = Math.round((done / boxes.length) * 100) + "%";
+        }
+
+        function save(input) {
+          var state = readState();
+          state[input.getAttribute("data-key")] = input.checked;
+          try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          } catch (error) {
+            /* storage is a gift, not a right */
+          }
+          paint();
+        }
+
+        boxes.forEach(function (input) {
+          input.addEventListener("change", function () { save(input); });
+        });
+
+        if (reset) {
+          reset.addEventListener("click", function () {
+            try {
+              window.localStorage.removeItem(STORAGE_KEY);
+            } catch (error) { }
+            paint();
+          });
+        }
+
+        paint();
+      }
+    })();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" sizes="12x12" />
+  <meta name="description" content="A single-file, dark-theme field manual for xterm: first launch, the three mouse menus, colors, fonts, X resources, scrollback, scissors keyboard, clipboard and the hero vocabulary of flags.">
+  <title>xterm — From Nothing to Hero · Monkey Blog</title>
+  <style>
+    :root {
+      --ink: #eef0f8;
+      --muted: #9aa3bd;
+      --accent: #c9a7ff;
+      --accent-warm: #ffd66b;
+      --good: #7fe3a8;
+      --line: rgba(160, 150, 210, 0.20);
+      --line-strong: rgba(201, 167, 255, 0.45);
+      --panel: rgba(14, 13, 24, 0.86);
+      --panel-soft: rgba(21, 20, 34, 0.76);
+      --code-bg: rgba(6, 5, 12, 0.88);
+      --radius: 0.9rem;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+        "Noto Sans", "Liberation Sans", sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { padding: 0; margin: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      background:
+        radial-gradient(1000px 470px at 88% -8%, rgba(201, 167, 255, 0.08), transparent 60%),
+        radial-gradient(840px 470px at -8% 25%, rgba(255, 214, 107, 0.06), transparent 55%),
+        linear-gradient(180deg, #08070e 0%, #0d0c17 55%, #070609 100%) fixed;
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-color: rgba(201, 167, 255, 0.4);
+      text-underline-offset: 0.2em;
+    }
+
+    a:visited { color: #b9a5dd; }
+
+    code, kbd, pre { font-family: var(--mono); font-size: 0.92em; }
+
+    code {
+      background: rgba(201, 167, 255, 0.1);
+      border: 1px solid var(--line);
+      border-radius: 0.4rem;
+      padding: 0.05em 0.4em;
+      white-space: nowrap;
+    }
+
+    kbd {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      border-radius: 0.35rem;
+      padding: 0.05em 0.45em;
+      font-size: 0.82em;
+    }
+
+    .home {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem clamp(1rem, 3vw, 2rem);
+      background: rgba(8, 7, 14, 0.88);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .home a.back {
+      display: inline-flex;
+      gap: 0.4rem;
+      align-items: center;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      padding: 0.25rem 0.9rem;
+    }
+
+    .home a.back:hover { background: rgba(201, 167, 255, 0.08); }
+
+    .home span.field {
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-family: var(--mono);
+    }
+
+    header.hero {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: clamp(2rem, 6vw, 3.4rem) clamp(1rem, 3vw, 2rem) 1rem;
+      text-align: center;
+    }
+
+    header.hero h1 {
+      margin: 0 0 0.4rem;
+      font-size: clamp(1.6rem, 4.5vw, 2.6rem);
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
+
+    header.hero h1 .xt {
+      font-family: var(--mono);
+      color: var(--accent-warm);
+    }
+
+    header.hero p.lede {
+      margin: 0 auto;
+      max-width: 48rem;
+      color: var(--muted);
+      font-size: clamp(0.95rem, 2vw, 1.06rem);
+    }
+
+    header.hero .meta {
+      margin: 0.9rem auto 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    header.hero .meta span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.15rem 0.7rem;
+      background: var(--panel-soft);
+    }
+
+    header.hero::after {
+      content: "";
+      display: block;
+      width: min(26rem, 70%);
+      height: 1px;
+      margin: 1.2rem auto 0;
+      background-image: linear-gradient(90deg, transparent, var(--line-strong), transparent);
+    }
+
+    .layout {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 0 clamp(1rem, 3vw, 2rem) clamp(2rem, 5vw, 3.5rem);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 980px) {
+      .layout { grid-template-columns: 16rem minmax(0, 1fr); align-items: start; }
+      nav.toc { position: sticky; top: 3.4rem; }
+    }
+
+    nav.toc {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+      padding: 0.9rem 0.9rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    nav.toc h2 {
+      margin: 0 0 0.6rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    nav.toc ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      counter-reset: toc;
+    }
+
+    nav.toc ol li { margin: 0; }
+
+    nav.toc ol a {
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+      padding: 0.28rem 0.45rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      color: var(--ink);
+      counter-increment: toc;
+    }
+
+    nav.toc ol a::before {
+      content: counter(toc, decimal-leading-zero);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+    }
+
+    nav.toc ol a:hover { background: rgba(201, 167, 255, 0.1); }
+
+    nav.toc ol a.active {
+      background: rgba(201, 167, 255, 0.14);
+      box-shadow: inset 2px 0 0 var(--accent);
+    }
+
+    main { min-width: 0; }
+
+    section.entry {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: clamp(1.1rem, 3vw, 1.8rem);
+      margin: 0 0 1.4rem;
+      scroll-margin-top: 3.8rem;
+    }
+
+    section.entry h2 {
+      margin: 0 0 0.7rem;
+      font-size: clamp(1.2rem, 2.6vw, 1.5rem);
+      line-height: 1.3;
+    }
+
+    section.entry h2 .tag {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.55rem;
+      font-family: var(--mono);
+      font-size: 0.62em;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-warm);
+      border: 1px solid rgba(255, 214, 107, 0.4);
+      border-radius: 999px;
+      padding: 0.12rem 0.55rem;
+    }
+
+    section.entry h3 {
+      margin: 1.4rem 0 0.4rem;
+      font-size: 1.05rem;
+      color: var(--accent);
+    }
+
+    section.entry p { margin: 0.55rem 0; }
+
+    section.entry ul.plain,
+    section.entry ol.plain {
+      margin: 0.5rem 0;
+      padding-left: 1.2rem;
+    }
+
+    section.entry ul.plain li,
+    section.entry ol.plain li { margin: 0.3rem 0; }
+
+    .note, .warn {
+      border-radius: 0.7rem;
+      padding: 0.75rem 1rem;
+      margin: 0.8rem 0;
+      font-size: 0.94rem;
+    }
+
+    .note {
+      border: 1px solid var(--line-strong);
+      background: rgba(201, 167, 255, 0.07);
+    }
+
+    .warn {
+      border: 1px solid rgba(255, 214, 107, 0.45);
+      background: rgba(255, 214, 107, 0.07);
+    }
+
+    .note b:first-child, .warn b:first-child { color: var(--accent-warm); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8rem 0;
+      font-size: 0.93rem;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.5rem 0.7rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: rgba(201, 167, 255, 0.08);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    td code { white-space: nowrap; }
+
+    .code {
+      position: relative;
+      margin: 0.8rem 0;
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      overflow: auto;
+      background: var(--code-bg);
+    }
+
+    .code pre {
+      margin: 0;
+      padding: 0.9rem 3.4rem 0.9rem 1rem;
+      overflow-x: auto;
+      line-height: 1.55;
+      font-size: 0.9rem;
+      color: #e6e2f4;
+      white-space: pre;
+    }
+
+    .code pre .u { color: var(--accent-warm); font-weight: 600; }
+    .code pre .cm { color: var(--muted); font-style: italic; }
+
+    .code .copy {
+      position: absolute;
+      top: 0.55rem;
+      right: 0.55rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      border-radius: 0.4rem;
+      padding: 0.2rem 0.55rem;
+      cursor: pointer;
+    }
+
+    .code .copy:hover,
+    .code .copy:focus-visible {
+      color: var(--ink);
+      border-color: var(--line-strong);
+    }
+
+    .code .copy:active { transform: translateY(1px); }
+
+    details.faq {
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      background: var(--panel-soft);
+      margin: 0.7rem 0;
+    }
+
+    details.faq summary {
+      cursor: pointer;
+      padding: 0.7rem 1rem;
+      font-weight: 600;
+      list-style-position: outside;
+    }
+
+    details.faq summary::marker { color: var(--accent); }
+
+    details.faq .faq-body {
+      padding: 0.7rem 1rem 0.9rem;
+      color: var(--ink);
+      border-top: 1px solid var(--line);
+    }
+
+    .swatches {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 0.4rem;
+      margin: 0.8rem 0;
+    }
+
+    .swatches span {
+      aspect-ratio: 2 / 1;
+      border-radius: 0.45rem;
+      display: grid;
+      place-items: end center;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      padding-bottom: 0.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.85);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    }
+
+    .swatch-label {
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .demo-btn {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line-strong);
+      border-radius: 0.5rem;
+      padding: 0.35rem 0.8rem;
+      cursor: pointer;
+      margin: 0.3rem 0.4rem 0.3rem 0;
+    }
+
+    .demo-btn:hover,
+    .demo-btn:focus-visible {
+      background: rgba(201, 167, 255, 0.12);
+    }
+
+    .checklist {
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      background: var(--panel-soft);
+      padding: 0.9rem 1rem;
+      margin: 0.9rem 0;
+    }
+
+    .checklist .meter {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .checklist .bar {
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .checklist .bar i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+      transition: width 0.25s ease;
+    }
+
+    .checklist label {
+      display: flex;
+      gap: 0.6rem;
+      align-items: baseline;
+      padding: 0.3rem 0;
+      cursor: pointer;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .checklist label:last-of-type { border-bottom: 0; }
+
+    .checklist input {
+      accent-color: var(--accent);
+      width: 1.05rem;
+      height: 1.05rem;
+      flex: none;
+    }
+
+    .checklist input:checked~span {
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-color: rgba(201, 167, 255, 0.5);
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      background: rgba(8, 7, 14, 0.9);
+    }
+
+    footer .foot {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 1.2rem clamp(1rem, 3vw, 2rem);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.4rem;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    footer .foot a { color: var(--accent); }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 0.3rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="home">
+    <a class="back" href="./index.html">&#8630; Home</a>
+    <span class="field">Field Manual XTH-2 · nothing to hero, one window at a time</span>
+  </div>
+
+  <header class="hero">
+    <h1><span class="xt">xterm</span> — From Nothing to Hero</h1>
+    <p class="lede">The terminal that is already there before you pick an emulator. It has no opinions, no
+      plugins and no settings UI &mdash; but it has menus hidden behind mouse chords, a resource database,
+      a 256-colour palette and a translation system for keys. Everything in one page.</p>
+    <div class="meta">
+      <span>menus &middot; resources &middot; colors &middot; fonts &middot; scrollback</span>
+      <span>vanilla JS &middot; CSS3 &middot; no dependencies</span>
+      <span>titles get hijacked, politely, on demand</span>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <nav class="toc" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#nothing">From nothing</a></li>
+        <li><a href="#first">First launch that sticks</a></li>
+        <li><a href="#menus">The three mouse menus</a></li>
+        <li><a href="#fonts">Fonts, honestly</a></li>
+        <li><a href="#colors">Colors and the 16 known faces</a></li>
+        <li><a href="#resources">The resource database</a></li>
+        <li><a href="#scrollback">Scrollback and the frozen screen</a></li>
+        <li><a href="#clipboard">Copy-paste without mystery</a></li>
+        <li><a href="#keys">Alt, Meta and other ghost stories</a></li>
+        <li><a href="#titles">Titles by escape sequence</a></li>
+        <li><a href="#resize">The resize ritual</a></li>
+        <li><a href="#vocab">Hero vocabulary</a></li>
+        <li><a href="#checklist">Your ladder to hero</a></li>
+      </ol>
+    </nav>
+
+    <main>
+
+      <section class="entry" id="nothing">
+        <h2><span class="tag">01</span>From nothing</h2>
+        <p>xterm is the X Window System's own terminal emulator &mdash; the original one, shipped with X
+          itself since the 1980s and still maintained. That placement is its whole personality:</p>
+          <ul class="plain">
+            <li><b>It is always there.</b> Install X on BSD or Linux and xterm appears with it. When your
+              fancy emulator breaks, when you are setting up a new window manager, when you ssh into a
+              machine with no dotfiles &mdash; it is the window you open next.</li>
+            <li><b>It does not fight.</b> No shells inside the emulator, no plugin sandboxes, no
+              theme marketplace. Features are negotiated with the X server like it is 1985,
+              which means they are all still documented.</li>
+            <li><b>It is the reference.</b> Ctrl-click menus, clipboard semantics, mouse support, 256 colours
+              &mdash; if a modern emulator implements something differently, xterm's way is what the man page
+              compares against first.</li>
+          </ul>
+          <p>On most systems it comes as a standalone package (<code>x11/xterm</code> on BSD,
+            <code>xterm</code> everywhere else), which drags in one small friend worth celebrating later:
+            <code>resize(1)</code>.</p>
+        <div class="note"><b>Note:</b> &ldquo;hero&rdquo; here means: you can configure xterm without a
+          drinking problem, name menus by their chords, and fix five classic puzzles (frozen screen, ghost
+          <kbd>Alt</kbd>, vanished titles, stale size after split, missing clipboard bridge).
+          Those five, named and fixed in a minute &mdash; that is the hero part.</div>
+      </section>
+
+      <section class="entry" id="first">
+        <h2><span class="tag">02</span>First launch that sticks</h2>
+        <p>From an X session (cwm, twm, anything with a launcher), the zeroth xterm is one command:</p>
+        <div class="code"><pre><span class="u">$</span> xterm &amp;</pre></div>
+        <p>And the four flags that cover every practical first launch:</p>
+        <div class="code"><pre><span class="u">$</span> xterm -ls              <span class="cm"># login shell, reads .profile like a console</span>
+<span class="u">$</span> xterm -e htop          <span class="cm"># run a command instead of a shell</span>
+<span class="u">$</span> xterm -title doughnut  <span class="cm"># name the window; joyriders' favourite</span>
+<span class="u">$</span> xterm -geometry 100x34+60+40</pre></div>
+        <p>The geometry syntax is <code>COLS×ROWS+X+Y</code> &mdash; columns first, then pixels for the
+          corner. It reads odd the first three times and obvious forever after.</p>
+        <div class="note"><b>Note:</b> <code>xterm -e</code> goes away with the shell inside it &mdash; close
+          htop, window closes. For a window that survives the command, use <code>-hold</code> (see the hero
+          vocabulary, section&nbsp;12) to watch errors at the end of scripts that flash by too fast.</div>
+      </section>
+
+      <section class="entry" id="menus">
+        <h2><span class="tag">03</span>The three mouse menus</h2>
+        <p>xterm's &ldquo;settings UI&rdquo; never made it into a GUI box; it is three pop-up menus wired to
+          Control chords while the pointer is over the window. No one would design this today; everyone who
+          has learned it refuses to give it back.</p>
+        <table>
+          <thead>
+            <tr><th>Chord</th><th>Menu</th><th>What lives there</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><kbd>Ctrl + Left-click</kbd></td><td>Main Options</td><td>Log to File, Print, Secure Keyboard (screen grab), Interrupt / Terminate / Kill, Continue / Suspend, Signal SIGQUIT &mdash; the emergency room.</td></tr>
+            <tr><td><kbd>Ctrl + Middle-click</kbd></td><td>VT Options</td><td>Scrollbar toggle, Jump Scroll, Reverse Video, Auto Wrap, Curses Emulation, Select to Clipboard, Locator &mdash; the daily behaviour panel.</td></tr>
+            <tr><td><kbd>Ctrl + Right-click</kbd></td><td>VT Fonts</td><td>Font sizes (Largest to Tiny), Escape (default), ASCII, fonts by name &mdash; the fast font dial.</td></tr>
+          </tbody>
+        </table>
+        <p>Two entries deserve a second sentence:</p>
+        <ul class="plain">
+          <li><b>Secure Keyboard</b> grabs input exclusively for this window; other clients (your IME daemon,
+            anything) stop reading the keyboard. Useful for passwords when you want to be sure.</li>
+          <li><b>Select to Clipboard</b> flips the copy behaviour to fill the modern <code>CLIPBOARD</code>
+            &mdash; section&nbsp;08 explains why that single menu entry ends the ancient
+            &ldquo;xterm cannot copy&rdquo; myth.</li>
+        </ul>
+        <div class="warn"><b>Warn:</b> in the Main Options menu, <code>Interrupt/Terminate/Kill</code> are what
+          their names say. Ctrl-Left-click exists precisely so nobody lands there by habit.</div>
+      </section>
+
+      <section class="entry" id="fonts">
+        <h2><span class="tag">04</span>Fonts, honestly</h2>
+        <p>By default xterm draws with its bitmap font, which is why it looks like a library scan from 1989.
+          The moment you point it at a TrueType face it becomes a modern citizen:</p>
+        <div class="code"><pre><span class="u">$</span> xterm -fa &quot;Liberation Mono&quot; -fs 12
+<span class="cm"># or, once, in resources (section 06):</span>
+XTerm*faceName: Liberation Mono
+XTerm*faceSize: 12</pre></div>
+        <ul class="plain">
+          <li><b>-fa / faceName:</b> any font your X server knows. Run <code>fc-list</code> to see the list;
+            monospace is a good idea, but xterm will not scold you.</li>
+          <li><b>-fs / faceSize:</b> point size. Set it once; the font menu then cycles sizes relative to it.</li>
+          <li><b>Ctrl + Right-click &rarr; VT Fonts</b> is the size dial for the session; resources are what
+            survives the dial.</li>
+          <li><b>UXTerm:</b> the same program pre-wired for Unicode; if your terminal
+            draws <code>?</code>-boxes for non-ASCII, try the <code>UXTerm</code> street name before
+            debugging anything.</li>
+        </ul>
+        <details class="faq">
+          <summary>My font change worked until I resized &mdash; then it went back?</summary>
+          <div class="faq-body">Menu changes are session-only; resources are permanent. Anything set
+            through a menu dies at the next reboot, anything in <code>.Xresources</code> is for tomorrow.
+            That rule resolves half of xterm folklore.</div>
+        </details>
+      </section>
+
+      <section class="entry" id="colors">
+        <h2><span class="tag">05</span>Colors and the 16 known faces</h2>
+        <p>xterm speaks 256 colours: the 16 classic ones (resources <code>color0</code> through
+          <code>color15</code>), the 6×6×6 cube, and 24 greys. Applications using ESC sequences or the
+          <code>xterm-256color</code> terminfo can address all of them.</p>
+        <p>The 16 faces every theme talks about &mdash; pure CSS, exactly as they ship by default:</p>
+        <div class="swatches" aria-label="The 16 default terminal colours">
+          <span style="background:#000000">0 black</span>
+          <span style="background:#cd0000">1 red</span>
+          <span style="background:#00cd00">2 green</span>
+          <span style="background:#cdcd00">3 yellow</span>
+          <span style="background:#0000cd">4 blue</span>
+          <span style="background:#cd00cd">5 magenta</span>
+          <span style="background:#00cdcd">6 cyan</span>
+          <span style="background:#cdcdcd">7 white</span>
+          <span style="background:#4d4d4d;color:#fff">8 brblack</span>
+          <span style="background:#ff0000;color:#fff">9 brred</span>
+          <span style="background:#00ff00">10 brgreen</span>
+          <span style="background:#ffff00">11 bryellow</span>
+          <span style="background:#0000ff;color:#fff">12 brblue</span>
+          <span style="background:#ff00ff;color:#fff">13 brmagenta</span>
+          <span style="background:#00ffff">14 brcyan</span>
+          <span style="background:#ffffff;color:#333">15 brwhite</span>
+        </div>
+        <p>Redefine any of them in resources, with the base pair thrown in:</p>
+        <div class="code"><pre>XTerm*foreground:  #eef0f8
+XTerm*background:  #0d0c17
+XTerm*color1:  #ff5f5f
+XTerm*color8:  #8a8a8a
+XTerm*cursorColor: #ffd66b</pre></div>
+        <p>And two parlor tricks for the session, no resources needed:</p>
+        <div class="code"><pre><span class="u">$</span> printf '\033]11;#101820\007'   <span class="cm"># repaint the background, live</span>
+<span class="u">$</span> printf '\033[0;31mred\033[0m' <span class="cm"># see? classic red</span></pre></div>
+        <div class="note"><b>Note:</b> themes from old Unix seasons still work: the menu entry
+          <em>Reverse Video</em> (Ctrl + Middle-click) flips the pair for five seconds of bluescreen comedy.</div>
+      </section>
+
+      <section class="entry" id="resources">
+        <h2><span class="tag">06</span>The resource database</h2>
+        <p>This is the heart of hero-land. xterm has no config file of its own; it reads the X resource
+          database. In practice you write them in <code>~/.Xresources</code> and load:</p>
+        <div class="code"><pre><span class="u">$</span> xrdb -merge ~/.Xresources</pre></div>
+        <p>Then new xterms inherit. A starter file that combines this page's earlier sections:</p>
+        <div class="code"><pre><span class="cm"># ~/.Xresources — xterm block</span>
+XTerm*loginShell:        true
+XTerm*faceName:          Liberation Mono
+XTerm*faceSize:          12
+XTerm*scrollBar:         true
+XTerm*scrollbar*thickness: 12
+XTerm*saveLines:         4096
+XTerm*scrollKey:         true
+XTerm*foreground:        #eef0f8
+XTerm*background:        #0d0c17
+XTerm*cursorColor:       #ffd66b
+XTerm*selectToClipboard: true</pre></div>
+        <p>How to find every button's name without reading the source:</p>
+        <div class="code"><pre><span class="u">$</span> appres xterm XTerm        <span class="cm"># full resource dump for the class</span></pre></div>
+        <div class="note"><b>Note:</b> the hierarchy is <code>Class.instance*resource</code> (or
+          <code>*</code> to skip levels). <code>XTerm*faceName</code> hits all xterms;
+          <code>xterm.debugshell*faceName</code> would hit one named instance only. Wildcards are free;
+          laziness with them is not.</div>
+        <div class="note"><b>Note:</b> some systems ship <code>.Xdefaults</code> plumbing instead; it works
+          the same at X startup day one. The two-file confusion dissolves the moment you standardise on
+          <code>.Xresources + xrdb -merge</code>.</div>
+      </section>
+
+      <section class="entry" id="scrollback">
+        <h2><span class="tag">07</span>Scrollback and the frozen screen</h2>
+        <p>The two experiences people actually have with scrollback: history that stops being kept
+          (the buffer was small), and a screen that stops moving
+          (the famous Ctrl+S accident).</p>
+        <h3>History that stops dying</h3>
+        <div class="code"><pre>XTerm*saveLines: 4096      <span class="cm"># default is 1024; give back some RAM</span>
+XTerm*scrollBar: true
+XTerm*scrollKey: true      <span class="cm"># any key output scrolls back to the prompt</span></pre></div>
+        <p>Use it: <kbd>Shift+PgUp</kbd>/<kbd>Shift+PgDn</kbd> line-wise, <kbd>Ctrl+PgUp</kbd> faster
+          (per <code>translations</code>, section&nbsp;12 for custom chords), or drag the scrollbar you
+          switched on above.</p>
+        <h3>The frozen screen sheet</h3>
+        <p>If output freezes while you type &mdash; and typing still works &mdash; that is not xterm dying.
+          Press <kbd>Ctrl+S</kbd> out of habit, you paused the pipe:</p>
+        <div class="code"><pre><kbd>Ctrl+Q</kbd>    <span class="cm"># unfreeze (xon)</span>
+<span class="u">$</span> stty -ixon            <span class="cm"># in your shell rc: no Ctrl+S/Q at all, ever</span></pre></div>
+        <div class="warn"><b>Warn:</b> everything else on this page is configuration. This trap is not: the
+          classic &ldquo;xterm hangs&rdquo; complaint is usually the flow control that the
+          session inherited and the user did not know was there.</div>
+      </section>
+
+      <section class="entry" id="clipboard">
+        <h2><span class="tag">08</span>Copy-paste without mystery</h2>
+        <p>X11 has two buffers, and xterm behaves like the person who insists on the rule rather than the
+          spirit:</p>
+        <table>
+          <thead>
+            <tr><th>Buffer</th><th>Filled by</th><th>Pasted by</th><th>Meaning</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b>PRIMARY</b></td><td>Simply selecting text</td><td>Middle-click</td><td>The original X way &mdash; selection <em>is</em> the copy.</td></tr>
+            <tr><td><b>CLIPBOARD</b></td><td>Explicit copy actions</td><td>Ctrl+V in modern apps</td><td>The other systems' way, arrived in X via the desktops.</td></tr>
+          </tbody>
+        </table>
+        <p>xterm by default works in <b>PRIMARY</b>: select, middle-click, done. Two bridges to the modern
+          world, pick one:</p>
+        <ol class="plain">
+          <li><b>One resource line</b> &mdash; the friendly one:</li>
+        </ol>
+        <div class="code"><pre><span class="cm"># ~/.Xresources — selection also lands in CLIPBOARD</span>
+XTerm*selectToClipboard: true</pre></div>
+        <ol class="plain" start="2">
+          <li><b>Custom chord</b> &mdash; explicit copy keys, like every modern editor (this uses
+            <code>translations</code>, the same machinery as section&nbsp;10):</li>
+        </ol>
+        <div class="code"><pre>XTerm*VT100.translations: #override \n\
+    Ctrl Shift &lt;Key&gt;C: copy-selection(CLIPBOARD) \n\
+    Ctrl Shift &lt;Key&gt;V: insert-selection(CLIPBOARD)</pre></div>
+        <p>The Ctrl+Shift chord version is what anyone coming from a modern editor tries first; the
+          resource version is what your muscle memory will thank you for. Doing both is also legal.</p>
+        <div class="note"><b>Note:</b> they left double-click word selection smart (<code>charClass</code> in
+          the hero vocabulary teaches it what &ldquo;a word&rdquo; is in URLs and paths), and triple-click
+          selects the line. That is 90% of daily needs, and nothing installs to provide them.</div>
+      </section>
+
+      <section class="entry" id="keys">
+        <h2><span class="tag">09</span>Alt, Meta and other ghost stories</h2>
+        <p>xterm predates convention convergence, so it keeps knobs for the two ghosts: one where <kbd>Alt</kbd>
+          does not reach your shell's readline (Alt-b goes forward a word in bash, but on some feet it does
+          not), and one where 8-bit bytes arrive where escape sequences were expected.</p>
+        <div class="code"><pre><span class="cm"># ~/.Xresources — the two ghost exterminators</span>
+XTerm*metaSendsEscape:  true   <span class="cm"># Alt-b arrives as ESC b, readline understands</span>
+XTerm*eightBitInput:    false  <span class="cm"># no raw 8th-bit mode; escape prefixes instead</span></pre></div>
+        <ul class="plain">
+          <li><b>metaSendsEscape</b> is the fix for &ldquo;Alt chords do nothing in the shell, but do in
+            other terminals&rdquo;. With it, <kbd>Alt</kbd> arrives as the ESC prefix your readline always
+            wanted; it is what most modern emulators hard-code.</li>
+          <li><b>eightBitInput:false</b> keeps everything inside a 7-bit world of control sequences, where
+            remote shells and TUIs thank you daily.</li>
+          <li>Verify with the shell's own report instead of guessing: <code>stty -a</code> (look for
+            <code>ixon</code>, <code>isig</code>), and the terminal's own vocabulary:
+            <code>TERM=xterm-256color tput colors</code>.</li>
+        </ul>
+        <div class="note"><b>Note:</b> if delete/backward keys argue back (sending <code>^?</code> or
+          <code>^H</code>, often depending whether you came through PuTTY, ssh, or your own machine), the
+          resources <code>backarrowKey</code> and <code>deleteIsDEL</code> are the honest dials. On a
+          well-configured stack both end up matching the shell's expectations &mdash; test, then set.</div>
+      </section>
+
+      <section class="entry" id="titles">
+        <h2><span class="tag">10</span>Titles by escape sequence</h2>
+        <p>Programs can rename the window or the icon with simple escape output; xterm accepts it if window
+          operations are allowed for that window.</p>
+        <div class="code"><pre><span class="u">$</span> printf '\033]2;doughnut shop\007'   <span class="cm"># rename the window title</span>
+<span class="u">$</span> printf '\033]1;icon name\007'       <span class="cm"># rename the icon title</span></pre></div>
+        <p>If nothing happened, that is privacy-by-default, not a bug:</p>
+        <div class="code"><pre>XTerm*allowWindowOps:  true   <span class="cm"># let escape sequences run window ops</span>
+XTerm*dynamicColors:   true   <span class="cm"># let them re-paint the palette too</span></pre></div>
+        <p>And you can test the same contract right here on this page &mdash; in JavaScript,
+          no escape sequences required:</p>
+        <p>
+          <button type="button" class="demo-btn" id="titleDemo">&#8620; hijack this page's title</button>
+          <button type="button" class="demo-btn" id="titleRestore">&#8629; restore</button>
+        </p>
+        <div class="note"><b>Note:</b> the shell-side habit worth copying: <code>PS1</code>'s
+          <code>\e]2;\W\007</code> tail keeps the title as current directory, and your window manager lists
+          become a trail of clear breadcrumbs. One line, permanent, revertible by removing the line.</div>
+      </section>
+
+      <section class="entry" id="resize">
+        <h2><span class="tag">11</span>The resize ritual</h2>
+        <p>Split the screen, drag a pane, and the shell inside still believes the old size &mdash; wrapping
+          lines at column 80 in a 200-wide window, or worse: truncating the right half silently on the next
+          long command. This is not xterm's fault; it is the shell's knowledge of the geometry lagging
+          behind:</p>
+        <div class="code"><pre><span class="u">$</span> resize           <span class="cm"># tells the shell the true size, right now</span>
+<span class="u">$</span> resize -u        <span class="cm"># else export two stty lines for eval</span>
+<span class="u">$</span> eval &quot;$(resize -u)&quot;   <span class="cm"># the way it is actually used in fish/zsh/rc files</span></pre></div>
+        <p>Resizing locally, without the helper, uses the shell itself:</p>
+        <div class="code"><pre><span class="u">$</span> stty rows 34 columns 100</pre></div>
+        <div class="note"><b>Note:</b> most modern shells catch SIGWINCH and follow along by themselves. When
+          one does not, <code>resize</code> is the five-letter command that ends the conversation. It ships
+          <em>with</em> xterm, which is why this manual keeps insisting you install the package and not some
+          appimage of it.</div>
+      </section>
+
+      <section class="entry" id="vocab">
+        <h2><span class="tag">12</span>Hero vocabulary</h2>
+        <p>The one-time dose: flags and resources that separate &ldquo;it opens&rdquo; from &ldquo;I steer
+          it&rdquo;:</p>
+        <table>
+          <thead>
+            <tr><th>Spell</th><th>What it does</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>-hold</code></td><td>Window survives the <code>-e</code> command; script output sticks around instead of flashing by.</td></tr>
+            <tr><td><code>-rv</code> / <code>*reverseVideo</code></td><td>Start reversed (bg/fg swapped); old soul, new mood.</td></tr>
+            <tr><td><code>-l</code> / <i>Log to File</i></td><td>Session tape recording &mdash; training, bug reports, receipts.</td></tr>
+            <tr><td><code>Secure Keyboard</code></td><td>Input grab: whole desktop keyboard belongs to this window (password theatre with a badge).</td></tr>
+            <tr><td><code>-ti vt220</code> / <code>-tn xterm-256color</code></td><td>Lie about your hardware to old programs (vt series) or name the terminfo key.</td></tr>
+            <tr><td><code>-cc class[:range,...]</code></td><td>Teach double-click what counts as &ldquo;a word&rdquo; &mdash; URLs, paths, hyphens and all.</td></tr>
+            <tr><td><code>-xrm &quot;resource: value&quot;</code></td><td>One-shot resource override on the command line &mdash; perfect for experiments without touching the files.</td></tr>
+            <tr><td><code>*translations</code></td><td>The key-translation table &mdash; per-key bindings, per-chord scroll, per-button paste. The section&nbsp;08 example is your template.</td></tr>
+            <tr><td><code>*charClass</code></td><td>The same word-selection teaching, as a resource (persistent cousin of <code>-cc</code>).</td></tr>
+            <tr><td><code>~/.Xterminator</code></td><td>The name you give your <code>.Xresources</code> block when you want to feel like a wizard &mdash; loading it stays an <code>xrdb</code> job.</td></tr>
+          </tbody>
+        </table>
+        <div class="warn"><b>Warn:</b> a hero vocabulary does not mean writing resources for every window.
+          Settle the 12 lines of section&nbsp;06 in <code>.Xresources</code>, add the two chips of
+          section&nbsp;09, and stop. The machines of people with 300 resource lines are no faster;
+          they are just harder to reproduce on the next laptop.</div>
+        <div class="note"><b>Note:</b> truth scoreboard: all of the above is documented in
+          <code>xterm(1)</code> and <code>xterm-ctlseqs(7)</code>, two documents remarkably grounded comparing
+          to the field. Reading them once beats a forum thread; keeping both in your <code>MANPATH</code>
+          beats ten.</div>
+      </section>
+
+      <section class="entry" id="checklist">
+        <h2><span class="tag">13</span>Your ladder to hero</h2>
+        <p>Progress below is stored in this browser (<code>localStorage</code>) only.</p>
+        <div class="checklist" id="xtChecklist">
+          <div class="meter">
+            <span id="xtCount">0 / 12</span>
+            <span class="bar"><i id="xtBar"></i></span>
+            <button type="button" id="xtReset" style="all: unset; cursor: pointer; color: var(--muted); border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.08em;">RESET</button>
+          </div>
+          <label><input type="checkbox" data-key="launch"><span>Launched xterm with <code>-ls</code>, <code>-e</code> and a custom <code>-geometry</code></span></label>
+          <label><input type="checkbox" data-key="menus"><span>Named all three menus from their Control chords, unaided</span></label>
+          <label><input type="checkbox" data-key="fonts"><span>Set <code>faceName</code> + <code>faceSize</code> and used the fonts menu</span></label>
+          <label><input type="checkbox" data-key="colors"><span>Recolored at least one of the 16 + cursor via resources</span></label>
+          <label><input type="checkbox" data-key="xrdb"><span><code>~/.Xresources</code> written and merged with <code>xrdb -merge</code></span></label>
+          <label><input type="checkbox" data-key="appres"><span>Found a resource by yourself with <code>appres</code></span></label>
+          <label><input type="checkbox" data-key="scrollback"><span><code>saveLines</code> raised and the scrollbar switched on</span></label>
+          <label><input type="checkbox" data-key="ctrls"><span>Hit the Ctrl+S freeze and answered it (Ctrl+Q, <code>stty -ixon</code>) in the same minute</span></label>
+          <label><input type="checkbox" data-key="clipboard"><span>Clipboard bridge chosen: <code>selectToClipboard</code> or the Ctrl+Shift translation pair</span></label>
+          <label><input type="checkbox" data-key="meta"><span><code>metaSendsEscape</code> set; Alt-b walks backwards in the shell</span></label>
+          <label><input type="checkbox" data-key="title"><span>Renamed a window by escape sequence (and owned the <code>allowWindowOps</code> moment)</span></label>
+          <label><input type="checkbox" data-key="resize"><span>Fixed a stale shell size with <code>resize</code> after splitting</span></label>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <div class="foot">
+      <span>Monkey Blog &middot; <a href="./index.html">Home</a></span>
+      <span><a href="./index.html">Archive</a> &middot; <a href="#nothing">Back to top</a></span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY = "xtermHero.progress.v1";
+      var tocLinks = Array.prototype.slice.call(document.querySelectorAll("nav.toc ol a"));
+      var sections = tocLinks.map(function (link) {
+        var anchor = link.getAttribute("href").slice(1);
+        return document.getElementById(anchor);
+      });
+
+      /* ---- active section in the table of contents ---- */
+      function setActive() {
+        var scrollY = window.scrollY + 140;
+        var activeIndex = 0;
+        sections.forEach(function (section, index) {
+          if (section && section.offsetTop <= scrollY) {
+            activeIndex = index;
+          }
+        });
+        tocLinks.forEach(function (link, index) {
+          link.classList.toggle("active", index === activeIndex);
+        });
+      }
+
+      var rafPending = false;
+      window.addEventListener("scroll", function () {
+        if (!rafPending) {
+          rafPending = true;
+          window.requestAnimationFrame(function () {
+            rafPending = false;
+            setActive();
+          });
+        }
+      }, { passive: true });
+      setActive();
+
+      /* ---- copy buttons on every code block ---- */
+      Array.prototype.slice.call(document.querySelectorAll(".code")).forEach(function (block) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "copy";
+        button.textContent = "copy";
+        button.setAttribute("aria-label", "Copy code to clipboard");
+        button.addEventListener("click", function () {
+          var text = block.querySelector("pre").textContent.replace(/\n*$/, "");
+          var done = function () {
+            button.textContent = "copied";
+            window.setTimeout(function () { button.textContent = "copy"; }, 1400);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () {
+              button.textContent = "nope";
+            });
+          } else {
+            var helper = document.createElement("textarea");
+            helper.value = text;
+            helper.setAttribute("readonly", "readonly");
+            helper.style.position = "absolute";
+            helper.style.left = "-9999px";
+            document.body.appendChild(helper);
+            helper.select();
+            try {
+              document.execCommand("copy");
+              done();
+            } catch (error) {
+              button.textContent = "nope";
+            }
+            document.body.removeChild(helper);
+          }
+        });
+        block.appendChild(button);
+      });
+
+      /* ---- title hijack demo: the same promise as \033]2;...\007 ---- */
+      var originalTitle = document.title;
+      var titleDemo = document.getElementById("titleDemo");
+      var titleRestore = document.getElementById("titleRestore");
+      if (titleDemo && titleRestore) {
+        titleDemo.addEventListener("click", function () {
+          document.title = "doughnut shop";
+        });
+        titleRestore.addEventListener("click", function () {
+          document.title = originalTitle;
+        });
+      }
+
+      /* ---- hero checklist, persisted per browser ---- */
+      var box = document.getElementById("xtChecklist");
+      if (box) {
+        var boxes = Array.prototype.slice.call(box.querySelectorAll("input[type=checkbox]"));
+        var count = document.getElementById("xtCount");
+        var bar = document.getElementById("xtBar");
+        var reset = document.getElementById("xtReset");
+
+        function readState() {
+          var state = {};
+          try {
+            state = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}") || {};
+          } catch (error) {
+            state = {};
+          }
+          return state;
+        }
+
+        function paint() {
+          var state = readState();
+          var done = 0;
+          boxes.forEach(function (input) {
+            var on = !!state[input.getAttribute("data-key")];
+            input.checked = on;
+            if (on) { done += 1; }
+          });
+          count.textContent = done + " / " + boxes.length;
+          bar.style.width = Math.round((done / boxes.length) * 100) + "%";
+        }
+
+        function save(input) {
+          var state = readState();
+          state[input.getAttribute("data-key")] = input.checked;
+          try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          } catch (error) {
+            /* storage is a gift, not a right */
+          }
+          paint();
+        }
+
+        boxes.forEach(function (input) {
+          input.addEventListener("change", function () { save(input); });
+        });
+
+        if (reset) {
+          reset.addEventListener("click", function () {
+            try {
+              window.localStorage.removeItem(STORAGE_KEY);
+            } catch (error) { }
+            paint();
+          });
+        }
+
+        paint();
+      }
+    })();
+  </script>
+</body>
+
+</html>

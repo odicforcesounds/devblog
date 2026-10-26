@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" sizes="12x12" />
+  <meta name="description" content="A single-file, dark-theme field manual for the i3 window manager: configuration files, keybindings workspaces and layout, icons and glyphs, the status bar, extra software (rofi, picom, dunst, feh), a full annotated fancy config and how to set every value.">
+  <title>i3 Desktop — From Nothing to Hero · Monkey Blog</title>
+  <style>
+    :root {
+      --ink: #eef4f0;
+      --muted: #9aaf9e;
+      --accent: #9fe870;
+      --accent-warm: #ffb38a;
+      --good: #7fe3a8;
+      --line: rgba(150, 200, 160, 0.20);
+      --line-strong: rgba(159, 232, 112, 0.40);
+      --panel: rgba(12, 18, 14, 0.86);
+      --panel-soft: rgba(18, 26, 20, 0.76);
+      --code-bg: rgba(5, 10, 7, 0.88);
+      --radius: 0.9rem;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+        "Noto Sans", "Liberation Sans", sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { padding: 0; margin: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      background:
+        radial-gradient(1000px 470px at 88% -8%, rgba(159, 232, 112, 0.07), transparent 60%),
+        radial-gradient(840px 470px at -8% 25%, rgba(255, 179, 138, 0.06), transparent 55%),
+        linear-gradient(180deg, #070b09 0%, #0b110d 55%, #060907 100%) fixed;
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-color: rgba(159, 232, 112, 0.4);
+      text-underline-offset: 0.2em;
+    }
+
+    a:visited { color: #b3d9a5; }
+
+    code, kbd, pre { font-family: var(--mono); font-size: 0.92em; }
+
+    code {
+      background: rgba(159, 232, 112, 0.1);
+      border: 1px solid var(--line);
+      border-radius: 0.4rem;
+      padding: 0.05em 0.4em;
+      white-space: nowrap;
+    }
+
+    kbd {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      border-radius: 0.35rem;
+      padding: 0.05em 0.45em;
+      font-size: 0.82em;
+    }
+
+    .home {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem clamp(1rem, 3vw, 2rem);
+      background: rgba(7, 11, 9, 0.88);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .home a.back {
+      display: inline-flex;
+      gap: 0.4rem;
+      align-items: center;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      padding: 0.25rem 0.9rem;
+    }
+
+    .home a.back:hover { background: rgba(159, 232, 112, 0.08); }
+
+    .home span.field {
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-family: var(--mono);
+    }
+
+    header.hero {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: clamp(2rem, 6vw, 3.4rem) clamp(1rem, 3vw, 2rem) 1rem;
+      text-align: center;
+    }
+
+    header.hero h1 {
+      margin: 0 0 0.4rem;
+      font-size: clamp(1.6rem, 4.5vw, 2.6rem);
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
+
+    header.hero h1 .mt {
+      font-family: var(--mono);
+      color: var(--accent-warm);
+    }
+
+    header.hero p.lede {
+      margin: 0 auto;
+      max-width: 50rem;
+      color: var(--muted);
+      font-size: clamp(0.95rem, 2vw, 1.06rem);
+    }
+
+    header.hero .meta {
+      margin: 0.9rem auto 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    header.hero .meta span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.15rem 0.7rem;
+      background: var(--panel-soft);
+    }
+
+    header.hero::after {
+      content: "";
+      display: block;
+      width: min(26rem, 70%);
+      height: 1px;
+      margin: 1.2rem auto 0;
+      background-image: linear-gradient(90deg, transparent, var(--line-strong), transparent);
+    }
+
+    .layout {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 0 clamp(1rem, 3vw, 2rem) clamp(2rem, 5vw, 3.5rem);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 980px) {
+      .layout { grid-template-columns: 16rem minmax(0, 1fr); align-items: start; }
+      nav.toc { position: sticky; top: 3.4rem; }
+    }
+
+    nav.toc {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+      padding: 0.9rem 0.9rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    nav.toc h2 {
+      margin: 0 0 0.6rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    nav.toc ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      counter-reset: toc;
+    }
+
+    nav.toc ol li { margin: 0; }
+
+    nav.toc ol a {
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+      padding: 0.28rem 0.45rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      color: var(--ink);
+      counter-increment: toc;
+    }
+
+    nav.toc ol a::before {
+      content: counter(toc, decimal-leading-zero);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+    }
+
+    nav.toc ol a:hover { background: rgba(159, 232, 112, 0.1); }
+
+    nav.toc ol a.active {
+      background: rgba(159, 232, 112, 0.14);
+      box-shadow: inset 2px 0 0 var(--accent);
+    }
+
+    main { min-width: 0; }
+
+    section.entry {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: clamp(1.1rem, 3vw, 1.8rem);
+      margin: 0 0 1.4rem;
+      scroll-margin-top: 3.8rem;
+    }
+
+    section.entry h2 {
+      margin: 0 0 0.7rem;
+      font-size: clamp(1.2rem, 2.6vw, 1.5rem);
+      line-height: 1.3;
+    }
+
+    section.entry h2 .tag {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.55rem;
+      font-family: var(--mono);
+      font-size: 0.62em;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-warm);
+      border: 1px solid rgba(255, 179, 138, 0.4);
+      border-radius: 999px;
+      padding: 0.12rem 0.55rem;
+    }
+
+    section.entry h3 {
+      margin: 1.4rem 0 0.4rem;
+      font-size: 1.05rem;
+      color: var(--accent);
+    }
+
+    section.entry p { margin: 0.55rem 0; }
+
+    section.entry ul.plain,
+    section.entry ol.plain {
+      margin: 0.5rem 0;
+      padding-left: 1.2rem;
+    }
+
+    section.entry ul.plain li,
+    section.entry ol.plain li { margin: 0.3rem 0; }
+
+    .note, .warn {
+      border-radius: 0.7rem;
+      padding: 0.75rem 1rem;
+      margin: 0.8rem 0;
+      font-size: 0.94rem;
+    }
+
+    .note {
+      border: 1px solid var(--line-strong);
+      background: rgba(159, 232, 112, 0.07);
+    }
+
+    .warn {
+      border: 1px solid rgba(255, 179, 138, 0.45);
+      background: rgba(255, 179, 138, 0.07);
+    }
+
+    .note b:first-child, .warn b:first-child { color: var(--accent-warm); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8rem 0;
+      font-size: 0.93rem;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.5rem 0.7rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: rgba(159, 232, 112, 0.08);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    td code { white-space: nowrap; }
+
+    .table-scroll { overflow-x: auto; }
+
+    .code {
+      position: relative;
+      margin: 0.8rem 0;
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      overflow: auto;
+      background: var(--code-bg);
+    }
+
+    .code pre {
+      margin: 0;
+      padding: 0.9rem 3.4rem 0.9rem 1rem;
+      overflow-x: auto;
+      line-height: 1.55;
+      font-size: 0.9rem;
+      color: #e2f0e4;
+      white-space: pre;
+    }
+
+    .code pre .u { color: var(--accent-warm); font-weight: 600; }
+    .code pre .cm { color: var(--muted); font-style: italic; }
+
+    .code .copy {
+      position: absolute;
+      top: 0.55rem;
+      right: 0.55rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      border-radius: 0.4rem;
+      padding: 0.2rem 0.55rem;
+      cursor: pointer;
+    }
+
+    .code .copy:hover,
+    .code .copy:focus-visible {
+      color: var(--ink);
+      border-color: var(--line-strong);
+    }
+
+    .code .copy:active { transform: translateY(1px); }
+
+    details.faq {
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      background: var(--panel-soft);
+      margin: 0.7rem 0;
+    }
+
+    details.faq summary {
+      cursor: pointer;
+      padding: 0.7rem 1rem;
+      font-weight: 600;
+      list-style-position: outside;
+    }
+
+    details.faq summary::marker { color: var(--accent); }
+
+    details.faq .faq-body {
+      padding: 0.7rem 1rem 0.9rem;
+      color: var(--ink);
+      border-top: 1px solid var(--line);
+    }
+
+    .glyph-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+      gap: 0.4rem;
+      margin: 0.8rem 0;
+    }
+
+    .glyph-strip span {
+      border-radius: 0.45rem;
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      padding: 0.5rem 0.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.92);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    }
+
+    .swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+      gap: 0.5rem;
+      margin: 0.8rem 0;
+    }
+
+    .swatch-grid figure {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 0.6rem;
+      overflow: hidden;
+      background: var(--panel-soft);
+    }
+
+    .swatch-grid .sw {
+      height: 3rem;
+      display: block;
+    }
+
+    .swatch-grid figcaption {
+      padding: 0.35rem 0.55rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .checklist {
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      background: var(--panel-soft);
+      padding: 0.9rem 1rem;
+      margin: 0.9rem 0;
+    }
+
+    .checklist .meter {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .checklist .bar {
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .checklist .bar i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+      transition: width 0.25s ease;
+    }
+
+    .checklist label {
+      display: flex;
+      gap: 0.6rem;
+      align-items: baseline;
+      padding: 0.3rem 0;
+      cursor: pointer;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .checklist label:last-of-type { border-bottom: 0; }
+
+    .checklist input {
+      accent-color: var(--accent);
+      width: 1.05rem;
+      height: 1.05rem;
+      flex: none;
+    }
+
+    .checklist input:checked~span {
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-color: rgba(159, 232, 112, 0.5);
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      background: rgba(7, 11, 9, 0.9);
+    }
+
+    footer .foot {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 1.2rem clamp(1rem, 3vw, 2rem);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.4rem;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    footer .foot a { color: var(--accent); }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 0.3rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="home">
+    <a class="back" href="./index.html">&#8630; Home</a>
+    <span class="field">Field Manual I3H-1 · a WM that obeys, one line at a time</span>
+  </div>
+
+  <header class="hero">
+    <h1><span class="mt">i3</span> Desktop — From Nothing to Hero</h1>
+    <p class="lede">The tiling window manager that fits in one config file and one head. This page is the
+      road from a bare X session to a desk that is yours: the config file, the keys, workspaces, the bar,
+      icons that actually render, the extra software that glues a desktop together, and a complete
+      annotated <b>fancy config</b> — every value explained by the line that sets it.</p>
+    <div class="meta">
+      <span>config &middot; workspaces &middot; glyphs &middot; rofi &middot; picom</span>
+      <span>vanilla JS &middot; CSS3 &middot; no dependencies</span>
+      <span>every value reversible, one line at a time</span>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <nav class="toc" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#nothing">From nothing</a></li>
+        <li><a href="#config">The configuration file</a></li>
+        <li><a href="#keys">Keys first, mouse optional</a></li>
+        <li><a href="#workspaces">Workspaces and layout</a></li>
+        <li><a href="#startup">Starting things automatically</a></li>
+        <li><a href="#bar">The bar, without tears</a></li>
+        <li><a href="#icons">Icons that render</a></li>
+        <li><a href="#extras">Extra software that glues the desk</a></li>
+        <li><a href="#fancy">The fancy config, annotated</a></li>
+        <li><a href="#gaps">Gaps, borders and transparency</a></li>
+        <li><a href="#scratchpad">The scratchpad and resize mode</a></li>
+        <li><a href="#vocab">Hero vocabulary</a></li>
+        <li><a href="#checklist">Your desk, day by day</a></li>
+      </ol>
+    </nav>
+
+    <main>
+
+      <section class="entry" id="nothing">
+        <h2><span class="tag">01</span>From nothing</h2>
+        <p>i3 is a tiling window manager for X11, created by Michael Stapelberg and friends, with two
+          rare virtues among WMs: it is <b>complete without a desktop environment</b>, and it is
+          <b>configured entirely in one text file</b> that you can read, version and print. Nothing is
+          hidden behind a GUI settings tool — that is not a limitation, it is the whole culture.</p>
+        <ul class="plain">
+          <li><b>Tiling by default:</b> windows share the screen instead of covering each other. The
+            mouse survives for exactly two jobs &mdash; resizing and clicking sometimes.</li>
+          <li><b>Keyboard-driven by contract:</b> <code>$mod</code> (usually <kbd>Super</kbd>) plus a
+            letter does everything.</li>
+          <li><b>Stable where it matters:</b> the IPC protocol and the config language have stayed
+            compatible for over a decade; configs from 2012 still work in 2026.</li>
+          <li><b>Siblings of the family:</b> <code>i3blocks</code>, <code>i3lock</code>,
+            <code>i3status</code>, and the Wayland rewrite <code>sway</code> (same config language).</li>
+        </ul>
+        <div class="code"><pre><span class="u">$</span> apt install i3 i3lock i3status     <span class="cm"># or pkg / dnf / pacman equivalents</span>
+<span class="u">$</span> echo "exec i3" &gt; ~/.xinitrc
+<span class="u">$</span> startx                            <span class="cm"># or pick i3 at your display manager's login</span></pre></div>
+        <p>First launch runs <code>i3-config-wizard</code>: it writes a starter config and asks one
+          question that matters for the rest of your life &mdash; <b>your <kbd>Super</kbd>/<kbd>Alt</kbd>
+            preference for <code>$mod</code></b>, plus how you want <kbd>Win</kbd>-key alternatives laid
+          out. Choose <kbd>Super</kbd>: Alt belongs to the applications Emacs, Firefox and everything in
+          between.</p>
+        <div class="note"><b>Note:</b> the wizard's output is just a normal config file. Everything it
+          wrote can be re-edited by hand from now on, and this page assumes
+          <code>~/.config/i3/config</code> (or <code>~/.i3/config</code>, whose existence it still honours
+          as a fallback).</div>
+      </section>
+
+      <section class="entry" id="config">
+        <h2><span class="tag">02</span>The configuration file</h2>
+        <p>One file: <b>~/.config/i3/config</b>. Plain text, one directive per line, <code>#</code> for
+          comments. There are no plugins, no modules, no scripts inside &mdash; which is why you never
+          fear a typo breaking half of your desktop at once.</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Directive</th><th>Means</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>set $mod Mod4</code></td><td>Name a key once, use it everywhere (<code>Mod4</code> = <kbd>Super</kbd>, <code>Mod1</code> = <kbd>Alt</kbd>).</td></tr>
+              <tr><td><code>bindsym</code></td><td>Bind one key combo to an action or a command (<code>bind</code> gives named modes with fallbacks).</td></tr>
+              <tr><td><code>exec</code> / <code>exec_always</code></td><td>Run a program at startup; <code>exec_always</code> also reruns on <code>i3 restart</code>.</td></tr>
+              <tr><td><code>assign</code> / <code>for_window</code></td><td>Send new windows to workspaces / apply rules to matching windows (criteria in <code>[brackets]</code>).</td></tr>
+              <tr><td><code>bar { }</code></td><td>The block that defines the whole bar (position, status command, colours, tray).</td></tr>
+              <tr><td><code>set_from_resource</code></td><td>Read a value from X resources before falling back to a literal (nice for theming).</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="code"><pre><span class="cm"># ~/.config/i3/config — smallest honest start (numbers in comments explain lines)</span>
+set $mod Mod4                          <span class="cm"># 01: Super is the leader key</span>
+set $term xterm                        <span class="cm"># 02: one terminal variable, used everywhere below</span>
+
+bindsym $mod+Return   exec $term       <span class="cm"># 03</span>
+bindsym $mod+Shift+q  kill             <span class="cm"># 04</span>
+bindsym $mod+h        split h          <span class="cm"># 05</span>
+bindsym $mod+v        split v          <span class="cm"># 06</span>
+bindsym $mod+j        focus down       <span class="cm"># 07</span>
+bindsym $mod+k        focus up         <span class="cm"># 08</span>
+bindsym $mod+Shift+j  move down        <span class="cm"># 09</span>
+bindsym $mod+Shift+k  move up          <span class="cm"># 10</span>
+
+bindsym $mod+1 workspace 1             <span class="cm"># 11: one line per workspace</span>
+bindsym $mod+2 workspace 2
+
+bindsym $mod+Shift+c reload            <span class="cm"># 12: re-read the config, keep windows</span>
+bindsym $mod+Shift+r restart           <span class="cm"># 13: restart i3 entirely</span>
+bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'Exit i3?' -B 'Yes' 'i3-msg exit'"</pre></div>
+        <p>The two reload commands are different and worth knowing early: <code>reload</code> re-reads the
+          config <em>into</em> the running session; <code>restart</code> replaces the WM process itself
+          &mdash; the reason an X restart is rarely needed to fix WM problems.</p>
+        <div class="note"><b>Note:</b> <code>i3-msg</code> is the command-line twin of the keys: run
+          <code>i3-msg workspace 3</code> from a shell to switch workspaces, <code>i3-msg 'resize grow
+          width 40 px'</code> to poke the layout from scripts or <code>i3-nagbar</code>.
+          <code>i3 --moreversion</code> also tells you at a glance if you broke something with the config
+          when i3 refuses a reload.</div>
+      </section>
+
+      <section class="entry" id="keys">
+        <h2><span class="tag">03</span>Keys first, mouse optional</h2>
+        <p>The key grammar is one verb family: <b>focus</b>, <b>move</b>, <b>workspace</b>, <b>layout</b>,
+          <b>resize</b>, <b>mark</b>. Learn it once and it survives any monitor arrangement:</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Chord</th><th>Action</th><th>The sentence it writes</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>$mod+d</code></td><td><code>exec dmenu_run</code></td><td>A launcher appears; type to run anything installed.</td></tr>
+              <tr><td><code>$mod+w</code> / <code>$mod+s</code> / <code>$mod+e</code></td><td><code>layout tabbed</code> / <code>stacking</code> / <code>toggle split</code></td><td>Each container cycles between the three layouts.</td></tr>
+              <tr><td><code>$mod+f</code> / <code>$mod+Shift+space</code></td><td>fullscreen toggle / floating toggle</td><td>Escape hatches when a tiling assumption breaks.</td></tr>
+              <tr><td><code>$mod+space</code></td><td>focus mode_toggle</td><td>Move focus between tiled and floating windows.</td></tr>
+              <tr><td><code>$mod+r</code></td><td>resize (mode)</td><td>Enter the built-in resize arrows mode; same keys again to leave.</td></tr>
+              <tr><td><code>$mod+Shift+s sticky toggle</code></td><td>sticky flag</td><td>Floating window follows you across workspaces.</td></tr>
+              <tr><td><code>$mod+a</code> / <code>$mod+Shift+a</code></td><td>focus parent / focus child</td><td>Walk the container tree instead of hashtables of corners.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note"><b>Note:</b> <code>bindsym</code> binds the keysym; <code>bindcode</code> binds
+          keycodes and survives layout switches on non-English keyboards. If your national characters
+          break<code>bindsym</code> bindings, switch those specific binds to <code>bindcode</code> with <code>xev</code> to find the code.</div>
+      </section>
+
+      <section class="entry" id="workspaces">
+        <h2><span class="tag">04</span>Workspaces and layout</h2>
+        <p><b>Workspaces are</b> i3's answer to virtual desktops: ten of them by default, bound to
+          <code>$mod+1..10</code> and named whatever you like (icons in section 07 use names, not
+          numbers):</p>
+        <div class="code"><pre>set $ws1 "1: term"
+set $ws2 "2: web"
+set $ws10 "10: mail"
+bindsym $mod+1  workspace $ws1
+bindsym $mod+2  workspace $ws2
+bindsym $mod+Shift+2  move container to workspace $ws2</pre></div>
+        <p>Layout is a tree. Each workspace holds <b>containers</b>; each container splits
+          horizontally/vertically, or switches to tabbed/stacking. The tree is why:</p>
+        <ul class="plain">
+          <li><b><code>$mod+e</code> (toggle split)</b> flips the last container's split direction &mdash; the
+            "swap two windows' arrangement" trick.</li>
+          <li><b><code>$mod+a</code> then <code>$mod+v</code> / <code>$mod+h</code></b> changes <em>where the
+            next window appears</em>: focus parent first, then split &mdash; the honest way to do &ldquo;open my
+            editor below my browser inside workspace 2&rdquo;.</li>
+          <li><b><code>$mod+Shift+1..10</code></b> moves a window to another workspace, and with
+            <code>$mod+Shift+space</code> first it can float instead.</li>
+        </ul>
+        <div class="code"><pre><span class="cm"># window rules on the tree (for_window + criteria)</span>
+for_window [class="^xfce4-notes"] floating enable
+assign [class="^ Firefox$"] $ws2
+assign [class="^thunderbird\ "] $ws10</pre></div>
+        <div class="note"><b>Note:</b> find the exact <code>class</code>/<code>title</code> strings with
+          <code>xprop</code> (click the window): <code>WM_CLASS(STRING)</code> is what criteria use. Guess
+          never; everyone who guesses ends up with rules that match the wrong window.</div>
+      </section>
+
+      <section class="entry" id="startup">
+        <h2><span class="tag">05</span>Starting things automatically</h2>
+        <p>i3 has one startup mechanism and no autostart daemon folklore: <code>/etc/i3/config</code>
+          <code>exec</code> lines (yours, in <code>~/.config/i3/config</code>).</p>
+        <div class="code"><pre>exec --no-startup-id nm-applet        <span class="cm"># network tray applet</span>
+exec --no-startup-id picom -b          <span class="cm"># compositor, daemon mode (section 10)</span>
+exec --no-startup-id dunst             <span class="cm"># notifications server</span>
+exec_always --no-startup-id feh --bg-scale ~/Pictures/wall.jpg
+
+exec --no-startup-id xss-lock --transfer-sleep-lock --i3lock --nofork</pre></div>
+        <p>Two honesty points:</p>
+        <ul class="plain">
+          <li><b><code>--no-startup-id</code></b> stops i3 from grabbing focus for the started window —
+            desktops lose their minds less when this flag is used.</li>
+          <li><b>That is all of it.</b> No <code>~/.config/autostart</code>, no XFCE daemons, no
+            systemd user units required here. If a program refuses to start this way (an updater that
+            insists) put it in your <code>~/.xprofile</code> file instead; but the config is where
+            desk-startup belongs.</li>
+        </ul>
+        <div class="note"><b>Note:</b> the <code>xss-lock</code> line is the sane way to wire
+          <code>i3lock</code> to suspend: the screen locks itself before the laptop sleeps, so the
+          password prompt is waiting when the lid opens.</div>
+      </section>
+
+      <section class="entry" id="bar">
+        <h2><span class="tag">06</span>The bar, without tears</h2>
+        <p>i3's built-in bar is driven by the <code>bar { }</code> block in the config and a <b>status
+          command</b> that prints one line of text: <code>i3status</code> by default,
+          <code>i3blocks</code> or <code>polybar</code> when you outgrow it.</p>
+        <div class="code"><pre>bar {
+    position top
+    status_command i3status -c ~/.config/i3/i3status.conf
+    tray_output primary
+    font pango:JetBrainsMono Nerd Font 10
+    separator_symbol " | "
+    colors {
+        background #0b110d
+        statusline  #eef4f0
+        separator   #9aaf9e
+        focused_workspace  #9fe870 #1f3a24 #0b110d
+        active_workspace   #4d6b52 #16241a #9aaf9e
+        inactive_workspace #16241a #0b110d #5f7a63
+        urgent_workspace   #ff9d5c #3a241f #0b110d
+    }
+}</pre></div>
+        <p>And a minimal <code>~/.config/i3/i3status.conf</code> to feed it:</p>
+        <div class="code"><pre>general {
+    interval = 5
+    colors = true
+}
+order += "wireless _first_"
+order += "ethernet _first_"
+order += "battery all"
+order += "load"
+order += "time"
+
+wireless _first_ { format_up = "%quality %essid" format_down = "" }
+            
+ethernet _first_ { format_up = "%ip" format_down = "" }
+battery all { format = "%status %percentage %remaining" }
+time { format = "%H:%M:%S" }</pre></div>
+        <div class="note"><b>Note:</b> <code>i3blocks</code> swaps the INI above for a set of little
+          scripts named by block; anything that can print a line to stdout can be a block. That model,
+          plus glyph fonts (next section), is where a laptop bar stops being a battery line and starts
+          being a dashboard.</div>
+      </section>
+
+      <section class="entry" id="icons">
+        <h2><span class="tag">07</span>Icons that render</h2>
+        <p>i3 has no icon system of its own &mdash; the only &ldquo;icons&rdquo; on an i3 desk are
+          <b>glyphs in a font</b>, used in three places: workspace names, status blocks, and per-window
+          titles (<code>for_window</code> rules). The one prerequisite is a font that actually contains
+          the glyphs:</p>
+        <div class="code"><pre><span class="u">$</span> apt install fonts-noto fonts-jetbrains-mono fonts-nerd-fonts-meta
+<span class="cm"># or the classic trinity: fonts-font-awesome, ttf-nerd-fonts-symbols, fonts-emojione</span>
+<span class="u">$</span> fc-list | grep -i "nerd\|awesome"   <span class="cm"># confirm the family name you will type in configs</span></pre></div>
+        <p>Then the font name (exact, from <code>fc-list</code>) becomes the config currency:</p>
+        <div class="code"><pre><span class="cm"># everywhere in the WM — the exact family name from fc-list, not a guess:</span>
+font pango:JetBrainsMono Nerd Font 10
+
+<span class="cm"># workspace names carry their glyphs directly (Unicode code points):</span>
+set $ws1 "1:  term"
+set $ws2 "2: "
+bindsym $mod+1 workspace $ws1
+
+<span class="cm"># and per-app window titles can too:</span>
+for_window [class="Firefox"] title_format "2: %title"</pre></div>
+        <p>Some of the most useful code points, from a Nerd Font / Font Awesome at their conventional
+          places (your <code>fc-list</code> family decides how they look, not the config):</p>
+        <div class="glyph-strip" aria-label="Common status glyphs">
+          <span>&#xf015; house</span>
+          <span>&#xf109; laptop</span>
+          <span>&#xf10b; battery</span>
+          <span>&#xf1eb; wifi</span>
+          <span>&#xf06e; volume</span>
+          <span>&#xf121; code</span>
+          <span>&#xf0ac; globe</span>
+          <span>&#xf0e0; mail</span>
+          <span>&#xf26c; tv</span>
+          <span>&#xf0f1; wrench</span>
+        </div>
+        <div class="note"><b>Note:</b> both <code>i3status</code> and <code>i3blocks</code> print these
+          glyphs straight out of shell scripts &mdash; the block script's stdout is the bar. UTF-8 in, bar
+          out; no plugin layer, no daemon to restart (well: <code>killall -USR1 i3blocks</code> if you
+          swap scripts live, or plain <code>restart</code> which everyone does instead).</div>
+        <div class="warn"><b>Warn:</b> if a glyph shows as a box, the family name in <code>font
+          pango:...</code> does not match <code>fc-list</code> exactly &mdash; case, hyphen and last word
+          all count (<code>Nerd Font</code>, not <code>NerdFonts</code>; <code>Font Awesome 6 Free</code>,
+          not <code>FontAwesome6</code>). The fix is always in one place: the font line.</div>
+      </section>
+
+      <section class="entry" id="extras">
+        <h2><span class="tag">08</span>Extra software that glues the desk</h2>
+        <p>An i3 install is deliberately naked. The extras below are what turn it from a WM into a desk,
+          with the role each one plays in one sentence:</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Tool</th><th>Fills</th><th>One-line install shape</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>rofi</code></td><td>dmenu's GTK-styled cousin: launcher, window switcher and much more with themes</td><td><code>bindsym $mod+d exec rofi -show drun</code></td></tr>
+              <tr><td><code>picom</code></td><td>Compositor: shadows, transparency, vsync, no screen tearing</td><td><code>exec --no-startup-id picom -b -c</code></td></tr>
+              <tr><td><code>dunst</code></td><td>Notification daemon for real (dbus) notifications</td><td><code>exec --no-startup-id dunst</code></td></tr>
+              <tr><td><code>feh</code> / <code>nitrogen</code></td><td>Wallpaper setter (feh is the scripted one)</td><td><code>exec_always --no-startup-id feh --bg-fill ~/w.png</code></td></tr>
+              <tr><td><code>i3lock</code></td><td>Screen lock, with colour or blur background</td><td><code>bindsym $mod+Shift+x exec i3lock -c 000000</code></td></tr>
+              <tr><td><code>maim</code> / <code>scrot</code></td><td>Screenshots (selection / whole screen)</td><td><code>bindsym Print exec maim -s ~/shot.png</code></td></tr>
+              <tr><td><code>network-manager-applet</code></td><td>Wifi/network in the tray + password prompts</td><td><code>exec --no-startup-id nm-applet</code></td></tr>
+              <tr><td><code>pavucontrol</code></td><td>Per-app volume when hotkeys are not enough</td><td><code>bindsym $mod+F11 exec pavucontrol</code></td></tr>
+              <tr><td><code>autorandr</code></td><td>Remembers monitor layouts per physical arrangement</td><td><code>exec --no-startup-id autorandr --change</code></td></tr>
+              <tr><td><code>xss-lock</code></td><td>Ties lock/suspend together</td><td><code>exec --no-startup-id xss-lock -- i3lock -c 000000</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The glue lines most desks end up wanting, exactly as written:</p>
+        <div class="code"><pre><span class="cm"># volume keys, PulseAudio flavour (swap pactl for amixer on pure ALSA boxes)</span>
+bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +5%
+bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -5%
+bindsym XF86AudioMute       exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle
+
+<span class="cm"># brightness (libinput-backed laptops use the sysfs path; check `ls /sys/class/backlight/`)</span>
+bindsym XF86MonBrightnessUp   exec --no-startup-id brightnessctl set +5%
+bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-</pre></div>
+        <div class="note"><b>Note:</b> keep one launcher only. People who bind <code>dmenu</code> on
+          <code>$mod+d</code> <em>and</em> rofi on <code>$mod+r</code> end up searching two lists to find
+          one app. Pick rofi (or pick nothing); one door is a desk, two doors is a puzzle.</div>
+        <div class="warn"><b>Warn:</b> <code>picom</code> with <code>experimental_backends = true</code>
+          was the classic tearing fix, but with <code>vsync</code> mis-set it becomes the tear cause.
+          If frames stutter after enabling any compositor, the first suspect is its vsync: honest
+          options are <code>vsync = true</code> (OpenGL) or <code>no</code> &mdash; not both worlds at
+          once.</div>
+      </section>
+
+      <section class="entry" id="fancy">
+        <h2><span class="tag">09</span>The fancy config, annotated</h2>
+        <p>Here is the target: one dark, gap-using, rofi-launched, notification-served i3 with iconed
+          workspaces and a themed bar &mdash; every value explained by the comment on its line. This is
+          meant to be read <b>top to bottom</b>; every number is a real knob.</p>
+        <div class="code"><pre><span class="cm"># ~/.config/i3/config — the fancy build, annotated by line</span>
+<span class="cm"># --- identity ----------------------------------------------------------------</span>
+set $mod Mod4                                  <span class="cm"># Super; swap to Mod1 if your desk prefers Alt</span>
+set $term xterm                                <span class="cm"># every exec below uses $term: change once</span>
+set $menu rofi -show drun                      <span class="cm"># theme lives in ~/.config/rofi/config.rasi</span>
+font pango:JetBrainsMono Nerd Font 10          <span class="cm"># the one font line the whole WM reads</span>
+
+<span class="cm"># --- the essential keys ------------------------------------------------------</span>
+bindsym $mod+Return exec $term
+bindsym $mod+d exec $menu
+bindsym $mod+Shift+q kill
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+r restart
+bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed exit shortcut. Do you really want to exit i3?' -B 'Yes, exit i3' 'i3-msg exit'"
+
+<span class="cm"># --- focus, like arrows on tilers --------------------------------------------</span>
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+h focus left
+bindsym $mod+l focus right
+<span class="cm"># vim keys as well, free at the same bindings:</span>
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+l move right
+
+<span class="cm"># --- splits and layouts ------------------------------------------------------</span>
+bindsym $mod+b split h
+bindsym $mod+v split v
+bindsym $mod+f fullscreen toggle
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+bindsym $mod+space focus mode_toggle
+
+<span class="cm"># --- workspaces with glyphs, one block each ----------------------------------</span>
+set $ws1 "1: &#xf120;"   <span class="cm"># term</span>
+set $ws2 "2: &#xf26c;"   <span class="cm"># web</span>
+set $ws3 "3: &#xf121;"   <span class="cm"># code</span>
+set $ws4 "4: &#xf0e0;"   <span class="cm"># mail</span>
+set $ws10 "10: &#xf013;" <span class="cm"># settings</span>
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+0 workspace $ws10
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+
+<span class="cm"># --- windows and rules -------------------------------------------------------</span>
+gaps inner 10                                  <span class="cm"># i3 ≥ 4.24 (gaps merge) or i3-gaps: the breathing quantity</span>
+gaps outer  4
+smart_gaps on                                  <span class="cm"># no gaps when a single window fills the screen</span>
+default_border pixel 2                         <span class="cm"># 1-2px: WM chrome you barely see but always find</span>
+default_floating_border pixel 2
+hide_edge_borders smart
+focus_follows_mouse no                         <span class="cm"># focus by keys is a decision, not a hover accident</span></pre></div>
+        <p>Read it again with the annotations: nothing above is magic; it is all <b>one concept per
+          line</b>. The full file for a working laptop also merges the sections below — bar block,
+          startup execs, keyranges for volume — and lands around 120 lines; not 1200. The
+          <code>$menu</code> variable exists to prove the launcher slot can take
+          <em>any</em> command string — swap it and the desk keeps its keys.</p>
+        <div class="note"><b>Note:</b> keep the file in git. An i3 config repo earns its keep faster than
+          any dotfile: a bad weekend of tweak-fu is undone by <code>git checkout
+          ~/.config/i3/config</code>, not by memory.</div>
+      </section>
+
+      <section class="entry" id="gaps">
+        <h2><span class="tag">10</span>Gaps, borders and transparency</h2>
+        <p>The <b>fancy layer</b> has exactly three ingredients, two of which live in the config and one
+          lives in a separate program:</p>
+        <div class="swatch-grid" aria-label="A calm dark colour set for the WM">
+          <figure><span class="sw" style="background:#0b110d"></span><figcaption>#0b110d bg</figcaption></figure>
+          <figure><span class="sw" style="background:#16241a"></span><figcaption>#16241a panel</figcaption></figure>
+          <figure><span class="sw" style="background:#9fe870"></span><figcaption>#9fe870 accent</figcaption></figure>
+          <figure><span class="sw" style="background:#ffb38a"></span><figcaption>#ffb38a urgent</figcaption></figure>
+          <figure><span class="sw" style="background:#9aaf9e"></span><figcaption>#9aaf9e muted</figcaption></figure>
+          <figure><span class="sw" style="background:#4d6b52"></span><figcaption>#4d6b52 inactive</figcaption></figure>
+        </div>
+        <div class="code"><pre><span class="cm"># colours: focused vs. the world (borders + text pairs)</span>
+client.focused          #9fe870 #16241a #eef4f0 #9fe870   #9fe870
+client.focused_inactive #4d6b52 #16241a #9aaf9e #4d6b52   #4d6b52
+client.unfocused        #16241a #0b110d #5f7a63 #16241a   #16241a
+client.urgent           #ffb38a #3a241f #0b110d #ffb38a   #ffb38a
+client.placeholder      #16241a #0b110d #9aaf9e #16241a   #16241a</pre></div>
+        <p>Each meaning is the same 5-part colour list:
+          <code>border · background · text · indicator · child_border</code>. Setting
+          <code>client.focused</code> is how a desk says &ldquo;this is the window I am inside&rdquo;
+          visually &mdash; the strongest single upgrade after the font.</p>
+        <div class="code"><pre><span class="cm"># transparency comes from picom's config, not from i3:</span>
+<span class="cm"># ~/.config/picom/picom.conf</span>
+opacity-rule = [
+  "95:class_g = 'URxvt'",
+  "100:class_g = 'firefox'"
+]
+shadow = true
+shadow-radius = 14
+vsync = true              <span class="cm"># the bool that rules tearing; one of its two values is honest</span></pre></div>
+        <div class="warn"><b>Warn:</b> screens <em>look</em> smoother with transparency, but every
+          transparent window costs a composite. On battery-starved hardware the optional
+          <code>picom</code> is the correct answer; a desk is not a benchmark of compositors.</div>
+      </section>
+
+      <section class="entry" id="scratchpad">
+        <h2><span class="tag">11</span>The scratchpad and resize mode</h2>
+        <p>The <b>scratchpad</b> is i3's best-kept secret: a floating window that can hide and pop on
+          any workspace. One terminal on it, summoned anywhere, is the toy desktops tend to stop
+          rebuilding around:</p>
+        <div class="code"><pre><span class="cm"># make-move-toggle ritual, bound once, used forever</span>
+bindsym $mod+Shift+minus move scratchpad          <span class="cm"># send the focused floating window to it</span>
+bindsym $mod+minus scratchpad show                <span class="cm"># summon/cycle scratchpad windows</span>
+exec --no-startup-id $term -name scratch
+for_window [instance="scratch"] move scratchpad, scratchpad show, resize set 90 ppt 35 ppt
+for_window [instance="scratch"] floating enable, sticky enable, border pixel 2</pre></div>
+        <p>And <b>resize mode</b>, i3's own modal gem &mdash; <code>$mod+r</code> turns arrow keys into
+          resize keys until <code>Escape</code>:</p>
+        <div class="code"><pre>mode "resize" {
+    bindsym h resize shrink width 10 px or 5 ppt
+    bindsym l resize grow   width 10 px or 5 ppt
+    bindsym k resize shrink height 10 px or 5 ppt
+    bindsym j resize grow   height 10 px or 5 ppt
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}</pre></div>
+        <div class="note"><b>Note:</b> the scratchpad and the <code>for_window</code> above together are
+          the honest template for every such desk toy: a quake terminal, a music player, a chat pane.
+          Resize once and the numbers persist; no xdotool scripts needed, and it keeps its size on any
+          monitor.</div>
+      </section>
+
+      <section class="entry" id="vocab">
+        <h2><span class="tag">12</span>Hero vocabulary</h2>
+        <p>The commands and one-liners that finish the road:</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Spell</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>i3-msg 'workspace 3'</code></td><td>Drive the WM from a shell or script (same grammar as bindsyms).</td></tr>
+              <tr><td><code>i3-msg restart</code></td><td>Restart without losing your session, from a terminal.</td></tr>
+              <tr><td><code>i3-msg 'layout tabbed'</code></td><td>Change layout of current workspace remotely.</td></tr>
+              <tr><td><code>i3-nagbar -m "text" -B "btn" action</code></td><td>That yellow warning bar; very useful in your own confirm dialogs.</td></tr>
+              <tr><td><code>i3-config-wizard</code></td><td>The declawed starter generator &mdash; rerun freely to inspect sane defaults.</td></tr>
+              <tr><td><code>i3-diag</code></td><td>Collect all runtime info for bug reports (also fine for &ldquo;why is my bar empty&rdquo;).</td></tr>
+              <tr><td><code>i3-msg exec xterm</code></td><td>Start apps <em>through</em> the WM, following startup-id focus rules.</td></tr>
+              <tr><td><code>i3-dump-log</code></td><td>What went wrong, in order of when it did.</td></tr>
+              <tr><td><code>xev</code></td><td>Find keysym/code numbers for binds.</td></tr>
+              <tr><td><code>i3-config-validator</code></td><td>Lint the config before <code>reload</code> rejects it.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>And the man pages that finish a hero: <code>i3</code> (the user guide lives here),
+          <code>i3status</code>, and i3's online user guide if your man page is minimal (or if you run
+          the Wayland twin, the same guide is almost fully applicable under <code>sway</code>).</p>
+        <div class="note"><b>Note:</b> and the meta-skill of the whole page: i3 rewards dictating the
+          exact <b>one line</b> that fixes today's annoyance, then stopping. A 120-line config you can
+          hold in your head beats a 1200-line config you barely survive.</div>
+      </section>
+
+      <section class="entry" id="checklist">
+        <h2><span class="tag">13</span>Your desk, day by day</h2>
+        <p>Progress below is stored in this browser (<code>localStorage</code>) only.</p>
+        <div class="checklist" id="i3Checklist">
+          <div class="meter">
+            <span id="i3Count">0 / 12</span>
+            <span class="bar"><i id="i3Bar"></i></span>
+            <button type="button" id="i3Reset" style="all: unset; cursor: pointer; color: var(--muted); border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.08em;">RESET</button>
+          </div>
+          <label><input type="checkbox" data-key="install"><span>i3 installed; <code>startx</code> lands in the config wizard, and you chose <kbd>Super</kbd> on purpose</span></label>
+          <label><input type="checkbox" data-key="spine"><span>Config lives in <code>~/.config/i3/config</code>, is under version control, and <code>$mod+Shift+c reload</code> works</span></label>
+          <label><input type="checkbox" data-key="keys"><span>Navigated a full day with only <code>$mod</code> + letters, no wallpaper-peeking mouse ritual</span></label>
+          <label><input type="checkbox" data-key="workspaces"><span> workspaces named (and eventually glyphed) that survive across workspaces</span></label>
+          <label><input type="checkbox" data-key="rules"><span><code>for_window</code>/<code>assign</code> rules written from <code>xprop</code>-read strings, never guessed</span></label>
+          <label><input type="checkbox" data-key="startup"><span>Startup matters in one place: <code>exec --no-startup-id</code> lines, composable, no magic</span></label>
+          <label><input type="checkbox" data-key="bar"><span>Bar themed with your colours; status line reads like your terminal does</span></label>
+          <label><input type="checkbox" data-key="glyphs"><span>Icon font verified by <code>fc-list</code>; the workspace glyphs render, not tofu boxes</span></label>
+          <label><input type="checkbox" data-key="launcher"><span>One launcher only (rofi or dmenu) - and both killed the other one's binding</span></label>
+          <label><input type="checkbox" data-key="extras"><span>Compositor, notifications, lock, screenshots and volume keys all in the config, not in the wiki of someday</span></label>
+          <label><input type="checkbox" data-key="fancy"><span>Fancy layer live: gaps, colours, borders, transparency &mdash; all values from your head, all reversible</span></label>
+          <label><input type="checkbox" data-key="scratchpad"><span>Scratchpad terminal on <code>$mod+minus</code>, sticky and the right size on every monitor</span></label>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <div class="foot">
+      <span>Monkey Blog &middot; <a href="./index.html">Home</a></span>
+      <span><a href="./index.html">Archive</a> &middot; <a href="#nothing">Back to top</a></span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY = "i3Hero.progress.v1";
+      var tocLinks = Array.prototype.slice.call(document.querySelectorAll("nav.toc ol a"));
+      var sections = tocLinks.map(function (link) {
+        var anchor = link.getAttribute("href").slice(1);
+        return document.getElementById(anchor);
+      });
+
+      /* ---- active section in the table of contents ---- */
+      function setActive() {
+        var scrollY = window.scrollY + 140;
+        var activeIndex = 0;
+        sections.forEach(function (section, index) {
+          if (section && section.offsetTop <= scrollY) {
+            activeIndex = index;
+          }
+        });
+        tocLinks.forEach(function (link, index) {
+          link.classList.toggle("active", index === activeIndex);
+        });
+      }
+
+      var rafPending = false;
+      window.addEventListener("scroll", function () {
+        if (!rafPending) {
+          rafPending = true;
+          window.requestAnimationFrame(function () {
+            rafPending = false;
+            setActive();
+          });
+        }
+      }, { passive: true });
+      setActive();
+
+      /* ---- copy buttons on every code block ---- */
+      Array.prototype.slice.call(document.querySelectorAll(".code")).forEach(function (block) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "copy";
+        button.textContent = "copy";
+        button.setAttribute("aria-label", "Copy code to clipboard");
+        button.addEventListener("click", function () {
+          var text = block.querySelector("pre").textContent.replace(/\n*$/, "");
+          var done = function () {
+            button.textContent = "copied";
+            window.setTimeout(function () { button.textContent = "copy"; }, 1400);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () {
+              button.textContent = "nope";
+            });
+          } else {
+            var helper = document.createElement("textarea");
+            helper.value = text;
+            helper.setAttribute("readonly", "readonly");
+            helper.style.position = "absolute";
+            helper.style.left = "-9999px";
+            document.body.appendChild(helper);
+            helper.select();
+            try {
+              document.execCommand("copy");
+              done();
+            } catch (error) {
+              button.textContent = "nope";
+            }
+            document.body.removeChild(helper);
+          }
+        });
+        block.appendChild(button);
+      });
+
+      /* ---- desk checklist, persisted per browser ---- */
+      var box = document.getElementById("i3Checklist");
+      if (box) {
+        var boxes = Array.prototype.slice.call(box.querySelectorAll("input[type=checkbox]"));
+        var count = document.getElementById("i3Count");
+        var bar = document.getElementById("i3Bar");
+        var reset = document.getElementById("i3Reset");
+
+        function readState() {
+          var state = {};
+          try {
+            state = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}") || {};
+          } catch (error) {
+            state = {};
+          }
+          return state;
+        }
+
+        function paint() {
+          var state = readState();
+          var done = 0;
+          boxes.forEach(function (input) {
+            var on = !!state[input.getAttribute("data-key")];
+            input.checked = on;
+            if (on) { done += 1; }
+          });
+          count.textContent = done + " / " + boxes.length;
+          bar.style.width = Math.round((done / boxes.length) * 100) + "%";
+        }
+
+        function save(input) {
+          var state = readState();
+          state[input.getAttribute("data-key")] = input.checked;
+          try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          } catch (error) {
+            /* storage is a gift, not a right */
+          }
+          paint();
+        }
+
+        boxes.forEach(function (input) {
+          input.addEventListener("change", function () { save(input); });
+        });
+
+        if (reset) {
+          reset.addEventListener("click", function () {
+            try {
+              window.localStorage.removeItem(STORAGE_KEY);
+            } catch (error) { }
+            paint();
+          });
+        }
+
+        paint();
+      }
+    })();
+  </script>
+</body>
+
+</html>

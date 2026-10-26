@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" sizes="12x12" />
+  <meta name="description" content="A single-file, dark-theme field manual for OpenBSD as a desktop: the sysctl and sndiod values that let Firefox play video without the OS lagging, and the rest of the knobs that stay reversible.">
+  <title>OpenBSD for Desktops · Monkey Blog</title>
+  <style>
+    :root {
+      --ink: #eef2f7;
+      --muted: #98a9bd;
+      --accent: #6fd7f2;
+      --accent-warm: #ffc46b;
+      --good: #7fe3a8;
+      --danger: #ff8f80;
+      --line: rgba(133, 170, 199, 0.18);
+      --line-strong: rgba(111, 215, 242, 0.45);
+      --panel: rgba(13, 18, 26, 0.86);
+      --panel-soft: rgba(20, 26, 36, 0.76);
+      --code-bg: rgba(5, 9, 14, 0.88);
+      --radius: 0.9rem;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+        "Noto Sans", "Liberation Sans", sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { padding: 0; margin: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      background:
+        radial-gradient(1000px 460px at 90% -10%, rgba(111, 215, 242, 0.08), transparent 60%),
+        radial-gradient(860px 480px at -8% 25%, rgba(255, 196, 107, 0.06), transparent 55%),
+        linear-gradient(180deg, #070b12 0%, #0b1119 55%, #060a10 100%) fixed;
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-color: rgba(111, 215, 242, 0.4);
+      text-underline-offset: 0.2em;
+    }
+
+    a:visited { color: #a9d6e4; }
+
+    code, kbd, pre { font-family: var(--mono); font-size: 0.92em; }
+
+    code {
+      background: rgba(111, 215, 242, 0.1);
+      border: 1px solid var(--line);
+      border-radius: 0.4rem;
+      padding: 0.05em 0.4em;
+      white-space: nowrap;
+    }
+
+    kbd {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      border-radius: 0.35rem;
+      padding: 0.05em 0.45em;
+      font-size: 0.82em;
+    }
+
+    .home {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem clamp(1rem, 3vw, 2rem);
+      background: rgba(7, 11, 18, 0.88);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .home a.back {
+      display: inline-flex;
+      gap: 0.4rem;
+      align-items: center;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      padding: 0.25rem 0.9rem;
+    }
+
+    .home a.back:hover { background: rgba(111, 215, 242, 0.08); }
+
+    .home span.field {
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-family: var(--mono);
+    }
+
+    header.hero {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: clamp(2rem, 6vw, 3.4rem) clamp(1rem, 3vw, 2rem) 1rem;
+      text-align: center;
+    }
+
+    header.hero h1 {
+      margin: 0 0 0.4rem;
+      font-size: clamp(1.6rem, 4.5vw, 2.6rem);
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
+
+    header.hero h1 .ob { color: var(--accent-warm); }
+
+    header.hero p.lede {
+      margin: 0 auto;
+      max-width: 48rem;
+      color: var(--muted);
+      font-size: clamp(0.95rem, 2vw, 1.06rem);
+    }
+
+    header.hero .meta {
+      margin: 0.9rem auto 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    header.hero .meta span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.15rem 0.7rem;
+      background: var(--panel-soft);
+    }
+
+    header.hero::after {
+      content: "";
+      display: block;
+      width: min(26rem, 70%);
+      height: 1px;
+      margin: 1.2rem auto 0;
+      background-image: linear-gradient(90deg, transparent, var(--line-strong), transparent);
+    }
+
+    .layout {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 0 clamp(1rem, 3vw, 2rem) clamp(2rem, 5vw, 3.5rem);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 980px) {
+      .layout { grid-template-columns: 16rem minmax(0, 1fr); align-items: start; }
+      nav.toc { position: sticky; top: 3.4rem; }
+    }
+
+    nav.toc {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+      padding: 0.9rem 0.9rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    nav.toc h2 {
+      margin: 0 0 0.6rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    nav.toc ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      counter-reset: toc;
+    }
+
+    nav.toc ol li { margin: 0; }
+
+    nav.toc ol a {
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+      padding: 0.28rem 0.45rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      color: var(--ink);
+      counter-increment: toc;
+    }
+
+    nav.toc ol a::before {
+      content: counter(toc, decimal-leading-zero);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+    }
+
+    nav.toc ol a:hover { background: rgba(111, 215, 242, 0.1); }
+
+    nav.toc ol a.active {
+      background: rgba(111, 215, 242, 0.14);
+      box-shadow: inset 2px 0 0 var(--accent);
+    }
+
+    main { min-width: 0; }
+
+    section.entry {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: clamp(1.1rem, 3vw, 1.8rem);
+      margin: 0 0 1.4rem;
+      scroll-margin-top: 3.8rem;
+    }
+
+    section.entry h2 {
+      margin: 0 0 0.7rem;
+      font-size: clamp(1.2rem, 2.6vw, 1.5rem);
+      line-height: 1.3;
+    }
+
+    section.entry h2 .tag {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.55rem;
+      font-family: var(--mono);
+      font-size: 0.62em;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-warm);
+      border: 1px solid rgba(255, 196, 107, 0.4);
+      border-radius: 999px;
+      padding: 0.12rem 0.55rem;
+    }
+
+    section.entry h3 {
+      margin: 1.4rem 0 0.4rem;
+      font-size: 1.05rem;
+      color: var(--accent);
+    }
+
+    section.entry p { margin: 0.55rem 0; }
+
+    section.entry ul.plain,
+    section.entry ol.plain {
+      margin: 0.5rem 0;
+      padding-left: 1.2rem;
+    }
+
+    section.entry ul.plain li,
+    section.entry ol.plain li { margin: 0.3rem 0; }
+
+    .note, .warn {
+      border-radius: 0.7rem;
+      padding: 0.75rem 1rem;
+      margin: 0.8rem 0;
+      font-size: 0.94rem;
+    }
+
+    .note {
+      border: 1px solid var(--line-strong);
+      background: rgba(111, 215, 242, 0.07);
+    }
+
+    .warn {
+      border: 1px solid rgba(255, 196, 107, 0.45);
+      background: rgba(255, 197, 107, 0.07);
+    }
+
+    .note b:first-child, .warn b:first-child { color: var(--accent-warm); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8rem 0;
+      font-size: 0.93rem;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.5rem 0.7rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: rgba(111, 215, 242, 0.08);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    td code { white-space: nowrap; }
+
+    .code {
+      position: relative;
+      margin: 0.8rem 0;
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      overflow: auto;
+      background: var(--code-bg);
+    }
+
+    .code pre {
+      margin: 0;
+      padding: 0.9rem 3.4rem 0.9rem 1rem;
+      overflow-x: auto;
+      line-height: 1.55;
+      font-size: 0.9rem;
+      color: #e0eff4;
+      white-space: pre;
+    }
+
+    .code pre .u { color: var(--accent-warm); font-weight: 600; }
+    .code pre .cm { color: var(--muted); font-style: italic; }
+
+    .code .copy {
+      position: absolute;
+      top: 0.55rem;
+      right: 0.55rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      border-radius: 0.4rem;
+      padding: 0.2rem 0.55rem;
+      cursor: pointer;
+    }
+
+    .code .copy:hover,
+    .code .copy:focus-visible {
+      color: var(--ink);
+      border-color: var(--line-strong);
+    }
+
+    .code .copy:active { transform: translateY(1px); }
+
+    details.faq {
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      background: var(--panel-soft);
+      margin: 0.7rem 0;
+    }
+
+    details.faq summary {
+      cursor: pointer;
+      padding: 0.7rem 1rem;
+      font-weight: 600;
+      list-style-position: outside;
+    }
+
+    details.faq summary::marker { color: var(--accent); }
+
+    details.faq .faq-body {
+      padding: 0.7rem 1rem 0.9rem;
+      color: var(--ink);
+      border-top: 1px solid var(--line);
+    }
+
+    .table-scroll { overflow-x: auto; }
+
+    .checklist {
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      background: var(--panel-soft);
+      padding: 0.9rem 1rem;
+      margin: 0.9rem 0;
+    }
+
+    .checklist .meter {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .checklist .bar {
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .checklist .bar i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+      transition: width 0.25s ease;
+    }
+
+    .checklist label {
+      display: flex;
+      gap: 0.6rem;
+      align-items: baseline;
+      padding: 0.3rem 0;
+      cursor: pointer;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .checklist label:last-of-type { border-bottom: 0; }
+
+    .checklist input {
+      accent-color: var(--accent);
+      width: 1.05rem;
+      height: 1.05rem;
+      flex: none;
+    }
+
+    .checklist input:checked~span {
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-color: rgba(111, 215, 242, 0.5);
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      background: rgba(7, 11, 18, 0.9);
+    }
+
+    footer .foot {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 1.2rem clamp(1rem, 3vw, 2rem);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.4rem;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    footer .foot a { color: var(--accent); }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 0.3rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="home">
+    <a class="back" href="./index.html">&#8630; Home</a>
+    <span class="field">Field Manual OBS-7 · desktop values that survive</span>
+  </div>
+
+  <header class="hero">
+    <h1><span class="ob">OpenBSD</span> for Desktops</h1>
+    <p class="lede">The default install guards the machine like a server. A desktop needs the same discipline
+      with roomier ceilings &mdash; enough that Firefox plays a video while the system keeps answering,
+      without a single change that cannot be undone by deleting one line.</p>
+    <div class="meta">
+      <span>sysctl &middot; sndiod &middot; firefox &middot; wsconsctl &middot; apm</span>
+      <span>vanilla JS &middot; CSS3 &middot; no dependencies</span>
+      <span>every knob is reversible</span>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <nav class="toc" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#deal">The deal</a></li>
+        <li><a href="#values">The values that stop the lag</a></li>
+        <li><a href="#persist">Testing, then keeping</a></li>
+        <li><a href="#firefox">Firefox, tamed</a></li>
+        <li><a href="#audio">Audio without crackle</a></li>
+        <li><a href="#ram">RAM arithmetic</a></li>
+        <li><a href="#input">Trackpads and keyboards</a></li>
+        <li><a href="#power">Battery, lid, suspend</a></li>
+        <li><a href="#wm">A window manager that answers</a></li>
+        <li><a href="#fonts">Fonts and the packages worth having</a></li>
+        <li><a href="#boring">The boring parts that matter</a></li>
+        <li><a href="#reference">Cheat sheet</a></li>
+        <li><a href="#checklist">Your desktop, checked off</a></li>
+      </ol>
+    </nav>
+
+    <main>
+
+      <section class="entry" id="deal">
+        <h2><span class="tag">01</span>The deal</h2>
+        <p>The stock values of a fresh install are chosen to protect machines you never look at. That is why a
+          browser can open too many files and fail, or a media pipeline can exhaust the process ceiling while
+          the desktop crawls. The project itself documents this: the values exist so a runaway service eats the
+          &ldquo;small&rdquo; quota first.</p>
+        <p>The deal you are signing when you keep reading:</p>
+        <ul class="plain">
+          <li><b>Reversibility first.</b> Most of this page is <code>sysctl</code> at runtime. Reboot clears it
+            if you regret it. Persistence is a plain-text line in <code>/etc/sysctl.conf</code> &mdash; remove
+            the line, the value is gone.</li>
+          <li><b>No recompiled kernels, no -current, no patches.</b> Everything here works on the release you
+            already installed, with the packages the mirrors already serve.</li>
+          <li><b>No fancy filesystems, no exotic schedulers.</b> The default FFS layout stays; the default
+            services stay. A desktop is the place you should be <em>least</em> creative.</li>
+          <li><b>Firefox does the media work</b>; the OS only has to stop tripping it.</li>
+        </ul>
+        <div class="note"><b>Note:</b> check every number against your own machine (<code>sysctl -a</code>
+          prints the current ones). The kernel clamps or rejects values outside its range, and it tells you
+          when it does &mdash; listen to it, do not fight it.</div>
+      </section>
+
+      <section class="entry" id="values">
+        <h2><span class="tag">02</span>The values that stop the lag</h2>
+        <p>This is the section you came for. Three ceilings cover most desktop slowdowns: file descriptors, the
+          process cap, and the thread cap. A browser is many processes each holding many files when video is
+          rolling; the defaults were sized smaller than that.</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Sysctl</th><th>Desktop value</th><th>Default-ish base</th><th>Why video lagged</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>kern.maxfiles</code></td>
+                <td><code>10240</code></td>
+                <td><code>7022</code></td>
+                <td>Each tab/thread keeps sockets, pipes, media descriptors; the cap lands and the browser queues instead of rendering.</td>
+              </tr>
+              <tr>
+                <td><code>kern.maxproc</code></td>
+                <td><code>65000</code></td>
+                <td><code>1310</code></td>
+                <td>A modern browser spawns processes per tab. Past the cap, new tabs die or the compositor stalls.</td>
+              </tr>
+              <tr>
+                <td><code>kern.maxthread</code></td>
+                <td><code>4096</code></td>
+                <td><code>1024</code></td>
+                <td>Media decoding is thread-hungry; when threads get refused, video decodes late &mdash; which is the &ldquo;OS lagging&rdquo; feel.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Apply them live, right now, no reboot:</p>
+        <div class="code"><pre><span class="u">$</span> doas sysctl kern.maxfiles=10240
+<span class="u">$</span> doas sysctl kern.maxproc=65000
+<span class="u">$</span> doas sysctl kern.maxthread=4096</pre></div>
+        <p>Then open Firefox, play a video, resize the window, switch tabs. The machine should stay smooth
+          because the browser stopped knocking on a closed ceiling. If a value is refused <code>&ldquo;Invalid
+          argument&rdquo;</code> or <code>&ldquo;Permission denied&rdquo;</code>, the range on your kernel is
+          different &mdash; back off, or read <code>options(4)</code>; do not shave the kernel.</p>
+        <div class="warn"><b>What I am not telling you to change:</b> <code>vm.*</code> percentages, buffer
+          cache ratios, <code>kern.maxclusters</code> beyond sanity, scheduler hacks. On a general-purpose
+          laptop those defaults are right, and turning them is how people &ldquo;tune&rdquo; a working system
+          into a mysterious one.</div>
+        <details class="faq">
+          <summary>Seriously, only three sysctls?</summary>
+          <div class="faq-body">For video playback without OS lag, yes in the common case: descriptors,
+            processes and threads are what a browser exhausts first. If your case is different, the evidence
+            is readable: <code>systat vmstat</code> during playback shows you whether the machine is swapping
+            (RAM problem &rarr; section&nbsp;06), starving on descriptors (files problem &rarr; this section),
+            or neither (then the lag is mismatched driver rendering &rarr; section&nbsp;04).</div>
+        </details>
+      </section>
+
+      <section class="entry" id="persist">
+        <h2><span class="tag">03</span>Testing, then keeping</h2>
+        <p>The beauty of sysctls: try, keep, or leave with a one-line difference. Runtime first as above; then,
+          to survive reboots, the same key=value pairs go into <code>/etc/sysctl.conf</code>:</p>
+        <div class="code"><pre><span class="cm"># /etc/sysctl.conf — one line each, no 'sysctl' keyword</span>
+kern.maxfiles=10240
+kern.maxproc=65000
+kern.maxthread=4096</pre></div>
+        <p>Confirm the boot result once:</p>
+        <div class="code"><pre><span class="u">$</span> doas reboot
+<span class="u">$</span> sysctl kern.maxfiles kern.maxproc kern.maxthread</pre></div>
+        <p>Discipline that keeps this safe for a normal user:</p>
+        <ul class="plain">
+          <li>Change <em>one</em> thing at a time and use the machine for an hour. If anything feels strange,
+            delete one line from <code>/etc/sysctl.conf</code>, reboot, done.</li>
+          <li>Keep a note (this page's checklist, or a file) of every line you added. Six months from now
+            &ldquo;the system changed behaviour&rdquo; will actually be &ldquo;past-me added a line&rdquo;.</li>
+          <li>Do not set values you have no reason for. More is not smoother; mis-sized memory pools are just a
+            new way to be slow.</li>
+        </ul>
+      </section>
+
+      <section class="entry" id="firefox">
+        <h2><span class="tag">04</span>Firefox, tamed</h2>
+        <p>Firefox from packages is the right Firefox &mdash; it is built against the system's libraries and
+          speaks <code>sndio</code> for audio natively:</p>
+        <div class="code"><pre><span class="u">$</span> doas pkg_add firefox</pre></div>
+        <p>Video playback on OpenBSD decodes in software through the bundled ffmpeg stack; the machine behind
+          sections&nbsp;02 and&nbsp;06 is what makes it smooth. There is one optional forward step:</p>
+        <div class="note"><b>Note (optional):</b> on machines whose DRM driver exposes hardware video decode
+          (newer Intel graphics are the usual candidates), Firefox can attempt VAAPI: <code>about:config</code>
+          &rarr; <code>media.ffmpeg.vaapi.enabled</code> &rarr; <code>true</code>, restart, and check whether
+          videos actually behave. It is per-profile and revertible with the same switch set back to
+          <code>false</code>. If there is no improvement &mdash; or video gets <em>worse</em> &mdash; flip it
+          back and move on. No loss.</div>
+        <div class="warn"><b>Warn:</b> do not chase acceleration through unofficial builds, forks or scripts
+          pasted from forums. A browser that runs outside the package system is un-signed, un-updated and a
+          genuine security regression on the machine you can least afford to regress.</div>
+        <h3>Small habits that keep it fast</h3>
+        <ul class="plain">
+          <li>Keep the profile small: hundreds of dormant tabs cost memory on any OS.</li>
+          <li>Let the package system update it (<code>pkg_add -u</code>) instead of living between versions.</li>
+          <li>If the browser itself freezes but the desktop answers, that is an in-browser problem &mdash;
+            sections 02/06 will not fix a broken profile; a fresh one will.</li>
+        </ul>
+      </section>
+
+      <section class="entry" id="audio">
+        <h2><span class="tag">05</span>Audio without crackle</h2>
+        <p><code>sndiod</code> is already running and mixing by default. Desktops rarely need tuning; when
+          video + music at once hiss or crackle under load, the device buffer can grow a little:</p>
+        <div class="code"><pre><span class="cm"># /etc/rc.conf.local — only if audio crackles under load</span>
+sndiod_flags=-b2400</pre></div>
+        <div class="code"><pre><span class="u">$</span> doas rcctl set sndiod flags -b2400
+<span class="u">$</span> doas rcctl restart sndiod</pre></div>
+        <p>Bigger buffer = more latency (a few milliseconds you will not notice) in exchange for staying fluid
+          when the CPU spikes. Defaults first; change only what crackles. Per-application volume just works on
+          <code>sndio</code>; per-app mixers from other systems do not exist here and are not missed.</p>
+        <div class="note"><b>Note:</b> if audio devices change (plug/unplug, monitors with speakers),
+          <code>sndiod</code> re-reads devices on the fly. Persistent weirdness is usually the volume knob of
+          the wrong device, not broken config.</div>
+      </section>
+
+      <section class="entry" id="ram">
+        <h2><span class="tag">06</span>RAM arithmetic</h2>
+        <p>No sysctl rescues too little RAM. Video in a browser is a few gigabytes of anonymous memory; the
+          page daemon starts clawing pages back as soon as the machine is tight, and <em>that</em> reclaiming
+          is the real &ldquo;OS is lagging&rdquo; experience &mdash; the system keeps running while it swaps
+          your video in and out.</p>
+        <div class="code"><pre><span class="u">$</span> systat vm 1          <span class="cm"># watch pi/po (pages in/out) during a video</span></pre></div>
+        <ul class="plain">
+          <li><b>8 GB</b>: fine for one browser session + WM + terminal.</li>
+          <li><b>16 GB</b>: the comfortable desktop number.</li>
+          <li>How to be honest about it: play your worst case (video + video call + editor) and watch
+            <code>systat vm</code>. If <code>pi/po</code> churn while the system feels mushy, you need more
+            memory, not more tuning.</li>
+        </ul>
+        <p>Swap exists to exist, not to be a second RAM: leave the default swap sized at install time, leave
+          the virtual-memory ratios alone, and treat &ldquo;<code>vm.anonmin</code>&rdquo;-style advice as
+          something for people with a measurement, not a feeling.</p>
+        <div class="note"><b>Note:</b> if the machine is old-slow rather than out-of-memory, upgrade path is
+          RAM &rarr; SSD &rarr; patient browser habits. The sysctls of section&nbsp;02 only remove the
+          <em>artificial</em> ceiling.</div>
+      </section>
+
+      <section class="entry" id="input">
+        <h2><span class="tag">07</span>Trackpads and keyboards</h2>
+        <p>These are <code>wsconsctl</code> knobs &mdash; same reversibility as sysctls. Trackpad tapping and
+          natural scrolling behaviour live here:</p>
+        <div class="code"><pre><span class="u">$</span> doas wsconsctl -w mouse.tapping=1       <span class="cm"># tap = click, live</span>
+<span class="u">$</span> doas wsconsctl -w mouse.scrolling=0     <span class="cm"># 0 traditional, 1 natural</span></pre></div>
+        <p>And to keep them after reboot, <code>/etc/wsconsctl.conf</code> takes the bare
+          <code>key=value</code> lines:</p>
+        <div class="code"><pre><span class="cm"># /etc/wsconsctl.conf</span>
+mouse.tapping=1
+mouse.scrolling=0</pre></div>
+        <p>Keyboard layouts follow the same pattern; list what your console understands and set it live with
+          <code>wsconsctl keyboard.map=</code>... then persist in the same file. Two knobs on the laptop
+          (tapping + scrolling) cover 90% of the &ldquo;OpenBSD feels unfinished&rdquo; first impressions.</p>
+        <div class="warn"><b>Warn:</b> do not autoload random X11 driver flags or modeline hacks from forums to
+          fix a trackpad. The <code>wsconsctl</code> route is the project's own and it survives
+          <code>xenodm</code> restarts; the forum route survives nothing.</div>
+      </section>
+
+      <section class="entry" id="power">
+        <h2><span class="tag">08</span>Battery, lid, suspend</h2>
+        <p>Laptops get the pleasant part of OpenBSD: suspend (<code>zzz</code>) works out of the box, and the
+          lid action is a sysctl:</p>
+        <div class="code"><pre><span class="u">$</span> apm                    <span class="cm"># battery state + performance mode</span>
+<span class="u">$</span> doas apm -A            <span class="cm"># automatic performance adjustment</span>
+<span class="u">$</span> doas sysctl machdep.lidaction=1   <span class="cm"># close lid = suspend (1); 0 leaves it alone</span></pre></div>
+        <p>Persist the lid behaviour in <code>/etc/sysctl.conf</code> like the others:</p>
+        <div class="code"><pre><span class="cm"># /etc/sysctl.conf</span>
+machdep.lidaction=1</pre></div>
+        <p>Allow yourself to suspend without a password being typed each time &mdash; acceptable only for
+          <code>zzz</code> itself:</p>
+        <div class="code"><pre><span class="cm"># /etc/doas.conf</span>
+permit nopass :wheel cmd zzz</pre></div>
+        <div class="warn"><b>Warn:</b> <code>permit nopass</code> otherwise gets you a root-shaped hole in the
+          name of convenience. One command, exactly that command.</div>
+        <div class="note"><b>Note:</b> after suspend, if the clock is off, <code>ntpd</code> re-syncs
+          automatically. If keys repeat weirdly until the next reboot, that is your machine's firmware being
+          ancient, not OpenBSD's fault alone &mdash; the same happens walking between three other OSes.</div>
+      </section>
+
+      <section class="entry" id="wm">
+        <h2><span class="tag">09</span>A window manager that answers</h2>
+        <p><code>cwm</code> ships in base and is the truthful answer to &ldquo;what WM on OpenBSD&rdquo;. X as
+          a whole is started by <code>xenodm</code>:</p>
+        <div class="code"><pre><span class="u">$</span> doas rcctl enable xenodm
+<span class="u">$</span> doas rcctl start xenodm</pre></div>
+        <p>And your <code>~/.xsession</code> simply must point at it (this file is the only thing between you
+          and a black screen; keep it tiny):</p>
+        <div class="code"><pre><span class="cm"># ~/.xsession</span>
+. /etc/X11/xinit/xinitrc.d/40-systray 2>/dev/null || true
+xsetroot -solid \&quot;#070b12\&quot;
+exec cwm</pre></div>
+        <p>Why cwm and not something showier: it is keyboard-first, memory-flat, updated with the base system,
+          and sports the most honest manual page in any WM. Window managers from packages (fvwm, i3 and so
+          on) also work &mdash; if a package install goes wrong, it is removable and you still have
+          <code>twm</code> and a console.</p>
+        <div class="note"><b>Note:</b> keep <code>xenodm</code> enabled rather than starting X from a bare
+          console every time; multiuser discipline survives by accident otherwise.</div>
+      </section>
+
+      <section class="entry" id="fonts">
+        <h2><span class="tag">10</span>Fonts and the packages worth having</h2>
+        <p>A desktop without good fonts is a desktop you describe as &ldquo;ugly&rdquo;. This is fixed by
+          packages, and it cannot break anything:</p>
+        <div class="code"><pre><span class="u">$</span> doas pkg_add noto-fonts noto-fonts-emoji dejavu-fonts</pre></div>
+        <ul class="plain">
+          <li><b>fonts:</b> a full family + emoji covers all web pages you will open.</li>
+          <li><b>audio/video:</b> nothing extra; <code>ffmpeg</code> rides inside Firefox and friends via
+            packages.</li>
+          <li><b>tools:</b> <code>curl</code>, <code>git</code>, <code>vim</code> (or neovim), <code>zsh</code>
+            &mdash; all from packages, all disposable.</li>
+          <li><b>updates</b> are one command, run occasionally: <code>pkg_add -u</code>.</li>
+        </ul>
+        <div class="note"><b>Note:</b> stay on <code>-release</code>/<code>-stable</code> as a normal user.
+          -current is a full-time hobby; a browser that changes under your video every week is a form of
+          self-harm.</div>
+      </section>
+
+      <section class="entry" id="boring">
+        <h2><span class="tag">11</span>The boring parts that matter</h2>
+        <ul class="plain">
+          <li><b>User discipline:</b> live as a normal user; <code>doas</code> for the few things above.
+            Everything on this page runs through doas, never inside a bare root shell.</li>
+          <li><b>Email noise:</b> the daily maintenance cron mail tells you about things like&nbsp;
+            &ldquo;disk nearing capacity&rdquo;. Read it instead of filtering it: it is the OS whispering.</li>
+          <li><code>/etc/motd</code>: shorten it. Reclaiming screen inches &mdash; not &ldquo;tuning&rdquo;,
+            but the daily reward.</li>
+          <li><code>dmesg</code> and <code>sysctl -a</code>: after every change, compare once before/after
+            before calling it &ldquo;better&rdquo;. Feelings lie; diffs do not.</li>
+          <li><b>Back up the small config:</b> these are now &ldquo;your&rdquo; files &mdash;
+            <code>/etc/sysctl.conf</code>, <code>/etc/wsconsctl.conf</code>, <code>/etc/doas.conf</code>,
+            <code>~/.xsession</code>. Four files; save a copy with <code>tar</code> when they feel right.</li>
+        </ul>
+        <div class="warn"><b>Warn:</b> nothing on this page should push you to enable services from
+          <code>rcctl</code> you cannot name the purpose of. A desktop with 8 enabled daemons is a small server
+          wearing a desktop's face, and it inherits a server's attack surface with none of its pay.</div>
+      </section>
+
+      <section class="entry" id="reference">
+        <h2><span class="tag">12</span>Cheat sheet</h2>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Goal</th><th>Command</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Un-stick video ceilings (live)</td><td><code>doas sysctl kern.maxfiles=10240 kern.maxproc=65000 kern.maxthread=4096</code></td></tr>
+              <tr><td>Keep them over reboots</td><td>same three pairs, one per line, in <code>/etc/sysctl.conf</code></td></tr>
+              <tr><td>See current values</td><td><code>sysctl kern.maxfiles kern.maxproc kern.maxthread</code></td></tr>
+              <tr><td>Audio breathing room</td><td><code>rcctl set sndiod flags -b2400 &amp;&amp; rcctl restart sndiod</code></td></tr>
+              <tr><td>Trackpad manners</td><td><code>doas wsconsctl -w mouse.tapping=1</code> (+ line in <code>/etc/wsconsctl.conf</code>)</td></tr>
+              <tr><td>Suspend now / on lid</td><td><code>doas zzz</code> / <code>machdep.lidaction=1</code></td></tr>
+              <tr><td>Watch memory churn</td><td><code>systat vm 1</code></td></tr>
+              <tr><td>X with cwm</td><td><code>rcctl enable xenodm</code>, <code>exec cwm</code> in <code>~/.xsession</code></td></tr>
+              <tr><td>Fonts</td><td><code>pkg_add noto-fonts noto-fonts-emoji dejavu-fonts</code></td></tr>
+              <tr><td>Everything fresh</td><td><code>pkg_add -u</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="entry" id="checklist">
+        <h2><span class="tag">13</span>Your desktop, checked off</h2>
+        <p>Progress below is stored in this browser (<code>localStorage</code>) only &mdash; closing the page
+          keeps it.</p>
+        <div class="checklist" id="deskChecklist">
+          <div class="meter">
+            <span id="deskCount">0 / 10</span>
+            <span class="bar"><i id="deskBar"></i></span>
+            <button type="button" id="deskReset" style="all: unset; cursor: pointer; color: var(--muted); border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.08em;">RESET</button>
+          </div>
+          <label><input type="checkbox" data-key="baseline"><span><code>sysctl -a</code> captured before any change (your before-picture)</span></label>
+          <label><input type="checkbox" data-key="maxfiles"><span><code>kern.maxfiles=10240</code> applied and kept in <code>/etc/sysctl.conf</code></span></label>
+          <label><input type="checkbox" data-key="maxproc"><span><code>kern.maxproc=65000</code> applied and kept</span></label>
+          <label><input type="checkbox" data-key="maxthread"><span><code>kern.maxthread=4096</code> applied and kept</span></label>
+          <label><input type="checkbox" data-key="video"><span>Video in Firefox plays smoothly with tabs switching beside it</span></label>
+          <label><input type="checkbox" data-key="vmstat"><span><code>systat vm</code> watched during playback; <code>pi/po</code> calm (or RAM planned)</span></label>
+          <label><input type="checkbox" data-key="sndio"><span>Audio checked under load; <code>-b2400</code> applied only if it crackled</span></label>
+          <label><input type="checkbox" data-key="input"><span>Trackpad tapping/scroll set via <code>wsconsctl</code> and persisted</span></label>
+          <label><input type="checkbox" data-key="power"><span>Lid + suspend + <code>doas</code> nopass for <code>zzz</code> only</span></label>
+          <label><input type="checkbox" data-key="backup"><span>The four config files copied away once (<code>sysctl.conf</code>, <code>wsconsctl.conf</code>, <code>doas.conf</code>, <code>~/.xsession</code>)</span></label>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <div class="foot">
+      <span>Monkey Blog &middot; <a href="./index.html">Home</a></span>
+      <span><a href="./index.html">Archive</a> &middot; <a href="#deal">Back to top</a></span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY = "openbsdDesktop.progress.v1";
+      var tocLinks = Array.prototype.slice.call(document.querySelectorAll("nav.toc ol a"));
+      var sections = tocLinks.map(function (link) {
+        var anchor = link.getAttribute("href").slice(1);
+        return document.getElementById(anchor);
+      });
+
+      /* ---- active section in the table of contents ---- */
+      function setActive() {
+        var scrollY = window.scrollY + 140;
+        var activeIndex = 0;
+        sections.forEach(function (section, index) {
+          if (section && section.offsetTop <= scrollY) {
+            activeIndex = index;
+          }
+        });
+        tocLinks.forEach(function (link, index) {
+          link.classList.toggle("active", index === activeIndex);
+        });
+      }
+
+      var rafPending = false;
+      window.addEventListener("scroll", function () {
+        if (!rafPending) {
+          rafPending = true;
+          window.requestAnimationFrame(function () {
+            rafPending = false;
+            setActive();
+          });
+        }
+      }, { passive: true });
+      setActive();
+
+      /* ---- copy buttons on every code block ---- */
+      Array.prototype.slice.call(document.querySelectorAll(".code")).forEach(function (block) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "copy";
+        button.textContent = "copy";
+        button.setAttribute("aria-label", "Copy code to clipboard");
+        button.addEventListener("click", function () {
+          var text = block.querySelector("pre").textContent;
+          var done = function () {
+            button.textContent = "copied";
+            window.setTimeout(function () { button.textContent = "copy"; }, 1400);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () {
+              button.textContent = "nope";
+            });
+          } else {
+            var helper = document.createElement("textarea");
+            helper.value = text;
+            helper.setAttribute("readonly", "readonly");
+            helper.style.position = "absolute";
+            helper.style.left = "-9999px";
+            document.body.appendChild(helper);
+            helper.select();
+            try {
+              document.execCommand("copy");
+              done();
+            } catch (error) {
+              button.textContent = "nope";
+            }
+            document.body.removeChild(helper);
+          }
+        });
+        block.appendChild(button);
+      });
+
+      /* ---- desktop checklist, persisted per browser ---- */
+      var box = document.getElementById("deskChecklist");
+      if (box) {
+        var boxes = Array.prototype.slice.call(box.querySelectorAll("input[type=checkbox]"));
+        var count = document.getElementById("deskCount");
+        var bar = document.getElementById("deskBar");
+        var reset = document.getElementById("deskReset");
+
+        function readState() {
+          var state = {};
+          try {
+            state = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}") || {};
+          } catch (error) {
+            state = {};
+          }
+          return state;
+        }
+
+        function paint() {
+          var state = readState();
+          var done = 0;
+          boxes.forEach(function (input) {
+            var on = !!state[input.getAttribute("data-key")];
+            input.checked = on;
+            if (on) { done += 1; }
+          });
+          count.textContent = done + " / " + boxes.length;
+          bar.style.width = Math.round((done / boxes.length) * 100) + "%";
+        }
+
+        function save(input) {
+          var state = readState();
+          state[input.getAttribute("data-key")] = input.checked;
+          try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          } catch (error) {
+            /* storage is a gift, not a right */
+          }
+          paint();
+        }
+
+        boxes.forEach(function (input) {
+          input.addEventListener("change", function () { save(input); });
+        });
+
+        if (reset) {
+          reset.addEventListener("click", function () {
+            try {
+              window.localStorage.removeItem(STORAGE_KEY);
+            } catch (error) { }
+            paint();
+          });
+        }
+
+        paint();
+      }
+    })();
+  </script>
+</body>
+
+</html>
