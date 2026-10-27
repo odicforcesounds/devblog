@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<!--
+  DATA DOSSIER TEMPLATE — extracted from docs/povertyAndFaith.html
+  ---------------------------------------------------------------------------
+  The page shell only: no article text. Everything the reader sees as content
+  is a placeholder. Search and replace these strings:
+    TITLE-WILL-BE-HERE-PLEASE              document title and <h1>
+    Metadata-description-will-be-here-please
+    KICKER-WILL-BE-HERE-PLEASE             small line above the title
+    LEDE-WILL-BE-HERE-PLEASE               italic standfirst
+    TAG-WILL-BE-HERE-PLEASE                one chip in the tag row
+    SECTION-TITLE-WILL-BE-HERE-PLEASE      section heading
+    ANCHOR-WILL-BE-HERE-PLEASE             section id (must be lang-prefixed)
+    PAGE_SLUG                              localStorage key for the language
+  The player is a Bandcamp iframe; swap album= and track= in its src.
+  Styles are inline on purpose: the page must work as a single file with no
+  external requests other than the Bandcamp player.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--   SECURITY -->
+<!-- ONLY ACCEPT EXTERNAL SOURCES FROM BANDCAMP.COM -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://bandcamp.com; frame-src 'self' https://bandcamp.com; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';">
+<meta name="X-Content-Type-Options" content="nosniff">
+<meta name="Referrer-Policy" content="no-referrer">
+<title>TITLE-WILL-BE-HERE-PLEASE</title>
+<meta name="description" content="Metadata-description-will-be-here-please">
+<meta name="fediverse:creator" content="@TaoExpression@mastodon.social">
+<style>
+:root{
+--bg:#0a0d12;--panel:#111823;--panel2:#161f2c;--ink:#e9eef5;--muted:#98a6b8;
+--line:#26313f;--accent:#7dd3a8;--accent2:#8ab4f8;--warn:#e0a458;--danger:#e07a86;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+--radius:10px;--max:53rem;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,"Times New Roman",serif;line-height:1.68}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+.progress{position:fixed;top:0;left:0;right:0;height:3px;background:var(--line);z-index:30}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;padding:.5rem .9rem;background:rgba(10,13,18,.95);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.78rem;letter-spacing:.04em}
+.topbar a.home{color:var(--accent);font-weight:700}
+.topbar .brand{color:var(--muted)}
+.topbar .spacer{flex:1 1 auto}
+.langswitch{display:flex;gap:.35rem}
+.langswitch button{cursor:pointer;background:var(--panel);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:.3rem .72rem;font-family:var(--mono);font-size:.74rem;letter-spacing:.06em}
+.langswitch button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#08120c;font-weight:700}
+main.lang.is-hidden{display:none}
+.wrap{max-width:var(--max);margin:0 auto;padding:1rem 1.15rem 4.5rem}
+header.hero{padding:1.7rem 0 1.1rem;border-bottom:1px solid var(--line)}
+.kicker{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--warn)}
+h1{font-size:clamp(1.55rem,4.2vw,2.3rem);line-height:1.16;margin:.45rem 0 .3rem}
+.lede{color:var(--muted);font-style:italic;margin:.2rem 0 0}
+.tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.9rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase}
+.tags span{border:1px solid var(--line);border-radius:999px;padding:.22rem .6rem;color:var(--muted)}
+nav.toc{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.1rem;margin:1.3rem 0}
+nav.toc h2{font-family:var(--mono);font-size:.76rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 .6rem}
+nav.toc ol{margin:0;padding-left:1.3rem}
+nav.toc li{margin:.18rem 0}
+nav.toc a{color:var(--ink)}
+nav.toc a.active{color:var(--accent);font-weight:700}
+section.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1.15rem 1.25rem;margin:1.15rem 0}
+section.card h2{margin:0 0 .35rem;color:var(--accent);font-size:1.3rem;line-height:1.25}
+h3.sub{margin:1.4rem 0 .3rem;color:var(--accent2);font-size:1.02rem;letter-spacing:.02em}
+p{margin:.65rem 0}
+p.first{margin-top:.2rem}
+.note{color:var(--muted);font-size:.92rem}
+blockquote{margin:1rem 0;padding:.5rem 1rem;border-left:3px solid var(--warn);background:var(--panel2);color:var(--muted);font-style:italic}
+ul.plain,ol.plain{margin:.6rem 0;padding-left:1.25rem}
+ul.plain li,ol.plain li{margin:.35rem 0}
+ul.grid{list-style:none;margin:.7rem 0 0;padding:0;display:grid;gap:.55rem}
+ul.grid li{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:.6rem .8rem}
+ul.grid li strong{color:var(--accent)}
+.chip{display:inline-block;font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;color:#08120c;background:var(--accent);border-radius:999px;padding:.1rem .5rem;margin-right:.45rem;vertical-align:.08em}
+.chip.warn{background:var(--warn)}
+.chip.dark{background:var(--accent2)}
+.filter{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;margin:.9rem 0 .2rem;font-family:var(--mono);font-size:.74rem}
+.filter .label{color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-size:.68rem;margin-right:.2rem}
+.filter button{cursor:pointer;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:.3rem .72rem;color:var(--muted);font-family:var(--mono);font-size:.74rem}
+.filter button[aria-pressed="true"]{background:var(--accent2);border-color:var(--accent2);color:#081018;font-weight:700}
+.filter .count-out{color:var(--muted);margin-left:.3rem}
+table{width:100%;border-collapse:collapse;margin:.9rem 0;font-size:.92rem}
+caption{caption-side:top;text-align:left;color:var(--muted);font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;padding-bottom:.35rem}
+th,td{border:1px solid var(--line);padding:.5rem .6rem;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+th{background:#0e1520;color:var(--accent);font-size:.82rem;letter-spacing:.03em}
+tbody tr[data-grp].off{display:none}
+td.num{font-family:var(--mono);color:var(--accent2);white-space:nowrap}
+table.prose td.num{white-space:normal}
+table.prose td{word-break:normal}
+td.hard{color:var(--danger)}
+td.easy{color:var(--accent)}
+.key{background:#0e1520;border:1px solid var(--accent);border-radius:8px;padding:.75rem .9rem;margin:.9rem 0;font-family:var(--mono);font-size:.82rem;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.sources{display:grid;gap:.9rem;margin-top:.9rem}
+.srcgrp{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:.75rem .85rem}
+.srcgrp h3{margin:0 0 .45rem;color:var(--accent);font-size:.95rem}
+.srcgrp ul{margin:0;padding-left:1.15rem}
+.srcgrp li{margin:.35rem 0;font-size:.92rem}
+.srcgrp small{display:block;color:var(--muted);font-family:var(--mono);font-size:.72rem;letter-spacing:.03em}
+footer.site{margin-top:1.6rem;border-top:1px solid var(--line);padding-top:.9rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:.6rem;font-family:var(--mono);font-size:.78rem}
+footer.site a{color:var(--accent)}
+#toTop{position:fixed;right:.9rem;bottom:.9rem;z-index:25;display:none;cursor:pointer;background:var(--panel2);border:1px solid var(--line);border-radius:999px;color:var(--ink);padding:.55rem .85rem;font-family:var(--mono);font-size:.76rem}
+#toTop.show{display:block}
+@media (max-width:640px){
+h1{font-size:1.5rem}
+section.card{padding:1rem}
+table{font-size:.85rem}
+th,td{padding:.4rem .45rem;white-space:normal}
+section.card{overflow-x:auto}
+}
+@media print{
+.topbar,.progress,#toTop,.filter{display:none}
+body{background:#fff;color:#000}
+section.card{border-color:#999;break-inside:avoid}
+tbody tr[data-grp].off{display:table-row}
+}
+</style>
+</head>
+<body>
+<div class="progress" aria-hidden="true"><i id="bar"></i></div>
+
+<!-- TOP BAR: home · brand · player · language switch -->
+<header class="topbar">
+<a class="home" href="./index.html">Home</a>
+<span class="brand">Monkey Blog · Data Dossier · Dossier de Dados</span>
+<span class="spacer">
+<!-- PLAYER: Bandcamp embed. Swap album= and track= in the src, and the fallback link. -->
+<iframe style="border: 0; width: 70%; height: 42px;" src="https://bandcamp.com/EmbeddedPlayer/album=495679629/size=small/bgcol=333333/linkcol=0f91ff/track=3817016636/transparent=true/" seamless><a href="https://odicforcesounds.bandcamp.com/album/shamanic-quest-dream">Shamanic Quest Dream by odicforcesounds</a></iframe>
+</span>
+<div class="langswitch" role="group" aria-label="Language / Idioma">
+<button type="button" data-setlang="en" aria-pressed="true">English</button>
+<button type="button" data-setlang="pt" aria-pressed="false">Português</button>
+</div>
+</header>
+
+<!-- =================== ENGLISH =================== -->
+<main id="en" class="lang" lang="en">
+<div class="wrap">
+
+<header class="hero">
+<div class="kicker">KICKER-WILL-BE-HERE-PLEASE</div>
+<h1>TITLE-WILL-BE-HERE-PLEASE</h1>
+<p class="lede">LEDE-WILL-BE-HERE-PLEASE</p>
+<div class="tags"><span>TAG-WILL-BE-HERE-PLEASE</span><span>TAG-WILL-BE-HERE-PLEASE</span><span>Bilingual</span></div>
+</header>
+
+<!-- CONTENTS: one list item per card section, in the same order, with the same ids -->
+<nav class="toc" aria-label="Contents">
+<h2>Contents</h2>
+<ol>
+<li><a href="#en-section-one">SECTION-TITLE-WILL-BE-HERE-PLEASE</a></li>
+<li><a href="#en-section-two">SECTION-TITLE-WILL-BE-HERE-PLEASE</a></li>
+<li><a href="#en-section-three">SECTION-TITLE-WILL-BE-HERE-PLEASE</a></li>
+<li><a href="#en-sources">Sources</a></li>
+</ol>
+</nav>
+
+<!-- SECTION: the standard block — heading, lead paragraph, subheadings, list, quote -->
+<section class="card" id="en-section-one">
+<h2>1. SECTION-TITLE-WILL-BE-HERE-PLEASE</h2>
+<p class="first">Opening paragraph. Use <strong>bold</strong> for the load-bearing figure, <em>italics</em> for a term, and a bare number rather than a qualifier when the number is the point.</p>
+<p class="note">A smaller aside in muted type, for a caveat or a definition that interrupts the argument.</p>
+
+<h3 class="sub">A subheading inside the section</h3>
+<p>Body paragraph. <span class="chip">Chip</span> marks a short label inside running text; <span class="chip warn">Warn</span> and <span class="chip dark">Dark</span> are the two other colours.</p>
+<ul class="plain">
+<li><strong>Point</strong> — the claim, then the evidence that supports it.</li>
+<li><strong>Point</strong> — one idea per bullet, one sentence of support.</li>
+</ul>
+
+<h3 class="sub">A second subheading</h3>
+<ol class="plain">
+<li><strong>First</strong> — use an ordered list when the order carries meaning.</li>
+<li><strong>Second</strong> — otherwise use the bulleted list above.</li>
+</ol>
+
+<ul class="grid">
+<li><strong>Boxed item</strong> — a grid card for parallel items of equal weight (a level, a mechanism, a case).</li>
+<li><strong>Boxed item</strong> — the boxes stack on mobile and form a column on desktop.</li>
+</ul>
+
+<blockquote>A pull quote for the sentence the reader should remember. One per section at most.</blockquote>
+
+<!-- KEY BLOCK: monospace box for a short calculation or a schema -->
+<div class="key">one per cent of $2,887 billion = about $29 billion a year
+the whole humanitarian appeal, or five peacekeeping budgets</div>
+</section>
+
+<!-- SECTION: filterable table. Delete this whole section when the page has no table. -->
+<section class="card" id="en-section-two">
+<h2>2. SECTION-TITLE-WILL-BE-HERE-PLEASE</h2>
+<p class="first">Paragraph introducing the table. The filter below the caption switches between the groups; the counter shows how many rows are visible.</p>
+
+<div class="filter" data-filter data-table="demo-en" data-axis="grp" role="group" aria-label="Filter by group">
+<span class="label">Group</span>
+<button type="button" data-grp="all" aria-pressed="true">All</button>
+<button type="button" data-grp="muslim" aria-pressed="false">Muslim-majority</button>
+<button type="button" data-grp="christian" aria-pressed="false">Christian-majority</button>
+<button type="button" data-grp="other" aria-pressed="false">Neither</button>
+<span class="count-out" data-count-for="demo-en">6 / 6</span>
+</div>
+
+<!-- Every row carries data-grp; the id matches data-table on the filter. -->
+<table id="demo-en">
+<caption>Caption: what is measured, for whom, and in which year</caption>
+<thead><tr><th>Country</th><th>Majority</th><th>Measure</th><th>Latest figure</th><th>Year</th></tr></thead>
+<tbody>
+<tr data-grp="muslim"><td>Country</td><td>Muslim</td><td>Multidimensional poverty</td><td class="num">82.7 %</td><td>2024</td></tr>
+<tr data-grp="muslim"><td>Country</td><td>Muslim</td><td>National poverty line</td><td class="num">74 %</td><td>2022</td></tr>
+<tr data-grp="christian"><td>Country</td><td>Christian</td><td>Official poverty rate</td><td class="num">10.6 %</td><td>2024</td></tr>
+<tr data-grp="christian"><td>Country</td><td>Christian</td><td>National poverty line</td><td class="num">69 %</td><td>2024</td></tr>
+<tr data-grp="other"><td>Country</td><td>Neither</td><td>The $3.00 line, over a decade</td><td class="num">27.1 % → 5.3 %</td><td>2011 → 2023</td></tr>
+<tr data-grp="other"><td>Country</td><td>Neither</td><td>Multidimensional poverty</td><td class="num">63 % — 133 million</td><td>2022</td></tr>
+</tbody>
+</table>
+
+<p>Paragraph reading the table: what it shows, and what it does not.</p>
+<p class="note">A caveat about the series, the year, or the agency that published it.</p>
+</section>
+
+<!-- SECTION: sources. Keep the .sources wrapper and one .srcgrp per theme. -->
+<section class="card" id="en-section-three">
+<h2>3. SECTION-TITLE-WILL-BE-HERE-PLEASE</h2>
+<p class="first">Body text before the sources, if the section needs one. Delete this paragraph otherwise.</p>
+</section>
+
+<section class="card" id="en-sources">
+<h2>4. Sources</h2>
+<p class="first">Official and institutional sources only. Figures are quoted with the year of the source, because numbers move.</p>
+<div class="sources">
+<div class="srcgrp">
+<h3>1. Theme of the first group of sources</h3>
+<ul>
+<li><a href="https://example.com/">example.com — the document's own title</a><small>The one number or sentence this source is here to support</small></li>
+<li><a href="https://example.com/">example.com — a second document</a><small>What it adds that the first does not</small></li>
+</ul>
+</div>
+<div class="srcgrp">
+<h3>2. Theme of the second group</h3>
+<ul>
+<li><a href="https://example.com/">example.com — a third document</a><small>Keep the description to one line; the link carries the rest</small></li>
+</ul>
+</div>
+</div>
+<p class="note">How the figures were used: quoted as published, with the year; disputed or estimated numbers are marked as such in the text.</p>
+</section>
+
+<!-- FOOTER -->
+<footer class="site"><a href="./index.html">Home</a><span>TITLE-WILL-BE-HERE-PLEASE · short description of the dossier</span></footer>
+</div>
+</main>
+
+<!-- =================== PORTUGUÊS =================== -->
+<!-- Same structure, same ids with the pt- prefix, same order as the English <nav class="toc">. -->
+<main id="pt" class="lang is-hidden" lang="pt">
+<div class="wrap">
+
+<header class="hero">
+<div class="kicker">KICKER-WILL-BE-HERE-PLEASE</div>
+<h1>TITLE-WILL-BE-HERE-PLEASE</h1>
+<p class="lede">LEDE-WILL-BE-HERE-PLEASE</p>
+<div class="tags"><span>TAG-WILL-BE-HERE-PLEASE</span><span>TAG-WILL-BE-HERE-PLEASE</span><span>Bilingue</span></div>
+</header>
+
+<nav class="toc" aria-label="Índice">
+<h2>Índice</h2>
+<ol>
+<li><a href="#pt-section-one">SECTION-TITLE-WILL-BE-HERE-PLEASE</a></li>
+<li><a href="#pt-section-two">SECTION-TITLE-WILL-BE-HERE-PLEASE</a></li>
+<li><a href="#pt-section-three">SECTION-TITLE-WILL-BE-HERE-PLEASE</a></li>
+<li><a href="#pt-sources">Fontes</a></li>
+</ol>
+</nav>
+
+<section class="card" id="pt-section-one">
+<h2>1. SECTION-TITLE-WILL-BE-HERE-PLEASE</h2>
+<p class="first">Parágrafo de abertura. Use <strong>negrito</strong> para o número que sustenta o argumento, <em>itálico</em> para um termo, e o número exacto em vez de uma aproximação quando o número é o ponto.</p>
+<p class="note">Aparte em tipo mais pequeno, para uma ressalva ou uma definição que interrompe o argumento.</p>
+
+<h3 class="sub">Um subtítulo dentro da secção</h3>
+<p>Parágrafo de corpo. <span class="chip">Etiqueta</span> marca um rótulo curto no texto; <span class="chip warn">Aviso</span> e <span class="chip dark">Escuro</span> são as outras duas cores.</p>
+<ul class="plain">
+<li><strong>Ponto</strong> — a afirmação, e depois a prova que a sustenta.</li>
+<li><strong>Ponto</strong> — uma ideia por alínea, uma frase de suporte.</li>
+</ul>
+
+<h3 class="sub">Um segundo subtítulo</h3>
+<ol class="plain">
+<li><strong>Primeiro</strong> — use lista ordenada quando a ordem tem significado.</li>
+<li><strong>Segundo</strong> — caso contrário, use a lista acima.</li>
+</ol>
+
+<ul class="grid">
+<li><strong>Item em caixa</strong> — cartão para itens paralelos de peso igual (um nível, um mecanismo, um caso).</li>
+<li><strong>Item em caixa</strong> — as caixas empilham no telemóvel e formam coluna no computador.</li>
+</ul>
+
+<blockquote>Uma citação para a frase que o leitor deve recordar. No máximo uma por secção.</blockquote>
+
+<div class="key">um por cento de 2.887 mil milhões = cerca de 29 mil milhões por ano
+todo o apelo humanitário, ou cinco orçamentos de manutenção de paz</div>
+</section>
+
+<section class="card" id="pt-section-two">
+<h2>2. SECTION-TITLE-WILL-BE-HERE-PLEASE</h2>
+<p class="first">Parágrafo que introduz a tabela. O filtro abaixo da legenda alterna entre os grupos; o contador mostra quantas linhas estão visíveis.</p>
+
+<div class="filter" data-filter data-table="demo-pt" data-axis="grp" role="group" aria-label="Filtrar por grupo">
+<span class="label">Grupo</span>
+<button type="button" data-grp="all" aria-pressed="true">Todos</button>
+<button type="button" data-grp="muslim" aria-pressed="false">Maioria muçulmana</button>
+<button type="button" data-grp="christian" aria-pressed="false">Maioria cristã</button>
+<button type="button" data-grp="other" aria-pressed="false">Nenhum</button>
+<span class="count-out" data-count-for="demo-pt">6 / 6</span>
+</div>
+
+<table id="demo-pt">
+<caption>Legenda: o que é medido, para quem, e em que ano</caption>
+<thead><tr><th>País</th><th>Maioria</th><th>Medida</th><th>Valor mais recente</th><th>Ano</th></tr></thead>
+<tbody>
+<tr data-grp="muslim"><td>País</td><td>Muçulmana</td><td>Pobreza multidimensional</td><td class="num">82,7 %</td><td>2024</td></tr>
+<tr data-grp="muslim"><td>País</td><td>Muçulmana</td><td>Linha nacional de pobreza</td><td class="num">74 %</td><td>2022</td></tr>
+<tr data-grp="christian"><td>País</td><td>Cristã</td><td>Taxa oficial de pobreza</td><td class="num">10,6 %</td><td>2024</td></tr>
+<tr data-grp="christian"><td>País</td><td>Cristã</td><td>Linha nacional de pobreza</td><td class="num">69 %</td><td>2024</td></tr>
+<tr data-grp="other"><td>País</td><td>Nenhuma</td><td>A linha dos 3 dólares, numa década</td><td class="num">27,1 % → 5,3 %</td><td>2011 → 2023</td></tr>
+<tr data-grp="other"><td>País</td><td>Nenhuma</td><td>Pobreza multidimensional</td><td class="num">63 % — 133 milhões</td><td>2022</td></tr>
+</tbody>
+</table>
+
+<p>Parágrafo que lê a tabela: o que mostra e o que não mostra.</p>
+<p class="note">Uma ressalva sobre a série, o ano ou a entidade que publicou.</p>
+</section>
+
+<section class="card" id="pt-section-three">
+<h2>3. SECTION-TITLE-WILL-BE-HERE-PLEASE</h2>
+<p class="first">Texto antes das fontes, se a secção precisar. Caso contrário, apague este parágrafo.</p>
+</section>
+
+<section class="card" id="pt-sources">
+<h2>4. Fontes</h2>
+<p class="first">Apenas fontes oficiais e institucionais. Os valores são citados com o ano da fonte, porque os números mudam.</p>
+<div class="sources">
+<div class="srcgrp">
+<h3>1. Tema do primeiro grupo de fontes</h3>
+<ul>
+<li><a href="https://example.com/">example.com — o título do próprio documento</a><small>O número ou a frase que esta fonte serve para sustentar</small></li>
+<li><a href="https://example.com/">example.com — um segundo documento</a><small>O que acrescenta que o primeiro não tem</small></li>
+</ul>
+</div>
+<div class="srcgrp">
+<h3>2. Tema do segundo grupo</h3>
+<ul>
+<li><a href="https://example.com/">example.com — um terceiro documento</a><small>Uma linha de descrição; o resto fica no link</small></li>
+</ul>
+</div>
+</div>
+<p class="note">Como os valores foram usados: citados tal como publicados, com o ano; números disputados ou estimados são assinalados como tal no texto.</p>
+</section>
+
+<footer class="site"><a href="./index.html">Início</a><span>TITLE-WILL-BE-HERE-PLEASE · descrição curta do dossier</span></footer>
+</div>
+</main>
+
+<button id="toTop" type="button" aria-label="Back to top">↑ Top</button>
+
+<script>
+(function(){
+"use strict";
+/* reading progress + back-to-top */
+var bar=document.getElementById("bar");
+var btn=document.getElementById("toTop");
+function onScroll(){
+var h=document.documentElement;
+var max=h.scrollHeight-window.innerHeight;
+var p=max>0?(window.scrollY/max)*100:0;
+if(bar){bar.style.width=p+"%";}
+if(btn){if(window.scrollY>700){btn.classList.add("show");}else{btn.classList.remove("show");}}
+}
+window.addEventListener("scroll",onScroll,{passive:true});
+window.addEventListener("resize",onScroll);
+onScroll();
+if(btn){btn.addEventListener("click",function(){window.scrollTo({top:0,behavior:"smooth"});});}
+
+/* language switch: one hidden-able main element per language (ids en and pt).
+   Replace PAGE_SLUG in the localStorage key, once. */
+var langBtns=document.querySelectorAll(".langswitch button");
+var langs=document.querySelectorAll("main.lang");
+function setLang(code){
+for(var i=0;i<langBtns.length;i++){
+langBtns[i].setAttribute("aria-pressed",langBtns[i].getAttribute("data-setlang")===code?"true":"false");
+}
+for(var j=0;j<langs.length;j++){
+langs[j].classList.toggle("is-hidden",langs[j].id!==code);
+}
+try{localStorage.setItem("PAGE_SLUG_lang",code);}catch(e){}
+document.documentElement.lang=code;
+}
+for(var b=0;b<langBtns.length;b++){
+langBtns[b].addEventListener("click",function(){setLang(this.getAttribute("data-setlang"));});
+}
+try{
+var saved=localStorage.getItem("PAGE_SLUG_lang");
+if(saved==="en"||saved==="pt"){setLang(saved);}
+}catch(e){}
+
+/* table filter: any .filter[data-filter] drives the table with the same id.
+   Rows are filtered on their data-grp attribute; the counter updates itself. */
+var state={};
+function applyGroup(tableId){
+var table=document.getElementById(tableId);
+if(!table){return;}
+var f=state[tableId]||{grp:"all"};
+state[tableId]=f;
+var rows=table.querySelectorAll("tbody tr[data-grp]");
+var shown=0;
+for(var i=0;i<rows.length;i++){
+var ok=(f.grp==="all")||(rows[i].getAttribute("data-grp")===f.grp);
+if(ok){rows[i].classList.remove("off");shown++;}
+else{rows[i].classList.add("off");}
+}
+var counters=document.querySelectorAll('[data-count-for="'+tableId+'"]');
+for(var c=0;c<counters.length;c++){counters[c].textContent=shown+" / "+rows.length;}
+}
+
+document.addEventListener("click",function(ev){
+var el=ev.target;
+if(!el||!el.getAttribute)return;
+var grp=el.getAttribute("data-grp");
+if(!grp)return;
+var group=el.closest?el.closest("[data-filter]"):null;
+if(!group)return;
+var tableId=group.getAttribute("data-table");
+if(!tableId)return;
+var f=state[tableId]||{grp:"all"};
+f.grp=grp;
+state[tableId]=f;
+var cells=group.querySelectorAll("[data-grp]");
+for(var j=0;j<cells.length;j++){
+cells[j].setAttribute("aria-pressed",cells[j].getAttribute("data-grp")===grp?"true":"false");
+}
+applyGroup(tableId);
+});
+
+/* active table-of-contents entry for the section in view */
+if("IntersectionObserver" in window){
+var obs=new IntersectionObserver(function(entries){
+for(var i=0;i<entries.length;i++){
+if(!entries[i].isIntersecting)continue;
+var id=entries[i].target.id;
+var links=document.querySelectorAll('.toc a[href="#'+id+'"]');
+if(!links.length)continue;
+var toc=links[0].closest?links[0].closest("nav.toc"):null;
+if(toc){
+var all=toc.querySelectorAll("a.active");
+for(var k=0;k<all.length;k++){all[k].classList.remove("active");}
+}
+links[0].classList.add("active");
+}
+},{rootMargin:"-15% 0px -75% 0px",threshold:0});
+var sections=document.querySelectorAll("section.card[id]");
+for(var s=0;s<sections.length;s++){obs.observe(sections[s]);}
+}
+})();
+</script>
+</body>
+</html>
