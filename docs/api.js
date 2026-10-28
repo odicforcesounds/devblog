@@ -252,10 +252,10 @@ export function searchFull(query, options) {
   const tokens = tokensOf(raw);
   if (!tokens.length) return Promise.resolve([]);
   const phrase = normalize(raw);
-  const files = (state.index && state.index.chunks) || [];
 
   const seen = new Map();
   let index = 0;
+  let retried = false;
 
   function report() {
     const list = Array.from(seen.values()).sort(function (a, b) {
@@ -266,6 +266,14 @@ export function searchFull(query, options) {
   }
 
   function step() {
+    // Read the manifest here, not before ready(): a caller may search on first paint,
+    // and state.index is only filled once index.json has arrived.
+    const files = (state.index && state.index.chunks) || [];
+    if (!files.length) {
+      if (retried) return Promise.resolve(report());
+      retried = true;
+      return Promise.resolve(ready()).then(step);
+    }
     if (index >= files.length) return Promise.resolve(report());
     if (seen.size >= limit * 2 && index >= 4) return Promise.resolve(report());
     const chunk = files[index++];

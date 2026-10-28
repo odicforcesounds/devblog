@@ -114,8 +114,9 @@ def write_json(path, data):
 
 
 # Pages that are part of the interface rather than the archive: home.html is the
-# browser built on top of this same JSON, so listing it would point at itself.
-SKIP = {"home.html"}
+# browser built on top of this same JSON (listing it would point at itself), and
+# 404.html is the error page the host serves for missing paths.
+SKIP = {"home.html", "404.html"}
 
 
 def main():

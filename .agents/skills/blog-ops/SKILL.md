@@ -16,6 +16,8 @@ problem you fix in the source.
 | --- | --- |
 | `docs/*.html` | 518 root pages. `index.html` is the archive/landing page. |
 | `docs/home.html` | Browser UI built on the JSON API. Not an article (excluded from the API). |
+| `docs/404.html` | Error page GitHub serves for missing paths; `noindex`, has its own search. Excluded from sitemap and API. |
+| `docs/.nojekyll` | Present so GitHub Pages serves the tree as-is instead of running Jekyll. |
 | `docs/api.js` | Vanilla ES module that reads the API. No dependencies. |
 | `docs/api/index.json` + `docs/api/text/NNN.json` | Generated: metadata for every page + article text in chunks. |
 | `build_api.py` | Regenerates `docs/api/`. Run after adding/editing pages. |
@@ -58,7 +60,10 @@ Non-negotiable, checked by `check_site.py`:
    class) or demote the extra one to `<h2 class="seo-h2">` plus a scoped CSS rule that
    reproduces the declarations the page gave `h1`. Never restyle the body to fulfil a
    tag requirement.
-7. One file is one document. If a page contains a second `<!DOCTYPE` (a pasted file),
+7. `404.html` is the one exception to the head contract: `noindex, follow`, one `<h1>`,
+   absolute asset paths (`/api.js`, not `./api.js` — the URL it is served under can be
+   any depth), no canonical, not in the sitemap, not in the API.
+8. One file is one document. If a page contains a second `<!DOCTYPE` (a pasted file),
    the browser ignores its tags and merges its text into the first page's body;
    `check_site.py` reports it and the fix is to split the extra document into its own
    file — never to delete it silently.
@@ -87,6 +92,11 @@ Microsoft, Apple, X, Facebook, Yahoo; no anonymous sign-in). Rules live in
 `backups/firebase-rules.txt`: `create` needs `request.auth != null`, exact fields,
 length caps, `createdAt == request.time`; `update`/`delete` denied. Changes there need
 pasting into the Firebase console — say so, do not claim they are live.
+
+**Search from a page that has not booted** — `API.searchFull()` reads the chunk
+manifest when it is called; before `ready()` resolves it must retry after loading
+(the guard is already in `docs/api.js`). If a page searches on first paint and gets
+zero results, that is the bug you are looking at.
 
 **Deploy** — `./pushit.sh` (asks for the ssh key). Never run it unasked.
 

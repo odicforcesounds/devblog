@@ -20,6 +20,9 @@ from xml.sax.saxutils import escape
 ORIGIN = "https://blog.odicforcesounds.com"
 DOCS = "docs"
 
+# Served by the host for missing paths; it must never appear in a sitemap.
+SKIP = {"404.html"}
+
 ROBOTS = """User-agent: *
 Allow: /
 
@@ -49,7 +52,7 @@ def lastmod(path):
 
 
 def build():
-    names = sorted(n for n in os.listdir(DOCS) if n.endswith(".html"))
+    names = sorted(n for n in os.listdir(DOCS) if n.endswith(".html") and n not in SKIP)
     lines = ['<?xml version="1.0" encoding="UTF-8"?>',
              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for name in names:

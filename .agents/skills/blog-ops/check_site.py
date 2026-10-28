@@ -25,6 +25,10 @@ DOCS = "docs"
 # Pages that are interface, not archive: excluded from the JSON API on purpose.
 NOT_ARTICLES = {"home.html"}
 
+# Infrastructure pages: served by the host, never listed in the sitemap or the API,
+# and not intended to rank. Only doctype, one <h1> and noindex are required.
+INFRA_PAGES = {"404.html"}
+
 DESC_MIN, DESC_MAX = 110, 155
 DESC_SOFT_MIN = 90              # below this: report as a stub, do not fail
 ALLOWED_LD = {"BlogPosting", "CollectionPage", "WebPage"}
@@ -214,10 +218,18 @@ def audit_page(name):
     elif parser.doctype.strip().lower() != "doctype html":
         problems.append("doctype is <%s>" % parser.doctype)
 
+    metas = meta_map(parser.metas)
+
+    if name in INFRA_PAGES:
+        if parser.h1_count != 1 or len(parser.h1) != 1:
+            problems.append("infra page needs exactly one <h1> with text")
+        if "noindex" not in (metas.get("robots", [""])[0]):
+            problems.append("infra page is not marked noindex")
+        return problems, warnings, ""
+
     # 2. one of each head tag
     if parser.title_count != 1 or len(parser.title) != 1:
         problems.append("%d <title> elements" % parser.title_count)
-    metas = meta_map(parser.metas)
 
     descriptions = metas.get("description", [])
     if len(descriptions) != 1:
@@ -295,7 +307,7 @@ def check_sitemap(names):
     duplicates = len(locs) - len(set(locs))
     if duplicates:
         problems.append("sitemap has %d duplicate <loc>" % duplicates)
-    want = {expected_url(n) for n in names}
+    want = {expected_url(n) for n in names if n not in INFRA_PAGES}
     missing = sorted(want - set(locs))
     extra = sorted(set(locs) - want)
     if missing:
@@ -319,7 +331,7 @@ def check_api(names):
 
     problems = []
     articles = data.get("articles") or []
-    want = {n for n in names if n not in NOT_ARTICLES}
+    want = {n for n in names if n not in NOT_ARTICLES and n not in INFRA_PAGES}
     got = {a.get("path") for a in articles}
     if data.get("count") != len(articles):
         problems.append("count says %r but there are %d articles" % (data.get("count"), len(articles)))
