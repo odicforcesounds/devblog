@@ -29,6 +29,7 @@ problem you fix in the source.
 | `backups/firebase-rules.txt` | Firestore rules for the comment form + Firebase console checklist. |
 | `pushit.sh` | Deploy: pull, `git add .`, commit, push. Only run it when asked to publish. |
 | `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit) and `build_sitemap.py` (sitemap + robots). |
+| `CLOUDFLARE.md` | Hosting runbook: DNS/proxy state, WebMCP, bot rules, redirects, cache, headers, HSTS. Read it before changing anything at the edge. |
 
 Gotchas that already bit us: `tmp/` and `tools/` are **gitignored** (scripts there are
 lost — put anything durable in the repo root or in this skill), and `pushit.sh` runs
@@ -97,6 +98,10 @@ pasting into the Firebase console — say so, do not claim they are live.
 manifest when it is called; before `ready()` resolves it must retry after loading
 (the guard is already in `docs/api.js`). If a page searches on first paint and gets
 zero results, that is the bug you are looking at.
+
+**Hosting** — the site is GitHub Pages behind a Cloudflare proxy. The edge can break
+crawling or inject scripts without a single byte changing in the repo; `CLOUDFLARE.md`
+lists what to check and how to confirm each setting with `curl`.
 
 **Deploy** — `./pushit.sh` (asks for the ssh key). Never run it unasked.
 
