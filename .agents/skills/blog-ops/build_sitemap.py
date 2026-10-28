@@ -21,7 +21,7 @@ ORIGIN = "https://blog.odicforcesounds.com"
 DOCS = "docs"
 
 # Served by the host for missing paths; it must never appear in a sitemap.
-SKIP = {"404.html"}
+SKIP = {"404.html", "home.html"}  # error page and the redirect stub
 
 ROBOTS = """# Policy: the archive is open to search engines, link previews and archives.
 # Two directories are kept out of the index, and the API JSON is a data source.

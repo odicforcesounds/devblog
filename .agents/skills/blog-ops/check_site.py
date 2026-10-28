@@ -23,11 +23,11 @@ ORIGIN = "https://blog.odicforcesounds.com"
 DOCS = "docs"
 
 # Pages that are interface, not archive: excluded from the JSON API on purpose.
-NOT_ARTICLES = {"home.html"}
+NOT_ARTICLES = {"browse.html"}
 
 # Infrastructure pages: served by the host, never listed in the sitemap or the API,
 # and not intended to rank. Only doctype, one <h1> and noindex are required.
-INFRA_PAGES = {"404.html"}
+INFRA_PAGES = {"404.html", "home.html"}  # 404 + the old redirect stub
 
 DESC_MIN, DESC_MAX = 110, 155
 DESC_SOFT_MIN = 90              # below this: report as a stub, do not fail
@@ -274,26 +274,93 @@ def audit_page(name):
     if len(parser.ld) != 1:
         problems.append("%d JSON-LD blocks" % len(parser.ld))
     else:
-        try:
-            data = json.loads(parser.ld[0])
-        except ValueError as exc:
-            problems.append("JSON-LD does not parse: %s" % exc)
-            data = None
-        if isinstance(data, dict):
-            if data.get("@type") not in ALLOWED_LD:
-                problems.append("JSON-LD @type is %r" % data.get("@type"))
-            if data.get("url") is not None and data.get("url") not in allowed:
-                problems.append("JSON-LD url is %r" % data.get("url"))
-            if not re.match(r"^\d{4}-\d{2}-\d{2}([T ].*)?$", str(data.get("datePublished") or "")):
-                problems.append("JSON-LD datePublished is %r" % data.get("datePublished"))
-            if data.get("inLanguage") is None:
-                problems.append("JSON-LD has no inLanguage")
-            if descriptions and data.get("description") != descriptions[0]:
-                problems.append("JSON-LD description differs from meta description")
-        elif data is not None:
-            problems.append("JSON-LD is not an object")
+        problems.extend(check_jsonld(name, parser.ld[0], allowed, descriptions))
 
     return problems, warnings, (descriptions[0] if descriptions else "")
+
+
+def check_jsonld(name, raw, allowed, descriptions):
+    """Validate the single block: one BlogPosting plus, for articles, a breadcrumb."""
+    problems = []
+    try:
+        data = json.loads(raw)
+    except ValueError as exc:
+        return ["JSON-LD does not parse: %s" % exc]
+    if not isinstance(data, dict):
+        return ["JSON-LD is not an object"]
+
+    nodes = data.get("@graph") if isinstance(data.get("@graph"), list) else [data]
+    types = [n.get("@type") for n in nodes if isinstance(n, dict)]
+    if len(types) != len(set(types)):
+        problems.append("JSON-LD repeats a @type: %s" % types)
+    posting = next((n for n in nodes if isinstance(n, dict) and n.get("@type") == "BlogPosting"), None)
+    if posting is None:
+        # A listing page is a CollectionPage, not an article: same url/language rules,
+        # none of the article-only ones (author, breadcrumb, image, wordCount).
+        if types and set(types) <= (ALLOWED_LD - {"BlogPosting"}):
+            node = nodes[0]
+            if node.get("url") is not None and node["url"] not in allowed:
+                problems.append("JSON-LD url is %r" % node.get("url"))
+            if node.get("inLanguage") is None:
+                problems.append("JSON-LD has no inLanguage")
+            if descriptions and node.get("description") != descriptions[0]:
+                problems.append("JSON-LD description differs from meta description")
+            return problems
+        problems.append("JSON-LD has no BlogPosting (%s)" % types)
+        return problems
+    if posting.get("url") is not None and posting.get("url") not in allowed:
+        problems.append("JSON-LD url is %r" % posting.get("url"))
+    if not re.match(r"^\d{4}-\d{2}-\d{2}([T ].*)?$", str(posting.get("datePublished") or "")):
+        problems.append("JSON-LD datePublished is %r" % posting.get("datePublished"))
+    if posting.get("inLanguage") is None:
+        problems.append("JSON-LD has no inLanguage")
+    if descriptions and posting.get("description") != descriptions[0]:
+        problems.append("JSON-LD description differs from meta description")
+
+    image = posting.get("image")
+    if isinstance(image, dict):
+        if image.get("@type") != "ImageObject" or not image.get("url"):
+            problems.append("JSON-LD image is not an ImageObject with a url")
+        elif not image.get("width") or not image.get("height"):
+            problems.append("JSON-LD image has no width/height")
+    elif image is not None:
+        problems.append("JSON-LD image is a plain string, not an ImageObject")
+
+    author = posting.get("author")
+    if not isinstance(author, dict) or author.get("@type") != "Person" or not author.get("name"):
+        problems.append("JSON-LD author is not a Person with a name")
+    publisher = posting.get("publisher")
+    if not isinstance(publisher, dict) or publisher.get("@type") != "Organization":
+        problems.append("JSON-LD has no publisher Organization")
+    elif not isinstance(publisher.get("logo"), dict) or not publisher["logo"].get("url"):
+        problems.append("JSON-LD publisher has no logo")
+    if not isinstance(posting.get("wordCount"), int) or posting["wordCount"] <= 0:
+        problems.append("JSON-LD wordCount is %r" % posting.get("wordCount"))
+
+    crumbs = [n for n in nodes if isinstance(n, dict) and n.get("@type") == "BreadcrumbList"]
+    wants_crumbs = name not in INFRA_PAGES and name != "index.html"
+    if not wants_crumbs:
+        if crumbs:
+            problems.append("breadcrumb on a page that is not an article")
+        return problems
+    if not crumbs:
+        problems.append("no BreadcrumbList")
+        return problems
+    items = crumbs[0].get("itemListElement") or []
+    if len(items) < 2:
+        problems.append("breadcrumb has %d items" % len(items))
+        return problems
+    if [i.get("position") for i in items] != list(range(1, len(items) + 1)):
+        problems.append("breadcrumb positions are %s" % [i.get("position") for i in items])
+    for item in items[:-1]:
+        if not item.get("item"):
+            problems.append("breadcrumb item %r has no url" % item.get("name"))
+    if not any(i.get("name") for i in items):
+        problems.append("breadcrumb has no names")
+    last = items[-1]
+    if last.get("item") and last["item"] not in allowed:
+        problems.append("breadcrumb ends at %r" % last.get("item"))
+    return problems
 
 
 def check_sitemap(names):

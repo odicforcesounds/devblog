@@ -11,7 +11,7 @@ chunks — plus the scripts that regenerate them.
 
 - **The archive** — 517 article pages under `docs/`, including `index.html`. The
   subject range is deliberately wide; see [Topics covered](#topics-covered).
-- **A home page for the API** — `docs/home.html`, a vanilla JavaScript browser over the
+- **A browser page for the API** — `docs/browse.html`, a vanilla JavaScript browser over the
   JSON index: full-text search, filters by language and year, no dependencies.
 - **A static JSON API** — `docs/api/index.json` (metadata and a chunk manifest) and
   `docs/api/text/*.json` (article text, 13 chunks). Built by `build_api.py`, read by
@@ -27,6 +27,8 @@ chunks — plus the scripts that regenerate them.
   Facebook, Yahoo — no anonymous sign-in), plus the console checklist.
 - **Hosting runbook** — `CLOUDFLARE.md`: DNS/proxy state, WebMCP, bot rules, redirects,
   cache, headers, HSTS. Not published.
+- **Search runbook** — `GOOGLE.md`: the structured data contract, the Search Console
+  order of operations, and the known gaps. Not published.
 - **The `blog-ops` skill** — `.agents/skills/blog-ops/`, with `check_site.py` (audit)
   and `build_sitemap.py` (sitemap + robots).
 - **Backups and snapshots** — `backups/`: original pages, URL maps, the previous
@@ -46,7 +48,7 @@ devblog/
 ├── backups/                   originals, maps, firebase-rules.txt
 ├── docs/                      ← published site root
 │   ├── index.html             archive landing page
-│   ├── home.html              browser over the JSON API
+│   ├── browse.html            browser over the JSON API
 │   ├── 404.html               error page (noindex)
 │   ├── *.html                 the articles
 │   ├── api/                   generated: index.json + text/NNN.json
@@ -79,14 +81,18 @@ is served, with a 404 status, for any path that does not exist.
    `<title>`, `meta[name=description]`, `link[rel=canonical]`, the Open Graph tags
    (`og:title`, `og:description`, `og:type`, `og:url`, `og:site_name`, `og:image`), the
    Twitter tags (`twitter:card`, `twitter:title`, `twitter:description`,
-   `twitter:image`), one JSON-LD block (`BlogPosting`), and **one** `<h1>` with text.
-   `datePublished` and `dateModified` come from git. Descriptions run 110–155
-   characters and are unique across the site.
+   `twitter:image`), one JSON-LD block, and **one** `<h1>` with text. The JSON-LD block
+   is a `@graph` with a `BlogPosting` (image object with dimensions, `Person` author,
+   publisher with logo, category, keywords, word count) and a `BreadcrumbList`
+   Home › category › article. `datePublished` and `dateModified` come from git.
+   Descriptions run 110–155 characters and are unique across the site. Run
+   `enrich_schema.py` rather than writing a graph by hand.
 3. `<!DOCTYPE html>` is the first thing in the file. Anything before it puts the page in
    quirks mode.
 4. Regenerate what is derived, and audit before committing:
 
    ```sh
+   python3 .agents/skills/blog-ops/enrich_schema.py        # JSON-LD graph (idempotent)
    python3 build_api.py                                    # docs/api/
    python3 .agents/skills/blog-ops/build_sitemap.py        # sitemap.xml + robots.txt
    python3 .agents/skills/blog-ops/check_site.py           # exit 0 = consistent
@@ -117,12 +123,12 @@ BlogAPI.recent(5);                 // newest changes
 ```
 
 `searchFull` calls `onResults` after each chunk, so a page can paint while the rest is
-still travelling. `home.html` and `404.html` are built on it.
+still travelling. `browse.html` and `404.html` are built on it.
 
-`home.html` on a cold start calls `searchFull` before the manifest has arrived — the
+`browse.html` on a cold start calls `searchFull` before the manifest has arrived — the
 retry is inside `docs/api.js`; do not remove it.
 
-The API covers the articles only. `home.html` and `404.html` are excluded on purpose:
+The API covers the articles only. `browse.html` and `404.html` are excluded on purpose:
 one is this browser, the other is a page that must never appear in results.
 
 ## Checks

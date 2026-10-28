@@ -15,7 +15,7 @@ problem you fix in the source.
 | Path | What it is |
 | --- | --- |
 | `docs/*.html` | 518 root pages. `index.html` is the archive/landing page. |
-| `docs/home.html` | Browser UI built on the JSON API. Not an article (excluded from the API). |
+| `docs/browse.html` | Browser UI built on the JSON API. Not an article (excluded from the API). |
 | `docs/404.html` | Error page GitHub serves for missing paths; `noindex`, has its own search. Excluded from sitemap and API. |
 | `docs/.nojekyll` | Present so GitHub Pages serves the tree as-is instead of running Jekyll. |
 | `docs/api.js` | Vanilla ES module that reads the API. No dependencies. |
@@ -28,7 +28,8 @@ problem you fix in the source.
 | `docs/tools/` | Feed pipeline for `index.html` (`feeds.json` → embedded `window.FEED_DATA` via `build.mjs`). `index.html` holds generated data — edit the CSS/body around it, not the blob. |
 | `backups/firebase-rules.txt` | Firestore rules for the comment form + Firebase console checklist. |
 | `pushit.sh` | Deploy: pull, `git add .`, commit, push. Only run it when asked to publish. |
-| `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit) and `build_sitemap.py` (sitemap + robots). |
+| `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD). |
+| `GOOGLE.md` | Search Console runbook: what the structured data says, order of operations, known gaps. |
 | `CLOUDFLARE.md` | Hosting runbook: DNS/proxy state, WebMCP, bot rules, redirects, cache, headers, HSTS. Read it before changing anything at the edge. |
 
 Gotchas that already bit us: `tmp/` and `tools/` are **gitignored** (scripts there are
@@ -50,11 +51,16 @@ Non-negotiable, checked by `check_site.py`:
    the sitemap lists `/`, so prefer that on new pages. Image:
    `https://blog.odicforcesounds.com/images/peace.jpg` unless the page has its own
    (`index.html` uses `three.jpg`).
-4. One JSON-LD block: `BlogPosting` for articles, `CollectionPage` for `home.html`.
+4. One JSON-LD block per page: a `@graph` with a `BlogPosting` (`CollectionPage` for
+   `browse.html`) plus, on every article, a `BreadcrumbList` of Home › category ›
+   article. The article node carries `image` as `ImageObject` with real width/height,
+   `author` as `Person`, `publisher` with a `logo`, `articleSection` (the category it
+   sits under on `index.html`), `keywords` from its own `h2`/`h3`, and `wordCount`.
    `datePublished`/`dateModified` come from git:
    `git log -1 --format=%ad --date=short -- docs/Page.html` (first commit = published,
    last = modified). Keep the four description copies (meta, og, twitter, JSON-LD)
-   identical.
+   identical. `python3 .agents/skills/blog-ops/enrich_schema.py` rebuilds the block for
+   every page and is idempotent; never hand-edit one page's graph in isolation.
 5. `meta description` 110–155 characters, unique across the site. Under 90 means the
    page has almost no text — say so instead of padding it with invented prose.
 6. Do not add a second `<h1>` for style: promote the existing title element (keep its
@@ -98,6 +104,12 @@ pasting into the Firebase console — say so, do not claim they are live.
 manifest when it is called; before `ready()` resolves it must retry after loading
 (the guard is already in `docs/api.js`). If a page searches on first paint and gets
 zero results, that is the bug you are looking at.
+
+**Structured data** — `enrich_schema.py` reads the page's own `og:image` as the
+article image (so the two never disagree), maps a page to its category through
+`index.html`, and writes the `@graph`. Order matters when adding a page: put it in a
+category on `index.html` first (that section needs an `id="category-…"`), then run
+`enrich_schema.py`, then `check_site.py`.
 
 **robots.txt** — `build_sitemap.py --robots` rewrites only that file (the sitemap's
 `lastmod` values are left alone). It has three groups: `*`, the named search engines,

@@ -113,10 +113,10 @@ def write_json(path, data):
     return len(raw.encode("utf-8"))
 
 
-# Pages that are part of the interface rather than the archive: home.html is the
+# Pages that are part of the interface rather than the archive: browse.html is the
 # browser built on top of this same JSON (listing it would point at itself), and
 # 404.html is the error page the host serves for missing paths.
-SKIP = {"home.html", "404.html"}
+SKIP = {"browse.html", "404.html", "home.html"}
 
 
 def main():
