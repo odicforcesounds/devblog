@@ -18,9 +18,11 @@
     --warn:#b47d6a;
     --serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Georgia,serif;
     --sans:"Helvetica Neue",Arial,system-ui,-apple-system,sans-serif;
+    --side:330px;
+    --maxw:840px;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
+  html,body{height:100%;margin:0;padding:0}
   body{
     background:
       radial-gradient(1200px 600px at 80% -10%, #1c2430 0%, transparent 60%),
@@ -29,42 +31,206 @@
     color:var(--text);
     font-family:var(--sans);
     line-height:1.7;
-    min-height:100vh;
-  }
-  .container{max-width:820px;margin:0 auto;padding:64px 24px 40px}
-  header{text-align:center;margin-bottom:44px}
-  .kicker{
-    font-size:12px;letter-spacing:.32em;text-transform:uppercase;
-    color:var(--muted);margin-bottom:18px;font-weight:600;
-  }
-  h1{
-    font-family:var(--serif);
-    font-size:clamp(30px,5vw,48px);
-    font-weight:600;
-    margin:0 0 12px;
-    letter-spacing:-.01em;
-  }
-  .subtitle{
-    color:var(--muted);
-    font-size:15px;
-    max-width:560px;
-    margin:0 auto;
-  }
-  .ornament{
-    display:block;
-    width:60px;height:2px;
-    margin:28px auto 0;
-    background:linear-gradient(90deg,transparent,var(--accent),transparent);
-    border-radius:2px;
-  }
-  article{font-family:var(--serif)}
-  article p{margin:0 0 18px}
-  article p.lead{
-    font-size:17px;
-    color:#d7dce2;
+    overflow:hidden;
   }
   a{color:var(--accent)}
-  article a{color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent);transition:border-color .2s}
+  button{font:inherit}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .layout{display:flex;height:100vh;height:100dvh;overflow:hidden}
+
+  /* ---------- sidebar ---------- */
+  .sidebar{
+    width:var(--side);
+    flex:0 0 var(--side);
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    border-right:1px solid var(--border);
+    background:linear-gradient(180deg,#12151b 0%,#0f1116 100%);
+    z-index:30;
+  }
+  .brand{
+    flex:0 0 auto;
+    padding:26px 20px 16px;
+    border-bottom:1px solid var(--border);
+  }
+  .brand .kicker{
+    font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--muted);font-weight:600;margin-bottom:10px;
+  }
+  .brand h1{
+    font-family:var(--serif);
+    font-size:19px;
+    line-height:1.28;
+    font-weight:600;
+    letter-spacing:-.01em;
+    margin:0;
+    color:#eceff5;
+  }
+  .brand p{
+    margin:8px 0 0;
+    font-size:11.5px;
+    line-height:1.5;
+    color:var(--muted);
+  }
+  .menu{
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    padding:10px 8px 24px;
+    scrollbar-width:thin;
+    scrollbar-color:#2f3640 transparent;
+  }
+  .menu::-webkit-scrollbar{width:8px}
+  .menu::-webkit-scrollbar-thumb{background:#2b323c;border-radius:8px}
+  .menu::-webkit-scrollbar-track{background:transparent}
+  .menu-item{margin:1px 0}
+  .menu-row{display:flex;align-items:flex-start;gap:2px}
+  .menu-link{
+    flex:1 1 auto;
+    display:block;
+    width:100%;
+    text-align:left;
+    background:none;
+    border:0;
+    border-radius:6px;
+    padding:8px 10px;
+    font-family:var(--sans);
+    font-size:13px;
+    line-height:1.4;
+    color:var(--muted);
+    cursor:pointer;
+    transition:background .15s,color .15s;
+  }
+  .menu-link:hover{background:#1a1e25;color:var(--text)}
+  .menu-link.active{
+    color:#eaf3e4;
+    background:#1b2620;
+    box-shadow:inset 2px 0 0 var(--accent);
+  }
+  .menu-toggle{
+    flex:0 0 24px;
+    height:28px;
+    margin-top:3px;
+    background:none;
+    border:0;
+    border-radius:5px;
+    color:var(--muted);
+    font-size:10px;
+    line-height:1;
+    cursor:pointer;
+    padding:0;
+  }
+  .menu-toggle:hover{color:var(--text);background:#1a1e25}
+  .menu-toggle[aria-expanded="true"]{color:var(--accent)}
+  .submenu{
+    display:none;
+    margin:0 0 6px 9px;
+    padding:2px 0 2px 10px;
+    border-left:1px solid #262c35;
+  }
+  .menu-item.open > .submenu{display:block}
+  .submenu .menu-link{
+    font-size:12.2px;
+    padding:6px 8px;
+    color:#8f98a6;
+    line-height:1.35;
+  }
+  .submenu .menu-link.active{color:#eaf3e4}
+  .side-foot{
+    flex:0 0 auto;
+    border-top:1px solid var(--border);
+    padding:12px 18px;
+    font-size:12px;
+  }
+  .side-foot a{
+    color:var(--muted);
+    text-decoration:none;
+    border-bottom:1px dotted var(--muted);
+  }
+  .side-foot a:hover{color:var(--gold);border-bottom-color:var(--gold)}
+
+  /* ---------- content ---------- */
+  .content{
+    flex:1 1 auto;
+    min-width:0;
+    height:100%;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    scrollbar-width:thin;
+    scrollbar-color:#2f3640 transparent;
+  }
+  .content::-webkit-scrollbar{width:10px}
+  .content::-webkit-scrollbar-thumb{background:#2b323c;border-radius:8px}
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 18px;
+    border-bottom:1px solid var(--border);
+    background:rgba(14,15,18,.92);
+    backdrop-filter:blur(10px);
+  }
+  .crumbs{
+    flex:1 1 auto;
+    min-width:0;
+    font-size:12px;
+    color:var(--muted);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .crumbs strong{color:#dfe4ea;font-weight:600}
+  .crumbs .sep{color:var(--border);padding:0 2px}
+  .pager{display:flex;gap:6px;flex:0 0 auto}
+  .navbtn{
+    background:var(--surface);
+    border:1px solid var(--border);
+    color:var(--muted);
+    border-radius:6px;
+    min-width:32px;
+    height:30px;
+    padding:0 8px;
+    font-size:12px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .navbtn:hover:not(:disabled){color:var(--text);border-color:#3a414d}
+  .navbtn:disabled{opacity:.35;cursor:default}
+  .hamb{display:none}
+  .printbtn{padding:0 10px}
+  .content-inner{
+    max-width:var(--maxw);
+    margin:0 auto;
+    padding:34px 30px 70px;
+  }
+
+  /* ---------- panels ---------- */
+  .panel{display:none}
+  .panel.active{display:block}
+  .subpanel{display:none}
+  .panel.all .subpanel{display:block}
+  .subpanel.active{display:block}
+  .panel.sub-view .sec-intro{display:none}
+  .panel > h2:first-child{margin-top:0}
+
+  /* ---------- article typography ---------- */
+  article{font-family:var(--serif)}
+  article p{margin:0 0 18px}
+  article p.lead{font-size:17px;color:#d7dce2}
+  article a{
+    color:var(--accent);
+    text-decoration:none;
+    border-bottom:1px dotted var(--accent);
+    transition:border-color .2s;
+  }
   article a:hover{border-color:var(--gold)}
   article a:visited{color:var(--accent)}
   h2{
@@ -74,12 +240,20 @@
     padding-bottom:6px;
     border-bottom:1px solid var(--border);
     color:#eceff5;
-    scroll-margin-top:80px;
   }
   h3{
     font-size:18px;
     margin:24px 0 8px;
     color:#cfd4dc;
+  }
+  article h4{
+    font-family:var(--sans);
+    font-size:12px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:22px 0 10px;
+    font-weight:600;
   }
   .callout{
     background:linear-gradient(180deg,#16211a 0%, #1a251f 100%);
@@ -116,13 +290,11 @@
     color:#e3d6c6;
     font-size:14.5px;
   }
-  .note .label{color:var(--gold);font-weight:600;margin-bottom:6px;font-size:12px;letter-spacing:.2em;text-transform:uppercase}
-  .two-col{
-    display:flex;
-    gap:18px;
-    margin:22px 0;
-    flex-wrap:wrap;
+  .note .label{
+    color:var(--gold);font-weight:600;margin-bottom:6px;
+    font-size:12px;letter-spacing:.2em;text-transform:uppercase;
   }
+  .two-col{display:flex;gap:18px;margin:22px 0;flex-wrap:wrap}
   .card{
     flex:1 1 200px;
     background:var(--surface);
@@ -130,12 +302,12 @@
     border-radius:8px;
     padding:16px 18px;
   }
-  .card h4{margin:0 0 8px;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-family:var(--sans);font-weight:600}
-  .card p{margin:0;font-size:14px;color:#c7cdd4}
-  .stats{
-    display:flex;gap:10px;flex-wrap:wrap;
-    margin:26px 0;
+  .card h4{
+    margin:0 0 8px;font-size:13px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);font-family:var(--sans);font-weight:600;
   }
+  .card p{margin:0;font-size:14px;color:#c7cdd4}
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0}
   .pill{
     background:var(--surface);
     border:1px solid var(--border);
@@ -146,38 +318,78 @@
   }
   .pill strong{color:var(--text);font-weight:600}
   .tablewrap{overflow-x:auto;margin:22px 0;border:1px solid var(--border);border-radius:8px}
-  table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:13.5px;background:#12151a}
-  caption{caption-side:top;text-align:left;padding:12px 14px 0;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  table{width:100%;min-width:560px;border-collapse:collapse;font-family:var(--sans);font-size:13.5px;background:#12151a}
+  caption{
+    caption-side:top;text-align:left;padding:12px 14px 0;
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  }
   th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--border);vertical-align:top}
-  th{color:var(--muted);font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;background:#151920}
+  th{
+    color:var(--muted);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    font-weight:600;background:#151920;
+  }
   tbody tr:last-child td{border-bottom:none}
   td strong{color:var(--text)}
   .num{font-variant-numeric:tabular-nums;white-space:nowrap}
   footer{
-    margin-top:60px;
+    margin-top:50px;
     border-top:1px solid var(--border);
-    padding-top:20px;
+    padding-top:18px;
     text-align:center;
     color:var(--muted);
     font-size:13px;
   }
-  .toc{
-    display:flex;gap:8px;flex-wrap:wrap;
-    margin-bottom:40px;
-    font-family:var(--sans);
-    font-size:13px;
-  }
-  .toc a{
-    color:var(--muted);
-    border-bottom:1px solid transparent;
-    padding-bottom:2px;
-  }
-  .toc a:hover{color:var(--text);border-bottom-color:var(--accent)}
   footer a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)}
   footer a:hover{color:var(--gold);border-bottom-color:var(--gold)}
   footer a:visited{color:var(--muted)}
-  .toc .sep{color:var(--border);user-select:none}
-  .tocintro{font-size:13px;color:var(--muted);margin-bottom:6px}
+
+  /* ---------- mobile ---------- */
+  .backdrop{display:none}
+  @media (max-width:900px){
+    .sidebar{
+      position:fixed;
+      top:0;left:0;bottom:0;
+      width:min(86vw,340px);
+      flex-basis:auto;
+      transform:translateX(-100%);
+      transition:transform .24s ease;
+      box-shadow:0 0 40px rgba(0,0,0,.65);
+    }
+    body.nav-open .sidebar{transform:translateX(0)}
+    .backdrop{
+      display:block;
+      position:fixed;inset:0;
+      background:rgba(0,0,0,.55);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .2s;
+      z-index:25;
+    }
+    body.nav-open .backdrop{opacity:1;pointer-events:auto}
+    .hamb{display:inline-flex}
+    .content-inner{padding:24px 18px 60px}
+    .topbar{padding:9px 12px}
+    .printbtn{display:none}
+    table{min-width:520px}
+  }
+
+  /* ---------- print ---------- */
+  @media print{
+    body{overflow:visible;background:#fff;color:#111}
+    .sidebar,.topbar,.backdrop{display:none!important}
+    .layout{display:block;height:auto;overflow:visible}
+    .content{overflow:visible;height:auto;background:#fff}
+    .content-inner{max-width:none;padding:0}
+    .panel,.subpanel,.sec-intro{display:block!important}
+    .panel{page-break-inside:auto;margin-bottom:24px}
+    h2{page-break-after:avoid;color:#111;border-color:#ccc}
+    h3{color:#111}
+    article a{color:#111;border-bottom:0}
+    .callout,.legalbox,.note,.card,.tablewrap{border-color:#ccc;background:#fff;color:#111}
+    th{background:#f2f2f2;color:#111}
+    td,th{border-color:#ddd}
+    footer{color:#444}
+  }
 </style>
 
     <link rel="canonical" href="https://blog.odicforcesounds.com/habitacao.html">
@@ -193,51 +405,33 @@
     <meta name="twitter:description" content="Como tornar atrativo dar uma casa por tempo determinado: incentivos fiscais legais, custos reais e modelos de gestão profissional.">
   </head>
 <body>
-<div class="container">
-  <header>
-    <div class="kicker">Proposta de política social · Habitação e solidariedade</div>
-    <h1>Proposta para resolver os problemas de habitação</h1>
-    <p class="subtitle">Um mecanismo baseado no comodato, na fiscalização independente e no reconhecimento social — agora com o mapa dos incentivos legais e dos custos reais de dar uso a uma casa.</p>
-    <span class="ornament"></span>
-  </header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar" aria-label="&#205;ndice do documento">
+    <div class="brand">
+      <div class="kicker">Habita&#231;&#227;o e solidariedade</div>
+      <h1>Proposta para resolver os problemas de habita&#231;&#227;o</h1>
+      <p>Comodato, fiscaliza&#231;&#227;o independente e incentivos legais</p>
+    </div>
+    <nav class="menu" id="menu" aria-label="T&#243;picos do documento"></nav>
+    <div class="side-foot"><a href="index.html">&#8592; P&#225;gina Principal</a></div>
+  </aside>
 
-    <nav class="toc">
-      <a href="#sec1">1. Em uma página</a>
-      <span class="sep">·</span>
-      <a href="#sec2">2. O problema e a ideia</a>
-      <span class="sep">·</span>
-      <a href="#sec3">3. O comodato solidário</a>
-      <span class="sep">·</span>
-      <a href="#sec4">4. O fiscalista</a>
-      <span class="sep">·</span>
-      <a href="#sec5">5. Reconhecimento</a>
-      <span class="sep">·</span>
-      <a href="#sec6">6. Tornar o ato atrativo</a>
-      <span class="sep">·</span>
-      <a href="#sec7">7. Quanto custa ceder</a>
-      <span class="sep">·</span>
-      <a href="#sec8">8. Guia: como pedir casa</a>
-      <span class="sep">·</span>
-      <a href="#sec9">9. Modelos internacionais</a>
-      <span class="sep">·</span>
-      <a href="#sec10">10. O comodato na lei</a>
-      <span class="sep">·</span>
-      <a href="#sec11">11. Catálogo de figuras</a>
-      <span class="sep">·</span>
-      <a href="#sec12">12. Obrigação cívica</a>
-      <span class="sep">·</span>
-      <a href="#sec13">13. Mudanças na lei</a>
-      <span class="sep">·</span>
-      <a href="#sec14">14. Simplificar o processo</a>
-      <span class="sep">·</span>
-      <a href="#sec15">15. Riscos e salvaguardas</a>
-      <span class="sep">·</span>
-      <a href="#sec16">16. Modelo para adaptar</a>
-    </nav>
+  <div class="backdrop" id="backdrop"></div>
 
-  <article>
+  <main class="content" id="content">
+    <div class="topbar">
+      <button class="navbtn hamb" id="hamb" type="button" aria-label="Abrir menu de t&#243;picos" aria-expanded="false">&#9776;</button>
+      <div class="crumbs" id="crumbs"></div>
+      <div class="pager">
+        <button class="navbtn" id="prevBtn" type="button" aria-label="T&#243;pico anterior" title="Anterior">&#8592;</button>
+        <button class="navbtn" id="nextBtn" type="button" aria-label="T&#243;pico seguinte" title="Seguinte">&#8594;</button>
+        <button class="navbtn printbtn" id="printBtn" type="button" aria-label="Imprimir o documento completo">Imprimir</button>
+      </div>
+    </div>
+    <div class="content-inner">
+      <article id="article">
 
-    <h2 id="sec1">1. Em uma página</h2>
+<h2 id="sec1">1. Em uma página</h2>
     <p class="lead">A pergunta deste documento é simples: o que é preciso para que quem tem uma casa sem uso a entregue, por tempo determinado, a quem não tem casa — sem a perder, sem risco desproporcionado e sem ficar a perder dinheiro?</p>
     <p>A resposta tem três partes, e nenhuma delas exige inventar direito novo. Primeiro, um instrumento jurídico já existente: o <strong>comodato</strong> — entrega gratuita e temporária com obrigação de restituir. Segundo, uma <strong>verificação independente</strong> — o fiscalista que visita a casa e documenta o seu estado. Terceiro, e o que este texto desenvolve com mais cuidado, um <strong>sistema de atratividade</strong>: benefícios fiscais que já existem, custos que podem ser eliminados, garantias que retiram o medo do vazio e reconhecimento que dá valor público ao ato.</p>
 
@@ -270,7 +464,7 @@
     <p>No regime comum, o comodato impõe ao comodatário o dever de usar a coisa com o cuidado devido e de a restituir no estado em que se encontra, salvo deterioração pelo uso normal. Protege o proprietário — que continua titular do bem — e protege quem recebe o uso, desde que as expectativas estejam definidas por escrito.</p>
     <p>O que esta proposta acrescenta não é uma nova figura jurídica, mas um sistema de organização, fiscalização e incentivo que rodeia essa figura para que ela possa ser usada em escala e com confiança.</p>
 
-    <h3>Como funciona, em cinco momentos</h3>
+    <h3>3.1 Como funciona, em cinco momentos</h3>
     <ol>
       <li><strong>Declaração de disponibilidade.</strong> O proprietário indica que tem uma habitação disponível para comodato temporário, especificando o prazo aproximado, as condições de uso aceitáveis e os cuidados que espera. Não é uma doação nem uma alienação: é uma disponibilidade a enquadrar num contrato.</li>
       <li><strong>Avaliação e acolhimento.</strong> A entidade gestora analisa a habitação, confirma que corresponde a um uso seguro e razoável e verifica a situação da pessoa ou família a acolher, com critérios transparentes e respeito pela dignidade das partes.</li>
@@ -285,6 +479,42 @@
       <span class="pill"><strong>Fiscalizado</strong> — visita semanal</span>
       <span class="pill"><strong>Reconhecido</strong> — exposição social e/ou religiosa</span>
       <span class="pill"><strong>Registado</strong> — contrato e inventário documentados</span>
+    </div>
+
+    <h3>3.2 Quem paga o quê — e porque isso decide a entrega</h3>
+    <p>Uma casa gratuita não é uma casa sem custos. A pergunta que trava muitos proprietários não é «quero dar?», é «quanto me vai custar por mês?». A resposta pode ser escrita no contrato: <strong>os custos de uso e de conservação corrente ficam com o ocupante; os custos de estrutura e de capital ficam com o proprietário</strong>. O comodato é gratuito no <em>uso</em>, não na <em>manutenção</em> — e essa distinção, bem redigida, muda a decisão de quem entrega.</p>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Matriz de encargos num comodato solidário</caption>
+        <thead>
+          <tr><th>Encargo</th><th>Quem paga</th><th>Como se trata</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Água, eletricidade, gás, internet</strong></td><td>Ocupante</td><td>Contratos em nome do ocupante; sem dívidas no nome do proprietário</td></tr>
+          <tr><td><strong>Quota de condomínio</strong></td><td>Ocupante</td><td>Despesa de uso; recibo do condomínio arquivado pelo programa</td></tr>
+          <tr><td><strong>Taxa de resíduos e saneamento</strong></td><td>Ocupante</td><td>Vem na fatura da água; muda com o contrato</td></tr>
+          <tr><td><strong>Pequenas reparações e consumíveis</strong></td><td>Ocupante</td><td>Cláusula com limite por ocorrência (ex.: €150) e por ano</td></tr>
+          <tr><td><strong>Seguro de conteúdo e responsabilidade civil</strong></td><td>Ocupante</td><td>Protege os bens de quem habita e danos a terceiros</td></tr>
+          <tr><td><strong>IMI</strong></td><td>Proprietário perante a AT</td><td>Pode ser <strong>reembolsado</strong> pelo ocupante, contra documento, sem margem</td></tr>
+          <tr><td><strong>Seguro do imóvel (multirriscos)</strong></td><td>Proprietário contrata</td><td>Prémio reembolsável pelo ocupante, contra recibo</td></tr>
+          <tr><td><strong>Obras estruturais, telhado, fachada, equipamentos em fim de vida</strong></td><td>Proprietário</td><td>Fundo de conservação do programa pode comparticipar</td></tr>
+          <tr><td><strong>Fiscalista, plataforma, contrato-tipo</strong></td><td>Programa</td><td>Pago pelo município ou pela receita do IMI agravado (secção 7.5)</td></tr>
+          <tr><td><strong>Formalização: contrato, certidões, registo (se houver)</strong></td><td>Programa / município</td><td>Um ato registado custa cerca de €375 (secção 7.1); o comodato dispensa registo</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>No caso típico, o proprietário entrega a casa e <strong>não paga nada por mês</strong>: água, luz, gás, internet, condomínio, resíduos e pequenas reparações ficam com quem lá vive; o IMI e o prémio do seguro são-lhe reembolsados, contra documento. O que resta é a estrutura — telhado, fachada, instalações em fim de vida — e é precisamente essa parte que um fundo de conservação pode cobrir. Uma caução modesta, equivalente a um mês de encargos, pode ser exigida e é devolvida no fim.</p>
+
+    <div class="note">
+      <div class="label">Gratuidade, não renda disfarçada</div>
+      <p>Para o contrato continuar a ser comodato, o dinheiro tem de ser <strong>reembolso de despesa real</strong>, nunca preço de uso: só despesas documentadas (fatura ou recibo), sem margem, e sem um valor fixo mensal superior ao custo efetivo. Um pagamento fixo e periódico pelo uso é arrendamento, com IRS, Imposto do Selo e regras do NRAU — e a AT pode requalificá-lo. A redação correta é «reembolso de encargos», não «contrapartida».</p>
+    </div>
+
+    <div class="legalbox">
+      <div class="label">Cláusula-tipo</div>
+      <p>«O comodatário suporta os consumos de água, eletricidade, gás e telecomunicações, a quota de condomínio, a taxa de resíduos e as pequenas reparações até €150 por ocorrência. Reembolsa o comodante do IMI e do prémio do seguro do imóvel, mediante documento comprovativo, no prazo de 30 dias. As obras de conservação estrutural competem ao comodante. O comodatário autoriza a verificação periódica prevista no regulamento do programa.»</p>
     </div>
 
     <h2 id="sec4">4. O fiscalista</h2>
@@ -407,6 +637,10 @@
       <p>Um prémio só é legítimo se não comprar decisões. Nada de acesso privilegiado a serviços públicos essenciais, nada de benefícios secretos, nada de vantagens transmissíveis ou convertíveis em dinheiro. Tudo publicado num registo municipal, com critérios iguais para todos e teto definido. A regra é simples: <strong>honra-se a pessoa, não se lhe dá poder</strong>. Um prémio que possa ser usado para obter favores deixa de ser reconhecimento e passa a ser corrupção com outro nome.</p>
     </div>
 
+    <h3>6.10 O argumento decisivo: custo corrente zero</h3>
+    <p>Falta a peça que fecha a conta. Se o ocupante suporta os encargos correntes descritos na secção 3.2, o custo mensal de ceder é <strong>zero</strong> — e o custo anual também é zero quando o programa paga a fiscalização e quando o IMI e o AIMI estão isentos. O proprietário deixa então de escolher entre «perder dinheiro» e «deixar vazio»: escolhe entre receber reconhecimento e pagar IMI agravado.</p>
+    <p>É por isso que a cláusula de encargos não é um detalhe administrativo: é a condição económica da generosidade. Sem ela, o comodato é um presente com fatura mensal para quem dá; com ela, é uma entrega que não empobrece ninguém. A frase que resume a proposta é simples: <strong>quem habita paga o uso do dia a dia; quem cede paga a estrutura — e o Estado paga a confiança.</strong></p>
+
     <h2 id="sec7">7. Quanto custa ceder — e quanto custa não ceder</h2>
     <p>Sem números, a conversa sobre generosidade fica no plano moral. Os valores abaixo são ordens de grandeza recolhidas em 2026, servem para decisão e não substituem orçamentos nem aconselhamento fiscal.</p>
 
@@ -456,12 +690,13 @@
         <tbody>
           <tr><td><strong>Fechado, em zona de pressão</strong></td><td class="num">€0</td><td class="num">IMI 6× (€3.150) + seguro + condomínio = €4.520</td><td class="num">− €4.520</td></tr>
           <tr><td><strong>Comodato solidário</strong></td><td class="num">€0</td><td class="num">IMI €525 + seguro €170 + condomínio €1.200 + fiscalista €720 = €2.615</td><td class="num">− €2.615</td></tr>
+          <tr><td><strong>Comodato com encargos a cargo do ocupante</strong></td><td class="num">€0</td><td class="num">IMI e seguro reembolsados; condomínio, consumos e pequenas reparações pagos por quem habita; fiscalista pelo programa</td><td class="num">€0</td></tr>
           <tr><td><strong>RSAA, renda €900</strong></td><td class="num">€10.800</td><td class="num">IRS, IMI e Selo isentos; seguro + condomínio = €1.370</td><td class="num">+ €9.430</td></tr>
           <tr><td><strong>Mercado, renda €1.100</strong></td><td class="num">€13.200</td><td class="num">IRS 10% (€1.320) + IMI €525 + seguro €170 + condomínio €1.200</td><td class="num">+ €9.985</td></tr>
         </tbody>
       </table>
     </div>
-    <p>Duas conclusões saltam da tabela. A primeira: <strong>ceder gratuitamente custa dinheiro</strong> — cerca de €2.600 por ano neste exemplo — e por isso a gratuidade precisa de reconhecimento, de isenções e de gestão paga pelo sistema, não de discursos. A segunda: <strong>arrendar no RSAA rende quase o mesmo que o mercado</strong> (€9.430 contra €9.985), com 18% menos renda para o inquilino e risco de vazio reduzido. A diferença entre os dois é sobretudo fiscal, não moral.</p>
+    <p>Três conclusões saltam da tabela. A primeira: <strong>ceder sem cláusula de encargos custa dinheiro</strong> — cerca de €2.600 por ano neste exemplo — e por isso a gratuidade precisa de reconhecimento, de isenções e de gestão paga pelo sistema, não de discursos. A segunda: com os <strong>encargos correntes a cargo de quem habita</strong> (secção 3.2), o mesmo comodato passa a custar <strong>zero</strong> ao proprietário, porque IMI e seguro são reembolsados e o condomínio, os consumos e as pequenas reparações são despesas de uso. A terceira: <strong>arrendar no RSAA rende quase o mesmo que o mercado</strong> (€9.430 contra €9.985), com 18% menos renda para o inquilino e risco de vazio reduzido. A diferença entre os caminhos é sobretudo fiscal e contratual, não moral.</p>
 
     <div class="note">
       <div class="label">Uma nota sobre o custo de fechar</div>
@@ -472,7 +707,11 @@
     <div class="two-col">
       <div class="card">
         <h4>Proprietário</h4>
-        <p>IMI, seguro, condomínio e conservação corrente. Nada paga pela fiscalização.</p>
+        <p>Estrutura e conservação pesada. Recebe do ocupante o reembolso documentado do IMI e do seguro, se assim for acordado. Nada paga pela fiscalização.</p>
+      </div>
+      <div class="card">
+        <h4>Ocupante</h4>
+        <p>Água, luz, gás, internet, condomínio, resíduos e pequenas reparações; seguro de conteúdo e responsabilidade civil.</p>
       </div>
       <div class="card">
         <h4>Entidade gestora</h4>
@@ -552,13 +791,19 @@
     <h3>Passo 4 — formalizar sem pagar uma escritura</h3>
     <p>O comodato não é direito real: não exige escritura nem registo. Basta um contrato escrito, assinado pelas partes, com prazo, inventário do estado da casa, regras de uso, quem paga consumos e condomínio, e o que acontece no fim. O custo razoável é €0 a €300. Se preferir segurança adicional, um documento particular autenticado por advogado, solicitador ou notário custa menos de metade de uma escritura — mas não é obrigatório.</p>
 
-    <h3>Passo 5 — quando a resposta não chega</h3>
+    <h3>Passo 5 — saber o que vai pagar</h3>
+    <p>Uma casa sem renda não é uma casa sem contas. Antes de assinar, exija a lista do que fica consigo e do que fica com o proprietário. Na prática, o ocupante paga: água, eletricidade, gás e internet (contratos em seu nome); quota de condomínio; taxa de resíduos; pequenas reparações até ao limite que estiver escrito; e o seu próprio seguro de conteúdo e responsabilidade civil. Pode também acordar-se que reembolse o proprietário do IMI e do prémio do seguro do imóvel, sempre contra documento. O que não deve aceitar é pagar uma «renda» disfarçada: se o valor for fixo e não corresponder a despesas reais, o contrato deixa de ser comodato.</p>
+
+    <h3>Passo 6 — quando a resposta não chega</h3>
     <ul>
       <li><strong>Reclame por escrito</strong> no livro de reclamações do município e guarde o número;</li>
       <li><strong>Recorra ao Provedor de Justiça</strong> (<a target="_blank" rel="noopener" href="https://www.provedor-jus.pt/">provedor-jus.pt</a>), que aprecia queixas contra serviços públicos;</li>
       <li><strong>Peça apoio à Rede Social</strong> do concelho e às IPSS — muitas têm respostas de alojamento temporário;</li>
       <li><strong>Não pague</strong> «taxas de reserva», «cauções» ou «intermediação» a particulares que prometem casa: é o sinal mais comum de fraude.</li>
     </ul>
+
+    <h3>E se eu quiser reabilitar uma ruína?</h3>
+    <p>Procure primeiro os avisos municipais de alienação ou de reabilitação: muitos concelhos têm listas de imóveis para recuperar. Se não existir concurso, peça ao município a identificação da ruína e do titular (certidão permanente, €15) e apresente uma manifestação de interesse por escrito, com projeto preliminar e orçamento. Junte um arquiteto ou engenheiro desde o início: sem projeto assinado e direção de obra não há aprovação nem financiamento. E confirme três coisas antes de se comprometer: o regime jurídico (venda, doação com encargos ou direito de superfície), a caução exigida e o prazo de obra.</p>
 
     <div class="callout">
       <div class="label">O que o leitor deve reter</div>
@@ -686,6 +931,9 @@
     <p>A usucapião resolve, na vida real, muitos dos problemas habitacionais que a lei escrita esqueceu: herdeiros que vivem durante décadas numa casa da família sem escrever nada, mães que acolhem filhos ou netos sem que ninguém pergunte quem é o titular, casas que passam de geração em geração apenas pelo facto de serem usadas. É a resposta do direito ao tempo: não é um estímulo à ocupação alheia, é a institucionalização legal de uma realidade que, de outra forma, ficaria na sombra.</p>
     <p>A relação com esta proposta é quase simétrica: a usucapião converte o uso prolongado sem direito em propriedade; o comodato solidário converte a propriedade sem uso em direito de uso imediato. São as duas pontas do mesmo problema. Em vez de esperar vinte anos pela lei do tempo, esta proposta sugere que o proprietário disponível, reconhecido e fiscalizado dê hoje o uso que a mesma realidade social acabará, por outras vias, por reconhecer.</p>
 
+    <h3>F. Ruínas: reabilitar para adquirir</h3>
+    <p>Uma ruína é o caso extremo do imóvel sem uso: já não serve para habitar, muitas vezes já não tem dono localizável, e o custo de a demolir é um custo público. Em vez de a tratar apenas como problema, pode tratar-se como <strong>oportunidade de habitação</strong>: quem apresenta um projeto sólido de reabilitação recebe o imóvel — por doação com encargos, venda simbólica ou direito de superfície — desde que o reconstrua e lá viva. É o modelo das «casas a 1 euro» italianas (<a target="_blank" rel="noopener" href="https://www.idealista.it/en/news/property-for-sale-in-italy/2026/01/23/203954-how-to-buy-a-house-for-1-euro-in-italy-everything-you-need-to-know">bando municipal, caução e prazo de obra</a>), adaptado com regras portuguesas e com uma diferença decisiva: <strong>residência permanente, não casa de férias</strong>. O processo está descrito na secção 12.3.</p>
+
     <div class="callout">
       <div class="label">Uma leitura transversal</div>
       <p>Todos estes institutos resolvem, por caminhos diferentes, a mesma pergunta: como dar uso a quem está sem casa, sem tomar a casa a quem a tem? Uns respondem com o tempo (usucapião), outros com o contrato (comodato), outros com um direito real sobre a coisa alheia (usufruto, uso e habitação, superfície, habitação duradoura), outros com a gradualidade (reserva de propriedade, promessa, doação com reserva), outros com o sistema público (arrendamento social, acessível, cooperativas, reabilitação). Nenhum dispensa clareza no contrato, registo do direito e qualidade da casa.</p>
@@ -743,10 +991,54 @@
       <p>Porque o alvo não é a pessoa: é o imóvel vazio. Ninguém perde a casa onde vive, ninguém perde a propriedade, e o proprietário recebe compensação. O que se retira é o direito de deixar uma casa fechada enquanto falta casa a outros — e retira-se com prazo, notificação, fórmula pública, possibilidade de resposta e controlo judicial. Uma regra que obriga o Estado a <em>procurar</em> o dono é o contrário de uma regra arbitrária: é a única forma de garantir que a omissão não é premiada.</p>
     </div>
 
+    <h3>12.3 Ruínas sem dono: reabilitar para adquirir</h3>
+    <p>Chamemos-lhe <strong>Reabilitar para Habitar</strong>. O princípio: uma ruína sem uso e sem dono localizável não deve ficar à espera de um comprador que nunca aparece. O município inventaria, procura o titular, e — quando a propriedade lhe chega por via legal — abre um concurso público para quem queira reabilitar e habitar. O prémio é o imóvel; o encargo é torná-lo sólido e viver nele.</p>
+
+    <h4>O processo, em sete passos</h4>
+    <ol>
+      <li><strong>Inventário e busca de titular.</strong> Levantamento das ruínas por freguesia, com certidão permanente do registo predial, dados do IMI e visita técnica. Se houver proprietário, negocia-se; se não houver, segue-se o caminho dos bens vagos e da herança jacente, com decisão judicial.</li>
+      <li><strong>Dossiê público do imóvel.</strong> Fotografias, áreas, estado estrutural, nível de conservação, estimativa de custo de obra e regime jurídico proposto. Sem esta informação, só concorrem aventureiros.</li>
+      <li><strong>Concurso público.</strong> Prazo de candidatura de 90 dias e critérios publicados. Podem candidatar-se pessoas singulares, agregados ou cooperativas, com prioridade para quem não tem habitação própria e para projetos de residência permanente.</li>
+      <li><strong>Avaliação por profissionais.</strong> Júri com um arquiteto ou engenheiro indicado pela Ordem, um técnico municipal e um técnico de ação social. Critérios: solidez estrutural do projeto (40%), capacidade financeira comprovada (30%), necessidade habitacional (20%), integração urbana (10%).</li>
+      <li><strong>Contrato com encargos e garantia.</strong> Prazo de obra de 18 a 36 meses, caução ou garantia bancária de 10% a 20% do custo estimado, seguro de obra, projeto com direção técnica e <strong>cláusula de reversão</strong>: se não reabilitar ou não habitar, o imóvel volta ao município e a caução é executada.</li>
+      <li><strong>Vistorias em três fases.</strong> Estrutura, estanquidade e acabamentos. Cada fase é certificada por técnico responsável e registada no processo; a escritura definitiva só acontece no fim.</li>
+      <li><strong>Habitar e ficar.</strong> Compromisso de residência permanente por dez anos, com registo na junta de freguesia. Só depois desse período o imóvel pode ser vendido sem autorização municipal.</li>
+    </ol>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Quanto custa reabilitar uma ruína de 60 m²</caption>
+        <thead>
+          <tr><th>Item</th><th>Custo indicativo</th><th>Nota</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Obra de reabilitação</strong></td><td class="num">€24.000–72.000</td><td>€400–1.200/m², conforme o estado e o nível de intervenção</td></tr>
+          <tr><td><strong>Projeto e licenciamento</strong></td><td class="num">€3.000–6.000</td><td>Arquitetura, especialidades, taxas municipais</td></tr>
+          <tr><td><strong>Ensaios e vistorias</strong></td><td class="num">€500–1.500</td><td>Estrutura, humidades, instalações</td></tr>
+          <tr><td><strong>Seguro de obra</strong></td><td class="num">€300–800</td><td>Durante o período de trabalhos</td></tr>
+          <tr><td><strong>Escritura e registo</strong></td><td class="num">€375–700</td><td>Casa Pronta / registo predial</td></tr>
+          <tr><td><strong>Total</strong></td><td class="num">≈ €28.000–81.000</td><td>Contra um T2 novo a partir de €150.000 na maioria dos concelhos</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <div class="label">Como se garante que fica sólido</div>
+      <p>Não por confiança, por procedimento: <strong>(1)</strong> projeto assinado por técnico habilitado e aprovado pelos serviços municipais; <strong>(2)</strong> direção de obra e coordenação de segurança obrigatórias; <strong>(3)</strong> três vistorias certificadas, com relatório fotográfico; <strong>(4)</strong> termo de responsabilidade do técnico e do empreiteiro; <strong>(5)</strong> caução que só é devolvida após a última vistoria; <strong>(6)</strong> seguro de obra e de responsabilidade civil. A casa pode ser antiga; a garantia de que é segura é nova e verificável.</p>
+    </div>
+
+    <div class="note">
+      <div class="label">O problema fiscal da «dádiva»</div>
+      <p>Em Portugal, dar ou vender por €1 não é automaticamente barato. Numa venda simbólica, o IMT pode incidir sobre o valor patrimonial tributário (superior ao preço); numa doação a quem não é cônjuge, descendente ou ascendente, o Imposto do Selo pode chegar a 10%. Sem uma <strong>isenção legal para transmissões de ruínas com encargo de reabilitação e habitação própria</strong>, a «oferta» pode custar ao beneficiário entre 6% e 10% do valor do imóvel. A alternativa que evita o problema é o <strong>direito de superfície</strong> por 50 a 90 anos: o município não perde a propriedade, o reabilitador tem segurança jurídica, e a casa entra no património municipal no fim — ou é transmitida, se assim se acordar.</p>
+    </div>
+
+    <p>Do lado do município, o balanço é favorável: deixa de ter uma ruína a degradar a rua, ganha um imóvel habitado e uma família com casa, e evita o custo de demolição e de fiscalização repetida. Do lado de quem reabilita, troca poupança e trabalho por uma casa que dificilmente compraria. Do lado da cidade, ganha-se o que nenhum programa de construção nova consegue comprar: uma rua recuperada sem despejar ninguém.</p>
+
     <h2 id="sec13">13. Mudanças na lei que fariam diferença</h2>
     <p>É honesto reconhecer que o comodato, tal como existe hoje, não foi desenhado para um programa de habitação solidária em escala. As propostas seguintes não substituem o que já existe — completam-no, e cada uma resolve um obstáculo concreto identificado nas secções anteriores.</p>
     <ol>
       <li><strong>Regime próprio de comodato solidário.</strong> Criar, junto ao direito civil ou à legislação de habitação, uma categoria específica para comodatos de habitação temporária de carácter solidário, com cláusulas mínimas de proteção, prazo, fiscalização e restituição. Simplifica o enquadramento e evita que cada caso dependa de um contrato sob medida.</li>
+      <li><strong>Isenção de IMT e de Imposto do Selo na transmissão de ruínas.</strong> Uma transmissão por valor simbólico pode ser tributada sobre o valor patrimonial, e uma doação a quem não é familiar pode custar 10% de Imposto do Selo — o que mata o incentivo à reabilitação. Uma isenção condicionada a obra concluída, vistoria e residência permanente resolve o problema sem abrir a porta à especulação.</li>
       <li><strong>Isenção de IMI e AIMI durante a cedência registada.</strong> É a proposta mais importante deste capítulo, e a que tem precedente direto: a Bélgica isenta o proprietário que entrega a casa a uma agência social. Em Portugal, a isenção equivalente pode ser desenhada como o RSAA — condicionada a contrato registado, prazo mínimo e verificação independente — e evitaria o custo de €525 a €3.150 por ano que hoje recai sobre quem cede.</li>
       <li><strong>Extensão do mecenato à cedência de uso.</strong> O regime dos arts. 62.º e ss. do EBF já reconhece donativos em dinheiro; uma extensão legal, com valor de referência fixado por portaria, permitiria deduzir à coleta uma fração do valor do uso cedido a entidades sociais, sem criar rendimento tributável para o comodatário.</li>
       <li><strong>Fundo de garantia de conservação.</strong> Um fundo público ou municipal que cubra danos acima do desgaste normal e o custo do restabelecimento do imóvel no fim do prazo. Resolve o receio mais concreto de quem entrega uma casa mobilada: perder o valor do que deixou.</li>
@@ -766,6 +1058,7 @@
         </thead>
         <tbody>
           <tr><td>Alargar e estabilizar o RSAA</td><td class="num">70%</td><td>Já existe, tem custo fiscal conhecido e não cria conflito de propriedade</td></tr>
+          <tr><td>Cláusula-tipo com encargos a cargo do ocupante</td><td class="num">65%</td><td>Não custa dinheiro público e responde ao principal receio do proprietário: a fatura mensal</td></tr>
           <tr><td>Carta de Cedente e prémios municipais</td><td class="num">60%</td><td>Barato, visível e inteiramente na competência das câmaras</td></tr>
           <tr><td>Banco municipal de casas vazias</td><td class="num">55%</td><td>Já há bolsas de habitação em vários municípios; é extensão, não invenção</td></tr>
           <tr><td>Balcão único e contrato-tipo</td><td class="num">50%</td><td>Não exige lei nem dinheiro; exige apenas desenho administrativo</td></tr>
@@ -774,6 +1067,8 @@
           <tr><td>Contrato temporário próprio para casas vazias</td><td class="num">30%</td><td>Mexe com o regime do arrendamento; resistência previsível de proprietários</td></tr>
           <tr><td>Recenseamento obrigatório de vazios</td><td class="num">25%</td><td>Implica fiscalização e coimas; requer acordo político alargado</td></tr>
           <tr><td>Autodeclaração anual com imposto agravado</td><td class="num">20%</td><td>Modelo irlandês é eficaz, mas politicamente sensível em ano de eleições</td></tr>
+          <tr><td>Concurso municipal de ruínas com venda simbólica ou doação com encargos</td><td class="num">40%</td><td>Já há prática municipal de alienação; falta padronizar o concurso e a garantia</td></tr>
+          <tr><td>Isenção fiscal na transmissão de ruínas para reabilitação</td><td class="num">25%</td><td>Custa receita e exige lei nacional; sem ela, a «dádiva» pode custar 6% a 10%</td></tr>
           <tr><td>Arrendamento forçado automático</td><td class="num">15%</td><td>Já existe na lei, mas é aplicado com parcimónia; automatizá-lo exige coragem judicial e política</td></tr>
         </tbody>
       </table>
@@ -877,49 +1172,323 @@
 
     <div class="callout">
       <div class="label">Conclusão</div>
-      <p>A habitação é, ao mesmo tempo, um direito, um recurso de mercado e um dever de cuidar do que é comum. Um sistema baseado no comodato, com fiscalista semanal, com incentivos fiscais ligados ao contrato e com reconhecimento social e religioso do proprietário generoso não resolve, sozinho, a crise habitacional — mas pode ser uma peça útil, legalmente ancorada, humanamente protegida e socialmente visível. E, em 2026, essa peça deixou de ser apenas moral: quem cede uma casa enquadrada num regime reconhecido pode pagar zero de IRS, zero de IMI e zero de AIMI — ou, se preferir dar sem contrapartida, pode pelo menos deixar de pagar o preço da ociosidade. Uma peça útil e honesta é melhor do que a espera de uma solução perfeita que nunca chega sozinha.</p>
+      <p>A habitação é, ao mesmo tempo, um direito, um recurso de mercado e um dever de cuidar do que é comum. Um sistema baseado no comodato, com fiscalista semanal, com incentivos fiscais ligados ao contrato e com reconhecimento social e religioso do proprietário generoso não resolve, sozinho, a crise habitacional — mas pode ser uma peça útil, legalmente ancorada, humanamente protegida e socialmente visível. E, em 2026, essa peça deixou de ser apenas moral: quem cede uma casa enquadrada num regime reconhecido pode pagar zero de IRS, zero de IMI e zero de AIMI — e, com os encargos correntes a cargo de quem habita, pode ceder a custo mensal zero, sem perder a propriedade nem pagar o preço da ociosidade. Uma peça útil e honesta é melhor do que a espera de uma solução perfeita que nunca chega sozinha.</p>
     </div>
   </article>
 
-  <footer>
-    <p>Documento de proposta · Comodato, usucapião e demais institutos do Código Civil e da legislação de habitação de Portugal · Fiscalização independente · <br>
-    Adaptável a diferentes ordenamentos jurídicos.<br>
-    <a href="index.html">Página Principal</a>
-    </p>
-  </footer>
+      <footer>
+        <p>Documento de proposta &#183; Comodato, usucapi&#227;o e demais institutos do C&#243;digo Civil e da legisla&#231;&#227;o de habita&#231;&#227;o de Portugal &#183; Fiscaliza&#231;&#227;o independente &#183; <br>
+        Adapt&#225;vel a diferentes ordenamentos jur&#237;dicos.<br>
+        <a href="index.html">P&#225;gina Principal</a>
+        </p>
+      </footer>
+    </div>
+  </main>
 </div>
 
 <script>
 (function(){
-  var links = document.querySelectorAll('.toc a[href^="#"]');
-  links.forEach(function(link){
-    link.addEventListener('click', function(e){
-      var id = link.getAttribute('href').slice(1);
-      var target = document.getElementById(id);
-      if(!target) return;
-      e.preventDefault();
-      target.scrollIntoView({behavior:'smooth', block:'start'});
+  "use strict";
+
+  var article = document.getElementById("article");
+  var menu = document.getElementById("menu");
+  var content = document.getElementById("content");
+  var crumbs = document.getElementById("crumbs");
+  var prevBtn = document.getElementById("prevBtn");
+  var nextBtn = document.getElementById("nextBtn");
+  var printBtn = document.getElementById("printBtn");
+  var hamb = document.getElementById("hamb");
+  var backdrop = document.getElementById("backdrop");
+
+  if (!article || !menu || !content) return;
+
+  /* ---------- 1. split the flat article into panels and subpanels ---------- */
+  var panels = [];
+  var currentPanel = null;
+  var currentIntro = null;
+  var currentSub = null;
+
+  Array.prototype.slice.call(article.childNodes).forEach(function(node){
+    if (node.nodeType === 1 && node.tagName === "H2") {
+      var panel = document.createElement("section");
+      panel.className = "panel";
+      panel.dataset.section = node.id;
+      panel.id = "p-" + node.id;
+      article.appendChild(panel);
+      panel.appendChild(node);
+
+      currentIntro = document.createElement("div");
+      currentIntro.className = "sec-intro";
+      panel.appendChild(currentIntro);
+
+      currentPanel = panel;
+      currentSub = null;
+      panels.push(panel);
+      return;
+    }
+
+    if (node.nodeType === 1 && node.tagName === "H3" && currentPanel) {
+      currentSub = document.createElement("section");
+      currentSub.className = "subpanel";
+      currentPanel.appendChild(currentSub);
+      currentSub.appendChild(node);
+      return;
+    }
+
+    if (currentSub) currentSub.appendChild(node);
+    else if (currentIntro) currentIntro.appendChild(node);
+    else if (currentPanel) currentPanel.appendChild(node);
+    else article.appendChild(node);
+  });
+
+  /* ---------- 2. targets, in reading order ---------- */
+  var targets = [];
+  var byId = {};
+
+  panels.forEach(function(panel){
+    var h2 = panel.querySelector("h2");
+    if (!h2) return;
+    var secId = panel.dataset.section;
+    var subs = panel.querySelectorAll(".subpanel");
+
+    var sectionTarget = {
+      id: secId, title: h2.textContent.trim(), panel: panel,
+      sub: null, heading: h2, index: targets.length
+    };
+    targets.push(sectionTarget);
+    byId[secId] = sectionTarget;
+
+    subs.forEach(function(sp, i){
+      var h3 = sp.querySelector("h3");
+      if (!h3) return;
+      var subId = secId + "-" + (i + 1);
+      sp.id = "p-" + subId;
+      sp.dataset.target = subId;
+      var t = {
+        id: subId, title: h3.textContent.trim(), panel: panel,
+        sub: sp, heading: h3, parent: sectionTarget, index: targets.length
+      };
+      targets.push(t);
+      byId[subId] = t;
     });
   });
 
-  var headings = document.querySelectorAll('article h2');
-  if('IntersectionObserver' in window){
-    var seen = new Set();
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){
-        if(entry.isIntersecting && !seen.has(entry.target)){
-          seen.add(entry.target);
-          var id = entry.target.id;
-          var link = document.querySelector('.toc a[href="#'+id+'"]');
-          if(link){
-            link.style.color = '#e6e9f0';
-            link.style.borderBottomColor = '#7fb069';
-          }
-        }
+  if (!targets.length) return;
+
+  /* ---------- 3. build the sidebar ---------- */
+  panels.forEach(function(panel){
+    var h2 = panel.querySelector("h2");
+    if (!h2) return;
+    var secId = panel.dataset.section;
+    var subs = panel.querySelectorAll(".subpanel");
+
+    var item = document.createElement("div");
+    item.className = "menu-item";
+    item.dataset.section = secId;
+
+    var row = document.createElement("div");
+    row.className = "menu-row";
+
+    var mainBtn = document.createElement("button");
+    mainBtn.type = "button";
+    mainBtn.className = "menu-link";
+    mainBtn.dataset.target = secId;
+    mainBtn.textContent = h2.textContent.trim();
+    row.appendChild(mainBtn);
+
+    var submenu = null;
+    if (subs.length) {
+      var toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "menu-toggle";
+      toggle.textContent = "\u25B8";
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-label", "Abrir subt\u00F3picos de " + h2.textContent.trim());
+      row.appendChild(toggle);
+
+      submenu = document.createElement("div");
+      submenu.className = "submenu";
+
+      subs.forEach(function(sp, i){
+        var h3 = sp.querySelector("h3");
+        if (!h3) return;
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "menu-link";
+        b.dataset.target = secId + "-" + (i + 1);
+        b.textContent = h3.textContent.trim();
+        submenu.appendChild(b);
       });
-    }, {rootMargin:'-40% 0px -55% 0px'});
-    headings.forEach(function(h){ io.observe(h); });
+    }
+
+    item.appendChild(row);
+    if (submenu) item.appendChild(submenu);
+    menu.appendChild(item);
+  });
+
+  /* ---------- 4. expand / collapse a topic ---------- */
+  function setOpen(item, open){
+    if (!item) return;
+    item.classList.toggle("open", open);
+    var t = item.querySelector(".menu-toggle");
+    if (t) {
+      t.setAttribute("aria-expanded", open ? "true" : "false");
+      t.textContent = open ? "\u25BE" : "\u25B8";
+    }
   }
+
+  /* ---------- 5. navigation ---------- */
+  var activeId = null;
+
+  function closeNav(){
+    document.body.classList.remove("nav-open");
+    if (hamb) hamb.setAttribute("aria-expanded", "false");
+  }
+
+  function renderCrumbs(target){
+    crumbs.textContent = "";
+    var sec = target.panel.querySelector("h2").textContent.trim();
+    if (target.sub) {
+      var top = document.createElement("span");
+      top.textContent = sec;
+      var sep = document.createElement("span");
+      sep.className = "sep";
+      sep.textContent = " / ";
+      var now = document.createElement("strong");
+      now.textContent = target.title;
+      crumbs.appendChild(top);
+      crumbs.appendChild(sep);
+      crumbs.appendChild(now);
+    } else {
+      var strong = document.createElement("strong");
+      strong.textContent = sec;
+      crumbs.appendChild(strong);
+    }
+  }
+
+  function updatePager(target){
+    var i = targets.indexOf(target);
+    prevBtn.disabled = i <= 0;
+    nextBtn.disabled = i >= targets.length - 1;
+  }
+
+  function show(id, options){
+    var target = byId[id];
+    if (!target) target = byId[targets[0].id];
+    if (!target) return;
+
+    options = options || {};
+    activeId = target.id;
+
+    var allPanels = article.querySelectorAll(".panel");
+    Array.prototype.forEach.call(allPanels, function(p){
+      p.classList.remove("active", "all", "sub-view");
+    });
+
+    target.panel.classList.add("active");
+    if (target.sub) {
+      target.panel.classList.add("sub-view");
+      Array.prototype.forEach.call(target.panel.querySelectorAll(".subpanel"), function(sp){
+        sp.classList.remove("active");
+      });
+      target.sub.classList.add("active");
+    } else {
+      target.panel.classList.add("all");
+      Array.prototype.forEach.call(target.panel.querySelectorAll(".subpanel"), function(sp){
+        sp.classList.remove("active");
+      });
+    }
+
+    Array.prototype.forEach.call(menu.querySelectorAll(".menu-link"), function(b){
+      b.classList.remove("active");
+      b.removeAttribute("aria-current");
+    });
+    var btn = menu.querySelector('.menu-link[data-target="' + target.id + '"]');
+    if (btn) {
+      btn.classList.add("active");
+      btn.setAttribute("aria-current", "true");
+    }
+
+    if (target.sub) {
+      var item = btn ? btn.closest(".menu-item") : null;
+      setOpen(item, true);
+    }
+
+    if (btn && btn.scrollIntoView) btn.scrollIntoView({ block: "nearest" });
+
+    content.scrollTop = 0;
+    renderCrumbs(target);
+    updatePager(target);
+
+    if (!options.fromHash) {
+      try { history.replaceState(null, "", "#" + target.id); } catch (e) {}
+    }
+
+    closeNav();
+
+    if (target.heading) {
+      target.heading.setAttribute("tabindex", "-1");
+      try { target.heading.focus({ preventScroll: true }); } catch (e) {}
+    }
+  }
+
+  /* ---------- 6. events ---------- */
+  menu.addEventListener("click", function(e){
+    var btn = e.target.closest("button");
+    if (!btn) return;
+
+    if (btn.classList.contains("menu-toggle")) {
+      var item = btn.closest(".menu-item");
+      setOpen(item, !item.classList.contains("open"));
+      return;
+    }
+
+    if (btn.dataset.target) show(btn.dataset.target);
+  });
+
+  prevBtn.addEventListener("click", function(){
+    var i = targets.findIndex(function(t){ return t.id === activeId; });
+    if (i > 0) show(targets[i - 1].id);
+  });
+
+  nextBtn.addEventListener("click", function(){
+    var i = targets.findIndex(function(t){ return t.id === activeId; });
+    if (i > -1 && i < targets.length - 1) show(targets[i + 1].id);
+  });
+
+  printBtn.addEventListener("click", function(){ try { window.print(); } catch (e) {} });
+
+  if (hamb) {
+    hamb.addEventListener("click", function(){
+      var open = document.body.classList.toggle("nav-open");
+      hamb.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  }
+
+  if (backdrop) backdrop.addEventListener("click", closeNav);
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape") closeNav();
+  });
+
+  article.addEventListener("click", function(e){
+    var a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    var id = a.getAttribute("href").slice(1);
+    if (byId[id]) {
+      e.preventDefault();
+      show(id);
+    }
+  });
+
+  window.addEventListener("hashchange", function(){
+    var id = decodeURIComponent(location.hash.replace(/^#/, ""));
+    if (byId[id] && id !== activeId) show(id);
+  });
+
+  /* ---------- 7. boot ---------- */
+  var initial = decodeURIComponent(location.hash.replace(/^#/, ""));
+  show(byId[initial] ? initial : targets[0].id);
 })();
 </script>
 </body>
