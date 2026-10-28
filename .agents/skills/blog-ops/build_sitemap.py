@@ -23,14 +23,56 @@ DOCS = "docs"
 # Served by the host for missing paths; it must never appear in a sitemap.
 SKIP = {"404.html"}
 
-ROBOTS = """User-agent: *
-Allow: /
+ROBOTS = """# Policy: the archive is open to search engines, link previews and archives.
+# Two directories are kept out of the index, and the API JSON is a data source.
 
-# Archived snapshots of third-party pages: kept for readers, not for indexing.
+# Every crawler not named below follows this group.
+User-agent: *
+Allow: /
 Disallow: /archive/
 Disallow: /obsdRouter/
+Disallow: /api/
 
-# JSON behind the on-page search. It is a data source, not a page.
+# Search engines. Same rules as above, repeated so that a crawler left out of this
+# list is an omission somebody can see, not an ambiguity.
+User-agent: Googlebot
+User-agent: Googlebot-Image
+User-agent: Googlebot-News
+User-agent: Google-InspectionTool
+User-agent: Bingbot
+User-agent: BingPreview
+User-agent: DuckDuckBot
+User-agent: Applebot
+User-agent: Baiduspider
+User-agent: YandexBot
+User-agent: SeznamBot
+User-agent: Yeti
+User-agent: Sogou web spider
+User-agent: PetalBot
+User-agent: Slurp
+User-agent: MojeekBot
+User-agent: Coccocbot
+Allow: /
+Disallow: /archive/
+Disallow: /obsdRouter/
+Disallow: /api/
+
+# Link previews and archives: these read a page to build a card or a snapshot, never
+# to rank it. Allowed so shared links render, keeping the same two exclusions.
+User-agent: facebookexternalhit
+User-agent: Twitterbot
+User-agent: LinkedInBot
+User-agent: Slackbot
+User-agent: TelegramBot
+User-agent: WhatsApp
+User-agent: Discordbot
+User-agent: ia_archiver
+User-agent: archive.org_bot
+User-agent: CCBot
+User-agent: W3C_Validator
+Allow: /
+Disallow: /archive/
+Disallow: /obsdRouter/
 Disallow: /api/
 
 Sitemap: %s/sitemap.xml
@@ -78,14 +120,20 @@ def current(name):
 
 def main(argv):
     check_only = "--check" in argv
+    robots_only = "--robots" in argv          # rewrite robots.txt, leave the sitemap alone
     if not os.path.isdir(DOCS):
         print("run this from the repository root (no %s/ here)" % DOCS)
         return 2
 
-    sitemap, count = build()
+    if robots_only:
+        sitemap, count = None, 0
+        targets = (("robots.txt", ROBOTS),)
+    else:
+        sitemap, count = build()
+        targets = (("sitemap.xml", sitemap), ("robots.txt", ROBOTS))
     changed = []
 
-    for name, text in (("sitemap.xml", sitemap), ("robots.txt", ROBOTS)):
+    for name, text in targets:
         if current(name) == text:
             print("%s: unchanged" % name)
             continue
@@ -106,7 +154,8 @@ def main(argv):
                 fh.write(text)
             print("%s: written" % name)
 
-    print("pages: %d" % count)
+    if not robots_only:
+        print("pages: %d" % count)
     if check_only:
         return 1 if changed else 0
     return 0

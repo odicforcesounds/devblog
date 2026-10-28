@@ -99,6 +99,14 @@ manifest when it is called; before `ready()` resolves it must retry after loadin
 (the guard is already in `docs/api.js`). If a page searches on first paint and gets
 zero results, that is the bug you are looking at.
 
+**robots.txt** — `build_sitemap.py --robots` rewrites only that file (the sitemap's
+`lastmod` values are left alone). It has three groups: `*`, the named search engines,
+and the link-preview/archive bots. All three must carry the same rules (`Allow: /` plus
+the `archive/`, `obsdRouter/` and `api/` exclusions) — a named group replaces the `*`
+group for that crawler, so a group without the exclusions would silently open the
+archive. `robots.txt` cannot block anything by itself either: a crawler that gets 403
+was stopped at the edge, not here.
+
 **Hosting** — the site is GitHub Pages behind a Cloudflare proxy. The edge can break
 crawling or inject scripts without a single byte changing in the repo; `CLOUDFLARE.md`
 lists what to check and how to confirm each setting with `curl`.
