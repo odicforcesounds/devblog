@@ -1,172 +1,175 @@
-Firebase Firestore rules to secure the comment inputs on docs/index.html
-=======================================================================
+Signed-in-only comments — Firestore rules and provider setup
+============================================================
 
-What this page does (from docs/index.html)
--------------------------------------------
-- Two visible text inputs: comment-name and comment-message
-- On submit it writes to Firestore collection "comments" with fields:
-    name:    cleaned, capped to 60 chars client-side
-    message: trimmed, capped to 2000 chars client-side
+What changed in docs/index.html
+-------------------------------
+- The comment widget now signs the reader in with Firebase Authentication before
+  the form unlocks. The provider buttons are Google, GitHub, Microsoft, Apple,
+  X / Twitter, Facebook and Yahoo.
+- Anonymous sign-in is not imported, not called and not offered anywhere. There
+  is no way to post without a provider account.
+- The name input was removed: the name comes from the provider profile
+  (displayName, or the local part of the email), capped at 60 characters.
+- Each new document is written with:
+    uid:       request.auth.uid of the signed-in user
+    name:      display name from the provider, 1..60 characters
+    photo:     profile picture URL (may be an empty string), <= 300 characters
+    provider:  e.g. "google.com", "github.com", <= 40 characters
+    message:   1..2000 characters
     createdAt: serverTimestamp()
-- It reads comments sorted desc, limited to 50, rendered with textContent only
+- Comments are still readable by everyone; only writing requires an account.
+- Existing documents without uid/photo/provider (written before this change)
+  keep rendering normally. They are shown as plain names, without avatar.
 
-Why rules still matter
-----------------------
-- Client-side maxlength and trimming are UX limits, not security limits.
-- Anyone with the Firebase web config can call the Firestore API directly.
-- A malicious client can bypass maxlength, send huge payloads, special characters,
-  or whatever else the app will accept if the backend allows it.
-- The page renders comments with textContent, so HTML/script injection in the
-  rendered output is not the main client-side risk here. The real risks are:
-    1. Spam / unbounded write volume
-    2. Oversized documents
-    3. Unexpected field shapes if the app later renders something unsafe
-    4. Abuse of serverTimestamp / write patterns
-
-Recommended Firestore rules
----------------------------
-Rules are required when the project is not in test mode. If you are still using
-the default "allow everything" test rules, this app is effectively open to abuse.
-
-Below is a strict, minimal ruleset that matches the comment flow in docs/index.html.
-
+The rules
+---------
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     match /comments/{commentId} {
-      // Allow reading comments for anyone the page can be loaded by.
+      // Anyone can read the thread.
       allow read: if true;
 
-      // Writing a new comment: require known fields and reasonable size caps.
-      allow create: if request.resource.data.size()
-                       <= 10240
-                     && request.resource.data.keys().hasOnly(['name','message','createdAt'])
-                     && request.resource.data.name is string
-                     && request.resource.data.name.size() <= 60
-                     && request.resource.data.message is string
-                     && request.resource.data.message.size() <= 2000
-                     && request.resource.data.createdAt is null
-                        || request.resource.data.createdAt is timestamp;
-
-      // Disallow updates and deletes for this simple comment widget.
-      allow update, delete: if false;
-    }
-  }
-}
-
-Notes on the rules above
--------------------------
-- read is public because the page shows comments to everyone.
-- create is restricted to exactly the fields the page uses.
-- size() cap on the whole document prevents oversized payloads even if someone
-  bypasses client-side trimming.
-- name is capped at 60 and message at 2000, matching the page's own limits.
-- createdAt must be null or a timestamp, which matches serverTimestamp usage.
-- update and delete are denied so comments can only be added, not edited or removed
-  from the client. If you later want moderation or deletion, add a separate admin
-  path instead of opening this one up.
-
-If you want stricter rules
---------------------------
-- If you want authenticated-only posting, replace the create condition with
-  something like:
-      allow create: if request.auth != null && ...field checks...
-
-- If you want rate limiting, Firestore rules alone cannot enforce per-IP or
-  per-user rate limits. Use Firebase App Check, Cloud Functions middleware,
-  or a separate abuse-mitigation layer for that.
-
-What Firebase features to enable alongside rules
--------------------------------------------------
-1. Firebase App Check
-   - Recommended for production.
-   - Helps reduce abuse from scripts using your Firebase config directly.
-
-2. Firestore indexes
-   - The page queries orderBy("createdAt", "desc") with limit(50).
-   - Make sure the matching index exists, otherwise queries fail at runtime.
-
-3. Do not leave the project in test mode
-   - Test rules usually allow read/write to everything.
-   - Switch to the rules above (or equivalent) before publishing.
-
-How this interacts with the current client code
-------------------------------------------------
-- The client already trims and caps name and message.
-- The client already renders with textContent, not innerHTML.
-- The rules above mainly protect the backend from:
-    * large payloads
-    * extra or unexpected fields
-    * edits/deletes from the client
-    * fully open write access if the app is shared publicly
-
-What this does NOT protect
----------------------------
-- This is a backend data-protection guide for Firestore rules, not a full
-  app-security review. It does not cover:
-    * Firebase Hosting headers or caching
-    * other collections or services in the project
-    * abusive but technically allowed content (spam, abuse, offensive text)
-    * moderation workflow
-
-Minimal next step
------------------
-1. Replace the Firestore rules in the Firebase console with the ruleset above
-   (or tighten them to your needs).
-2. Enable App Check if this page is public and abuse becomes a problem.
-3. Confirm the createdAt index exists for the descending query.
-
-That combination is what actually secures the comment inputs end to end:
-the client limits UX, the page renders safely, and Firestore rules enforce the
-real limits on size, shape, and write access.
-
-
-Authenticated-only posting variant
-----------------------------------
-If you want only signed-in users to post comments, replace the comment create rule
-with this pattern instead of the public create rule above.
-
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    match /comments/{commentId} {
-      allow read: if true;
-
+      // Only a signed-in user may write, and only as themselves.
       allow create: if request.auth != null
-                       && request.resource.data.size() <= 10240
-                       && request.resource.data.keys().hasOnly(['name','message','createdAt'])
+                       && request.resource.data.keys().hasOnly(
+                            ['uid', 'name', 'photo', 'provider', 'message', 'createdAt'])
+                       && request.resource.data.keys().hasAll(['uid', 'name', 'message', 'createdAt'])
+                       && request.resource.data.uid == request.auth.uid
                        && request.resource.data.name is string
+                       && request.resource.data.name.size() > 0
                        && request.resource.data.name.size() <= 60
                        && request.resource.data.message is string
+                       && request.resource.data.message.size() > 0
                        && request.resource.data.message.size() <= 2000
-                       && (request.resource.data.createdAt is null
-                           || request.resource.data.createdAt is timestamp);
+                       && (!('photo' in request.resource.data)
+                           || (request.resource.data.photo is string
+                               && request.resource.data.photo.size() <= 300))
+                       && (!('provider' in request.resource.data)
+                           || (request.resource.data.provider is string
+                               && request.resource.data.provider.size() <= 40))
+                       && request.resource.data.createdAt == request.time;
 
+      // No edits, no deletes from any client. Moderate from the console or with
+      // an admin SDK that bypasses these rules.
       allow update, delete: if false;
     }
   }
 }
 
-Notes on the authenticated variant
------------------------------------
-- read stays public so visitors can still see comments.
-- create requires request.auth != null, so only users signed in through Firebase
-  Auth can add comments.
-- The field and size checks stay the same as the public variant.
-- You must enable Firebase Authentication for this variant to matter; otherwise
-  request.auth will be null for everyone and posting will be denied.
+Why each clause is there
+------------------------
+- request.auth != null: the only thing that stops anonymous writes. Client-side
+  disabling of the button is UX; this clause is the actual lock.
+- uid == request.auth.uid: a signed-in user cannot post as somebody else's uid,
+  so two accounts cannot be confused later.
+- keys().hasOnly([...]) plus hasAll([...]): rejects extra fields (nobody can
+  smuggle an "isAdmin", "pinned" or "html" field into the document) while still
+  accepting the optional photo/provider of older clients.
+- name/message size caps: the same limits the page applies, enforced server-side.
+- createdAt == request.time: matches serverTimestamp() exactly; a client cannot
+  backdate or forward-date a comment.
+- update/delete denied: comments are append-only from the browser.
 
-If you use this variant, decide which auth providers you want to allow, because
-the rules do not choose that for you. Common options are email/password,
-anonymous accounts, or a provider like Google. Pick one or a small set and enable
-only those in the Firebase Auth settings, otherwise the rules may still be too
-open for your own threat model.
+Deployment
+----------
+Firebase console -> Firestore Database -> Rules: paste the block above and
+publish. Or, with the CLI in the project root:
 
-If you need moderation or deletion later
------------------------------------------
-Do not reopen update/delete on the public comment path just to moderate content.
-Instead, add a separate admin-only path or a Cloud Functions-backed moderation
-flow, and keep the public client write rules strict.
+    firebase deploy --only firestore:rules
 
+Keep the index for the query the page runs (orderBy createdAt desc, limit 50);
+Firestore normally creates the single-field one automatically.
+
+Enabling the providers (this part is console work, not code)
+------------------------------------------------------------
+Authentication -> Sign-in method. Enable only what you intend to support; the
+page shows every button, and a provider that is not enabled answers with
+"auth/operation-not-allowed", which the page reports as
+"This sign-in provider is not enabled in the Firebase project yet."
+
+Google
+  1. Enable Google.
+  2. Pick a project support email.
+  Nothing else is needed.
+
+GitHub
+  1. GitHub -> Settings -> Developer settings -> OAuth Apps -> New OAuth App.
+  2. Homepage URL: https://blog.odicforcesounds.com
+  3. Authorization callback URL:
+     https://blog-comments-6b4f5.firebaseapp.com/__/auth/handler
+  4. Copy the Client ID and Client Secret into the GitHub provider in Firebase.
+
+Microsoft
+  1. Azure Portal -> App registrations -> New registration.
+  2. Redirect URI (Web):
+     https://blog-comments-6b4f5.firebaseapp.com/__/auth/handler
+  3. Copy the Application (client) ID and create a client secret.
+
+Apple
+  1. Requires a paid Apple Developer account.
+  2. Create a Services ID and a Sign in with Apple key.
+  3. Return URL: https://blog-comments-6b4f5.firebaseapp.com/__/auth/handler
+  4. Firebase asks for the Services ID, Team ID, Key ID and the .p8 key.
+
+X / Twitter
+  1. developer.x.com -> Project and App with OAuth 1.0a read/write.
+  2. Callback URL: https://blog-comments-6b4f5.firebaseapp.com/__/auth/handler
+  3. Copy API Key and API Secret into Firebase.
+
+Facebook
+  1. developers.facebook.com -> Create app -> Facebook Login.
+  2. Valid OAuth Redirect URI:
+     https://blog-comments-6b4f5.firebaseapp.com/__/auth/handler
+  3. Copy App ID and App Secret. Facebook Login needs app review before it works
+     for people who are not admins of the app.
+
+Yahoo
+  1. developer.yahoo.com -> Create app.
+  2. Redirect URI: https://blog-comments-6b4f5.firebaseapp.com/__/auth/handler
+  3. Copy Client ID and Client Secret.
+
+Authorised domains
+------------------
+Authentication -> Settings -> Authorised domains must include:
+
+    blog.odicforcesounds.com
+    localhost            (only if you test locally)
+
+Without that, sign-in fails with auth/unauthorized-domain.
+
+Recommended extra lock: App Check
+---------------------------------
+The web API key is public by design, so anyone can call Firestore directly with
+it. The rules above already stop anonymous writes, but App Check (reCAPTCHA v3)
+also rejects traffic that is not coming from your pages. Enable App Check for
+Firestore, register the web app with a reCAPTCHA v3 key, and add the initialisation
+to the page when you are ready to enforce it. Enforce only after watching the
+metrics for a few days, otherwise legitimate readers get blocked.
+
+Optional: only your own accounts
+--------------------------------
+Requiring a provider still lets any GitHub or Google user post. If you want the
+thread closed to everybody except a few people, keep the same rules and add the
+uid allowlist. Sign in once with each account you want, read its uid in the
+Firebase console (Authentication -> Users) and paste them here:
+
+    allow create: if request.auth != null
+                     && request.auth.uid in [
+                          'UID_FIRST_ACCOUNT',
+                          'UID_SECOND_ACCOUNT'
+                        ]
+                     && request.resource.data.uid == request.auth.uid
+                     && ... the same field checks as above ...
+
+The uid never changes, while an email or a display name can, so an allowlist on
+uid survives profile edits and provider changes.
+
+What this does NOT solve
+------------------------
+- Spam by a real, signed-in account. Rules cannot judge content; use moderation
+  in the console, or a Cloud Function that checks rate per uid.
+- Rate limiting per user. Firestore rules cannot count previous writes; a
+  Cloud Function or App Check quota is the tool for that.
+- Content moderation. Nothing here reads the message.
