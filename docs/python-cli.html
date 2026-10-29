@@ -1,0 +1,3063 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Shell, Extended — Thirty Python Apps and One Clean Install</title>
+  <meta name="description" content="From the terminal: virtual environments, pipx and uv, thirty Python apps from GitHub, the ten errors that stop an install, and twelve sources.">
+  <link rel="canonical" href="https://blog.odicforcesounds.com/python-cli.html">
+  <meta property="og:title" content="The Shell, Extended — Thirty Python Apps and One Clean Install">
+  <meta property="og:description" content="From the terminal: virtual environments, pipx and uv, thirty Python apps from GitHub, the ten errors that stop an install, and twelve sources.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://blog.odicforcesounds.com/python-cli.html">
+  <meta property="og:site_name" content="Monkey Blog">
+  <meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Shell, Extended — Thirty Python Apps and One Clean Install">
+  <meta name="twitter:description" content="From the terminal: virtual environments, pipx and uv, thirty Python apps from GitHub, the ten errors that stop an install, and twelve sources.">
+  <meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/python-cli.html#article",
+      "headline": "The Shell, Extended — Thirty Python Apps and One Clean Install",
+      "name": null,
+      "description": "From the terminal: virtual environments, pipx and uv, thirty Python apps from GitHub, the ten errors that stop an install, and twelve sources.",
+      "url": "https://blog.odicforcesounds.com/python-cli.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://blog.odicforcesounds.com/python-cli.html"
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://blog.odicforcesounds.com/images/peace.jpg",
+        "width": 1496,
+        "height": 960
+      },
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "name": "Oscar",
+        "url": "https://blog.odicforcesounds.com/",
+        "sameAs": [
+          "https://mastodon.social/@TaoExpression"
+        ]
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://blog.odicforcesounds.com/images/three.jpg",
+          "width": 1024,
+          "height": 1024
+        }
+      },
+      "isPartOf": {
+        "@type": "Blog",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/"
+      },
+      "articleSection": "Programming & Development",
+      "keywords": "The Shell, Extended, Python CLI, virtual environment, pipx, uv",
+      "wordCount": 9000,
+      "datePublished": "2026-10-29",
+      "dateModified": "2026-10-29"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://blog.odicforcesounds.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Programming & Development",
+          "item": "https://blog.odicforcesounds.com/#category-programming-and-development"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "The Shell, Extended — Thirty Python Apps and One Clean Install",
+          "item": "https://blog.odicforcesounds.com/python-cli.html"
+        }
+      ]
+    }
+  ]
+}
+  </script>
+  <style>
+    :root {
+      --bg: #06090a;
+      --bg-soft: #0b1214;
+      --panel: rgba(16, 26, 27, 0.88);
+      --panel-2: rgba(22, 36, 37, 0.94);
+      --line: rgba(127, 224, 168, 0.15);
+      --line-strong: rgba(127, 224, 168, 0.38);
+      --ink: #f2ece1;
+      --muted: #a99f90;
+      --leaf: #7fe0a8;
+      --leaf-deep: #2f9e63;
+      --water: #7fd1b9;
+      --warm: #e07a5f;
+      --danger: #ef7d7d;
+      --radius: 14px;
+      --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 6rem;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(1100px 600px at 85% -10%, rgba(224, 122, 95, 0.12), transparent 60%),
+        radial-gradient(900px 500px at 5% 8%, rgba(127, 224, 168, 0.08), transparent 60%),
+        var(--bg);
+      font-family: var(--sans);
+      font-size: 17px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: var(--leaf);
+      text-decoration-color: rgba(127, 224, 168, 0.4);
+      text-underline-offset: 3px;
+    }
+
+    a:hover {
+      color: var(--water);
+    }
+
+    .wrap {
+      width: min(1120px, 100% - 2.5rem);
+      margin-inline: auto;
+    }
+
+    /* ---------- header ---------- */
+    header.hero {
+      padding: clamp(2rem, 5vw, 4rem) 0 2.5rem;
+      border-bottom: 1px solid var(--line);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -60% 40%;
+      height: 420px;
+      background: radial-gradient(closest-side, rgba(224, 122, 95, 0.18), transparent);
+      pointer-events: none;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 1.6rem;
+    }
+
+    .topbar .mark {
+      font-family: var(--mono);
+      font-size: 0.64rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .topbar .mark:hover {
+      color: var(--leaf);
+    }
+
+    .topbar-tools {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.7rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      transition: color 140ms ease, border-color 140ms ease;
+    }
+
+    .home-link:hover,
+    .home-link:focus-visible {
+      color: var(--leaf);
+      border-color: var(--line-strong);
+    }
+
+    .lang-switch {
+      display: flex;
+      gap: 0.3rem;
+      padding: 0.2rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(11, 9, 6, 0.6);
+    }
+
+    .lang-switch button {
+      padding: 0.28rem 0.7rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: color 140ms ease, background-color 140ms ease;
+    }
+
+    .lang-switch button:hover {
+      color: var(--ink);
+    }
+
+    .lang-switch button[aria-pressed="true"] {
+      color: #1a1105;
+      background: var(--leaf);
+    }
+
+    .kicker {
+      margin: 0 0 0.8rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--leaf);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 6vw, 3.75rem);
+      line-height: 1.04;
+      letter-spacing: -0.02em;
+      max-width: 18ch;
+    }
+
+    .lede {
+      margin: 1.2rem 0 0;
+      max-width: 64ch;
+      font-size: clamp(1rem, 1.6vw, 1.16rem);
+      color: #d8cfc0;
+    }
+
+    .facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin: 1.8rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .facts li {
+      padding: 0.4rem 0.85rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    /* ---------- nav ---------- */
+    nav.toc {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(11, 9, 6, 0.93);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    nav.toc ul {
+      display: flex;
+      gap: 0.35rem;
+      margin: 0;
+      padding: 0.5rem 0;
+      list-style: none;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    nav.toc a {
+      display: block;
+      padding: 0.32rem 0.65rem;
+      white-space: nowrap;
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid transparent;
+      border-radius: 999px;
+    }
+
+    nav.toc a:hover,
+    nav.toc a:focus-visible {
+      color: var(--leaf);
+      border-color: var(--line-strong);
+    }
+
+    /* ---------- sections ---------- */
+    main {
+      padding-bottom: 5rem;
+    }
+
+    section {
+      padding: clamp(2.2rem, 5.5vw, 3.6rem) 0 0.5rem;
+    }
+
+    section > h2 {
+      margin: 0 0 0.4rem;
+      font-size: clamp(1.5rem, 3.2vw, 2.05rem);
+      letter-spacing: -0.01em;
+    }
+
+    section > h2 .num {
+      display: inline-block;
+      margin-right: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      color: var(--leaf);
+      vertical-align: 0.55em;
+    }
+
+    .sub {
+      margin: 0 0 1.6rem;
+      max-width: 70ch;
+      color: var(--muted);
+    }
+
+    h3 {
+      margin: 1.8rem 0 0.5rem;
+      font-size: 1.08rem;
+      letter-spacing: 0.01em;
+    }
+
+    h4 {
+      margin: 1.2rem 0 0.35rem;
+      font-size: 0.96rem;
+    }
+
+    p {
+      max-width: 72ch;
+    }
+
+    /* ---------- components ---------- */
+    .grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .card {
+      padding: 1.1rem 1.15rem;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .card h3,
+    .card h4 {
+      margin: 0 0 0.45rem;
+      font-size: 0.98rem;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 0.94rem;
+      color: #d3c9ba;
+    }
+
+    .card .tag {
+      display: inline-block;
+      margin-bottom: 0.55rem;
+      padding: 0.15rem 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--water);
+      border: 1px solid rgba(127, 209, 185, 0.35);
+      border-radius: 999px;
+    }
+
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .steps li {
+      counter-increment: step;
+      position: relative;
+      padding: 1rem 1.1rem 1rem 3.4rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .steps li::before {
+      content: counter(step, decimal-leading-zero);
+      position: absolute;
+      left: 1rem;
+      top: 1rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      color: var(--leaf);
+    }
+
+    .steps h3 {
+      margin: 0 0 0.3rem;
+      font-size: 1rem;
+    }
+
+    .steps p {
+      margin: 0;
+      font-size: 0.94rem;
+      color: #d3c9ba;
+    }
+
+    .steps .warn {
+      display: block;
+      margin-top: 0.5rem;
+      padding-left: 0.75rem;
+      border-left: 2px solid var(--warm);
+      font-size: 0.88rem;
+      color: #e3c7b3;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      min-width: 640px;
+    }
+
+    caption {
+      padding: 0.8rem 1rem 0;
+      text-align: left;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    th,
+    td {
+      padding: 0.6rem 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(127, 224, 168, 0.1);
+      vertical-align: top;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #1b1610;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    tbody tr:hover {
+      background: rgba(127, 224, 168, 0.05);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    td.num,
+    th.num {
+      font-family: var(--mono);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* ---------- tools ---------- */
+    .tool {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      padding: 1.2rem;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+    }
+
+    @media (max-width: 760px) {
+      .tool {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tool .fields {
+      display: grid;
+      gap: 0.7rem;
+    }
+
+    label {
+      display: grid;
+      gap: 0.3rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 0.95rem;
+      letter-spacing: normal;
+      text-transform: none;
+      background: rgba(9, 7, 4, 0.78);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      outline: none;
+    }
+
+    select:focus-visible,
+    input:focus-visible,
+    button:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--water);
+      outline-offset: 2px;
+    }
+
+    .readout {
+      display: grid;
+      gap: 0.55rem;
+      align-content: start;
+      padding: 0.9rem 1rem;
+      background: rgba(9, 7, 4, 0.55);
+      border: 1px solid var(--line);
+      border-radius: 11px;
+    }
+
+    .readout dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.35rem 0.9rem;
+      margin: 0;
+      font-size: 0.92rem;
+    }
+
+    .readout dt {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      align-self: center;
+    }
+
+    .readout dd {
+      margin: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .verdict {
+      margin: 0;
+      padding: 0.55rem 0.7rem;
+      font-size: 0.9rem;
+      border-radius: 9px;
+      border: 1px solid var(--line);
+      color: #d3c9ba;
+    }
+
+    .verdict[data-state="ok"] {
+      border-color: rgba(127, 224, 168, 0.5);
+      color: var(--leaf);
+      background: rgba(127, 224, 168, 0.08);
+    }
+
+    .verdict[data-state="warn"] {
+      border-color: rgba(224, 122, 95, 0.5);
+      color: var(--warm);
+      background: rgba(224, 122, 95, 0.08);
+    }
+
+    .verdict[data-state="bad"] {
+      border-color: rgba(239, 125, 125, 0.5);
+      color: var(--danger);
+      background: rgba(239, 125, 125, 0.08);
+    }
+
+    /* ---------- manual components ---------- */
+    .reading-paths {
+      display: grid;
+      gap: 0.8rem;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      margin: 1.5rem 0 0;
+    }
+
+    .path {
+      display: block;
+      padding: 0.95rem 1.05rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 140ms ease, transform 140ms ease;
+    }
+
+    .path:hover {
+      border-color: var(--line-strong);
+      transform: translateY(-2px);
+      color: inherit;
+    }
+
+    .path strong {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.95rem;
+      color: var(--leaf);
+    }
+
+    .path span {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .ledger {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      margin: 1.3rem 0 0;
+    }
+
+    .ledger .col {
+      padding: 1rem 1.1rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .ledger h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .ledger ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      font-size: 0.92rem;
+      color: #d3c9ba;
+    }
+
+    .ledger li {
+      margin-bottom: 0.35rem;
+    }
+
+    .recipe {
+      padding: 1.1rem 1.2rem;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .recipe h3 {
+      margin: 0 0 0.35rem;
+      font-size: 1.02rem;
+    }
+
+    .recipe .meta {
+      margin-bottom: 0.6rem;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--water);
+    }
+
+    .recipe ul,
+    .recipe ol {
+      margin: 0.4rem 0 0;
+      padding-left: 1.15rem;
+      font-size: 0.9rem;
+      color: #d3c9ba;
+    }
+
+    .recipe li {
+      margin-bottom: 0.3rem;
+    }
+
+    .recipe .limit {
+      display: block;
+      margin-top: 0.7rem;
+      padding-left: 0.75rem;
+      border-left: 2px solid var(--warm);
+      font-size: 0.86rem;
+      color: #e3c7b3;
+    }
+
+    .danger {
+      margin: 1.3rem 0;
+      padding: 0.95rem 1.1rem;
+      font-size: 0.93rem;
+      color: #ecd2d2;
+      background: rgba(239, 125, 125, 0.07);
+      border-left: 3px solid var(--danger);
+      border-radius: 0 10px 10px 0;
+    }
+
+    .danger strong {
+      color: var(--danger);
+    }
+
+    .fig {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: rgba(9, 7, 4, 0.5);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .fig svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: 660px;
+      margin: 0 auto;
+    }
+
+    .fig figcaption {
+      margin-top: 0.7rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .glossary {
+      display: grid;
+      gap: 0.5rem;
+      margin: 0;
+      padding: 0;
+    }
+
+    .glossary div {
+      padding: 0.6rem 0.85rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .glossary dt {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--leaf);
+    }
+
+    .glossary dd {
+      margin: 0.2rem 0 0;
+      font-size: 0.9rem;
+      color: #d3c9ba;
+    }
+
+    .sources {
+      display: grid;
+      gap: 0.6rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .sources li {
+      padding: 0.75rem 0.9rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .sources a {
+      font-weight: 600;
+    }
+
+    .sources span {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0.8rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .pill-list li {
+      padding: 0.25rem 0.6rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-left: 0.45rem;
+      padding: 0 0.4rem;
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: 999px;
+    }
+
+    .badge.ok {
+      color: var(--leaf);
+      border: 1px solid rgba(127, 224, 168, 0.4);
+    }
+
+    .badge.warn {
+      color: var(--warm);
+      border: 1px solid rgba(224, 122, 95, 0.4);
+    }
+
+    .badge.bad {
+      color: var(--danger);
+      border: 1px solid rgba(239, 125, 125, 0.4);
+    }
+
+    /* ---------- misc ---------- */
+    .note {
+      margin: 1.2rem 0;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.93rem;
+      color: #d3c9ba;
+      background: rgba(127, 209, 185, 0.06);
+      border-left: 3px solid var(--water);
+      border-radius: 0 10px 10px 0;
+    }
+
+    .note strong {
+      color: var(--ink);
+    }
+
+    .two {
+      display: grid;
+      gap: 1.2rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    ul.clean {
+      margin: 0.4rem 0 0;
+      padding-left: 1.1rem;
+      color: #d3c9ba;
+      font-size: 0.94rem;
+    }
+
+    ul.clean li {
+      margin-bottom: 0.35rem;
+    }
+
+    footer {
+      padding: 2.5rem 0 3.5rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: var(--ink);
+    }
+
+    .cross {
+      margin: 1rem 0 0;
+      max-width: 62ch;
+      color: var(--muted);
+    }
+
+    .cross a {
+      color: var(--leaf);
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.8rem;
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--leaf);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .path:hover { transform: none; }
+    }
+  
+    /* ---------- shell manual additions ---------- */
+    pre {
+      margin: 0.8rem 0;
+      padding: 0.85rem 1rem;
+      overflow-x: auto;
+      background: #05090a;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--leaf-deep);
+      border-radius: 10px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.55;
+      color: #d7f5e2;
+      tab-size: 2;
+    }
+
+    pre .c { color: #6f8c80; }
+    pre .p { color: var(--leaf); }
+    pre .bad { color: var(--danger); }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.86em;
+      padding: 0.1em 0.35em;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: rgba(127, 224, 168, 0.06);
+      color: #c8f0d9;
+    }
+
+    .tool-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1rem;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 0.9rem;
+    }
+
+    .tool-head h3 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0.7rem 0 1rem;
+    }
+
+    .chip {
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.36rem 0.66rem;
+      border-radius: 999px;
+      border: 1px solid var(--line-strong);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .chip[aria-pressed="true"] {
+      background: rgba(127, 224, 168, 0.14);
+      border-color: var(--leaf);
+      color: var(--leaf);
+    }
+
+    .search {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border-radius: 9px;
+      border: 1px solid var(--line-strong);
+      background: #05090a;
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+    }
+
+    .search:focus,
+    select:focus,
+    input:focus {
+      outline: 2px solid rgba(127, 224, 168, 0.35);
+      outline-offset: 1px;
+    }
+
+    .apps-table th,
+    .apps-table td {
+      vertical-align: top;
+    }
+
+    .apps-table td.cmd cell,
+    .apps-table code {
+      white-space: nowrap;
+    }
+
+    .family-tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.18rem 0.42rem;
+      border-radius: 999px;
+      border: 1px solid var(--line-strong);
+      color: var(--water);
+    }
+
+    .empty {
+      padding: 1rem 0;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+
+    .cmd-block {
+      position: relative;
+      margin-top: 0.7rem;
+    }
+
+    .cmd-block button {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.55rem;
+      border-radius: 6px;
+      border: 1px solid var(--line-strong);
+      background: rgba(6, 9, 10, 0.9);
+      color: var(--leaf);
+      cursor: pointer;
+    }
+
+    .cmd-block button:hover {
+      background: rgba(127, 224, 168, 0.12);
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: minmax(120px, 34%) 1fr;
+      gap: 0.35rem 1rem;
+      margin: 0.7rem 0 0;
+      font-size: 0.92rem;
+    }
+
+    .kv dt {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding-top: 0.15rem;
+    }
+
+    .kv dd {
+      margin: 0;
+    }
+
+    .scroll {
+      overflow-x: auto;
+    }
+
+    @media (max-width: 720px) {
+      .kv {
+        grid-template-columns: 1fr;
+      }
+      pre {
+        font-size: 0.72rem;
+      }
+    }
+</style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <div class="topbar">
+        <a class="mark" href="index.html">Monkey Blog · The Shell, Extended</a>
+        <div class="topbar-tools">
+          <a class="home-link" href="index.html"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" focusable="false"><path d="M8 1.5 1.5 7h1.8v6.5h3.4V9.8h2.6v3.7h3.4V7h1.8L8 1.5Z" fill="currentColor"/></svg><span data-i18n="nav.home">Home</span></a>
+          <div class="lang-switch" role="group" aria-label="Language / Idioma">
+            <button type="button" data-lang="en" aria-pressed="true" lang="en">EN</button>
+            <button type="button" data-lang="pt" aria-pressed="false" lang="pt">PT</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="kicker" data-i18n="hero.kicker">Terminal tools · a manual in nineteen parts</p>
+      <h1 data-i18n="hero.title">The Shell, Extended</h1>
+      <p class="lede" data-i18n="hero.lede">
+        Python's best software does not live in an app store. It lives in a terminal, in a
+        repository with a README, behind one command that installs it. This manual is about that
+        command: how to build a virtual environment, how to keep it out of the system, and thirty
+        real GitHub projects worth the trouble — from posting to Mastodon to OCR on a scanned
+        contract.
+      </p>
+      <ul class="facts">
+        <li data-i18n="hero.f1">Nineteen parts</li>
+        <li data-i18n="hero.f2">Thirty apps</li>
+        <li data-i18n="hero.f3">venv · pipx · uv</li>
+        <li data-i18n="hero.f4">Install builder</li>
+        <li data-i18n="hero.f5">Ten errors, solved</li>
+        <li data-i18n="hero.f6">Every repo linked</li>
+      </ul>
+
+      <div class="reading-paths">
+        <a class="path" href="#venv">
+          <strong data-i18n="path.a.h">I have never made a venv</strong>
+          <span data-i18n="path.a.p">Part 02: seven commands, one afternoon, and nothing else on your machine changes.</span>
+        </a>
+        <a class="path" href="#builder">
+          <strong data-i18n="path.b.h">Show me the tools first</strong>
+          <span data-i18n="path.b.p">Part 06: every tool with its package, version, home page and one-line purpose, plus the command for your machine.</span>
+        </a>
+        <a class="path" href="#pipx">
+          <strong data-i18n="path.c.h">Just give me the command</strong>
+          <span data-i18n="path.c.p">Part 03: one isolated environment per app, and no dependency conflicts.</span>
+        </a>
+        <a class="path" href="#errors">
+          <strong data-i18n="path.d.h">An install just failed</strong>
+          <span data-i18n="path.d.p">Part 16: the ten messages that stop people, and the fix for each one.</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Sections">
+    <div class="wrap">
+      <ul>
+        <li><a href="#rule" data-i18n="nav.rule">The rule</a></li>
+        <li><a href="#venv" data-i18n="nav.venv">venv</a></li>
+        <li><a href="#pipx" data-i18n="nav.pipx">pipx</a></li>
+        <li><a href="#uv" data-i18n="nav.uv">uv</a></li>
+        <li><a href="#path" data-i18n="nav.path">PATH</a></li>
+        <li><a href="#builder" data-i18n="nav.builder">Builder</a></li>
+        <li><a href="#social" data-i18n="nav.social">Social</a></li>
+        <li><a href="#media" data-i18n="nav.media">Media</a></li>
+        <li><a href="#machine" data-i18n="nav.machine">Machine</a></li>
+        <li><a href="#data" data-i18n="nav.data">Data</a></li>
+        <li><a href="#docs" data-i18n="nav.docs">Documents</a></li>
+        <li><a href="#terminal" data-i18n="nav.terminal">Terminal</a></li>
+        <li><a href="#library" data-i18n="nav.library">Library</a></li>
+        <li><a href="#servers" data-i18n="nav.servers">Servers</a></li>
+        <li><a href="#maintain" data-i18n="nav.maintain">Upkeep</a></li>
+        <li><a href="#errors" data-i18n="nav.errors">Errors</a></li>
+        <li><a href="#decide" data-i18n="nav.decide">Which one</a></li>
+        <li><a href="#sources" data-i18n="nav.sources">Sources</a></li>
+        <li><a href="#glossary" data-i18n="nav.glossary">Glossary</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section id="rule">
+      <h2><span class="num">01</span><span data-i18n="s1.title">Never install into the system Python</span></h2>
+      <p class="sub" data-i18n="s1.sub">
+        Almost every broken Python install starts with one of two sentences: "it worked on my
+        machine" and "I ran it with sudo". Both are the same mistake — installing a project's
+        dependencies into the one interpreter your operating system uses to run itself. There is a
+        rule that removes the whole class of problem, and it fits in three lines.
+      </p>
+
+      <ol class="steps">
+        <li>
+          <h3 data-i18n="s1.r1.h">One: the system Python belongs to the system</h3>
+          <p data-i18n="s1.r1.p">Debian, Ubuntu, Fedora, macOS and Arch all ship Python because parts of the operating system are written in it. Installing packages into it means two projects can demand two versions of the same library, and the loser is usually your desktop. Modern distributions now refuse: pip exits with <code>error: externally-managed-environment</code>, which is not a bug, it is a locked door with a reason.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s1.r2.h">Two: a project gets a venv, an app gets pipx</h3>
+          <p data-i18n="s1.r2.p">If you will <code>import</code> the thing from your own code, it belongs in a virtual environment inside the project folder. If you will only type its name at the prompt, it belongs in pipx (or uv), which gives the app its own private venv and puts a single launcher on your PATH. Nothing else on the machine sees it.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s1.r3.h">Three: no sudo, ever, for pip</h3>
+          <p data-i18n="s1.r3.p">The single exception is your distribution's package manager — <code>apt install python3-venv</code>, <code>dnf install python3-pip</code> — which installs the tooling, never a project's dependencies. If a README tells you to <code>sudo pip install</code>, the README is old; use the project's pyproject or the PyPI name with pipx.</p>
+        </li>
+      </ol>
+
+      <div class="note">
+        <strong data-i18n="s1.note.h">What that error actually says</strong>
+        <p data-i18n="s1.note.p">PEP 668 lets a distribution mark its interpreter as externally managed, with an <code>EXTERNALLY-MANAGED</code> marker file next to the standard library. pip reads it and stops. You can override it with <code>--break-system-packages</code>; you should not, and no command in this manual needs it. The escape hatch is a venv, which is one command away.</p>
+      </div>
+
+      <h3 data-i18n="s1.which.h">Three tools, three jobs</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.tool">Tool</th>
+              <th data-i18n="t.job">What it is for</th>
+              <th data-i18n="t.when">Use it when</th>
+              <th data-i18n="t.cost">What it costs</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>venv</code></th>
+              <td data-i18n="s1.v1.a">A folder with its own Python, its own <code>pip</code> and its own site-packages. Built into Python since 3.3.</td>
+              <td data-i18n="s1.v1.b">You are writing code that imports the library, or you need an exact pinned set of versions for one project.</td>
+              <td data-i18n="s1.v1.c">20–200 MB per environment, and one activation command per terminal.</td>
+            </tr>
+            <tr>
+              <th><code>pipx</code></th>
+              <td data-i18n="s1.v2.a">A manager of isolated environments, one per command-line app, with a launcher symlinked into <code>~/.local/bin</code>.</td>
+              <td data-i18n="s1.v2.b">The package provides a command you run (yt-dlp, toot, csvkit) and you never import it.</td>
+              <td data-i18n="s1.v2.c">A few MB per app; the disk cost is the price of never having a dependency conflict again.</td>
+            </tr>
+            <tr>
+              <th><code>uv</code></th>
+              <td data-i18n="s1.v3.a">A single fast binary that does venvs, pip installs, Python version downloads and tool installs — the same jobs, in seconds.</td>
+              <td data-i18n="s1.v3.b">You install tools often, or you are tired of waiting for a resolver. <code>uvx</code> also runs an app without installing it at all.</td>
+              <td data-i18n="s1.v3.c">One more binary to trust and to update; it is written in Rust, not Python.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 data-i18n="s1.quick.h">The whole idea, on one screen</h3>
+      <p data-i18n="s1.quick.p">One environment per app, no activation needed, and the command is addressed by its full path. This is the pattern the rest of the manual refines; everything else is convenience built on top of it.</p>
+      <pre>python3 -m venv ~/.venvs/media
+~/.venvs/media/bin/pip install --upgrade pip
+~/.venvs/media/bin/pip install yt-dlp
+~/.venvs/media/bin/yt-dlp --version</pre>
+      <p class="sub" data-i18n="s1.quick.after">Nothing was installed system-wide, nothing needs sudo, and deleting <code>~/.venvs/media</code> removes every trace. The three drawbacks are that the path is long, that each app needs its own folder, and that you have to remember which folder holds what — which is exactly what pipx removes.</p>
+    </section>
+
+    <section id="venv">
+      <h2><span class="num">02</span><span data-i18n="s2.title">The virtual environment, from zero</span></h2>
+      <p class="sub" data-i18n="s2.sub">
+        A venv is not a virtual machine and it is not magic: it is a directory containing a
+        symlink to your Python, a copy of the launcher scripts, and a <code>site-packages</code>
+        folder that pip writes into. Activating it changes one environment variable,
+        <code>PATH</code>, so that <code>python</code> means this folder instead of the system one.
+        That is the entire mechanism.
+      </p>
+
+      <h3 data-i18n="s2.steps.h">Seven commands, in order</h3>
+      <ol class="steps">
+        <li>
+          <h3 data-i18n="s2.r1.h">Check what you have</h3>
+          <p data-i18n="s2.r1.p"><code>python3 --version</code> should print 3.11 or newer for most of the apps in this manual (mitmproxy, for one, wants 3.12 — each project states its floor on PyPI). If the version is older than a project needs, install a newer interpreter next to the old one rather than replacing the system's.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s2.r2.h">Install the venv module, if your distribution split it out</h3>
+          <p data-i18n="s2.r2.p">Debian and Ubuntu ship Python without <code>ensurepip</code>, which makes <code>python3 -m venv</code> fail with "ensurepip is not available". One package fixes it permanently: <code>sudo apt install python3-venv</code>. Fedora and Arch already include it; macOS from python.org includes it; Homebrew's Python does too.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s2.r3.h">Create it inside the project</h3>
+          <p data-i18n="s2.r3.p">Name it <code>.venv</code> and put it in the project root — editors, linters and every tutorial already look there. The folder is disposable: no data lives in it, only symlinks and wheels.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s2.r4.h">Activate it</h3>
+          <p data-i18n="s2.r4.p">Activation is a convenience, not a requirement. It exists so that typing <code>python</code> and <code>pip</code> does the right thing; the environment works identically if you call <code>.venv/bin/python</code> directly, which is what cron jobs and scripts should do.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s2.r5.h">Install with pip, then freeze</h3>
+          <p data-i18n="s2.r5.p">Install what you need, confirm it imports, then write the exact versions to a file. <code>pip freeze</code> records everything including transitive dependencies; a hand-written <code>requirements.txt</code> records only your intent. For applications, freeze. For libraries, pin the direct dependencies and let the resolver work.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s2.r6.h">Leave, and come back later</h3>
+          <p data-i18n="s2.r6.p"><code>deactivate</code> restores the old PATH. Next session, activate again, or skip activation and use the full path. On a server, always skip it: a script that depends on an activated shell breaks the first time it runs from cron.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s2.r7.h">Delete it when it rots</h3>
+          <p data-i18n="s2.r7.p">When upgrades go wrong, the fastest fix is <code>rm -rf .venv</code> and create it again from <code>requirements.txt</code>. Ten seconds, no residue. This is the habit that makes the rest of this manual safe: environments are cheap, so never repair one for an hour.</p>
+        </li>
+      </ol>
+
+      <h3 data-i18n="s2.os.h">The same three commands on each system</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.system">System</th>
+              <th data-i18n="t.create">Create</th>
+              <th data-i18n="t.activate">Activate</th>
+              <th data-i18n="t.deactivate">Leave</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Linux / macOS (bash, zsh)</th>
+              <td><code>python3 -m venv .venv</code></td>
+              <td><code>source .venv/bin/activate</code></td>
+              <td><code>deactivate</code></td>
+            </tr>
+            <tr>
+              <th>fish</th>
+              <td><code>python3 -m venv .venv</code></td>
+              <td><code>source .venv/bin/activate.fish</code></td>
+              <td><code>deactivate</code></td>
+            </tr>
+            <tr>
+              <th>Windows (PowerShell)</th>
+              <td><code>py -m venv .venv</code></td>
+              <td><code>.venv\Scripts\Activate.ps1</code></td>
+              <td><code>deactivate</code></td>
+            </tr>
+            <tr>
+              <th>Windows (cmd)</th>
+              <td><code>py -m venv .venv</code></td>
+              <td><code>.venv\Scripts\activate.bat</code></td>
+              <td><code>deactivate</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">
+        <strong data-i18n="s2.note.h">PowerShell blocks the activation script</strong>
+        <p data-i18n="s2.note.p">By default Windows refuses to run <code>Activate.ps1</code> because it is an unsigned script. The fix is per-user, not per-machine: <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code>. If you would rather not touch policy at all, call <code>.venv\Scripts\python.exe</code> directly and never activate.</p>
+      </div>
+
+      <h3 data-i18n="s2.session.h">A real session, with the output it should give</h3>
+      <pre>cd ~/projects/scrape
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install requests beautifulsoup4
+python -c "import requests, bs4; print(requests.__version__, bs4.__version__)"
+pip freeze &gt; requirements.txt
+deactivate</pre>
+      <p data-i18n="s2.session.after">From another machine, or after deleting the folder: <code>python3 -m venv .venv &amp;&amp; source .venv/bin/activate &amp;&amp; pip install -r requirements.txt</code>. That one line is the entire portability story of a Python project, and it is why <code>requirements.txt</code> is committed while <code>.venv</code> is not.</p>
+
+      <div class="two">
+        <div class="card">
+          <h3 data-i18n="s2.git.h">What goes into git</h3>
+          <p data-i18n="s2.git.p">Commit <code>requirements.txt</code> (or <code>pyproject.toml</code> with a lock file). Never commit <code>.venv</code>: it contains absolute paths, platform-specific binaries and tens of megabytes. One line in <code>.gitignore</code> — <code>.venv/</code> — prevents a hundred confusing clones.</p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="s2.bad.h">The two flags that cause trouble</h3>
+          <p data-i18n="s2.bad.p"><code>--system-site-packages</code> lets an environment see the system's packages, which quietly reintroduces the conflict you were escaping. <code>--without-pip</code> creates an environment with no installer; you then need <code>python -m ensurepip</code>. Neither is needed for anything in this manual.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="pipx">
+      <h2><span class="num">03</span><span data-i18n="s3.title">pipx: one command per app, no conflicts</span></h2>
+      <p class="sub" data-i18n="s3.sub">
+        pipx is the answer to a specific question: what if I want the command, not the library?
+        It creates a private venv for each app under <code>~/.local/pipx/venvs</code>, installs the
+        package there with the right interpreter, and symlinks only the launcher into
+        <code>~/.local/bin</code>. Two apps can then depend on two incompatible versions of the
+        same library and neither notices the other exists.
+      </p>
+
+      <h3 data-i18n="s3.start.h">Start here</h3>
+      <pre><span class="c"># Debian / Ubuntu</span>
+sudo apt install pipx
+<span class="c"># Fedora</span>
+sudo dnf install pipx
+<span class="c"># macOS (Homebrew)</span>
+brew install pipx
+<span class="c"># or, with any Python already installed</span>
+python3 -m pip install --user pipx
+
+pipx ensurepath
+<span class="c"># open a new terminal, then</span>
+pipx install toot
+toot --help</pre>
+      <p data-i18n="s3.start.after"><code>ensurepath</code> writes the PATH line in your shell's startup file. If the next shell still says <code>command not found</code>, the file was the wrong one — see part 05 — or the shell cached its command list and needs <code>hash -r</code>.</p>
+
+      <h3 data-i18n="s3.cmds.h">The eight pipx commands worth memorising</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.command">Command</th>
+              <th data-i18n="t.does">What it does</th>
+              <th data-i18n="t.why">Why you would type it</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th><code>pipx install NAME</code></th><td data-i18n="s3.c1.a">Creates a venv and links the launcher.</td><td data-i18n="s3.c1.b">The normal case. Add extras in quotes: <code>pipx install "qrcode[pil]"</code>.</td></tr>
+            <tr><th><code>pipx list</code></th><td data-i18n="s3.c2.a">Shows every app, its version and its command names.</td><td data-i18n="s3.c2.b">When you cannot remember whether you already installed something.</td></tr>
+            <tr><th><code>pipx upgrade NAME</code></th><td data-i18n="s3.c3.a">Upgrades that app only, in its own venv.</td><td data-i18n="s3.c3.b">yt-dlp and gallery-dl need this often: sites change weekly.</td></tr>
+            <tr><th><code>pipx upgrade-all</code></th><td data-i18n="s3.c4.a">Upgrades every app pipx manages.</td><td data-i18n="s3.c4.b">A monthly habit, not a daily one.</td></tr>
+            <tr><th><code>pipx uninstall NAME</code></th><td data-i18n="s3.c5.a">Removes the venv and the launcher.</td><td data-i18n="s3.c5.b">A clean removal with no leftovers in site-packages.</td></tr>
+            <tr><th><code>pipx inject NAME PKG</code></th><td data-i18n="s3.c6.a">Adds a library to that app's venv.</td><td data-i18n="s3.c6.b">For plugins and optional backends, without touching other apps.</td></tr>
+            <tr><th><code>pipx run NAME</code></th><td data-i18n="s3.c7.a">Runs the app in a temporary venv that is thrown away.</td><td data-i18n="s3.c7.b">Trying something once without committing to it.</td></tr>
+            <tr><th><code>pipx reinstall NAME --python 3.12</code></th><td data-i18n="s3.c8.a">Rebuilds that app's venv with another interpreter.</td><td data-i18n="s3.c8.b">When an app needs a newer (or older) Python than the default.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="two">
+        <div class="card">
+          <h3 data-i18n="s3.inject.h">The plugin pattern</h3>
+          <p data-i18n="s3.inject.p">A command with an ecosystem — beets, llm, mkdocs — usually wants a plugin. Install the app, then <code>pipx inject beets beets-fetchart</code>. The plugin lands in the same private venv, so it cannot break any other tool, and <code>pipx upgrade beets</code> leaves it alone.</p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="s3.pin.h">When an app must not move</h3>
+          <p data-i18n="s3.pin.p">pipx has no lock file by design: it is for tools you want current. If a version must be frozen — a publishing pipeline, a scraper with brittle selectors — use a venv with a pinned requirements file, or <code>uv tool install NAME==1.2.3</code>, and treat it as a project rather than a tool.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="uv">
+      <h2><span class="num">04</span><span data-i18n="s4.title">uv: the same jobs, in seconds</span></h2>
+      <p class="sub" data-i18n="s4.sub">
+        uv is a single binary from Astral that replaces the slow parts of the Python toolchain:
+        creating environments, resolving dependencies, downloading interpreters, installing
+        command-line tools. It is not a Python package (there is a pip-installable wheel, but the
+        supported install is the binary), and it is the one tool in this manual that is worth
+        learning for its own sake.
+      </p>
+
+      <pre><span class="c"># install the binary (Linux / macOS)</span>
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+<span class="c"># a tool, isolated, with its launcher on PATH</span>
+uv tool install yt-dlp
+uv tool list
+uv tool upgrade --all
+uv tool uninstall yt-dlp
+
+<span class="c"># run something once, without installing it</span>
+uvx csvlook data.csv
+
+<span class="c"># a project environment, pip-compatible</span>
+uv venv .venv
+uv pip install -r requirements.txt
+uv python install 3.12</pre>
+
+      <div class="note">
+        <strong data-i18n="s4.note.h">uvx is the feature that changes habits</strong>
+        <p data-i18n="s4.note.p"><code>uvx NAME</code> downloads the app into a cached environment, runs it with the arguments you gave, and leaves your PATH untouched. For a one-off conversion, a single <code>csvsql</code> query or a quick <code>gallery-dl</code> run, that is faster than deciding whether you want the tool permanently. The cache means the second run is instant.</p>
+      </div>
+
+      <h3 data-i18n="s4.pick.h">pipx or uv?</h3>
+      <p data-i18n="s4.pick.p">Both produce the same result: an isolated environment and a launcher in <code>~/.local/bin</code>. pipx is the conservative choice — it is packaged by every major distribution, its behaviour is stable, and it only manages tools. uv is faster and broader, and it will also manage your project environments and Python versions, which is either convenient or one dependency too many, depending on your taste. The manual uses pipx in its commands and notes the uv equivalent; nothing here needs both.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th data-i18n="t.task">Task</th><th>pipx</th><th>uv</th></tr>
+          </thead>
+          <tbody>
+            <tr><th data-i18n="s4.t1">Install a tool</th><td><code>pipx install X</code></td><td><code>uv tool install X</code></td></tr>
+            <tr><th data-i18n="s4.t2">Run once</th><td><code>pipx run X</code></td><td><code>uvx X</code></td></tr>
+            <tr><th data-i18n="s4.t3">Upgrade everything</th><td><code>pipx upgrade-all</code></td><td><code>uv tool upgrade --all</code></td></tr>
+            <tr><th data-i18n="s4.t4">Choose the interpreter</th><td><code>--python 3.12</code></td><td><code>--python 3.12</code></td></tr>
+            <tr><th data-i18n="s4.t5">Add a plugin</th><td><code>pipx inject X Y</code></td><td><code>uv tool install X --with Y</code></td></tr>
+            <tr><th data-i18n="s4.t6">Project environment</th><td data-i18n="s4.t6.a">not its job</td><td><code>uv venv</code>, <code>uv pip</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="path">
+      <h2><span class="num">05</span><span data-i18n="s5.title">PATH, and where things actually go</span></h2>
+      <p class="sub" data-i18n="s5.sub">
+        The most common failure in this manual is not a broken package. It is a correct install
+        whose command cannot be found, because the launcher was written to a directory your shell
+        does not search. Knowing the four directories removes the mystery.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th data-i18n="t.dir">Directory</th><th data-i18n="t.holds">What lives there</th><th data-i18n="t.touch">Should you touch it?</th></tr>
+          </thead>
+          <tbody>
+            <tr><th><code>~/.local/bin</code></th><td data-i18n="s5.d1.a">Launchers from pipx and uv, plus any <code>pip install --user</code> script.</td><td data-i18n="s5.d1.b">No — but it must be on PATH. This is the directory <code>ensurepath</code> adds.</td></tr>
+            <tr><th><code>~/.local/pipx/venvs/&lt;app&gt;</code></th><td data-i18n="s5.d2.a">The private environment of each pipx app, with its dependencies.</td><td data-i18n="s5.d2.b">Never by hand. pipx owns it; edit through <code>inject</code> or reinstall.</td></tr>
+            <tr><th><code>~/.venvs</code></th><td data-i18n="s5.d3.a">Environments that belong to no project — a scratch toolbox of your own.</td><td data-i18n="s5.d3.b">Yes, freely. It is just folders you invented; delete them when bored.</td></tr>
+            <tr><th><code>/usr/local/bin</code></th><td data-i18n="s5.d4.a">System-wide launchers, usually from your distribution or a make install.</td><td data-i18n="s5.d4.b">Only with sudo, and only for things the package manager did not provide.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 data-i18n="s5.add.h">Adding it once, per shell</h3>
+      <pre><span class="c"># bash — ~/.bashrc     zsh — ~/.zshrc</span>
+export PATH="$HOME/.local/bin:$PATH"
+
+<span class="c"># fish</span>
+fish_add_path ~/.local/bin
+
+<span class="c"># then, in the current shell</span>
+source ~/.bashrc
+command -v toot</pre>
+      <p data-i18n="s5.add.after">On Windows the equivalent is <code>setx PATH "%PATH%;%USERPROFILE%\AppData\Roaming\Python\Scripts"</code> in a fresh cmd, and a restart of the terminal. If <code>command -v</code> prints nothing but the file exists, the shell is using a cached list: <code>hash -r</code> in bash, <code>rehash</code> in zsh, or simply open a new window.</p>
+
+      <div class="note">
+        <strong data-i18n="s5.note.h">The check that settles it</strong>
+        <p data-i18n="s5.note.p"><code>ls ~/.local/bin | head</code> shows whether the launcher exists; <code>echo $PATH | tr ':' '\n' | grep local</code> shows whether the shell looks there. Those two commands answer "why is my command not found" in five seconds, and they are always the first thing to run before reading an error message twice.</p>
+      </div>
+    </section>
+
+    <section id="builder">
+      <h2><span class="num">06</span><span data-i18n="s6.title">Build the command for your machine</span></h2>
+      <p class="sub" data-i18n="s6.sub">
+        Three choices — the app, the method, the operating system — and the block below is what
+        you paste. It includes the system packages that app usually needs, because that is the
+        step the README assumes you already did, and above it the tool shows its package, version,
+        home page, family and one-line purpose.
+      </p>
+
+      <div class="tool" id="builder-tool">
+        <div class="tool-head">
+          <h3 data-i18n="s6.tool.h">Install builder</h3>
+          <span class="badge" data-i18n="s6.tool.badge">thirty apps</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s6.app">App</span>
+            <select id="b-app"></select>
+          </label>
+          <label class="field"><span data-i18n="s6.method">Method</span>
+            <select id="b-method">
+              <option value="pipx" data-i18n="s6.m.pipx">pipx (recommended)</option>
+              <option value="uv" data-i18n="s6.m.uv">uv (fastest)</option>
+              <option value="venv" data-i18n="s6.m.venv">venv (manual)</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s6.os">System</span>
+            <select id="b-os">
+              <option value="linux" data-i18n="s6.os.linux">Linux</option>
+              <option value="mac" data-i18n="s6.os.mac">macOS</option>
+              <option value="win" data-i18n="s6.os.win">Windows</option>
+            </select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s6.out.app">App</dt><dd id="b-name">—</dd>
+          <dt data-i18n="s6.out.pkg">Package</dt><dd id="b-pkg">—</dd>
+          <dt data-i18n="s6.out.cmd">Command</dt><dd id="b-cmd">—</dd>
+          <dt data-i18n="s6.out.deps">System packages</dt><dd id="b-deps">—</dd>
+          <dt data-i18n="s6.out.what">What it does</dt><dd id="b-what">—</dd>
+          <dt data-i18n="s6.out.home">Home</dt><dd id="b-home">—</dd>
+          <dt data-i18n="s6.out.family">Family</dt><dd id="b-family">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="b-copy" data-i18n="s6.copy">Copy</button>
+          <pre id="b-out">—</pre>
+        </div>
+        <p class="sub" id="b-note"></p>
+      </div>
+    </section>
+    <section id="social">
+      <h2><span class="num">07</span><span data-i18n="s8.title">Posting: Mastodon, APIs and the web, from the prompt</span></h2>
+      <p class="sub" data-i18n="s8.sub">
+        Two of the most useful tools in this manual do the thing a browser tab does, without the
+        tab: <strong>toot</strong> speaks the Mastodon API, and <strong>posting</strong> is a
+        terminal client for any HTTP API. Between them, publishing and testing an endpoint stop
+        being a reason to open a window.
+      </p>
+
+      <div class="card">
+        <h3>toot — <span data-i18n="s8.toot.h">a Mastodon client in the terminal</span></h3>
+        <p data-i18n="s8.toot.p">A Python CLI for Mastodon and compatible servers (Pleroma, GoToSocial, Akkoma). It authenticates with an app token stored in your config, so the password never appears in a command line. It posts, threads, uploads media, reads timelines and can run scheduled posts through cron.</p>
+        <pre>pipx install toot
+toot login                      <span class="c"># choose the instance, paste the code</span>
+toot post "first post from the shell"
+toot post "a thread" --visibility unlisted
+toot tui                        <span class="c"># a full terminal interface</span>
+toot timeline --local --num 20
+toot upload photo.jpg --description "a caption for screen readers"</pre>
+        <p data-i18n="s8.toot.after">The TUI is the part people miss: <code>toot tui</code> gives a keyboard-driven timeline with replies and boosts, useful on a server over SSH. For automation, <code>toot post</code> returns the new status URL, so a script can chain it.</p>
+      </div>
+
+      <div class="card">
+        <h3>posting — <span data-i18n="s8.post.h">an API client that lives in the terminal</span></h3>
+        <p data-i18n="s8.post.p">Postman, for people who live in a shell: requests stored as YAML files in a collection, environments with variables, syntax highlighting, and keyboard-only editing. It is the fastest way to exercise an endpoint you are building, and the collection is a text file you can commit.</p>
+        <pre>pipx install posting     <span class="c"># the PyPI package is Python; the repo now also ships a Go build</span>
+posting                  <span class="c"># opens the TUI, current folder as collection</span>
+posting --collection ~/api/requests
+posting request.posting.yaml --env dev</pre>
+        <p data-i18n="s8.post.after">A request file is a small YAML document — method, URL, headers, body — so it reviews in a diff and travels with the repository. The Python distribution on PyPI is what pipx installs; the project's README documents the newer standalone binary if you prefer that route.</p>
+      </div>
+
+      <div class="card">
+        <h3>HTTPie — <span data-i18n="s8.http.h">the readable curl</span></h3>
+        <p data-i18n="s8.http.p">curl is always there and always cryptic. HTTPie turns a request into something closer to a sentence: JSON is assumed, headers are coloured, and the response is formatted instead of concatenated. It is the tool to reach for when you are debugging an API by hand.</p>
+        <pre>pipx install httpie
+http GET https://api.github.com/repos/pypa/pipx
+http POST https://httpbin.org/post name=oscar tags:= '["shell","python"]'
+http --auth user:token GET https://api.example.com/me
+http --download https://example.com/file.tar.gz
+https example.com          <span class="c"># the same, over TLS, in three letters</span></pre>
+      </div>
+
+      <div class="note">
+        <strong data-i18n="s8.note.h">Tokens are files, not arguments</strong>
+        <p data-i18n="s8.note.p">A token typed after a command is stored in your shell history, and shell history is world-readable more often than people think. <code>toot login</code> keeps its token in <code>~/.config/toot/config.json</code>; for HTTPie, put the credential in a session (<code>--session=api</code>) or read it from an environment variable. If you have already leaked one, revoke it — do not edit the history and hope.</p>
+      </div>
+    </section>
+
+    <section id="media">
+      <h2><span class="num">08</span><span data-i18n="s9.title">Media: download, archive, convert</span></h2>
+      <p class="sub" data-i18n="s9.sub">
+        The most-installed command-line Python apps in the world are media downloaders, and for
+        good reason: they do one job better than any website, they are scriptable, and they keep
+        working after the site changes. All four here want <strong>ffmpeg</strong> installed by the
+        system, not by pip — that is the single most common reason a download "succeeds" and
+        produces no file.
+      </p>
+
+      <pre><span class="c"># the system dependency all four share</span>
+sudo apt install ffmpeg        <span class="c"># Debian / Ubuntu</span>
+sudo dnf install ffmpeg        <span class="c"># Fedora (RPM Fusion)</span>
+brew install ffmpeg            <span class="c"># macOS</span></pre>
+
+      <div class="card">
+        <h3>yt-dlp — <span data-i18n="s9.yt.h">the reference implementation of "download that"</span></h3>
+        <p data-i18n="s9.yt.p">A fork of youtube-dl that is updated weekly and supports well over a thousand sites. Formats, subtitles, chapters, playlists, archives that skip what you already have, and a config file for the options you always pass.</p>
+        <pre>pipx install yt-dlp
+yt-dlp "https://example.com/video"
+yt-dlp -f "bestvideo[height&lt;=1080]+bestaudio/best" URL
+yt-dlp -x --audio-format mp3 URL
+yt-dlp --write-subs --sub-langs "pt.*,en.*" URL
+yt-dlp --download-archive seen.txt URL     <span class="c"># a channel, once, cleanly</span></pre>
+        <p data-i18n="s9.yt.after">The <code>--download-archive</code> flag is the one that turns a downloader into a subscription: run it from cron, and each pass fetches only what is new. Keep the archive file with the media, not in <code>/tmp</code>.</p>
+      </div>
+
+      <div class="card">
+        <h3>gallery-dl — <span data-i18n="s9.gal.h">image galleries, not videos</span></h3>
+        <p data-i18n="s9.gal.p">The companion tool for the sites yt-dlp does not cover: image boards, artist pages, manga readers, photo feeds. It preserves the post metadata as JSON next to the files, which makes an archive searchable years later.</p>
+        <pre>pipx install gallery-dl
+gallery-dl "https://example.com/artist"
+gallery-dl --range 1-50 "https://example.com/gallery"
+gallery-dl -g URL                <span class="c"># print the URLs instead of downloading</span>
+gallery-dl --write-metadata URL  <span class="c"># JSON sidecars</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>streamlink — <span data-i18n="s9.sl.h">live streams into a player</span></h3>
+        <p data-i18n="s9.sl.p">Takes a page URL that is playing a stream and hands the stream itself to mpv or VLC, at a quality you choose. No browser, no ads, no compositor. It also records, which is the difference between "I watched it" and "I have it".</p>
+        <pre>pipx install streamlink
+streamlink URL best              <span class="c"># default player</span>
+streamlink --player mpv URL 720p
+streamlink --output stream.ts URL best</pre>
+      </div>
+
+      <div class="card">
+        <h3>spotdl — <span data-i18n="s9.spot.h">playlists to files</span></h3>
+        <p data-i18n="s9.spot.p">Reads a Spotify playlist or track, finds a matching audio source, and writes tagged files with cover art. Treat it as a tool for material you already have the right to keep: it matches audio from public sources, and what it writes is your responsibility, not the tool's.</p>
+        <pre>pipx install spotdl
+spotdl "https://open.spotify.com/playlist/..."
+spotdl URL --output "{artist}/{album}/{title}.{output-ext}"</pre>
+      </div>
+
+      <div class="danger">
+        <strong data-i18n="s9.warn.h">The legal line, in one paragraph</strong>
+        <p data-i18n="s9.warn.p">Downloading is not the same as owning. Copyright applies to the file, the site's terms apply to the access, and neither is suspended because the tool is open source. Keep what you have the right to keep, archive your own uploads, use the tools for research and accessibility where the law allows it, and do not build a business on redistributing other people's work. The four projects above document their limits; read them once.</p>
+      </div>
+    </section>
+
+    <section id="machine">
+      <h2><span class="num">09</span><span data-i18n="s10.title">Watching the machine: CPU, GPU, and why it is slow</span></h2>
+      <p class="sub" data-i18n="s10.sub">
+        Three tools, three questions. What is the whole machine doing right now? Is the GPU the
+        bottleneck? And which line of my Python is spending the time? None of them needs root, and
+        all three produce output you can paste into a bug report.
+      </p>
+
+      <div class="card">
+        <h3>Glances — <span data-i18n="s10.gl.h">the whole machine, on one screen</span></h3>
+        <p data-i18n="s10.gl.p">CPU, memory, disks, network, sensors, containers and the top processes, in a layout that fits an 80-column terminal and refreshes itself. The same process can serve that view over HTTP, which makes it a monitoring dashboard for a headless box with no agent to install.</p>
+        <pre>pipx install glances
+glances                          <span class="c"># interactive</span>
+glances -w                       <span class="c"># web mode: open http://localhost:61208</span>
+glances -t 2                     <span class="c"># refresh every two seconds</span>
+glances --export csv --export-csv-file load.csv</pre>
+      </div>
+
+      <div class="card">
+        <h3>Nvitop — <span data-i18n="s10.nv.h">the GPU answer</span></h3>
+        <p data-i18n="s10.nv.p">An NVIDIA GPU monitor that shows per-process memory, utilisation and temperature, with the tree of processes that own each card — the thing <code>nvidia-smi</code> almost does. It installs as a Python app but talks to the driver directly; no CUDA toolkit is required, only a working driver.</p>
+        <pre>pipx install nvitop
+nvitop                           <span class="c"># full monitor</span>
+nvitop -m                        <span class="c"># compact, one line per GPU</span>
+nvitop --once                    <span class="c"># print and exit, for scripts</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>pyinstrument — <span data-i18n="s10.py.h">a profiler you can read</span></h3>
+        <p data-i18n="s10.py.p">Statistical profiler with a human-first report: it shows the call stack as a tree of time, not a wall of numbers. Run it on a script, or attach it to a running process, and export an HTML file you can open later.</p>
+        <pre>pipx install pyinstrument
+pyinstrument script.py
+pyinstrument -r html -o profile.html script.py
+pyinstrument -m mypackage.cli</pre>
+        <p data-i18n="s10.py.after">For a web request that feels slow, the useful pattern is to wrap the handler rather than the server: profile the function, not the framework. And profile twice — a single run is an anecdote, two runs with the same shape are a measurement.</p>
+      </div>
+    </section>
+    <section id="data">
+      <h2><span class="num">10</span><span data-i18n="s11.title">Data: SQLite, CSV, JSON, Postgres</span></h2>
+      <p class="sub" data-i18n="s11.sub">
+        Most "data work" is not a notebook. It is a file with rows, a question about those rows,
+        and a shell where the file already is. These five tools answer the question without opening
+        an editor: <strong>datasette</strong> publishes a database as a browsable site,
+        <strong>sqlite-utils</strong> builds and edits it, <strong>csvkit</strong> slices text
+        files, <strong>jc</strong> converts any command's output to JSON, and
+        <strong>pgcli</strong> gives Postgres autocomplete.
+      </p>
+
+      <div class="card">
+        <h3>Datasette — <span data-i18n="s11.ds.h">a database with a URL</span></h3>
+        <p data-i18n="s11.ds.p">Point it at a SQLite file and it serves a browsable, filterable, facetable interface with a JSON API on every table. It is the fastest way to let someone else look at your data without sending them the file, and it needs no server configuration at all.</p>
+        <pre>pipx install datasette
+datasette mydata.db                    <span class="c"># http://127.0.0.1:8001</span>
+datasette mydata.db -m metadata.json --port 8080
+datasette mydata.db --cors --setting sql_time_limit_ms 5000</pre>
+        <p data-i18n="s11.ds.after">Every table also answers as JSON: append <code>.json</code> to the URL. That single feature replaces a small API project more often than people expect.</p>
+      </div>
+
+      <div class="card">
+        <h3>sqlite-utils — <span data-i18n="s11.su.h">the database, from the command line</span></h3>
+        <p data-i18n="s11.su.p">Inserts CSV and JSON into SQLite, creates tables from the data's shape, runs queries, alters schemas and converts columns — the operations you would otherwise write twelve lines of Python for, every time.</p>
+        <pre>pipx install sqlite-utils
+sqlite-utils insert data.db readings readings.csv --csv --detect-types
+sqlite-utils schema data.db
+sqlite-utils query data.db "select month, avg(value) from readings group by 1"
+sqlite-utils convert data.db readings value 'float(value.strip())'</pre>
+      </div>
+
+      <div class="card">
+        <h3>csvkit — <span data-i18n="s11.ck.h">fourteen commands, one idea</span></h3>
+        <p data-i18n="s11.ck.p">Each utility does one transformation and writes CSV to stdout, so they compose in a pipe: cut columns, filter rows, sort, join, describe, then query the result with SQL. It also reads XLSX, which makes it the bridge between a spreadsheet and everything else.</p>
+        <pre>pipx install csvkit
+csvlook sales.csv
+csvcut -c 1,3,7 sales.csv | csvsort -c 3 -r | head
+csvgrep -c country -m "PT" sales.csv
+in2csv report.xlsx &gt; report.csv
+csvsql --query "select country, sum(total) from sales group by 1" sales.csv</pre>
+      </div>
+
+      <div class="card">
+        <h3>jc — <span data-i18n="s11.jc.h">JSON from any command</span></h3>
+        <p data-i18n="s11.jc.p">Takes the text output of a hundred familiar commands — <code>ls</code>, <code>ps</code>, <code>df</code>, <code>ip</code>, <code>dig</code>, <code>systemctl</code> — and returns structured JSON, so the next step can be <code>jq</code> instead of <code>awk</code>. It also parses the formats that have no parser: ini, csv, yaml, syslog, crontab.</p>
+        <pre>pipx install jc
+ls -l | jc --ls -p | jq '.[] | select(.size &gt; 1000000) | .filename'
+df -h | jc --df -p
+cat /etc/hosts | jc --hosts -p</pre>
+      </div>
+
+      <div class="card">
+        <h3>pgcli — <span data-i18n="s11.pg.h">Postgres with autocomplete</span></h3>
+        <p data-i18n="s11.pg.p">A Postgres client that knows your schema: table and column names complete as you type, syntax is coloured, and the results page themselves. The same family includes <code>mycli</code> for MySQL and <code>litecli</code> for SQLite, from the same maintainers.</p>
+        <pre>pipx install pgcli
+pgcli postgresql://user@localhost:5432/mydb
+<span class="c"># inside the prompt</span>
+\d                     <span class="c"># tables, views, sequences</span>
+\d+ users              <span class="c"># columns, indexes, constraints</span>
+\dp                    <span class="c"># permissions</span></pre>
+      </div>
+    </section>
+
+    <section id="docs">
+      <h2><span class="num">11</span><span data-i18n="s12.title">Documents: scan, print, label</span></h2>
+      <p class="sub" data-i18n="s12.sub">
+        Three small tools with the same shape: input on the left, a file on the right, no
+        application window. OCR turns a scan into text, WeasyPrint turns HTML and CSS into a print
+        PDF, and qrcode turns a string into something a phone can read.
+      </p>
+
+      <div class="card">
+        <h3>OCRmyPDF — <span data-i18n="s12.oc.h">a scanned PDF that can be searched</span></h3>
+        <p data-i18n="s12.oc.p">Adds a text layer to an image-only PDF, keeping the original scan underneath: it looks identical, and Ctrl+F works. It is the difference between an archive and a pile of pictures of documents. Tesseract and Ghostscript are system packages, not pip packages.</p>
+        <pre>sudo apt install tesseract-ocr tesseract-ocr-por ghostscript
+pipx install ocrmypdf
+ocrmypdf scan.pdf searchable.pdf -l por
+ocrmypdf --skip-text batch.pdf out.pdf      <span class="c"># leave existing text alone</span>
+ocrmypdf --deskew --clean --rotate-pages in.pdf out.pdf
+ocrmypdf -l por+eng --jobs 4 in.pdf out.pdf</pre>
+        <p data-i18n="s12.oc.after">Language packs are the usual surprise: <code>tesseract-ocr-por</code> for Portuguese, <code>-eng</code> for English, <code>-spa</code> for Spanish. Without the pack, OCR runs with an English model and mangles every accent.</p>
+      </div>
+
+      <div class="card">
+        <h3>WeasyPrint — <span data-i18n="s12.wp.h">HTML to PDF, properly</span></h3>
+        <p data-i18n="s12.wp.p">Renders HTML with real CSS support, including paged media: margins, running headers, page numbers, footnotes and page breaks. It is how a generated invoice, a report or a book stops being a screenshot of a browser.</p>
+        <pre>sudo apt install libpango-1.0-0 libpangoft2-1.0-0     <span class="c"># Debian 12+</span>
+brew install pango                                    <span class="c"># macOS</span>
+pipx install weasyprint
+weasyprint invoice.html invoice.pdf
+weasyprint --base-url ./assets report.html report.pdf</pre>
+        <p data-i18n="s12.wp.after">The CSS to learn is small: <code>@page { size: A4; margin: 2cm }</code>, <code>@page { @bottom-center { content: counter(page) } }</code>, and <code>break-before: page</code>. That is most of a printable document.</p>
+      </div>
+
+      <div class="card">
+        <h3>qrcode — <span data-i18n="s12.qr.h">a QR code from the prompt</span></h3>
+        <p data-i18n="s12.qr.p">Small, old, and still the quickest way to put a URL into a room: generate a PNG or an SVG, print it, stick it on a shelf label or a business card. The CLI is called <code>qr</code>, and it needs the image extra.</p>
+        <pre>pipx install "qrcode[pil]"
+qr "https://blog.odicforcesounds.com" &gt; qr.png
+qr --factory=svg "https://example.com" &gt; qr.svg
+qr --error-correction=H "long text here" &gt; big.png</pre>
+        <p data-i18n="s12.qr.after">Higher error correction means a denser image that still reads when partly covered — worth it for anything printed small or placed outdoors.</p>
+      </div>
+    </section>
+
+    <section id="terminal">
+      <h2><span class="num">12</span><span data-i18n="s13.title">Terminal craft: files, mistakes, memory</span></h2>
+      <p class="sub" data-i18n="s13.sub">
+        Four tools that make the shell itself better: a file manager that never leaves the
+        keyboard, a corrector for the command you just mistyped, a manual with examples instead of
+        flags, and a renderer that makes Markdown and code readable at the prompt.
+      </p>
+
+      <div class="card">
+        <h3>ranger — <span data-i18n="s13.ra.h">three columns, no mouse</span></h3>
+        <p data-i18n="s13.ra.p">A terminal file manager with a preview pane: text, images (in a suitable terminal), PDFs, archives. Moving, copying, bulk renaming and opening a shell in the current directory are single keys. It is the answer for a server where <code>ls</code> is not enough and a desktop is not available.</p>
+        <pre>pipx install ranger-fm
+ranger
+<span class="c"># hjkl move, space select, yy copy, dd cut, pp paste</span>
+<span class="c"># :mkdir name   :rename   S  shell here   ?  keys</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>thefuck — <span data-i18n="s13.tf.h">the correction after the swear word</span></h3>
+        <p data-i18n="s13.tf.p">When a command fails because of a typo or a missing sudo, type <code>fuck</code> and it proposes the corrected command, which you accept with Enter. It reads the previous command and its error, not your intentions — which is why it works so often.</p>
+        <pre>pipx install thefuck
+<span class="c"># add once to ~/.bashrc or ~/.zshrc</span>
+eval $(thefuck --alias)
+<span class="c"># then</span>
+fuck
+fuck --yeah      <span class="c"># accept without asking</span>
+fuck --repeat    <span class="c"># keep fixing until it works</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>tldr — <span data-i18n="s13.tl.h">the manual, with examples</span></h3>
+        <p data-i18n="s13.tl.p">Man pages list every flag; tldr pages show the five invocations people actually use. The Python client downloads the community pages and caches them locally, so lookups are instant and offline after the first update.</p>
+        <pre>pipx install tldr
+tldr tar
+tldr --update
+tldr --list | head</pre>
+      </div>
+
+      <div class="card">
+        <h3>rich-cli — <span data-i18n="s13.rc.h">Markdown and code, rendered</span></h3>
+        <p data-i18n="s13.rc.p">Prints a file the way it was meant to look: Markdown with headings and tables, source code with syntax highlighting and line numbers, JSON pretty-printed, CSV as a table. Useful for READMEs over SSH and for checking generated output before it ships.</p>
+        <pre>pipx install rich-cli
+rich README.md
+rich --syntax -n script.py
+rich --json data.json
+rich --csv table.csv --head 10</pre>
+      </div>
+    </section>
+
+    <section id="library">
+      <h2><span class="num">13</span><span data-i18n="s14.title">A personal library that outlives the app</span></h2>
+      <p class="sub" data-i18n="s14.sub">
+        The best argument for command-line tools is not speed, it is ownership: the music library
+        is a folder of tagged files, the bookmarks are a SQLite database, the calendar is a
+        directory of <code>.ics</code> files. Nothing here needs an account, and everything can be
+        backed up with <code>rsync</code>.
+      </p>
+
+      <div class="card">
+        <h3>beets — <span data-i18n="s14.be.h">the music library that fixes itself</span></h3>
+        <p data-i18n="s14.be.p">Imports a folder, fingerprints the audio, looks up the release, writes correct tags, moves the files into a clean tree and stores everything in a queryable database. Once set up, <code>beet import</code> is the only command you need for a new album.</p>
+        <pre>pipx install beets
+beet import ~/Downloads/album
+beet ls -a artist:radiohead
+beet fetchart
+beet lyrics
+beet write          <span class="c"># push database changes back to the files</span></pre>
+        <p data-i18n="s14.be.after">Configuration lives in <code>~/.config/beets/config.yaml</code>: library path, directory format, plugins. The important habit is <code>beet write</code> — the database is a convenience, the files are the archive.</p>
+      </div>
+
+      <div class="card">
+        <h3>buku — <span data-i18n="s14.bu.h">bookmarks you own</span></h3>
+        <p data-i18n="s14.bu.p">A bookmark manager for the terminal with tags, full-text search and an HTML export. The database is one SQLite file, so it syncs, greps, and survives the death of any company.</p>
+        <pre>pipx install buku
+buku -a https://example.com/article python cli reading
+buku -s "sqlite"
+buku --export bookmarks.html
+buku -p          <span class="c"># print the database path</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>khal — <span data-i18n="s14.kh.h">the calendar as files</span></h3>
+        <p data-i18n="s14.kh.p">Reads and writes calendars stored as iCalendar files in a folder — the same format every phone and mail client understands. Paired with <code>vdirsyncer</code>, it keeps a local copy in sync with a CalDAV server, so the terminal and the pocket agree.</p>
+        <pre>pipx install khal vdirsyncer
+khal list
+khal list today 7d
+khal new tomorrow 18:00 19:00 Dinner with Ana
+ikhal          <span class="c"># interactive editor</span></pre>
+        <p data-i18n="s14.kh.after">The config is <code>~/.config/khal/config</code>: one section per calendar, a path, a colour. Start with a single local calendar before adding a server; syncing is a second problem.</p>
+      </div>
+
+      <div class="card">
+        <h3>todoman — <span data-i18n="s14.td.h">tasks as text, not as an app</span></h3>
+        <p data-i18n="s14.td.p">Manages tasks in the same iCalendar format, one file per task, with lists, due dates, priorities and a compact table view. Because the storage is plain text, a task can be edited with any editor and still be found by the tool.</p>
+        <pre>pipx install todoman
+todo list
+todo new "renew the passport" --due 2026-11-15 --list Personal
+todo done 3
+todo edit 3</pre>
+      </div>
+    </section>
+
+    <section id="servers">
+      <h2><span class="num">14</span><span data-i18n="s15.title">Serve and ship: docs, traffic, inspection</span></h2>
+      <p class="sub" data-i18n="s15.sub">
+        Two tools for putting something on the network, and one for understanding what a program
+        sends over it. Both are Python apps that install with a single command and run from a
+        folder, which is the whole aesthetic of this manual.
+      </p>
+
+      <div class="card">
+        <h3>MkDocs — <span data-i18n="s15.mk.h">Markdown in, site out</span></h3>
+        <p data-i18n="s15.mk.p">A documentation generator with a live-reload server: write Markdown, keep a small <code>mkdocs.yml</code>, and <code>mkdocs serve</code> shows the site while you type. <code>mkdocs build</code> produces static files that any host will serve. It is also a perfectly good blog engine if you stop at the first theme.</p>
+        <pre>pipx install mkdocs
+mkdocs new my-docs
+cd my-docs
+mkdocs serve            <span class="c"># http://127.0.0.1:8000</span>
+mkdocs build --strict
+mkdocs gh-deploy        <span class="c"># publish to GitHub Pages</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>mitmproxy — <span data-i18n="s15.mm.h">look at the traffic</span></h3>
+        <p data-i18n="s15.mm.p">An intercepting proxy with three front ends: an interactive console, a web UI, and a non-interactive mode for scripts. It is how you find out what an app actually sends — which headers, which endpoint, which payload — and how you replay a request until it behaves.</p>
+        <pre>pipx install mitmproxy
+mitmproxy               <span class="c"># console, on port 8080</span>
+mitmweb                 <span class="c"># browser UI</span>
+mitmdump -w session.flows
+mitmdump -nr session.flows --set flow_detail=1</pre>
+        <p data-i18n="s15.mm.after">To see HTTPS you install mitmproxy's CA certificate in the client you are testing — the project documents it per platform. Use it on your own devices and your own traffic: intercepting someone else's is not a debugging technique, it is an attack.</p>
+      </div>
+    </section>
+    <section id="maintain">
+      <h2><span class="num">15</span><span data-i18n="s16.title">Keeping it clean for a year</span></h2>
+      <p class="sub" data-i18n="s16.sub">
+        An install is a decision you keep paying for: every tool has a version, a cache and a
+        folder. The maintenance is small if it is regular — five minutes a month, four commands,
+        and the machine never accumulates the kind of Python installation nobody dares touch.
+      </p>
+
+      <pre>pipx upgrade-all                 <span class="c"># every app, in its own venv</span>
+uv tool upgrade --all            <span class="c"># if you use uv</span>
+pip cache purge                  <span class="c"># wheels you will never need again</span>
+uv cache clean
+du -sh ~/.venvs/* | sort -h      <span class="c"># the environments you forgot</span></pre>
+
+      <div class="two">
+        <div class="card">
+          <h3 data-i18n="s16.a.h">Audit before you trust</h3>
+          <p data-i18n="s16.a.p">A tool's dependencies are code you run with your permissions. <code>pipx run pip-audit</code> checks an environment against the public vulnerability database, and <code>pipx list --include-injected</code> reminds you what you added by hand. Neither is a guarantee; both catch the obvious.</p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="s16.b.h">The rule of the second install</h3>
+          <p data-i18n="s16.b.p">Install a tool the first time because you need it. Install it the second time — after removing it, with a different method — because you now know how you use it. Everything installed "just in case" becomes the folder you skip when backing up.</p>
+        </div>
+      </div>
+
+      <h3 data-i18n="s16.c.h">What to back up, and what not to</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th data-i18n="t.path">Path</th><th data-i18n="t.backup">Back it up?</th><th data-i18n="t.why2">Why</th></tr>
+          </thead>
+          <tbody>
+            <tr><th><code>~/.config/toot</code>, <code>~/.config/khal</code>, <code>~/.config/beets</code></th><td data-i18n="s16.b1.a">Yes</td><td data-i18n="s16.b1.b">Configuration and tokens: half an hour to recreate, impossible to remember.</td></tr>
+            <tr><th><code>~/.local/share/buku</code>, the beets database</th><td data-i18n="s16.b2.a">Yes</td><td data-i18n="s16.b2.b">Your bookmarks and library index. Small files, years of decisions.</td></tr>
+            <tr><th><code>~/.local/pipx/venvs</code>, <code>~/.cache/uv</code></th><td data-i18n="s16.b3.a">No</td><td data-i18n="s16.b3.b">Rebuilt from a name and a version in one command.</td></tr>
+            <tr><th>Your media and your documents</th><td data-i18n="s16.b4.a">Twice</td><td data-i18n="s16.b4.b">The tools are replaceable. This is the part that is not.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="errors">
+      <h2><span class="num">16</span><span data-i18n="s17.title">The ten messages that stop an install</span></h2>
+      <p class="sub" data-i18n="s17.sub">
+        These are not ten problems. They are three: the wrong interpreter, a missing system
+        library, or a directory the shell cannot see. The table maps the message to the cause,
+        because the message is almost never the cause.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.message">Message</th>
+              <th data-i18n="t.cause">What it means</th>
+              <th data-i18n="t.fix">Fix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>error: externally-managed-environment</code></th>
+              <td data-i18n="s17.e1.b">You are installing into the distribution's Python, which PEP 668 now blocks on purpose.</td>
+              <td data-i18n="s17.e1.c">Create a venv, or use <code>pipx install</code>. Do not use <code>--break-system-packages</code>.</td>
+            </tr>
+            <tr>
+              <th><code>command not found: yt-dlp</code> after a successful install</th>
+              <td data-i18n="s17.e2.b">The launcher is in <code>~/.local/bin</code>, which is not on PATH in this shell.</td>
+              <td data-i18n="s17.e2.c">Run <code>pipx ensurepath</code>, open a new terminal, or <code>export PATH="$HOME/.local/bin:$PATH"</code> and <code>hash -r</code>.</td>
+            </tr>
+            <tr>
+              <th><code>ModuleNotFoundError: No module named 'X'</code></th>
+              <td data-i18n="s17.e3.b">The package is installed for a different interpreter than the one running the script.</td>
+              <td data-i18n="s17.e3.c">Compare <code>which python</code> with the install line, then reinstall using <code>python -m pip</code> from the same environment.</td>
+            </tr>
+            <tr>
+              <th><code>error: Microsoft Visual C++ 14.0 or greater is required</code></th>
+              <td data-i18n="s17.e4.b">No prebuilt wheel exists for this package and this Python on Windows.</td>
+              <td data-i18n="s17.e4.c">Try a newer Python (more wheels), use <code>--only-binary :all:</code> to see what is available, or install the Build Tools.</td>
+            </tr>
+            <tr>
+              <th><code>fatal error: Python.h: No such file or directory</code></th>
+              <td data-i18n="s17.e5.b">The package compiles a C extension and the Python development headers are missing.</td>
+              <td data-i18n="s17.e5.c"><code>sudo apt install python3-dev</code> (Debian), <code>python3-devel</code> (Fedora), then retry.</td>
+            </tr>
+            <tr>
+              <th><code>ERROR: No matching distribution found for X</code></th>
+              <td data-i18n="s17.e6.b">Usually a Python version below the project's floor, a misspelled name, or no network.</td>
+              <td data-i18n="s17.e6.c">Check the project's <code>Requires-Python</code> on PyPI, confirm the exact package name, then try a newer interpreter.</td>
+            </tr>
+            <tr>
+              <th><code>SSL: CERTIFICATE_VERIFY_FAILED</code></th>
+              <td data-i18n="s17.e7.b">The Python from python.org on macOS ships without a certificate bundle, or a proxy intercepts TLS.</td>
+              <td data-i18n="s17.e7.c">Run <code>Install Certificates.command</code> in the Python folder, or <code>pip install --upgrade certifi</code>. On a corporate proxy, set <code>REQUESTS_CA_BUNDLE</code>.</td>
+            </tr>
+            <tr>
+              <th><code>Killed</code> while building a package</th>
+              <td data-i18n="s17.e8.b">The compiler ran out of memory — common on a 1 GB VPS with a large source build.</td>
+              <td data-i18n="s17.e8.c">Add swap, or avoid compiling: prefer <code>--only-binary :all:</code>, or install the app where wheels exist for your platform.</td>
+            </tr>
+            <tr>
+              <th><code>Permission denied: /usr/lib/python3/dist-packages</code></th>
+              <td data-i18n="s17.e9.b">A previous <code>sudo pip install</code> left root-owned files, and now pip cannot clean up after itself.</td>
+              <td data-i18n="s17.e9.c">Stop using sudo for pip. Uninstall what you added with sudo, fix ownership if needed (<code>sudo chown -R $USER</code> on the user-writable parts), and move to venv or pipx.</td>
+            </tr>
+            <tr>
+              <th><code>Could not build wheels for X, which is required to install pyproject.toml-based projects</code></th>
+              <td data-i18n="s17.e10.b">The package needs a system library or a compiler the machine does not have — pango, ffmpeg, tesseract, libpq.</td>
+              <td data-i18n="s17.e10.c">Install the system package named in the error, then retry. The app chapters in this manual list which one each tool needs.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <strong data-i18n="s17.note.h">Read the last line, not the first</strong>
+        <p data-i18n="s17.note.p">pip prints a page of resolver output and the useful sentence is at the very end, after <code>ERROR:</code>. Copy the last ten lines, not the whole log, when you search for the message — and add the Python version and the operating system, because half the answers online are for a different pair.</p>
+      </div>
+    </section>
+
+    <section id="decide">
+      <h2><span class="num">17</span><span data-i18n="s18.title">Which method, for this thing, today</span></h2>
+      <p class="sub" data-i18n="s18.sub">
+        Three answers decide it: whether your code imports the package, how often you will run
+        the command, and whether you already have a fast installer. The tool below asks those three
+        and gives one answer, with the command that follows from it.
+      </p>
+
+      <div class="tool">
+        <div class="tool-head">
+          <h3 data-i18n="s18.tool.h">venv, pipx or uv?</h3>
+          <span class="badge" data-i18n="s18.tool.badge">one answer</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s18.q1">Will your own Python code import it?</span>
+            <select id="d-import">
+              <option value="no" data-i18n="s18.q1.no">No — I only run its command</option>
+              <option value="yes" data-i18n="s18.q1.yes">Yes — I need it as a library</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s18.q2">How often will you run it?</span>
+            <select id="d-often">
+              <option value="daily" data-i18n="s18.q2.daily">Daily or weekly</option>
+              <option value="sometimes" data-i18n="s18.q2.sometimes">Now and then</option>
+              <option value="once" data-i18n="s18.q2.once">Once, to try it</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s18.q3">Already using uv?</span>
+            <select id="d-uv">
+              <option value="no" data-i18n="s18.q3.no">No, and I would rather not</option>
+              <option value="yes" data-i18n="s18.q3.yes">Yes</option>
+            </select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s18.out.verdict">Verdict</dt><dd id="d-verdict">—</dd>
+          <dt data-i18n="s18.out.why">Because</dt><dd id="d-why">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="d-copy" data-i18n="s18.copy">Copy</button>
+          <pre id="d-out">—</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="sources">
+      <h2><span class="num">18</span><span data-i18n="s19.title">Sources, and what each one is good for</span></h2>
+      <p class="sub" data-i18n="s19.sub">
+        The manual is built from primary documentation, not from tutorials. Each link below is the
+        page that settles the question; every app in the table links to its own repository, which
+        is the authority on its own flags.
+      </p>
+
+      <ul class="sources">
+        <li>
+          <a href="https://docs.python.org/3/library/venv.html" target="_blank" rel="noopener">Python documentation — venv</a>
+          <span data-i18n="src.1">The reference for creating environments, including the activation scripts per shell and the --system-site-packages flag.</span>
+        </li>
+        <li>
+          <a href="https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/" target="_blank" rel="noopener">Python Packaging User Guide — installing packages</a>
+          <span data-i18n="src.2">The official walkthrough of venv plus pip, with the same commands on Windows and POSIX.</span>
+        </li>
+        <li>
+          <a href="https://peps.python.org/pep-0668/" target="_blank" rel="noopener">PEP 668 — externally managed environments</a>
+          <span data-i18n="src.3">Why the externally-managed-environment error exists, and what its authors expect you to do instead.</span>
+        </li>
+        <li>
+          <a href="https://pip.pypa.io/en/stable/user_guide/" target="_blank" rel="noopener">pip — user guide</a>
+          <span data-i18n="src.4">Requirements files, constraints, wheels and the options used in part 02.</span>
+        </li>
+        <li>
+          <a href="https://pipx.pypa.io/stable/" target="_blank" rel="noopener">pipx documentation</a>
+          <span data-i18n="src.5">The tool's own manual: inject, run, upgrade-all, and where environments are stored.</span>
+        </li>
+        <li>
+          <a href="https://docs.astral.sh/uv/" target="_blank" rel="noopener">uv documentation</a>
+          <span data-i18n="src.6">Installation, tool management and project environments, from the project that makes the binary.</span>
+        </li>
+        <li>
+          <a href="https://docs.astral.sh/uv/guides/tools/" target="_blank" rel="noopener">uv — tools guide</a>
+          <span data-i18n="src.7">The uv tool install and uvx behaviour described in part 04, with the equivalents to pipx.</span>
+        </li>
+        <li>
+          <a href="https://packaging.python.org/en/latest/tutorials/managing-dependencies/" target="_blank" rel="noopener">Python Packaging — managing dependencies</a>
+          <span data-i18n="src.8">When to freeze, when to pin and when a lock file is the honest answer.</span>
+        </li>
+        <li>
+          <a href="https://pypi.org/" target="_blank" rel="noopener">PyPI</a>
+          <span data-i18n="src.9">The version, the Python floor and the release date for every package named here.</span>
+        </li>
+        <li>
+          <a href="https://github.com/pypa/pipx" target="_blank" rel="noopener">pipx repository</a>
+          <span data-i18n="src.10">Issues and changelog; the place to check before assuming a bug is yours.</span>
+        </li>
+        <li>
+          <a href="https://tldr.sh/" target="_blank" rel="noopener">tldr pages</a>
+          <span data-i18n="src.11">The community project behind the examples the tldr client downloads.</span>
+        </li>
+        <li>
+          <a href="https://github.com/ihabunek/toot" target="_blank" rel="noopener">toot repository</a>
+          <span data-i18n="src.12">Mastodon client flags, the TUI, and the config format used for tokens.</span>
+        </li>
+      </ul>
+      <p class="sub" data-i18n="s19.after">Where a project's documentation and its README disagree, the README of the tagged release is what installs — the docs site can be a version ahead. That is not a defect of this manual, it is a property of software that ships weekly.</p>
+    </section>
+
+    <section id="glossary">
+      <h2><span class="num">19</span><span data-i18n="s20.title">Glossary</span></h2>
+      <p class="sub" data-i18n="s20.sub">Twelve words that explain most of the confusion in this manual.</p>
+      <dl class="glossary" id="glossary-list"></dl>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p data-i18n="footer.p">
+        Written from a Linux terminal and checked against PyPI and each project's repository on
+        the day of publication: package names, versions, Python floors, entry points and system
+        dependencies read from the released metadata, with the commands taken from each project's
+        own documentation. Where the manual says "usually", it is because the system package names
+        differ between distributions — the project's README is the final word.
+      </p>
+      <a class="back" href="index.html"><span data-i18n="footer.back">&larr; Back to the archive</span></a>
+      <p class="cross" data-i18n="footer.cross">The rest of the series: <a href="golang-cli.html">Go in the Shell</a> for the compiled half of the same idea, <a href="rust-cli.html">Rust in the Shell</a> for the compiled half that argues back, <a href="hydroponics.html">Hydroponics at Home</a> for a garden without soil, and <a href="recycling.html">Nothing Is Garbage</a> for the second life of everything the house throws away.</p>
+    </div>
+  </footer>
+  <script>
+    (function () {
+      "use strict";
+
+      /* ---------- the thirty apps ---------- */
+      var APPS = [
+        { key: "pipx", family: "install", name: "pipx", pkg: "pipx", cmd: "pipx", repo: "pypa/pipx", py: "3.11",
+          what: { en: "The installer that gives every command-line app its own environment; the rest of this table assumes it.",
+                  pt: "O instalador que dá a cada aplicação de linha de comando o seu próprio ambiente; o resto desta tabela conta com ele." },
+          deps: { en: "None beyond Python", pt: "Nada além do Python" } },
+        { key: "toot", family: "social", name: "toot", pkg: "toot", cmd: "toot", repo: "ihabunek/toot", py: "3.9",
+          what: { en: "Mastodon and compatible servers from the terminal: post, thread, upload media, read timelines, or open a full TUI.",
+                  pt: "Mastodon e servidores compatíveis a partir do terminal: publicar, encadear, carregar media, ler timelines ou abrir uma TUI completa." },
+          deps: { en: "A Mastodon account", pt: "Uma conta Mastodon" } },
+        { key: "posting", family: "social", name: "posting", pkg: "posting", cmd: "posting", repo: "darrenburns/posting", py: "3.11",
+          what: { en: "A keyboard-only HTTP client: requests as YAML files, environments, variables, syntax highlighting.",
+                  pt: "Um cliente HTTP só de teclado: pedidos em ficheiros YAML, ambientes, variáveis, realce de sintaxe." },
+          deps: { en: "None — the PyPI package is Python; the repository also ships a Go binary",
+                  pt: "Nenhuma — o pacote no PyPI é Python; o repositório também publica um binário em Go" } },
+        { key: "httpie", family: "social", name: "HTTPie", pkg: "httpie", cmd: "http", repo: "httpie/cli", py: "3.7",
+          what: { en: "curl with sentences instead of flags: JSON by default, coloured headers, formatted responses.",
+                  pt: "curl com frases em vez de opções: JSON por omissão, cabeçalhos coloridos, respostas formatadas." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "yt-dlp", family: "media", name: "yt-dlp", pkg: "yt-dlp", cmd: "yt-dlp", repo: "yt-dlp/yt-dlp", py: "3.11",
+          what: { en: "Downloads from over a thousand sites: formats, subtitles, chapters, playlists, and an archive of what you already have.",
+                  pt: "Descarrega de mais de mil sites: formatos, legendas, capítulos, playlists e um registo do que já tem." },
+          deps: { en: "ffmpeg, to merge video and audio and to extract sound", pt: "ffmpeg, para juntar vídeo e áudio e extrair o som" },
+          sys: { apt: "ffmpeg", brew: "ffmpeg" } },
+        { key: "gallery-dl", family: "media", name: "gallery-dl", pkg: "gallery-dl", cmd: "gallery-dl", repo: "mikf/gallery-dl", py: "3.8",
+          what: { en: "Image and gallery downloads that yt-dlp does not cover, with JSON metadata written beside every file.",
+                  pt: "Descarregamentos de imagens e galerias que o yt-dlp não cobre, com metadados JSON ao lado de cada ficheiro." },
+          deps: { en: "ffmpeg for video posts", pt: "ffmpeg para publicações de vídeo" },
+          sys: { apt: "ffmpeg", brew: "ffmpeg" } },
+        { key: "streamlink", family: "media", name: "streamlink", pkg: "streamlink", cmd: "streamlink", repo: "streamlink/streamlink", py: "3.10",
+          what: { en: "Hands a live stream to mpv or VLC at the quality you choose, and records it if you ask.",
+                  pt: "Entrega uma emissão em direto ao mpv ou ao VLC na qualidade que escolher, e grava-a se pedir." },
+          deps: { en: "mpv or VLC; ffmpeg to save the stream", pt: "mpv ou VLC; ffmpeg para gravar a emissão" },
+          sys: { apt: "mpv ffmpeg", brew: "mpv ffmpeg" } },
+        { key: "spotdl", family: "media", name: "spotdl", pkg: "spotdl", cmd: "spotdl", repo: "spotDL/spotify-downloader", py: "3.11",
+          what: { en: "Playlists and tracks to tagged audio files with cover art, named from a template.",
+                  pt: "Playlists e faixas para ficheiros de áudio com etiquetas e capa, nomeados a partir de um modelo." },
+          deps: { en: "ffmpeg", pt: "ffmpeg" },
+          sys: { apt: "ffmpeg", brew: "ffmpeg" } },
+        { key: "glances", family: "machine", name: "Glances", pkg: "glances", cmd: "glances", repo: "nicolargo/glances", py: "3.10",
+          what: { en: "The whole machine on one screen: CPU, memory, disks, network, sensors, containers — and the same view over HTTP.",
+                  pt: "A máquina inteira num ecrã: CPU, memória, discos, rede, sensores, contentores — e a mesma vista por HTTP." },
+          deps: { en: "None; sensors need lm-sensors", pt: "Nenhuma; os sensores precisam de lm-sensors" } },
+        { key: "pyinstrument", family: "machine", name: "pyinstrument", pkg: "pyinstrument", cmd: "pyinstrument", repo: "joerick/pyinstrument", py: "3.8",
+          what: { en: "A statistical profiler with a readable call tree and an HTML report you can keep.",
+                  pt: "Um profiler estatístico com uma árvore de chamadas legível e um relatório HTML para guardar." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "nvitop", family: "machine", name: "Nvitop", pkg: "nvitop", cmd: "nvitop", repo: "XuehaiPan/nvitop", py: "3.8",
+          what: { en: "Per-process GPU memory, utilisation and temperature, with the process tree that owns each card.",
+                  pt: "Memória, utilização e temperatura da GPU por processo, com a árvore de processos dona de cada placa." },
+          deps: { en: "An NVIDIA driver; no CUDA toolkit needed", pt: "Um driver NVIDIA; não é preciso CUDA toolkit" } },
+        { key: "datasette", family: "data", name: "Datasette", pkg: "datasette", cmd: "datasette", repo: "simonw/datasette", py: "3.10",
+          what: { en: "Publishes a SQLite file as a browsable, filterable site with a JSON API on every table.",
+                  pt: "Publica um ficheiro SQLite como site navegável e filtrável, com uma API JSON em cada tabela." },
+          deps: { en: "None — SQLite ships with Python", pt: "Nenhuma — o SQLite vem com o Python" } },
+        { key: "sqlite-utils", family: "data", name: "sqlite-utils", pkg: "sqlite-utils", cmd: "sqlite-utils", repo: "simonw/sqlite-utils", py: "3.10",
+          what: { en: "Inserts CSV and JSON into SQLite, creates tables from the data's shape, queries and converts columns.",
+                  pt: "Insere CSV e JSON em SQLite, cria tabelas a partir da forma dos dados, consulta e converte colunas." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "csvkit", family: "data", name: "csvkit", pkg: "csvkit", cmd: "csvlook", repo: "wireservice/csvkit", py: "3.9",
+          what: { en: "Fourteen commands that cut, filter, sort, join, describe and SQL-query CSV — and read XLSX.",
+                  pt: "Catorze comandos que cortam, filtram, ordenam, juntam, descrevem e consultam CSV com SQL — e leem XLSX." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "jc", family: "data", name: "jc", pkg: "jc", cmd: "jc", repo: "kellyjonbrazil/jc", py: "3.6",
+          what: { en: "Turns the output of ls, ps, df, ip, dig and a hundred others into JSON, so jq can take over.",
+                  pt: "Converte a saída de ls, ps, df, ip, dig e uma centena de outros em JSON, para o jq assumir." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "pgcli", family: "data", name: "pgcli", pkg: "pgcli", cmd: "pgcli", repo: "dbcli/pgcli", py: "3.10",
+          what: { en: "Postgres with schema-aware autocomplete, colours and paging; mycli and litecli are the siblings.",
+                  pt: "Postgres com autocompletar que conhece o esquema, cores e paginação; mycli e litecli são os irmãos." },
+          deps: { en: "A Postgres server to connect to", pt: "Um servidor Postgres para onde ligar" } },
+        { key: "llm", family: "data", name: "llm", pkg: "llm", cmd: "llm", repo: "simonw/llm", py: "3.10",
+          what: { en: "Prompts and models from the terminal, every conversation logged in SQLite, plugins for local or hosted models.",
+                  pt: "Prompts e modelos a partir do terminal, cada conversa registada em SQLite, plugins para modelos locais ou alojados." },
+          deps: { en: "An API key, or a local model plugin", pt: "Uma chave de API, ou um plugin de modelo local" } },
+        { key: "rich-cli", family: "terminal", name: "rich-cli", pkg: "rich-cli", cmd: "rich", repo: "Textualize/rich-cli", py: "3.9",
+          what: { en: "Prints Markdown, JSON, CSV and source code with the formatting they deserve.",
+                  pt: "Imprime Markdown, JSON, CSV e código-fonte com a formatação que merecem." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "thefuck", family: "terminal", name: "thefuck", pkg: "thefuck", cmd: "fuck", repo: "nvbn/thefuck", py: "3.8",
+          what: { en: "Corrects the command you just mistyped, from the error it produced instead of from your intentions.",
+                  pt: "Corrige o comando que acabou de escrever mal, a partir do erro que produziu e não das suas intenções." },
+          deps: { en: "A shell alias: eval $(thefuck --alias)", pt: "Um alias na shell: eval $(thefuck --alias)" } },
+        { key: "tldr", family: "terminal", name: "tldr", pkg: "tldr", cmd: "tldr", repo: "tldr-pages/tldr-python-client", py: "3.10",
+          what: { en: "The manual page that shows the five invocations people actually use, cached locally.",
+                  pt: "A página de manual que mostra as cinco invocações que as pessoas usam de facto, em cache local." },
+          deps: { en: "None; a network for the first update", pt: "Nenhuma; rede para a primeira atualização" } },
+        { key: "ranger", family: "terminal", name: "ranger", pkg: "ranger-fm", cmd: "ranger", repo: "ranger/ranger", py: "3.8",
+          what: { en: "A three-column file manager with previews, bulk rename and a shell in the current folder.",
+                  pt: "Um gestor de ficheiros de três colunas com pré-visualização, renomeação em lote e uma shell na pasta atual." },
+          deps: { en: "file and less; w3m for image previews", pt: "file e less; w3m para pré-visualizar imagens" },
+          sys: { apt: "file less", brew: "file less" } },
+        { key: "ocrmypdf", family: "docs", name: "OCRmyPDF", pkg: "ocrmypdf", cmd: "ocrmypdf", repo: "ocrmypdf/OCRmyPDF", py: "3.11",
+          what: { en: "Adds a searchable text layer to a scanned PDF without touching the scan underneath.",
+                  pt: "Acrescenta uma camada de texto pesquisável a um PDF digitalizado, sem tocar no documento original." },
+          deps: { en: "tesseract-ocr, the language pack, ghostscript", pt: "tesseract-ocr, o pacote de língua, ghostscript" },
+          sys: { apt: "tesseract-ocr tesseract-ocr-por ghostscript", brew: "tesseract ghostscript" } },
+        { key: "weasyprint", family: "docs", name: "WeasyPrint", pkg: "weasyprint", cmd: "weasyprint", repo: "Kozea/WeasyPrint", py: "3.10",
+          what: { en: "HTML and CSS to a print-quality PDF, with page numbers, margins and running headers.",
+                  pt: "HTML e CSS para um PDF de qualidade de impressão, com números de página, margens e cabeçalhos correntes." },
+          deps: { en: "pango and fontconfig", pt: "pango e fontconfig" },
+          sys: { apt: "libpango-1.0-0 libpangoft2-1.0-0", brew: "pango" } },
+        { key: "qrcode", family: "docs", name: "qrcode", pkg: "qrcode[pil]", cmd: "qr", repo: "lincolnloop/python-qrcode", py: "3.9",
+          what: { en: "QR codes as PNG or SVG, straight to stdout, for labels, cards and walls.",
+                  pt: "Códigos QR em PNG ou SVG, direto para o stdout, para etiquetas, cartões e paredes." },
+          deps: { en: "Pillow, installed by the [pil] extra", pt: "Pillow, instalado pelo extra [pil]" } },
+        { key: "beets", family: "library", name: "beets", pkg: "beets", cmd: "beet", repo: "beetbox/beets", py: "3.10",
+          what: { en: "Imports, fingerprints, tags, renames and organises a music library; the files remain the archive.",
+                  pt: "Importa, identifica, etiqueta, renomeia e organiza uma biblioteca de música; os ficheiros continuam a ser o arquivo." },
+          deps: { en: "ffmpeg for lossy formats", pt: "ffmpeg para formatos com perdas" },
+          sys: { apt: "ffmpeg", brew: "ffmpeg" } },
+        { key: "buku", family: "library", name: "buku", pkg: "buku", cmd: "buku", repo: "jarun/buku", py: "3.10",
+          what: { en: "Bookmarks with tags and full-text search in one SQLite file you can copy anywhere.",
+                  pt: "Marcadores com etiquetas e pesquisa em texto completo num único ficheiro SQLite que pode copiar para qualquer lado." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "khal", family: "library", name: "khal", pkg: "khal", cmd: "khal", repo: "pimutils/khal", py: "3.10",
+          what: { en: "A calendar read from iCalendar files, with a list view and an interactive editor.",
+                  pt: "Um calendário lido de ficheiros iCalendar, com vista em lista e um editor interativo." },
+          deps: { en: "vdirsyncer to sync with a server", pt: "vdirsyncer para sincronizar com um servidor" } },
+        { key: "todoman", family: "library", name: "todoman", pkg: "todoman", cmd: "todo", repo: "pimutils/todoman", py: "3.10",
+          what: { en: "Tasks stored as iCalendar files, one per task, listed and edited from the shell.",
+                  pt: "Tarefas guardadas como ficheiros iCalendar, uma por tarefa, listadas e editadas a partir da shell." },
+          deps: { en: "vdirsyncer to sync with a server", pt: "vdirsyncer para sincronizar com um servidor" } },
+        { key: "mkdocs", family: "servers", name: "MkDocs", pkg: "mkdocs", cmd: "mkdocs", repo: "mkdocs/mkdocs", py: "3.8",
+          what: { en: "Markdown to a documentation site, with live reload and a one-command publish to GitHub Pages.",
+                  pt: "Markdown para um site de documentação, com recarregamento automático e publicação em GitHub Pages com um comando." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "mitmproxy", family: "servers", name: "mitmproxy", pkg: "mitmproxy", cmd: "mitmproxy", repo: "mitmproxy/mitmproxy", py: "3.12",
+          what: { en: "An intercepting HTTPS proxy with a console, a web interface and a scripting mode.",
+                  pt: "Um proxy HTTPS que interceta, com consola, interface web e modo de scripting." },
+          deps: { en: "Its CA certificate on the client you test", pt: "O certificado CA no cliente que está a testar" } }
+      ];
+
+      var FAMILIES = ["install", "social", "media", "machine", "data", "docs", "terminal", "library", "servers"];
+      var FAMILY_LABEL = {
+        en: { install: "Installer", social: "Social", media: "Media", machine: "Machine", data: "Data & text",
+              docs: "Documents", terminal: "Terminal", library: "Library", servers: "Servers" },
+        pt: { install: "Instalador", social: "Social", media: "Média", machine: "Máquina", data: "Dados e texto",
+              docs: "Documentos", terminal: "Terminal", library: "Biblioteca", servers: "Servidores" }
+      };
+
+      var GLOSSARY = [
+        { en: ["Virtual environment", "A folder with its own Python launcher and its own site-packages. Activating it changes only PATH; calling its python directly changes nothing at all."],
+          pt: ["Ambiente virtual", "Uma pasta com o seu próprio lançador Python e as suas próprias site-packages. Ativá-la muda apenas o PATH; chamar o python dela diretamente não muda nada."] },
+        { en: ["site-packages", "The directory where pip writes installed packages — inside an environment, or inside the system Python, which is the case the rule in part 01 avoids."],
+          pt: ["site-packages", "A pasta onde o pip escreve os pacotes instalados — dentro de um ambiente, ou dentro do Python do sistema, que é o caso que a regra da parte 01 evita."] },
+        { en: ["PATH", "The list of directories the shell searches for a command, in order. A launcher outside that list is invisible even when the install succeeded."],
+          pt: ["PATH", "A lista de pastas onde a shell procura um comando, por ordem. Um lançador fora dessa lista é invisível mesmo quando a instalação correu bem."] },
+        { en: ["Entry point", "The function a package declares in its metadata so that installing it creates a command with a name — toot, yt-dlp, csvlook."],
+          pt: ["Entry point", "A função que um pacote declara nos seus metadados para que a instalação crie um comando com nome — toot, yt-dlp, csvlook."] },
+        { en: ["Wheel", "A prebuilt binary package (.whl). If a wheel exists for your platform and Python version, nothing is compiled and nothing can fail to compile."],
+          pt: ["Wheel", "Um pacote binário já construído (.whl). Se existir uma wheel para a sua plataforma e versão de Python, nada é compilado e nada pode falhar na compilação."] },
+        { en: ["sdist", "The source archive. Installing it means building it, which needs a compiler, headers and the system libraries the project links against."],
+          pt: ["sdist", "O arquivo de código-fonte. Instalá-lo significa compilá-lo, o que exige compilador, headers e as bibliotecas de sistema contra as quais o projeto liga."] },
+        { en: ["Resolver", "The part of pip that chooses versions satisfying every constraint at once. A conflict is the resolver telling you two requirements cannot both be true."],
+          pt: ["Resolver", "A parte do pip que escolhe versões que satisfazem todas as restrições ao mesmo tempo. Um conflito é o resolver a dizer que dois requisitos não podem ser verdadeiros em simultâneo."] },
+        { en: ["Pin", "Writing ==version so an install is reproducible. A range (>=1,<2) is a policy, not a pin: it guarantees nothing about tomorrow."],
+          pt: ["Pin", "Escrever ==versão para que a instalação seja reproduzível. Um intervalo (>=1,<2) é uma política, não um pin: não garante nada sobre amanhã."] },
+        { en: ["Lock file", "A generated record of the exact version of every dependency, transitive ones included, so two machines resolve to the same set."],
+          pt: ["Lock file", "Um registo gerado com a versão exata de cada dependência, incluindo as transitivas, para que duas máquinas resolvam para o mesmo conjunto."] },
+        { en: ["PEP 668", "The standard that lets a distribution mark its Python as externally managed, which is what produces the error this manual keeps referring to."],
+          pt: ["PEP 668", "A norma que permite a uma distribuição marcar o seu Python como gerido externamente, e que produz o erro a que este manual volta sempre."] },
+        { en: ["Isolation", "The property that lets two apps depend on incompatible versions of the same library and both keep working: one environment each."],
+          pt: ["Isolamento", "A propriedade que permite a duas aplicações depender de versões incompatíveis da mesma biblioteca e ambas continuarem a funcionar: um ambiente para cada."] },
+        { en: ["Cache", "Downloaded wheels kept for reuse. Deleting it costs time and bandwidth, never correctness — so it is always a safe thing to clear."],
+          pt: ["Cache", "Wheels descarregadas e guardadas para reutilização. Apagá-la custa tempo e largura de banda, nunca correção — por isso é sempre seguro limpá-la."] }
+      ];
+
+      /* ---------- DOM helpers ---------- */
+      function byId(id) {
+        return document.getElementById(id);
+      }
+
+      function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) {
+          node.className = className;
+        }
+        if (text != null) {
+          node.textContent = text;
+        }
+        return node;
+      }
+
+      var lang = "en";
+      var EN = {};
+
+      /* ---------- install builder ---------- */
+      function systemsLine(app, os) {
+        if (!app.sys) {
+          return "";
+        }
+        if (os === "linux" && app.sys.apt) {
+          return "sudo apt install " + app.sys.apt + "\n\n";
+        }
+        if (os === "mac" && app.sys.brew) {
+          return "brew install " + app.sys.brew + "\n\n";
+        }
+        return "";
+      }
+
+      function builderText(app, method, os) {
+        var s = systemsLine(app, os);
+        var qty = app.pkg.indexOf("[") !== -1 ? '"' + app.pkg + '"' : app.pkg;
+        var win = os === "win";
+        var py = win ? "py" : "python3";
+
+        if (method === "pipx") {
+          s += "# pipx, once per machine\n";
+          s += win ? "py -m pip install --user pipx\npy -m pipx ensurepath\n"
+                   : py + " -m pip install --user pipx\n" + py + " -m pipx ensurepath\n";
+          s += "# open a new terminal\n\n";
+          s += "pipx install " + qty + "\n";
+          s += app.cmd + " --help";
+          return s;
+        }
+
+        if (method === "uv") {
+          s += "# uv, once per machine\n";
+          s += win ? 'powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"'
+                   : "curl -LsSf https://astral.sh/uv/install.sh | sh";
+          s += "\n\nuv tool install " + qty + "\n" + app.cmd + " --help";
+          return s;
+        }
+
+        var dir = win ? "%USERPROFILE%\\.venvs\\" + app.key : "~/.venvs/" + app.key;
+        var bin = win ? dir + "\\Scripts" : dir + "/bin";
+        s += py + " -m venv " + dir + "\n";
+        s += bin + (win ? "\\pip" : "/pip") + " install " + qty + "\n";
+        s += bin + (win ? "\\" + app.cmd + ".exe" : "/" + app.cmd) + " --help";
+        return s;
+      }
+
+      function updateBuilder() {
+        var appSel = byId("b-app");
+        var methodSel = byId("b-method");
+        var osSel = byId("b-os");
+        if (!appSel || !methodSel || !osSel) {
+          return;
+        }
+        var app = APPS[parseInt(appSel.value, 10)] || APPS[0];
+        var method = methodSel.value;
+        var os = osSel.value;
+
+        byId("b-name").textContent = app.name;
+        byId("b-pkg").textContent = app.pkg;
+        byId("b-cmd").textContent = app.cmd;
+        byId("b-deps").textContent = app.deps[lang];
+        byId("b-what").textContent = app.what[lang];
+        byId("b-family").textContent = FAMILY_LABEL[lang][app.family];
+        var home = byId("b-home");
+        home.innerHTML = "";
+        var homeLink = document.createElement("a");
+        homeLink.href = "https://github.com/" + app.repo;
+        homeLink.target = "_blank";
+        homeLink.rel = "noopener";
+        homeLink.textContent = "github.com/" + app.repo;
+        home.appendChild(homeLink);
+        byId("b-out").textContent = builderText(app, method, os);
+        byId("b-note").textContent = lang === "pt"
+          ? "Python " + app.py + " ou mais recente. Se o comando não for encontrado depois de instalar, a parte 05 tem a resposta."
+          : "Python " + app.py + " or newer. If the command is not found after installing, part 05 has the answer.";
+      }
+
+      function fillBuilder() {
+        var appSel = byId("b-app");
+        if (!appSel) {
+          return;
+        }
+        appSel.innerHTML = "";
+        APPS.forEach(function (app, index) {
+          var option = el("option", null, app.name);
+          option.value = String(index);
+          appSel.appendChild(option);
+        });
+        updateBuilder();
+      }
+
+      /* ---------- decision tool ---------- */
+      function verdict() {
+        var imports = byId("d-import").value === "yes";
+        var often = byId("d-often").value;
+        var uv = byId("d-uv").value === "yes";
+
+        if (imports) {
+          return {
+            state: "ok",
+            title: lang === "pt" ? "Um ambiente virtual, dentro do projeto" : "A virtual environment, inside the project",
+            why: lang === "pt"
+              ? "O seu código vai fazer import do pacote, por isso precisa das versões certas no interpretador que corre esse código — e nada disso deve tocar no Python do sistema."
+              : "Your code will import the package, so it needs the right versions in the interpreter that runs that code — and none of that should touch the system Python.",
+            cmd: "cd ~/projects/myapp\npython3 -m venv .venv\nsource .venv/bin/activate\npython -m pip install --upgrade pip\npip install PACKAGE\npip freeze > requirements.txt"
+          };
+        }
+        if (often === "once") {
+          return {
+            state: "mid",
+            title: lang === "pt" ? "Não instale: execute uma vez" : "Do not install it: run it once",
+            why: lang === "pt"
+              ? "Se é para experimentar, um ambiente temporário é suficiente e não deixa nada no PATH. Se gostar, instale a seguir com pipx."
+              : "If it is an experiment, a throwaway environment is enough and leaves nothing on your PATH. If you like it, install it properly afterwards.",
+            cmd: uv ? "uvx PACKAGE --help" : "pipx run PACKAGE --help"
+          };
+        }
+        if (uv) {
+          return {
+            state: "ok",
+            title: lang === "pt" ? "uv tool install" : "uv tool install",
+            why: lang === "pt"
+              ? "Já usa uv: instale como ferramenta, com o seu próprio ambiente e o lançador em ~/.local/bin, e atualize tudo com um comando."
+              : "You already use uv: install it as a tool, with its own environment and its launcher in ~/.local/bin, and upgrade everything with one command.",
+            cmd: "uv tool install PACKAGE\nPACKAGE --help\nuv tool upgrade --all"
+          };
+        }
+        return {
+          state: "ok",
+          title: lang === "pt" ? "pipx install" : "pipx install",
+          why: lang === "pt"
+            ? "Uma aplicação, um ambiente, um lançador. É o caminho com menos decisões e o que este manual usa por omissão."
+            : "One app, one environment, one launcher. It is the path with the fewest decisions, and the one this manual uses by default.",
+          cmd: "python3 -m pip install --user pipx\npython3 -m pipx ensurepath\npipx install PACKAGE\nPACKAGE --help"
+        };
+      }
+
+      function updateDecision() {
+        var v = verdict();
+        var out = byId("d-verdict");
+        if (!out) {
+          return;
+        }
+        out.textContent = v.title;
+        out.dataset.state = v.state;
+        byId("d-why").textContent = v.why;
+        byId("d-out").textContent = v.cmd;
+      }
+
+      /* ---------- glossary ---------- */
+      function renderGlossary() {
+        var list = byId("glossary-list");
+        if (!list) {
+          return;
+        }
+        list.innerHTML = "";
+        GLOSSARY.forEach(function (entry) {
+          var pair = entry[lang];
+          list.appendChild(el("dt", null, pair[0]));
+          list.appendChild(el("dd", null, pair[1]));
+        });
+      }
+
+      /* ---------- copy ---------- */
+      function wireCopy(buttonId, sourceId) {
+        var button = byId(buttonId);
+        var source = byId(sourceId);
+        if (!button || !source) {
+          return;
+        }
+        button.addEventListener("click", function () {
+          var text = source.textContent;
+          var done = function () {
+            var previous = button.getAttribute("data-label") || button.textContent;
+            button.setAttribute("data-label", previous);
+            button.textContent = lang === "pt" ? "copiado" : "copied";
+            window.setTimeout(function () {
+              button.textContent = lang === "pt" ? "copiar" : "copy";
+            }, 1400);
+          };
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(done, done);
+              return;
+            }
+          } catch (error) {
+            /* fall through to the textarea */
+          }
+          var area = document.createElement("textarea");
+          area.value = text;
+          document.body.appendChild(area);
+          area.select();
+          try {
+            document.execCommand("copy");
+          } catch (error) {
+            /* nothing left to try */
+          }
+          document.body.removeChild(area);
+          done();
+        });
+      }
+
+      /* ---------- language ---------- */
+      var TITLE = {
+        en: "The Shell, Extended — Thirty Python Apps and One Clean Install",
+        pt: "A Shell, Alargada — Trinta Aplicações Python e Uma Instalação Limpa"
+      };
+      var DESCRIPTION = {
+        en: "From the terminal: virtual environments, pipx and uv, thirty Python apps from GitHub, the ten errors that stop an install, and twelve sources.",
+        pt: "Do terminal: ambientes virtuais, pipx e uv, trinta aplicações Python do GitHub, os dez erros que travam uma instalação e doze fontes."
+      };
+
+      var langButtons = [];
+      var PT = {
+        "hero.kicker": "Ferramentas de terminal · um manual em dezanove partes",
+        "hero.title": "A Shell, Alargada",
+        "hero.lede": "O melhor software Python não vive numa loja de aplicações. Vive num terminal, num repositório com um README, atrás de um comando que o instala. Este manual é sobre esse comando: como construir um ambiente virtual, como o manter fora do sistema, e trinta projetos reais do GitHub que valem o trabalho — de publicar no Mastodon a fazer OCR a um contrato digitalizado.",
+        "hero.f1": "Dezanove partes",
+        "hero.f2": "Trinta aplicações",
+        "hero.f3": "venv · pipx · uv",
+        "hero.f4": "Construtor de instalação",
+        "hero.f5": "Dez erros, resolvidos",
+        "hero.f6": "Cada repositório ligado",
+
+        "path.a.h": "Nunca criei um venv",
+        "path.a.p": "Parte 02: sete comandos, uma tarde, e nada muda no resto da máquina.",
+        "path.b.h": "Quero ver as ferramentas",
+        "path.b.p": "Parte 06: cada ferramenta com o pacote, a versão, a página e uma linha sobre o que faz, mais o comando para a sua máquina.",
+        "path.c.h": "Dê-me só o comando",
+        "path.c.p": "Parte 03: um ambiente isolado por aplicação, sem conflitos de dependências.",
+        "path.d.h": "Uma instalação acabou de falhar",
+        "path.d.p": "Parte 16: as dez mensagens que travam as pessoas e a correção de cada uma.",
+
+        "nav.home": "Início",
+        "nav.rule": "A regra",
+        "nav.venv": "venv",
+        "nav.pipx": "pipx",
+        "nav.uv": "uv",
+        "nav.path": "PATH",
+        "nav.builder": "Construtor",
+        "nav.social": "Social",
+        "nav.media": "Média",
+        "nav.machine": "Máquina",
+        "nav.data": "Dados",
+        "nav.docs": "Documentos",
+        "nav.terminal": "Terminal",
+        "nav.library": "Biblioteca",
+        "nav.servers": "Servidores",
+        "nav.maintain": "Manutenção",
+        "nav.errors": "Erros",
+        "nav.decide": "Qual método",
+        "nav.sources": "Fontes",
+        "nav.glossary": "Glossário",
+
+        "t.tool": "Ferramenta",
+        "t.job": "Para que serve",
+        "t.when": "Usar quando",
+        "t.cost": "O que custa",
+        "t.system": "Sistema",
+        "t.create": "Criar",
+        "t.activate": "Ativar",
+        "t.deactivate": "Sair",
+        "t.command": "Comando",
+        "t.does": "O que faz",
+        "t.why": "Porque o faria",
+        "t.task": "Tarefa",
+        "t.dir": "Diretório",
+        "t.holds": "O que guarda",
+        "t.touch": "Deve mexer?",
+        "t.path": "Caminho",
+        "t.backup": "Cópia de segurança?",
+        "t.why2": "Porquê",
+        "t.message": "Mensagem",
+        "t.cause": "O que significa",
+        "t.fix": "Correção",
+
+        "s1.title": "Nunca instale no Python do sistema",
+        "s1.sub": "Quase todas as instalações Python avariadas começam com uma de duas frases: «funcionava na minha máquina» e «corri com sudo». São o mesmo erro — instalar as dependências de um projeto no único interpretador que o sistema operativo usa para se correr a si próprio. Há uma regra que elimina toda a classe de problema, e cabe em três linhas.",
+        "s1.r1.h": "Um: o Python do sistema pertence ao sistema",
+        "s1.r1.p": "Debian, Ubuntu, Fedora, macOS e Arch trazem Python porque partes do sistema operativo estão escritas nele. Instalar pacotes nele significa que dois projetos podem exigir duas versões da mesma biblioteca, e quem perde é normalmente o seu ambiente gráfico. As distribuições modernas já recusam: o pip termina com <code>error: externally-managed-environment</code>, que não é um erro, é uma porta fechada com uma razão.",
+        "s1.r2.h": "Dois: um projeto recebe um venv, uma aplicação recebe pipx",
+        "s1.r2.p": "Se vai fazer <code>import</code> da coisa no seu código, pertence a um ambiente virtual dentro da pasta do projeto. Se só vai escrever o nome dela no prompt, pertence ao pipx (ou ao uv), que dá à aplicação o seu próprio venv privado e deixa um único lançador no seu PATH. Nada mais na máquina a vê.",
+        "s1.r3.h": "Três: nunca sudo, para pip",
+        "s1.r3.p": "A única exceção é o gestor de pacotes da distribuição — <code>apt install python3-venv</code>, <code>dnf install python3-pip</code> — que instala as ferramentas, nunca as dependências de um projeto. Se um README diz para fazer <code>sudo pip install</code>, o README está velho; use o pyproject do projeto ou o nome no PyPI com pipx.",
+        "s1.note.h": "O que esse erro diz de facto",
+        "s1.note.p": "A PEP 668 permite que uma distribuição marque o seu interpretador como gerido externamente, com um ficheiro <code>EXTERNALLY-MANAGED</code> ao lado da biblioteca padrão. O pip lê-o e para. Pode contornar com <code>--break-system-packages</code>; não deve, e nenhum comando neste manual precisa disso. A saída é um venv, a um comando de distância.",
+        "s1.which.h": "Três ferramentas, três funções",
+        "s1.v1.a": "Uma pasta com o seu próprio Python, o seu próprio <code>pip</code> e as suas próprias site-packages. Incluída no Python desde a 3.3.",
+        "s1.v1.b": "Está a escrever código que faz import da biblioteca, ou precisa de um conjunto exato de versões para um projeto.",
+        "s1.v1.c": "20–200 MB por ambiente, e um comando de ativação por terminal.",
+        "s1.v2.a": "Um gestor de ambientes isolados, um por aplicação de linha de comando, com um lançador ligado por symlink em <code>~/.local/bin</code>.",
+        "s1.v2.b": "O pacote fornece um comando que se corre (yt-dlp, toot, csvkit) e que nunca é importado.",
+        "s1.v2.c": "Alguns MB por aplicação; o custo em disco é o preço de nunca mais ter um conflito de dependências.",
+        "s1.v3.a": "Um único binário rápido que faz venvs, instalações pip, descarregamento de versões de Python e instalação de ferramentas — os mesmos trabalhos, em segundos.",
+        "s1.v3.b": "Instala ferramentas com frequência, ou está cansado de esperar pelo resolver. O <code>uvx</code> também corre uma aplicação sem a instalar.",
+        "s1.v3.c": "Mais um binário em que confiar e para atualizar; está escrito em Rust, não em Python.",
+        "s1.quick.h": "A ideia toda, num ecrã",
+        "s1.quick.p": "Um ambiente por aplicação, sem ativação, e o comando chamado pelo caminho completo. É o padrão que o resto do manual refina; tudo o resto é conveniência por cima disto.",
+        "s1.quick.after": "Nada foi instalado no sistema, nada precisa de sudo, e apagar <code>~/.venvs/media</code> remove qualquer rasto. As três desvantagens são o caminho longo, a necessidade de uma pasta por aplicação, e ter de lembrar qual pasta tem o quê — que é exatamente o que o pipx remove.",
+
+        "s2.title": "O ambiente virtual, do zero",
+        "s2.sub": "Um venv não é uma máquina virtual nem magia: é um diretório com um symlink para o seu Python, uma cópia dos scripts de arranque e uma pasta <code>site-packages</code> onde o pip escreve. Ativá-lo muda uma variável de ambiente, o <code>PATH</code>, para que <code>python</code> signifique esta pasta em vez do Python do sistema. É todo o mecanismo.",
+        "s2.steps.h": "Sete comandos, por ordem",
+        "s2.r1.h": "Ver o que tem",
+        "s2.r1.p": "<code>python3 --version</code> deve imprimir 3.11 ou mais recente para a maioria das aplicações deste manual (o mitmproxy, por exemplo, quer 3.12 — cada projeto declara o mínimo no PyPI). Se a versão for mais antiga do que um projeto exige, instale um interpretador novo ao lado do antigo em vez de substituir o do sistema.",
+        "s2.r2.h": "Instalar o módulo venv, se a sua distribuição o separou",
+        "s2.r2.p": "Debian e Ubuntu trazem Python sem <code>ensurepip</code>, o que faz <code>python3 -m venv</code> falhar com «ensurepip is not available». Um pacote resolve isso para sempre: <code>sudo apt install python3-venv</code>. Fedora e Arch já o incluem; o Python de python.org inclui; o do Homebrew também.",
+        "s2.r3.h": "Criá-lo dentro do projeto",
+        "s2.r3.p": "Chame-lhe <code>.venv</code> e ponha-o na raiz do projeto — editores, linters e todos os tutoriais já olham para lá. A pasta é descartável: não vive nada nela além de symlinks e wheels.",
+        "s2.r4.h": "Ativá-lo",
+        "s2.r4.p": "Ativar é uma conveniência, não uma obrigação. Existe para que escrever <code>python</code> e <code>pip</code> faça a coisa certa; o ambiente funciona igual se chamar <code>.venv/bin/python</code> diretamente, que é o que cron e scripts devem fazer.",
+        "s2.r5.h": "Instalar com pip, depois congelar",
+        "s2.r5.p": "Instale o que precisa, confirme que importa, e escreva as versões exatas num ficheiro. O <code>pip freeze</code> regista tudo, incluindo dependências transitivas; um <code>requirements.txt</code> escrito à mão regista só a sua intenção. Para aplicações, congele. Para bibliotecas, fixe as dependências diretas e deixe o resolver trabalhar.",
+        "s2.r6.h": "Sair, e voltar depois",
+        "s2.r6.p": "O <code>deactivate</code> restaura o PATH anterior. Na sessão seguinte, ative outra vez, ou salte a ativação e use o caminho completo. Num servidor, salte sempre: um script que depende de uma shell ativada quebra na primeira vez que corre no cron.",
+        "s2.r7.h": "Apagá-lo quando apodrece",
+        "s2.r7.p": "Quando as atualizações correm mal, a correção mais rápida é <code>rm -rf .venv</code> e criá-lo outra vez a partir do <code>requirements.txt</code>. Dez segundos, sem resíduos. É o hábito que torna o resto deste manual seguro: ambientes são baratos, por isso nunca repare um durante uma hora.",
+        "s2.os.h": "Os mesmos três comandos em cada sistema",
+        "s2.note.h": "O PowerShell bloqueia o script de ativação",
+        "s2.note.p": "Por omissão o Windows recusa correr <code>Activate.ps1</code> porque é um script não assinado. A correção é por utilizador, não por máquina: <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code>. Se preferir não tocar em políticas, chame <code>.venv\\Scripts\\python.exe</code> diretamente e nunca ative.",
+        "s2.session.h": "Uma sessão real, com a saída que deve dar",
+        "s2.session.after": "Noutra máquina, ou depois de apagar a pasta: <code>python3 -m venv .venv &amp;&amp; source .venv/bin/activate &amp;&amp; pip install -r requirements.txt</code>. Essa linha é toda a história de portabilidade de um projeto Python, e é por isso que o <code>requirements.txt</code> é commitado e o <code>.venv</code> não.",
+        "s2.git.h": "O que vai para o git",
+        "s2.git.p": "Commit o <code>requirements.txt</code> (ou o <code>pyproject.toml</code> com um ficheiro de lock). Nunca commit o <code>.venv</code>: contém caminhos absolutos, binários específicos da plataforma e dezenas de megabytes. Uma linha no <code>.gitignore</code> — <code>.venv/</code> — evita cem clones confusos.",
+        "s2.bad.h": "As duas opções que causam sarilhos",
+        "s2.bad.p": "O <code>--system-site-packages</code> deixa um ambiente ver os pacotes do sistema, o que reintroduz em silêncio o conflito de que estava a fugir. O <code>--without-pip</code> cria um ambiente sem instalador; depois precisa de <code>python -m ensurepip</code>. Nenhum dos dois é necessário para nada neste manual.",
+
+        "s3.title": "pipx: um comando por aplicação, sem conflitos",
+        "s3.sub": "O pipx responde a uma pergunta específica: e se eu quiser o comando, e não a biblioteca? Cria um venv privado para cada aplicação em <code>~/.local/pipx/venvs</code>, instala lá o pacote com o interpretador certo, e liga apenas o lançador em <code>~/.local/bin</code>. Duas aplicações podem então depender de duas versões incompatíveis da mesma biblioteca e nenhuma nota a outra.",
+        "s3.start.h": "Comece aqui",
+        "s3.start.after": "O <code>ensurepath</code> escreve a linha do PATH no ficheiro de arranque da sua shell. Se a shell seguinte ainda diz <code>command not found</code>, o ficheiro era o errado — ver a parte 05 — ou a shell guardou a lista de comandos em cache e precisa de <code>hash -r</code>.",
+        "s3.cmds.h": "Os oito comandos do pipx que vale a pena memorizar",
+        "s3.c1.a": "Cria um venv e liga o lançador.",
+        "s3.c1.b": "O caso normal. Extras entre aspas: <code>pipx install \"qrcode[pil]\"</code>.",
+        "s3.c2.a": "Mostra cada aplicação, a versão e os nomes de comando.",
+        "s3.c2.b": "Quando não se lembra se já instalou alguma coisa.",
+        "s3.c3.a": "Atualiza só essa aplicação, no seu próprio venv.",
+        "s3.c3.b": "O yt-dlp e o gallery-dl precisam disto muitas vezes: os sites mudam todas as semanas.",
+        "s3.c4.a": "Atualiza todas as aplicações geridas pelo pipx.",
+        "s3.c4.b": "Um hábito mensal, não diário.",
+        "s3.c5.a": "Remove o venv e o lançador.",
+        "s3.c5.b": "Uma remoção limpa, sem sobras nas site-packages.",
+        "s3.c6.a": "Acrescenta uma biblioteca ao venv dessa aplicação.",
+        "s3.c6.b": "Para plugins e backends opcionais, sem tocar nas outras aplicações.",
+        "s3.c7.a": "Corre a aplicação num venv temporário que é deitado fora.",
+        "s3.c7.b": "Experimentar uma vez sem se comprometer.",
+        "s3.c8.a": "Reconstrói o venv dessa aplicação com outro interpretador.",
+        "s3.c8.b": "Quando uma aplicação precisa de um Python mais novo (ou mais velho) do que o padrão.",
+        "s3.inject.h": "O padrão dos plugins",
+        "s3.inject.p": "Um comando com ecossistema — beets, llm, mkdocs — normalmente quer um plugin. Instale a aplicação, depois <code>pipx inject beets beets-fetchart</code>. O plugin fica no mesmo venv privado, por isso não pode quebrar outra ferramenta, e <code>pipx upgrade beets</code> não lhe toca.",
+        "s3.pin.h": "Quando uma aplicação não pode mudar",
+        "s3.pin.p": "O pipx não tem ficheiro de lock por desenho: é para ferramentas que quer atuais. Se uma versão tiver de ficar congelada — um pipeline de publicação, um scraper com seletores frágeis — use um venv com um requirements fixo, ou <code>uv tool install NOME==1.2.3</code>, e trate-o como um projeto em vez de uma ferramenta.",
+
+        "s4.title": "uv: os mesmos trabalhos, em segundos",
+        "s4.sub": "O uv é um único binário da Astral que substitui as partes lentas da cadeia de ferramentas Python: criar ambientes, resolver dependências, descarregar interpretadores, instalar ferramentas de linha de comando. Não é um pacote Python (há uma wheel instalável com pip, mas a instalação suportada é o binário), e é a única ferramenta neste manual que vale a pena aprender por si.",
+        "s4.note.h": "O uvx é a funcionalidade que muda hábitos",
+        "s4.note.p": "O <code>uvx NOME</code> descarrega a aplicação para um ambiente em cache, corre-a com os argumentos que deu, e deixa o seu PATH intacto. Para uma conversão única, uma consulta <code>csvsql</code> ou uma passagem rápida do <code>gallery-dl</code>, isso é mais rápido do que decidir se quer a ferramenta para sempre. A cache faz com que a segunda execução seja instantânea.",
+        "s4.pick.h": "pipx ou uv?",
+        "s4.pick.p": "Ambos produzem o mesmo resultado: um ambiente isolado e um lançador em <code>~/.local/bin</code>. O pipx é a escolha conservadora — é empacotado por todas as distribuições principais, o comportamento é estável, e só gere ferramentas. O uv é mais rápido e mais amplo, e também gere os ambientes e as versões de Python dos projetos, o que é ou conveniente ou uma dependência a mais, conforme o gosto. O manual usa pipx nos comandos e indica o equivalente em uv; nada aqui precisa dos dois.",
+        "s4.t1": "Instalar uma ferramenta",
+        "s4.t2": "Correr uma vez",
+        "s4.t3": "Atualizar tudo",
+        "s4.t4": "Escolher o interpretador",
+        "s4.t5": "Adicionar um plugin",
+        "s4.t6": "Ambiente de projeto",
+        "s4.t6.a": "não é a função dele",
+
+        "s5.title": "PATH, e onde as coisas ficam de facto",
+        "s5.sub": "A falha mais comum neste manual não é um pacote avariado. É uma instalação correta cujo comando não é encontrado, porque o lançador foi escrito para uma pasta que a sua shell não procura. Conhecer os quatro diretórios remove o mistério.",
+        "s5.d1.a": "Lançadores do pipx e do uv, mais qualquer script de <code>pip install --user</code>.",
+        "s5.d1.b": "Não — mas tem de estar no PATH. É o diretório que o <code>ensurepath</code> acrescenta.",
+        "s5.d2.a": "O ambiente privado de cada aplicação pipx, com as suas dependências.",
+        "s5.d2.b": "Nunca à mão. O pipx é o dono; edite com <code>inject</code> ou reinstale.",
+        "s5.d3.a": "Ambientes que não pertencem a nenhum projeto — uma caixa de ferramentas sua.",
+        "s5.d3.b": "Sim, à vontade. São pastas que inventou; apague-as quando se aborrecer.",
+        "s5.d4.a": "Lançadores para todo o sistema, normalmente da distribuição ou de um make install.",
+        "s5.d4.b": "Só com sudo, e só para coisas que o gestor de pacotes não forneceu.",
+        "s5.add.h": "Acrescentá-lo uma vez, por shell",
+        "s5.add.after": "No Windows o equivalente é <code>setx PATH \"%PATH%;%USERPROFILE%\\AppData\\Roaming\\Python\\Scripts\"</code> num cmd novo, e reiniciar o terminal. Se o <code>command -v</code> não imprime nada mas o ficheiro existe, a shell está a usar uma lista em cache: <code>hash -r</code> no bash, <code>rehash</code> no zsh, ou simplesmente abrir uma janela nova.",
+        "s5.note.h": "A verificação que resolve a dúvida",
+        "s5.note.p": "<code>ls ~/.local/bin | head</code> mostra se o lançador existe; <code>echo $PATH | tr ':' '\\n' | grep local</code> mostra se a shell procura lá. Esses dois comandos respondem a «porque é que o meu comando não é encontrado» em cinco segundos, e são sempre a primeira coisa a correr antes de ler uma mensagem de erro duas vezes.",
+
+        "s6.title": "Construa o comando para a sua máquina",
+        "s6.sub": "Três escolhas — a aplicação, o método, o sistema — e o bloco abaixo é o que cola. Inclui os pacotes de sistema que essa aplicação costuma precisar, porque é o passo que o README assume que já fez, e acima mostra o pacote, a versão, a página, a família e uma linha sobre o que faz.",
+        "s6.tool.h": "Construtor de instalação",
+        "s6.tool.badge": "trinta aplicações",
+        "s6.app": "Aplicação",
+        "s6.method": "Método",
+        "s6.m.pipx": "pipx (recomendado)",
+        "s6.m.uv": "uv (mais rápido)",
+        "s6.m.venv": "venv (manual)",
+        "s6.os": "Sistema",
+        "s6.os.linux": "Linux",
+        "s6.os.mac": "macOS",
+        "s6.os.win": "Windows",
+        "s6.out.app": "Aplicação",
+        "s6.out.pkg": "Pacote",
+        "s6.out.cmd": "Comando",
+        "s6.out.deps": "Pacotes de sistema",
+        "s6.out.what": "O que faz",
+        "s6.out.home": "Página",
+        "s6.out.family": "Família",
+        "s6.copy": "Copiar",
+
+
+        "s8.title": "Publicar: Mastodon, APIs e a web, a partir do prompt",
+        "s8.sub": "Duas das ferramentas mais úteis deste manual fazem o que um separador do navegador faz, sem o separador: o <strong>toot</strong> fala a API do Mastodon, e o <strong>posting</strong> é um cliente de terminal para qualquer API HTTP. Entre os dois, publicar e testar um endpoint deixam de ser motivo para abrir uma janela.",
+        "s8.toot.h": "um cliente Mastodon no terminal",
+        "s8.toot.p": "Um CLI Python para Mastodon e servidores compatíveis (Pleroma, GoToSocial, Akkoma). Autentica-se com um token de aplicação guardado na configuração, por isso a palavra-passe nunca aparece na linha de comando. Publica, encadeia, carrega media, lê timelines e pode correr publicações agendadas por cron.",
+        "s8.toot.after": "O TUI é a parte que as pessoas perdem: <code>toot tui</code> dá uma timeline conduzida por teclado, com respostas e boosts, útil num servidor por SSH. Para automação, <code>toot post</code> devolve o URL do novo estado, para um script poder encadear.",
+        "s8.post.h": "um cliente de API que vive no terminal",
+        "s8.post.p": "O Postman, para quem vive numa shell: pedidos guardados como ficheiros YAML numa coleção, ambientes com variáveis, realce de sintaxe e edição só com teclado. É a forma mais rápida de exercitar um endpoint que está a construir, e a coleção é um ficheiro de texto que pode commitar.",
+        "s8.post.after": "Um ficheiro de pedido é um pequeno documento YAML — método, URL, cabeçalhos, corpo — por isso revê-se num diff e viaja com o repositório. A distribuição Python no PyPI é o que o pipx instala; o README do projeto documenta o binário autónomo mais recente, se preferir esse caminho.",
+        "s8.http.h": "o curl legível",
+        "s8.http.p": "O curl está sempre lá e é sempre críptico. O HTTPie transforma um pedido em algo mais próximo de uma frase: o JSON é assumido, os cabeçalhos têm cor, e a resposta é formatada em vez de concatenada. É a ferramenta a usar quando está a depurar uma API à mão.",
+        "s8.note.h": "Tokens são ficheiros, não argumentos",
+        "s8.note.p": "Um token escrito depois de um comando fica no histórico da shell, e o histórico é legível por todos mais vezes do que se pensa. O <code>toot login</code> guarda o token em <code>~/.config/toot/config.json</code>; para o HTTPie, ponha a credencial numa sessão (<code>--session=api</code>) ou leia-a de uma variável de ambiente. Se já a deixou escapar, revogue-a — não edite o histórico e espere.",
+
+        "s9.title": "Media: descarregar, arquivar, converter",
+        "s9.sub": "As aplicações Python de linha de comando mais instaladas do mundo são descarregadores de media, e por boa razão: fazem um trabalho melhor do que qualquer site, são programáveis, e continuam a funcionar depois de o site mudar. Todas as quatro aqui querem o <strong>ffmpeg</strong> instalado pelo sistema, não pelo pip — é a razão mais comum para um descarregamento «correr bem» e não produzir ficheiro.",
+        "s9.yt.h": "a implementação de referência de «descarregue isso»",
+        "s9.yt.p": "Um fork do youtube-dl atualizado semanalmente, com suporte a mais de mil sites. Formatos, legendas, capítulos, playlists, arquivos que saltam o que já tem, e um ficheiro de configuração para as opções que passa sempre.",
+        "s9.yt.after": "A opção <code>--download-archive</code> é a que transforma um descarregador numa subscrição: corra-o no cron e cada passagem traz só o que é novo. Guarde o ficheiro de arquivo com o media, não em <code>/tmp</code>.",
+        "s9.gal.h": "galerias de imagens, não vídeos",
+        "s9.gal.p": "A ferramenta companheira para os sites que o yt-dlp não cobre: image boards, páginas de artistas, leitores de manga, feeds de fotografias. Preserva os metadados da publicação como JSON ao lado dos ficheiros, o que torna um arquivo pesquisável anos depois.",
+        "s9.sl.h": "emissões em direto para um leitor",
+        "s9.sl.p": "Recebe o URL de uma página que está a emitir e entrega a emissão em si ao mpv ou ao VLC, na qualidade que escolher. Sem navegador, sem anúncios, sem compositor. Também grava, que é a diferença entre «vi» e «tenho».",
+        "s9.spot.h": "playlists em ficheiros",
+        "s9.spot.p": "Lê uma playlist ou faixa do Spotify, encontra uma fonte de áudio correspondente e escreve ficheiros etiquetados com capa. Trate-o como uma ferramenta para material que já tem o direito de guardar: ele emparelha áudio de fontes públicas, e o que escreve é responsabilidade sua, não da ferramenta.",
+        "s9.warn.h": "A linha legal, num parágrafo",
+        "s9.warn.p": "Descarregar não é o mesmo que possuir. O direito de autor aplica-se ao ficheiro, os termos do site aplicam-se ao acesso, e nenhum dos dois fica suspenso por a ferramenta ser open source. Guarde o que tem direito a guardar, arquive as suas próprias publicações, use as ferramentas para investigação e acessibilidade onde a lei o permite, e não construa um negócio a redistribuir trabalho dos outros. Os quatro projetos acima documentam os seus limites; leia-os uma vez.",
+
+        "s10.title": "Observar a máquina: CPU, GPU e porque é lento",
+        "s10.sub": "Três ferramentas, três perguntas. O que está a máquina toda a fazer agora? A GPU é o estrangulamento? E que linha do meu Python está a gastar o tempo? Nenhuma precisa de root, e as três produzem saída que pode colar num relatório de erro.",
+        "s10.gl.h": "A máquina toda, num ecrã",
+        "s10.gl.p": "CPU, memória, discos, rede, sensores, contentores e os processos principais, num esquema que cabe num terminal de 80 colunas e se atualiza sozinho. O mesmo processo pode servir essa vista por HTTP, o que faz dele um painel de monitorização para uma máquina sem ecrã, sem instalar nenhum agente.",
+        "s10.nv.h": "A resposta da GPU",
+        "s10.nv.p": "Um monitor de GPU NVIDIA que mostra memória, utilização e temperatura por processo, com a árvore de processos dona de cada placa — a coisa que o <code>nvidia-smi</code> quase faz. Instala-se como aplicação Python mas fala diretamente com o driver; não é preciso CUDA toolkit, só um driver a funcionar.",
+        "s10.py.h": "um profiler que se lê",
+        "s10.py.p": "Profiler estatístico com um relatório feito para humanos: mostra a pilha de chamadas como uma árvore de tempo, não uma parede de números. Corra-o num script, ou ligue-o a um processo a correr, e exporte um HTML para abrir depois.",
+        "s10.py.after": "Para um pedido web que parece lento, o padrão útil é envolver o handler e não o servidor: perfile a função, não o framework. E perfile duas vezes — uma execução é uma anedota, duas com a mesma forma são uma medição.",
+
+        "s11.title": "Dados: SQLite, CSV, JSON, Postgres",
+        "s11.sub": "A maior parte do «trabalho de dados» não é um notebook. É um ficheiro com linhas, uma pergunta sobre essas linhas, e uma shell onde o ficheiro já está. Estas cinco ferramentas respondem à pergunta sem abrir um editor: o <strong>datasette</strong> publica uma base de dados como site navegável, o <strong>sqlite-utils</strong> constrói-a e edita-a, o <strong>csvkit</strong> corta ficheiros de texto, o <strong>jc</strong> converte a saída de qualquer comando em JSON, e o <strong>pgcli</strong> dá autocompletar ao Postgres.",
+        "s11.ds.h": "uma base de dados com URL",
+        "s11.ds.p": "Aponta-se para um ficheiro SQLite e ele serve uma interface navegável, filtrável e com facetas, com uma API JSON em cada tabela. É a forma mais rápida de deixar outra pessoa olhar para os seus dados sem lhe enviar o ficheiro, e não precisa de configuração de servidor nenhuma.",
+        "s11.ds.after": "Cada tabela também responde em JSON: acrescente <code>.json</code> ao URL. Essa única funcionalidade substitui um pequeno projeto de API mais vezes do que se espera.",
+        "s11.su.h": "a base de dados, a partir da linha de comando",
+        "s11.su.p": "Insere CSV e JSON em SQLite, cria tabelas a partir da forma dos dados, corre consultas, altera esquemas e converte colunas — as operações para as quais escreveria doze linhas de Python, de cada vez.",
+        "s11.ck.h": "catorze comandos, uma ideia",
+        "s11.ck.p": "Cada utilitário faz uma transformação e escreve CSV no stdout, por isso compõem-se num pipe: cortar colunas, filtrar linhas, ordenar, juntar, descrever, e depois consultar o resultado com SQL. Também lê XLSX, o que o torna a ponte entre uma folha de cálculo e tudo o resto.",
+        "s11.jc.h": "JSON a partir de qualquer comando",
+        "s11.jc.p": "Recebe a saída em texto de uma centena de comandos familiares — <code>ls</code>, <code>ps</code>, <code>df</code>, <code>ip</code>, <code>dig</code>, <code>systemctl</code> — e devolve JSON estruturado, para o passo seguinte poder ser <code>jq</code> em vez de <code>awk</code>. Também analisa os formatos que não têm analisador: ini, csv, yaml, syslog, crontab.",
+        "s11.pg.h": "Postgres com autocompletar",
+        "s11.pg.p": "Um cliente Postgres que conhece o seu esquema: nomes de tabelas e colunas completam-se enquanto escreve, a sintaxe tem cor, e os resultados paginam-se. A mesma família inclui o <code>mycli</code> para MySQL e o <code>litecli</code> para SQLite, dos mesmos mantenedores.",
+
+        "s12.title": "Documentos: digitalizar, imprimir, etiquetar",
+        "s12.sub": "Três ferramentas pequenas com a mesma forma: entrada à esquerda, ficheiro à direita, nenhuma janela de aplicação. O OCR transforma uma digitalização em texto, o WeasyPrint transforma HTML e CSS num PDF de impressão, e o qrcode transforma uma string em algo que um telefone lê.",
+        "s12.oc.h": "um PDF digitalizado que se pode pesquisar",
+        "s12.oc.p": "Acrescenta uma camada de texto a um PDF só de imagens, mantendo a digitalização original por baixo: parece idêntico, e Ctrl+F funciona. É a diferença entre um arquivo e um monte de fotografias de documentos. O Tesseract e o Ghostscript são pacotes de sistema, não pacotes pip.",
+        "s12.oc.after": "Os pacotes de língua são a surpresa habitual: <code>tesseract-ocr-por</code> para português, <code>-eng</code> para inglês, <code>-spa</code> para espanhol. Sem o pacote, o OCR corre com um modelo inglês e estraga todos os acentos.",
+        "s12.wp.h": "HTML para PDF, como deve ser",
+        "s12.wp.p": "Renderiza HTML com suporte real de CSS, incluindo media paginada: margens, cabeçalhos correntes, números de página, notas de rodapé e quebras de página. É como uma fatura gerada, um relatório ou um livro deixam de ser uma captura de ecrã de um navegador.",
+        "s12.wp.after": "O CSS a aprender é pequeno: <code>@page { size: A4; margin: 2cm }</code>, <code>@page { @bottom-center { content: counter(page) } }</code>, e <code>break-before: page</code>. É a maior parte de um documento imprimível.",
+        "s12.qr.h": "um código QR a partir do prompt",
+        "s12.qr.p": "Pequeno, antigo, e ainda a forma mais rápida de pôr um URL numa sala: gera um PNG ou um SVG, imprime-o, cola-o numa etiqueta de prateleira ou num cartão de visita. O CLI chama-se <code>qr</code> e precisa do extra de imagem.",
+        "s12.qr.after": "Mais correção de erro significa uma imagem mais densa que continua a ler-se quando tapada em parte — vale a pena para tudo o que é impresso pequeno ou fica ao ar livre.",
+
+        "s13.title": "Ofício de terminal: ficheiros, erros, memória",
+        "s13.sub": "Quatro ferramentas que melhoram a própria shell: um gestor de ficheiros que nunca sai do teclado, um corretor para o comando que acabou de escrever mal, um manual com exemplos em vez de opções, e um renderizador que torna Markdown e código legíveis no prompt.",
+        "s13.ra.h": "três colunas, sem rato",
+        "s13.ra.p": "Um gestor de ficheiros de terminal com painel de pré-visualização: texto, imagens (num terminal adequado), PDFs, arquivos. Mover, copiar, renomear em lote e abrir uma shell na pasta atual são teclas únicas. É a resposta para um servidor onde o <code>ls</code> não chega e não há ambiente gráfico.",
+        "s13.tf.h": "a correção depois do palavrão",
+        "s13.tf.p": "Quando um comando falha por um erro de escrita ou por falta de sudo, escreva <code>fuck</code> e ele propõe o comando corrigido, que aceita com Enter. Lê o comando anterior e o erro, não as suas intenções — é por isso que funciona tantas vezes.",
+        "s13.tl.h": "o manual, com exemplos",
+        "s13.tl.p": "As páginas de manual listam todas as opções; as páginas tldr mostram as cinco invocações que as pessoas usam. O cliente Python descarrega as páginas da comunidade e guarda-as em cache local, por isso as consultas são instantâneas e offline depois da primeira atualização.",
+        "s13.rc.h": "Markdown e código, renderizados",
+        "s13.rc.p": "Imprime um ficheiro como ele foi feito para parecer: Markdown com títulos e tabelas, código com realce de sintaxe e números de linha, JSON formatado, CSV como tabela. Útil para READMEs por SSH e para verificar saída gerada antes de a publicar.",
+
+        "s14.title": "Uma biblioteca pessoal que sobrevive à aplicação",
+        "s14.sub": "O melhor argumento para ferramentas de linha de comando não é a velocidade, é a posse: a biblioteca de música é uma pasta de ficheiros etiquetados, os marcadores são uma base de dados SQLite, o calendário é um diretório de ficheiros <code>.ics</code>. Nada aqui precisa de uma conta, e tudo pode ser copiado com <code>rsync</code>.",
+        "s14.be.h": "a biblioteca de música que se corrige sozinha",
+        "s14.be.p": "Importa uma pasta, identifica o áudio, procura a edição, escreve etiquetas corretas, move os ficheiros para uma árvore limpa e guarda tudo numa base de dados consultável. Depois de configurado, <code>beet import</code> é o único comando de que precisa para um álbum novo.",
+        "s14.be.after": "A configuração vive em <code>~/.config/beets/config.yaml</code>: caminho da biblioteca, formato do diretório, plugins. O hábito importante é <code>beet write</code> — a base de dados é uma conveniência, os ficheiros são o arquivo.",
+        "s14.bu.h": "marcadores que são seus",
+        "s14.bu.p": "Um gestor de marcadores para o terminal, com etiquetas, pesquisa em texto completo e exportação HTML. A base de dados é um ficheiro SQLite, por isso sincroniza-se, faz-se grep, e sobrevive à morte de qualquer empresa.",
+        "s14.kh.h": "o calendário como ficheiros",
+        "s14.kh.p": "Lê e escreve calendários guardados como ficheiros iCalendar numa pasta — o mesmo formato que todos os telefones e clientes de correio entendem. Emparelhado com o <code>vdirsyncer</code>, mantém uma cópia local sincronizada com um servidor CalDAV, para o terminal e o bolso concordarem.",
+        "s14.kh.after": "A configuração é <code>~/.config/khal/config</code>: uma secção por calendário, um caminho, uma cor. Comece com um único calendário local antes de acrescentar um servidor; sincronizar é um segundo problema.",
+        "s14.td.h": "tarefas como texto, não como aplicação",
+        "s14.td.p": "Gere tarefas no mesmo formato iCalendar, um ficheiro por tarefa, com listas, datas de vencimento, prioridades e uma vista de tabela compacta. Como o armazenamento é texto simples, uma tarefa pode ser editada com qualquer editor e continuar a ser encontrada pela ferramenta.",
+
+        "s15.title": "Servir e publicar: documentação, tráfego, inspeção",
+        "s15.sub": "Duas ferramentas para pôr algo na rede, e uma para perceber o que um programa envia por ela. Ambas são aplicações Python que se instalam com um comando e correm de uma pasta, que é toda a estética deste manual.",
+        "s15.mk.h": "Markdown entra, site sai",
+        "s15.mk.p": "Um gerador de documentação com servidor de recarregamento automático: escreva Markdown, mantenha um pequeno <code>mkdocs.yml</code>, e <code>mkdocs serve</code> mostra o site enquanto escreve. O <code>mkdocs build</code> produz ficheiros estáticos que qualquer alojamento serve. Também é um motor de blog perfeitamente bom, se parar no primeiro tema.",
+        "s15.mm.h": "olhar para o tráfego",
+        "s15.mm.p": "Um proxy que interceta, com três frentes: consola interativa, interface web, e um modo não interativo para scripts. É como se descobre o que uma aplicação envia de facto — que cabeçalhos, que endpoint, que payload — e como se repete um pedido até ele se comportar.",
+        "s15.mm.after": "Para ver HTTPS instala-se o certificado CA do mitmproxy no cliente que está a testar — o projeto documenta-o por plataforma. Use-o nos seus dispositivos e no seu tráfego: intercetar o dos outros não é uma técnica de depuração, é um ataque.",
+
+        "s16.title": "Manter tudo limpo durante um ano",
+        "s16.sub": "Uma instalação é uma decisão que se continua a pagar: cada ferramenta tem uma versão, uma cache e uma pasta. A manutenção é pequena se for regular — cinco minutos por mês, quatro comandos, e a máquina nunca acumula o tipo de instalação Python que ninguém se atreve a tocar.",
+        "s16.a.h": "Auditar antes de confiar",
+        "s16.a.p": "As dependências de uma ferramenta são código que corre com as suas permissões. O <code>pipx run pip-audit</code> verifica um ambiente contra a base pública de vulnerabilidades, e o <code>pipx list --include-injected</code> lembra-o do que acrescentou à mão. Nenhum dos dois é uma garantia; ambos apanham o óbvio.",
+        "s16.b.h": "A regra da segunda instalação",
+        "s16.b.p": "Instale uma ferramenta da primeira vez porque precisa dela. Instale-a da segunda — depois de a remover, com outro método — porque agora sabe como a usa. Tudo o que é instalado «só por precaução» torna-se a pasta que se salta na cópia de segurança.",
+        "s16.c.h": "O que copiar, e o que não copiar",
+        "s16.b1.a": "Sim",
+        "s16.b1.b": "Configuração e tokens: meia hora para recriar, impossível de lembrar.",
+        "s16.b2.a": "Sim",
+        "s16.b2.b": "Os seus marcadores e o índice da biblioteca. Ficheiros pequenos, anos de decisões.",
+        "s16.b3.a": "Não",
+        "s16.b3.b": "Reconstruído a partir de um nome e de uma versão, num comando.",
+        "s16.b4.a": "Duas vezes",
+        "s16.b4.b": "As ferramentas são substituíveis. Esta é a parte que não é.",
+
+        "s17.title": "As dez mensagens que travam uma instalação",
+        "s17.sub": "Estes não são dez problemas. São três: o interpretador errado, uma biblioteca de sistema em falta, ou um diretório que a shell não vê. A tabela liga a mensagem à causa, porque a mensagem quase nunca é a causa.",
+        "s17.e1.b": "Está a instalar no Python da distribuição, que a PEP 668 agora bloqueia de propósito.",
+        "s17.e1.c": "Crie um venv, ou use <code>pipx install</code>. Não use <code>--break-system-packages</code>.",
+        "s17.e2.b": "O lançador está em <code>~/.local/bin</code>, que não está no PATH desta shell.",
+        "s17.e2.c": "Corra <code>pipx ensurepath</code>, abra um terminal novo, ou <code>export PATH=\"$HOME/.local/bin:$PATH\"</code> e <code>hash -r</code>.",
+        "s17.e3.b": "O pacote está instalado para um interpretador diferente do que corre o script.",
+        "s17.e3.c": "Compare <code>which python</code> com a linha de instalação, e reinstale com <code>python -m pip</code> a partir do mesmo ambiente.",
+        "s17.e4.b": "Não existe wheel pré-construída para este pacote e este Python no Windows.",
+        "s17.e4.c": "Tente um Python mais recente (mais wheels), use <code>--only-binary :all:</code> para ver o que existe, ou instale as Build Tools.",
+        "s17.e5.b": "O pacote compila uma extensão em C e faltam os headers de desenvolvimento do Python.",
+        "s17.e5.c": "<code>sudo apt install python3-dev</code> (Debian), <code>python3-devel</code> (Fedora), e tente outra vez.",
+        "s17.e6.b": "Normalmente uma versão de Python abaixo do mínimo do projeto, um nome mal escrito, ou falta de rede.",
+        "s17.e6.c": "Verifique o <code>Requires-Python</code> no PyPI, confirme o nome exato do pacote, e tente um interpretador mais recente.",
+        "s17.e7.b": "O Python de python.org no macOS vem sem um conjunto de certificados, ou um proxy interceta o TLS.",
+        "s17.e7.c": "Corra <code>Install Certificates.command</code> na pasta do Python, ou <code>pip install --upgrade certifi</code>. Num proxy corporativo, defina <code>REQUESTS_CA_BUNDLE</code>.",
+        "s17.e8.b": "O compilador ficou sem memória — comum num VPS de 1 GB com uma compilação grande.",
+        "s17.e8.c": "Acrescente swap, ou evite compilar: prefira <code>--only-binary :all:</code>, ou instale a aplicação onde existam wheels para a sua plataforma.",
+        "s17.e9.b": "Um <code>sudo pip install</code> anterior deixou ficheiros com dono root, e agora o pip não consegue limpar o que fez.",
+        "s17.e9.c": "Deixe de usar sudo para pip. Desinstale o que acrescentou com sudo, corrija a posse se preciso (<code>sudo chown -R $USER</code> nas partes que o utilizador pode escrever), e passe a venv ou pipx.",
+        "s17.e10.b": "O pacote precisa de uma biblioteca de sistema ou de um compilador que a máquina não tem — pango, ffmpeg, tesseract, libpq.",
+        "s17.e10.c": "Instale o pacote de sistema indicado no erro e tente outra vez. Os capítulos de aplicações deste manual dizem qual cada ferramenta precisa.",
+        "s17.note.h": "Leia a última linha, não a primeira",
+        "s17.note.p": "O pip imprime uma página de saída do resolver e a frase útil está mesmo no fim, depois de <code>ERROR:</code>. Copie as últimas dez linhas, não o log todo, quando procurar a mensagem — e junte a versão de Python e o sistema operativo, porque metade das respostas online é para outro par.",
+
+        "s18.title": "Que método, para esta coisa, hoje",
+        "s18.sub": "Três respostas decidem: se o seu código importa o pacote, com que frequência vai correr o comando, e se já tem um instalador rápido. A ferramenta abaixo faz essas três perguntas e dá uma resposta, com o comando que dela decorre.",
+        "s18.tool.h": "venv, pipx ou uv?",
+        "s18.tool.badge": "uma resposta",
+        "s18.q1": "O seu código Python vai importá-lo?",
+        "s18.q1.no": "Não — só corro o comando",
+        "s18.q1.yes": "Sim — preciso dele como biblioteca",
+        "s18.q2": "Com que frequência o vai correr?",
+        "s18.q2.daily": "Todos os dias ou todas as semanas",
+        "s18.q2.sometimes": "De vez em quando",
+        "s18.q2.once": "Uma vez, para experimentar",
+        "s18.q3": "Já usa uv?",
+        "s18.q3.no": "Não, e preferia não usar",
+        "s18.q3.yes": "Sim",
+        "s18.out.verdict": "Veredicto",
+        "s18.out.why": "Porque",
+        "s18.copy": "Copiar",
+
+        "s19.title": "Fontes, e para que serve cada uma",
+        "s19.sub": "O manual é construído a partir de documentação primária, não de tutoriais. Cada ligação abaixo é a página que resolve a questão; cada aplicação na tabela liga ao seu próprio repositório, que é a autoridade sobre as suas próprias opções.",
+        "src.1": "A referência para criar ambientes, incluindo os scripts de ativação por shell e a opção --system-site-packages.",
+        "src.2": "O percurso oficial de venv mais pip, com os mesmos comandos no Windows e em POSIX.",
+        "src.3": "Porque existe o erro externally-managed-environment, e o que os autores esperam que faça em vez disso.",
+        "src.4": "Ficheiros de requisitos, restrições, wheels e as opções usadas na parte 02.",
+        "src.5": "O manual da ferramenta: inject, run, upgrade-all, e onde ficam os ambientes.",
+        "src.6": "Instalação, gestão de ferramentas e ambientes de projeto, do projeto que faz o binário.",
+        "src.7": "O comportamento de uv tool install e do uvx descrito na parte 04, com os equivalentes ao pipx.",
+        "src.8": "Quando congelar, quando fixar, e quando um ficheiro de lock é a resposta honesta.",
+        "src.9": "A versão, o mínimo de Python e a data de lançamento de cada pacote aqui nomeado.",
+        "src.10": "Issues e changelog; o lugar onde verificar antes de assumir que o erro é seu.",
+        "src.11": "O projeto comunitário por trás dos exemplos que o cliente tldr descarrega.",
+        "src.12": "Opções do cliente Mastodon, o TUI, e o formato de configuração usado para os tokens.",
+        "s19.after": "Quando a documentação de um projeto e o seu README discordam, é o README da versão etiquetada que instala — o site de documentação pode estar uma versão à frente. Isso não é um defeito deste manual, é uma propriedade de software que publica todas as semanas.",
+
+        "s20.title": "Glossário",
+        "s20.sub": "Doze palavras que explicam a maior parte da confusão neste manual.",
+
+        "footer.p": "Escrito a partir de um terminal Linux e verificado contra o PyPI e o repositório de cada projeto no dia da publicação: nomes de pacote, versões, mínimos de Python, entry points e dependências de sistema lidos dos metadados publicados, com os comandos tirados da documentação de cada projeto. Onde o manual diz «normalmente», é porque os nomes dos pacotes de sistema diferem entre distribuições — o README do projeto é a palavra final.",
+        "footer.back": "← Voltar ao arquivo",
+        "footer.cross": "O resto da série: <a href=\"golang-cli.html\">Go na Shell</a> para a metade compilada da mesma ideia, <a href=\"rust-cli.html\">Rust na Shell</a> para a metade compilada que responde, <a href=\"hydroponics.html\">Hidroponia em Casa</a> para uma horta sem solo, e <a href=\"recycling.html\">Nada É Lixo</a> para a segunda vida de tudo o que a casa deita fora."
+      };
+
+      function applyLanguage(next) {
+        lang = next;
+        document.documentElement.lang = next;
+        document.querySelectorAll("[data-i18n]").forEach(function (node) {
+          var key = node.getAttribute("data-i18n");
+          node.innerHTML = next === "pt" && PT[key] != null ? PT[key] : EN[key];
+        });
+        langButtons.forEach(function (button) {
+          button.setAttribute("aria-pressed", button.dataset.lang === next ? "true" : "false");
+        });
+        document.title = TITLE[next];
+        ["description", "og:description", "twitter:description"].forEach(function (name) {
+          var node = name === "description"
+            ? document.querySelector('meta[name="description"]')
+            : document.querySelector('meta[property="' + name + '"]');
+          if (node) {
+            node.setAttribute("content", DESCRIPTION[next]);
+          }
+        });
+        renderGlossary();
+        updateBuilder();
+        updateDecision();
+      }
+
+      /* ---------- start ---------- */
+      langButtons = Array.prototype.slice.call(document.querySelectorAll(".lang-switch button"));
+      langButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          applyLanguage(button.dataset.lang);
+        });
+      });
+
+      document.querySelectorAll("[data-i18n]").forEach(function (node) {
+        EN[node.getAttribute("data-i18n")] = node.innerHTML;
+      });
+
+      ["b-app", "b-method", "b-os"].forEach(function (id) {
+        var node = byId(id);
+        if (node) {
+          node.addEventListener("change", updateBuilder);
+        }
+      });
+      ["d-import", "d-often", "d-uv"].forEach(function (id) {
+        var node = byId(id);
+        if (node) {
+          node.addEventListener("change", updateDecision);
+        }
+      });
+
+      wireCopy("b-copy", "b-out");
+      wireCopy("d-copy", "d-out");
+
+      fillBuilder();
+      renderGlossary();
+      updateDecision();
+    })();
+  </script>
+
+</body>
+
+</html>

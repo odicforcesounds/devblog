@@ -1,0 +1,3133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rust in the Shell — Thirty Crates, One Toolchain</title>
+  <meta name="description" content="Rust from the terminal: rustup, cargo install, CARGO_HOME on PATH, thirty crates with verified MSRVs, and the errors that stop a build.">
+  <link rel="canonical" href="https://blog.odicforcesounds.com/rust-cli.html">
+  <meta property="og:title" content="Rust in the Shell — Thirty Crates, One Toolchain">
+  <meta property="og:description" content="Rust from the terminal: rustup, cargo install, CARGO_HOME on PATH, thirty crates with verified MSRVs, and the errors that stop a build.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://blog.odicforcesounds.com/rust-cli.html">
+  <meta property="og:site_name" content="Monkey Blog">
+  <meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Rust in the Shell — Thirty Crates, One Toolchain">
+  <meta name="twitter:description" content="Rust from the terminal: rustup, cargo install, CARGO_HOME on PATH, thirty crates with verified MSRVs, and the errors that stop a build.">
+  <meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/rust-cli.html#article",
+      "headline": "Rust in the Shell — Thirty Crates, One Toolchain",
+      "name": null,
+      "description": "Rust from the terminal: rustup, cargo install, CARGO_HOME on PATH, thirty crates with verified MSRVs, and the errors that stop a build.",
+      "url": "https://blog.odicforcesounds.com/rust-cli.html",
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://blog.odicforcesounds.com/rust-cli.html" },
+      "image": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/peace.jpg", "width": 1496, "height": 960 },
+      "inLanguage": "en",
+      "author": { "@type": "Person", "name": "Oscar", "url": "https://blog.odicforcesounds.com/", "sameAs": ["https://mastodon.social/@TaoExpression"] },
+      "publisher": { "@type": "Organization", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/", "logo": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/three.jpg", "width": 1024, "height": 1024 } },
+      "isPartOf": { "@type": "Blog", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/" },
+      "articleSection": "Programming & Development",
+      "keywords": "Rust in the Shell, rustup, cargo install, CARGO_HOME, Rust CLI apps",
+      "wordCount": 9200,
+      "datePublished": "2026-10-29",
+      "dateModified": "2026-10-29"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://blog.odicforcesounds.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Programming & Development", "item": "https://blog.odicforcesounds.com/#category-programming-and-development" },
+        { "@type": "ListItem", "position": 3, "name": "Rust in the Shell — Thirty Crates, One Toolchain", "item": "https://blog.odicforcesounds.com/rust-cli.html" }
+      ]
+    }
+  ]
+}
+  </script>
+  <style>
+    :root {
+      --bg: #050709;
+      --bg-soft: #0a0f14;
+      --panel: rgba(14, 21, 26, 0.9);
+      --panel-2: rgba(20, 31, 38, 0.94);
+      --line: rgba(226, 149, 95, 0.15);
+      --line-strong: rgba(226, 149, 95, 0.38);
+      --ink: #f2ece1;
+      --muted: #a99f90;
+      --leaf: #e2955f;
+      --leaf-deep: #8f4a22;
+      --water: #f3c9a4;
+      --warm: #e07a5f;
+      --danger: #ef7d7d;
+      --radius: 14px;
+      --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 6rem;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(1100px 600px at 85% -10%, rgba(226, 149, 95, 0.13), transparent 60%),
+        radial-gradient(900px 500px at 5% 8%, rgba(226, 149, 95, 0.08), transparent 60%),
+        var(--bg);
+      font-family: var(--sans);
+      font-size: 17px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: var(--leaf);
+      text-decoration-color: rgba(226, 149, 95, 0.4);
+      text-underline-offset: 3px;
+    }
+
+    a:hover {
+      color: var(--water);
+    }
+
+    .wrap {
+      width: min(1120px, 100% - 2.5rem);
+      margin-inline: auto;
+    }
+
+    /* ---------- header ---------- */
+    header.hero {
+      padding: clamp(2rem, 5vw, 4rem) 0 2.5rem;
+      border-bottom: 1px solid var(--line);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -60% 40%;
+      height: 420px;
+      background: radial-gradient(closest-side, rgba(226, 149, 95, 0.16), transparent);
+      pointer-events: none;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 1.6rem;
+    }
+
+    .topbar .mark {
+      font-family: var(--mono);
+      font-size: 0.64rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .topbar .mark:hover {
+      color: var(--leaf);
+    }
+
+    .topbar-tools {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.7rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      transition: color 140ms ease, border-color 140ms ease;
+    }
+
+    .home-link:hover,
+    .home-link:focus-visible {
+      color: var(--leaf);
+      border-color: var(--line-strong);
+    }
+
+    .lang-switch {
+      display: flex;
+      gap: 0.3rem;
+      padding: 0.2rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(11, 9, 6, 0.6);
+    }
+
+    .lang-switch button {
+      padding: 0.28rem 0.7rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: color 140ms ease, background-color 140ms ease;
+    }
+
+    .lang-switch button:hover {
+      color: var(--ink);
+    }
+
+    .lang-switch button[aria-pressed="true"] {
+      color: #1a1105;
+      background: var(--leaf);
+    }
+
+    .kicker {
+      margin: 0 0 0.8rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--leaf);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 6vw, 3.75rem);
+      line-height: 1.04;
+      letter-spacing: -0.02em;
+      max-width: 18ch;
+    }
+
+    .lede {
+      margin: 1.2rem 0 0;
+      max-width: 64ch;
+      font-size: clamp(1rem, 1.6vw, 1.16rem);
+      color: #d8cfc0;
+    }
+
+    .facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin: 1.8rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .facts li {
+      padding: 0.4rem 0.85rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    /* ---------- nav ---------- */
+    nav.toc {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(11, 9, 6, 0.93);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    nav.toc ul {
+      display: flex;
+      gap: 0.35rem;
+      margin: 0;
+      padding: 0.5rem 0;
+      list-style: none;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    nav.toc a {
+      display: block;
+      padding: 0.32rem 0.65rem;
+      white-space: nowrap;
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid transparent;
+      border-radius: 999px;
+    }
+
+    nav.toc a:hover,
+    nav.toc a:focus-visible {
+      color: var(--leaf);
+      border-color: var(--line-strong);
+    }
+
+    /* ---------- sections ---------- */
+    main {
+      padding-bottom: 5rem;
+    }
+
+    section {
+      padding: clamp(2.2rem, 5.5vw, 3.6rem) 0 0.5rem;
+    }
+
+    section > h2 {
+      margin: 0 0 0.4rem;
+      font-size: clamp(1.5rem, 3.2vw, 2.05rem);
+      letter-spacing: -0.01em;
+    }
+
+    section > h2 .num {
+      display: inline-block;
+      margin-right: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      color: var(--leaf);
+      vertical-align: 0.55em;
+    }
+
+    .sub {
+      margin: 0 0 1.6rem;
+      max-width: 70ch;
+      color: var(--muted);
+    }
+
+    h3 {
+      margin: 1.8rem 0 0.5rem;
+      font-size: 1.08rem;
+      letter-spacing: 0.01em;
+    }
+
+    h4 {
+      margin: 1.2rem 0 0.35rem;
+      font-size: 0.96rem;
+    }
+
+    p {
+      max-width: 72ch;
+    }
+
+    /* ---------- components ---------- */
+    .grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .card {
+      padding: 1.1rem 1.15rem;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .card h3,
+    .card h4 {
+      margin: 0 0 0.45rem;
+      font-size: 0.98rem;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 0.94rem;
+      color: #d3c9ba;
+    }
+
+    .card .tag {
+      display: inline-block;
+      margin-bottom: 0.55rem;
+      padding: 0.15rem 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--water);
+      border: 1px solid rgba(127, 209, 185, 0.35);
+      border-radius: 999px;
+    }
+
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .steps li {
+      counter-increment: step;
+      position: relative;
+      padding: 1rem 1.1rem 1rem 3.4rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .steps li::before {
+      content: counter(step, decimal-leading-zero);
+      position: absolute;
+      left: 1rem;
+      top: 1rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      color: var(--leaf);
+    }
+
+    .steps h3 {
+      margin: 0 0 0.3rem;
+      font-size: 1rem;
+    }
+
+    .steps p {
+      margin: 0;
+      font-size: 0.94rem;
+      color: #d3c9ba;
+    }
+
+    .steps .warn {
+      display: block;
+      margin-top: 0.5rem;
+      padding-left: 0.75rem;
+      border-left: 2px solid var(--warm);
+      font-size: 0.88rem;
+      color: #e3c7b3;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      min-width: 640px;
+    }
+
+    caption {
+      padding: 0.8rem 1rem 0;
+      text-align: left;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    th,
+    td {
+      padding: 0.6rem 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(226, 149, 95, 0.1);
+      vertical-align: top;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #1b1610;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    tbody tr:hover {
+      background: rgba(226, 149, 95, 0.05);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    td.num,
+    th.num {
+      font-family: var(--mono);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* ---------- tools ---------- */
+    .tool {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      padding: 1.2rem;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+    }
+
+    @media (max-width: 760px) {
+      .tool {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tool .fields {
+      display: grid;
+      gap: 0.7rem;
+    }
+
+    label {
+      display: grid;
+      gap: 0.3rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 0.95rem;
+      letter-spacing: normal;
+      text-transform: none;
+      background: rgba(9, 7, 4, 0.78);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      outline: none;
+    }
+
+    select:focus-visible,
+    input:focus-visible,
+    button:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--water);
+      outline-offset: 2px;
+    }
+
+    .readout {
+      display: grid;
+      gap: 0.55rem;
+      align-content: start;
+      padding: 0.9rem 1rem;
+      background: rgba(9, 7, 4, 0.55);
+      border: 1px solid var(--line);
+      border-radius: 11px;
+    }
+
+    .readout dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.35rem 0.9rem;
+      margin: 0;
+      font-size: 0.92rem;
+    }
+
+    .readout dt {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      align-self: center;
+    }
+
+    .readout dd {
+      margin: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .verdict {
+      margin: 0;
+      padding: 0.55rem 0.7rem;
+      font-size: 0.9rem;
+      border-radius: 9px;
+      border: 1px solid var(--line);
+      color: #d3c9ba;
+    }
+
+    .verdict[data-state="ok"] {
+      border-color: rgba(226, 149, 95, 0.5);
+      color: var(--leaf);
+      background: rgba(226, 149, 95, 0.08);
+    }
+
+    .verdict[data-state="warn"] {
+      border-color: rgba(224, 122, 95, 0.5);
+      color: var(--warm);
+      background: rgba(224, 122, 95, 0.08);
+    }
+
+    .verdict[data-state="bad"] {
+      border-color: rgba(239, 125, 125, 0.5);
+      color: var(--danger);
+      background: rgba(239, 125, 125, 0.08);
+    }
+
+    /* ---------- manual components ---------- */
+    .reading-paths {
+      display: grid;
+      gap: 0.8rem;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      margin: 1.5rem 0 0;
+    }
+
+    .path {
+      display: block;
+      padding: 0.95rem 1.05rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 140ms ease, transform 140ms ease;
+    }
+
+    .path:hover {
+      border-color: var(--line-strong);
+      transform: translateY(-2px);
+      color: inherit;
+    }
+
+    .path strong {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.95rem;
+      color: var(--leaf);
+    }
+
+    .path span {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .ledger {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      margin: 1.3rem 0 0;
+    }
+
+    .ledger .col {
+      padding: 1rem 1.1rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .ledger h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .ledger ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      font-size: 0.92rem;
+      color: #d3c9ba;
+    }
+
+    .ledger li {
+      margin-bottom: 0.35rem;
+    }
+
+    .recipe {
+      padding: 1.1rem 1.2rem;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .recipe h3 {
+      margin: 0 0 0.35rem;
+      font-size: 1.02rem;
+    }
+
+    .recipe .meta {
+      margin-bottom: 0.6rem;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--water);
+    }
+
+    .recipe ul,
+    .recipe ol {
+      margin: 0.4rem 0 0;
+      padding-left: 1.15rem;
+      font-size: 0.9rem;
+      color: #d3c9ba;
+    }
+
+    .recipe li {
+      margin-bottom: 0.3rem;
+    }
+
+    .recipe .limit {
+      display: block;
+      margin-top: 0.7rem;
+      padding-left: 0.75rem;
+      border-left: 2px solid var(--warm);
+      font-size: 0.86rem;
+      color: #e3c7b3;
+    }
+
+    .danger {
+      margin: 1.3rem 0;
+      padding: 0.95rem 1.1rem;
+      font-size: 0.93rem;
+      color: #ecd2d2;
+      background: rgba(239, 125, 125, 0.07);
+      border-left: 3px solid var(--danger);
+      border-radius: 0 10px 10px 0;
+    }
+
+    .danger strong {
+      color: var(--danger);
+    }
+
+    .fig {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: rgba(9, 7, 4, 0.5);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .fig svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: 660px;
+      margin: 0 auto;
+    }
+
+    .fig figcaption {
+      margin-top: 0.7rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .glossary {
+      display: grid;
+      gap: 0.5rem;
+      margin: 0;
+      padding: 0;
+    }
+
+    .glossary div {
+      padding: 0.6rem 0.85rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .glossary dt {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--leaf);
+    }
+
+    .glossary dd {
+      margin: 0.2rem 0 0;
+      font-size: 0.9rem;
+      color: #d3c9ba;
+    }
+
+    .sources {
+      display: grid;
+      gap: 0.6rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .sources li {
+      padding: 0.75rem 0.9rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .sources a {
+      font-weight: 600;
+    }
+
+    .sources span {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0.8rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .pill-list li {
+      padding: 0.25rem 0.6rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-left: 0.45rem;
+      padding: 0 0.4rem;
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: 999px;
+    }
+
+    .badge.ok {
+      color: var(--leaf);
+      border: 1px solid rgba(226, 149, 95, 0.4);
+    }
+
+    .badge.warn {
+      color: var(--warm);
+      border: 1px solid rgba(224, 122, 95, 0.4);
+    }
+
+    .badge.bad {
+      color: var(--danger);
+      border: 1px solid rgba(239, 125, 125, 0.4);
+    }
+
+    /* ---------- misc ---------- */
+    .note {
+      margin: 1.2rem 0;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.93rem;
+      color: #d3c9ba;
+      background: rgba(127, 209, 185, 0.06);
+      border-left: 3px solid var(--water);
+      border-radius: 0 10px 10px 0;
+    }
+
+    .note strong {
+      color: var(--ink);
+    }
+
+    .two {
+      display: grid;
+      gap: 1.2rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    ul.clean {
+      margin: 0.4rem 0 0;
+      padding-left: 1.1rem;
+      color: #d3c9ba;
+      font-size: 0.94rem;
+    }
+
+    ul.clean li {
+      margin-bottom: 0.35rem;
+    }
+
+    footer {
+      padding: 2.5rem 0 3.5rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: var(--ink);
+    }
+
+    .cross {
+      margin: 1rem 0 0;
+      max-width: 62ch;
+      color: var(--muted);
+    }
+
+    .cross a {
+      color: var(--leaf);
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.8rem;
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--leaf);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .path:hover { transform: none; }
+    }
+  
+    /* ---------- shell manual additions ---------- */
+    pre {
+      margin: 0.8rem 0;
+      padding: 0.85rem 1rem;
+      overflow-x: auto;
+      background: #04070a;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--leaf-deep);
+      border-radius: 10px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.55;
+      color: #d6ecf7;
+      tab-size: 2;
+    }
+
+    pre .c { color: #6f8c80; }
+    pre .p { color: var(--leaf); }
+    pre .bad { color: var(--danger); }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.86em;
+      padding: 0.1em 0.35em;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: rgba(226, 149, 95, 0.06);
+      color: #cfe9f6;
+    }
+
+    .tool-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1rem;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 0.9rem;
+    }
+
+    .tool-head h3 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0.7rem 0 1rem;
+    }
+
+    .chip {
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.36rem 0.66rem;
+      border-radius: 999px;
+      border: 1px solid var(--line-strong);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .chip[aria-pressed="true"] {
+      background: rgba(226, 149, 95, 0.14);
+      border-color: var(--leaf);
+      color: var(--leaf);
+    }
+
+    .search {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border-radius: 9px;
+      border: 1px solid var(--line-strong);
+      background: #04070a;
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+    }
+
+    .search:focus,
+    select:focus,
+    input:focus {
+      outline: 2px solid rgba(226, 149, 95, 0.35);
+      outline-offset: 1px;
+    }
+
+    .apps-table th,
+    .apps-table td {
+      vertical-align: top;
+    }
+
+    .apps-table td.cmd cell,
+    .apps-table code {
+      white-space: nowrap;
+    }
+
+    .family-tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.18rem 0.42rem;
+      border-radius: 999px;
+      border: 1px solid var(--line-strong);
+      color: var(--water);
+    }
+
+    .empty {
+      padding: 1rem 0;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+
+    .cmd-block {
+      position: relative;
+      margin-top: 0.7rem;
+    }
+
+    .cmd-block button {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.55rem;
+      border-radius: 6px;
+      border: 1px solid var(--line-strong);
+      background: rgba(5, 7, 9, 0.9);
+      color: var(--leaf);
+      cursor: pointer;
+    }
+
+    .cmd-block button:hover {
+      background: rgba(226, 149, 95, 0.12);
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: minmax(120px, 34%) 1fr;
+      gap: 0.35rem 1rem;
+      margin: 0.7rem 0 0;
+      font-size: 0.92rem;
+    }
+
+    .kv dt {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding-top: 0.15rem;
+    }
+
+    .kv dd {
+      margin: 0;
+    }
+
+    .scroll {
+      overflow-x: auto;
+    }
+
+    @media (max-width: 720px) {
+      .kv {
+        grid-template-columns: 1fr;
+      }
+      pre {
+        font-size: 0.72rem;
+      }
+    }
+</style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <div class="topbar">
+        <a class="mark" href="index.html">Monkey Blog · Rust in the Shell</a>
+        <div class="topbar-tools">
+          <a class="home-link" href="index.html"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" focusable="false"><path d="M8 1.5 1.5 7h1.8v6.5h3.4V9.8h2.6v3.7h3.4V7h1.8L8 1.5Z" fill="currentColor"/></svg><span data-i18n="nav.home">Home</span></a>
+          <div class="lang-switch" role="group" aria-label="Language / Idioma">
+            <button type="button" data-lang="en" aria-pressed="true" lang="en">EN</button>
+            <button type="button" data-lang="pt" aria-pressed="false" lang="pt">PT</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="kicker" data-i18n="hero.kicker">Compiled tools · a manual in nineteen parts</p>
+      <h1 data-i18n="hero.title">Rust in the Shell</h1>
+      <p class="lede" data-i18n="hero.lede">
+        The tools that replaced half of the classic Unix commands were not written in C. The
+        faster grep, the friendlier find, the cat with syntax colours, the prompt that draws
+        itself, the fuzzy finder, the test runner — a surprising number of them are Rust
+        binaries you install with one line. This manual is about the toolchain that compiles
+        them, the register they come from, and thirty projects worth the wait.
+      </p>
+      <ul class="facts">
+        <li data-i18n="hero.f1">Nineteen parts</li>
+        <li data-i18n="hero.f2">Thirty crates</li>
+        <li data-i18n="hero.f3">MSRVs checked</li>
+        <li data-i18n="hero.f4">Install builder</li>
+        <li data-i18n="hero.f5">Route chooser</li>
+        <li data-i18n="hero.f6">Every repo linked</li>
+      </ul>
+
+      <div class="reading-paths">
+        <a class="path" href="#toolchain">
+          <strong data-i18n="path.a.h">I have never installed Rust</strong>
+          <span data-i18n="path.a.p">Part 02: one script, one toolchain, and a compiler that is ready in four minutes.</span>
+        </a>
+        <a class="path" href="#builder">
+          <strong data-i18n="path.b.h">Show me the tools first</strong>
+          <span data-i18n="path.b.p">Part 06: every crate with its version, MSRV, home page and what it does, plus the command for your machine.</span>
+        </a>
+        <a class="path" href="#install">
+          <strong data-i18n="path.c.h">Just give me the command</strong>
+          <span data-i18n="path.c.p">Part 03: cargo install, the pinned version, and where the binary lands.</span>
+        </a>
+        <a class="path" href="#errors">
+          <strong data-i18n="path.d.h">A build just failed</strong>
+          <span data-i18n="path.d.p">Part 16: the messages that stop people, from a missing linker to an MSRV one release too new.</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Sections">
+    <div class="wrap">
+      <ul>
+        <li><a href="#rule" data-i18n="nav.rule">The rule</a></li>
+        <li><a href="#toolchain" data-i18n="nav.toolchain">rustup</a></li>
+        <li><a href="#install" data-i18n="nav.install">cargo install</a></li>
+        <li><a href="#layout" data-i18n="nav.layout">Layout</a></li>
+        <li><a href="#path" data-i18n="nav.path">PATH</a></li>
+        <li><a href="#builder" data-i18n="nav.builder">Builder</a></li>
+        <li><a href="#prompt" data-i18n="nav.prompt">Prompt</a></li>
+        <li><a href="#shell" data-i18n="nav.shell">Shell</a></li>
+        <li><a href="#files" data-i18n="nav.files">Files</a></li>
+        <li><a href="#text" data-i18n="nav.text">Text</a></li>
+        <li><a href="#machine" data-i18n="nav.machine">Machine</a></li>
+        <li><a href="#network" data-i18n="nav.network">Network</a></li>
+        <li><a href="#tasks" data-i18n="nav.tasks">Tasks</a></li>
+        <li><a href="#cargo" data-i18n="nav.cargo">Cargo</a></li>
+        <li><a href="#git" data-i18n="nav.git">Git</a></li>
+        <li><a href="#errors" data-i18n="nav.errors">Errors</a></li>
+        <li><a href="#route" data-i18n="nav.route">Route</a></li>
+        <li><a href="#sources" data-i18n="nav.sources">Sources</a></li>
+        <li><a href="#glossary" data-i18n="nav.glossary">Glossary</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section id="rule">
+      <h2><span class="num">01</span><span data-i18n="s1.title">One register, three rules, a compiler you keep</span></h2>
+      <p class="sub" data-i18n="s1.sub">
+        Rust is not a scripting language, and that is the first thing to accept: installing a
+        tool means compiling it, and compiling it needs a compiler. In exchange there is one
+        register (crates.io), one command (<code>cargo install</code>), and no runtime to keep
+        alive afterwards — the result is a single executable that runs on a machine with nothing
+        installed. These three rules are the whole of it; the rest of this manual is detail.
+      </p>
+
+      <ol class="steps">
+        <li>
+          <h3 data-i18n="s1.r1.h">One: rustup owns the compiler, cargo owns the crates</h3>
+          <p data-i18n="s1.r1.p"><code>rustup</code> installs and switches toolchains; <code>cargo</code> builds and fetches crates. They are separate programs that agree on a directory. Do not install a second <code>rustc</code> from your distribution and expect the two to coexist politely: whichever comes first on PATH wins, and half the "this crate needs a newer Rust" reports are a distribution compiler from two years ago answering the phone.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s1.r2.h">Two: binaries go to ~/.cargo/bin, never to /usr/local</h3>
+          <p data-i18n="s1.r2.p">By default <code>cargo install</code> writes into <code>$CARGO_HOME/bin</code>, which is <code>~/.cargo/bin</code> — a directory you own. Never prefix it with <code>sudo</code>: root's home is not your home, and the binary you just spent four minutes compiling will be invisible. <code>--root</code> changes the destination; nothing else should.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s1.r3.h">Three: PATH and the compiler are the two things that break</h3>
+          <p data-i18n="s1.r3.p">A successful install and a <code>command not found</code> mean PATH. A <code>cargo install</code> that dies in a build script means a missing system library or a toolchain that is too old. There is almost no third category — part 05 covers the first, part 16 covers the second.</p>
+        </li>
+      </ol>
+
+      <div class="note">
+        <strong data-i18n="s1.note.h">Why "compiled" changes the maintenance story</strong>
+        <p data-i18n="s1.note.p">A Python tool breaks when its interpreter moves; a Go tool is one file; a Rust tool is one file too, statically linked against everything except the C library. Copy it to another machine of the same OS and architecture and it runs — no crates, no toolchain, no compiler needed on the target. The cost is paid once, at install time, and it is not small: a first install of a large crate can take minutes. Part 03 is mostly about not paying that cost twice.</p>
+      </div>
+
+      <h3 data-i18n="s1.which.h">Four commands that people confuse</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.command">Command</th>
+              <th data-i18n="t.does">What it does</th>
+              <th data-i18n="t.when">Use it when</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>cargo install crate</code></th>
+              <td data-i18n="s1.c1.a">Compiles the crate's binary targets and copies them into <code>~/.cargo/bin</code>. Works outside any project.</td>
+              <td data-i18n="s1.c1.b">Always, for a tool you want to keep. This is the command of the manual.</td>
+            </tr>
+            <tr>
+              <th><code>cargo install --path .</code></th>
+              <td data-i18n="s1.c2.a">Compiles the crate in the current directory from its working tree.</td>
+              <td data-i18n="s1.c2.b">You are developing that tool, or testing a patch before proposing it.</td>
+            </tr>
+            <tr>
+              <th><code>cargo binstall crate</code></th>
+              <td data-i18n="s1.c3.a">Downloads a prebuilt binary from the project's releases when one exists, and falls back to <code>cargo install</code> when it does not.</td>
+              <td data-i18n="s1.c3.b">You want the tool now and not in six minutes. Part 13 installs binstall itself.</td>
+            </tr>
+            <tr>
+              <th><code>cargo add crate</code></th>
+              <td data-i18n="s1.c4.a">Adds a dependency to the current project's <code>Cargo.toml</code>. Puts nothing on your PATH.</td>
+              <td data-i18n="s1.c4.b">You are writing Rust code that imports the crate as a library.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p data-i18n="s1.after">One nuance that surprises people coming from Go: a crate can be both a library and a binary, and <code>cargo install</code> only cares about the binary targets. Installing <code>ripgrep</code> does not put a library on your system for other programs to use; it puts <code>rg</code> in your PATH. The two lives are separate, which is why an install never disturbs a project that happens to depend on the same crate.</p>
+    </section>
+
+    <section id="toolchain">
+      <h2><span class="num">02</span><span data-i18n="s2.title">The toolchain, from rustup</span></h2>
+      <p class="sub" data-i18n="s2.sub">
+        Rust ships as a toolchain manager and three programs. <code>rustup</code> decides which
+        compiler is current; <code>rustc</code> compiles; <code>cargo</code> resolves, builds and
+        installs. A stable release lands every six weeks, and the line at the time of writing is
+        <strong>1.99</strong> — which matters, because several crates in part 06 ask for 1.95 or
+        newer and cannot be built by anything older.
+      </p>
+
+      <h3 data-i18n="s2.linux.h">Linux and macOS, the official way</h3>
+      <pre>curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+<span class="c"># it asks one question; the default profile is right for a workstation</span>
+<span class="c"># 1) Proceed with standard installation</span>
+
+source "$HOME/.cargo/env"      <span class="c"># or open a new terminal</span>
+rustc --version               <span class="c"># rustc 1.99.0 (…)</span>
+cargo --version               <span class="c"># cargo 1.99.0 (…)</span></pre>
+
+      <p data-i18n="s2.linux.after">The script is a shell program you can read before running it, and it writes only inside <code>~/.cargo</code> and <code>~/.rustup</code>. Two profiles exist: <code>default</code> adds rustfmt, clippy and the documentation, <code>minimal</code> adds nothing but the compiler — the second is what a CI image wants, because it is half the download. To change later: <code>rustup set profile default</code>, then <code>rustup component add rustfmt clippy</code>.</p>
+
+      <h3 data-i18n="s2.win.h">Windows</h3>
+      <p data-i18n="s2.win.p">Download <code>rustup-init.exe</code> from rustup.rs. It will offer to install the Visual Studio C++ build tools for you, and you should accept: Rust on Windows links with <code>link.exe</code>, and without it every build fails at the last step with a linker error that mentions no missing package. If you already have Visual Studio with the C++ workload, skip that part. The MSYS2 toolchain is an alternative, not an addition — pick one.</p>
+
+      <h3 data-i18n="s2.comp.h">The components worth knowing</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.component">Component</th>
+              <th data-i18n="t.gives">What it gives you</th>
+              <th data-i18n="t.install">Install it</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>rustfmt</code></th>
+              <td data-i18n="s2.cp1.a">The formatter behind <code>cargo fmt</code>, and the reason Rust code looks the same in every repository.</td>
+              <td><code>rustup component add rustfmt</code></td>
+            </tr>
+            <tr>
+              <th><code>clippy</code></th>
+              <td data-i18n="s2.cp2.a">The linter behind <code>cargo clippy</code>: several hundred checks, most of them about a construct that compiles and should not.</td>
+              <td><code>rustup component add clippy</code></td>
+            </tr>
+            <tr>
+              <th><code>rust-analyzer</code></th>
+              <td data-i18n="s2.cp3.a">The language server your editor talks to. Installing it through rustup keeps it in step with the compiler.</td>
+              <td><code>rustup component add rust-analyzer</code></td>
+            </tr>
+            <tr>
+              <th><code>rust-src</code></th>
+              <td data-i18n="s2.cp4.a">The standard library's source, for reading <code>Option</code> instead of guessing and for some debugger setups.</td>
+              <td><code>rustup component add rust-src</code></td>
+            </tr>
+            <tr>
+              <th><code>llvm-tools</code></th>
+              <td data-i18n="s2.cp5.a"><code>llvm-cov</code> and friends, for coverage and binary inspection.</td>
+              <td><code>rustup component add llvm-tools</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 data-i18n="s2.pin.h">Pinning a project to a toolchain</h3>
+      <p data-i18n="s2.pin.p">A <code>rust-toolchain.toml</code> in the repository root is the honest way to say "this builds with 1.95". rustup reads it when you enter the directory and installs that toolchain if it is missing; nobody has to remember which version the project wanted.</p>
+      <pre><span class="c"># rust-toolchain.toml</span>
+[toolchain]
+channel = "1.95.0"
+components = ["rustfmt", "clippy"]
+
+<span class="c"># or, for a one-off directory you do not want to commit</span>
+rustup override set 1.95.0
+rustup override unset
+
+<span class="c"># what is installed, and which one is answering</span>
+rustup show
+rustup toolchain list</pre>
+      <p data-i18n="s2.pin.after">Prefer <code>channel = "1.95.0"</code> to <code>"stable"</code> for anything you will come back to: stable moves under you six weeks at a time, which is fine for a program and unkind to a build that has to reproduce. Nightly exists for unstable features and is a legitimate answer only when a crate says so in its README.</p>
+
+      <div class="note">
+        <strong data-i18n="s2.distro.h">The distribution package, and why it is a trap here</strong>
+        <p data-i18n="s2.distro.p">Debian, Fedora and Arch all package <code>rustc</code> and <code>cargo</code>. They work, they are fast to install, and they are usually several releases behind — which is exactly the failure mode of part 06, where eight crates declare an MSRV above 1.90. Worse, if both exist, your shell may run the distribution <code>cargo</code> while your <code>~/.cargo/bin</code> holds another, and the error messages will not tell you which. Either use rustup, or use the distribution package and never mix; do not install both and hope.</p>
+      </div>
+    </section>
+
+    <section id="install">
+      <h2><span class="num">03</span><span data-i18n="s3.title">cargo install: the whole installation story</span></h2>
+      <p class="sub" data-i18n="s3.sub">
+        One command, one register, one destination. <code>cargo install ripgrep</code> resolves the
+        newest compatible version of the crate, downloads it and its dependency tree, compiles
+        everything in release mode, and copies the resulting executables into
+        <code>~/.cargo/bin</code>. There is no resolver choosing a version for you beyond "newest
+        that fits", no environment to activate, and no record to consult afterwards except
+        <code>cargo install --list</code>.
+      </p>
+
+      <h3 data-i18n="s3.basic.h">The command, with the flag that matters</h3>
+      <pre>cargo install --locked ripgrep
+rg --version</pre>
+      <p data-i18n="s3.basic.p"><code>--locked</code> is not decoration. Without it, Cargo is allowed to update the versions of dependencies to the newest semver-compatible ones, which is how a tool that compiled for everyone else fails on your machine because a transitive crate published a minor release an hour ago. With it, Cargo uses the <code>Cargo.lock</code> the author tested. Almost every project in part 06 publishes a lock file for exactly this reason, and the manual always passes the flag.</p>
+
+      <h3 data-i18n="s3.flags.h">The flags worth memorising</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.flag">Flag</th>
+              <th data-i18n="t.does">What it does</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>--locked</code></th>
+              <td data-i18n="s3.f1">Uses the crate's <code>Cargo.lock</code> exactly. Fewer surprises, occasionally an older dependency than you expected.</td>
+            </tr>
+            <tr>
+              <th><code>--version 15.2.0</code></th>
+              <td data-i18n="s3.f2">Pins the crate. The value is the registry version without a <code>v</code>, unlike Go's tags.</td>
+            </tr>
+            <tr>
+              <th><code>--root ~/.local</code></th>
+              <td data-i18n="s3.f3">Writes to <code>~/.local/bin</code> instead of <code>~/.cargo/bin</code>. Useful when that directory is already on PATH.</td>
+            </tr>
+            <tr>
+              <th><code>--git https://…</code></th>
+              <td data-i18n="s3.f4">Builds from a repository instead of the registry, at the default branch unless <code>--branch</code> or <code>--tag</code> is added.</td>
+            </tr>
+            <tr>
+              <th><code>--no-default-features</code></th>
+              <td data-i18n="s3.f5">Compiles without the crate's default feature set — fewer dependencies, less code, sometimes no GUI or no TLS.</td>
+            </tr>
+            <tr>
+              <th><code>--features git</code></th>
+              <td data-i18n="s3.f6">Adds a named feature. Read the crate's README before guessing: feature names are the crate's own vocabulary.</td>
+            </tr>
+            <tr>
+              <th><code>--force</code></th>
+              <td data-i18n="s3.f7">Overwrites an existing binary. Needed when two crates ship a target with the same name, or when you reinstall the same version.</td>
+            </tr>
+            <tr>
+              <th><code>--list</code> / <code>--root</code></th>
+              <td data-i18n="s3.f8">Lists what cargo installed and where. The only inventory you have.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 data-i18n="s3.pin.h">Pin, or float</h3>
+      <p data-i18n="s3.pin.p"><code>cargo install crate</code> always takes the newest published version; there is no <code>@latest</code> to argue about. Pin when the tool is part of a pipeline — a formatter in CI, a linter in a hook, a test runner that defines what "passing" means. Float when the tool's job is to track a moving target, and reinstall monthly. Either way, write the version down somewhere outside your shell history; the builder in part 06 does it for you.</p>
+
+      <h3 data-i18n="s3.up.h">Upgrading, and the tool that upgrades everything</h3>
+      <pre>cargo install --locked ripgrep          <span class="c"># newest, over the old binary</span>
+cargo install --list                    <span class="c"># what is here, with versions</span>
+cargo uninstall ripgrep                 <span class="c"># remove the binary, keep the cache</span>
+
+<span class="c"># cargo-update adds the missing verb</span>
+cargo install --locked cargo-update
+cargo install-update --all</pre>
+      <p data-i18n="s3.up.after">Rust has no equivalent of Go's "download a toolchain because the module asked". The compiler you have is the compiler that compiles, and a crate that requires more fails with a clear message naming the version. That is why the check below exists: it answers, before a four-minute build, whether the crates you picked are inside your compiler's reach.</p>
+
+      <h3 data-i18n="s3.tc.h">Check the MSRV before you compile</h3>
+      <p data-i18n="s3.tc.p">Each crate may declare a <em>minimum supported Rust version</em> in its published metadata. It is a promise, not a guess: below it the crate is not expected to build, and above it the author has agreed not to raise the floor without a semver-minor release. The builder in part 06 shows the number for every tool; this check compares it with yours.</p>
+
+      <div class="tool" id="tc-tool">
+        <div class="tool-head">
+          <h3 data-i18n="s3.tc.tool.h">MSRV check</h3>
+          <span class="badge" data-i18n="s3.tc.tool.badge">before you install</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s3.tc.yours">Your Rust</span>
+            <select id="tc-mine"></select>
+          </label>
+          <label class="field"><span data-i18n="s3.tc.app">The tool</span>
+            <select id="tc-app"></select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s3.tc.out.need">Needs</dt><dd id="tc-need">—</dd>
+          <dt data-i18n="s3.tc.out.verdict">Verdict</dt><dd id="tc-verdict">—</dd>
+          <dt data-i18n="s3.tc.out.how">What happens</dt><dd id="tc-how">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="tc-copy" data-i18n="s3.tc.copy">Copy</button>
+          <pre id="tc-out">—</pre>
+        </div>
+      </div>
+    </section>
+    <section id="layout">
+      <h2><span class="num">04</span><span data-i18n="s4.title">Where the bytes go, and how to take them back</span></h2>
+      <p class="sub" data-i18n="s4.sub">
+        Rust is not shy about disk. A toolchain is about 1.5 GB once you add components; the
+        dependency sources of a few dozen tools add another gigabyte; a single release build of a
+        big crate leaves a <code>target</code> directory measured in hundreds of megabytes. None of
+        it is precious, and all of it is forgettable — which is how a laptop ends up with twelve
+        gigabytes of compiler artefacts.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.dir">Directory</th>
+              <th data-i18n="t.holds">What it holds</th>
+              <th data-i18n="t.touch">Should you touch it?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>~/.rustup/toolchains</code></th>
+              <td data-i18n="s4.d1.a">Every installed toolchain: compiler, standard library, docs, components. One directory per channel.</td>
+              <td data-i18n="s4.d1.b">Never by hand. Remove a channel with <code>rustup toolchain uninstall</code>.</td>
+            </tr>
+            <tr>
+              <th><code>~/.cargo/bin</code></th>
+              <td data-i18n="s4.d2.a">Everything on your PATH from this ecosystem: cargo, rustc, rustup, and every tool you installed.</td>
+              <td data-i18n="s4.d2.b">Only through <code>cargo uninstall</code>, which knows which binaries a crate owns.</td>
+            </tr>
+            <tr>
+              <th><code>~/.cargo/registry</code></th>
+              <td data-i18n="s4.d3.a">Downloaded <code>.crate</code> archives and their extracted sources — shared by every build, usually the largest directory here.</td>
+              <td data-i18n="s4.d3.b">With <code>cargo cache -a</code> if you have cargo-cache, or by deleting <code>cache</code> and <code>src</code>; both regrow on demand.</td>
+            </tr>
+            <tr>
+              <th><code>~/.cargo/git</code></th>
+              <td data-i18n="s4.d4.a">Clones made by <code>--git</code> dependencies and installs. Often stale, rarely large.</td>
+              <td data-i18n="s4.d4.b">Yes, when a git install behaves like an older commit — but delete, do not edit.</td>
+            </tr>
+            <tr>
+              <th><code>~/project/target</code></th>
+              <td data-i18n="s4.d5.a">Compiled dependencies, incremental state, the final binaries. The directory that surprises people.</td>
+              <td data-i18n="s4.d5.b">With <code>cargo clean</code>, and add it to <code>.gitignore</code> — it is nobody's source code.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 data-i18n="s4.clean.h">Three commands that reclaim most of it</h3>
+      <pre>du -sh ~/.rustup ~/.cargo ~/code/*/target 2&gt;/dev/null | sort -h | tail -5
+
+rustup toolchain uninstall nightly          <span class="c"># ~1 GB back</span>
+cargo clean                                 <span class="c"># the current project's target/</span>
+rm -rf ~/.cargo/registry/cache ~/.cargo/registry/src   <span class="c"># sources, re-downloadable</span></pre>
+      <p data-i18n="s4.clean.after">The last line is safe but not free: the next build of each tool downloads its dependencies again. Do it when disk pressure is real, not as tidying. A toolchain you never use is the better target — nightly builds are large, and installing one to try a feature is exactly how three of them accumulate.</p>
+
+      <h3 data-i18n="s4.speed.h">Making the wait shorter</h3>
+      <p data-i18n="s4.speed.p">A first install compiles the crate and its whole dependency graph in release mode, which is why <code>rg</code> takes thirty seconds and a browser engine takes an hour. Three things help and none of them is a trick. <code>cargo install</code> reuses the shared registry, so the second install of a similar tool is faster. A faster linker matters more than a faster CPU for large builds: <code>-C link-arg=-fuse-ld=lld</code> in <code>~/.cargo/config.toml</code>, or mold, can cut link time in half. And a compiler cache such as <code>sccache</code> helps when you rebuild the same dependencies repeatedly — for one-off installs it is overhead.</p>
+      <pre><span class="c"># ~/.cargo/config.toml — faster links, if lld is installed</span>
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "link-arg=-fuse-ld=lld"]</pre>
+      <p data-i18n="s4.speed.after">If disk and bandwidth are the constraint rather than patience, <code>cargo binstall</code> is the answer, not a faster compiler: it downloads the binary the project's CI already built. Part 13 covers it, including its one real limitation — not every project publishes binaries.</p>
+
+      <div class="note">
+        <strong data-i18n="s4.cache.h">The shared target directory, and why not to share one</strong>
+        <p data-i18n="s4.cache.p"><code>CARGO_TARGET_DIR</code> points every project at one build directory. It looks like a saving and behaves like a bug hunt: profile settings, feature flags and target triples collide, and a rebuild can pick artefacts compiled with another project's configuration. The one legitimate use is CI, where each job starts from nothing anyway. On a workstation, let each project keep its own <code>target</code> and delete it when the branch is merged.</p>
+      </div>
+    </section>
+
+    <section id="path">
+      <h2><span class="num">05</span><span data-i18n="s5.title">PATH, and the check that settles it</span></h2>
+      <p class="sub" data-i18n="s5.sub">
+        The rustup installer already appended <code>~/.cargo/bin</code> to your shell profile, which
+        is why most people never see this problem. It appears in three situations: a shell that
+        does not read the file rustup edited, a container built without a login shell, and a
+        machine where a distribution <code>cargo</code> comes first.
+      </p>
+
+      <h3 data-i18n="s5.add.h">Add it once, for your shell</h3>
+      <pre><span class="c"># bash / zsh</span>
+echo 'export PATH="$HOME/.cargo/bin:$PATH"' &gt;&gt; ~/.bashrc   <span class="c"># or ~/.zshrc</span>
+exec "$SHELL" -l
+
+<span class="c"># fish</span>
+fish_add_path ~/.cargo/bin
+
+<span class="c"># the line the installer writes, if you want the canonical version</span>
+. "$HOME/.cargo/env"</pre>
+      <p data-i18n="s5.add.after">Put it in front, not behind. Prepending is what makes your rustup toolchain win against <code>/usr/bin/cargo</code>; appending is how the distribution compiler keeps answering while your toolchain sits unused. And run <code>exec "$SHELL" -l</code> rather than opening a new window — the difference between "it works now" and "it works sometimes" is usually a non-login shell.</p>
+
+      <h3 data-i18n="s5.check.h">Two commands, one answer</h3>
+      <pre>command -v cargo           <span class="c"># /home/you/.cargo/bin/cargo  →  good</span>
+which -a cargo             <span class="c"># every cargo on PATH, in order</span>
+rustup which cargo         <span class="c"># the one rustup considers current</span>
+cargo --version            <span class="c"># 1.99.0  →  the cargo that ships with Rust 1.99</span></pre>
+      <p data-i18n="s5.check.p">If <code>which -a</code> prints two paths, the order decides. If it prints one and your installed tool is missing, the binary directory is not on PATH at all. If <code>cargo --version</code> reports something older than <code>rustc --version</code> expects, you have found the mixed installation from part 02 and the fix is to remove the distribution package, not to add another export.</p>
+
+      <div class="note">
+        <strong data-i18n="s5.note.h">A tool that vanishes after an upgrade</strong>
+        <p data-i18n="s5.note.p">Two crates can ship a binary with the same name, and the second install overwrites the first with no warning beyond a line of output. <code>cargo install --list</code> shows both crates as installed while only one binary exists. When a tool changes behaviour after an unrelated install, this is the first thing to check — and <code>--force</code> on the one you meant to keep is the fix.</p>
+      </div>
+    </section>
+
+    <section id="builder">
+      <h2><span class="num">06</span><span data-i18n="s6.title">Build the command for your machine</span></h2>
+      <p class="sub" data-i18n="s6.sub">
+        Three choices — the tool, the method, the system — and the block below is what you paste.
+        The pinned method uses the exact version verified for this manual; the source method clones
+        the repository when you want to read the code before trusting it; the prebuilt method asks
+        <code>cargo binstall</code> for a binary first. Above the block, each tool shows its crate,
+        version, MSRV, home page, family and what it does.
+      </p>
+
+      <div class="tool" id="builder-tool">
+        <div class="tool-head">
+          <h3 data-i18n="s6.tool.h">Install builder</h3>
+          <span class="badge" data-i18n="s6.tool.badge">thirty tools</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s6.app">Tool</span>
+            <select id="b-app"></select>
+          </label>
+          <label class="field"><span data-i18n="s6.method">Method</span>
+            <select id="b-method">
+              <option value="latest" data-i18n="s6.m.latest">cargo install --locked</option>
+              <option value="pinned" data-i18n="s6.m.pinned">pinned version</option>
+              <option value="binstall" data-i18n="s6.m.binstall">prebuilt binary</option>
+              <option value="source" data-i18n="s6.m.source">from source</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s6.os">System</span>
+            <select id="b-os">
+              <option value="linux" data-i18n="s6.os.linux">Linux</option>
+              <option value="mac" data-i18n="s6.os.mac">macOS</option>
+              <option value="win" data-i18n="s6.os.win">Windows</option>
+            </select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s6.out.app">Tool</dt><dd id="b-name">—</dd>
+          <dt data-i18n="s6.out.pkg">Crate</dt><dd id="b-pkg">—</dd>
+          <dt data-i18n="s6.out.ver">Version</dt><dd id="b-ver">—</dd>
+          <dt data-i18n="s6.out.cmd">Command</dt><dd id="b-cmd">—</dd>
+          <dt data-i18n="s6.out.need">Needs Rust</dt><dd id="b-need">—</dd>
+          <dt data-i18n="s6.out.what">What it does</dt><dd id="b-what">—</dd>
+          <dt data-i18n="s6.out.home">Home</dt><dd id="b-home">—</dd>
+          <dt data-i18n="s6.out.family">Family</dt><dd id="b-family">—</dd>
+          <dt data-i18n="s6.out.deps">Needs installed</dt><dd id="b-deps">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="b-copy" data-i18n="s6.copy">Copy</button>
+          <pre id="b-out">—</pre>
+        </div>
+        <p class="sub" id="b-note"></p>
+      </div>
+    </section>
+    <section id="prompt">
+      <h2><span class="num">07</span><span data-i18n="s7.title">The prompt, the cd, and the history</span></h2>
+      <p class="sub" data-i18n="s7.sub">
+        Three tools that change how the shell feels rather than what it runs. <strong>starship</strong>
+        draws the prompt, <strong>zoxide</strong> replaces <code>cd</code> with a memory of where you
+        have been, and <strong>atuin</strong> replaces the history file with a searchable, encrypted
+        database. All three install the same way, and all three hook into the shell with one line.
+      </p>
+
+      <div class="card">
+        <h3>starship — <span data-i18n="s7.st.h">a prompt that knows where it is</span></h3>
+        <p data-i18n="s7.st.p">One binary, one <code>starship.toml</code>, and a prompt that shows the git branch, the language version, the exit code of the last command, the time a build took — without a shell script per shell. It is fast because it is compiled and because it only asks the modules the current directory can use. The reason to choose it over a hand-written prompt is not beauty; it is that a new language gets supported by an upgrade instead of by editing your <code>.bashrc</code>.</p>
+        <pre>cargo install --locked starship
+
+<span class="c"># ~/.bashrc, or the zsh / fish equivalent</span>
+eval "$(starship init bash)"
+eval "$(starship init zsh)"
+
+<span class="c"># a minimal prompt, in ~/.config/starship.toml</span>
+add_newline = false
+[character]
+success_symbol = "[\$](bold green)"
+error_symbol = "[\$](bold red)"
+[git_branch]
+format = "on [\$branch](\$style) "</pre>
+      </div>
+
+      <div class="card">
+        <h3>zoxide — <span data-i18n="s7.zo.h">cd, but it remembers</span></h3>
+        <p data-i18n="s7.zo.p">It keeps a score for every directory you visit and lets you jump by fragment: <code>z proj</code> from anywhere. The ranking is what makes it work — frequency and recency, not a list you maintain. Hook it over <code>cd</code> with <code>--cmd cd</code> and it behaves like cd for paths that exist, and like a jump for anything else, which is the version people keep.</p>
+        <pre>cargo install --locked zoxide
+eval "$(zoxide init bash --cmd cd)"     <span class="c"># zsh / fish / nushell too</span>
+
+z blog                <span class="c"># best match for "blog"</span>
+z blog docs           <span class="c"># both fragments, any order</span>
+zi                    <span class="c"># pick interactively (needs fzf or skim)</span>
+zoxide query -ls      <span class="c"># the whole ranking, with scores</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>atuin — <span data-i18n="s7.at.h">history as a database</span></h3>
+        <p data-i18n="s7.at.p">Your shell history is a flat file that every terminal writes to at exit, which is why it loses commands, duplicates others and cannot tell you what failed. Atuin records each command with its exit code, duration, directory and session into SQLite, and gives you a search interface on Ctrl+R that filters by all of it. Sync between machines is optional and end-to-end encrypted; self-hosting is a single binary and a Postgres or SQLite database.</p>
+        <pre>cargo install --locked atuin
+eval "$(atuin init bash)"        <span class="c"># or zsh / fish / nu</span>
+
+atuin import auto                <span class="c"># bring the old history file in</span>
+atuin search -i                  <span class="c"># the interactive search</span>
+atuin search --exit 1 --before 2026-10-01
+atuin stats                      <span class="c"># what you actually run</span>
+
+<span class="c"># optional: your own server, or the hosted one</span>
+atuin register -u me -p … -k …   <span class="c"># self-hosted</span>
+atuin login -u me</pre>
+        <p data-i18n="s7.at.after">The privacy question is fair, and the answer is architectural: without <code>atuin login</code> nothing leaves the machine. With sync, the encryption key never leaves it either — the server stores ciphertext and cannot read your commands.</p>
+      </div>
+    </section>
+
+    <section id="shell">
+      <h2><span class="num">08</span><span data-i18n="s8.title">A shell written in Rust, and two that extend yours</span></h2>
+      <p class="sub" data-i18n="s8.sub">
+        <strong>Nushell</strong> is a shell where everything is a table, <strong>mise</strong> is the
+        version manager that finally replaced four others, and <strong>skim</strong> is the fuzzy
+        finder you can script from Rust as easily as from a pipeline. Two of the three are large
+        builds; the third is a library with a binary attached.
+      </p>
+
+      <div class="card">
+        <h3>nushell — <span data-i18n="s8.nu.h">pipelines of structured data</span></h3>
+        <p data-i18n="s8.nu.p">In bash a pipeline carries bytes and every command re-parses them. In Nushell a pipeline carries a table with named columns, so <code>ls</code> can be filtered by <code>size</code>, <code>ps</code> sorted by <code>cpu</code>, and JSON read as a data structure rather than text. It is a different shell, not a drop-in replacement: your <code>.bashrc</code> does not apply, and the first hour is unlearning. What it buys is a shell where the answer to "which of these files is largest" is one expression.</p>
+        <pre>cargo install --locked nu        <span class="c"># add --features=full for the extras</span>
+nu
+
+ls | where size &gt; 10mb | sort-by size --reverse | first 5
+ps | where cpu &gt; 5 | select pid name cpu mem
+open package.json | get dependencies | columns
+http get https://api.github.com/repos/nushell/nushell | get stargazers_count
+ls **/*.rs | group-by { path parse | get extension } | transpose ext files</pre>
+      </div>
+
+      <div class="card">
+        <h3>mise — <span data-i18n="s8.mi.h">one version manager for every language</span></h3>
+        <p data-i18n="s8.mi.p">Node, Python, Go, Ruby, Java, Terraform and the rest, with one command and one configuration file. It reads the same <code>.tool-versions</code> as asdf, so migrating is a copy, and adds a task runner and an environment manager that reads <code>.env</code> files. If you have ever had three version managers with three activation lines in one profile, this is the one that replaces them.</p>
+        <pre>cargo install --locked mise
+eval "$(mise activate bash)"        <span class="c"># or zsh / fish</span>
+
+mise use --global node@22
+mise use python@3.13                <span class="c"># writes .mise.toml in the project</span>
+mise install
+mise ls --current
+mise exec -- node --version
+
+<span class="c"># .mise.toml, committed with the project</span>
+[tools]
+node = "22"
+python = "3.13"
+
+[tasks.test]
+run = "cargo nextest run"</pre>
+      </div>
+
+      <div class="card">
+        <h3>skim — <span data-i18n="s8.sk.h">a fuzzy finder you can link against</span></h3>
+        <p data-i18n="s8.sk.p">The same idea as fzf, written as a Rust library with a CLI on top — which is why it is fast on a million-line input and why other Rust programs embed it. The interface is compatible enough that most fzf habits transfer, and the extras are the reason to switch: a built-in interactive mode that re-runs the search command on every keystroke, and a tmux popup wrapper.</p>
+        <pre>cargo install --locked skim        <span class="c"># the binary is sk</span>
+
+sk                                  <span class="c"># files under the current directory</span>
+sk --ansi -i -c 'rg --color=always --line-number "{}"'
+git ls-files | sk --preview 'bat --color=always {}'
+sk-tmux -d 40%                      <span class="c"># in a tmux popup</span>
+vim "$(sk)"</pre>
+      </div>
+    </section>
+
+    <section id="files">
+      <h2><span class="num">09</span><span data-i18n="s9.title">Find, read, list: the four that replace the classics</span></h2>
+      <p class="sub" data-i18n="s9.sub">
+        <strong>ripgrep</strong> replaces grep, <strong>fd</strong> replaces find, <strong>bat</strong>
+        replaces cat and <strong>eza</strong> replaces ls. None of them is a wrapper around the
+        original, and none of them is installed by default — which is why the first week feels like
+        using someone else's kitchen and the second week feels like your own.
+      </p>
+
+      <div class="card">
+        <h3>ripgrep — <span data-i18n="s9.rg.h">grep, with the right defaults</span></h3>
+        <p data-i18n="s9.rg.p">It respects <code>.gitignore</code>, skips binary files, searches recursively by default, and uses a regex engine that is fast enough to make the flags unnecessary. The behaviour change that matters is the silence: it does not descend into <code>node_modules</code> or <code>target</code> unless you ask, so the results are the files you meant.</p>
+        <pre>cargo install --locked ripgrep
+
+rg 'fn main'                        <span class="c"># recursive, ignores .gitignore</span>
+rg -n --hidden -g '!target' 'TODO'
+rg -t py 'import requests'
+rg -l 'deprecated' | xargs sed -i 's/deprecated/obsolete/g'
+rg --stats 'unsafe'                 <span class="c"># counts, files, time</span>
+rg -C 3 'panic!'</pre>
+      </div>
+
+      <div class="card">
+        <h3>fd — <span class="data-i18n="s9.fd.h">find, without the incantation</span></h3>
+        <p data-i18n="s9.fd.p">The syntax is <code>fd PATTERN</code>, the pattern is a regex on the file name, and it is recursive and gitignore-aware by default. Everything that took a manual page to learn in find is a flag: <code>-e</code> for extension, <code>-x</code> to run a command per result, <code>-X</code> to run one command with all of them. On Debian and Ubuntu the package installs the binary as <code>fdfind</code> to avoid a name clash, which is the single most common "it did not install" report.</p>
+        <pre>cargo install --locked fd-find        <span class="c"># binary: fd</span>
+
+fd '\.rs$'                          <span class="c"># regex on names</span>
+fd -e rs -e toml                    <span class="c"># by extension</span>
+fd -H -I 'config'                   <span class="c"># include hidden and ignored</span>
+fd -e jpg -x convert {} {.}.webp    <span class="c"># per file; {.} is the stem</span>
+fd -e log -X rm                    <span class="c"># one invocation, all paths</span>
+fd -td -d 2                         <span class="c"># directories, two levels down</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>bat — <span data-i18n="s9.bt.h">cat with syntax colours and a pager</span></h3>
+        <p data-i18n="s9.bt.p">A <code>cat</code> that highlights the file by its language, shows line numbers when the output is a terminal, adds a header with the file name and size, and pages long files. It also integrates with git to mark changed lines, which turns "read this file" into "see what changed in this file" without opening a diff.</p>
+        <pre>cargo install --locked bat
+
+bat src/main.rs
+bat --diff src/main.rs              <span class="c"># git changes in the margin</span>
+bat -A .env                         <span class="c"># show invisible characters</span>
+bat --plain --language json x.json  <span class="c"># no decoration, for piping</span>
+bat --list-themes | head
+
+<span class="c"># as the pager for man pages, in ~/.bashrc</span>
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"</pre>
+      </div>
+
+      <div class="card">
+        <h3>eza — <span class="data-i18n="s9.ez.h">ls with the columns you wanted</span></h3>
+        <p data-i18n="s9.ez.p">Git status per file, a tree view, icons, human-readable sizes, and a grid that stays readable in a narrow terminal. The one that changes daily use is <code>--git</code>: a directory listing that also says which files are modified or untracked, without a second command.</p>
+        <pre>cargo install --locked eza
+
+eza -la --git --group-directories-first
+eza --tree -L 2 --git-ignore
+eza -l --sort=modified --reverse | head
+eza --icons=auto -T -L 1</pre>
+      </div>
+    </section>
+
+    <section id="text">
+      <h2><span class="num">10</span><span data-i18n="s10.title">Text surgery, counting, bytes, Markdown</span></h2>
+      <p class="sub" data-i18n="s10.sub">
+        Four small tools with sharp edges. <strong>sd</strong> does find-and-replace with a syntax
+        you can remember, <strong>tokei</strong> counts code the way a report needs it,
+        <strong>hexyl</strong> makes a hex dump legible, and <strong>mdcat</strong> renders Markdown
+        in a terminal that can show pictures.
+      </p>
+
+      <div class="card">
+        <h3>sd — <span data-i18n="s10.sd.h">search and displace</span></h3>
+        <p data-i18n="s10.sd.p">The signature is <code>sd PATTERN REPLACEMENT [FILES]</code>, the pattern is a regex, and the default is to write in place. That last part is the danger and the point: no <code>-i</code> flag to remember, no backup file to clean up, and a preview mode when you want to look first.</p>
+        <pre>cargo install --locked sd
+
+sd 'foo' 'bar' file.txt             <span class="c"># in place</span>
+sd -p 'foo' 'bar' file.txt          <span class="c"># preview only</span>
+sd '(\d{4})-(\d{2})-(\d{2})' '$3/$2/$1' dates.txt
+fd -e md -x sd 'localhost:8080' 'example.com' {}
+sd 'fn (\w+)\(' 'pub fn $1(' src/lib.rs</pre>
+      </div>
+
+      <div class="card">
+        <h3>tokei — <span data-i18n="s10.tk.h">how much code is actually here</span></h3>
+        <p data-i18n="s10.tk.p">Counts lines, code, comments and blanks per language, in parallel, with the language detected from the extension. It respects <code>.gitignore</code>, excludes vendored directories by default in the common cases, and outputs JSON or YAML when the number is going into a report rather than a terminal.</p>
+        <pre>cargo install --locked tokei
+
+tokei
+tokei --sort code
+tokei -e target,node_modules,dist
+tokei --output json | jq '.Rust.code'
+tokei src tests --compact</pre>
+      </div>
+
+      <div class="card">
+        <h3>hexyl — <span data-i18n="s10.hx.h">a hex dump with colour</span></h3>
+        <p data-i18n="s10.hx.p">The columns are offset, bytes and ASCII, and the colours distinguish printable characters, whitespace, control codes and the null byte. That sounds cosmetic until you are looking for a stray <code>\r\n</code> in a protocol capture or a BOM at the start of a file; then the colour is the whole feature.</p>
+        <pre>cargo install --locked hexyl
+
+hexyl firmware.bin
+hexyl -n 64 secrets.txt             <span class="c"># first 64 bytes only</span>
+hexyl -s 128 -n 32 data.bin         <span class="c"># a window</span>
+hexyl --border none --color always dump.bin | head</pre>
+      </div>
+
+      <div class="card">
+        <h3>mdcat — <span data-i18n="s10.md.h">read a README without leaving the shell</span></h3>
+        <p data-i18n="s10.md.p">Renders Markdown with headings, tables, lists, syntax highlighting and, in terminals that support it, inline images. The renderer is strict about CommonMark and picks up local links, so a document with a table of contents behaves like a document. For a repository you have just cloned, it is the fastest way to read the instructions you are about to ignore.</p>
+        <pre>cargo install --locked mdcat
+
+mdcat README.md
+mdcat docs/guide.md | less -R
+mdcat --paginate CHANGELOG.md</pre>
+      </div>
+    </section>
+
+    <section id="machine">
+      <h2><span class="num">11</span><span data-i18n="s11.title">The machine: processes, disk, and who is using the network</span></h2>
+      <p class="sub" data-i18n="s11.sub">
+        <strong>bottom</strong> is top with graphs, <strong>procs</strong> is ps with colour and real
+        sorting, <strong>dust</strong> is du that finishes, and <strong>bandwhich</strong> answers
+        the question none of the others can: which process is using the bandwidth right now.
+      </p>
+
+      <div class="card">
+        <h3>bottom — <span data-i18n="s11.bt.h">top, if top had been designed this decade</span></h3>
+        <p data-i18n="s11.bt.p">CPU, memory, network, disk and temperature in widgets you can rearrange, with mouse support, zoom, filters and a config file. It runs over SSH without complaint, and the search-and-kill flow (<code>/</code> then <code>dd</code>) is the reason to keep it open on a server.</p>
+        <pre>cargo install --locked bottom        <span class="c"># binary: btm</span>
+
+btm
+btm --basic                          <span class="c"># no graphs, for a slow link</span>
+btm --battery
+btm --basic --battery</pre>
+      </div>
+
+      <div class="card">
+        <h3>procs — <span data-i18n="s11.pr.h">ps with the columns that matter</span></h3>
+        <p data-i18n="s11.pr.p">Readable by default: colour per process state, a tree view, sortable by CPU or memory as a number rather than as a string. It also shows the command with its arguments wrapped instead of truncated, which is the difference between seeing a process and guessing at it.</p>
+        <pre>cargo install --locked procs
+
+procs
+procs --tree
+procs firefox
+procs --sortd cpu | head -15
+procs --watch 1</pre>
+      </div>
+
+      <div class="card">
+        <h3>dust — <span class="data-i18n="s11.du.h">du, drawn as a tree</span></h3>
+        <p data-i18n="s11.du.p">It walks directories in parallel, then prints a tree of the largest entries with bars, so the answer to "what is eating the disk" is the first screen rather than a sorted list you have to read. The binary is <code>dust</code>; the crate is <code>du-dust</code>, which is the kind of registry detail this manual exists to record.</p>
+        <pre>cargo install --locked du-dust        <span class="c"># binary: dust</span>
+
+dust
+dust -d 2                            <span class="c"># two levels</span>
+dust -n 15                           <span class="c"># fifteen lines</span>
+dust -r                              <span class="c"># smallest first</span>
+dust -X target                       <span class="c"># skip a directory</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>bandwhich — <span data-i18n="s11.bw.h">the network, per process</span></h3>
+        <p data-i18n="s11.bw.p">Shows connections grouped by process and by remote address, with current throughput and totals, refreshing in place. It needs raw socket access to see other processes' traffic: run it with <code>sudo</code>, or grant the binary the capability once so it does not need a password. It is a diagnostic, not a firewall — nothing it shows is blocked by it.</p>
+        <pre>cargo install --locked bandwhich
+
+sudo bandwhich
+sudo bandwhich -i wlan0
+sudo setcap cap_net_raw,cap_net_admin=eip ~/.cargo/bin/bandwhich
+bandwhich --total-utilization</pre>
+      </div>
+    </section>
+    <section id="network">
+      <h2><span class="num">12</span><span data-i18n="s12.title">The network, measured rather than guessed</span></h2>
+      <p class="sub" data-i18n="s12.sub">
+        <strong>gping</strong> draws latency over time, <strong>trippy</strong> shows where the
+        packets stop, and <strong>oha</strong> measures what a server does under load. Three
+        answers to three different questions, and all three are better than the tool they replace
+        for the simple reason that they keep history instead of printing one number.
+      </p>
+
+      <div class="card">
+        <h3>gping — <span data-i18n="s12.gp.h">ping with a graph</span></h3>
+        <p data-i18n="s12.gp.p">The same ICMP request, plotted over time, with several hosts on the same axes. A latency problem is almost never visible in one number and is obvious in a shape: the periodic spike every sixty seconds is a cron job, the sawtooth is bufferbloat, the flat line at 300 ms is a route you should not be taking.</p>
+        <pre>cargo install --locked gping
+
+gping 1.1.1.1
+gping google.com cloudflare.com     <span class="c"># several hosts, one chart</span>
+gping --simple-graphics 8.8.8.8     <span class="c"># for a limited terminal</span>
+gping --buffer 60 1.1.1.1           <span class="c"># a minute of history</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>trippy — <span data-i18n="s12.tr.h">traceroute, live</span></h3>
+        <p data-i18n="s12.tr.p">A traceroute that keeps probing while you watch: each hop shows its latency distribution, packet loss per hop, and a map of where the loss begins. That last part is the whole point — a traceroute tells you the hops, and this tells you which hop is actually dropping packets rather than inheriting the loss from the one before it.</p>
+        <pre>cargo install --locked trippy        <span class="c"># binary: trip</span>
+
+sudo trip example.com
+sudo trip -u example.com            <span class="c"># UDP instead of ICMP</span>
+sudo trip --dns-resolve-method cloudflare
+sudo setcap cap_net_raw,cap_net_admin+eip ~/.cargo/bin/trip</pre>
+        <p data-i18n="s12.tr.after">Raw sockets are the reason for <code>sudo</code>, and the capability is the reason you only need it once. On macOS the tool needs to run as root as well; there is no capability equivalent.</p>
+      </div>
+
+      <div class="card">
+        <h3>oha — <span data-i18n="s12.oh.h">load, with a live histogram</span></h3>
+        <p data-i18n="s12.oh.p">An HTTP load generator with a terminal interface that updates while the test runs: requests per second, latency percentiles, status codes, and a histogram that shows whether the tail is a tail or a cliff. It can hold a connection open, send a JSON body, follow redirects, and stop on a duration instead of a count — which is how you reproduce a real traffic shape.</p>
+        <pre>cargo install --locked oha
+
+oha -n 1000 -c 50 https://example.com
+oha -z 30s -c 20 https://example.com/health
+oha --no-tui -n 200 -c 10 https://example.com | tail -20
+oha -m POST -H 'content-type: application/json' \
+    -d '{"id":1}' https://example.com/api/items
+oha --latency-correction -q 50 -n 500 https://example.com</pre>
+        <p data-i18n="s12.oh.after">Point it at something you own, on a network you are allowed to load. A load generator is indistinguishable from an attack from the other side of the wire, and "it was only a thousand requests" is not a defence anyone accepts twice.</p>
+      </div>
+    </section>
+
+    <section id="tasks">
+      <h2><span class="num">13</span><span data-i18n="s13.title">Tasks, watching, and the shortcut that skips compiling</span></h2>
+      <p class="sub" data-i18n="s13.sub">
+        <strong>just</strong> runs the commands you keep forgetting, <strong>watchexec</strong> runs
+        them when a file changes, and <strong>cargo-binstall</strong> downloads a binary instead of
+        building one. The third is not a task tool, but it belongs here: it is how you install the
+        other two in four seconds.
+      </p>
+
+      <div class="card">
+        <h3>just — <span data-i18n="s13.ju.h">a makefile without the make</span></h3>
+        <p data-i18n="s13.ju.p">Recipes with names, dependencies, arguments and no tab-versus-space argument. It is not a build system and does not pretend to be: it does not check timestamps, so a recipe runs when you ask. That limitation is why a <code>justfile</code> usually sits beside cargo rather than replacing it — <code>just test</code> expands to the three commands you would otherwise look up.</p>
+        <pre>cargo install --locked just
+
+<span class="c"># justfile</span>
+default: build
+
+build:
+    cargo build --release
+
+test *args:
+    cargo nextest run {{args}}
+
+fmt:
+    cargo fmt --all
+    cargo clippy --all-targets -- -D warnings
+
+<span class="c"># then</span>
+just --list
+just test --no-capture
+just --choose                       <span class="c"># fuzzy pick a recipe</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>watchexec — <span data-i18n="s13.wx.h">run it again when a file changes</span></h3>
+        <p data-i18n="s13.wx.p">A general-purpose file watcher: it runs a command, watches a set of paths, and restarts the command when something changes. It knows about gitignore, debounces editor save storms, and can restart the process group on change — which is what makes it usable for a server rather than only for a test run.</p>
+        <pre>cargo install --locked watchexec-cli        <span class="c"># binary: watchexec</span>
+
+watchexec -e rs,toml -- cargo test
+watchexec -w src -c -- cargo run
+watchexec -r -e py -- python app.py          <span class="c"># restart on change</span>
+watchexec --shell=bash -- 'echo changed: $WATCHEXEC_COMMON_PATH'</pre>
+      </div>
+
+      <div class="card">
+        <h3>cargo-binstall — <span data-i18n="s13.bi.h">the binary the release already built</span></h3>
+        <p data-i18n="s13.bi.p">Most of the projects in this manual publish prebuilt binaries on their GitHub releases. binstall looks for the one matching your platform and installs it, falling back to <code>cargo install</code> when there is none — with the same version resolution, the same destination, and the same <code>--locked</code> discipline. It is the single biggest quality-of-life improvement in this ecosystem, and it is itself a Rust binary.</p>
+        <pre>cargo install --locked cargo-binstall
+cargo binstall ripgrep
+cargo binstall --no-confirm zellij
+cargo binstall --strategies crate-meta-data ripgrep
+cargo binstall --version 15.2.0 ripgrep</pre>
+        <p data-i18n="s13.bi.after">The fallback is the important part: a project without release artefacts still installs, only slowly. That means binstall is safe to alias over the whole workflow — <code>cargo binstall</code> first, and let it decide.</p>
+      </div>
+    </section>
+
+    <section id="cargo">
+      <h2><span class="num">14</span><span data-i18n="s14.title">Three subcommands that make a Rust project defensible</span></h2>
+      <p class="sub" data-i18n="s14.sub">
+        <strong>cargo-nextest</strong> runs tests faster and reports them better,
+        <strong>cargo-audit</strong> checks the dependency tree against the vulnerability database,
+        and <strong>cargo-deny</strong> enforces the policies a team actually agreed on. They are
+        subcommands, not separate tools: installed once, they extend the <code>cargo</code> you
+        already type.
+      </p>
+
+      <div class="card">
+        <h3>cargo-nextest — <span data-i18n="s14.nt.h">a test runner with a queue</span></h3>
+        <p data-i18n="s14.nt.p">It runs each test binary's tests in a separate process, in parallel, with per-test timeouts and retries, then prints a summary grouped by outcome instead of a scroll of dots. The practical difference is on a suite of a few hundred tests: <code>cargo test</code> takes a minute and hides which one is slow; <code>cargo nextest run</code> takes twenty seconds and names it.</p>
+        <pre>cargo install --locked cargo-nextest
+
+cargo nextest run
+cargo nextest run --no-capture
+cargo nextest run --retries 2 -E 'test(flaky)'
+cargo nextest list -T junit &gt; report.xml
+cargo nextest run --profile ci</pre>
+        <p data-i18n="s14.nt.after">One difference to know before you switch: nextest does not run doctests, because they need the compiler rather than a test binary. The CI recipe is both — <code>cargo nextest run</code> and <code>cargo test --doc</code>.</p>
+      </div>
+
+      <div class="card">
+        <h3>cargo-audit — <span data-i18n="s14.au.h">the advisories, against your lock file</span></h3>
+        <p data-i18n="s14.au.p">It reads <code>Cargo.lock</code>, compares every crate and version against the RustSec advisory database, and exits non-zero when something matches. Because it works on the lock file it can run in CI before anything is built, which is the cheapest possible place to find out that a dependency you added last week has a published CVE.</p>
+        <pre>cargo install --locked cargo-audit
+
+cargo audit
+cargo audit --json | jq '.vulnerabilities.count'
+cargo audit --deny warnings
+cargo audit fix --dry-run           <span class="c"># what it would bump</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>cargo-deny — <span class="data-i18n="s14.dn.h">licences, bans, sources, advisories</span></h3>
+        <p data-i18n="s14.dn.p">Four checks in one configuration file: which licences are allowed, which crates are banned or pinned to one version, which registries and git sources are trusted, and which advisories apply. It is the tool that makes an audit trail out of a dependency tree, and the reason a company can answer "what is in this binary" without a spreadsheet.</p>
+        <pre>cargo install --locked cargo-deny
+
+cargo deny init                     <span class="c"># writes deny.toml</span>
+cargo deny check
+cargo deny check licenses bans
+cargo deny check advisories</pre>
+      </div>
+    </section>
+
+    <section id="git">
+      <h2><span class="num">15</span><span data-i18n="s15.title">Git, changelogs, and spelling</span></h2>
+      <p class="sub" data-i18n="s15.sub">
+        <strong>delta</strong> makes a diff readable, <strong>git-cliff</strong> turns commit
+        messages into a changelog, and <strong>typos</strong> finds the spelling mistakes in
+        identifiers and comments that a compiler cannot see. Between them they cover the three
+        things that rot in a repository nobody is paid to maintain.
+      </p>
+
+      <div class="card">
+        <h3>delta — <span data-i18n="s15.dt.h">a diff with a sense of structure</span></h3>
+        <p data-i18n="s15.dt.p">Side-by-side or unified, syntax-highlighted by language, with line numbers in both columns and moved lines detected as moves rather than as a deletion plus an addition. It installs as a pager, so it improves every command that produces a diff — including the ones you did not know produced one.</p>
+        <pre>cargo install --locked git-delta        <span class="c"># binary: delta</span>
+
+git config --global core.pager delta
+git config --global interactive.diffFilter 'delta --color-only'
+git config --global delta.navigate true
+git config --global merge.conflictStyle zdiff3
+
+delta a.txt b.txt                   <span class="c"># two files, no git</span>
+git diff --stat                    <span class="c"># now readable by default</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>git-cliff — <span data-i18n="s15.gc.h">a changelog from the commits you wrote</span></h3>
+        <p data-i18n="s15.gc.p">It parses conventional commits, groups them by type, links the pull requests and authors, and renders a changelog from a template you can edit. The section of a release that nobody enjoys writing becomes a command in the release workflow, and the result is consistent because it is generated rather than remembered.</p>
+        <pre>cargo install --locked git-cliff
+
+git cliff -o CHANGELOG.md
+git cliff --unreleased --tag v0.4.0 -o CHANGELOG.md
+git cliff v0.3.0..v0.4.0 --strip header
+git cliff --latest --body | head -40</pre>
+      </div>
+
+      <div class="card">
+        <h3>typos — <span data-i18n="s15.ty.h">spelling, for code</span></h3>
+        <p data-i18n="s15.ty.p">It checks identifiers, comments, strings and documentation for misspellings, using a dictionary of common mistakes in source code rather than a general English one — so <code>ba</code>, <code>ser</code> and <code>nd</code> are not flagged, and <code>recieve</code> is. Corrections are suggested as a diff, and <code>-w</code> applies them after you have looked.</p>
+        <pre>cargo install --locked typos-cli        <span class="c"># binary: typos</span>
+
+typos
+typos -w                            <span class="c"># write the corrections</span>
+typos --diff                        <span class="c"># as a patch, for review</span>
+typos src/ docs/
+typos --format brief</pre>
+      </div>
+    </section>
+    <section id="errors">
+      <h2><span class="num">16</span><span data-i18n="s16.title">The ten messages that stop a build</span></h2>
+      <p class="sub" data-i18n="s16.sub">
+        Rust's errors are precise about the source code and vague about the machine, which is why
+        the ones below are the ones people paste into a search engine. Each row links the message to
+        the cause, because the cause is usually one package, one directory, or one version away.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.message">Message</th>
+              <th data-i18n="t.cause">What it means</th>
+              <th data-i18n="t.fix">Fix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>error: linker `cc` not found</code></th>
+              <td data-i18n="s16.e1.b">There is a compiler but no C linker. Every Rust binary links against the system C library, so a bare container fails here.</td>
+              <td data-i18n="s16.e1.c">Install <code>build-essential</code> (Debian), <code>base-devel</code> (Arch), <code>xcode-select --install</code> (macOS), or the C++ build tools on Windows.</td>
+            </tr>
+            <tr>
+              <th><code>failed to run custom build command for `openssl-sys`</code></th>
+              <td data-i18n="s16.e2.b">A crate wants to link a C library and its headers or <code>pkg-config</code> are missing.</td>
+              <td data-i18n="s16.e2.c">Install <code>pkg-config libssl-dev</code>, or build with <code>--no-default-features</code> and a rustls feature if the project offers one.</td>
+            </tr>
+            <tr>
+              <th><code>package `x` cannot be built because it requires rustc 1.95 or newer</code></th>
+              <td data-i18n="s16.e3.b">The crate's declared MSRV is above your compiler. Nothing is wrong with the crate.</td>
+              <td data-i18n="s16.e3.c"><code>rustup update stable</code>. If you are pinned in a <code>rust-toolchain.toml</code>, raise it deliberately — or install an older version of the tool.</td>
+            </tr>
+            <tr>
+              <th><code>error: could not compile `x` (signal: 9, SIGKILL: kill)</code></th>
+              <td data-i18n="s16.e4.b">The linker ran out of memory. Rust's final link step is the memory-hungry part, and a container with 2 GB will be killed.</td>
+              <td data-i18n="s16.e4.c">Build with fewer jobs (<code>cargo install -j 1</code>), add swap, or use a linker that uses less memory such as lld.</td>
+            </tr>
+            <tr>
+              <th><code>No space left on device</code></th>
+              <td data-i18n="s16.e5.b">The build directory filled the disk — usually several gigabytes for one large crate.</td>
+              <td data-i18n="s16.e5.c">Clear old <code>target</code> directories and the registry cache; part 04 has the commands and the sizes.</td>
+            </tr>
+            <tr>
+              <th><code>error: failed to select a version for the requirement `x = "^2"`</code></th>
+              <td data-i18n="s16.e6.b">No published version satisfies the resolver, often because a dependency was yanked after the lock file was written.</td>
+              <td data-i18n="s16.e6.c">Drop <code>--locked</code> to let Cargo re-resolve, or <code>cargo update -p x</code> in the project. A yanked crate can still be built if it is in your lock file.</td>
+            </tr>
+            <tr>
+              <th><code>error: binary `fd` already exists in destination</code></th>
+              <td data-i18n="s16.e7.b">Another crate ships a binary with the same name, or you are reinstalling the same version.</td>
+              <td data-i18n="s16.e7.c">Add <code>--force</code> if you meant to overwrite. Check <code>cargo install --list</code> to see what was there first.</td>
+            </tr>
+            <tr>
+              <th><code>error: no such command: `binstall`</code></th>
+              <td data-i18n="s16.e8.b">Cargo looks for subcommands as binaries named <code>cargo-*</code> on PATH. The binary is installed somewhere your shell does not see, or not at all.</td>
+              <td data-i18n="s16.e8.c">Install it (<code>cargo install --locked cargo-binstall</code>) and check <code>command -v cargo-binstall</code> before blaming the tool.</td>
+            </tr>
+            <tr>
+              <th><code>warning: be sure to add `~/.cargo/bin` to your PATH</code></th>
+              <td data-i18n="s16.e9.b">The install worked; the shell cannot find the result. Part 05.</td>
+              <td data-i18n="s16.e9.c"><code>export PATH="$HOME/.cargo/bin:$PATH"</code> in the profile your shell actually reads, then start a login shell.</td>
+            </tr>
+            <tr>
+              <th><code>error: failed to download ... SSL certificate problem</code></th>
+              <td data-i18n="s16.e10.b">A proxy, a corporate TLS inspection certificate, or a missing CA bundle between you and crates.io.</td>
+              <td data-i18n="s16.e10.c">Set <code>https_proxy</code>, point <code>CARGO_HTTP_CAINFO</code> at the corporate bundle, or use <code>CARGO_NET_GIT_FETCH_WITH_CLI=true</code> for git dependencies.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <strong data-i18n="s16.note.h">The two failures that look like the machine dying</strong>
+        <p data-i18n="s16.note.p">A build that ends in <code>Killed</code> ran out of memory at the link step — add swap or reduce jobs, and it will finish. A build that takes eight minutes the first time and three seconds the second is the incremental and registry caches doing their job; <code>cargo clean</code> resets it to the slow version, so there is no reason to. Neither is a sign that the tool is broken.</p>
+      </div>
+    </section>
+
+    <section id="route">
+      <h2><span class="num">17</span><span data-i18n="s17.title">Which route for this tool</span></h2>
+      <p class="sub" data-i18n="s17.sub">
+        There are four honest ways to get a Rust binary onto a machine, and the right one depends on
+        who will run it and where. Answer three questions and the verdict below names the route, the
+        reason, and the command — including the case where the answer is "do not compile this here".
+      </p>
+
+      <div class="tool" id="route-tool">
+        <div class="tool-head">
+          <h3 data-i18n="s17.tool.h">Route chooser</h3>
+          <span class="badge" data-i18n="s17.tool.badge">four routes</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s17.q1">Does your own code import it?</span>
+            <select id="rt-code">
+              <option value="no" data-i18n="s17.q1.no">No — it is a command I run</option>
+              <option value="yes" data-i18n="s17.q1.yes">Yes — it is a library</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s17.q2">Will it run where there is no compiler?</span>
+            <select id="rt-target">
+              <option value="no" data-i18n="s17.q2.no">No — this machine builds</option>
+              <option value="yes" data-i18n="s17.q2.yes">Yes — a server or a laptop without Rust</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s17.q3">Is it packaged by your distribution or nix?</span>
+            <select id="rt-distro">
+              <option value="no" data-i18n="s17.q3.no">No</option>
+              <option value="yes" data-i18n="s17.q3.yes">Yes, and it is current</option>
+            </select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s17.out.route">Route</dt><dd id="rt-route">—</dd>
+          <dt data-i18n="s17.out.verdict">Verdict</dt><dd id="rt-verdict">—</dd>
+          <dt data-i18n="s17.out.why">Why</dt><dd id="rt-why">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="rt-copy" data-i18n="s17.copy">Copy</button>
+          <pre id="rt-out">—</pre>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.route">Route</th>
+              <th data-i18n="t.good">Good for</th>
+              <th data-i18n="t.cost">What it costs</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>cargo install --locked</code></th>
+              <td data-i18n="s17.r1.a">Your workstation, the newest version, reproducibility.</td>
+              <td data-i18n="s17.r1.b">Minutes of compile time, and a dependency tree that must compile cleanly.</td>
+            </tr>
+            <tr>
+              <th><code>cargo binstall</code></th>
+              <td data-i18n="s17.r2.a">Any machine that can download a release artefact, especially a CI image.</td>
+              <td data-i18n="s17.r2.b">Trust in the project's release pipeline, and the fallback compile when there is no artefact.</td>
+            </tr>
+            <tr>
+              <th><code>distro</code> / <code>nix</code></th>
+              <td data-i18n="s17.r3.a">A fleet you do not want compiling, and a version that arrives with the system's updates.</td>
+              <td data-i18n="s17.r3.b">An older version than upstream — occasionally far older — and names that differ from upstream's.</td>
+            </tr>
+            <tr>
+              <th><code>cargo build --release</code> + copy</th>
+              <td data-i18n="s17.r4.a">A server with no toolchain: build once here, copy the binary, done.</td>
+              <td data-i18n="s17.r4.b">You own the build: matching libc and architecture, and the update is your problem.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p data-i18n="s17.after">The cross-compilation footnote is worth knowing before it surprises you: a binary built on a glibc distribution will not run on a musl system such as Alpine. Build with the <code>x86_64-unknown-linux-musl</code> target for a static binary, or build inside the image you will deploy.</p>
+    </section>
+
+    <section id="sources">
+      <h2><span class="num">18</span><span data-i18n="s18.title">Sources, and what each one settles</span></h2>
+      <p class="sub" data-i18n="s18.sub">
+        The manual is built from the projects' own documentation and from the metadata each crate
+        publishes. Every tool in part 06 links to its repository, which is the authority on its own
+        flags — and the pages below are the authority on the toolchain itself.
+      </p>
+
+      <ul class="sources">
+        <li><a href="https://rustup.rs/" target="_blank" rel="noopener">rustup.rs</a> — <span data-i18n="src.1">The installer used in part 02, with the profiles and the components it can add.</span></li>
+        <li><a href="https://rust-lang.github.io/rustup/" target="_blank" rel="noopener">The rustup book</a> — <span data-i18n="src.2">Toolchains, overrides, <code>rust-toolchain.toml</code> and what <code>rustup show</code> is telling you.</span></li>
+        <li><a href="https://doc.rust-lang.org/cargo/commands/cargo-install.html" target="_blank" rel="noopener">cargo install</a> — <span data-i18n="src.3">Every flag in the table of part 03, including <code>--locked</code>, <code>--root</code> and <code>--git</code>.</span></li>
+        <li><a href="https://doc.rust-lang.org/cargo/reference/config.html" target="_blank" rel="noopener">Cargo configuration</a> — <span data-i18n="src.4">Where <code>config.toml</code> lives, and the environment variables that override it, including the registry and proxy settings.</span></li>
+        <li><a href="https://crates.io/" target="_blank" rel="noopener">crates.io</a> — <span data-i18n="src.5">The register itself: every crate, version, MSRV and repository link used here.</span></li>
+        <li><a href="https://doc.rust-lang.org/edition-guide/" target="_blank" rel="noopener">The edition guide</a> — <span data-i18n="src.6">What an edition changes, which editions a compiler supports, and why edition 2024 needs Rust 1.85.</span></li>
+        <li><a href="https://blog.rust-lang.org/" target="_blank" rel="noopener">The Rust blog</a> — <span data-i18n="src.7">Release announcements every six weeks, the source of the version numbers quoted here.</span></li>
+        <li><a href="https://doc.rust-lang.org/cargo/reference/manifest.html" target="_blank" rel="noopener">The manifest reference</a> — <span data-i18n="src.8">The <code>rust-version</code> field, which is where a crate's declared MSRV actually lives.</span></li>
+        <li><a href="https://github.com/cargo-bins/cargo-binstall" target="_blank" rel="noopener">cargo-binstall</a> — <span data-i18n="src.9">How a prebuilt artefact is located for each platform, and what happens when none exists.</span></li>
+        <li><a href="https://rustsec.org/" target="_blank" rel="noopener">RustSec</a> — <span data-i18n="src.10">The advisory database behind <code>cargo audit</code>, and the format of the entries it matches.</span></li>
+        <li><a href="https://doc.rust-lang.org/rustc/platform-support.html" target="_blank" rel="noopener">Platform support</a> — <span data-i18n="src.11">Which targets are tier 1, tier 2 or tier 3, and therefore which cross-compiles are expected to work.</span></li>
+        <li><a href="https://doc.rust-lang.org/cargo/reference/build-scripts.html" target="_blank" rel="noopener">Build scripts</a> — <span data-i18n="src.12">Why a crate can fail before your code compiles, and what <code>pkg-config</code> is doing in a Rust build.</span></li>
+      </ul>
+      <p data-i18n="s18.after">The versions in part 06 are the newest published crates on 29 October 2026, and each MSRV is the one declared in that release's metadata. Both will move; the repository remains the authority, and the trailing <code>--locked</code> is how you keep today's build tomorrow.</p>
+    </section>
+
+    <section id="glossary">
+      <h2><span class="num">19</span><span data-i18n="s19.title">Glossary</span></h2>
+      <p class="sub" data-i18n="s19.sub">Twelve words that explain most of the confusion in this manual.</p>
+      <ul class="glossary" id="glossary-list"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p data-i18n="footer.p">
+        Written from a Linux terminal and checked against each crate's published metadata on the
+        day of publication: version, declared MSRV and binary names read from crates.io, and every
+        command taken from the project's own documentation. Where the manual says "usually", it is
+        because a distribution package name or a binary name differs — the repository is the final
+        word.
+      </p>
+      <a class="back" href="index.html"><span data-i18n="footer.back">&larr; Back to the archive</span></a>
+      <p class="cross" data-i18n="footer.cross">The rest of the series: <a href="python-cli.html">The Shell, Extended</a> for the Python half of the same idea, <a href="golang-cli.html">Go in the Shell</a> for the compiled-toolchain argument without a borrow checker, <a href="hydroponics.html">Hydroponics at Home</a> for a garden without soil, and <a href="recycling.html">Nothing Is Garbage</a> for the second life of everything the house throws away.</p>
+    </div>
+  </footer>
+  <script>
+    (function () {
+      "use strict";
+
+      /* ---------- the thirty crates (versions and MSRVs resolved via crates.io) ---------- */
+      var APPS = [
+        { key: "starship", family: "prompt", name: "starship", crate: "starship", cmd: "starship", ver: "1.27.0", repo: "starship/starship", need: "1.95", path: ".",
+          what: { en: "A prompt for any shell: git state, language versions, last exit code, command duration — configured in one TOML file.",
+                  pt: "Um prompt para qualquer shell: estado do git, versões de linguagens, último código de saída, duração do comando — configurado num só ficheiro TOML." } },
+        { key: "zoxide", family: "prompt", name: "zoxide", crate: "zoxide", cmd: "zoxide", ver: "0.10.0", repo: "ajeetdsouza/zoxide", need: "1.88.0", path: ".",
+          what: { en: "A cd that keeps a score for every directory you visit, so a fragment of a path is enough to jump there.",
+                  pt: "Um cd que guarda uma pontuação de cada pasta que visita, para bastar um fragmento do caminho para saltar até lá." } },
+        { key: "atuin", family: "prompt", name: "atuin", crate: "atuin", cmd: "atuin", ver: "18.24.3", repo: "atuinsh/atuin", need: "1.95.0", path: "crates/atuin",
+          what: { en: "Shell history in SQLite: every command with its exit code, directory and duration, searchable, optionally synced encrypted.",
+                  pt: "Histórico de shell em SQLite: cada comando com código de saída, pasta e duração, pesquisável e, se quiser, sincronizado cifrado." } },
+        { key: "nu", family: "shell", name: "Nushell", crate: "nu", cmd: "nu", ver: "0.116.1", repo: "nushell/nushell", need: "1.96.1", path: ".",
+          what: { en: "A shell where the pipeline carries tables with named columns instead of bytes, so ls, ps and JSON become data you can filter.",
+                  pt: "Uma shell onde a conduta transporta tabelas com colunas nomeadas em vez de bytes, e ls, ps e JSON passam a ser dados que se filtram." } },
+        { key: "mise", family: "shell", name: "mise", crate: "mise", cmd: "mise", ver: "2026.10.23", repo: "jdx/mise", need: "1.95", path: ".",
+          what: { en: "One version manager for every language, plus per-project environments and tasks — reads the same .tool-versions as asdf.",
+                  pt: "Um gestor de versões para todas as linguagens, mais ambientes e tarefas por projeto — lê o mesmo .tool-versions que o asdf." } },
+        { key: "skim", family: "shell", name: "skim", crate: "skim", cmd: "sk", ver: "5.9.0", repo: "skim-rs/skim", need: "1.91", path: ".",
+          what: { en: "A fuzzy finder as a Rust library with a CLI: fast on huge inputs, with an interactive mode that re-runs your search on each keystroke.",
+                  pt: "Um localizador difuso como biblioteca Rust com CLI: rápido em entradas enormes, com um modo interativo que repete a pesquisa a cada tecla." } },
+        { key: "ripgrep", family: "files", name: "ripgrep", crate: "ripgrep", cmd: "rg", ver: "15.2.0", repo: "BurntSushi/ripgrep", need: "1.85", path: ".",
+          what: { en: "grep that respects .gitignore, skips binaries and searches recursively by default, fast enough that the flags stop mattering.",
+                  pt: "Um grep que respeita o .gitignore, salta binários e pesquisa recursivamente por omissão, rápido ao ponto de as opções deixarem de importar." } },
+        { key: "fd", family: "files", name: "fd", crate: "fd-find", cmd: "fd", ver: "10.5.0", repo: "sharkdp/fd", need: "1.90.0", path: ".",
+          what: { en: "find with a regex on the file name, gitignore awareness and parallel walking — the pattern, not a grammar of predicates.",
+                  pt: "O find com uma expressão regular sobre o nome, consciência do gitignore e travessia em paralelo — o padrão, não uma gramática de predicados." } },
+        { key: "bat", family: "files", name: "bat", crate: "bat", cmd: "bat", ver: "0.26.1", repo: "sharkdp/bat", need: "1.87", path: ".",
+          what: { en: "cat with syntax highlighting, line numbers, a pager and git change marks in the margin.",
+                  pt: "O cat com realce de sintaxe, números de linha, pager e marcas das alterações do git na margem." } },
+        { key: "eza", family: "files", name: "eza", crate: "eza", cmd: "eza", ver: "0.23.5", repo: "eza-community/eza", need: "1.90", path: ".",
+          what: { en: "ls with git status per file, a tree view, icons and human sizes that stay readable in a narrow terminal.",
+                  pt: "O ls com estado do git por ficheiro, vista em árvore, ícones e tamanhos legíveis num terminal estreito." } },
+        { key: "sd", family: "text", name: "sd", crate: "sd", cmd: "sd", ver: "1.0.0", repo: "chmln/sd", need: "1.70.0", path: ".",
+          what: { en: "Search and displace: sd PATTERN REPLACEMENT writes in place by default, with a preview flag when you want to look first.",
+                  pt: "Procurar e substituir: sd PADRÃO SUBSTITUIÇÃO escreve no local por omissão, com uma opção de pré-visualização para ver primeiro." } },
+        { key: "tokei", family: "text", name: "tokei", crate: "tokei", cmd: "tokei", ver: "15.0.0", repo: "XAMPPRocky/tokei", need: "1.71", path: ".",
+          what: { en: "Lines, code, comments and blanks per language, counted in parallel, with JSON output for a report.",
+                  pt: "Linhas, código, comentários e vazias por linguagem, contados em paralelo, com saída JSON para um relatório." } },
+        { key: "hexyl", family: "text", name: "hexyl", crate: "hexyl", cmd: "hexyl", ver: "0.17.0", repo: "sharkdp/hexyl", need: "1.88", path: ".",
+          what: { en: "A hex dump that colours printable characters, whitespace, control codes and null bytes differently.",
+                  pt: "Um dump hexadecimal que pinta de forma diferente caracteres imprimíveis, espaços, códigos de controlo e bytes nulos." } },
+        { key: "mdcat", family: "text", name: "mdcat", crate: "mdcat", cmd: "mdcat", ver: "2.19.0", repo: "BIRSAx2/mdcat", need: "1.95", path: ".",
+          what: { en: "Markdown rendered in the terminal — headings, tables, highlighted code and images where the terminal supports them.",
+                  pt: "Markdown renderizado no terminal — títulos, tabelas, código realçado e imagens onde o terminal as suporta." } },
+        { key: "bottom", family: "machine", name: "bottom", crate: "bottom", cmd: "btm", ver: "0.14.9", repo: "ClementTsang/bottom", need: "1.95.0", path: ".",
+          what: { en: "top with graphs for CPU, memory, network, disk and temperature, in widgets you can rearrange.",
+                  pt: "O top com gráficos de CPU, memória, rede, disco e temperatura, em widgets que se podem reorganizar." } },
+        { key: "procs", family: "machine", name: "procs", crate: "procs", cmd: "procs", ver: "0.14.12", repo: "dalance/procs", need: "1.88", path: ".",
+          what: { en: "ps with colour, a tree view, numeric sorting and command lines wrapped instead of truncated.",
+                  pt: "O ps com cor, vista em árvore, ordenação numérica e linhas de comando inteiras em vez de cortadas." } },
+        { key: "dust", family: "machine", name: "dust", crate: "du-dust", cmd: "dust", ver: "1.2.6", repo: "bootandy/dust", need: null, floor: "1.85", path: ".",
+          what: { en: "du drawn as a tree, walking directories in parallel, so the answer to what is eating the disk is the first screen.",
+                  pt: "O du desenhado em árvore, a percorrer pastas em paralelo, para a resposta ao que enche o disco ser o primeiro ecrã." } },
+        { key: "bandwhich", family: "machine", name: "bandwhich", crate: "bandwhich", cmd: "bandwhich", ver: "0.23.1", repo: "imsnif/bandwhich", need: "1.74.0", path: ".",
+          deps: { en: "raw socket access — sudo, or cap_net_raw", pt: "acesso a sockets raw — sudo, ou cap_net_raw" },
+          what: { en: "Current network use grouped by process and remote address, with throughput and totals, refreshed in place.",
+                  pt: "Uso atual da rede agrupado por processo e endereço remoto, com taxa e totais, atualizado no local." } },
+        { key: "gping", family: "network", name: "gping", crate: "gping", cmd: "gping", ver: "1.21.0", repo: "orf/gping", need: null, floor: null, path: ".",
+          deps: { en: "the system ping binary", pt: "o binário ping do sistema" },
+          what: { en: "ping plotted over time, several hosts on one chart, so a latency problem becomes a shape.",
+                  pt: "O ping desenhado ao longo do tempo, vários anfitriões no mesmo gráfico, para um problema de latência se tornar uma forma." } },
+        { key: "trippy", family: "network", name: "trippy", crate: "trippy", cmd: "trip", ver: "0.13.0", repo: "fujiapple852/trippy", need: "1.78", path: ".",
+          deps: { en: "raw socket access — sudo, or cap_net_raw", pt: "acesso a sockets raw — sudo, ou cap_net_raw" },
+          what: { en: "A live traceroute: loss and latency per hop over time, so you can see which hop starts dropping packets.",
+                  pt: "Um traceroute ao vivo: perda e latência por salto ao longo do tempo, para ver qual salto começa a perder pacotes." } },
+        { key: "oha", family: "network", name: "oha", crate: "oha", cmd: "oha", ver: "1.16.0", repo: "hatoo/oha", need: "1.88", path: ".",
+          what: { en: "An HTTP load generator with a live histogram of latency percentiles, status codes and requests per second.",
+                  pt: "Um gerador de carga HTTP com histograma ao vivo de percentis de latência, códigos de estado e pedidos por segundo." } },
+        { key: "just", family: "tasks", name: "just", crate: "just", cmd: "just", ver: "1.59.0", repo: "casey/just", need: "1.89.0", path: ".",
+          what: { en: "Named recipes with dependencies and arguments, no tabs, no timestamps — the commands you keep forgetting, written once.",
+                  pt: "Receitas com nome, dependências e argumentos, sem tabs e sem datas — os comandos que esquece sempre, escritos uma vez." } },
+        { key: "watchexec", family: "tasks", name: "watchexec", crate: "watchexec-cli", cmd: "watchexec", ver: "2.8.0", repo: "watchexec/watchexec", need: null, floor: null, path: "crates/cli",
+          what: { en: "Runs a command again when files change, aware of gitignore, debouncing editor saves and restarting the process group.",
+                  pt: "Corre um comando outra vez quando ficheiros mudam, ciente do gitignore, juntando gravações do editor e reiniciando o grupo de processos." } },
+        { key: "binstall", family: "tasks", name: "cargo-binstall", crate: "cargo-binstall", cmd: "cargo-binstall", ver: "1.26.1", repo: "cargo-bins/cargo-binstall", need: "1.96.1", path: ".",
+          what: { en: "Installs the prebuilt binary from a project's releases, and falls back to compiling when no artefact exists.",
+                  pt: "Instala o binário pré-compilado das releases de um projeto, e recorre à compilação quando não existe artefacto." } },
+        { key: "nextest", family: "cargo", name: "cargo-nextest", crate: "cargo-nextest", cmd: "cargo-nextest", ver: "0.9.150", repo: "nextest-rs/nextest", need: "1.91", path: "cargo-nextest",
+          what: { en: "A test runner with one process per test, per-test timeouts, retries and a summary grouped by outcome.",
+                  pt: "Um executor de testes com um processo por teste, tempos limite por teste, repetições e um resumo agrupado por resultado." } },
+        { key: "audit", family: "cargo", name: "cargo-audit", crate: "cargo-audit", cmd: "cargo-audit", ver: "0.22.2", repo: "rustsec/rustsec", need: "1.88", path: "cargo-audit",
+          what: { en: "Checks Cargo.lock against the RustSec advisory database and exits non-zero when something matches.",
+                  pt: "Verifica o Cargo.lock contra a base de avisos RustSec e sai com erro quando algo corresponde." } },
+        { key: "deny", family: "cargo", name: "cargo-deny", crate: "cargo-deny", cmd: "cargo-deny", ver: "0.20.2", repo: "EmbarkStudios/cargo-deny", need: "1.88.0", path: ".",
+          what: { en: "Licences, banned crates, trusted sources and advisories, checked against one deny.toml.",
+                  pt: "Licenças, crates proibidos, fontes de confiança e avisos, verificados contra um deny.toml." } },
+        { key: "delta", family: "git", name: "delta", crate: "git-delta", cmd: "delta", ver: "0.20.1", repo: "dandavison/delta", need: null, floor: null, path: ".",
+          what: { en: "A diff pager with syntax highlighting, side-by-side view, line numbers and moved lines detected as moves.",
+                  pt: "Um pager de diffs com realce de sintaxe, vista lado a lado, números de linha e linhas movidas detetadas como movimentos." } },
+        { key: "git-cliff", family: "git", name: "git-cliff", crate: "git-cliff", cmd: "git-cliff", ver: "2.14.2", repo: "orhun/git-cliff", need: "1.88.0", path: ".",
+          what: { en: "Turns conventional commits into a changelog from a template, grouped by type and linked to pull requests.",
+                  pt: "Transforma commits convencionais num changelog a partir de um modelo, agrupado por tipo e ligado aos pull requests." } },
+        { key: "typos", family: "git", name: "typos", crate: "typos-cli", cmd: "typos", ver: "1.51.1", repo: "crate-ci/typos", need: "1.95", path: "crates/typos-cli",
+          what: { en: "Finds misspellings in identifiers, comments and strings, with a dictionary built for source code rather than prose.",
+                  pt: "Encontra erros ortográficos em identificadores, comentários e strings, com um dicionário feito para código e não para prosa." } }
+      ];
+
+      var FAMILIES = ["prompt", "shell", "files", "text", "machine", "network", "tasks", "cargo", "git"];
+      var FAMILY_LABEL = {
+        en: { prompt: "Prompt", shell: "Shell", files: "Files", text: "Text", machine: "Machine",
+              network: "Network", tasks: "Tasks", cargo: "Cargo", git: "Git" },
+        pt: { prompt: "Prompt", shell: "Shell", files: "Ficheiros", text: "Texto", machine: "Máquina",
+              network: "Rede", tasks: "Tarefas", cargo: "Cargo", git: "Git" }
+      };
+
+      var GLOSSARY = [
+        { en: ["Crate", "The unit of compilation, distribution and installation. It can produce a library, one or more binaries, or both — <code>cargo install</code> only takes the binaries."],
+          pt: ["Crate", "A unidade de compilação, distribuição e instalação. Pode produzir uma biblioteca, um ou mais binários, ou ambos — o <code>cargo install</code> só leva os binários."] },
+        { en: ["Registry", "The index a crate comes from. crates.io is the default; a company mirror or a git dependency is the exception."],
+          pt: ["Registo", "O índice de onde vem um crate. O crates.io é o padrão; um espelho da empresa ou uma dependência git são a exceção."] },
+        { en: ["Edition", "A compatibility boundary for the language itself — 2015, 2018, 2021, 2024. A crate states its edition in <code>Cargo.toml</code>; edition 2024 requires Rust 1.85."],
+          pt: ["Edição", "Uma fronteira de compatibilidade da própria linguagem — 2015, 2018, 2021, 2024. Um crate declara a edição no <code>Cargo.toml</code>; a edição 2024 exige Rust 1.85."] },
+        { en: ["MSRV", "Minimum supported Rust version, declared as <code>rust-version</code> in the manifest. It is a promise about the floor, not a recommendation."],
+          pt: ["MSRV", "Versão mínima de Rust suportada, declarada como <code>rust-version</code> no manifesto. É uma promessa sobre o mínimo, não uma recomendação."] },
+        { en: ["Toolchain", "A specific compiler release plus its standard library and components. rustup installs and switches between them."],
+          pt: ["Toolchain", "Uma versão específica do compilador com a sua biblioteca padrão e componentes. O rustup instala e alterna entre elas."] },
+        { en: ["Channel", "stable, beta or nightly. Stable moves every six weeks; a project that must reproduce pins an exact version instead."],
+          pt: ["Canal", "stable, beta ou nightly. O stable move a cada seis semanas; um projeto que tem de reproduzir fixa uma versão exata."] },
+        { en: ["Target triple", "The platform a compiler produces code for — <code>x86_64-unknown-linux-gnu</code>, <code>aarch64-apple-darwin</code>. Cross-compiling means naming a different one."],
+          pt: ["Tripleto de alvo", "A plataforma para a qual o compilador produz código — <code>x86_64-unknown-linux-gnu</code>, <code>aarch64-apple-darwin</code>. Compilar para outra é nomear um diferente."] },
+        { en: ["Cargo.lock", "The exact resolved versions of every dependency. Committed for binaries, and the reason <code>--locked</code> is reproducible."],
+          pt: ["Cargo.lock", "As versões exatas resolvidas de cada dependência. Fica no repositório para binários, e é a razão de <code>--locked</code> ser reproduzível."] },
+        { en: ["Feature flag", "A compile-time switch a crate declares — optional dependencies or extra functionality. Features are additive, and someone else's choice can turn one on."],
+          pt: ["Feature flag", "Um interruptor de compilação declarado pelo crate — dependências opcionais ou funcionalidade extra. As features são aditivas, e a escolha de outra pessoa pode ativar uma."] },
+        { en: ["CARGO_HOME", "<code>~/.cargo</code> by default: the binaries, the registry cache and the configuration. Moving it moves the whole installation."],
+          pt: ["CARGO_HOME", "<code>~/.cargo</code> por omissão: os binários, a cache do registo e a configuração. Mudá-lo move a instalação inteira."] },
+        { en: ["rustup override", "A per-directory toolchain choice, stored by rustup rather than in the repository. <code>rust-toolchain.toml</code> is the version you can commit."],
+          pt: ["Override do rustup", "Uma escolha de toolchain por pasta, guardada pelo rustup e não no repositório. O <code>rust-toolchain.toml</code> é a versão que se pode comprometer."] },
+        { en: ["Build script", "<code>build.rs</code>, run before the crate compiles. It is what probes for a C library with <code>pkg-config</code>, and therefore what fails when one is missing."],
+          pt: ["Build script", "<code>build.rs</code>, executado antes de o crate compilar. É o que procura uma biblioteca C com <code>pkg-config</code>, e portanto o que falha quando falta uma."] }
+      ];
+
+      var RUST_VERSIONS = ["1.75", "1.78", "1.80", "1.82", "1.85", "1.88", "1.90", "1.91", "1.95", "1.96", "1.99"];
+
+      function byId(id) {
+        return document.getElementById(id);
+      }
+
+      function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) {
+          node.className = className;
+        }
+        if (text != null) {
+          node.textContent = text;
+        }
+        return node;
+      }
+
+      var lang = "en";
+      var EN = {};
+
+      var TITLE = {
+        en: "Rust in the Shell — Thirty Crates, One Toolchain",
+        pt: "Rust na Shell — Trinta Crates, Uma Toolchain"
+      };
+      var DESCRIPTION = {
+        en: "Rust from the terminal: rustup, cargo install, CARGO_HOME on PATH, thirty crates with verified MSRVs, and the errors that stop a build.",
+        pt: "Rust a partir do terminal: rustup, cargo install, CARGO_HOME no PATH, trinta crates com MSRV verificado, e os erros que travam uma compilação."
+      };
+
+      /* ---------- builder ---------- */
+      function needLabel(app) {
+        if (app.need) {
+          return app.need;
+        }
+        if (app.floor) {
+          return app.floor + (lang === "pt" ? " (edição 2024)" : " (edition 2024)");
+        }
+        return lang === "pt" ? "não declarado" : "not declared";
+      }
+
+      function builderText(app, method, os) {
+        var win = os === "win";
+        var home = win ? "%USERPROFILE%\\.cargo\\bin\\" + app.cmd.replace("cargo-", "") + ".exe"
+                       : "~/.cargo/bin/" + app.cmd.replace("cargo-", "");
+        var lines = [];
+        lines.push("rustc --version        # " + (app.need ? "needs " + app.need + " or newer"
+                                                              : "no MSRV declared; current stable builds it"));
+        if (app.deps) {
+          lines.push("# needs installed: " + app.deps[lang]);
+        }
+        lines.push("");
+
+        if (method === "binstall") {
+          lines.push("cargo install --locked cargo-binstall    # once only");
+          lines.push("cargo binstall " + app.crate);
+        } else if (method === "source") {
+          lines.push("git clone https://github.com/" + app.repo);
+          lines.push("cd " + app.repo.split("/")[1]);
+          lines.push("cargo install --locked --path " + (app.path || ".") + (method === "source" && app.path !== "." ? "   # the crate lives here" : ""));
+        } else if (method === "pinned") {
+          lines.push("cargo install --locked " + app.crate + " --version " + app.ver);
+        } else {
+          lines.push("cargo install --locked " + app.crate);
+        }
+
+        lines.push("");
+        lines.push((app.cmd.indexOf("cargo-") === 0 ? "cargo " + app.cmd.slice(6) : app.cmd) + " --help");
+        lines.push("# the binary: " + home);
+        return lines.join("\n");
+      }
+
+      function updateBuilder() {
+        var appSel = byId("b-app");
+        if (!appSel) {
+          return;
+        }
+        var app = APPS[parseInt(appSel.value, 10)] || APPS[0];
+        var method = byId("b-method").value;
+        var os = byId("b-os").value;
+
+        byId("b-name").textContent = app.name;
+        byId("b-pkg").textContent = app.crate;
+        byId("b-ver").textContent = app.ver;
+        byId("b-cmd").textContent = app.cmd.indexOf("cargo-") === 0 ? "cargo " + app.cmd.slice(6) : app.cmd;
+        byId("b-need").textContent = needLabel(app);
+        byId("b-what").textContent = app.what[lang];
+        byId("b-family").textContent = FAMILY_LABEL[lang][app.family];
+        byId("b-deps").textContent = app.deps ? app.deps[lang]
+          : (lang === "pt" ? "um linker C (build-essential / build tools)" : "a C linker (build-essential / build tools)");
+
+        var home = byId("b-home");
+        home.innerHTML = "";
+        var homeLink = document.createElement("a");
+        homeLink.href = "https://github.com/" + app.repo;
+        homeLink.target = "_blank";
+        homeLink.rel = "noopener";
+        homeLink.textContent = "github.com/" + app.repo;
+        home.appendChild(homeLink);
+
+        byId("b-out").textContent = builderText(app, method, os);
+        byId("b-note").textContent = lang === "pt"
+          ? "Se o comando não for encontrado depois de instalar, ~/.cargo/bin não está no PATH — parte 05. A versão fixa é a que foi verificada para este manual, e --locked mantém a árvore de dependências que o autor testou."
+          : "If the command is not found after installing, ~/.cargo/bin is not on PATH — part 05. The pinned version is the one verified for this manual, and --locked keeps the dependency tree the author tested.";
+      }
+
+      function fillBuilder() {
+        var appSel = byId("b-app");
+        if (!appSel) {
+          return;
+        }
+        appSel.innerHTML = "";
+        APPS.forEach(function (app, index) {
+          var option = el("option", null, app.name);
+          option.value = String(index);
+          appSel.appendChild(option);
+        });
+        updateBuilder();
+      }
+
+      /* ---------- MSRV check ---------- */
+      function cmpVersion(a, b) {
+        var pa = String(a).split(".").map(Number);
+        var pb = String(b).split(".").map(Number);
+        for (var i = 0; i < 3; i += 1) {
+          var x = pa[i] || 0;
+          var y = pb[i] || 0;
+          if (x !== y) {
+            return x < y ? -1 : 1;
+          }
+        }
+        return 0;
+      }
+
+      function floorOf(app) {
+        return app.need || app.floor;
+      }
+
+      function updateCheck() {
+        var appSel = byId("tc-app");
+        var mineSel = byId("tc-mine");
+        if (!appSel || !mineSel) {
+          return;
+        }
+        var app = APPS[parseInt(appSel.value, 10)] || APPS[0];
+        var mine = mineSel.value;
+        var verdict = byId("tc-verdict");
+        var how = byId("tc-how");
+        var out = byId("tc-out");
+        var floor = floorOf(app);
+
+        byId("tc-need").textContent = app.need
+          ? app.need + " (" + app.name + ")"
+          : (lang === "pt" ? "não declarado (" + app.name + ")" : "not declared (" + app.name + ")");
+
+        var installCmd = "cargo install --locked " + app.crate + " --version " + app.ver;
+
+        if (!floor) {
+          verdict.textContent = lang === "pt" ? "Sem mínimo declarado: o stable atual compila." : "No declared floor: current stable builds it.";
+          verdict.dataset.state = "ok";
+          how.textContent = lang === "pt"
+            ? "O crate não declara rust-version. Se a compilação falhar por causa de uma dependência, atualize o Rust e repita."
+            : "The crate declares no rust-version. If the build fails on a dependency instead, update Rust and repeat.";
+          out.textContent = installCmd + "\n" + app.cmd + " --help";
+          return;
+        }
+
+        if (cmpVersion(mine, floor) >= 0) {
+          verdict.textContent = lang === "pt" ? "Suficiente: o seu compilador é recente o bastante." : "Fine: your compiler is new enough.";
+          verdict.dataset.state = "ok";
+          how.textContent = app.need
+            ? (lang === "pt" ? "O seu Rust (" + mine + ") está acima do mínimo de " + app.need + "; nada extra é descarregado."
+                             : "Your Rust (" + mine + ") is above the " + app.need + " floor; nothing extra is downloaded.")
+            : (lang === "pt" ? "O seu Rust (" + mine + ") está acima do mínimo da edição 2024, que é 1.85."
+                             : "Your Rust (" + mine + ") is above the edition-2024 floor of 1.85.");
+          out.textContent = installCmd + "\n" + app.cmd + " --help";
+          return;
+        }
+
+        verdict.textContent = lang === "pt" ? "Demasiado antigo para este crate." : "Too old for this crate.";
+        verdict.dataset.state = "bad";
+        how.textContent = lang === "pt"
+          ? "Atualize com «rustup update stable» (o stable é " + "1.99" + ") e repita. Sem isso, o cargo pára antes de compilar nada."
+          : "Update with \"rustup update stable\" (stable is 1.99) and repeat. Without that, Cargo stops before compiling anything.";
+        out.textContent = "rustup update stable\nrustup show\n" + installCmd;
+      }
+
+      function fillCheck() {
+        var appSel = byId("tc-app");
+        var mineSel = byId("tc-mine");
+        if (!appSel || !mineSel) {
+          return;
+        }
+        appSel.innerHTML = "";
+        APPS.forEach(function (app, index) {
+          var option = el("option", null, app.name);
+          option.value = String(index);
+          appSel.appendChild(option);
+        });
+        mineSel.innerHTML = "";
+        RUST_VERSIONS.forEach(function (version) {
+          var option = el("option", null, version);
+          option.value = version;
+          mineSel.appendChild(option);
+        });
+        mineSel.value = "1.99";
+        updateCheck();
+      }
+
+      /* ---------- route chooser ---------- */
+      function updateRoute() {
+        var code = byId("rt-code");
+        if (!code) {
+          return;
+        }
+        var isLib = code.value === "yes";
+        var noCompiler = byId("rt-target").value === "yes";
+        var packaged = byId("rt-distro").value === "yes";
+
+        var route = byId("rt-route");
+        var verdict = byId("rt-verdict");
+        var why = byId("rt-why");
+        var out = byId("rt-out");
+
+        if (isLib) {
+          route.textContent = lang === "pt" ? "Dependência, não binário" : "A dependency, not a binary";
+          verdict.textContent = lang === "pt" ? "cargo add, e a versão fica no Cargo.toml" : "cargo add, and the version lives in Cargo.toml";
+          verdict.dataset.state = "ok";
+          why.textContent = lang === "pt"
+            ? "O seu código importa o crate, por isso a versão tem de ser resolvida com o projeto, não instalada na máquina. Nada vai para o PATH."
+            : "Your code imports the crate, so the version has to resolve with the project rather than be installed on the machine. Nothing goes on PATH.";
+          out.textContent = "cargo add " + "serde" + "\ncargo build\ncargo tree -i " + "serde";
+          return;
+        }
+
+        if (noCompiler) {
+          route.textContent = lang === "pt" ? "Compilar aqui, copiar o binário" : "Build here, copy the binary";
+          verdict.textContent = lang === "pt" ? "Um ficheiro, nenhuma toolchain no destino" : "One file, no toolchain on the target";
+          verdict.dataset.state = "ok";
+          why.textContent = lang === "pt"
+            ? "Um binário Rust liga-se à libc do sistema onde foi construído. Compile para a mesma arquitetura e a mesma libc — musl se o destino for Alpine."
+            : "A Rust binary links the libc of the system that built it. Build for the same architecture and the same libc — musl if the target is Alpine.";
+          out.textContent = "cargo install --locked <crate> --root ./out\ninstall -m 0755 ./out/bin/<command> /tmp/\nscp /tmp/<command> server:/usr/local/bin/";
+          return;
+        }
+
+        if (packaged) {
+          route.textContent = lang === "pt" ? "Pacote da distribuição ou nix" : "Distribution package or nix";
+          verdict.textContent = lang === "pt" ? "Atualiza com o sistema, e é mais antigo" : "Updates with the system, and is older";
+          verdict.dataset.state = "mid";
+          why.textContent = lang === "pt"
+            ? "É a rota certa para uma frota que não deve compilar. Confirme a versão: um pacote de há dois anos pode não ter a opção que procura, e alguns mudam o nome do binário (fd → fdfind no Debian)."
+            : "The right route for a fleet that should not compile. Check the version: a two-year-old package may lack the flag you want, and some rename the binary (fd → fdfind on Debian).";
+          out.textContent = "apt install <package>        # or: nix profile install nixpkgs#<package>\ncommand -v <command>";
+          return;
+        }
+
+        route.textContent = lang === "pt" ? "cargo binstall, com recurso a cargo install" : "cargo binstall, falling back to cargo install";
+        verdict.textContent = lang === "pt" ? "Segundos se houver artefacto, minutos se não houver" : "Seconds if there is an artefact, minutes if there is not";
+        verdict.dataset.state = "ok";
+        why.textContent = lang === "pt"
+          ? "Numa máquina de trabalho com compilador, o binstall evita a compilação quando o projeto publica binários e delega no cargo install quando não publica. A mesma versão, o mesmo destino."
+          : "On a workstation with a compiler, binstall skips the build when the project publishes binaries and delegates to cargo install when it does not. Same version, same destination.";
+        out.textContent = "cargo install --locked cargo-binstall\ncargo binstall <crate>\n<command> --help";
+      }
+
+      function fillRoute() {
+        if (!byId("rt-code")) {
+          return;
+        }
+        updateRoute();
+      }
+
+      /* ---------- shared ---------- */
+      function renderGlossary() {
+        var list = byId("glossary-list");
+        if (!list) {
+          return;
+        }
+        list.innerHTML = "";
+        GLOSSARY.forEach(function (entry) {
+          var pair = entry[lang] || entry.en;
+          var li = el("li", null, null);
+          li.appendChild(el("strong", null, pair[0]));
+          var p = el("p", null, null);
+          p.innerHTML = pair[1];
+          li.appendChild(p);
+          list.appendChild(li);
+        });
+      }
+
+      var langButtons = [];
+
+      function applyLanguage(next) {
+        lang = next;
+        document.documentElement.lang = next;
+        document.querySelectorAll("[data-i18n]").forEach(function (node) {
+          var key = node.getAttribute("data-i18n");
+          node.innerHTML = next === "pt" && PT[key] != null ? PT[key] : EN[key];
+        });
+        langButtons.forEach(function (button) {
+          button.setAttribute("aria-pressed", button.dataset.lang === next ? "true" : "false");
+        });
+        document.title = TITLE[next];
+        [["description", "name"], ["og:description", "property"], ["twitter:description", "name"]].forEach(function (pair) {
+          var node = document.querySelector('meta[' + pair[1] + '="' + pair[0] + '"]');
+          if (node) {
+            node.setAttribute("content", DESCRIPTION[next]);
+          }
+        });
+        renderGlossary();
+        updateBuilder();
+        updateCheck();
+        updateRoute();
+      }
+
+      function wireCopy(buttonId, preId) {
+        var button = byId(buttonId);
+        var pre = byId(preId);
+        if (!button || !pre) {
+          return;
+        }
+        button.addEventListener("click", function () {
+          var text = pre.textContent;
+          var done = function () {
+            var original = button.textContent;
+            button.textContent = lang === "pt" ? "Copiado" : "Copied";
+            window.setTimeout(function () {
+              button.textContent = original;
+            }, 1400);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, done);
+          } else {
+            done();
+          }
+        });
+      }
+
+      langButtons = Array.prototype.slice.call(document.querySelectorAll(".lang-switch button"));
+      langButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          applyLanguage(button.dataset.lang);
+        });
+      });
+
+      document.querySelectorAll("[data-i18n]").forEach(function (node) {
+        EN[node.getAttribute("data-i18n")] = node.innerHTML;
+      });
+
+      ["b-app", "b-method", "b-os"].forEach(function (id) {
+        var node = byId(id);
+        if (node) {
+          node.addEventListener("change", updateBuilder);
+        }
+      });
+      ["tc-app", "tc-mine"].forEach(function (id) {
+        var node = byId(id);
+        if (node) {
+          node.addEventListener("change", updateCheck);
+        }
+      });
+      ["rt-code", "rt-target", "rt-distro"].forEach(function (id) {
+        var node = byId(id);
+        if (node) {
+          node.addEventListener("change", updateRoute);
+        }
+      });
+
+      wireCopy("b-copy", "b-out");
+      wireCopy("tc-copy", "tc-out");
+      wireCopy("rt-copy", "rt-out");
+
+      fillBuilder();
+      fillCheck();
+      fillRoute();
+      renderGlossary();
+
+      var PT = {
+        "nav.home": "Início",
+        "hero.kicker": "Ferramentas compiladas · um manual em dezanove partes",
+        "hero.title": "Rust na Shell",
+        "hero.lede": "As ferramentas que substituíram metade dos comandos clássicos do Unix não foram escritas em C. O grep mais rápido, o find mais amigável, o cat com cores de sintaxe, o prompt que se desenha sozinho, o localizador difuso, o executor de testes — uma parte surpreendente delas são binários Rust que se instalam com uma linha. Este manual é sobre a toolchain que os compila, o registo de onde vêm, e trinta projetos que valem a espera.",
+        "hero.f1": "Dezanove partes",
+        "hero.f2": "Trinta crates",
+        "hero.f3": "MSRV verificados",
+        "hero.f4": "Construtor de instalação",
+        "hero.f5": "Escolha de rota",
+        "hero.f6": "Todos os repositórios ligados",
+        "path.a.h": "Nunca instalei Rust",
+        "path.a.p": "Parte 02: um script, uma toolchain, e um compilador pronto em quatro minutos.",
+        "path.b.h": "Mostre-me primeiro as ferramentas",
+        "path.b.p": "Parte 06: cada crate com versão, MSRV, página e o que faz, mais o comando para a sua máquina.",
+        "path.c.h": "Dê-me só o comando",
+        "path.c.p": "Parte 03: cargo install, a versão fixa, e onde o binário fica.",
+        "path.d.h": "Uma compilação acabou de falhar",
+        "path.d.p": "Parte 16: as mensagens que travam as pessoas, de um linker em falta a um MSRV uma versão acima.",
+
+        "nav.rule": "A regra",
+        "nav.toolchain": "rustup",
+        "nav.install": "cargo install",
+        "nav.layout": "Pastas",
+        "nav.path": "PATH",
+        "nav.builder": "Construtor",
+        "nav.prompt": "Prompt",
+        "nav.shell": "Shell",
+        "nav.files": "Ficheiros",
+        "nav.text": "Texto",
+        "nav.machine": "Máquina",
+        "nav.network": "Rede",
+        "nav.tasks": "Tarefas",
+        "nav.cargo": "Cargo",
+        "nav.git": "Git",
+        "nav.errors": "Erros",
+        "nav.route": "Rota",
+        "nav.sources": "Fontes",
+        "nav.glossary": "Glossário",
+
+        "s1.title": "Um registo, três regras, um compilador que se guarda",
+        "s1.sub": "Rust não é uma linguagem de scripting, e isso é a primeira coisa a aceitar: instalar uma ferramenta significa compilá-la, e compilá-la precisa de um compilador. Em troca há um registo (crates.io), um comando (<code>cargo install</code>), e nenhum runtime para manter vivo depois — o resultado é um executável único que corre numa máquina sem nada instalado. Estas três regras são o essencial; o resto do manual é detalhe.",
+        "s1.r1.h": "Um: o rustup é dono do compilador, o cargo é dono dos crates",
+        "s1.r1.p": "O <code>rustup</code> instala e alterna toolchains; o <code>cargo</code> compila e descarrega crates. São programas separados que concordam numa pasta. Não instale um segundo <code>rustc</code> da distribuição à espera de que os dois convivam com educação: ganha o que vier primeiro no PATH, e metade dos relatos de «este crate precisa de um Rust mais novo» são um compilador da distribuição de há dois anos a atender o telefone.",
+        "s1.r2.h": "Dois: os binários vão para ~/.cargo/bin, nunca para /usr/local",
+        "s1.r2.p": "Por omissão o <code>cargo install</code> escreve em <code>$CARGO_HOME/bin</code>, que é <code>~/.cargo/bin</code> — uma pasta sua. Nunca ponha <code>sudo</code> à frente: a home do root não é a sua, e o binário que acabou de compilar durante quatro minutos fica invisível. O <code>--root</code> muda o destino; nada mais o deve fazer.",
+        "s1.r3.h": "Três: o PATH e o compilador são as duas coisas que quebram",
+        "s1.r3.p": "Uma instalação com sucesso e um <code>command not found</code> significam PATH. Um <code>cargo install</code> que morre num build script significa uma biblioteca de sistema em falta ou uma toolchain demasiado antiga. Quase não há terceira categoria — a parte 05 cobre a primeira, a parte 16 a segunda.",
+        "s1.note.h": "Porque «compilado» muda a manutenção",
+        "s1.note.p": "Uma ferramenta Python quebra quando o interpretador se muda; uma de Go é um ficheiro; uma de Rust também é um ficheiro, ligado estaticamente a tudo exceto à biblioteca C. Copie-o para outra máquina com o mesmo sistema e arquitetura e ele corre — sem crates, sem toolchain, sem compilador no destino. O custo paga-se uma vez, na instalação, e não é pequeno: a primeira instalação de um crate grande pode levar minutos. A parte 03 é sobretudo sobre não pagar esse custo duas vezes.",
+        "s1.which.h": "Quatro comandos que se confundem",
+        "t.command": "Comando",
+        "t.does": "O que faz",
+        "t.when": "Usar quando",
+        "s1.c1.a": "Compila os alvos binários do crate e copia-os para <code>~/.cargo/bin</code>. Funciona fora de qualquer projeto.",
+        "s1.c1.b": "Sempre, para uma ferramenta que quer manter. É o comando do manual.",
+        "s1.c2.a": "Compila o crate na pasta atual, a partir da sua árvore de trabalho.",
+        "s1.c2.b": "Está a desenvolver essa ferramenta, ou a testar uma correção antes de a propor.",
+        "s1.c3.a": "Descarrega um binário pré-compilado das releases do projeto quando existe, e recorre ao <code>cargo install</code> quando não existe.",
+        "s1.c3.b": "Quer a ferramenta agora e não daqui a seis minutos. A parte 13 instala o próprio binstall.",
+        "s1.c4.a": "Acrescenta uma dependência ao <code>Cargo.toml</code> do projeto atual. Não põe nada no PATH.",
+        "s1.c4.b": "Está a escrever código Rust que importa o crate como biblioteca.",
+        "s1.after": "Uma nuance que surpreende quem vem de Go: um crate pode ser biblioteca e binário ao mesmo tempo, e o <code>cargo install</code> só se interessa pelos alvos binários. Instalar o <code>ripgrep</code> não põe uma biblioteca no sistema para outros programas usarem; põe o <code>rg</code> no seu PATH. As duas vidas são separadas, e é por isso que uma instalação nunca perturba um projeto que dependa do mesmo crate.",
+
+        "s2.title": "A toolchain, a partir do rustup",
+        "s2.sub": "Rust distribui-se como um gestor de toolchains e três programas. O <code>rustup</code> decide qual é o compilador atual; o <code>rustc</code> compila; o <code>cargo</code> resolve, compila e instala. Sai uma versão estável a cada seis semanas, e a linha à data de publicação é a <strong>1.99</strong> — o que importa, porque vários crates da parte 06 pedem 1.95 ou mais e não são construídos por nada mais antigo.",
+        "s2.linux.h": "Linux e macOS, da forma oficial",
+        "s2.linux.after": "O script é um programa de shell que pode ler antes de correr, e escreve apenas dentro de <code>~/.cargo</code> e <code>~/.rustup</code>. Há dois perfis: o <code>default</code> acrescenta rustfmt, clippy e a documentação, o <code>minimal</code> acrescenta só o compilador — o segundo é o que uma imagem de CI quer, porque é metade do download. Para mudar depois: <code>rustup set profile default</code>, e <code>rustup component add rustfmt clippy</code>.",
+        "s2.win.h": "Windows",
+        "s2.win.p": "Descarregue o <code>rustup-init.exe</code> de rustup.rs. Ele propõe instalar as Visual Studio C++ build tools, e deve aceitar: o Rust no Windows liga com o <code>link.exe</code>, e sem ele todas as compilações falham no último passo com um erro de linker que não nomeia nenhum pacote em falta. Se já tem o Visual Studio com a carga de trabalho C++, salte essa parte. O MSYS2 é uma alternativa, não uma adição — escolha uma.",
+        "s2.comp.h": "Os componentes que vale a pena conhecer",
+        "t.component": "Componente",
+        "t.gives": "O que dá",
+        "t.install": "Instalar",
+        "s2.cp1.a": "O formatador por trás do <code>cargo fmt</code>, e a razão pela qual o código Rust se parece igual em todos os repositórios.",
+        "s2.cp2.a": "O linter por trás do <code>cargo clippy</code>: várias centenas de verificações, quase todas sobre uma construção que compila e não devia.",
+        "s2.cp3.a": "O servidor de linguagem com que o seu editor fala. Instalá-lo pelo rustup mantém-no em passo com o compilador.",
+        "s2.cp4.a": "O código-fonte da biblioteca padrão, para ler <code>Option</code> em vez de adivinhar e para algumas configurações de depurador.",
+        "s2.cp5.a": "O <code>llvm-cov</code> e companhia, para cobertura e inspeção de binários.",
+        "s2.pin.h": "Fixar um projeto a uma toolchain",
+        "s2.pin.p": "Um <code>rust-toolchain.toml</code> na raiz do repositório é a forma honesta de dizer «isto compila com 1.95». O rustup lê-o quando entra na pasta e instala essa toolchain se faltar; ninguém tem de se lembrar da versão que o projeto queria.",
+        "s2.pin.after": "Prefira <code>channel = \"1.95.0\"</code> a <code>\"stable\"</code> em tudo o que vai revisitar: o stable move-se debaixo dos seus pés a cada seis semanas, o que é aceitável para um programa e cruel para uma compilação que tem de reproduzir. O nightly existe para funcionalidades instáveis e é uma resposta legítima apenas quando um crate o diz no README.",
+        "s2.distro.h": "O pacote da distribuição, e porque aqui é uma armadilha",
+        "s2.distro.p": "Debian, Fedora e Arch embalam <code>rustc</code> e <code>cargo</code>. Funcionam, instalam-se depressa, e estão normalmente várias versões atrás — que é exatamente o modo de falha da parte 06, onde oito crates declaram um MSRV acima de 1.90. Pior: se os dois existirem, a sua shell pode correr o <code>cargo</code> da distribuição enquanto <code>~/.cargo/bin</code> guarda outro, e as mensagens de erro não dizem qual. Ou usa rustup, ou usa o pacote da distribuição e nunca mistura; não instale os dois a esperar que resulte.",
+
+        "s3.title": "cargo install: toda a história da instalação",
+        "s3.sub": "Um comando, um registo, um destino. O <code>cargo install ripgrep</code> resolve a versão mais recente compatível do crate, descarrega-a com a sua árvore de dependências, compila tudo em modo release e copia os executáveis para <code>~/.cargo/bin</code>. Não há um resolver a escolher uma versão por si além de «a mais recente que caiba», nem ambiente para ativar, nem registo para consultar depois além do <code>cargo install --list</code>.",
+        "s3.basic.h": "O comando, com a opção que importa",
+        "s3.basic.p": "O <code>--locked</code> não é decoração. Sem ele, o Cargo pode atualizar as versões das dependências para as mais recentes compatíveis com o semver, e é assim que uma ferramenta que compilava para toda a gente falha na sua máquina porque um crate transitivo publicou uma versão menor há uma hora. Com ele, o Cargo usa o <code>Cargo.lock</code> que o autor testou. Quase todos os projetos da parte 06 publicam um ficheiro de lock exatamente por isto, e o manual passa sempre a opção.",
+        "s3.flags.h": "As opções que vale a pena memorizar",
+        "t.flag": "Opção",
+        "s3.f1": "Usa o <code>Cargo.lock</code> do crate tal como está. Menos surpresas, ocasionalmente uma dependência mais antiga do que esperava.",
+        "s3.f2": "Fixa o crate. O valor é a versão do registo sem um <code>v</code>, ao contrário das etiquetas de Go.",
+        "s3.f3": "Escreve em <code>~/.local/bin</code> em vez de <code>~/.cargo/bin</code>. Útil quando essa pasta já está no PATH.",
+        "s3.f4": "Compila a partir de um repositório em vez do registo, no ramo por omissão salvo se acrescentar <code>--branch</code> ou <code>--tag</code>.",
+        "s3.f5": "Compila sem o conjunto de features por omissão do crate — menos dependências, menos código, às vezes sem GUI ou sem TLS.",
+        "s3.f6": "Acrescenta uma feature nomeada. Leia o README do crate antes de adivinhar: os nomes das features são o vocabulário do próprio crate.",
+        "s3.f7": "Substitui um binário existente. Necessário quando dois crates trazem um alvo com o mesmo nome, ou quando reinstala a mesma versão.",
+        "s3.f8": "Lista o que o cargo instalou e onde. É o único inventário que tem.",
+        "s3.pin.h": "Fixar, ou flutuar",
+        "s3.pin.p": "O <code>cargo install crate</code> leva sempre a versão publicada mais recente; não há um <code>@latest</code> para discutir. Fixe quando a ferramenta faz parte de uma conduta — um formatador em CI, um linter num hook, um executor de testes que define o que é «passar». Deixe flutuar quando o trabalho da ferramenta é acompanhar um alvo em movimento, e reinstale mensalmente. De qualquer forma, escreva a versão em algum lado fora do histórico da shell; o construtor da parte 06 fá-lo por si.",
+        "s3.up.h": "Atualizar, e a ferramenta que atualiza tudo",
+        "s3.up.after": "O Rust não tem equivalente ao Go, que descarrega uma toolchain porque o módulo a pediu. O compilador que tem é o compilador que compila, e um crate que exige mais falha com uma mensagem clara a nomear a versão. É por isso que a verificação abaixo existe: responde, antes de uma compilação de quatro minutos, se os crates que escolheu estão ao alcance do seu compilador.",
+        "s3.tc.h": "Verifique o MSRV antes de compilar",
+        "s3.tc.p": "Cada crate pode declarar uma <em>versão mínima de Rust suportada</em> nos metadados que publica. É uma promessa, não um palpite: abaixo dela não se espera que o crate compile, e acima o autor concordou em não subir o mínimo sem uma versão semver menor. O construtor da parte 06 mostra o número de cada ferramenta; esta verificação compara-o com o seu.",
+        "s3.tc.tool.h": "Verificação de MSRV",
+        "s3.tc.tool.badge": "antes de instalar",
+        "s3.tc.yours": "O seu Rust",
+        "s3.tc.app": "A ferramenta",
+        "s3.tc.out.need": "Precisa",
+        "s3.tc.out.verdict": "Veredicto",
+        "s3.tc.out.how": "O que acontece",
+        "s3.tc.copy": "Copiar",
+
+        "s4.title": "Para onde vão os bytes, e como os recuperar",
+        "s4.sub": "O Rust não é tímido com o disco. Uma toolchain ocupa cerca de 1,5 GB depois de acrescentar componentes; o código das dependências de algumas dezenas de ferramentas soma outro gigabyte; uma única compilação release de um crate grande deixa uma pasta <code>target</code> de centenas de megabytes. Nada disso é precioso, e tudo isso é esquecível — e é assim que um portátil acaba com doze gigabytes de artefactos de compilador.",
+        "t.dir": "Pasta",
+        "t.holds": "O que guarda",
+        "t.touch": "Deve mexer?",
+        "s4.d1.a": "Todas as toolchains instaladas: compilador, biblioteca padrão, documentação, componentes. Uma pasta por canal.",
+        "s4.d1.b": "Nunca à mão. Remova um canal com <code>rustup toolchain uninstall</code>.",
+        "s4.d2.a": "Tudo o que está no seu PATH vindo deste ecossistema: cargo, rustc, rustup, e cada ferramenta que instalou.",
+        "s4.d2.b": "Só através do <code>cargo uninstall</code>, que sabe quais binários pertencem a cada crate.",
+        "s4.d3.a": "Arquivos <code>.crate</code> descarregados e o código extraído — partilhados por todas as compilações, normalmente a pasta maior.",
+        "s4.d3.b": "Com <code>cargo cache -a</code> se tiver o cargo-cache, ou apagando <code>cache</code> e <code>src</code>; ambos voltam a crescer à procura.",
+        "s4.d4.a": "Clones feitos por dependências e instalações com <code>--git</code>. Muitas vezes obsoletos, raramente grandes.",
+        "s4.d4.b": "Sim, quando uma instalação git se comporta como um commit antigo — mas apague, não edite.",
+        "s4.d5.a": "Dependências compiladas, estado incremental, os binários finais. A pasta que surpreende as pessoas.",
+        "s4.d5.b": "Com <code>cargo clean</code>, e acrescente-a ao <code>.gitignore</code> — não é código de ninguém.",
+        "s4.clean.h": "Três comandos que recuperam a maior parte",
+        "s4.clean.after": "A última linha é segura mas não é gratuita: a compilação seguinte de cada ferramenta descarrega outra vez as dependências. Faça-o quando a pressão de disco é real, não por arrumação. Uma toolchain que nunca usa é o alvo melhor — as builds nightly são grandes, e instalar uma para experimentar uma funcionalidade é exatamente como três delas se acumulam.",
+        "s4.speed.h": "Encurtar a espera",
+        "s4.speed.p": "Uma primeira instalação compila o crate e todo o grafo de dependências em modo release, e é por isso que o <code>rg</code> leva trinta segundos e um motor de browser leva uma hora. Três coisas ajudam e nenhuma é um truque. O <code>cargo install</code> reutiliza o registo partilhado, por isso a segunda instalação de uma ferramenta parecida é mais rápida. Um linker mais rápido importa mais do que um CPU mais rápido em compilações grandes: <code>-C link-arg=-fuse-ld=lld</code> em <code>~/.cargo/config.toml</code>, ou mold, pode cortar o tempo de ligação para metade. E uma cache de compilador como o <code>sccache</code> ajuda quando reconstrói as mesmas dependências repetidamente — para instalações únicas é peso morto.",
+        "s4.speed.after": "Se a restrição é disco e largura de banda em vez de paciência, a resposta é o <code>cargo binstall</code>, não um compilador mais rápido: descarrega o binário que o CI do projeto já construiu. A parte 13 cobre-o, incluindo a sua única limitação real — não todos os projetos publicam binários.",
+        "s4.cache.h": "A pasta target partilhada, e porque não a partilhar",
+        "s4.cache.p": "<code>CARGO_TARGET_DIR</code> aponta todos os projetos para uma pasta de compilação. Parece uma poupança e comporta-se como uma caça ao bug: definições de perfil, features e triplos de alvo colidem, e uma recompilação pode apanhar artefactos compilados com a configuração de outro projeto. O único uso legítimo é CI, onde cada tarefa começa do zero. Numa máquina de trabalho, deixe cada projeto com o seu <code>target</code> e apague-o quando o ramo for integrado.",
+
+        "s5.title": "PATH, e a verificação que resolve a dúvida",
+        "s5.sub": "O instalador do rustup já acrescentou <code>~/.cargo/bin</code> ao perfil da shell, e é por isso que a maioria das pessoas nunca vê este problema. Ele aparece em três situações: uma shell que não lê o ficheiro que o rustup editou, um contentor construído sem shell de login, e uma máquina onde um <code>cargo</code> da distribuição vem primeiro.",
+        "s5.add.h": "Acrescentar uma vez, para a sua shell",
+        "s5.add.after": "Ponha à frente, não atrás. É a posição à frente que faz a sua toolchain do rustup ganhar ao <code>/usr/bin/cargo</code>; pôr atrás é como o compilador da distribuição continua a atender enquanto a sua toolchain fica sem uso. E corra <code>exec \"$SHELL\" -l</code> em vez de abrir outra janela — a diferença entre «agora funciona» e «às vezes funciona» é normalmente uma shell não-login.",
+        "s5.check.h": "Dois comandos, uma resposta",
+        "s5.check.p": "Se o <code>which -a</code> imprimir dois caminhos, a ordem decide. Se imprimir um e a ferramenta instalada faltar, a pasta dos binários não está no PATH de todo. Se o <code>cargo --version</code> anunciar algo mais antigo do que o <code>rustc --version</code> espera, encontrou a instalação misturada da parte 02 e a correção é remover o pacote da distribuição, não acrescentar outro export.",
+        "s5.note.h": "Uma ferramenta que desaparece depois de uma atualização",
+        "s5.note.p": "Dois crates podem trazer um binário com o mesmo nome, e a segunda instalação substitui a primeira sem aviso além de uma linha de saída. O <code>cargo install --list</code> mostra os dois crates como instalados enquanto só existe um binário. Quando uma ferramenta muda de comportamento depois de uma instalação sem relação, é a primeira coisa a verificar — e <code>--force</code> na que queria manter é a correção.",
+
+        "s6.title": "Construa o comando para a sua máquina",
+        "s6.sub": "Três escolhas — a ferramenta, o método, o sistema — e o bloco abaixo é o que cola. O método fixo usa a versão exata verificada para este manual; o método a partir do código clona o repositório quando quer ler o código antes de confiar nele; o método pré-compilado pede primeiro um binário ao <code>cargo binstall</code>. Acima do bloco, cada ferramenta mostra o crate, a versão, o MSRV, a página, a família e o que faz.",
+        "s6.tool.h": "Construtor de instalação",
+        "s6.tool.badge": "trinta ferramentas",
+        "s6.app": "Ferramenta",
+        "s6.method": "Método",
+        "s6.m.latest": "cargo install --locked",
+        "s6.m.pinned": "versão fixa",
+        "s6.m.binstall": "binário pré-compilado",
+        "s6.m.source": "a partir do código",
+        "s6.os": "Sistema",
+        "s6.os.linux": "Linux",
+        "s6.os.mac": "macOS",
+        "s6.os.win": "Windows",
+        "s6.out.app": "Ferramenta",
+        "s6.out.pkg": "Crate",
+        "s6.out.ver": "Versão",
+        "s6.out.cmd": "Comando",
+        "s6.out.need": "Precisa de Rust",
+        "s6.out.what": "O que faz",
+        "s6.out.home": "Página",
+        "s6.out.family": "Família",
+        "s6.out.deps": "Precisa instalado",
+        "s6.copy": "Copiar",
+
+        "s7.title": "O prompt, o cd, e o histórico",
+        "s7.sub": "Três ferramentas que mudam como a shell se sente e não o que ela corre. O <strong>starship</strong> desenha o prompt, o <strong>zoxide</strong> substitui o <code>cd</code> por uma memória de onde já esteve, e o <strong>atuin</strong> substitui o ficheiro de histórico por uma base de dados pesquisável e cifrada. Os três instalam-se da mesma forma, e os três entram na shell com uma linha.",
+        "s7.st.h": "um prompt que sabe onde está",
+        "s7.st.p": "Um binário, um <code>starship.toml</code>, e um prompt que mostra o ramo de git, a versão da linguagem, o código de saída do último comando, o tempo que uma compilação levou — sem um script de shell por shell. É rápido porque é compilado e porque só pergunta pelos módulos que a pasta atual pode usar. A razão para o escolher em vez de um prompt escrito à mão não é beleza; é que uma linguagem nova passa a ser suportada por uma atualização em vez de por uma edição ao seu <code>.bashrc</code>.",
+        "s7.zo.h": "cd, mas com memória",
+        "s7.zo.p": "Guarda uma pontuação por cada pasta que visita e deixa saltar por fragmento: <code>z proj</code> de qualquer lugar. A ordenação é o que faz funcionar — frequência e recência, não uma lista que mantém. Ligue-o sobre o <code>cd</code> com <code>--cmd cd</code> e ele comporta-se como cd para caminhos que existem e como salto para o resto, que é a versão que as pessoas mantêm.",
+        "s7.at.h": "o histórico como base de dados",
+        "s7.at.p": "O histórico da sua shell é um ficheiro plano em que cada terminal escreve ao sair, e é por isso que perde comandos, duplica outros e não sabe dizer o que falhou. O Atuin grava cada comando com código de saída, duração, pasta e sessão num SQLite, e dá uma interface de pesquisa em Ctrl+R que filtra por tudo isso. A sincronização entre máquinas é opcional e cifrada ponta a ponta; alojá-la você mesmo é um binário e uma base de dados Postgres ou SQLite.",
+        "s7.at.after": "A questão da privacidade é justa, e a resposta é arquitetural: sem <code>atuin login</code> nada sai da máquina. Com sincronização, a chave de cifra também não sai — o servidor guarda texto cifrado e não consegue ler os seus comandos.",
+
+        "s8.title": "Uma shell escrita em Rust, e duas que estendem a sua",
+        "s8.sub": "O <strong>Nushell</strong> é uma shell onde tudo é uma tabela, o <strong>mise</strong> é o gestor de versões que finalmente substituiu quatro outros, e o <strong>skim</strong> é o localizador difuso que se usa de Rust tão facilmente como de uma conduta. Dois dos três são compilações grandes; o terceiro é uma biblioteca com um binário anexado.",
+        "s8.nu.h": "condutas de dados estruturados",
+        "s8.nu.p": "Em bash uma conduta transporta bytes e cada comando volta a analisá-los. Em Nushell uma conduta transporta uma tabela com colunas nomeadas, por isso o <code>ls</code> pode ser filtrado por <code>size</code>, o <code>ps</code> ordenado por <code>cpu</code>, e um JSON lido como estrutura e não como texto. É uma shell diferente, não um substituto direto: o seu <code>.bashrc</code> não se aplica, e a primeira hora é de desaprender. O que compra é uma shell onde a resposta a «qual destes ficheiros é maior» é uma expressão.",
+        "s8.mi.h": "um gestor de versões para todas as linguagens",
+        "s8.mi.p": "Node, Python, Go, Ruby, Java, Terraform e o resto, com um comando e um ficheiro de configuração. Lê o mesmo <code>.tool-versions</code> que o asdf, por isso migrar é uma cópia, e acrescenta um executor de tarefas e um gestor de ambientes que lê ficheiros <code>.env</code>. Se alguma vez teve três gestores de versões com três linhas de ativação no mesmo perfil, este é o que os substitui.",
+        "s8.sk.h": "um localizador difuso contra o qual se pode ligar",
+        "s8.sk.p": "A mesma ideia do fzf, escrita como biblioteca Rust com uma CLI por cima — é por isso que é rápido num milhão de linhas e que outros programas Rust a incorporam. A interface é suficientemente compatível para quase todos os hábitos de fzf transitarem, e os extras são a razão para mudar: um modo interativo que repete o comando de pesquisa a cada tecla, e um invólucro para popup de tmux.",
+
+        "s9.title": "Encontrar, ler, listar: os quatro que substituem os clássicos",
+        "s9.sub": "O <strong>ripgrep</strong> substitui o grep, o <strong>fd</strong> o find, o <strong>bat</strong> o cat e o <strong>eza</strong> o ls. Nenhum é um invólucro sobre o original, e nenhum vem instalado por omissão — é por isso que a primeira semana parece usar a cozinha de outra pessoa e a segunda parece a sua.",
+        "s9.rg.h": "grep, com as omissões certas",
+        "s9.rg.p": "Respeita o <code>.gitignore</code>, salta binários, pesquisa recursivamente por omissão, e usa um motor de expressões regulares suficientemente rápido para as opções perderem importância. A mudança de comportamento que conta é o silêncio: não desce para <code>node_modules</code> nem <code>target</code> a não ser que peça, por isso os resultados são os ficheiros que queria.",
+        "s9.fd.h": "find, sem o encantamento",
+        "s9.fd.p": "A sintaxe é <code>fd PADRÃO</code>, o padrão é uma expressão regular sobre o nome do ficheiro, e é recursivo e ciente do gitignore por omissão. Tudo o que exigia uma página de manual no find é uma opção: <code>-e</code> para extensão, <code>-x</code> para correr um comando por resultado, <code>-X</code> para correr um comando com todos eles. No Debian e no Ubuntu o pacote instala o binário como <code>fdfind</code> para evitar uma colisão de nomes, que é o relato de «não instalou» mais comum.",
+        "s9.bt.h": "cat com cores de sintaxe e pager",
+        "s9.bt.p": "Um <code>cat</code> que realça o ficheiro pela linguagem, mostra números de linha quando a saída é um terminal, acrescenta um cabeçalho com nome e tamanho, e pagina ficheiros longos. Também se liga ao git para marcar as linhas alteradas, o que transforma «ler este ficheiro» em «ver o que mudou neste ficheiro» sem abrir um diff.",
+        "s9.ez.h": "ls com as colunas que queria",
+        "s9.ez.p": "Estado do git por ficheiro, vista em árvore, ícones, tamanhos legíveis, e uma grelha que continua legível num terminal estreito. A que muda o uso diário é <code>--git</code>: uma listagem que diz também quais ficheiros estão modificados ou não seguidos, sem um segundo comando.",
+
+        "s10.title": "Cirurgia de texto, contagem, bytes, Markdown",
+        "s10.sub": "Quatro ferramentas pequenas com gumes afiados. O <strong>sd</strong> faz procurar-e-substituir com uma sintaxe que se decora, o <strong>tokei</strong> conta código como um relatório precisa, o <strong>hexyl</strong> torna um dump hexadecimal legível, e o <strong>mdcat</strong> renderiza Markdown num terminal que mostra imagens.",
+        "s10.sd.h": "procurar e deslocar",
+        "s10.sd.p": "A assinatura é <code>sd PADRÃO SUBSTITUIÇÃO [FICHEIROS]</code>, o padrão é uma expressão regular, e a omissão é escrever no local. Essa última parte é o perigo e o objetivo: nenhuma opção <code>-i</code> para lembrar, nenhum ficheiro de backup para limpar, e um modo de pré-visualização para quando quer ver primeiro.",
+        "s10.tk.h": "quanto código existe de facto aqui",
+        "s10.tk.p": "Conta linhas, código, comentários e vazias por linguagem, em paralelo, com a linguagem detetada pela extensão. Respeita o <code>.gitignore</code>, exclui pastas vendorizadas nos casos comuns, e produz JSON ou YAML quando o número vai para um relatório em vez de um terminal.",
+        "s10.hx.h": "um dump hexadecimal com cor",
+        "s10.hx.p": "As colunas são deslocamento, bytes e ASCII, e as cores distinguem caracteres imprimíveis, espaços, códigos de controlo e o byte nulo. Parece cosmético até estar à procura de um <code>\\r\\n</code> perdido numa captura de protocolo ou de um BOM no início de um ficheiro; aí a cor é a funcionalidade toda.",
+        "s10.md.h": "ler um README sem sair da shell",
+        "s10.md.p": "Renderiza Markdown com títulos, tabelas, listas, realce de sintaxe e, em terminais que o suportam, imagens embutidas. O renderizador é estrito quanto a CommonMark e resolve links locais, por isso um documento com índice comporta-se como um documento. Para um repositório acabado de clonar, é a forma mais rápida de ler as instruções que está prestes a ignorar.",
+
+        "s11.title": "A máquina: processos, disco, e quem está a usar a rede",
+        "s11.sub": "O <strong>bottom</strong> é o top com gráficos, o <strong>procs</strong> é o ps com cor e ordenação a sério, o <strong>dust</strong> é o du que termina, e o <strong>bandwhich</strong> responde à pergunta que nenhum dos outros consegue: que processo está a usar a largura de banda agora.",
+        "s11.bt.h": "top, se o top tivesse sido desenhado nesta década",
+        "s11.bt.p": "CPU, memória, rede, disco e temperatura em widgets que se reorganizam, com suporte de rato, zoom, filtros e um ficheiro de configuração. Corre por SSH sem se queixar, e o fluxo de procurar-e-matar (<code>/</code> e depois <code>dd</code>) é a razão para o manter aberto num servidor.",
+        "s11.pr.h": "ps com as colunas que importam",
+        "s11.pr.p": "Legível por omissão: cor por estado do processo, vista em árvore, ordenação por CPU ou memória como número e não como texto. Também mostra a linha de comando com os argumentos em várias linhas em vez de truncados, o que é a diferença entre ver um processo e adivinhar sobre ele.",
+        "s11.du.h": "du, desenhado como árvore",
+        "s11.du.p": "Percorre pastas em paralelo e imprime uma árvore das entradas maiores com barras, por isso a resposta a «o que está a comer o disco» é o primeiro ecrã e não uma lista ordenada que é preciso ler. O binário é <code>dust</code>; o crate é <code>du-dust</code>, que é o tipo de detalhe de registo para o qual este manual existe.",
+        "s11.bw.h": "a rede, por processo",
+        "s11.bw.p": "Mostra ligações agrupadas por processo e por endereço remoto, com taxa atual e totais, atualizando no local. Precisa de acesso a sockets raw para ver o tráfego dos outros processos: corra com <code>sudo</code>, ou dê a capacidade ao binário uma vez para não precisar de palavra-passe. É um diagnóstico, não uma firewall — nada do que mostra é bloqueado por ele.",
+
+        "s12.title": "A rede, medida em vez de adivinhada",
+        "s12.sub": "O <strong>gping</strong> desenha a latência ao longo do tempo, o <strong>trippy</strong> mostra onde os pacotes param, e o <strong>oha</strong> mede o que um servidor faz sob carga. Três respostas para três perguntas diferentes, e todas melhores do que a ferramenta que substituem pela simples razão de guardarem história em vez de imprimirem um número.",
+        "s12.gp.h": "ping com um gráfico",
+        "s12.gp.p": "O mesmo pedido ICMP, desenhado ao longo do tempo, com vários anfitriões nos mesmos eixos. Um problema de latência quase nunca é visível num número e é óbvio numa forma: o pico periódico a cada sessenta segundos é um cron, o dente de serra é bufferbloat, a linha plana a 300 ms é uma rota que não devia estar a ser tomada.",
+        "s12.tr.h": "traceroute, ao vivo",
+        "s12.tr.p": "Um traceroute que continua a sondar enquanto olha: cada salto mostra a distribuição de latência, a perda por salto, e um mapa de onde a perda começa. Essa última parte é o essencial — um traceroute diz os saltos, e este diz qual salto está de facto a perder pacotes em vez de herdar a perda do anterior.",
+        "s12.tr.after": "Os sockets raw são a razão do <code>sudo</code>, e a capacidade é a razão de só precisar dele uma vez. No macOS a ferramenta também tem de correr como root; não há equivalente de capacidade.",
+        "s12.oh.h": "carga, com um histograma ao vivo",
+        "s12.oh.p": "Um gerador de carga HTTP com uma interface de terminal que se atualiza durante o teste: pedidos por segundo, percentis de latência, códigos de estado, e um histograma que mostra se a cauda é uma cauda ou um penhasco. Sabe manter uma ligação aberta, enviar um corpo JSON, seguir redirecionamentos e parar por duração em vez de por contagem — que é como se reproduz uma forma de tráfego real.",
+        "s12.oh.after": "Aponte-o a algo seu, numa rede que lhe é permitido carregar. Um gerador de carga é indistinguível de um ataque do outro lado do fio, e «foram só mil pedidos» não é uma defesa que alguém aceite duas vezes.",
+
+        "s13.title": "Tarefas, vigilância, e o atalho que salta a compilação",
+        "s13.sub": "O <strong>just</strong> corre os comandos que esquece sempre, o <strong>watchexec</strong> corre-os quando um ficheiro muda, e o <strong>cargo-binstall</strong> descarrega um binário em vez de o construir. O terceiro não é uma ferramenta de tarefas, mas pertence aqui: é como se instalam os outros dois em quatro segundos.",
+        "s13.ju.h": "um makefile sem o make",
+        "s13.ju.p": "Receitas com nome, dependências, argumentos, e sem a discussão de tabs contra espaços. Não é um sistema de build e não finge ser: não verifica datas, por isso uma receita corre quando pede. Essa limitação é a razão pela qual um <code>justfile</code> costuma ficar ao lado do cargo em vez de o substituir — <code>just test</code> expande-se nos três comandos que de outra forma teria de procurar.",
+        "s13.wx.h": "correr outra vez quando um ficheiro muda",
+        "s13.wx.p": "Um vigia de ficheiros de uso geral: corre um comando, observa um conjunto de caminhos, e reinicia o comando quando algo muda. Conhece o gitignore, junta as rajadas de gravações do editor, e reinicia o grupo de processos na mudança — que é o que o torna utilizável para um servidor e não só para um teste.",
+        "s13.bi.h": "o binário que a release já construiu",
+        "s13.bi.p": "Quase todos os projetos deste manual publicam binários nas releases do GitHub. O binstall procura o que corresponde à sua plataforma e instala-o, recorrendo ao <code>cargo install</code> quando não há nenhum — com a mesma resolução de versão, o mesmo destino e a mesma disciplina de <code>--locked</code>. É a maior melhoria de qualidade de vida deste ecossistema, e é ele próprio um binário Rust.",
+        "s13.bi.after": "O recurso é a parte importante: um projeto sem artefactos de release instala-se na mesma, só que devagar. Isso significa que o binstall é seguro como atalho sobre todo o fluxo — <code>cargo binstall</code> primeiro, e deixe-o decidir.",
+
+        "s14.title": "Três subcomandos que tornam um projeto Rust defensável",
+        "s14.sub": "O <strong>cargo-nextest</strong> corre testes mais depressa e relata-os melhor, o <strong>cargo-audit</strong> verifica a árvore de dependências contra a base de vulnerabilidades, e o <strong>cargo-deny</strong> impõe as políticas em que uma equipa concordou. São subcomandos, não ferramentas separadas: instalados uma vez, estendem o <code>cargo</code> que já escreve.",
+        "s14.nt.h": "um executor de testes com fila",
+        "s14.nt.p": "Corre os testes de cada binário de teste num processo separado, em paralelo, com tempos limite e repetições por teste, e imprime um resumo agrupado por resultado em vez de uma fila de pontos. A diferença prática é numa suite de algumas centenas de testes: o <code>cargo test</code> leva um minuto e esconde qual é lento; o <code>cargo nextest run</code> leva vinte segundos e nomeia-o.",
+        "s14.nt.after": "Uma diferença a saber antes de mudar: o nextest não corre doctests, porque precisam do compilador e não de um binário de teste. A receita de CI leva os dois — <code>cargo nextest run</code> e <code>cargo test --doc</code>.",
+        "s14.au.h": "os avisos, contra o seu ficheiro de lock",
+        "s14.au.p": "Lê o <code>Cargo.lock</code>, compara cada crate e versão com a base de avisos RustSec, e sai com código de erro quando algo corresponde. Como trabalha sobre o ficheiro de lock, pode correr em CI antes de se construir seja o que for, que é o lugar mais barato possível para descobrir que uma dependência acrescentada na semana passada tem uma CVE publicada.",
+        "s14.dn.h": "licenças, proibições, fontes, avisos",
+        "s14.dn.p": "Quatro verificações num ficheiro de configuração: que licenças são permitidas, que crates estão proibidos ou fixados a uma versão, que registos e fontes git são de confiança, e que avisos se aplicam. É a ferramenta que transforma uma árvore de dependências num rasto de auditoria, e a razão pela qual uma empresa consegue responder «o que está neste binário» sem uma folha de cálculo.",
+
+        "s15.title": "Git, changelogs, e ortografia",
+        "s15.sub": "O <strong>delta</strong> torna um diff legível, o <strong>git-cliff</strong> transforma mensagens de commit num changelog, e o <strong>typos</strong> encontra os erros ortográficos em identificadores e comentários que um compilador não vê. Entre os três cobrem as três coisas que apodrecem num repositório que ninguém é pago para manter.",
+        "s15.dt.h": "um diff com sentido de estrutura",
+        "s15.dt.p": "Lado a lado ou unificado, realçado por linguagem, com números de linha nas duas colunas e linhas movidas detetadas como movimentos em vez de uma remoção mais uma adição. Instala-se como pager, por isso melhora todos os comandos que produzem um diff — incluindo os que não sabia que produziam.",
+        "s15.gc.h": "um changelog a partir dos commits que escreveu",
+        "s15.gc.p": "Analisa commits convencionais, agrupa-os por tipo, liga os pull requests e os autores, e renderiza um changelog a partir de um modelo que pode editar. A parte do lançamento que ninguém gosta de escrever passa a um comando no fluxo de release, e o resultado é consistente porque é gerado e não lembrado.",
+        "s15.ty.h": "ortografia, para código",
+        "s15.ty.p": "Verifica identificadores, comentários, strings e documentação à procura de erros, com um dicionário de enganos comuns em código-fonte e não de inglês geral — por isso <code>ba</code>, <code>ser</code> e <code>nd</code> não são assinalados, e <code>recieve</code> é. As correções são sugeridas como diff, e o <code>-w</code> aplica-as depois de olhar.",
+
+        "s16.title": "As dez mensagens que travam uma compilação",
+        "s16.sub": "Os erros do Rust são precisos sobre o código e vagos sobre a máquina, e é por isso que os de baixo são os que as pessoas colam num motor de busca. Cada linha liga a mensagem à causa, porque a causa está normalmente a um pacote, uma pasta ou uma versão de distância.",
+        "t.message": "Mensagem",
+        "t.cause": "O que significa",
+        "t.fix": "Correção",
+        "s16.e1.b": "Há compilador mas não há linker C. Todos os binários Rust se ligam à biblioteca C do sistema, por isso um contentor mínimo falha aqui.",
+        "s16.e1.c": "Instale <code>build-essential</code> (Debian), <code>base-devel</code> (Arch), <code>xcode-select --install</code> (macOS), ou as C++ build tools no Windows.",
+        "s16.e2.b": "Um crate quer ligar uma biblioteca C e faltam os headers ou o <code>pkg-config</code>.",
+        "s16.e2.c": "Instale <code>pkg-config libssl-dev</code>, ou compile com <code>--no-default-features</code> e uma feature rustls se o projeto oferecer.",
+        "s16.e3.b": "O MSRV declarado do crate está acima do seu compilador. Não há nada errado com o crate.",
+        "s16.e3.c": "<code>rustup update stable</code>. Se está fixado num <code>rust-toolchain.toml</code>, suba-o deliberadamente — ou instale uma versão anterior da ferramenta.",
+        "s16.e4.b": "O linker ficou sem memória. O passo final de ligação do Rust é o que consome memória, e um contentor com 2 GB é morto.",
+        "s16.e4.c": "Compile com menos tarefas (<code>cargo install -j 1</code>), acrescente swap, ou use um linker que gaste menos memória como o lld.",
+        "s16.e5.b": "A pasta de compilação encheu o disco — normalmente vários gigabytes para um crate grande.",
+        "s16.e5.c": "Limpe pastas <code>target</code> antigas e a cache do registo; a parte 04 tem os comandos e os tamanhos.",
+        "s16.e6.b": "Nenhuma versão publicada satisfaz o resolver, muitas vezes porque uma dependência foi retirada depois de o lock ter sido escrito.",
+        "s16.e6.c": "Retire o <code>--locked</code> para deixar o Cargo resolver outra vez, ou <code>cargo update -p x</code> no projeto. Um crate retirado ainda pode ser compilado se estiver no seu lock.",
+        "s16.e7.b": "Outro crate traz um binário com o mesmo nome, ou está a reinstalar a mesma versão.",
+        "s16.e7.c": "Acrescente <code>--force</code> se queria substituir. Veja <code>cargo install --list</code> para saber o que lá estava primeiro.",
+        "s16.e8.b": "O cargo procura subcomandos como binários chamados <code>cargo-*</code> no PATH. O binário está instalado onde a shell não vê, ou não está.",
+        "s16.e8.c": "Instale-o (<code>cargo install --locked cargo-binstall</code>) e verifique <code>command -v cargo-binstall</code> antes de culpar a ferramenta.",
+        "s16.e9.b": "A instalação correu bem; a shell não encontra o resultado. Parte 05.",
+        "s16.e9.c": "<code>export PATH=\"$HOME/.cargo/bin:$PATH\"</code> no perfil que a sua shell lê de facto, e depois abra uma shell de login.",
+        "s16.e10.b": "Um proxy, um certificado de inspeção TLS da empresa, ou um pacote de ACs em falta entre si e o crates.io.",
+        "s16.e10.c": "Defina <code>https_proxy</code>, aponte <code>CARGO_HTTP_CAINFO</code> ao pacote da empresa, ou use <code>CARGO_NET_GIT_FETCH_WITH_CLI=true</code> para dependências git.",
+        "s16.note.h": "As duas falhas que parecem a máquina a morrer",
+        "s16.note.p": "Uma compilação que termina em <code>Killed</code> ficou sem memória no passo de ligação — acrescente swap ou reduza as tarefas, e termina. Uma compilação que leva oito minutos na primeira vez e três segundos na segunda é a cache incremental e a do registo a fazer o seu trabalho; <code>cargo clean</code> repõe a versão lenta, por isso não há razão para o fazer. Nenhuma das duas é sinal de que a ferramenta está avariada.",
+
+        "s17.title": "Que rota para esta ferramenta",
+        "s17.sub": "Há quatro formas honestas de pôr um binário Rust numa máquina, e a certa depende de quem o vai correr e onde. Responda a três perguntas e o veredicto abaixo nomeia a rota, a razão e o comando — incluindo o caso em que a resposta é «não compile isto aqui».",
+        "s17.tool.h": "Escolha de rota",
+        "s17.tool.badge": "quatro rotas",
+        "s17.q1": "O seu código importa-o?",
+        "s17.q1.no": "Não — é um comando que corro",
+        "s17.q1.yes": "Sim — é uma biblioteca",
+        "s17.q2": "Vai correr onde não há compilador?",
+        "s17.q2.no": "Não — esta máquina compila",
+        "s17.q2.yes": "Sim — um servidor ou um portátil sem Rust",
+        "s17.q3": "Está empacotado pela sua distribuição ou pelo nix?",
+        "s17.q3.no": "Não",
+        "s17.q3.yes": "Sim, e está atual",
+        "s17.out.route": "Rota",
+        "s17.out.verdict": "Veredicto",
+        "s17.out.why": "Porquê",
+        "s17.copy": "Copiar",
+        "t.route": "Rota",
+        "t.good": "Boa para",
+        "t.cost": "O que custa",
+        "s17.r1.a": "A sua máquina de trabalho, a versão mais recente, reprodutibilidade.",
+        "s17.r1.b": "Minutos de compilação, e uma árvore de dependências que tem de compilar sem erros.",
+        "s17.r2.a": "Qualquer máquina que consiga descarregar um artefacto de release, sobretudo uma imagem de CI.",
+        "s17.r2.b": "Confiança na conduta de release do projeto, e a compilação de recurso quando não há artefacto.",
+        "s17.r3.a": "Uma frota que não quer a compilar, e uma versão que chega com as atualizações do sistema.",
+        "s17.r3.b": "Uma versão mais antiga do que a de origem — por vezes muito mais — e nomes diferentes dos de origem.",
+        "s17.r4.a": "Um servidor sem toolchain: compile aqui, copie o binário, pronto.",
+        "s17.r4.b": "A compilação é sua: libc e arquitetura coincidentes, e a atualização passa a ser problema seu.",
+        "s17.after": "A nota de rodapé sobre compilação cruzada vale a pena antes de surpreender: um binário compilado numa distribuição com glibc não corre num sistema musl como o Alpine. Compile para o alvo <code>x86_64-unknown-linux-musl</code> para um binário estático, ou compile dentro da imagem onde vai implantar.",
+
+        "s18.title": "Fontes, e o que cada uma resolve",
+        "s18.sub": "O manual é construído a partir da documentação dos próprios projetos e dos metadados que cada crate publica. Todas as ferramentas da parte 06 ligam ao seu repositório, que é a autoridade sobre as suas opções — e as páginas abaixo são a autoridade sobre a toolchain.",
+        "src.1": "O instalador usado na parte 02, com os perfis e os componentes que pode acrescentar.",
+        "src.2": "Toolchains, overrides, <code>rust-toolchain.toml</code> e o que o <code>rustup show</code> lhe está a dizer.",
+        "src.3": "Todas as opções da tabela da parte 03, incluindo <code>--locked</code>, <code>--root</code> e <code>--git</code>.",
+        "src.4": "Onde vive o <code>config.toml</code>, e as variáveis de ambiente que o sobrepõem, incluindo as do registo e do proxy.",
+        "src.5": "O registo em si: cada crate, versão, MSRV e ligação ao repositório usados aqui.",
+        "src.6": "O que uma edição muda, que edições um compilador suporta, e porque a edição 2024 exige Rust 1.85.",
+        "src.7": "Os anúncios de release a cada seis semanas, a fonte dos números de versão citados aqui.",
+        "src.8": "O campo <code>rust-version</code>, que é onde o MSRV declarado de um crate vive de facto.",
+        "src.9": "Como se localiza um artefacto pré-compilado para cada plataforma, e o que acontece quando não há nenhum.",
+        "src.10": "A base de avisos por trás do <code>cargo audit</code>, e o formato das entradas que ele compara.",
+        "src.11": "Que alvos são tier 1, tier 2 ou tier 3, e portanto que compilações cruzadas se espera que funcionem.",
+        "src.12": "Porque um crate pode falhar antes de o seu código compilar, e o que o <code>pkg-config</code> faz numa compilação Rust.",
+        "s18.after": "As versões da parte 06 são os crates publicados mais recentes em 29 de outubro de 2026, e cada MSRV é o declarado nos metadados dessa release. Ambos vão mudar; o repositório continua a ser a autoridade, e o <code>--locked</code> final é como guarda a compilação de hoje para amanhã.",
+
+        "s19.title": "Glossário",
+        "s19.sub": "Doze palavras que explicam a maior parte da confusão neste manual.",
+
+        "footer.p": "Escrito a partir de um terminal Linux e verificado contra os metadados publicados de cada crate no dia da publicação: versão, MSRV declarado e nomes de binário lidos do crates.io, e cada comando tirado da documentação do próprio projeto. Onde o manual diz «normalmente», é porque o nome de um pacote de distribuição ou de um binário difere — o repositório é a palavra final.",
+        "footer.back": "← Voltar ao arquivo",
+        "footer.cross": "O resto da série: <a href=\"python-cli.html\">A Shell, Alargada</a> para a metade Python da mesma ideia, <a href=\"golang-cli.html\">Go na Shell</a> para o argumento da toolchain compilada sem borrow checker, <a href=\"hydroponics.html\">Hidroponia em Casa</a> para uma horta sem solo, e <a href=\"recycling.html\">Nada É Lixo</a> para a segunda vida de tudo o que a casa deita fora."
+      };
+
+    })();
+  </script>
+
+</body>
+
+</html>

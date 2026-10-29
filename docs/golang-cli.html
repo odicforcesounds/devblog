@@ -1,0 +1,2784 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Go in the Shell — Thirty Binaries, One Toolchain</title>
+  <meta name="description" content="Go from the terminal: the toolchain, go install, GOBIN on PATH, thirty GitHub apps with verified versions, and the errors that stop a build.">
+  <link rel="canonical" href="https://blog.odicforcesounds.com/golang-cli.html">
+  <meta property="og:title" content="Go in the Shell — Thirty Binaries, One Toolchain">
+  <meta property="og:description" content="Go from the terminal: the toolchain, go install, GOBIN on PATH, thirty GitHub apps with verified versions, and the errors that stop a build.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://blog.odicforcesounds.com/golang-cli.html">
+  <meta property="og:site_name" content="Monkey Blog">
+  <meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Go in the Shell — Thirty Binaries, One Toolchain">
+  <meta name="twitter:description" content="Go from the terminal: the toolchain, go install, GOBIN on PATH, thirty GitHub apps with verified versions, and the errors that stop a build.">
+  <meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/golang-cli.html#article",
+      "headline": "Go in the Shell — Thirty Binaries, One Toolchain",
+      "name": null,
+      "description": "Go from the terminal: the toolchain, go install, GOBIN on PATH, thirty GitHub apps with verified versions, and the errors that stop a build.",
+      "url": "https://blog.odicforcesounds.com/golang-cli.html",
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://blog.odicforcesounds.com/golang-cli.html" },
+      "image": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/peace.jpg", "width": 1496, "height": 960 },
+      "inLanguage": "en",
+      "author": { "@type": "Person", "name": "Oscar", "url": "https://blog.odicforcesounds.com/", "sameAs": ["https://mastodon.social/@TaoExpression"] },
+      "publisher": { "@type": "Organization", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/", "logo": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/three.jpg", "width": 1024, "height": 1024 } },
+      "isPartOf": { "@type": "Blog", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/" },
+      "articleSection": "Programming & Development",
+      "keywords": "Go in the Shell, Go toolchain, go install, GOBIN, Go CLI apps",
+      "wordCount": 9000,
+      "datePublished": "2026-10-29",
+      "dateModified": "2026-10-29"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://blog.odicforcesounds.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Programming & Development", "item": "https://blog.odicforcesounds.com/#category-programming-and-development" },
+        { "@type": "ListItem", "position": 3, "name": "Go in the Shell — Thirty Binaries, One Toolchain", "item": "https://blog.odicforcesounds.com/golang-cli.html" }
+      ]
+    }
+  ]
+}
+  </script>
+  <style>
+    :root {
+      --bg: #050709;
+      --bg-soft: #0a0f14;
+      --panel: rgba(14, 21, 26, 0.9);
+      --panel-2: rgba(20, 31, 38, 0.94);
+      --line: rgba(110, 198, 232, 0.15);
+      --line-strong: rgba(110, 198, 232, 0.38);
+      --ink: #f2ece1;
+      --muted: #a99f90;
+      --leaf: #6ec6e8;
+      --leaf-deep: #2b7f9e;
+      --water: #7fd1b9;
+      --warm: #e07a5f;
+      --danger: #ef7d7d;
+      --radius: 14px;
+      --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 6rem;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(1100px 600px at 85% -10%, rgba(224, 122, 95, 0.12), transparent 60%),
+        radial-gradient(900px 500px at 5% 8%, rgba(110, 198, 232, 0.08), transparent 60%),
+        var(--bg);
+      font-family: var(--sans);
+      font-size: 17px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: var(--leaf);
+      text-decoration-color: rgba(110, 198, 232, 0.4);
+      text-underline-offset: 3px;
+    }
+
+    a:hover {
+      color: var(--water);
+    }
+
+    .wrap {
+      width: min(1120px, 100% - 2.5rem);
+      margin-inline: auto;
+    }
+
+    /* ---------- header ---------- */
+    header.hero {
+      padding: clamp(2rem, 5vw, 4rem) 0 2.5rem;
+      border-bottom: 1px solid var(--line);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -60% 40%;
+      height: 420px;
+      background: radial-gradient(closest-side, rgba(224, 122, 95, 0.18), transparent);
+      pointer-events: none;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 1.6rem;
+    }
+
+    .topbar .mark {
+      font-family: var(--mono);
+      font-size: 0.64rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .topbar .mark:hover {
+      color: var(--leaf);
+    }
+
+    .topbar-tools {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.7rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      transition: color 140ms ease, border-color 140ms ease;
+    }
+
+    .home-link:hover,
+    .home-link:focus-visible {
+      color: var(--leaf);
+      border-color: var(--line-strong);
+    }
+
+    .lang-switch {
+      display: flex;
+      gap: 0.3rem;
+      padding: 0.2rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(11, 9, 6, 0.6);
+    }
+
+    .lang-switch button {
+      padding: 0.28rem 0.7rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: color 140ms ease, background-color 140ms ease;
+    }
+
+    .lang-switch button:hover {
+      color: var(--ink);
+    }
+
+    .lang-switch button[aria-pressed="true"] {
+      color: #1a1105;
+      background: var(--leaf);
+    }
+
+    .kicker {
+      margin: 0 0 0.8rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--leaf);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 6vw, 3.75rem);
+      line-height: 1.04;
+      letter-spacing: -0.02em;
+      max-width: 18ch;
+    }
+
+    .lede {
+      margin: 1.2rem 0 0;
+      max-width: 64ch;
+      font-size: clamp(1rem, 1.6vw, 1.16rem);
+      color: #d8cfc0;
+    }
+
+    .facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin: 1.8rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .facts li {
+      padding: 0.4rem 0.85rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    /* ---------- nav ---------- */
+    nav.toc {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(11, 9, 6, 0.93);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    nav.toc ul {
+      display: flex;
+      gap: 0.35rem;
+      margin: 0;
+      padding: 0.5rem 0;
+      list-style: none;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    nav.toc a {
+      display: block;
+      padding: 0.32rem 0.65rem;
+      white-space: nowrap;
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid transparent;
+      border-radius: 999px;
+    }
+
+    nav.toc a:hover,
+    nav.toc a:focus-visible {
+      color: var(--leaf);
+      border-color: var(--line-strong);
+    }
+
+    /* ---------- sections ---------- */
+    main {
+      padding-bottom: 5rem;
+    }
+
+    section {
+      padding: clamp(2.2rem, 5.5vw, 3.6rem) 0 0.5rem;
+    }
+
+    section > h2 {
+      margin: 0 0 0.4rem;
+      font-size: clamp(1.5rem, 3.2vw, 2.05rem);
+      letter-spacing: -0.01em;
+    }
+
+    section > h2 .num {
+      display: inline-block;
+      margin-right: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      color: var(--leaf);
+      vertical-align: 0.55em;
+    }
+
+    .sub {
+      margin: 0 0 1.6rem;
+      max-width: 70ch;
+      color: var(--muted);
+    }
+
+    h3 {
+      margin: 1.8rem 0 0.5rem;
+      font-size: 1.08rem;
+      letter-spacing: 0.01em;
+    }
+
+    h4 {
+      margin: 1.2rem 0 0.35rem;
+      font-size: 0.96rem;
+    }
+
+    p {
+      max-width: 72ch;
+    }
+
+    /* ---------- components ---------- */
+    .grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .card {
+      padding: 1.1rem 1.15rem;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .card h3,
+    .card h4 {
+      margin: 0 0 0.45rem;
+      font-size: 0.98rem;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 0.94rem;
+      color: #d3c9ba;
+    }
+
+    .card .tag {
+      display: inline-block;
+      margin-bottom: 0.55rem;
+      padding: 0.15rem 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--water);
+      border: 1px solid rgba(127, 209, 185, 0.35);
+      border-radius: 999px;
+    }
+
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .steps li {
+      counter-increment: step;
+      position: relative;
+      padding: 1rem 1.1rem 1rem 3.4rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .steps li::before {
+      content: counter(step, decimal-leading-zero);
+      position: absolute;
+      left: 1rem;
+      top: 1rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      color: var(--leaf);
+    }
+
+    .steps h3 {
+      margin: 0 0 0.3rem;
+      font-size: 1rem;
+    }
+
+    .steps p {
+      margin: 0;
+      font-size: 0.94rem;
+      color: #d3c9ba;
+    }
+
+    .steps .warn {
+      display: block;
+      margin-top: 0.5rem;
+      padding-left: 0.75rem;
+      border-left: 2px solid var(--warm);
+      font-size: 0.88rem;
+      color: #e3c7b3;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      min-width: 640px;
+    }
+
+    caption {
+      padding: 0.8rem 1rem 0;
+      text-align: left;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    th,
+    td {
+      padding: 0.6rem 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(110, 198, 232, 0.1);
+      vertical-align: top;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #1b1610;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    tbody tr:hover {
+      background: rgba(110, 198, 232, 0.05);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    td.num,
+    th.num {
+      font-family: var(--mono);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* ---------- tools ---------- */
+    .tool {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      padding: 1.2rem;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+    }
+
+    @media (max-width: 760px) {
+      .tool {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tool .fields {
+      display: grid;
+      gap: 0.7rem;
+    }
+
+    label {
+      display: grid;
+      gap: 0.3rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 0.95rem;
+      letter-spacing: normal;
+      text-transform: none;
+      background: rgba(9, 7, 4, 0.78);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      outline: none;
+    }
+
+    select:focus-visible,
+    input:focus-visible,
+    button:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--water);
+      outline-offset: 2px;
+    }
+
+    .readout {
+      display: grid;
+      gap: 0.55rem;
+      align-content: start;
+      padding: 0.9rem 1rem;
+      background: rgba(9, 7, 4, 0.55);
+      border: 1px solid var(--line);
+      border-radius: 11px;
+    }
+
+    .readout dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.35rem 0.9rem;
+      margin: 0;
+      font-size: 0.92rem;
+    }
+
+    .readout dt {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      align-self: center;
+    }
+
+    .readout dd {
+      margin: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .verdict {
+      margin: 0;
+      padding: 0.55rem 0.7rem;
+      font-size: 0.9rem;
+      border-radius: 9px;
+      border: 1px solid var(--line);
+      color: #d3c9ba;
+    }
+
+    .verdict[data-state="ok"] {
+      border-color: rgba(110, 198, 232, 0.5);
+      color: var(--leaf);
+      background: rgba(110, 198, 232, 0.08);
+    }
+
+    .verdict[data-state="warn"] {
+      border-color: rgba(224, 122, 95, 0.5);
+      color: var(--warm);
+      background: rgba(224, 122, 95, 0.08);
+    }
+
+    .verdict[data-state="bad"] {
+      border-color: rgba(239, 125, 125, 0.5);
+      color: var(--danger);
+      background: rgba(239, 125, 125, 0.08);
+    }
+
+    /* ---------- manual components ---------- */
+    .reading-paths {
+      display: grid;
+      gap: 0.8rem;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      margin: 1.5rem 0 0;
+    }
+
+    .path {
+      display: block;
+      padding: 0.95rem 1.05rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 140ms ease, transform 140ms ease;
+    }
+
+    .path:hover {
+      border-color: var(--line-strong);
+      transform: translateY(-2px);
+      color: inherit;
+    }
+
+    .path strong {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.95rem;
+      color: var(--leaf);
+    }
+
+    .path span {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .ledger {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      margin: 1.3rem 0 0;
+    }
+
+    .ledger .col {
+      padding: 1rem 1.1rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .ledger h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .ledger ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      font-size: 0.92rem;
+      color: #d3c9ba;
+    }
+
+    .ledger li {
+      margin-bottom: 0.35rem;
+    }
+
+    .recipe {
+      padding: 1.1rem 1.2rem;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .recipe h3 {
+      margin: 0 0 0.35rem;
+      font-size: 1.02rem;
+    }
+
+    .recipe .meta {
+      margin-bottom: 0.6rem;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--water);
+    }
+
+    .recipe ul,
+    .recipe ol {
+      margin: 0.4rem 0 0;
+      padding-left: 1.15rem;
+      font-size: 0.9rem;
+      color: #d3c9ba;
+    }
+
+    .recipe li {
+      margin-bottom: 0.3rem;
+    }
+
+    .recipe .limit {
+      display: block;
+      margin-top: 0.7rem;
+      padding-left: 0.75rem;
+      border-left: 2px solid var(--warm);
+      font-size: 0.86rem;
+      color: #e3c7b3;
+    }
+
+    .danger {
+      margin: 1.3rem 0;
+      padding: 0.95rem 1.1rem;
+      font-size: 0.93rem;
+      color: #ecd2d2;
+      background: rgba(239, 125, 125, 0.07);
+      border-left: 3px solid var(--danger);
+      border-radius: 0 10px 10px 0;
+    }
+
+    .danger strong {
+      color: var(--danger);
+    }
+
+    .fig {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: rgba(9, 7, 4, 0.5);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .fig svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: 660px;
+      margin: 0 auto;
+    }
+
+    .fig figcaption {
+      margin-top: 0.7rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .glossary {
+      display: grid;
+      gap: 0.5rem;
+      margin: 0;
+      padding: 0;
+    }
+
+    .glossary div {
+      padding: 0.6rem 0.85rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .glossary dt {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--leaf);
+    }
+
+    .glossary dd {
+      margin: 0.2rem 0 0;
+      font-size: 0.9rem;
+      color: #d3c9ba;
+    }
+
+    .sources {
+      display: grid;
+      gap: 0.6rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .sources li {
+      padding: 0.75rem 0.9rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .sources a {
+      font-weight: 600;
+    }
+
+    .sources span {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0.8rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .pill-list li {
+      padding: 0.25rem 0.6rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-left: 0.45rem;
+      padding: 0 0.4rem;
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: 999px;
+    }
+
+    .badge.ok {
+      color: var(--leaf);
+      border: 1px solid rgba(110, 198, 232, 0.4);
+    }
+
+    .badge.warn {
+      color: var(--warm);
+      border: 1px solid rgba(224, 122, 95, 0.4);
+    }
+
+    .badge.bad {
+      color: var(--danger);
+      border: 1px solid rgba(239, 125, 125, 0.4);
+    }
+
+    /* ---------- misc ---------- */
+    .note {
+      margin: 1.2rem 0;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.93rem;
+      color: #d3c9ba;
+      background: rgba(127, 209, 185, 0.06);
+      border-left: 3px solid var(--water);
+      border-radius: 0 10px 10px 0;
+    }
+
+    .note strong {
+      color: var(--ink);
+    }
+
+    .two {
+      display: grid;
+      gap: 1.2rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    ul.clean {
+      margin: 0.4rem 0 0;
+      padding-left: 1.1rem;
+      color: #d3c9ba;
+      font-size: 0.94rem;
+    }
+
+    ul.clean li {
+      margin-bottom: 0.35rem;
+    }
+
+    footer {
+      padding: 2.5rem 0 3.5rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: var(--ink);
+    }
+
+    .cross {
+      margin: 1rem 0 0;
+      max-width: 62ch;
+      color: var(--muted);
+    }
+
+    .cross a {
+      color: var(--leaf);
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.8rem;
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--leaf);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .path:hover { transform: none; }
+    }
+  
+    /* ---------- shell manual additions ---------- */
+    pre {
+      margin: 0.8rem 0;
+      padding: 0.85rem 1rem;
+      overflow-x: auto;
+      background: #04070a;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--leaf-deep);
+      border-radius: 10px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.55;
+      color: #d6ecf7;
+      tab-size: 2;
+    }
+
+    pre .c { color: #6f8c80; }
+    pre .p { color: var(--leaf); }
+    pre .bad { color: var(--danger); }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.86em;
+      padding: 0.1em 0.35em;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: rgba(110, 198, 232, 0.06);
+      color: #cfe9f6;
+    }
+
+    .tool-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1rem;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 0.9rem;
+    }
+
+    .tool-head h3 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0.7rem 0 1rem;
+    }
+
+    .chip {
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.36rem 0.66rem;
+      border-radius: 999px;
+      border: 1px solid var(--line-strong);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .chip[aria-pressed="true"] {
+      background: rgba(110, 198, 232, 0.14);
+      border-color: var(--leaf);
+      color: var(--leaf);
+    }
+
+    .search {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border-radius: 9px;
+      border: 1px solid var(--line-strong);
+      background: #04070a;
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+    }
+
+    .search:focus,
+    select:focus,
+    input:focus {
+      outline: 2px solid rgba(110, 198, 232, 0.35);
+      outline-offset: 1px;
+    }
+
+    .apps-table th,
+    .apps-table td {
+      vertical-align: top;
+    }
+
+    .apps-table td.cmd cell,
+    .apps-table code {
+      white-space: nowrap;
+    }
+
+    .family-tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.18rem 0.42rem;
+      border-radius: 999px;
+      border: 1px solid var(--line-strong);
+      color: var(--water);
+    }
+
+    .empty {
+      padding: 1rem 0;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+
+    .cmd-block {
+      position: relative;
+      margin-top: 0.7rem;
+    }
+
+    .cmd-block button {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.55rem;
+      border-radius: 6px;
+      border: 1px solid var(--line-strong);
+      background: rgba(5, 7, 9, 0.9);
+      color: var(--leaf);
+      cursor: pointer;
+    }
+
+    .cmd-block button:hover {
+      background: rgba(110, 198, 232, 0.12);
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: minmax(120px, 34%) 1fr;
+      gap: 0.35rem 1rem;
+      margin: 0.7rem 0 0;
+      font-size: 0.92rem;
+    }
+
+    .kv dt {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding-top: 0.15rem;
+    }
+
+    .kv dd {
+      margin: 0;
+    }
+
+    .scroll {
+      overflow-x: auto;
+    }
+
+    @media (max-width: 720px) {
+      .kv {
+        grid-template-columns: 1fr;
+      }
+      pre {
+        font-size: 0.72rem;
+      }
+    }
+</style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <div class="topbar">
+        <a class="mark" href="index.html">Monkey Blog · Go in the Shell</a>
+        <div class="topbar-tools">
+          <a class="home-link" href="index.html"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" focusable="false"><path d="M8 1.5 1.5 7h1.8v6.5h3.4V9.8h2.6v3.7h3.4V7h1.8L8 1.5Z" fill="currentColor"/></svg><span data-i18n="nav.home">Home</span></a>
+          <div class="lang-switch" role="group" aria-label="Language / Idioma">
+            <button type="button" data-lang="en" aria-pressed="true" lang="en">EN</button>
+            <button type="button" data-lang="pt" aria-pressed="false" lang="pt">PT</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="kicker" data-i18n="hero.kicker">Compiled tools · a manual in nineteen parts</p>
+      <h1 data-i18n="hero.title">Go in the Shell</h1>
+      <p class="lede" data-i18n="hero.lede">
+        Go produces one file per program: no interpreter, no runtime to install, nothing to keep
+        in sync. That is why so much of the software you already use in a terminal — the fuzzy
+        finder, the git interface, the container dashboards, the vulnerability scanner — is
+        written in it. This manual is about the toolchain that builds those binaries, the one
+        command that installs them, and thirty projects worth compiling.
+      </p>
+      <ul class="facts">
+        <li data-i18n="hero.f1">Nineteen parts</li>
+        <li data-i18n="hero.f2">Thirty binaries</li>
+        <li data-i18n="hero.f3">Versions checked</li>
+        <li data-i18n="hero.f4">Install builder</li>
+        <li data-i18n="hero.f5">Toolchain check</li>
+        <li data-i18n="hero.f6">Every repo linked</li>
+      </ul>
+
+      <div class="reading-paths">
+        <a class="path" href="#toolchain">
+          <strong data-i18n="path.a.h">I have never installed Go</strong>
+          <span data-i18n="path.a.p">Part 02: one tarball, one PATH line, and a compiler that is finished in a minute.</span>
+        </a>
+        <a class="path" href="#builder">
+          <strong data-i18n="path.b.h">Show me the tools first</strong>
+          <span data-i18n="path.b.p">Part 06: every tool with its module, version, home page and what it does, plus the command for your machine.</span>
+        </a>
+        <a class="path" href="#install">
+          <strong data-i18n="path.c.h">Just give me the command</strong>
+          <span data-i18n="path.c.p">Part 03: the one command, the pinned version, and where the binary lands.</span>
+        </a>
+        <a class="path" href="#errors">
+          <strong data-i18n="path.d.h">A build just failed</strong>
+          <span data-i18n="path.d.p">Part 17: the ten messages that stop people, from GOBIN to a toolchain that is too old.</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Sections">
+    <div class="wrap">
+      <ul>
+        <li><a href="#rule" data-i18n="nav.rule">The rule</a></li>
+        <li><a href="#toolchain" data-i18n="nav.toolchain">Toolchain</a></li>
+        <li><a href="#install" data-i18n="nav.install">go install</a></li>
+        <li><a href="#layout" data-i18n="nav.layout">Layout</a></li>
+        <li><a href="#path" data-i18n="nav.path">GOBIN</a></li>
+        <li><a href="#builder" data-i18n="nav.builder">Builder</a></li>
+        <li><a href="#shell" data-i18n="nav.shell">Shell</a></li>
+        <li><a href="#git" data-i18n="nav.git">Git</a></li>
+        <li><a href="#containers" data-i18n="nav.containers">Containers</a></li>
+        <li><a href="#docs" data-i18n="nav.docs">Documents</a></li>
+        <li><a href="#build" data-i18n="nav.build">Build</a></li>
+        <li><a href="#data" data-i18n="nav.data">Data</a></li>
+        <li><a href="#machine" data-i18n="nav.machine">Machine</a></li>
+        <li><a href="#security" data-i18n="nav.security">Security</a></li>
+        <li><a href="#sync" data-i18n="nav.sync">Sync</a></li>
+        <li><a href="#servers" data-i18n="nav.servers">Servers</a></li>
+        <li><a href="#errors" data-i18n="nav.errors">Errors</a></li>
+        <li><a href="#sources" data-i18n="nav.sources">Sources</a></li>
+        <li><a href="#glossary" data-i18n="nav.glossary">Glossary</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section id="rule">
+      <h2><span class="num">01</span><span data-i18n="s1.title">One command, three rules, no runtime</span></h2>
+      <p class="sub" data-i18n="s1.sub">
+        A Go tool is a single executable. There is no interpreter to match, no environment to
+        activate, no shared library to break: <code>go install</code> compiles the program and drops one file
+        on your disk. That simplicity is also why the three rules below are enough — almost every
+        Go installation problem is a path, a version, or a directory that the shell cannot see.
+      </p>
+
+      <ol class="steps">
+        <li>
+          <h3 data-i18n="s1.r1.h">One: install with a version, not with a mood</h3>
+          <p data-i18n="s1.r1.p">Since Go 1.17, <code>go get</code> only edits a <code>go.mod</code>; it no longer installs binaries. The command for tools is <code>go install module/path@version</code>. Writing <code>@latest</code> is allowed and is what the manual mostly does — but a published article ages, and <code>@v1.2.3</code> is the line that will still compile the same code next year.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s1.r2.h">Two: the binary goes to GOBIN, never to /usr/local</h3>
+          <p data-i18n="s1.r2.p">By default the result lands in <code>$(go env GOPATH)/bin</code>, a directory you own. Never prefix the command with <code>sudo</code>: the compiler will happily write into root's home, and the binary you just built will be invisible to your user. If you want another destination, set <code>GOBIN</code> — not a different compiler flag.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s1.r3.h">Three: put that directory on PATH once</h3>
+          <p data-i18n="s1.r3.p">Installation succeeds and the shell still says <code>command not found</code>, because <code>~/go/bin</code> is not on PATH on a fresh system. One export line in your shell profile fixes it forever; <code>go env -w GOBIN=…</code> fixes the destination instead. Part 05 has both, with the check that tells you which one you are missing.</p>
+        </li>
+      </ol>
+
+      <div class="note">
+        <strong data-i18n="s1.note.h">Why "no runtime" changes the maintenance story</strong>
+        <p data-i18n="s1.note.p">A Python tool needs the interpreter that installed it, a Node tool needs its package tree, a Go tool needs nothing. Copy the file to another machine of the same OS and architecture and it runs. That also means an upgrade is a replacement, not a merge: install the new version, and the old file is gone. There is no uninstall command and no leftovers to clean, which is either liberating or alarming, depending on how much you enjoy housekeeping.</p>
+      </div>
+
+      <h3 data-i18n="s1.which.h">Four commands that people confuse</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.command">Command</th>
+              <th data-i18n="t.does">What it does</th>
+              <th data-i18n="t.when">Use it when</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>go install pkg@version</code></th>
+              <td data-i18n="s1.c1.a">Compiles a main package and writes the executable to GOBIN. Works outside any module.</td>
+              <td data-i18n="s1.c1.b">Always, for a tool you want to keep. This is the command of the manual.</td>
+            </tr>
+            <tr>
+              <th><code>go install ./cmd/tool</code></th>
+              <td data-i18n="s1.c2.a">Compiles from the source in the current module, at the working tree's state.</td>
+              <td data-i18n="s1.c2.b">You are developing that tool, or testing a patch before proposing it.</td>
+            </tr>
+            <tr>
+              <th><code>go get pkg@version</code></th>
+              <td data-i18n="s1.c3.a">Adds or updates a dependency in <code>go.mod</code>. It does not put anything on your PATH.</td>
+              <td data-i18n="s1.c3.b">You are writing Go code that imports the package as a library.</td>
+            </tr>
+            <tr>
+              <th><code>go build -o out ./cmd/tool</code></th>
+              <td data-i18n="s1.c4.a">Writes the binary to a path you choose, and keeps the whole toolchain cache warm.</td>
+              <td data-i18n="s1.c4.b">Cross-compiling, embedding version flags, or producing an artifact for release.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="sub" data-i18n="s1.after">One nuance worth knowing before it surprises you: inside a module directory, <code>go install pkg@version</code> still ignores your <code>go.mod</code> and installs the published version. That is deliberate — the <code>@version</code> is the request, and the module you happen to be standing in is not.</p>
+    </section>
+
+    <section id="toolchain">
+      <h2><span class="num">02</span><span data-i18n="s2.title">The toolchain, from zero</span></h2>
+      <p class="sub" data-i18n="s2.sub">
+        Go ships as a tarball, an installer or a package. Whatever route you take, the result is
+        the same two things: a directory with the compiler and standard library, and a
+        <code>go</code> command that knows where it lives. The manual's numbers assume Go 1.27,
+        which is the current release line at the time of writing; the tools in part 06 state
+        their own minimums, and one of them is fine with 1.22.
+      </p>
+
+      <h3 data-i18n="s2.linux.h">Linux, the honest way</h3>
+      <pre><span class="c"># download the archive for your architecture from go.dev/dl</span>
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf go1.27.3.linux-amd64.tar.gz
+
+<span class="c"># add to ~/.profile or ~/.bashrc, once</span>
+export PATH="$PATH:/usr/local/go/bin"
+
+go version</pre>
+      <p data-i18n="s2.linux.after">Removing the old directory first is not optional: the tarball extracts into <code>/usr/local/go</code>, and merging two versions leaves a compiler with one standard library and another's tools. The distribution package (<code>sudo apt install golang-go</code>) is usually several releases behind; it is fine for running something, not for building the newest tools.</p>
+
+      <h3 data-i18n="s2.other.h">macOS and Windows</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th data-i18n="t.system">System</th><th data-i18n="t.route">Route</th><th data-i18n="t.check">Check</th></tr>
+          </thead>
+          <tbody>
+            <tr><th>macOS</th><td><code>brew install go</code>, or the pkg installer from go.dev/dl</td><td><code>go version</code>, <code>go env GOROOT</code></td></tr>
+            <tr><th>Windows</th><td>The MSI from go.dev/dl, which sets PATH itself</td><td><code>go version</code> in a new terminal</td></tr>
+            <tr><th>Debian / Ubuntu</th><td>tarball preferred; <code>apt install golang-go</code> lags</td><td><code>go version</code></td></tr>
+            <tr><th>Fedora / Arch</th><td><code>dnf install golang</code> / <code>pacman -S go</code></td><td><code>go version</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 data-i18n="s2.env.h">The five variables that matter</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th data-i18n="t.var">Variable</th><th data-i18n="t.meaning">What it is</th><th data-i18n="t.default">Default</th></tr>
+          </thead>
+          <tbody>
+            <tr><th><code>GOROOT</code></th><td data-i18n="s2.v1">Where the compiler and standard library live. The <code>go</code> command finds it on its own.</td><td><code>/usr/local/go</code></td></tr>
+            <tr><th><code>GOPATH</code></th><td data-i18n="s2.v2">Your workspace: module cache, and the default home of installed binaries.</td><td><code>~/go</code></td></tr>
+            <tr><th><code>GOBIN</code></th><td data-i18n="s2.v3">If set, <code>go install</code> writes binaries here instead of <code>GOPATH/bin</code>.</td><td data-i18n="s2.v3d">unset</td></tr>
+            <tr><th><code>GOMODCACHE</code></th><td data-i18n="s2.v4">Downloaded module sources, shared by every project on the machine.</td><td><code>~/go/pkg/mod</code></td></tr>
+            <tr><th><code>GOTOOLCHAIN</code></th><td data-i18n="s2.v5">Whether Go may download a newer toolchain when a module asks for one.</td><td><code>auto</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <pre>go env GOROOT GOPATH GOBIN GOMODCACHE GOTOOLCHAIN
+go env -w GOBIN="$HOME/.local/bin"    <span class="c"># persists in the Go env file</span>
+go env -u GOBIN                       <span class="c"># undo it</span></pre>
+      <p data-i18n="s2.env.after"><code>go env -w</code> writes to the file that <code>go env GOENV</code> names — usually <code>~/.config/go/env</code> — so the setting survives shells without an export line. It is the right place for <code>GOBIN</code> and <code>GOPROXY</code>; the wrong place for anything secret, because the file is plain text.</p>
+    </section>
+
+    <section id="install">
+      <h2><span class="num">03</span><span data-i18n="s3.title">go install: the whole installation story</span></h2>
+      <p class="sub" data-i18n="s3.sub">
+        No registry to browse, no resolver to argue with: the module path in the command is both
+        the address and the identity. Go downloads the module at the version you named, builds the
+        package and its dependencies with the toolchain currently in use, and writes the result
+        into GOBIN.
+      </p>
+
+      <pre>go install github.com/junegunn/fzf@latest
+go install github.com/mikefarah/yq/v4@v4.54.1
+go install github.com/cli/cli/v2/cmd/gh@latest
+
+<span class="c"># where did it go, and what is in it</span>
+ls "$(go env GOPATH)/bin"
+go version -m "$(go env GOPATH)/bin/lazygit"</pre>
+      <p data-i18n="s3.after"><code>go version -m</code> is the audit tool nobody remembers: it prints the module path, the exact version, the build flags and the VCS revision of any Go binary. When a tool behaves differently from its documentation, that line tells you whether you are running what you think you are.</p>
+
+      <div class="two">
+        <div class="card">
+          <h3 data-i18n="s3.pin.h">Pin or float</h3>
+          <p data-i18n="s3.pin.p"><code>@latest</code> is a promise that the author's newest tag is better; <code>@v4.54.1</code> is a promise that today's behaviour is tomorrow's. For tools you script against — a formatter in CI, a linter in a hook — pin. For tools whose job is to keep up with a moving target (fzf, rclone), float and rerun the install monthly.</p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="s3.name.h">The binary's name is not the module's</h3>
+          <p data-i18n="s3.name.p">The executable is named after the package, which is normally the last element of the path: <code>…/cmd/goose</code> gives <code>goose</code>, <code>mvdan.cc/sh/v3/cmd/shfmt</code> gives <code>shfmt</code>. When a project's README says "install with go install X" and the command is different, the last path element is the clue.</p>
+        </div>
+      </div>
+
+      <h3 data-i18n="s3.tc.h">When the tool wants a newer Go than you have</h3>
+      <p data-i18n="s3.tc.p">Since Go 1.21, <code>GOTOOLCHAIN=auto</code> (the default) makes the <code>go</code> command download and run the toolchain a module requires. You will see a line like <code>go: downloading go1.27.3</code> and the build proceeds with that version — no manual upgrade, and no risk of breaking your main installation. The download is cached, so it happens once per version.</p>
+      <p data-i18n="s3.tc.p2">The builder in part 06 lists the Go each tool asks for, taken from its published module file. Use the check below when you are about to install something and want to know whether it will pull a toolchain, or fail because yours is pinned to <code>local</code>.</p>
+
+      <div class="tool" id="tc-tool">
+        <div class="tool-head">
+          <h3 data-i18n="s3.tc.tool.h">Toolchain check</h3>
+          <span class="badge" data-i18n="s3.tc.tool.badge">before you install</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s3.tc.yours">Your Go version</span>
+            <select id="tc-mine"></select>
+          </label>
+          <label class="field"><span data-i18n="s3.tc.app">The tool</span>
+            <select id="tc-app"></select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s3.tc.out.need">Needs</dt><dd id="tc-need">—</dd>
+          <dt data-i18n="s3.tc.out.verdict">Verdict</dt><dd id="tc-verdict">—</dd>
+          <dt data-i18n="s3.tc.out.how">What happens</dt><dd id="tc-how">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="tc-copy" data-i18n="s3.tc.copy">Copy</button>
+          <pre id="tc-out">—</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="layout">
+      <h2><span class="num">04</span><span data-i18n="s4.title">Where the bytes go, and how to get them back</span></h2>
+      <p class="sub" data-i18n="s4.sub">
+        A Go toolchain is not shy about disk: the module cache keeps every source archive it has
+        ever downloaded, and the build cache keeps compiled objects so the next build is fast. Both
+        are safe to delete, and both grow back. Knowing the five directories turns "my disk is
+        full" into a two-command answer.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th data-i18n="t.dir">Directory</th><th data-i18n="t.holds">What lives there</th><th data-i18n="t.touch">Should you touch it?</th></tr>
+          </thead>
+          <tbody>
+            <tr><th><code>/usr/local/go</code></th><td data-i18n="s4.d1.a">The toolchain itself: compiler, linker, standard library. Replaced wholesale on upgrade.</td><td data-i18n="s4.d1.b">Only by extracting a new tarball over it — after removing the old one.</td></tr>
+            <tr><th><code>~/go/bin</code></th><td data-i18n="s4.d2.a">Every binary installed by <code>go install</code>, unless GOBIN says otherwise.</td><td data-i18n="s4.d2.b">Yes: deleting a file here is how you uninstall a Go tool.</td></tr>
+            <tr><th><code>~/go/pkg/mod</code></th><td data-i18n="s4.d3.a">Downloaded module sources, shared by all projects. Often the largest directory.</td><td data-i18n="s4.d3.b">With <code>go clean -modcache</code>, never by hand.</td></tr>
+            <tr><th><code>~/.cache/go-build</code></th><td data-i18n="s4.d4.a">Compiled package objects, keyed by content and toolchain version.</td><td data-i18n="s4.d4.b">With <code>go clean -cache</code>. Costs rebuild time, nothing else.</td></tr>
+            <tr><th><code>~/.config/go/env</code></th><td data-i18n="s4.d5.a">The persistent settings written by <code>go env -w</code>.</td><td data-i18n="s4.d5.b">With <code>go env -w</code> / <code>-u</code>, so the file stays well-formed.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <pre>du -sh "$(go env GOMODCACHE)" "$(go env GOCACHE)" 2&gt;/dev/null
+go clean -modcache          <span class="c"># frees the module sources; nothing else breaks</span>
+go clean -cache             <span class="c"># frees compiled objects; next build is slower</span>
+go clean -testcache         <span class="c"># forgets cached test results</span></pre>
+
+      <div class="two">
+        <div class="card">
+          <h3 data-i18n="s4.up.h">Upgrading a tool</h3>
+          <p data-i18n="s4.up.p">Rerun the same install line with a newer tag. Go writes the new binary over the old one in a single move, so there is no half-upgraded state and no uninstall step. If the new version misbehaves, reinstall the previous tag — the module cache may still have it, and the download is quick either way.</p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="s4.off.h">Working offline, or behind a proxy</h3>
+          <p data-i18n="s4.off.p"><code>GOPROXY</code> is a list of module proxies, <code>https://proxy.golang.org,direct</code> by default. Behind a company mirror, point it at the mirror and keep <code>direct</code> as fallback. <code>GONOSUMDB</code>/<code>GOSUMDB</code> and <code>GOFLAGS=-mod=mod</code> are the other two knobs; setting them blindly is how checksum errors become permanent.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="path">
+      <h2><span class="num">05</span><span data-i18n="s5.title">GOBIN, PATH, and the five-second check</span></h2>
+      <p class="sub" data-i18n="s5.sub">
+        A Go install cannot fail quietly in the way a Python one can — but it can succeed into a
+        directory your shell does not search. Two commands tell you everything: where the binary
+        went, and whether that directory is on PATH.
+      </p>
+
+      <pre>ls "$(go env GOPATH)/bin" | head
+echo "$PATH" | tr ':' '\n' | grep -E "go/bin|local/bin"</pre>
+
+      <h3 data-i18n="s5.add.h">Adding it once, per shell</h3>
+      <pre><span class="c"># bash — ~/.bashrc     zsh — ~/.zshrc</span>
+export PATH="$PATH:$(go env GOPATH)/bin"
+
+<span class="c"># fish</span>
+fish_add_path (go env GOPATH)/bin
+
+<span class="c"># Windows, PowerShell, once</span>
+[Environment]::SetEnvironmentVariable("Path", "$env:Path;$env:USERPROFILE\go\bin", "User")</pre>
+      <p data-i18n="s5.add.after">If you would rather keep tools in a directory that is already on PATH, set <code>GOBIN</code> instead of editing the profile twice: <code>go env -w GOBIN="$HOME/.local/bin"</code>. Pick one — GOBIN or a PATH entry — and do not maintain both, because the next person to debug your machine will find two directories and trust neither.</p>
+
+      <div class="note">
+        <strong data-i18n="s5.note.h">The check that settles it</strong>
+        <p data-i18n="s5.note.p"><code>command -v lazygit</code> prints the resolved path or nothing. If it prints nothing but the file exists in <code>$(go env GOPATH)/bin</code>, the problem is PATH, not Go. If the file does not exist either, the install failed earlier — and the error is in the install output, not in your shell configuration.</p>
+      </div>
+    </section>
+
+    <section id="builder">
+      <h2><span class="num">06</span><span data-i18n="s6.title">Build the command for your machine</span></h2>
+      <p class="sub" data-i18n="s6.sub">
+        Three choices — the tool, the method, the system — and the block below is what you paste.
+        The pinned method uses the exact version verified for this manual; the source method
+        clones the repository when you want to read the code before trusting it. Above the block,
+        each tool shows its module, version, home page, family and what it does.
+      </p>
+
+      <div class="tool" id="builder-tool">
+        <div class="tool-head">
+          <h3 data-i18n="s6.tool.h">Install builder</h3>
+          <span class="badge" data-i18n="s6.tool.badge">thirty tools</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s6.app">Tool</span>
+            <select id="b-app"></select>
+          </label>
+          <label class="field"><span data-i18n="s6.method">Method</span>
+            <select id="b-method">
+              <option value="latest" data-i18n="s6.m.latest">go install @latest</option>
+              <option value="pinned" data-i18n="s6.m.pinned">go install @version</option>
+              <option value="source" data-i18n="s6.m.source">from source</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s6.os">System</span>
+            <select id="b-os">
+              <option value="linux" data-i18n="s6.os.linux">Linux</option>
+              <option value="mac" data-i18n="s6.os.mac">macOS</option>
+              <option value="win" data-i18n="s6.os.win">Windows</option>
+            </select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s6.out.app">Tool</dt><dd id="b-name">—</dd>
+          <dt data-i18n="s6.out.pkg">Module</dt><dd id="b-pkg">—</dd>
+          <dt data-i18n="s6.out.ver">Version</dt><dd id="b-ver">—</dd>
+          <dt data-i18n="s6.out.cmd">Command</dt><dd id="b-cmd">—</dd>
+          <dt data-i18n="s6.out.need">Needs Go</dt><dd id="b-need">—</dd>
+          <dt data-i18n="s6.out.what">What it does</dt><dd id="b-what">—</dd>
+          <dt data-i18n="s6.out.home">Home</dt><dd id="b-home">—</dd>
+          <dt data-i18n="s6.out.family">Family</dt><dd id="b-family">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="b-copy" data-i18n="s6.copy">Copy</button>
+          <pre id="b-out">—</pre>
+        </div>
+        <p class="sub" id="b-note"></p>
+      </div>
+    </section>
+    <section id="shell">
+      <h2><span class="num">07</span><span data-i18n="s8.title">The shell itself: find, ask, load</span></h2>
+      <p class="sub" data-i18n="s8.sub">
+        Three tools that change how the prompt behaves rather than what it runs: <strong>fzf</strong>
+        turns any list into a searchable menu, <strong>gum</strong> gives shell scripts a usable
+        interface, and <strong>direnv</strong> loads a directory's environment when you enter it.
+      </p>
+
+      <div class="card">
+        <h3>fzf — <span data-i18n="s8.fzf.h">the fuzzy finder everything plugs into</span></h3>
+        <p data-i18n="s8.fzf.p">A general-purpose selector: it reads lines from stdin and gives back the one you picked. That is the whole program, which is why it appears inside editors, git workflows and history search. The key bindings are the part that changes your day: Ctrl+R for history, Ctrl+T for files, Alt+C to cd into a directory.</p>
+        <pre>go install github.com/junegunn/fzf@v0.74.5
+<span class="c"># key bindings and completion, bash / zsh / fish</span>
+eval "$(fzf --bash)"
+source &lt;(fzf --zsh)
+fzf --fish | source
+
+<span class="c"># anywhere a list exists</span>
+git ls-files | fzf
+vim "$(fzf)"
+fzf --preview 'head -40 {}'</pre>
+      </div>
+
+      <div class="card">
+        <h3>gum — <span data-i18n="s8.gum.h">a UI for shell scripts</span></h3>
+        <p data-i18n="s8.gum.p">Choose, confirm, input, filter, spin, style text. It is not a TUI framework; it is the six or seven primitives a script needs before it stops feeling like a script. A backup script that asks which disk, with an arrow key and a spinner, is a different object from one that takes an argument you have to remember.</p>
+        <pre>go install charm.land/gum/v2@latest
+gum choose "backup" "restore" "quit"
+gum confirm "Delete the old snapshots?" &amp;&amp; restic forget --prune
+name=$(gum input --placeholder "project name")
+gum spin --spinner dot --title "Compressing" -- tar czf out.tgz dir
+gum format -- "# Report" "generated $(date +%F)"</pre>
+      </div>
+
+      <div class="card">
+        <h3>direnv — <span data-i18n="s8.direnv.h">environment per directory</span></h3>
+        <p data-i18n="s8.direnv.p">Put an <code>.envrc</code> in a folder, approve it once, and the variables load when you cd in and unload when you leave. It is the tool that stops "export API_URL=…" from being pasted into every terminal, and it works for Go projects exactly as it does for anything else: <code>export GOPATH=$PWD/.gopath</code>, or a project-specific <code>GOFLAGS</code>.</p>
+        <pre>go install github.com/direnv/direnv/v2@latest
+eval "$(direnv hook bash)"     <span class="c"># or zsh / fish</span>
+
+<span class="c"># in the project folder, .envrc</span>
+export API_URL=http://localhost:8080
+export GOFLAGS=-mod=mod
+
+direnv allow
+<span class="c"># later, after editing .envrc</span>
+direnv reload</pre>
+        <p data-i18n="s8.direnv.after">Approval is a security feature, not a formality: an <code>.envrc</code> is executable shell, so a cloned repository cannot silently change your environment until you read it and allow it.</p>
+      </div>
+    </section>
+
+    <section id="git">
+      <h2><span class="num">08</span><span data-i18n="s9.title">Git, without the ceremony</span></h2>
+      <p class="sub" data-i18n="s9.sub">
+        <strong>lazygit</strong> is a keyboard interface to the commands you already know, and
+        <strong>gh</strong> is the GitHub API as a command. Between them, the two operations that
+        still need a browser — reviewing a diff hunk by hunk, and opening a pull request — stop
+        needing one.
+      </p>
+
+      <div class="card">
+        <h3>lazygit — <span data-i18n="s9.lg.h">stage, commit, rebase, resolve</span></h3>
+        <p data-i18n="s9.lg.p">Five panels: status, files, branches, commits, stash. Space stages a file or a hunk, <code>c</code> commits, <code>P</code> pushes, <code>?</code> lists every key. Conflict resolution is the part where it earns its place: the conflicted file opens in your editor with the markers, and the panel tracks what is left.</p>
+        <pre>go install github.com/jesseduffield/lazygit@v0.66.2
+lazygit
+<span class="c"># space stage · c commit · P push · p pull · ? help · q quit</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>gh — <span data-i18n="s9.gh.h">the GitHub CLI</span></h3>
+        <p data-i18n="s9.gh.p">Authenticates with a device code or a token, then treats repositories, issues, pull requests, releases and Actions as subcommands. <code>gh pr create --fill</code> is the one-liner that replaces a browser form; <code>gh run watch</code> is the one that replaces refreshing a tab.</p>
+        <pre>go install github.com/cli/cli/v2/cmd/gh@latest
+gh auth login
+gh repo clone owner/project
+gh pr create --fill --base main
+gh pr checks
+gh run watch
+gh release create v1.2.0 --generate-notes</pre>
+      </div>
+    </section>
+
+    <section id="containers">
+      <h2><span class="num">09</span><span data-i18n="s10.title">Containers: look inside, and look at the bill</span></h2>
+      <p class="sub" data-i18n="s10.sub">
+        Two dashboards and one microscope. <strong>lazydocker</strong> for a single machine's
+        containers and images, <strong>k9s</strong> for a cluster, and <strong>dive</strong> for the
+        question neither answers: why is this image 900 MB?
+      </p>
+
+      <div class="card">
+        <h3>lazydocker — <span data-i18n="s10.ld.h">docker compose, as a keyboard</span></h3>
+        <p data-i18n="s10.ld.p">Lists containers, services, images, volumes and logs, with the actions you actually take: restart, attach a shell, prune, view the compose file. It talks to the same Docker socket as the CLI, so nothing needs to be installed inside the containers.</p>
+        <pre>go install github.com/jesseduffield/lazydocker@latest
+lazydocker
+<span class="c"># r restart · s stop · d remove · l logs · ? help</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>k9s — <span data-i18n="s10.k9.h">a cluster in one screen</span></h3>
+        <p data-i18n="s10.k9.p">A terminal UI over kubectl: pods, deployments, services, events and logs, refreshed continuously, with a command bar for resources the menus do not cover. The details that matter are the two keys <code>l</code> for logs and <code>d</code> for describe, which is where most debugging happens.</p>
+        <pre>go install github.com/derailed/k9s@v0.51.0
+k9s
+<span class="c"># :pods  :ns  :ctx  :deploy  ·  l logs  d describe  y yaml</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>dive — <span data-i18n="s10.dive.h">every layer of an image</span></h3>
+        <p data-i18n="s10.dive.p">Shows what each Dockerfile instruction added or removed, with a score for wasted space and a file tree you can walk. It is the fastest way to find the 400 MB build cache someone forgot to delete, and it runs in CI with a failure threshold.</p>
+        <pre>go install github.com/wagoodman/dive@v0.13.1
+dive myimage:latest
+dive build -t myimage .
+CI=true dive myimage:latest        <span class="c"># non-interactive, for pipelines</span></pre>
+      </div>
+    </section>
+
+    <section id="docs">
+      <h2><span class="num">10</span><span data-i18n="s11.title">Documents and demonstrations</span></h2>
+      <p class="sub" data-i18n="s11.sub">
+        <strong>glow</strong> renders Markdown at the prompt, which is where most READMEs are first
+        read. <strong>VHS</strong> records a terminal session from a script, which is how a
+        demonstration stops being a screen recording with a mouse in it.
+      </p>
+
+      <div class="card">
+        <h3>glow — <span data-i18n="s11.gl.h">Markdown that looks like Markdown</span></h3>
+        <p data-i18n="s11.gl.p">Renders a file, a URL or a repository's README with headings, tables, lists and syntax highlighting, in the terminal or through a pager. It also creates and edits snippets, which makes it a small note system for people who never leave the shell.</p>
+        <pre>go install charm.land/glow/v3@latest
+glow README.md
+glow -p README.md                 <span class="c"># through a pager</span>
+glow github.com/charmbracelet/glow
+glow -s dark -w 100 notes.md</pre>
+      </div>
+
+      <div class="card">
+        <h3>VHS — <span data-i18n="s11.vhs.h">a terminal recording you can diff</span></h3>
+        <p data-i18n="s11.vhs.p">Writes a <code>.tape</code> file: the commands, the typing speed, the size, the font. Running it produces a GIF, MP4 or WebM that is reproducible — regenerate it when the interface changes instead of re-recording by hand. It needs <code>ttyd</code> and <code>ffmpeg</code> at run time.</p>
+        <pre>go install github.com/charmbracelet/vhs@v0.12.1
+<span class="c"># demo.tape</span>
+Output demo.gif
+Set FontSize 22
+Type "lazygit"
+Enter
+Sleep 2s
+<span class="c"># then</span>
+vhs demo.tape</pre>
+      </div>
+    </section>
+
+    <section id="build">
+      <h2><span class="num">11</span><span data-i18n="s12.title">Build, format, lint, debug, reload</span></h2>
+      <p class="sub" data-i18n="s12.sub">
+        Six tools that form a working Go setup, in the order a day uses them: a task runner, a
+        linter, two formatters, a live reload, and a debugger. All of them install the same way,
+        which is the point of this manual.
+      </p>
+
+      <div class="card">
+        <h3>Task — <span data-i18n="s12.task.h">a Makefile that is honest about being YAML</span></h3>
+        <p data-i18n="s12.task.p">Dependencies, checksums that skip unchanged work, cross-platform variables and no tab-versus-space war. A <code>Taskfile.yml</code> is readable by someone who has never used make, which is most of the reason to choose it for a project that others will clone.</p>
+        <pre>go install github.com/go-task/task/v3/cmd/task@latest
+<span class="c"># Taskfile.yml</span>
+version: '3'
+tasks:
+  build:
+    cmds:
+      - go build -o bin/app ./cmd/app
+  test:
+    cmds:
+      - go test ./...
+  lint:
+    deps: [build]
+    cmds:
+      - golangci-lint run
+<span class="c"># then</span>
+task --list
+task test</pre>
+      </div>
+
+      <div class="card">
+        <h3>golangci-lint — <span data-i18n="s12.gcl.h">one command, a hundred linters</span></h3>
+        <p data-i18n="s12.gcl.p">Runs the linters that agree with each other, in parallel, with one configuration file and one exit code. It is the standard answer to "which linter should I use" in Go, and version 2 added a formatter command so it can replace gofmt in the same pass.</p>
+        <pre>go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0
+golangci-lint run
+golangci-lint run --fix
+golangci-lint fmt
+golangci-lint linters | head</pre>
+      </div>
+
+      <div class="card">
+        <h3>gofumpt and shfmt — <span data-i18n="s12.fmt.h">formatting, settled</span></h3>
+        <p data-i18n="s12.fmt.p"><code>gofumpt</code> is gofmt with the rules the Go team would have added if compatibility had not stopped them: no empty lines at the start of a block, no unnecessary parentheses, grouped imports. <code>shfmt</code> does the same job for shell scripts, which is where formatting arguments usually survive longest.</p>
+        <pre>go install mvdan.cc/gofumpt@latest
+go install mvdan.cc/sh/v3/cmd/shfmt@latest
+
+gofumpt -l -w .
+shfmt -l -w scripts/
+shfmt -i 2 -ci -d deploy.sh</pre>
+      </div>
+
+      <div class="card">
+        <h3>Air — <span data-i18n="s12.air.h">restart on save</span></h3>
+        <p data-i18n="s12.air.p">Watches the project, rebuilds and restarts the binary when a Go file changes, and proxies the port so the browser reconnects. It is the development loop for a server, without a second terminal and without remembering which process to kill.</p>
+        <pre>go install github.com/air-verse/air@v1.67.4
+air init          <span class="c"># writes .air.toml</span>
+air
+<span class="c"># in .air.toml</span>
+<span class="c"># cmd = "go build -o ./tmp/main ./cmd/server"</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>Delve — <span data-i18n="s12.dlv.h">a real debugger</span></h3>
+        <p data-i18n="s12.dlv.p">Breakpoints, stepping, goroutine inspection and remote debugging, with a CLI that mirrors gdb's habits. <code>dlv debug</code> compiles with debug information and stops at your first breakpoint; <code>dlv test</code> does the same for a failing test, which is where it is most useful.</p>
+        <pre>go install github.com/go-delve/delve/cmd/dlv@v1.27.2
+dlv debug ./cmd/server
+<span class="c"># (dlv) break main.main</span>
+<span class="c"># (dlv) continue</span>
+<span class="c"># (dlv) next</span>
+<span class="c"># (dlv) print someVar</span>
+dlv test ./internal/store</pre>
+      </div>
+    </section>
+
+    <section id="data">
+      <h2><span class="num">12</span><span data-i18n="s13.title">Data: YAML, SQL and migrations</span></h2>
+      <p class="sub" data-i18n="s13.sub">
+        <strong>yq</strong> is jq for YAML and XML, <strong>sqlc</strong> turns SQL into type-safe
+        Go code, and <strong>goose</strong> runs the migrations that keep a schema honest. All three
+        are small, fast, and designed to sit in a pipeline.
+      </p>
+
+      <div class="card">
+        <h3>yq — <span data-i18n="s13.yq.h">jq's YAML-speaking sibling</span></h3>
+        <p data-i18n="s13.yq.p">Reads and writes YAML, JSON, XML, CSV and properties with the same expression language, including in-place edits that preserve comments and ordering. It is the tool that makes a Kubernetes manifest editable from a script without a templating engine.</p>
+        <pre>go install github.com/mikefarah/yq/v4@v4.54.1
+yq '.services.web.image' compose.yaml
+yq -i '.services.web.environment.MODE = "production"' compose.yaml
+yq -o=json '.' config.yaml
+yq '.[] | select(.age &gt; 30) | .name' people.yaml</pre>
+      </div>
+
+      <div class="card">
+        <h3>sqlc — <span data-i18n="s13.sqlc.h">SQL in, Go out</span></h3>
+        <p data-i18n="s13.sqlc.p">You write queries and a schema; it generates the Go functions and structs, checking the SQL against the schema at generation time. No ORM, no reflection at run time, no mismatch between the query and the type it returns.</p>
+        <pre>go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
+sqlc init
+sqlc generate
+sqlc vet
+sqlc compile</pre>
+      </div>
+
+      <div class="card">
+        <h3>goose — <span data-i18n="s13.goose.h">migrations that run anywhere</span></h3>
+        <p data-i18n="s13.goose.p">Versioned SQL (or Go) migrations with up, down and status, usable as a CLI or embedded as a library. It supports Postgres, MySQL, SQLite and more, and it records what it has applied in a table you can read.</p>
+        <pre>go install github.com/pressly/goose/v3/cmd/goose@v3.29.0
+goose create add_users sql
+export GOOSE_DRIVER=postgres
+export GOOSE_DBSTRING="postgres://localhost/app?sslmode=disable"
+goose status
+goose up
+goose down</pre>
+      </div>
+    </section>
+    <section id="machine">
+      <h2><span class="num">13</span><span data-i18n="s14.title">The machine: what is using the disk</span></h2>
+      <p class="sub" data-i18n="s14.sub">
+        Two answers to one question. <strong>duf</strong> shows the filesystems — which mount has
+        room, which is full, what is mounted but forgotten. <strong>gdu</strong> shows the folders
+        inside one of them, sorted by weight, fast enough to point at a home directory.
+      </p>
+
+      <div class="card">
+        <h3>duf — <span data-i18n="s14.duf.h">df, with the columns you wanted</span></h3>
+        <p data-i18n="s14.duf.p">Mount points grouped by device, usage bars, inode counts and a JSON output for scripts. It reads better than <code>df -h</code> because it stops pretending a network mount and a USB stick are the same kind of thing, and it works on Linux, macOS and Windows.</p>
+        <pre>go install github.com/muesli/duf@v0.9.1
+duf
+duf -only local
+duf --json | head -20</pre>
+      </div>
+
+      <div class="card">
+        <h3>gdu — <span data-i18n="s14.gdu.h">disk usage, in parallel</span></h3>
+        <p data-i18n="s14.gdu.p">An interactive tree of what is large, with the option to delete without leaving the interface. It uses goroutines to read directories in parallel, which is why it finishes on a home folder while <code>du</code> is still thinking about it.</p>
+        <pre>go install github.com/dundee/gdu/v5/cmd/gdu@v5.38.0
+gdu
+gdu ~/Downloads
+gdu -n /            <span class="c"># non-interactive, for scripts</span></pre>
+      </div>
+    </section>
+
+    <section id="security">
+      <h2><span class="num">14</span><span data-i18n="s15.title">Security: scan, sign, store, encrypt</span></h2>
+      <p class="sub" data-i18n="s15.sub">
+        Four tools with four different jobs: <strong>trivy</strong> finds known vulnerabilities,
+        <strong>gitleaks</strong> finds secrets that should not be in a repository,
+        <strong>gopass</strong> keeps the passwords, and <strong>age</strong> encrypts a file with a
+        key you can hold in your head.
+      </p>
+
+      <div class="card">
+        <h3>Trivy — <span data-i18n="s15.tr.h">what is vulnerable, exactly</span></h3>
+        <p data-i18n="s15.tr.p">Scans container images, filesystems, repositories and IaC files against vulnerability and misconfiguration databases, with severity filters and a JSON output for CI. It needs no daemon and no agent: point it at an image name and it downloads the metadata it needs.</p>
+        <pre>go install github.com/aquasecurity/trivy/cmd/trivy@v0.76.1
+trivy image alpine:3.20
+trivy fs --severity HIGH,CRITICAL .
+trivy repo https://github.com/owner/project
+trivy config .</pre>
+      </div>
+
+      <div class="card">
+        <h3>gitleaks — <span data-i18n="s15.gl.h">secrets do not belong in git</span></h3>
+        <p data-i18n="s15.gl.p">Scans a repository's history for API keys, tokens and private keys, using a rule set of provider patterns and entropy checks. It also runs as a pre-commit hook, which is the only moment when removing a leaked key is still cheap.</p>
+        <pre>go install github.com/gitleaks/gitleaks/v8@v8.30.1
+gitleaks git . --verbose
+gitleaks dir . --verbose
+gitleaks git --staged          <span class="c"># pre-commit</span></pre>
+        <p data-i18n="s15.gl.after">A secret committed once is compromised the moment it is pushed. Rotate it first, then clean the history — rewriting the past without rotating the credential cleans the evidence, not the problem.</p>
+      </div>
+
+      <div class="card">
+        <h3>gopass — <span data-i18n="s15.gp.h">passwords in a git repository</span></h3>
+        <p data-i18n="s15.gp.p">A pass-compatible password store: each secret is a GPG-encrypted file in a git repository you control, with recipients per folder and a clipboard mode. No account, no sync service, and a backup that is just a clone.</p>
+        <pre>go install github.com/gopasspw/gopass@v1.17.4
+gopass init
+gopass insert -c work/mail
+gopass show -c work/mail
+gopass generate -c web/github 32
+gopass ls</pre>
+      </div>
+
+      <div class="card">
+        <h3>age — <span data-i18n="s15.age.h">encryption with one key, one line</span></h3>
+        <p data-i18n="s15.age.p">Modern file encryption with a deliberately small design: an X25519 key pair, a passphrase mode, and a format you can read in a spec. It replaced GPG for the case "encrypt this file for that person", and it composes: <code>tar</code> into <code>age</code> into <code>ssh</code> is a backup in one pipe.</p>
+        <pre>go install filippo.io/age/cmd/age@latest
+age-keygen -o key.txt
+age -r age1ql3z7... -o backup.tar.age backup.tar
+age -d -i key.txt backup.tar.age &gt; backup.tar
+age -p -o secret.age secret.txt      <span class="c"># passphrase instead of a key</span></pre>
+      </div>
+    </section>
+
+    <section id="sync">
+      <h2><span class="num">15</span><span data-i18n="s16.title">Sync and backup: the two that must not lie</span></h2>
+      <p class="sub" data-i18n="s16.sub">
+        <strong>rclone</strong> moves files between anything and anything — local disk, S3, Drive,
+        SFTP, WebDAV. <strong>restic</strong> keeps encrypted, deduplicated snapshots that you can
+        restore selectively. Sync is not backup, and the pair makes the difference obvious.
+      </p>
+
+      <div class="card">
+        <h3>rclone — <span data-i18n="s16.rc.h">one client for every remote</span></h3>
+        <p data-i18n="s16.rc.p">Configure a remote once, then copy, sync, check, mount or serve it with the same flags. <code>sync</code> makes the destination match the source — including deletions — so it is a mirror, not an archive; <code>copy</code> only adds. Knowing which one you typed is the whole discipline.</p>
+        <pre>go install github.com/rclone/rclone@v1.75.2
+rclone config
+rclone copy ~/Photos remote:backup/Photos -P
+rclone sync ~/Docs remote:docs --dry-run
+rclone check ~/Docs remote:docs
+rclone mount remote: /mnt/remote</pre>
+      </div>
+
+      <div class="card">
+        <h3>restic — <span data-i18n="s16.rs.h">encrypted snapshots with retention</span></h3>
+        <p data-i18n="s16.rs.p">A repository holds snapshots; each snapshot references deduplicated, encrypted chunks. <code>forget --prune</code> applies a retention policy, and <code>restore</code> can bring back one file from three years ago. The repository can live on a local disk, an SFTP host or an S3 bucket.</p>
+        <pre>go install github.com/restic/restic/cmd/restic@v0.19.1
+export RESTIC_REPOSITORY=/mnt/backup/restic
+export RESTIC_PASSWORD_FILE=~/.restic-pass
+restic init
+restic backup ~/Documents ~/Projects
+restic snapshots
+restic restore latest --target /tmp/restore --include "Projects/x"
+restic forget --keep-daily 7 --keep-weekly 4 --prune
+restic check</pre>
+        <p data-i18n="s16.rs.after">Test the restore before you trust the backup. A repository that has never been restored is a hypothesis, and <code>restic check --read-data</code> is the command that turns it into evidence.</p>
+      </div>
+    </section>
+
+    <section id="servers">
+      <h2><span class="num">16</span><span data-i18n="s17.title">Serve and reach: sites, TLS, network</span></h2>
+      <p class="sub" data-i18n="s17.sub">
+        <strong>Hugo</strong> builds a site from Markdown in milliseconds, <strong>Caddy</strong>
+        serves it with automatic HTTPS, and <strong>Tailscale</strong> makes the machine reachable
+        without opening a port. Three binaries, no runtime, one small server.
+      </p>
+
+      <div class="card">
+        <h3>Hugo — <span data-i18n="s17.hu.h">a static site in one binary</span></h3>
+        <p data-i18n="s17.hu.p">Content in Markdown, layouts in Go templates, output as files. It is the generator this blog's neighbours use when a build has to finish before a coffee does, and it ships as a single executable with no plugin runtime.</p>
+        <pre>go install github.com/gohugoio/hugo@v0.169.0
+hugo new site myblog
+cd myblog
+hugo new content posts/hello.md
+hugo server -D
+hugo --minify</pre>
+      </div>
+
+      <div class="card">
+        <h3>Caddy — <span data-i18n="s17.ca.h">a web server with certificates included</span></h3>
+        <p data-i18n="s17.ca.p">A Caddyfile is four lines, and HTTPS is not one of them: certificates are obtained and renewed automatically for any domain that resolves to the machine. It also proxies, rewrites and serves PHP or FastCGI when asked, with a JSON config for anything the Caddyfile cannot express.</p>
+        <pre>go install github.com/caddyserver/caddy/v2/cmd/caddy@v2.11.7
+<span class="c"># Caddyfile</span>
+example.com {
+    root * /srv/site
+    file_server
+}
+caddy validate --config Caddyfile
+caddy run
+caddy fmt --overwrite Caddyfile</pre>
+      </div>
+
+      <div class="card">
+        <h3>Tailscale — <span data-i18n="s17.ts.h">your own private network</span></h3>
+        <p data-i18n="s17.ts.p">A WireGuard mesh that connects your machines wherever they are, with identity instead of firewall rules. <code>tailscale serve</code> exposes a local port to your own devices only; <code>tailscale ssh</code> authenticates with the same identity, so a home server stops needing a public IP or an open port.</p>
+        <pre>go install tailscale.com/cmd/tailscale@latest
+sudo tailscale up
+tailscale status
+tailscale ip -4
+tailscale serve 8080
+tailscale ssh server</pre>
+        <p data-i18n="s17.ts.after">On Linux the daemon needs root; the client does not. That is why the install line is followed by <code>sudo tailscale up</code> and not by <code>sudo go install</code> — the binary belongs to you, the network interface belongs to the system.</p>
+      </div>
+    </section>
+
+    <section id="errors">
+      <h2><span class="num">17</span><span data-i18n="s18.title">The ten messages that stop a build</span></h2>
+      <p class="sub" data-i18n="s18.sub">
+        Go's errors are unusually literal, which is a gift: each line below names the thing that is
+        wrong. The table maps the message to the cause, because the cause is usually one directory
+        or one version away from the message.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.message">Message</th>
+              <th data-i18n="t.cause">What it means</th>
+              <th data-i18n="t.fix">Fix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>go: command not found</code></th>
+              <td data-i18n="s18.e1.b">The toolchain is not on PATH — either not installed, or installed into <code>/usr/local/go</code> without the export line.</td>
+              <td data-i18n="s18.e1.c">Add <code>/usr/local/go/bin</code> to PATH, open a new shell, then <code>go version</code>.</td>
+            </tr>
+            <tr>
+              <th><code>command not found: lazygit</code> after a successful install</th>
+              <td data-i18n="s18.e2.b">The binary is in <code>$(go env GOPATH)/bin</code> (or GOBIN) and the shell does not search there.</td>
+              <td data-i18n="s18.e2.c">Add that directory to PATH, or set <code>GOBIN</code> to one already on it. Part 05.</td>
+            </tr>
+            <tr>
+              <th><code>go: go.mod file not found in current directory or any parent directory</code></th>
+              <td data-i18n="s18.e3.b">You ran <code>go build</code>, <code>go run</code> or <code>go test</code> outside a module.</td>
+              <td data-i18n="s18.e3.c"><code>go mod init example.com/me/thing</code> in the project root — or use <code>go install pkg@version</code>, which needs no module.</td>
+            </tr>
+            <tr>
+              <th><code>cannot use path@version syntax in GOPATH mode</code></th>
+              <td data-i18n="s18.e4.b"><code>GO111MODULE=off</code> is set, which disables modules entirely.</td>
+              <td data-i18n="s18.e4.c"><code>go env -u GO111MODULE</code> and retry. Modules are the only supported mode.</td>
+            </tr>
+            <tr>
+              <th><code>go: go.mod requires go &gt;= 1.26.0 (running go 1.22.1; GOTOOLCHAIN=local)</code></th>
+              <td data-i18n="s18.e5.b">The project needs a newer Go, and automatic toolchain switching is disabled.</td>
+              <td data-i18n="s18.e5.c"><code>go env -w GOTOOLCHAIN=auto</code>, or install the newer release from go.dev/dl.</td>
+            </tr>
+            <tr>
+              <th><code>no required module provides package X; to add it: go get X</code></th>
+              <td data-i18n="s18.e6.b">The import exists in the code but not in <code>go.mod</code>.</td>
+              <td data-i18n="s18.e6.c"><code>go get X</code> then <code>go mod tidy</code>.</td>
+            </tr>
+            <tr>
+              <th><code>module github.com/a/b@latest found (v1.2.3), but does not contain package github.com/a/b/cmd/c</code></th>
+              <td data-i18n="s18.e7.b">The module is right; the subdirectory in the path is not. The main package lives elsewhere.</td>
+              <td data-i18n="s18.e7.c">Look at the repository tree for the directory holding <code>main.go</code>, and use that path.</td>
+            </tr>
+            <tr>
+              <th><code>verifying github.com/a/b@v1.2.3: checksum mismatch</code></th>
+              <td data-i18n="s18.e8.b">The cached copy does not match the recorded hash, usually a corrupted download or a retagged release.</td>
+              <td data-i18n="s18.e8.c"><code>go clean -modcache</code> and retry. If it persists, the upstream tag genuinely changed — do not disable the checksum database to silence it.</td>
+            </tr>
+            <tr>
+              <th><code>dial tcp … i/o timeout</code> or <code>403 Forbidden</code> fetching a module</th>
+              <td data-i18n="s18.e9.b">The module proxy is unreachable, blocked, or the module is private.</td>
+              <td data-i18n="s18.e9.c">Check <code>GOPROXY</code>; for private modules set <code>GOPRIVATE=github.com/yourorg/*</code> and use SSH credentials.</td>
+            </tr>
+            <tr>
+              <th><code>permission denied</code> writing to <code>/usr/local/bin</code></th>
+              <td data-i18n="s18.e10.b"><code>GOBIN</code> points at a root-owned directory, or the command was run with sudo.</td>
+              <td data-i18n="s18.e10.c">Unset GOBIN and let it write to <code>~/go/bin</code>. Never <code>sudo go install</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <strong data-i18n="s18.note.h">The two failures that look like the machine dying</strong>
+        <p data-i18n="s18.note.p">A build that ends in <code>Killed</code> ran out of memory — add swap, or build the specific package instead of the whole module. A build that compiles for twenty minutes the first time and two seconds afterwards is the build cache doing its job; <code>go clean -cache</code> resets it, and the long wait is not a sign that something is wrong.</p>
+      </div>
+    </section>
+
+    <section id="sources">
+      <h2><span class="num">18</span><span data-i18n="s19.title">Sources, and what each one settles</span></h2>
+      <p class="sub" data-i18n="s19.sub">
+        The manual is built from the Go project's own documentation and from the module metadata
+        each tool publishes. Every tool in part 06 links to its repository, which is the authority
+        on its own flags.
+      </p>
+
+      <ul class="sources">
+        <li>
+          <a href="https://go.dev/dl/" target="_blank" rel="noopener">go.dev/dl — downloads</a>
+          <span data-i18n="src.1">Every release archive and installer, with checksums, for every supported platform.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/doc/install" target="_blank" rel="noopener">go.dev — install</a>
+          <span data-i18n="src.2">The official removal-and-extract procedure used in part 02, per operating system.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/ref/mod" target="_blank" rel="noopener">Go modules reference</a>
+          <span data-i18n="src.3">Module paths, versions, the module cache, and the exact semantics of <code>go install pkg@version</code>.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/doc/toolchain" target="_blank" rel="noopener">Go toolchains</a>
+          <span data-i18n="src.4">How GOTOOLCHAIN decides to download a newer compiler, and what <code>auto</code> and <code>local</code> mean.</span>
+        </li>
+        <li>
+          <a href="https://pkg.go.dev/cmd/go" target="_blank" rel="noopener">cmd/go documentation</a>
+          <span data-i18n="src.5">The command reference, including the environment variables table used in part 02.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/doc/gopath_code" target="_blank" rel="noopener">GOPATH and workspaces</a>
+          <span data-i18n="src.6">What GOPATH still governs now that modules own dependency resolution.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/ref/mod#goproxy-protocol" target="_blank" rel="noopener">Module proxy protocol</a>
+          <span data-i18n="src.7">The protocol <code>go install</code> speaks — and the reason a plain URL can be checked for a version.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/doc/devel/release" target="_blank" rel="noopener">Release and support policy</a>
+          <span data-i18n="src.8">Which Go versions still receive fixes, and why the newest two matter for a tool you install.</span>
+        </li>
+        <li>
+          <a href="https://pkg.go.dev/" target="_blank" rel="noopener">pkg.go.dev</a>
+          <span data-i18n="src.9">The package index: module paths, versions and documentation for everything named here.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/doc/go-get-install-deprecation" target="_blank" rel="noopener">Deprecation of go get for executables</a>
+          <span data-i18n="src.10">The change that split installing a tool from adding a dependency, and the migration it asks for.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/wiki/Modules" target="_blank" rel="noopener">Go wiki — modules</a>
+          <span data-i18n="src.11">The community-maintained notes on module behaviour, including the corner cases the reference leaves implicit.</span>
+        </li>
+        <li>
+          <a href="https://golangci-lint.run/" target="_blank" rel="noopener">golangci-lint documentation</a>
+          <span data-i18n="src.12">Configuration, the linter list and the formatter command used in part 11.</span>
+        </li>
+      </ul>
+      <p class="sub" data-i18n="s19.after">Versions in part 06 are the newest tags resolved through the public module proxy on 29 October 2026, and the Go requirement is the one written in each version's <code>go.mod</code>. Both will move; the repository remains the authority.</p>
+    </section>
+
+    <section id="glossary">
+      <h2><span class="num">19</span><span data-i18n="s20.title">Glossary</span></h2>
+      <p class="sub" data-i18n="s20.sub">Twelve words that explain most of the confusion in this manual.</p>
+      <dl class="glossary" id="glossary-list"></dl>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p data-i18n="footer.p">
+        Written from a Linux terminal and checked against each project's published module on the
+        day of publication: module path, newest tag and Go requirement resolved through the public
+        module proxy, and every command traced to the package that declares it. Where the manual
+        says "usually", it is because a module path or a distribution package differs — the
+        repository is the final word.
+      </p>
+      <a class="back" href="index.html"><span data-i18n="footer.back">&larr; Back to the archive</span></a>
+      <p class="cross" data-i18n="footer.cross">The rest of the series: <a href="python-cli.html">The Shell, Extended</a> for the Python half of the same idea, <a href="rust-cli.html">Rust in the Shell</a> for the same argument with a borrow checker, <a href="hydroponics.html">Hydroponics at Home</a> for a garden without soil, and <a href="recycling.html">Nothing Is Garbage</a> for the second life of everything the house throws away.</p>
+    </div>
+  </footer>
+  <script>
+    (function () {
+      "use strict";
+
+      /* ---------- the thirty tools (module paths and versions resolved via proxy.golang.org) ---------- */
+      var APPS = [
+        { key: "fzf", family: "shell", name: "fzf", module: "github.com/junegunn/fzf", cmd: "fzf", repo: "junegunn/fzf", dir: ".", ver: "v0.74.5", need: "1.23.0",
+          what: { en: "A fuzzy selector for any list: files, history, branches, a menu you invent. The Ctrl+R and Ctrl+T bindings are the ones that stay.",
+                  pt: "Um seletor difuso para qualquer lista: ficheiros, histórico, ramos, um menu inventado. Atalhos Ctrl+R e Ctrl+T são os que ficam." } },
+        { key: "gum", family: "shell", name: "gum", module: "charm.land/gum/v2", cmd: "gum", repo: "charmbracelet/gum", dir: ".", ver: "v2.0.2", need: "1.26.7",
+          what: { en: "Choose, confirm, input, filter, spin, format — the primitives a shell script needs to stop feeling like a script.",
+                  pt: "Escolher, confirmar, pedir, filtrar, girar, formatar — as primitivas que um script precisa para deixar de parecer um script." } },
+        { key: "direnv", family: "shell", name: "direnv", module: "github.com/direnv/direnv/v2", cmd: "direnv", repo: "direnv/direnv", dir: ".", ver: "v2.38.2", need: "1.26.0",
+          what: { en: "Loads a directory's environment when you enter it and unloads it when you leave, after you approve the .envrc once.",
+                  pt: "Carrega o ambiente de uma pasta quando entra nela e descarrega-o quando sai, depois de aprovar o .envrc uma vez." } },
+        { key: "lazygit", family: "git", name: "lazygit", module: "github.com/jesseduffield/lazygit", cmd: "lazygit", repo: "jesseduffield/lazygit", dir: ".", ver: "v0.66.2", need: "1.26.0",
+          what: { en: "A keyboard interface to git: stage hunk by hunk, commit, rebase, resolve conflicts, without typing the plumbing.",
+                  pt: "Uma interface de teclado para o git: preparar pedaço a pedaço, commit, rebase, resolver conflitos, sem escrever o encanamento." } },
+        { key: "gh", family: "git", name: "GitHub CLI", module: "github.com/cli/cli/v2/cmd/gh", cmd: "gh", repo: "cli/cli", dir: "cmd/gh", ver: "v2.103.3", need: "1.27.3",
+          what: { en: "Repositories, issues, pull requests, releases and Actions as subcommands, authenticated once.",
+                  pt: "Repositórios, issues, pull requests, releases e Actions como subcomandos, autenticados uma vez." } },
+        { key: "lazydocker", family: "containers", name: "lazydocker", module: "github.com/jesseduffield/lazydocker", cmd: "lazydocker", repo: "jesseduffield/lazydocker", dir: ".", ver: "v0.25.2", need: "1.22",
+          what: { en: "Containers, services, images, volumes and logs in one screen, with the actions you actually take.",
+                  pt: "Contentores, serviços, imagens, volumes e registos num ecrã, com as ações que se tomam de facto." } },
+        { key: "k9s", family: "containers", name: "k9s", module: "github.com/derailed/k9s", cmd: "k9s", repo: "derailed/k9s", dir: ".", ver: "v0.51.0", need: "1.25.8",
+          what: { en: "A terminal UI over kubectl: pods, deployments, services, events and logs, refreshed continuously.",
+                  pt: "Uma interface de terminal sobre o kubectl: pods, deployments, serviços, eventos e registos, sempre atualizados." } },
+        { key: "dive", family: "containers", name: "dive", module: "github.com/wagoodman/dive", cmd: "dive", repo: "wagoodman/dive", dir: ".", ver: "v0.13.1", need: "1.24",
+          what: { en: "Every layer of a container image, what each instruction added, and how much of it is wasted space.",
+                  pt: "Cada camada de uma imagem de contentor, o que cada instrução acrescentou, e quanto disso é espaço desperdiçado." } },
+        { key: "glow", family: "docs", name: "glow", module: "charm.land/glow/v3", cmd: "glow", repo: "charmbracelet/glow", dir: ".", ver: "v3.0.0", need: "1.26.5",
+          what: { en: "Renders Markdown — local, remote or a GitHub README — with headings, tables and highlighted code.",
+                  pt: "Renderiza Markdown — local, remoto ou um README do GitHub — com títulos, tabelas e código realçado." } },
+        { key: "vhs", family: "docs", name: "VHS", module: "github.com/charmbracelet/vhs", cmd: "vhs", repo: "charmbracelet/vhs", dir: ".", ver: "v0.12.1", need: "1.26.7",
+          what: { en: "Records a terminal session from a .tape script into a GIF or MP4, reproducibly.",
+                  pt: "Grava uma sessão de terminal a partir de um guião .tape para GIF ou MP4, de forma reproduzível." } },
+        { key: "task", family: "build", name: "Task", module: "github.com/go-task/task/v3/cmd/task", cmd: "task", repo: "go-task/task", dir: "cmd/task", ver: "v3.54.0", need: "1.26.4",
+          what: { en: "A task runner with a readable Taskfile, real dependencies and no tab-versus-space argument.",
+                  pt: "Um executor de tarefas com um Taskfile legível, dependências a sério e sem a discussão de tabs contra espaços." } },
+        { key: "golangci", family: "build", name: "golangci-lint", module: "github.com/golangci/golangci-lint/v2/cmd/golangci-lint", cmd: "golangci-lint", repo: "golangci/golangci-lint", dir: "cmd/golangci-lint", ver: "v2.15.0", need: "1.26.0",
+          what: { en: "A hundred linters behind one command, one configuration file and one exit code.",
+                  pt: "Uma centena de linters atrás de um comando, um ficheiro de configuração e um código de saída." } },
+        { key: "gofumpt", family: "build", name: "gofumpt", module: "mvdan.cc/gofumpt", cmd: "gofumpt", repo: "mvdan/gofumpt", dir: ".", ver: "v0.12.0", need: "1.26.0",
+          what: { en: "gofmt plus the rules the Go team could not add without breaking compatibility.",
+                  pt: "O gofmt mais as regras que a equipa do Go não pôde acrescentar sem quebrar compatibilidade." } },
+        { key: "shfmt", family: "build", name: "shfmt", module: "mvdan.cc/sh/v3/cmd/shfmt", cmd: "shfmt", repo: "mvdan/sh", dir: "cmd/shfmt", ver: "v3.14.1", need: "1.26.0",
+          what: { en: "Parses and formats shell scripts, with checks that catch the quoting bug before bash does.",
+                  pt: "Analisa e formata scripts de shell, com verificações que apanham o erro de aspas antes do bash." } },
+        { key: "air", family: "build", name: "Air", module: "github.com/air-verse/air", cmd: "air", repo: "air-verse/air", dir: ".", ver: "v1.67.4", need: "1.26.0",
+          what: { en: "Rebuilds and restarts a Go server when a file changes, and proxies the port.",
+                  pt: "Recompila e reinicia um servidor Go quando um ficheiro muda, e faz proxy da porta." } },
+        { key: "dlv", family: "build", name: "Delve", module: "github.com/go-delve/delve/cmd/dlv", cmd: "dlv", repo: "go-delve/delve", dir: "cmd/dlv", ver: "v1.27.2", need: "1.25.0",
+          what: { en: "A real debugger for Go: breakpoints, stepping, goroutines and remote sessions.",
+                  pt: "Um depurador a sério para Go: pontos de paragem, passo a passo, goroutines e sessões remotas." } },
+        { key: "yq", family: "data", name: "yq", module: "github.com/mikefarah/yq/v4", cmd: "yq", repo: "mikefarah/yq", dir: ".", ver: "v4.54.1", need: "1.26.0",
+          what: { en: "jq's expression language for YAML, JSON, XML and CSV, with comment-preserving edits.",
+                  pt: "A linguagem de expressões do jq para YAML, JSON, XML e CSV, com edições que preservam comentários." } },
+        { key: "sqlc", family: "data", name: "sqlc", module: "github.com/sqlc-dev/sqlc/cmd/sqlc", cmd: "sqlc", repo: "sqlc-dev/sqlc", dir: "cmd/sqlc", ver: "v1.31.1", need: "1.26.2",
+          what: { en: "Generates type-safe Go from SQL queries and a schema, checked at generation time.",
+                  pt: "Gera Go com tipos a partir de consultas SQL e de um esquema, verificado na geração." } },
+        { key: "goose", family: "data", name: "goose", module: "github.com/pressly/goose/v3/cmd/goose", cmd: "goose", repo: "pressly/goose", dir: "cmd/goose", ver: "v3.29.0", need: "1.26.0",
+          what: { en: "Versioned database migrations with up, down and status, usable as a CLI or a library.",
+                  pt: "Migrações de base de dados versionadas com up, down e status, como CLI ou biblioteca." } },
+        { key: "duf", family: "machine", name: "duf", module: "github.com/muesli/duf", cmd: "duf", repo: "muesli/duf", dir: ".", ver: "v0.9.1", need: "1.23.0",
+          what: { en: "Filesystems and free space in a table you can read, with a JSON mode for scripts.",
+                  pt: "Sistemas de ficheiros e espaço livre numa tabela legível, com modo JSON para scripts." } },
+        { key: "gdu", family: "machine", name: "gdu", module: "github.com/dundee/gdu/v5/cmd/gdu", cmd: "gdu", repo: "dundee/gdu", dir: "cmd/gdu", ver: "v5.38.0", need: "1.26.0",
+          what: { en: "Parallel disk usage analysis with an interactive tree and deletion in place.",
+                  pt: "Análise de uso de disco em paralelo, com árvore interativa e remoção no local." } },
+        { key: "trivy", family: "security", name: "Trivy", module: "github.com/aquasecurity/trivy/cmd/trivy", cmd: "trivy", repo: "aquasecurity/trivy", dir: "cmd/trivy", ver: "v0.76.1", need: "1.27.0",
+          what: { en: "Scans images, filesystems, repositories and IaC for known vulnerabilities and misconfigurations.",
+                  pt: "Analisa imagens, sistemas de ficheiros, repositórios e IaC à procura de vulnerabilidades e configurações erradas." } },
+        { key: "gitleaks", family: "security", name: "gitleaks", module: "github.com/gitleaks/gitleaks/v8", cmd: "gitleaks", repo: "gitleaks/gitleaks", dir: ".", ver: "v8.30.1", need: "1.24.11",
+          what: { en: "Finds API keys, tokens and private keys in a repository or its history, from a rule set of provider patterns.",
+                  pt: "Encontra chaves de API, tokens e chaves privadas num repositório ou no seu histórico, a partir de um conjunto de regras." } },
+        { key: "gopass", family: "security", name: "gopass", module: "github.com/gopasspw/gopass", cmd: "gopass", repo: "gopasspw/gopass", dir: ".", ver: "v1.17.4", need: "1.26.0",
+          what: { en: "A pass-compatible password store: GPG-encrypted files in a git repository you control.",
+                  pt: "Um cofre de palavras-passe compatível com o pass: ficheiros cifrados com GPG num repositório git seu." } },
+        { key: "age", family: "security", name: "age", module: "filippo.io/age/cmd/age", cmd: "age", repo: "FiloSottile/age", dir: "cmd/age", ver: "v1.3.2", need: "1.25.0",
+          what: { en: "Small, modern file encryption: one key pair, one passphrase mode, a readable spec.",
+                  pt: "Cifra de ficheiros pequena e moderna: um par de chaves, um modo com frase-passe, uma especificação legível." } },
+        { key: "rclone", family: "sync", name: "rclone", module: "github.com/rclone/rclone", cmd: "rclone", repo: "rclone/rclone", dir: ".", ver: "v1.75.2", need: "1.26.0",
+          what: { en: "Copy, sync, check, mount and serve any remote — S3, Drive, SFTP, WebDAV — with one set of flags.",
+                  pt: "Copiar, sincronizar, verificar, montar e servir qualquer remoto — S3, Drive, SFTP, WebDAV — com as mesmas opções." } },
+        { key: "restic", family: "sync", name: "restic", module: "github.com/restic/restic/cmd/restic", cmd: "restic", repo: "restic/restic", dir: "cmd/restic", ver: "v0.19.1", need: "1.25.10",
+          what: { en: "Encrypted, deduplicated snapshots with retention policies and selective restore.",
+                  pt: "Instantâneos cifrados e desduplicados, com políticas de retenção e restauro seletivo." } },
+        { key: "hugo", family: "servers", name: "Hugo", module: "github.com/gohugoio/hugo", cmd: "hugo", repo: "gohugoio/hugo", dir: ".", ver: "v0.169.0", need: "1.27.0",
+          what: { en: "Markdown plus templates into a static site, built in milliseconds by one binary.",
+                  pt: "Markdown mais modelos num site estático, construído em milissegundos por um único binário." } },
+        { key: "caddy", family: "servers", name: "Caddy", module: "github.com/caddyserver/caddy/v2/cmd/caddy", cmd: "caddy", repo: "caddyserver/caddy", dir: "cmd/caddy", ver: "v2.11.7", need: "1.26.0",
+          what: { en: "A web server and reverse proxy that obtains and renews HTTPS certificates by itself.",
+                  pt: "Um servidor web e proxy inverso que obtém e renova certificados HTTPS sozinho." } },
+        { key: "tailscale", family: "servers", name: "Tailscale", module: "tailscale.com/cmd/tailscale", cmd: "tailscale", repo: "tailscale/tailscale", dir: "cmd/tailscale", ver: "v1.104.4", need: "1.27.3",
+          what: { en: "A WireGuard mesh between your machines, addressed by identity instead of firewall rules.",
+                  pt: "Uma rede WireGuard entre as suas máquinas, endereçada por identidade em vez de regras de firewall." } }
+      ];
+
+      var FAMILIES = ["shell", "git", "containers", "docs", "build", "data", "machine", "security", "sync", "servers"];
+      var FAMILY_LABEL = {
+        en: { shell: "Shell", git: "Git", containers: "Containers", docs: "Documents", build: "Build",
+              data: "Data", machine: "Machine", security: "Security", sync: "Sync", servers: "Servers" },
+        pt: { shell: "Shell", git: "Git", containers: "Contentores", docs: "Documentos", build: "Compilação",
+              data: "Dados", machine: "Máquina", security: "Segurança", sync: "Sincronização", servers: "Servidores" }
+      };
+
+      var GLOSSARY = [
+        { en: ["Module", "A versioned collection of packages published at a path — <code>github.com/jesseduffield/lazygit</code> — which is also the address you install from."],
+          pt: ["Módulo", "Uma coleção versionada de pacotes publicada num caminho — <code>github.com/jesseduffield/lazygit</code> — que é também o endereço de onde se instala."] },
+        { en: ["Module path", "The import path that identifies a module, ending in a major-version suffix (v2, v3) when the API broke compatibility. It is not a URL, though it usually looks like one."],
+          pt: ["Caminho de módulo", "O caminho de importação que identifica um módulo, terminado num sufixo de versão maior (v2, v3) quando a API quebrou compatibilidade. Não é um URL, embora pareça."] },
+        { en: ["Version", "A tag like v1.27.2. For a tool, the version you name is the version you compile; there is no resolver deciding for you."],
+          pt: ["Versão", "Uma etiqueta como v1.27.2. Para uma ferramenta, a versão que indica é a versão que compila; não há resolver a decidir por si."] },
+        { en: ["go.mod", "The file that declares a module's path, its Go requirement and its dependencies. Every build inside the project reads it."],
+          pt: ["go.mod", "O ficheiro que declara o caminho de um módulo, o requisito de Go e as dependências. Todas as compilações dentro do projeto o leem."] },
+        { en: ["go.sum", "The recorded hashes of the modules a project uses. It is what makes a build verifiable rather than merely repeatable."],
+          pt: ["go.sum", "Os hashes registados dos módulos que um projeto usa. É o que torna uma compilação verificável e não apenas repetível."] },
+        { en: ["GOROOT", "Where the toolchain lives: compiler, linker, standard library. Replaced as a whole when you upgrade Go."],
+          pt: ["GOROOT", "Onde vive a cadeia de ferramentas: compilador, linker, biblioteca padrão. Substituído por inteiro quando atualiza o Go."] },
+        { en: ["GOPATH", "Your workspace. It still owns the default binary directory and the module cache, even though modules ended its role as the source tree."],
+          pt: ["GOPATH", "O seu espaço de trabalho. Ainda é dono da pasta de binários por omissão e da cache de módulos, apesar de os módulos terem acabado com o seu papel de árvore de código."] },
+        { en: ["GOBIN", "If set, the single directory <code>go install</code> writes executables to. Set it with <code>go env -w</code>, not with an export in one shell."],
+          pt: ["GOBIN", "Se definido, a única pasta onde o <code>go install</code> escreve executáveis. Defina-o com <code>go env -w</code>, não com um export numa shell."] },
+        { en: ["Module proxy", "An HTTP service that serves module archives and metadata — proxy.golang.org by default. It is what <code>go install</code> talks to."],
+          pt: ["Proxy de módulos", "Um serviço HTTP que serve arquivos e metadados de módulos — proxy.golang.org por omissão. É com ele que o <code>go install</code> fala."] },
+        { en: ["Toolchain", "A specific Go release, including its compiler. <code>GOTOOLCHAIN=auto</code> lets the go command download and use the one a module requires."],
+          pt: ["Toolchain", "Uma versão específica de Go, incluindo o compilador. <code>GOTOOLCHAIN=auto</code> deixa o comando go descarregar e usar a que o módulo exige."] },
+        { en: ["Build cache", "Compiled objects keyed by content, so the second build is fast. Safe to delete; the only cost is time."],
+          pt: ["Cache de compilação", "Objetos compilados indexados por conteúdo, para a segunda compilação ser rápida. Seguro apagar; o único custo é tempo."] },
+        { en: ["Main package", "A package named <code>main</code> with a <code>func main()</code>. Only main packages produce an executable, and only they can be installed with <code>go install</code>."],
+          pt: ["Pacote main", "Um pacote chamado <code>main</code> com uma <code>func main()</code>. Só pacotes main produzem executável, e só eles se instalam com <code>go install</code>."] }
+      ];
+
+      var GO_VERSIONS = ["1.21", "1.22", "1.23", "1.24", "1.25", "1.26", "1.27"];
+
+      function byId(id) {
+        return document.getElementById(id);
+      }
+
+      function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) {
+          node.className = className;
+        }
+        if (text != null) {
+          node.textContent = text;
+        }
+        return node;
+      }
+
+      var lang = "en";
+      var EN = {};
+
+      /* ---------- builder ---------- */
+      function builderText(app, method, os) {
+        var win = os === "win";
+        var local = win ? "%USERPROFILE%\\go\\bin\\" + app.cmd + ".exe"
+                        : '"$(go env GOPATH)/bin/' + app.cmd + '"';
+        var s = "go version    # needs " + app.need + " or newer\n\n";
+
+        if (method === "source") {
+          s += "git clone https://github.com/" + app.repo + "\n";
+          s += "cd " + app.repo.split("/")[1] + "\n";
+          s += app.dir === "." ? "go build -o " + app.cmd + " .\n" : "go build -o " + app.cmd + " ./" + app.dir + "\n";
+          s += "install -m 0755 " + app.cmd + " \"$(go env GOPATH)/bin/\"\n\n";
+        } else {
+          s += "go install " + app.module + "@" + (method === "pinned" ? app.ver : "latest") + "\n\n";
+        }
+
+        s += app.cmd + " --help\n\n";
+        s += "# the binary: " + local;
+        return s;
+      }
+
+      function updateBuilder() {
+        var appSel = byId("b-app");
+        if (!appSel) {
+          return;
+        }
+        var app = APPS[parseInt(appSel.value, 10)] || APPS[0];
+        var method = byId("b-method").value;
+        var os = byId("b-os").value;
+
+        byId("b-name").textContent = app.name;
+        byId("b-pkg").textContent = app.module;
+        byId("b-ver").textContent = app.ver;
+        byId("b-cmd").textContent = app.cmd;
+        byId("b-need").textContent = app.need;
+        byId("b-what").textContent = app.what[lang];
+        byId("b-family").textContent = FAMILY_LABEL[lang][app.family];
+        var home = byId("b-home");
+        home.innerHTML = "";
+        var homeLink = document.createElement("a");
+        homeLink.href = "https://github.com/" + app.repo;
+        homeLink.target = "_blank";
+        homeLink.rel = "noopener";
+        homeLink.textContent = "github.com/" + app.repo;
+        home.appendChild(homeLink);
+        byId("b-out").textContent = builderText(app, method, os);
+        byId("b-note").textContent = lang === "pt"
+          ? "Se o comando não for encontrado depois de instalar, a pasta dos binários não está no PATH — parte 05. O código-fonte compila com o mesmo go install, sem sudo."
+          : "If the command is not found after installing, the binary directory is not on PATH — part 05. The source method builds with the same toolchain, and never needs sudo.";
+      }
+
+      function fillBuilder() {
+        var appSel = byId("b-app");
+        if (!appSel) {
+          return;
+        }
+        appSel.innerHTML = "";
+        APPS.forEach(function (app, index) {
+          var option = el("option", null, app.name);
+          option.value = String(index);
+          appSel.appendChild(option);
+        });
+        updateBuilder();
+      }
+
+      /* ---------- toolchain check ---------- */
+      /* The selector names a release line (1.26), not a patch release, so the
+         comparison is major.minor: within a line, GOTOOLCHAIN handles the patch. */
+      function cmpVersion(a, b) {
+        var pa = String(a).split(".").map(Number);
+        var pb = String(b).split(".").map(Number);
+        if ((pa[0] || 0) !== (pb[0] || 0)) {
+          return (pa[0] || 0) < (pb[0] || 0) ? -1 : 1;
+        }
+        var ma = pa[1] || 0;
+        var mb = pb[1] || 0;
+        return ma === mb ? 0 : (ma < mb ? -1 : 1);
+      }
+
+      function updateCheck() {
+        var appSel = byId("tc-app");
+        var mineSel = byId("tc-mine");
+        if (!appSel || !mineSel) {
+          return;
+        }
+        var app = APPS[parseInt(appSel.value, 10)] || APPS[0];
+        var mine = mineSel.value;
+        var verdict = byId("tc-verdict");
+        var how = byId("tc-how");
+        var out = byId("tc-out");
+
+        byId("tc-need").textContent = app.need + " (" + app.name + ")";
+
+        var installCmd = "go install " + app.module + "@" + app.ver;
+
+        if (cmpVersion(mine, app.need) >= 0) {
+          verdict.textContent = lang === "pt"
+            ? "Suficiente: nada extra é descarregado."
+            : "Fine: nothing extra gets downloaded.";
+          verdict.dataset.state = "ok";
+          how.textContent = lang === "pt"
+            ? "O seu Go (" + mine + ") compila " + app.name + " diretamente."
+            : "Your Go (" + mine + ") compiles " + app.name + " directly.";
+          out.textContent = installCmd + "\n" + app.cmd + " --help";
+          return;
+        }
+
+        if (mine === "1.21") {
+          verdict.textContent = lang === "pt"
+            ? "Demasiado antigo, e anterior à troca automática de toolchain."
+            : "Too old, and older than automatic toolchain switching.";
+          verdict.dataset.state = "bad";
+          how.textContent = lang === "pt"
+            ? "Instale o Go " + app.need + " a partir de go.dev/dl e repita a instalação."
+            : "Install Go " + app.need + " from go.dev/dl, then rerun the install.";
+          out.textContent = "# install Go " + app.need + " from https://go.dev/dl/\n" + installCmd;
+          return;
+        }
+
+        verdict.textContent = lang === "pt"
+          ? "O go descarrega o toolchain go" + app.need + " sozinho."
+          : "The go command downloads toolchain go" + app.need + " itself.";
+        verdict.dataset.state = "mid";
+        how.textContent = lang === "pt"
+          ? "Com GOTOOLCHAIN=auto (o padrão), verá «go: downloading go" + app.need + "» e a compilação continua. Para forçar, defina GOTOOLCHAIN=go" + app.need + "."
+          : "With GOTOOLCHAIN=auto (the default) you will see \"go: downloading go" + app.need + "\" and the build continues. To be explicit, set GOTOOLCHAIN=go" + app.need + ".";
+        out.textContent = "GOTOOLCHAIN=go" + app.need + " " + installCmd + "\n" + app.cmd + " --help";
+      }
+
+      function fillCheck() {
+        var appSel = byId("tc-app");
+        var mineSel = byId("tc-mine");
+        if (!appSel || !mineSel) {
+          return;
+        }
+        appSel.innerHTML = "";
+        APPS.forEach(function (app, index) {
+          var option = el("option", null, app.name);
+          option.value = String(index);
+          appSel.appendChild(option);
+        });
+        mineSel.innerHTML = "";
+        GO_VERSIONS.forEach(function (v) {
+          var option = el("option", null, v);
+          option.value = v;
+          if (v === "1.26") {
+            option.selected = true;
+          }
+          mineSel.appendChild(option);
+        });
+        updateCheck();
+      }
+
+      /* ---------- glossary ---------- */
+      function renderGlossary() {
+        var list = byId("glossary-list");
+        if (!list) {
+          return;
+        }
+        list.innerHTML = "";
+        GLOSSARY.forEach(function (entry) {
+          var pair = entry[lang];
+          list.appendChild(el("dt", null, pair[0]));
+          var dd = el("dd");
+          dd.innerHTML = pair[1];
+          list.appendChild(dd);
+        });
+      }
+
+      /* ---------- copy ---------- */
+      function wireCopy(buttonId, sourceId) {
+        var button = byId(buttonId);
+        var source = byId(sourceId);
+        if (!button || !source) {
+          return;
+        }
+        button.addEventListener("click", function () {
+          var text = source.textContent;
+          var done = function () {
+            button.textContent = lang === "pt" ? "copiado" : "copied";
+            window.setTimeout(function () {
+              button.textContent = lang === "pt" ? "copiar" : "copy";
+            }, 1400);
+          };
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(done, done);
+              return;
+            }
+          } catch (error) {
+            /* fall through */
+          }
+          var area = document.createElement("textarea");
+          area.value = text;
+          document.body.appendChild(area);
+          area.select();
+          try {
+            document.execCommand("copy");
+          } catch (error) {
+            /* nothing left to try */
+          }
+          document.body.removeChild(area);
+          done();
+        });
+      }
+
+      /* ---------- language ---------- */
+      var TITLE = {
+        en: "Go in the Shell — Thirty Binaries, One Toolchain",
+        pt: "Go na Shell — Trinta Binários, Uma Toolchain"
+      };
+      var DESCRIPTION = {
+        en: "Go from the terminal: the toolchain, go install, GOBIN on PATH, thirty GitHub apps with verified versions, and the errors that stop a build.",
+        pt: "Go a partir do terminal: a toolchain, o go install, o GOBIN no PATH, trinta aplicações do GitHub com versões verificadas e os erros que travam uma compilação."
+      };
+
+      var langButtons = [];
+      var PT = {
+        "hero.kicker": "Ferramentas compiladas · um manual em dezanove partes",
+        "hero.title": "Go na Shell",
+        "hero.lede": "Go produz um ficheiro por programa: sem interpretador, sem runtime para instalar, nada para manter sincronizado. É por isso que tanto do software que já usa num terminal — o localizador difuso, a interface de git, os painéis de contentores, o scanner de vulnerabilidades — está escrito nele. Este manual é sobre a toolchain que compila esses binários, o único comando que os instala, e trinta projetos que valem a compilação.",
+        "hero.f1": "Dezanove partes",
+        "hero.f2": "Trinta binários",
+        "hero.f3": "Versões verificadas",
+        "hero.f4": "Construtor de instalação",
+        "hero.f5": "Verificação de toolchain",
+        "hero.f6": "Cada repositório ligado",
+
+        "path.a.h": "Nunca instalei Go",
+        "path.a.p": "Parte 02: um arquivo, uma linha de PATH, e um compilador pronto num minuto.",
+        "path.b.h": "Quero ver as ferramentas",
+        "path.b.p": "Parte 06: cada ferramenta com o módulo, a versão, a página e o que faz, mais o comando construído para a sua máquina.",
+        "path.c.h": "Dê-me só o comando",
+        "path.c.p": "Parte 03: o único comando, a versão fixa, e onde o binário fica.",
+        "path.d.h": "Uma compilação acabou de falhar",
+        "path.d.p": "Parte 17: as dez mensagens que travam as pessoas, do GOBIN a uma toolchain demasiado antiga.",
+
+        "nav.home": "Início",
+        "nav.rule": "A regra",
+        "nav.toolchain": "Toolchain",
+        "nav.install": "go install",
+        "nav.layout": "Estrutura",
+        "nav.path": "GOBIN",
+        "nav.builder": "Construtor",
+        "nav.shell": "Shell",
+        "nav.git": "Git",
+        "nav.containers": "Contentores",
+        "nav.docs": "Documentos",
+        "nav.build": "Compilação",
+        "nav.data": "Dados",
+        "nav.machine": "Máquina",
+        "nav.security": "Segurança",
+        "nav.sync": "Sincronização",
+        "nav.servers": "Servidores",
+        "nav.errors": "Erros",
+        "nav.sources": "Fontes",
+        "nav.glossary": "Glossário",
+
+        "t.command": "Comando",
+        "t.does": "O que faz",
+        "t.when": "Usar quando",
+        "t.system": "Sistema",
+        "t.route": "Rota",
+        "t.check": "Verificação",
+        "t.var": "Variável",
+        "t.meaning": "O que é",
+        "t.default": "Por omissão",
+        "t.dir": "Diretório",
+        "t.holds": "O que guarda",
+        "t.touch": "Deve mexer?",
+        "t.message": "Mensagem",
+        "t.cause": "O que significa",
+        "t.fix": "Correção",
+
+        "s1.title": "Um comando, três regras, nenhum runtime",
+        "s1.sub": "Uma ferramenta Go é um único executável. Não há interpretador para igualar, ambiente para ativar, biblioteca partilhada para quebrar: <code>go install</code> compila o programa e deixa um ficheiro no disco. Essa simplicidade é também a razão pela qual as três regras abaixo bastam — quase todos os problemas de instalação Go são um caminho, uma versão, ou uma pasta que a shell não vê.",
+        "s1.r1.h": "Um: instale com uma versão, não com um humor",
+        "s1.r1.p": "Desde o Go 1.17, o <code>go get</code> só edita um <code>go.mod</code>; já não instala binários. O comando para ferramentas é <code>go install caminho/do/módulo@versão</code>. Escrever <code>@latest</code> é permitido e é o que o manual faz na maioria dos casos — mas um artigo publicado envelhece, e <code>@v1.2.3</code> é a linha que continua a compilar o mesmo código no ano seguinte.",
+        "s1.r2.h": "Dois: o binário vai para o GOBIN, nunca para /usr/local",
+        "s1.r2.p": "Por omissão o resultado cai em <code>$(go env GOPATH)/bin</code>, uma pasta sua. Nunca ponha <code>sudo</code> à frente do comando: o compilador escreve alegremente na home do root, e o binário que acabou de construir fica invisível para o seu utilizador. Se quiser outro destino, defina <code>GOBIN</code> — não outra opção do compilador.",
+        "s1.r3.h": "Três: ponha essa pasta no PATH, uma vez",
+        "s1.r3.p": "A instalação corre bem e a shell continua a dizer <code>command not found</code>, porque <code>~/go/bin</code> não está no PATH num sistema novo. Uma linha de export no perfil da shell resolve para sempre; <code>go env -w GOBIN=…</code> muda antes o destino. A parte 05 tem as duas, com a verificação que diz qual lhe falta.",
+        "s1.note.h": "Porque «sem runtime» muda a manutenção",
+        "s1.note.p": "Uma ferramenta Python precisa do interpretador que a instalou, uma de Node precisa da sua árvore de pacotes, uma de Go não precisa de nada. Copie o ficheiro para outra máquina do mesmo sistema e arquitetura e ele corre. Isso também significa que atualizar é substituir, não juntar: instala-se a versão nova e o ficheiro antigo desaparece. Não há comando de desinstalação nem sobras para limpar, o que é libertador ou alarmante, conforme o gosto pela arrumação.",
+        "s1.which.h": "Quatro comandos que se confundem",
+        "s1.c1.a": "Compila um pacote main e escreve o executável no GOBIN. Funciona fora de qualquer módulo.",
+        "s1.c1.b": "Sempre, para uma ferramenta que quer manter. É o comando do manual.",
+        "s1.c2.a": "Compila a partir do código do módulo atual, no estado da árvore de trabalho.",
+        "s1.c2.b": "Está a desenvolver essa ferramenta, ou a testar uma correção antes de a propor.",
+        "s1.c3.a": "Acrescenta ou atualiza uma dependência no <code>go.mod</code>. Não põe nada no seu PATH.",
+        "s1.c3.b": "Está a escrever código Go que importa o pacote como biblioteca.",
+        "s1.c4.a": "Escreve o binário no caminho que escolher, e mantém a cache da toolchain quente.",
+        "s1.c4.b": "Compilação cruzada, flags de versão embutidas, ou produzir um artefacto para lançamento.",
+        "s1.after": "Uma nuance que vale a pena saber antes de surpreender: dentro de um diretório de módulo, <code>go install pkg@version</code> continua a ignorar o seu <code>go.mod</code> e instala a versão publicada. É deliberado — o <code>@version</code> é o pedido, e o módulo onde está não conta.",
+
+        "s2.title": "A toolchain, do zero",
+        "s2.sub": "Go distribui-se como arquivo, instalador ou pacote. Seja qual for o caminho, o resultado são as mesmas duas coisas: um diretório com o compilador e a biblioteca padrão, e um comando <code>go</code> que sabe onde vive. Os números do manual assumem Go 1.27, a linha atual à data de publicação; as ferramentas da parte 06 declaram os seus mínimos, e um deles está bem com 1.22.",
+        "s2.linux.h": "Linux, da forma honesta",
+        "s2.linux.after": "Remover o diretório antigo primeiro não é opcional: o arquivo extrai para <code>/usr/local/go</code>, e juntar duas versões deixa um compilador com uma biblioteca padrão e ferramentas de outra. O pacote da distribuição (<code>sudo apt install golang-go</code>) costuma estar várias versões atrás; serve para correr algo, não para compilar as ferramentas mais recentes.",
+        "s2.other.h": "macOS e Windows",
+        "s2.env.h": "As cinco variáveis que importam",
+        "s2.v1": "Onde vivem o compilador e a biblioteca padrão. O comando <code>go</code> encontra-o sozinho.",
+        "s2.v2": "O seu espaço de trabalho: cache de módulos e a casa por omissão dos binários instalados.",
+        "s2.v3": "Se definido, o <code>go install</code> escreve os binários aqui em vez de <code>GOPATH/bin</code>.",
+        "s2.v3d": "não definido",
+        "s2.v4": "Fontes de módulos descarregadas, partilhadas por todos os projetos da máquina.",
+        "s2.v5": "Se o Go pode descarregar uma toolchain mais recente quando um módulo a pede.",
+        "s2.env.after": "O <code>go env -w</code> escreve no ficheiro que <code>go env GOENV</code> indica — normalmente <code>~/.config/go/env</code> — por isso a definição sobrevive às shells sem uma linha de export. É o lugar certo para <code>GOBIN</code> e <code>GOPROXY</code>; o lugar errado para qualquer segredo, porque o ficheiro é texto simples.",
+
+        "s3.title": "go install: toda a história da instalação",
+        "s3.sub": "Sem registo para navegar, sem resolver para discutir: o caminho do módulo no comando é o endereço e a identidade. O Go descarrega o módulo na versão indicada, compila o pacote e as suas dependências com a toolchain em uso, e escreve o resultado no GOBIN.",
+        "s3.after": "O <code>go version -m</code> é a ferramenta de auditoria de que ninguém se lembra: imprime o caminho do módulo, a versão exata, as flags de compilação e a revisão de VCS de qualquer binário Go. Quando uma ferramenta se comporta de forma diferente da documentação, essa linha diz se está a correr o que pensa.",
+        "s3.pin.h": "Fixar ou flutuar",
+        "s3.pin.p": "<code>@latest</code> é a promessa de que a etiqueta mais recente do autor é melhor; <code>@v4.54.1</code> é a promessa de que o comportamento de hoje é o de amanhã. Para ferramentas com que escreve scripts — um formatador em CI, um linter num hook — fixe. Para ferramentas cujo trabalho é acompanhar um alvo em movimento (fzf, rclone), flutue e repita a instalação mensalmente.",
+        "s3.name.h": "O nome do binário não é o do módulo",
+        "s3.name.p": "O executável tem o nome do pacote, normalmente o último elemento do caminho: <code>…/cmd/goose</code> dá <code>goose</code>, <code>mvdan.cc/sh/v3/cmd/shfmt</code> dá <code>shfmt</code>. Quando o README diz «instale com go install X» e o comando é outro, o último elemento do caminho é a pista.",
+        "s3.tc.h": "Quando a ferramenta quer um Go mais novo do que o seu",
+        "s3.tc.p": "Desde o Go 1.21, <code>GOTOOLCHAIN=auto</code> (o padrão) faz o comando <code>go</code> descarregar e usar a toolchain que o módulo exige. Verá uma linha como <code>go: downloading go1.27.3</code> e a compilação continua com essa versão — sem atualização manual e sem risco de quebrar a instalação principal. O download fica em cache, por isso acontece uma vez por versão.",
+        "s3.tc.p2": "O construtor da parte 06 lista o Go que cada ferramenta pede, retirado do ficheiro de módulo publicado. Use a verificação abaixo quando estiver prestes a instalar algo e quiser saber se vai descarregar uma toolchain, ou falhar porque a sua está fixada em <code>local</code>.",
+        "s3.tc.tool.h": "Verificação de toolchain",
+        "s3.tc.tool.badge": "antes de instalar",
+        "s3.tc.yours": "O seu Go",
+        "s3.tc.app": "A ferramenta",
+        "s3.tc.out.need": "Precisa",
+        "s3.tc.out.verdict": "Veredicto",
+        "s3.tc.out.how": "O que acontece",
+        "s3.tc.copy": "Copiar",
+
+        "s4.title": "Para onde vão os bytes, e como os recuperar",
+        "s4.sub": "Uma toolchain Go não é tímida com o disco: a cache de módulos guarda todos os arquivos de código que já descarregou, e a cache de compilação guarda objetos para a próxima compilação ser rápida. Ambas se podem apagar, e ambas voltam a crescer. Conhecer as cinco pastas transforma «o disco encheu-se» numa resposta de dois comandos.",
+        "s4.d1.a": "A própria toolchain: compilador, linker, biblioteca padrão. Substituída por inteiro na atualização.",
+        "s4.d1.b": "Só extraindo um arquivo novo por cima — depois de remover o antigo.",
+        "s4.d2.a": "Todos os binários instalados por <code>go install</code>, salvo se o GOBIN disser outra coisa.",
+        "s4.d2.b": "Sim: apagar um ficheiro aqui é como se desinstala uma ferramenta Go.",
+        "s4.d3.a": "Fontes de módulos descarregadas, partilhadas por todos os projetos. Normalmente a pasta maior.",
+        "s4.d3.b": "Com <code>go clean -modcache</code>, nunca à mão.",
+        "s4.d4.a": "Objetos de pacotes compilados, indexados por conteúdo e versão da toolchain.",
+        "s4.d4.b": "Com <code>go clean -cache</code>. Custa tempo de compilação, nada mais.",
+        "s4.d5.a": "As definições persistentes escritas por <code>go env -w</code>.",
+        "s4.d5.b": "Com <code>go env -w</code> / <code>-u</code>, para o ficheiro continuar bem formado.",
+        "s4.up.h": "Atualizar uma ferramenta",
+        "s4.up.p": "Repita a mesma linha de instalação com uma etiqueta mais recente. O Go escreve o binário novo por cima do antigo num único movimento, por isso não há estado meio-atualizado nem passo de desinstalação. Se a versão nova se portar mal, reinstale a anterior — a cache de módulos pode ainda tê-la, e o download é rápido de qualquer forma.",
+        "s4.off.h": "Trabalhar offline, ou atrás de um proxy",
+        "s4.off.p": "<code>GOPROXY</code> é uma lista de proxies de módulos, <code>https://proxy.golang.org,direct</code> por omissão. Atrás de um espelho da empresa, aponte-o para o espelho e mantenha <code>direct</code> como alternativa. <code>GONOSUMDB</code>/<code>GOSUMDB</code> e <code>GOFLAGS=-mod=mod</code> são os outros botões; defini-los às cegas é como erros de checksum se tornam permanentes.",
+
+        "s5.title": "GOBIN, PATH, e a verificação de cinco segundos",
+        "s5.sub": "Uma instalação Go não falha em silêncio como uma Python — mas pode ter sucesso para uma pasta que a shell não procura. Dois comandos dizem tudo: onde foi o binário, e se essa pasta está no PATH.",
+        "s5.add.h": "Acrescentar uma vez, por shell",
+        "s5.add.after": "Se preferir guardar as ferramentas numa pasta que já está no PATH, defina <code>GOBIN</code> em vez de editar o perfil duas vezes: <code>go env -w GOBIN=\"$HOME/.local/bin\"</code>. Escolha uma — GOBIN ou uma entrada no PATH — e não mantenha as duas, porque a próxima pessoa a depurar a sua máquina encontra duas pastas e não confia em nenhuma.",
+        "s5.note.h": "A verificação que resolve a dúvida",
+        "s5.note.p": "<code>command -v lazygit</code> imprime o caminho resolvido ou nada. Se não imprime nada mas o ficheiro existe em <code>$(go env GOPATH)/bin</code>, o problema é o PATH, não o Go. Se o ficheiro também não existe, a instalação falhou antes — e o erro está na saída da instalação, não na configuração da shell.",
+
+        "s6.title": "Construa o comando para a sua máquina",
+        "s6.sub": "Três escolhas — a ferramenta, o método, o sistema — e o bloco abaixo é o que cola. O método fixo usa a versão exata verificada para este manual; o método a partir do código clona o repositório quando quer ler o código antes de confiar nele. Acima do bloco, cada ferramenta mostra o módulo, a versão, a página, a família e o que faz.",
+        "s6.tool.h": "Construtor de instalação",
+        "s6.tool.badge": "trinta ferramentas",
+        "s6.app": "Ferramenta",
+        "s6.method": "Método",
+        "s6.m.latest": "go install @latest",
+        "s6.m.pinned": "go install @versão",
+        "s6.m.source": "a partir do código",
+        "s6.os": "Sistema",
+        "s6.os.linux": "Linux",
+        "s6.os.mac": "macOS",
+        "s6.os.win": "Windows",
+        "s6.out.app": "Ferramenta",
+        "s6.out.pkg": "Módulo",
+        "s6.out.ver": "Versão",
+        "s6.out.cmd": "Comando",
+        "s6.out.need": "Precisa de Go",
+        "s6.out.what": "O que faz",
+        "s6.out.home": "Página",
+        "s6.out.family": "Família",
+        "s6.copy": "Copiar",
+
+
+        "s8.title": "A própria shell: encontrar, perguntar, carregar",
+        "s8.sub": "Três ferramentas que mudam o comportamento do prompt e não o que ele corre: o <strong>fzf</strong> transforma qualquer lista num menu pesquisável, o <strong>gum</strong> dá aos scripts uma interface utilizável, e o <strong>direnv</strong> carrega o ambiente de uma pasta quando entra nela.",
+        "s8.fzf.h": "o localizador difuso onde tudo encaixa",
+        "s8.fzf.p": "Um seletor de uso geral: lê linhas do stdin e devolve a que escolheu. É todo o programa, e é por isso que aparece dentro de editores, fluxos de git e pesquisa de histórico. Os atalhos são a parte que muda o dia: Ctrl+R para histórico, Ctrl+T para ficheiros, Alt+C para entrar numa pasta.",
+        "s8.gum.h": "uma UI para scripts de shell",
+        "s8.gum.p": "Escolher, confirmar, pedir, filtrar, girar, estilizar texto. Não é um framework de TUI; são as seis ou sete primitivas de que um script precisa para deixar de parecer um script. Um script de backup que pergunta qual o disco, com uma seta e um spinner, é um objeto diferente de um que leva um argumento que é preciso decorar.",
+        "s8.direnv.h": "ambiente por diretório",
+        "s8.direnv.p": "Ponha um <code>.envrc</code> numa pasta, aprove uma vez, e as variáveis carregam quando entra e descarregam quando sai. É a ferramenta que impede o «export API_URL=…» de ser colado em cada terminal, e funciona para projetos Go exatamente como para o resto: <code>export GOPATH=$PWD/.gopath</code>, ou um <code>GOFLAGS</code> específico do projeto.",
+        "s8.direnv.after": "A aprovação é uma funcionalidade de segurança, não uma formalidade: um <code>.envrc</code> é shell executável, por isso um repositório clonado não pode mudar o seu ambiente em silêncio até o ler e aprovar.",
+
+        "s9.title": "Git, sem cerimónia",
+        "s9.sub": "O <strong>lazygit</strong> é uma interface de teclado para os comandos que já conhece, e o <strong>gh</strong> é a API do GitHub como comando. Entre os dois, as duas operações que ainda pedem um navegador — rever um diff pedaço a pedaço e abrir um pull request — deixam de o pedir.",
+        "s9.lg.h": "preparar, comprometer, rebase, resolver",
+        "s9.lg.p": "Cinco painéis: estado, ficheiros, ramos, commits, stash. Espaço prepara um ficheiro ou um pedaço, <code>c</code> faz commit, <code>P</code> faz push, <code>?</code> lista todas as teclas. A resolução de conflitos é onde ganha o lugar: o ficheiro em conflito abre no seu editor com os marcadores, e o painel acompanha o que falta.",
+        "s9.gh.h": "o CLI do GitHub",
+        "s9.gh.p": "Autentica-se com um código de dispositivo ou um token, e depois trata repositórios, issues, pull requests, releases e Actions como subcomandos. <code>gh pr create --fill</code> é a linha que substitui um formulário no navegador; <code>gh run watch</code> é a que substitui atualizar um separador.",
+
+        "s10.title": "Contentores: olhar para dentro e para a fatura",
+        "s10.sub": "Dois painéis e um microscópio. O <strong>lazydocker</strong> para os contentores e imagens de uma máquina, o <strong>k9s</strong> para um cluster, e o <strong>dive</strong> para a pergunta a que nenhum responde: porque é que esta imagem tem 900 MB?",
+        "s10.ld.h": "docker compose, como teclado",
+        "s10.ld.p": "Lista contentores, serviços, imagens, volumes e registos, com as ações que se tomam: reiniciar, abrir uma shell, limpar, ver o ficheiro compose. Fala com o mesmo socket Docker que o CLI, por isso nada precisa de ser instalado dentro dos contentores.",
+        "s10.k9.h": "um cluster num ecrã",
+        "s10.k9.p": "Uma interface de terminal sobre o kubectl: pods, deployments, serviços, eventos e registos, sempre atualizados, com uma barra de comandos para os recursos que os menus não cobrem. O detalhe que importa são as duas teclas <code>l</code> para registos e <code>d</code> para describe, onde acontece a maior parte da depuração.",
+        "s10.dive.h": "cada camada de uma imagem",
+        "s10.dive.p": "Mostra o que cada instrução do Dockerfile acrescentou ou removeu, com uma pontuação para o espaço desperdiçado e uma árvore de ficheiros navegável. É a forma mais rápida de encontrar os 400 MB de cache de compilação que alguém esqueceu, e corre em CI com um limite de falha.",
+
+        "s11.title": "Documentos e demonstrações",
+        "s11.sub": "O <strong>glow</strong> renderiza Markdown no prompt, que é onde a maioria dos READMEs é lida pela primeira vez. O <strong>VHS</strong> grava uma sessão de terminal a partir de um guião, que é como uma demonstração deixa de ser uma gravação de ecrã com um rato pelo meio.",
+        "s11.gl.h": "Markdown com o aspeto de Markdown",
+        "s11.gl.p": "Renderiza um ficheiro, um URL ou o README de um repositório com títulos, tabelas, listas e realce de sintaxe, no terminal ou através de um pager. Também cria e edita snippets, o que o torna um pequeno sistema de notas para quem nunca sai da shell.",
+        "s11.vhs.h": "uma gravação de terminal que se pode comparar",
+        "s11.vhs.p": "Escreve um ficheiro <code>.tape</code>: os comandos, a velocidade de escrita, o tamanho, a fonte. Correr dá um GIF, MP4 ou WebM reproduzível — regenere quando a interface mudar, em vez de gravar à mão outra vez. Precisa de <code>ttyd</code> e <code>ffmpeg</code> em execução.",
+
+        "s12.title": "Compilar, formatar, analisar, depurar, recarregar",
+        "s12.sub": "Seis ferramentas que formam um ambiente Go de trabalho, na ordem em que um dia as usa: um executor de tarefas, um linter, dois formatadores, um recarregamento automático e um depurador. Todas se instalam da mesma forma, que é o ponto deste manual.",
+        "s12.task.h": "um Makefile honesto por ser YAML",
+        "s12.task.p": "Dependências, checksums que saltam trabalho não alterado, variáveis multiplataforma e nenhuma guerra de tabs contra espaços. Um <code>Taskfile.yml</code> é legível por quem nunca usou make, o que é a maior parte da razão para o escolher num projeto que outros vão clonar.",
+        "s12.gcl.h": "um comando, cem linters",
+        "s12.gcl.p": "Corre os linters que concordam entre si, em paralelo, com um ficheiro de configuração e um código de saída. É a resposta padrão a «que linter devo usar» em Go, e a versão 2 acrescentou um comando de formatação para substituir o gofmt na mesma passagem.",
+        "s12.fmt.h": "formatação, resolvida",
+        "s12.fmt.p": "O <code>gofumpt</code> é o gofmt com as regras que a equipa do Go teria acrescentado se a compatibilidade não o impedisse: sem linhas vazias no início de um bloco, sem parênteses desnecessários, imports agrupados. O <code>shfmt</code> faz o mesmo para scripts de shell, onde as discussões de formatação costumam durar mais.",
+        "s12.air.h": "reiniciar ao guardar",
+        "s12.air.p": "Vigia o projeto, recompila e reinicia o binário quando um ficheiro Go muda, e faz proxy da porta para o navegador reconectar. É o ciclo de desenvolvimento de um servidor, sem um segundo terminal e sem ter de lembrar que processo matar.",
+        "s12.dlv.h": "um depurador a sério",
+        "s12.dlv.p": "Pontos de paragem, passo a passo, inspeção de goroutines e depuração remota, com um CLI que imita os hábitos do gdb. O <code>dlv debug</code> compila com informação de depuração e para no primeiro ponto de paragem; o <code>dlv test</code> faz o mesmo para um teste que falha, que é onde é mais útil.",
+
+        "s13.title": "Dados: YAML, SQL e migrações",
+        "s13.sub": "O <strong>yq</strong> é o jq para YAML e XML, o <strong>sqlc</strong> transforma SQL em código Go com tipos, e o <strong>goose</strong> corre as migrações que mantêm um esquema honesto. Os três são pequenos, rápidos, e feitos para estar num pipeline.",
+        "s13.yq.h": "o irmão do jq que fala YAML",
+        "s13.yq.p": "Lê e escreve YAML, JSON, XML, CSV e properties com a mesma linguagem de expressões, incluindo edições no local que preservam comentários e ordem. É a ferramenta que torna um manifesto Kubernetes editável a partir de um script sem motor de templates.",
+        "s13.sqlc.h": "SQL entra, Go sai",
+        "s13.sqlc.p": "Escreve consultas e um esquema; ele gera as funções e estruturas Go, verificando o SQL contra o esquema na geração. Sem ORM, sem reflexão em execução, sem desencontro entre a consulta e o tipo que devolve.",
+        "s13.goose.h": "migrações que correm em qualquer lado",
+        "s13.goose.p": "Migrações SQL (ou Go) versionadas com up, down e status, utilizáveis como CLI ou embutidas como biblioteca. Suporta Postgres, MySQL, SQLite e mais, e regista o que aplicou numa tabela que pode ler.",
+
+        "s14.title": "A máquina: o que está a usar o disco",
+        "s14.sub": "Duas respostas para uma pergunta. O <strong>duf</strong> mostra os sistemas de ficheiros — que montagem tem espaço, qual está cheia, o que está montado e esquecido. O <strong>gdu</strong> mostra as pastas dentro de uma delas, ordenadas por peso, rápido o suficiente para apontar a uma home.",
+        "s14.duf.h": "df, com as colunas que queria",
+        "s14.duf.p": "Pontos de montagem agrupados por dispositivo, barras de uso, contagem de inodes e saída JSON para scripts. Lê-se melhor do que <code>df -h</code> porque deixa de fingir que uma montagem de rede e uma pen USB são a mesma coisa, e funciona em Linux, macOS e Windows.",
+        "s14.gdu.h": "uso de disco, em paralelo",
+        "s14.gdu.p": "Uma árvore interativa do que é grande, com a opção de apagar sem sair da interface. Usa goroutines para ler diretórios em paralelo, e é por isso que termina numa home enquanto o <code>du</code> ainda está a pensar.",
+
+        "s15.title": "Segurança: analisar, assinar, guardar, cifrar",
+        "s15.sub": "Quatro ferramentas com quatro funções: o <strong>trivy</strong> encontra vulnerabilidades conhecidas, o <strong>gitleaks</strong> encontra segredos que não deviam estar num repositório, o <strong>gopass</strong> guarda as palavras-passe, e o <strong>age</strong> cifra um ficheiro com uma chave que se pode guardar na cabeça.",
+        "s15.tr.h": "o que está vulnerável, exatamente",
+        "s15.tr.p": "Analisa imagens, sistemas de ficheiros, repositórios e ficheiros IaC contra bases de vulnerabilidades e configurações erradas, com filtros de severidade e saída JSON para CI. Não precisa de daemon nem de agente: aponte-o a um nome de imagem e ele descarrega os metadados de que precisa.",
+        "s15.gl.h": "segredos não pertencem ao git",
+        "s15.gl.p": "Analisa o histórico de um repositório à procura de chaves de API, tokens e chaves privadas, com um conjunto de regras de padrões de fornecedores e verificações de entropia. Também corre como hook de pré-commit, que é o único momento em que remover uma chave exposta ainda é barato.",
+        "s15.gl.after": "Um segredo comprometido uma vez está comprometido no instante em que é enviado. Rode a credencial primeiro, limpe o histórico depois — reescrever o passado sem rodar a credencial limpa a prova, não o problema.",
+        "s15.gp.h": "palavras-passe num repositório git",
+        "s15.gp.p": "Um cofre compatível com o pass: cada segredo é um ficheiro cifrado com GPG num repositório git seu, com destinatários por pasta e um modo de área de transferência. Sem conta, sem serviço de sincronização, e um backup que é apenas um clone.",
+        "s15.age.h": "cifra com uma chave, uma linha",
+        "s15.age.p": "Cifra de ficheiros moderna com um desenho deliberadamente pequeno: um par de chaves X25519, um modo com frase-passe, e um formato que se lê numa especificação. Substituiu o GPG para o caso «cifre este ficheiro para aquela pessoa», e compõe-se: <code>tar</code> para dentro do <code>age</code> para dentro do <code>ssh</code> é um backup numa só conduta.",
+
+        "s16.title": "Sincronização e backup: os dois que não podem mentir",
+        "s16.sub": "O <strong>rclone</strong> move ficheiros entre tudo e tudo — disco local, S3, Drive, SFTP, WebDAV. O <strong>restic</strong> guarda instantâneos cifrados e desduplicados que se podem restaurar seletivamente. Sincronizar não é fazer backup, e o par torna a diferença óbvia.",
+        "s16.rc.h": "um cliente para todos os remotos",
+        "s16.rc.p": "Configure um remoto uma vez, e depois copie, sincronize, verifique, monte ou sirva com as mesmas flags. <code>sync</code> faz o destino coincidir com a origem — incluindo eliminações — por isso é um espelho, não um arquivo; <code>copy</code> só acrescenta. Saber qual escreveu é toda a disciplina.",
+        "s16.rs.h": "instantâneos cifrados com retenção",
+        "s16.rs.p": "Um repositório guarda instantâneos; cada instantâneo referencia blocos cifrados e desduplicados. <code>forget --prune</code> aplica uma política de retenção, e <code>restore</code> pode trazer um ficheiro de há três anos. O repositório pode estar num disco local, num anfitrião SFTP ou num bucket S3.",
+        "s16.rs.after": "Teste o restauro antes de confiar no backup. Um repositório que nunca foi restaurado é uma hipótese, e <code>restic check --read-data</code> é o comando que a transforma em prova.",
+
+        "s17.title": "Servir e alcançar: sites, TLS, rede",
+        "s17.sub": "O <strong>Hugo</strong> constrói um site a partir de Markdown em milissegundos, o <strong>Caddy</strong> serve-o com HTTPS automático, e o <strong>Tailscale</strong> torna a máquina alcançável sem abrir uma porta. Três binários, nenhum runtime, um servidor pequeno.",
+        "s17.hu.h": "um site estático num binário",
+        "s17.hu.p": "Conteúdo em Markdown, layouts em templates Go, saída em ficheiros. É o gerador que os vizinhos deste blog usam quando a compilação tem de terminar antes do café, e distribui-se como um executável único, sem runtime de plugins.",
+        "s17.ca.h": "um servidor web com certificados incluídos",
+        "s17.ca.p": "Um Caddyfile são quatro linhas, e HTTPS não é uma delas: os certificados são obtidos e renovados automaticamente para qualquer domínio que resolva para a máquina. Também faz proxy, reescritas e serve PHP ou FastCGI quando pedido, com uma configuração JSON para o que o Caddyfile não exprime.",
+        "s17.ts.h": "a sua própria rede privada",
+        "s17.ts.p": "Uma malha WireGuard que liga as suas máquinas onde quer que estejam, com identidade em vez de regras de firewall. O <code>tailscale serve</code> expõe uma porta local só aos seus dispositivos; o <code>tailscale ssh</code> autentica com a mesma identidade, e um servidor em casa deixa de precisar de IP público ou porta aberta.",
+        "s17.ts.after": "Em Linux o daemon precisa de root; o cliente não. É por isso que a linha de instalação é seguida de <code>sudo tailscale up</code> e não de <code>sudo go install</code> — o binário é seu, a interface de rede é do sistema.",
+
+        "s18.title": "As dez mensagens que travam uma compilação",
+        "s18.sub": "Os erros do Go são invulgarmente literais, o que é uma dádiva: cada linha abaixo nomeia o que está errado. A tabela liga a mensagem à causa, porque a causa está normalmente a uma pasta ou a uma versão da mensagem.",
+        "s18.e1.b": "A toolchain não está no PATH — ou não está instalada, ou foi instalada em <code>/usr/local/go</code> sem a linha de export.",
+        "s18.e1.c": "Acrescente <code>/usr/local/go/bin</code> ao PATH, abra uma shell nova, e <code>go version</code>.",
+        "s18.e2.b": "O binário está em <code>$(go env GOPATH)/bin</code> (ou no GOBIN) e a shell não procura lá.",
+        "s18.e2.c": "Acrescente essa pasta ao PATH, ou defina <code>GOBIN</code> para uma que já esteja. Parte 05.",
+        "s18.e3.b": "Correu <code>go build</code>, <code>go run</code> ou <code>go test</code> fora de um módulo.",
+        "s18.e3.c": "<code>go mod init example.com/me/coisa</code> na raiz do projeto — ou use <code>go install pkg@version</code>, que não precisa de módulo.",
+        "s18.e4.b": "<code>GO111MODULE=off</code> está definido, o que desliga os módulos por completo.",
+        "s18.e4.c": "<code>go env -u GO111MODULE</code> e repita. Os módulos são o único modo suportado.",
+        "s18.e5.b": "O projeto precisa de um Go mais novo, e a troca automática de toolchain está desligada.",
+        "s18.e5.c": "<code>go env -w GOTOOLCHAIN=auto</code>, ou instale a versão nova de go.dev/dl.",
+        "s18.e6.b": "O import existe no código mas não no <code>go.mod</code>.",
+        "s18.e6.c": "<code>go get X</code> e depois <code>go mod tidy</code>.",
+        "s18.e7.b": "O módulo está certo; o subdiretório no caminho não. O pacote main vive noutro sítio.",
+        "s18.e7.c": "Veja na árvore do repositório a pasta que tem <code>main.go</code>, e use esse caminho.",
+        "s18.e8.b": "A cópia em cache não corresponde ao hash registado, normalmente um download corrompido ou uma etiqueta reescrita.",
+        "s18.e8.c": "<code>go clean -modcache</code> e repita. Se persistir, a etiqueta a montante mudou mesmo — não desligue a base de checksums para silenciar isto.",
+        "s18.e9.b": "O proxy de módulos está inalcançável, bloqueado, ou o módulo é privado.",
+        "s18.e9.c": "Verifique <code>GOPROXY</code>; para módulos privados defina <code>GOPRIVATE=github.com/suaorg/*</code> e use credenciais SSH.",
+        "s18.e10.b": "O <code>GOBIN</code> aponta para uma pasta com dono root, ou o comando foi corrido com sudo.",
+        "s18.e10.c": "Retire o GOBIN e deixe escrever em <code>~/go/bin</code>. Nunca <code>sudo go install</code>.",
+        "s18.note.h": "As duas falhas que parecem a máquina a morrer",
+        "s18.note.p": "Uma compilação que termina em <code>Killed</code> ficou sem memória — acrescente swap, ou compile o pacote específico em vez do módulo todo. Uma compilação que demora vinte minutos na primeira vez e dois segundos depois é a cache de compilação a fazer o seu trabalho; <code>go clean -cache</code> reinicia-a, e a espera longa não é sinal de que algo está errado.",
+
+        "s19.title": "Fontes, e o que cada uma resolve",
+        "s19.sub": "O manual é construído a partir da documentação do próprio projeto Go e dos metadados de módulo que cada ferramenta publica. Cada ferramenta da parte 06 liga ao seu repositório, que é a autoridade sobre as suas próprias opções.",
+        "src.1": "Todos os arquivos e instaladores de cada versão, com checksums, para cada plataforma suportada.",
+        "src.2": "O procedimento oficial de remover e extrair usado na parte 02, por sistema operativo.",
+        "src.3": "Caminhos de módulo, versões, a cache de módulos e a semântica exata de <code>go install pkg@version</code>.",
+        "src.4": "Como o GOTOOLCHAIN decide descarregar um compilador mais novo, e o que <code>auto</code> e <code>local</code> significam.",
+        "src.5": "A referência do comando, incluindo a tabela de variáveis de ambiente usada na parte 02.",
+        "src.6": "O que o GOPATH ainda governa agora que os módulos são donos da resolução de dependências.",
+        "src.7": "O protocolo que o <code>go install</code> fala — e a razão pela qual um URL simples pode ser verificado para uma versão.",
+        "src.8": "Que versões de Go ainda recebem correções, e porque as duas mais recentes importam para uma ferramenta que instala.",
+        "src.9": "O índice de pacotes: caminhos de módulo, versões e documentação de tudo o que aqui é nomeado.",
+        "src.10": "A mudança que separou instalar uma ferramenta de acrescentar uma dependência, e a migração que pede.",
+        "src.11": "As notas da comunidade sobre o comportamento dos módulos, incluindo os casos que a referência deixa implícitos.",
+        "src.12": "Configuração, lista de linters e o comando de formatação usado na parte 11.",
+        "s19.after": "As versões da parte 06 são as etiquetas mais recentes resolvidas através do proxy público de módulos em 29 de outubro de 2026, e o requisito de Go é o que está escrito no <code>go.mod</code> de cada versão. Ambos vão mudar; o repositório continua a ser a autoridade.",
+
+        "s20.title": "Glossário",
+        "s20.sub": "Doze palavras que explicam a maior parte da confusão neste manual.",
+
+        "footer.p": "Escrito a partir de um terminal Linux e verificado contra o módulo publicado de cada projeto no dia da publicação: caminho de módulo, etiqueta mais recente e requisito de Go resolvidos através do proxy público de módulos, e cada comando traçado até ao pacote que o declara. Onde o manual diz «normalmente», é porque um caminho de módulo ou um pacote de distribuição difere — o repositório é a palavra final.",
+        "footer.back": "← Voltar ao arquivo",
+        "footer.cross": "O resto da série: <a href=\"python-cli.html\">A Shell, Alargada</a> para a metade Python da mesma ideia, <a href=\"rust-cli.html\">Rust na Shell</a> para o mesmo argumento com um borrow checker, <a href=\"hydroponics.html\">Hidroponia em Casa</a> para uma horta sem solo, e <a href=\"recycling.html\">Nada É Lixo</a> para a segunda vida de tudo o que a casa deita fora."
+      };
+
+      function applyLanguage(next) {
+        lang = next;
+        document.documentElement.lang = next;
+        document.querySelectorAll("[data-i18n]").forEach(function (node) {
+          var key = node.getAttribute("data-i18n");
+          node.innerHTML = next === "pt" && PT[key] != null ? PT[key] : EN[key];
+        });
+        langButtons.forEach(function (button) {
+          button.setAttribute("aria-pressed", button.dataset.lang === next ? "true" : "false");
+        });
+        document.title = TITLE[next];
+        ["description", "og:description", "twitter:description"].forEach(function (name) {
+          var node = name === "description"
+            ? document.querySelector('meta[name="description"]')
+            : document.querySelector('meta[property="' + name + '"]');
+          if (node) {
+            node.setAttribute("content", DESCRIPTION[next]);
+          }
+        });
+        renderGlossary();
+        updateBuilder();
+        updateCheck();
+      }
+
+      langButtons = Array.prototype.slice.call(document.querySelectorAll(".lang-switch button"));
+      langButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          applyLanguage(button.dataset.lang);
+        });
+      });
+
+      document.querySelectorAll("[data-i18n]").forEach(function (node) {
+        EN[node.getAttribute("data-i18n")] = node.innerHTML;
+      });
+
+      ["b-app", "b-method", "b-os"].forEach(function (id) {
+        var node = byId(id);
+        if (node) {
+          node.addEventListener("change", updateBuilder);
+        }
+      });
+      ["tc-app", "tc-mine"].forEach(function (id) {
+        var node = byId(id);
+        if (node) {
+          node.addEventListener("change", updateCheck);
+        }
+      });
+
+      wireCopy("b-copy", "b-out");
+      wireCopy("tc-copy", "tc-out");
+
+      fillBuilder();
+      fillCheck();
+      renderGlossary();
+    })();
+  </script>
+
+</body>
+
+</html>
