@@ -14,7 +14,7 @@ problem you fix in the source.
 
 | Path | What it is |
 | --- | --- |
-| `docs/*.html` | 518 root pages. `index.html` is the archive/landing page. |
+| `docs/*.html` | 520 root pages: 517 articles, `index.html`, `browse.html`, `404.html`. |
 | `docs/browse.html` | Browser UI built on the JSON API. Not an article (excluded from the API). |
 | `docs/404.html` | Error page GitHub serves for missing paths; `noindex`, has its own search. Excluded from sitemap and API. |
 | `docs/.nojekyll` | Present so GitHub Pages serves the tree as-is instead of running Jekyll. |
@@ -27,10 +27,12 @@ problem you fix in the source.
 | `templates/` | Article starting points. |
 | `docs/tools/` | Feed pipeline for `index.html` (`feeds.json` → embedded `window.FEED_DATA` via `build.mjs`). `index.html` holds generated data — edit the CSS/body around it, not the blob. |
 | `backups/firebase-rules.txt` | Firestore rules for the comment form + Firebase console checklist. |
+| `backups/comments-login-failure.md` | Why every sign-in button failed, the evidence, and what the widget does now. |
+| `backups/setup-facebook-github.md` | How to enable another provider (console steps + the `AUTH_PROVIDERS` entry). |
 | `pushit.sh` | Deploy: pull, `git add .`, commit, push. Only run it when asked to publish. |
 | `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD). |
-| `GOOGLE.md` | Search Console runbook: what the structured data says, order of operations, known gaps. |
-| `CLOUDFLARE.md` | Hosting runbook: DNS/proxy state, WebMCP, bot rules, redirects, cache, headers, HSTS. Read it before changing anything at the edge. |
+| `backups/GOOGLE.md` | Search Console runbook: what the structured data says, order of operations, known gaps. |
+| `backups/CLOUDFLARE.md` | Hosting runbook: DNS/proxy state, WebMCP, bot rules, redirects, cache, headers, HSTS. Read it before changing anything at the edge. |
 
 Gotchas that already bit us: `tmp/` and `tools/` are **gitignored** (scripts there are
 lost — put anything durable in the repo root or in this skill), and `pushit.sh` runs
@@ -94,11 +96,29 @@ one-off script, run it, then prove it with `check_site.py` and with
 `git diff --numstat` that only the intended files moved. Every such script must be
 idempotent: a second run changes nothing.
 
-**Comments** — the form on `index.html` requires a real account (Google, GitHub,
-Microsoft, Apple, X, Facebook, Yahoo; no anonymous sign-in). Rules live in
-`backups/firebase-rules.txt`: `create` needs `request.auth != null`, exact fields,
-length caps, `createdAt == request.time`; `update`/`delete` denied. Changes there need
-pasting into the Firebase console — say so, do not claim they are live.
+**Comments** — the form on `index.html` requires a real account, and only offers the
+methods that exist in the Firebase project: Google (`signInWithPopup`), e-mail with
+password, and phone + SMS. The buttons come from `AUTH_PROVIDERS`; a provider that is
+not enabled in the console must not be in that array, because its button can only fail
+with `OPERATION_NOT_ALLOWED : The identity provider configuration is not found`.
+Check the live state before touching the array:
+
+```sh
+curl -s -X POST "https://identitytoolkit.googleapis.com/v1/accounts:createAuthUri?key=$KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"identifier":"a@b.com","continueUri":"https://blog.odicforcesounds.com/","providerId":"github.com"}'
+# authUri  -> provider enabled
+# OPERATION_NOT_ALLOWED -> not enabled; remove the button or enable it first
+```
+
+Rules live in `backups/firebase-rules.txt`: `create` needs `request.auth != null`, the
+exact field set, length caps, `uid == request.auth.uid`, `createdAt == request.time`;
+`update`/`delete` denied. Changes there need pasting into the Firebase console — say so,
+do not claim they are live. Diagnoses and provider setup are written up in
+`backups/comments-login-failure.md` and `backups/setup-facebook-github.md`; read them
+before changing the widget. Phone also needs the reader's country allowed under
+Authentication → Settings → SMS region policy — a number from a country that is off
+answers `SMS unable to be sent until this region enabled`.
 
 **Search from a page that has not booted** — `API.searchFull()` reads the chunk
 manifest when it is called; before `ready()` resolves it must retry after loading
@@ -138,6 +158,12 @@ lists what to check and how to confirm each setting with `curl`.
   with `runScripts: "dangerously"` works when the page's module body is inlined and
   `window.BlogAPI` is injected — assert computed styles, not just attributes. There is
   no Chrome in this environment, so do not promise screenshots.
+- The comment module imports from `gstatic.com`, which jsdom will not fetch. Rewrite its
+  import lines to `const { … } = globalThis.__FB;`, inject a fake Firebase, and run the
+  body with `vm.runInContext` against the jsdom window; that is how the sign-in flow is
+  exercised end to end (fake `onAuthStateChanged`, failing credential calls, the SMS
+  confirmation object). The harness lives in `tmp/authtest/` while it exists — `tmp/` is
+  gitignored, so recreate it rather than assume it is there.
 
 ## House style
 

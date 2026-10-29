@@ -1132,6 +1132,70 @@ cursor: progress;
 opacity: 0.55;
 }
 
+.comments-or {
+display: flex;
+align-items: center;
+gap: 0.6rem;
+margin: 0.35rem 0 0;
+font-family: var(--mono);
+font-size: 0.58rem;
+letter-spacing: 0.14em;
+text-transform: uppercase;
+color: var(--muted);
+}
+
+.comments-or::before,
+.comments-or::after {
+content: "";
+flex: 1;
+height: 1px;
+background-color: var(--line);
+}
+
+.comments-credentials {
+display: grid;
+gap: 0.6rem;
+}
+
+.comments-credentials[hidden] {
+display: none;
+}
+
+.comments-credentials .comments-actions button[data-variant="quiet"] {
+color: var(--ink);
+background-color: transparent;
+border-color: var(--line-strong);
+}
+
+.comments-credentials .comments-actions button[data-variant="quiet"]:hover,
+.comments-credentials .comments-actions button[data-variant="quiet"]:focus-visible {
+color: var(--accent-warm);
+border-color: var(--accent-warm);
+}
+
+.comments-credentials .comments-actions button[data-variant="link"] {
+padding: 0;
+font-size: 0.6rem;
+letter-spacing: 0.06em;
+text-transform: none;
+color: var(--muted);
+background-color: transparent;
+border: 0;
+}
+
+.comments-credentials .comments-actions button[data-variant="link"]:hover,
+.comments-credentials .comments-actions button[data-variant="link"]:focus-visible {
+color: var(--accent-warm);
+}
+
+.comments-recaptcha {
+min-height: 0;
+}
+
+.comments-recaptcha:empty {
+display: none;
+}
+
 .comments-identity {
 display: flex;
 align-items: center;
@@ -2355,6 +2419,49 @@ width: min(1120px, calc(100% - 9rem));
         <p class="comments-auth-title">Sign in to comment</p>
         <p class="comments-auth-note" id="comment-auth-note">Comments are tied to a real account. Anonymous posting is not allowed, so a name and a provider are always behind what you write.</p>
         <div class="comments-providers" id="comment-providers"></div>
+
+        <p class="comments-or"><span>or with an email</span></p>
+
+        <form class="comments-credentials" id="email-form" novalidate>
+          <label class="comments-field" for="email-address">
+            <span>Email</span>
+            <input id="email-address" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com">
+          </label>
+          <label class="comments-field" for="email-password">
+            <span>Password</span>
+            <input id="email-password" name="password" type="password" autocomplete="current-password" minlength="6" maxlength="128" placeholder="At least 6 characters">
+          </label>
+          <div class="comments-actions">
+            <button type="submit" id="email-signin">Sign in</button>
+            <button type="button" data-variant="quiet" id="email-signup">Create account</button>
+            <button type="button" data-variant="link" id="email-reset">Forgot the password?</button>
+          </div>
+        </form>
+
+        <p class="comments-or"><span>or with a phone number</span></p>
+
+        <form class="comments-credentials" id="phone-form" novalidate>
+          <label class="comments-field" for="phone-number">
+            <span>Phone <small>with country code</small></span>
+            <input id="phone-number" name="phone" type="tel" autocomplete="tel" maxlength="20" placeholder="+351 912 345 678">
+          </label>
+          <div class="comments-actions">
+            <button type="submit" data-variant="quiet" id="phone-send">Send code by SMS</button>
+          </div>
+        </form>
+
+        <form class="comments-credentials" id="phone-code-form" hidden novalidate>
+          <label class="comments-field" for="phone-code">
+            <span>Code from the SMS</span>
+            <input id="phone-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">
+          </label>
+          <div class="comments-actions">
+            <button type="submit" id="phone-verify">Verify and sign in</button>
+            <button type="button" data-variant="link" id="phone-cancel">Use another number</button>
+          </div>
+        </form>
+
+        <div id="comment-recaptcha" class="comments-recaptcha"></div>
       </div>
 
       <div class="comments-identity" id="comment-identity" hidden>
@@ -3658,18 +3765,19 @@ width: min(1120px, calc(100% - 9rem));
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
       browserLocalPersistence,
-      FacebookAuthProvider,
+      createUserWithEmailAndPassword,
       getAuth,
       getRedirectResult,
-      GithubAuthProvider,
       GoogleAuthProvider,
       onAuthStateChanged,
-      OAuthProvider,
+      RecaptchaVerifier,
+      sendPasswordResetEmail,
       setPersistence,
+      signInWithEmailAndPassword,
+      signInWithPhoneNumber,
       signInWithPopup,
       signInWithRedirect,
-      signOut,
-      TwitterAuthProvider
+      signOut
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
       addDoc,
@@ -3696,20 +3804,19 @@ width: min(1120px, calc(100% - 9rem));
     const MAX_NAME = 60;
     const MAX_MESSAGE = 2000;
 
-    /* Every entry is an authenticated identity. Nothing anonymous is wired. */
+    /* Only the providers actually enabled in the Firebase project. A button
+       for a provider that is off is a button that can only fail: createAuthUri
+       answers "the identity provider configuration is not found". */
     const AUTH_PROVIDERS = [
-      { id: "google.com", label: "Google", primary: true, make: function () { return new GoogleAuthProvider(); } },
-      { id: "github.com", label: "GitHub", primary: true, make: function () { return new GithubAuthProvider(); } },
-      { id: "microsoft.com", label: "Microsoft", primary: false, make: function () { return new OAuthProvider("microsoft.com").setCustomParameters({ prompt: "select_account" }); } },
-      { id: "apple.com", label: "Apple", primary: false, make: function () { return new OAuthProvider("apple.com"); } },
-      { id: "twitter.com", label: "X / Twitter", primary: false, make: function () { return new TwitterAuthProvider(); } },
-      { id: "facebook.com", label: "Facebook", primary: false, make: function () { return new FacebookAuthProvider(); } },
-      { id: "yahoo.com", label: "Yahoo", primary: false, make: function () { return new OAuthProvider("yahoo.com"); } }
+      { id: "google.com", label: "Continue with Google", primary: true, make: function () { return new GoogleAuthProvider(); } }
     ];
     const PROVIDER_LABELS = AUTH_PROVIDERS.reduce(function (acc, p) {
       acc[p.id] = p.label;
       return acc;
-    }, {});
+    }, {
+      "password": "email and password",
+      "phone": "phone number"
+    });
 
     /* Only avatars hosted by the providers themselves. A comment field is
        written by its author, so an open URL would let anyone plant a tracking
@@ -3737,9 +3844,26 @@ width: min(1120px, calc(100% - 9rem));
     const identityProvider = document.getElementById("comment-identity-provider");
     const avatar = document.getElementById("comment-avatar");
     const signOutButton = document.getElementById("comment-signout");
+    const emailForm = document.getElementById("email-form");
+    const emailAddress = document.getElementById("email-address");
+    const emailPassword = document.getElementById("email-password");
+    const emailSignIn = document.getElementById("email-signin");
+    const emailSignUp = document.getElementById("email-signup");
+    const emailReset = document.getElementById("email-reset");
+    const phoneForm = document.getElementById("phone-form");
+    const phoneNumber = document.getElementById("phone-number");
+    const phoneSend = document.getElementById("phone-send");
+    const phoneCodeForm = document.getElementById("phone-code-form");
+    const phoneCode = document.getElementById("phone-code");
+    const phoneVerify = document.getElementById("phone-verify");
+    const phoneCancel = document.getElementById("phone-cancel");
+    const recaptchaBox = document.getElementById("comment-recaptcha");
 
     if (form && messageInput && submitButton && status && counter && list && empty && count &&
-        signinPanel && providersBox && identity && identityName && identityProvider && avatar && signOutButton) {
+        signinPanel && providersBox && identity && identityName && identityProvider && avatar && signOutButton &&
+        emailForm && emailAddress && emailPassword && emailSignIn && emailSignUp && emailReset &&
+        phoneForm && phoneNumber && phoneSend && phoneCodeForm && phoneCode && phoneVerify && phoneCancel &&
+        recaptchaBox) {
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
       const auth = getAuth(app);
@@ -3752,6 +3876,8 @@ width: min(1120px, calc(100% - 9rem));
         timeStyle: "short"
       });
       let statusTimer = 0;
+      let phoneVerifier = null;
+      let phoneConfirmation = null;
 
       function setStatus(text, state) {
         status.textContent = text;
@@ -3798,6 +3924,167 @@ width: min(1120px, calc(100% - 9rem));
           return "Too many attempts. Wait a minute and try again.";
         }
         return "Could not sign you in. Try another provider.";
+      }
+
+      /* Email, password and phone have their own vocabulary; the OAuth codes
+         above would all collapse into "try another provider", which is wrong
+         when the only provider on offer is the one that just failed. */
+      function credentialMessage(error) {
+        const code = (error && error.code) || "";
+        if (code === "auth/invalid-email") {
+          return "That email address does not look right.";
+        }
+        if (code === "auth/missing-email" || code === "auth/missing-password") {
+          return "Fill in the email and the password.";
+        }
+        if (code === "auth/weak-password") {
+          return "Use at least 6 characters in the password.";
+        }
+        if (code === "auth/email-already-in-use") {
+          return "That address already has an account. Sign in instead.";
+        }
+        if (code === "auth/wrong-password" || code === "auth/invalid-credential" || code === "auth/user-not-found") {
+          return "Wrong email or password. Create an account if this is your first time.";
+        }
+        if (code === "auth/user-disabled") {
+          return "This account has been disabled.";
+        }
+        if (code === "auth/too-many-requests") {
+          return "Too many attempts. Wait a few minutes.";
+        }
+        if (code === "auth/network-request-failed") {
+          return "Network problem. Try again in a moment.";
+        }
+        if (code === "auth/operation-not-allowed") {
+          return "This sign-in method is off in the Firebase project.";
+        }
+        if (code === "auth/invalid-phone-number") {
+          return "Use the full number, with the country code.";
+        }
+        if (code === "auth/missing-verification-code" || code === "auth/invalid-verification-code") {
+          return "That code is not right. Check the SMS and try again.";
+        }
+        if (code === "auth/code-expired") {
+          return "That code expired. Ask for a new one.";
+        }
+        if (code === "auth/invalid-app-credential" || code === "auth/captcha-check-failed") {
+          return "The reCAPTCHA check failed. Reload the page and try again.";
+        }
+        return "Could not sign you in. Try again.";
+      }
+
+      function busy(buttons, isBusy) {
+        buttons.forEach(function (button) {
+          button.disabled = isBusy;
+        });
+      }
+
+      function submitEmail(action) {
+        const address = emailAddress.value.trim();
+        const password = emailPassword.value;
+
+        if (!address || !password) {
+          setStatus("Fill in the email and the password.", "error");
+          return;
+        }
+
+        setStatus(action === "signup" ? "Creating the account..." : "Signing in...", "");
+        busy([emailSignIn, emailSignUp, emailReset], true);
+
+        const call = action === "signup"
+          ? createUserWithEmailAndPassword(auth, address, password)
+          : signInWithEmailAndPassword(auth, address, password);
+
+        call.then(function () {
+          emailPassword.value = "";
+          if (action === "signup") {
+            setStatus("Account created. You can post now.", "success");
+          }
+        }).catch(function (error) {
+          setStatus(credentialMessage(error), "error");
+        }).finally(function () {
+          busy([emailSignIn, emailSignUp, emailReset], false);
+        });
+      }
+
+      function ensureVerifier() {
+        if (!phoneVerifier) {
+          phoneVerifier = new RecaptchaVerifier(auth, recaptchaBox, { size: "invisible" });
+        }
+        return phoneVerifier;
+      }
+
+      function resetPhone() {
+        phoneConfirmation = null;
+        phoneCode.value = "";
+        phoneCodeForm.hidden = true;
+        phoneForm.hidden = false;
+        if (phoneVerifier) {
+          phoneVerifier.clear();
+          phoneVerifier = null;
+        }
+      }
+
+      function sendPhoneCode() {
+        const number = phoneNumber.value.trim();
+
+        if (!/^\+?[0-9][0-9 ()-]{5,19}$/.test(number)) {
+          setStatus("Use the full number, with the country code, like +351 912 345 678.", "error");
+          return;
+        }
+
+        setStatus("Sending the code...", "");
+        busy([phoneSend], true);
+
+        Promise.resolve().then(function () {
+          return ensureVerifier().render();
+        }).then(function () {
+          return signInWithPhoneNumber(auth, number, phoneVerifier);
+        }).then(function (confirmation) {
+          phoneConfirmation = confirmation;
+          phoneForm.hidden = true;
+          phoneCodeForm.hidden = false;
+          phoneCode.focus();
+          setStatus("Code sent. Type the six digits from the SMS.", "success");
+        }).catch(function (error) {
+          const raw = String((error && error.message) || "");
+          const regional = /region|recaptcha|invalid-app-credential/i.test(raw);
+          resetPhone();
+          if (regional) {
+            setStatus("SMS is not enabled for this country in the Firebase project, or reCAPTCHA refused this domain.", "error");
+          } else {
+            setStatus(credentialMessage(error), "error");
+          }
+        }).finally(function () {
+          busy([phoneSend], false);
+        });
+      }
+
+      function confirmPhoneCode() {
+        const code = phoneCode.value.trim();
+
+        if (!phoneConfirmation) {
+          setStatus("Ask for a code first.", "error");
+          return;
+        }
+
+        if (!/^[0-9]{6}$/.test(code)) {
+          setStatus("Type the six digits from the SMS.", "error");
+          return;
+        }
+
+        setStatus("Checking the code...", "");
+        busy([phoneVerify], true);
+
+        phoneConfirmation.confirm(code).then(function () {
+          resetPhone();
+          phoneNumber.value = "";
+          setStatus("Signed in. You can post now.", "success");
+        }).catch(function (error) {
+          setStatus(credentialMessage(error), "error");
+        }).finally(function () {
+          busy([phoneVerify], false);
+        });
       }
 
       function providerLabel(user) {
@@ -3902,8 +4189,51 @@ width: min(1120px, calc(100% - 9rem));
 
         onAuthStateChanged(auth, applyUser);
 
+        emailForm.addEventListener("submit", function (event) {
+          event.preventDefault();
+          submitEmail("signin");
+        });
+
+        emailSignUp.addEventListener("click", function () {
+          submitEmail("signup");
+        });
+
+        emailReset.addEventListener("click", function () {
+          const address = emailAddress.value.trim();
+          if (!address) {
+            setStatus("Type your email address first, then ask for the reset link.", "error");
+            emailAddress.focus();
+            return;
+          }
+          busy([emailReset], true);
+          sendPasswordResetEmail(auth, address).then(function () {
+            setStatus("Reset link sent to " + address + ".", "success");
+          }).catch(function (error) {
+            setStatus(credentialMessage(error), "error");
+          }).finally(function () {
+            busy([emailReset], false);
+          });
+        });
+
+        phoneForm.addEventListener("submit", function (event) {
+          event.preventDefault();
+          sendPhoneCode();
+        });
+
+        phoneCodeForm.addEventListener("submit", function (event) {
+          event.preventDefault();
+          confirmPhoneCode();
+        });
+
+        phoneCancel.addEventListener("click", function () {
+          resetPhone();
+          setStatus("", "");
+          phoneNumber.focus();
+        });
+
         signOutButton.addEventListener("click", function () {
           signOutButton.disabled = true;
+          resetPhone();
           signOut(auth).then(function () {
             setStatus("Signed out. Reading and posting are still separate.", "");
           }).catch(function () {
