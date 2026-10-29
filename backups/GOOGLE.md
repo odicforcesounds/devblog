@@ -48,11 +48,14 @@ Philosophy & Spirituality, Politics Law & Justice, Psychology & the Mind,
 Society Culture & Education, Music Art & Creativity, Games & Quests,
 Health Food & Wellbeing, Business & Economics, Site Blog & Reading.
 
-### 1.2 `browse.html` deixou de estar órfão
+### 1.2 Página separada de pesquisa: removida
 
-`docs/browse.html` (o browser sobre a API JSON) não tinha uma única ligação a apontar
-para ele. Agora há uma na barra do `index.html` — **Browse all** — ao lado de
-*Master Exam*, a reutilizar a classe `.game-link` que já existia. Nenhum CSS novo.
+`docs/browse.html` (o browser sobre a API JSON) chegou a ter uma ligação **Browse all**
+na barra do `index.html`. Foi depois apagada: a pesquisa que interessa — filtrar as
+categorias do arquivo — já existe no próprio `index.html`, e manter uma segunda página
+com pesquisa só criava dois sítios onde procurar. A ligação saiu do `index.html`, a
+entrada saiu do `sitemap.xml`, e `docs/404.html` ficou com *Blog index* e *Sitemap*.
+O stub `docs/home.html`, que redireccionava para lá, passou a redireccionar para `/`.
 
 ### 1.3 Canonical da página inicial
 
@@ -157,8 +160,9 @@ subir com um título melhor. Não vale a pena pedir as 517.
 | `Excluída por robots.txt` | `/archive/`, `/obsdRouter/`, `/api/` | esperado |
 | `Não encontrada (404)` | — | confirmar que `docs/404.html` está a servir |
 
-`browse.html` e `404.html` vão aparecer no relatório. O `404.html` está de propósito.
-O `browse.html` agora tem ligação; deve ser rastreado na próxima passagem.
+O `404.html` vai aparecer no relatório, e está de propósito. A antiga `browse.html` já
+não existe; se aparecer no relatório é cache do lado do Google, e o `sitemap.xml`
+reenviado resolve.
 
 ### Passo 8 — Bing, de graça
 

@@ -34,7 +34,7 @@ AUTHOR_URL = ORIGIN + "/"
 AUTHOR_SAME_AS = ["https://mastodon.social/@TaoExpression"]
 
 # Pages that are interface, not articles: their JSON-LD is written by hand.
-SKIP = {"404.html", "browse.html", "home.html"}
+SKIP = {"404.html", "home.html"}
 
 LD_RE = re.compile(r'<script type="application/ld\+json">[\s\S]*?</script>')
 

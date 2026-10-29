@@ -10,12 +10,13 @@ chunks — plus the scripts that regenerate them.
 ## What this repository contains
 
 - **The archive** — 520 HTML files at the root of `docs/`: 517 articles, plus
-  `index.html` (the landing page), `browse.html` and `404.html`. The subject range is
-  deliberately wide; see [Topics covered](#topics-covered).
-- **A browser page for the API** — `docs/browse.html`, a vanilla JavaScript browser over
-  the JSON index: full-text search, filters by language and year, no dependencies.
+  `index.html` (the landing page), `404.html` and `home.html` (a redirect stub kept for
+  old links). The subject range is deliberately wide; see
+  [Topics covered](#topics-covered).
+- **Search on the landing page** — `docs/index.html` filters its own category list from
+  a single input, with no dependency and no second page to visit.
 - **A 404 page** — `docs/404.html`, which GitHub Pages serves for missing paths, with
-  its own search over the same API.
+  its own search over the JSON API.
 - **A comment form** — on `index.html` only: Google, e-mail/password and phone number
   sign-in, a Firestore-backed thread, no anonymous posting. Rules in
   `backups/firebase-rules.txt`; what was broken and how it was fixed in
@@ -47,9 +48,9 @@ devblog/
 ├── .agents/skills/blog-ops/   check_site.py, build_sitemap.py, enrich_schema.py, SKILL.md
 ├── backups/                   runbooks, originals, maps, firebase-rules.txt
 ├── docs/                      ← published site root
-│   ├── index.html             landing page, categories, comment form
-│   ├── browse.html            browser over the JSON API
-│   ├── 404.html               error page (noindex)
+│   ├── index.html             landing page, categories, search, comment form
+│   ├── 404.html               error page (noindex), search over the API
+│   ├── home.html              redirect stub for the old page name
 │   ├── *.html                 the 517 articles
 │   ├── api/                   generated: index.json + text/NNN.json
 │   ├── api.js                 vanilla ES module that reads the API
@@ -138,7 +139,8 @@ curl -s https://blog.odicforcesounds.com/api/index.json | jq '{count, languages,
 ```
 
 `index.json` carries `generated`, `origin`, `count`, `languages`, `years`, `chunks`
-(the text manifest) and `articles` (517 of them). Each article has `slug`, `url`, `path`,
+(the text manifest) and `articles` (518 entries, `index.html` among them). Each entry has
+`slug`, `url`, `path`,
 `title`, `description`, `lang`, `published`, `modified`, `h1`, `headings`, `words`,
 `chars`.
 
@@ -152,14 +154,14 @@ BlogAPI.recent(5);                 // newest changes
 ```
 
 `searchFull` calls `onResults` after each chunk, so a page can paint while the rest is
-still travelling. `browse.html` and `404.html` are built on it.
+still travelling. `404.html` is built on it.
 
-`browse.html` on a cold start calls `searchFull` before the manifest has arrived — the
-retry is inside `docs/api.js`; do not remove it.
+`404.html` calls `searchFull` before the manifest has arrived — the retry is inside
+`docs/api.js`; do not remove it.
 
-The API covers the articles only. `index.html`, `browse.html` and `404.html` are
-excluded on purpose: one is the landing page, one is this browser, the last is a page
-that must never appear in results.
+The API covers the pages as documents, `index.html` included. Only `404.html` and the
+`home.html` stub are left out: one must never appear in results, the other is not a
+page.
 
 ## Checks
 

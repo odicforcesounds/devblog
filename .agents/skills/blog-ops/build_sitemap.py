@@ -94,7 +94,10 @@ def lastmod(path):
 
 
 def build():
-    names = sorted(n for n in os.listdir(DOCS) if n.endswith(".html") and n not in SKIP)
+    # The root first, then alphabetical: the landing page is the entry point and
+    # keeping it on line 3 keeps the diff of a one-page change to one page.
+    names = sorted((n for n in os.listdir(DOCS) if n.endswith(".html") and n not in SKIP),
+                   key=lambda n: (n != "index.html", n))
     lines = ['<?xml version="1.0" encoding="UTF-8"?>',
              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for name in names:

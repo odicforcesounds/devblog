@@ -23,7 +23,9 @@ ORIGIN = "https://blog.odicforcesounds.com"
 DOCS = "docs"
 
 # Pages that are interface, not archive: excluded from the JSON API on purpose.
-NOT_ARTICLES = {"browse.html"}
+# Empty since the standalone API browser page was dropped; only the infra pages
+# below are out of the API now.
+NOT_ARTICLES = set()
 
 # Infrastructure pages: served by the host, never listed in the sitemap or the API,
 # and not intended to rank. Only doctype, one <h1> and noindex are required.
