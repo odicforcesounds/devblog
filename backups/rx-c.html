@@ -1,0 +1,284 @@
+    <section id="prompt">
+      <h2><span class="num">07</span><span data-i18n="s7.title">The prompt, the cd, and the history</span></h2>
+      <p class="sub" data-i18n="s7.sub">
+        Three tools that change how the shell feels rather than what it runs. <strong>starship</strong>
+        draws the prompt, <strong>zoxide</strong> replaces <code>cd</code> with a memory of where you
+        have been, and <strong>atuin</strong> replaces the history file with a searchable, encrypted
+        database. All three install the same way, and all three hook into the shell with one line.
+      </p>
+
+      <div class="card">
+        <h3>starship — <span data-i18n="s7.st.h">a prompt that knows where it is</span></h3>
+        <p data-i18n="s7.st.p">One binary, one <code>starship.toml</code>, and a prompt that shows the git branch, the language version, the exit code of the last command, the time a build took — without a shell script per shell. It is fast because it is compiled and because it only asks the modules the current directory can use. The reason to choose it over a hand-written prompt is not beauty; it is that a new language gets supported by an upgrade instead of by editing your <code>.bashrc</code>.</p>
+        <pre>cargo install --locked starship
+
+<span class="c"># ~/.bashrc, or the zsh / fish equivalent</span>
+eval "$(starship init bash)"
+eval "$(starship init zsh)"
+
+<span class="c"># a minimal prompt, in ~/.config/starship.toml</span>
+add_newline = false
+[character]
+success_symbol = "[\$](bold green)"
+error_symbol = "[\$](bold red)"
+[git_branch]
+format = "on [\$branch](\$style) "</pre>
+      </div>
+
+      <div class="card">
+        <h3>zoxide — <span data-i18n="s7.zo.h">cd, but it remembers</span></h3>
+        <p data-i18n="s7.zo.p">It keeps a score for every directory you visit and lets you jump by fragment: <code>z proj</code> from anywhere. The ranking is what makes it work — frequency and recency, not a list you maintain. Hook it over <code>cd</code> with <code>--cmd cd</code> and it behaves like cd for paths that exist, and like a jump for anything else, which is the version people keep.</p>
+        <pre>cargo install --locked zoxide
+eval "$(zoxide init bash --cmd cd)"     <span class="c"># zsh / fish / nushell too</span>
+
+z blog                <span class="c"># best match for "blog"</span>
+z blog docs           <span class="c"># both fragments, any order</span>
+zi                    <span class="c"># pick interactively (needs fzf or skim)</span>
+zoxide query -ls      <span class="c"># the whole ranking, with scores</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>atuin — <span class="data-i18n-placeholder"></span><span data-i18n="s7.at.h">history as a database</span></h3>
+        <p data-i18n="s7.at.p">Your shell history is a flat file that every terminal writes to at exit, which is why it loses commands, duplicates others and cannot tell you what failed. Atuin records each command with its exit code, duration, directory and session into SQLite, and gives you a search interface on Ctrl+R that filters by all of it. Sync between machines is optional and end-to-end encrypted; self-hosting is a single binary and a Postgres or SQLite database.</p>
+        <pre>cargo install --locked atuin
+eval "$(atuin init bash)"        <span class="c"># or zsh / fish / nu</span>
+
+atuin import auto                <span class="c"># bring the old history file in</span>
+atuin search -i                  <span class="c"># the interactive search</span>
+atuin search --exit 1 --before 2026-10-01
+atuin stats                      <span class="c"># what you actually run</span>
+
+<span class="c"># optional: your own server, or the hosted one</span>
+atuin register -u me -p … -k …   <span class="c"># self-hosted</span>
+atuin login -u me</pre>
+        <p data-i18n="s7.at.after">The privacy question is fair, and the answer is architectural: without <code>atuin login</code> nothing leaves the machine. With sync, the encryption key never leaves it either — the server stores ciphertext and cannot read your commands.</p>
+      </div>
+    </section>
+
+    <section id="shell">
+      <h2><span class="num">08</span><span data-i18n="s8.title">A shell written in Rust, and two that extend yours</span></h2>
+      <p class="sub" data-i18n="s8.sub">
+        <strong>Nushell</strong> is a shell where everything is a table, <strong>mise</strong> is the
+        version manager that finally replaced four others, and <strong>skim</strong> is the fuzzy
+        finder you can script from Rust as easily as from a pipeline. Two of the three are large
+        builds; the third is a library with a binary attached.
+      </p>
+
+      <div class="card">
+        <h3>nushell — <span data-i18n="s8.nu.h">pipelines of structured data</span></h3>
+        <p data-i18n="s8.nu.p">In bash a pipeline carries bytes and every command re-parses them. In Nushell a pipeline carries a table with named columns, so <code>ls</code> can be filtered by <code>size</code>, <code>ps</code> sorted by <code>cpu</code>, and JSON read as a data structure rather than text. It is a different shell, not a drop-in replacement: your <code>.bashrc</code> does not apply, and the first hour is unlearning. What it buys is a shell where the answer to "which of these files is largest" is one expression.</p>
+        <pre>cargo install --locked nu        <span class="c"># add --features=full for the extras</span>
+nu
+
+ls | where size &gt; 10mb | sort-by size --reverse | first 5
+ps | where cpu &gt; 5 | select pid name cpu mem
+open package.json | get dependencies | columns
+http get https://api.github.com/repos/nushell/nushell | get stargazers_count
+ls **/*.rs | group-by { path parse | get extension } | transpose ext files</pre>
+      </div>
+
+      <div class="card">
+        <h3>mise — <span data-i18n="s8.mi.h">one version manager for every language</span></h3>
+        <p data-i18n="s8.mi.p">Node, Python, Go, Ruby, Java, Terraform and the rest, with one command and one configuration file. It reads the same <code>.tool-versions</code> as asdf, so migrating is a copy, and adds a task runner and an environment manager that reads <code>.env</code> files. If you have ever had three version managers with three activation lines in one profile, this is the one that replaces them.</p>
+        <pre>cargo install --locked mise
+eval "$(mise activate bash)"        <span class="c"># or zsh / fish</span>
+
+mise use --global node@22
+mise use python@3.13                <span class="c"># writes .mise.toml in the project</span>
+mise install
+mise ls --current
+mise exec -- node --version
+
+<span class="c"># .mise.toml, committed with the project</span>
+[tools]
+node = "22"
+python = "3.13"
+
+[tasks.test]
+run = "cargo nextest run"</pre>
+      </div>
+
+      <div class="card">
+        <h3>skim — <span data-i18n="s8.sk.h">a fuzzy finder you can link against</span></h3>
+        <p data-i18n="s8.sk.p">The same idea as fzf, written as a Rust library with a CLI on top — which is why it is fast on a million-line input and why other Rust programs embed it. The interface is compatible enough that most fzf habits transfer, and the extras are the reason to switch: a built-in interactive mode that re-runs the search command on every keystroke, and a tmux popup wrapper.</p>
+        <pre>cargo install --locked skim        <span class="c"># the binary is sk</span>
+
+sk                                  <span class="c"># files under the current directory</span>
+sk --ansi -i -c 'rg --color=always --line-number "{}"'
+git ls-files | sk --preview 'bat --color=always {}'
+sk-tmux -d 40%                      <span class="c"># in a tmux popup</span>
+vim "$(sk)"</pre>
+      </div>
+    </section>
+
+    <section id="files">
+      <h2><span class="num">09</span><span data-i18n="s9.title">Find, read, list: the four that replace the classics</span></h2>
+      <p class="sub" data-i18n="s9.sub">
+        <strong>ripgrep</strong> replaces grep, <strong>fd</strong> replaces find, <strong>bat</strong>
+        replaces cat and <strong>eza</strong> replaces ls. None of them is a wrapper around the
+        original, and none of them is installed by default — which is why the first week feels like
+        using someone else's kitchen and the second week feels like your own.
+      </p>
+
+      <div class="card">
+        <h3>ripgrep — <span data-i18n="s9.rg.h">grep, with the right defaults</span></h3>
+        <p data-i18n="s9.rg.p">It respects <code>.gitignore</code>, skips binary files, searches recursively by default, and uses a regex engine that is fast enough to make the flags unnecessary. The behaviour change that matters is the silence: it does not descend into <code>node_modules</code> or <code>target</code> unless you ask, so the results are the files you meant.</p>
+        <pre>cargo install --locked ripgrep
+
+rg 'fn main'                        <span class="c"># recursive, ignores .gitignore</span>
+rg -n --hidden -g '!target' 'TODO'
+rg -t py 'import requests'
+rg -l 'deprecated' | xargs sed -i 's/deprecated/obsolete/g'
+rg --stats 'unsafe'                 <span class="c"># counts, files, time</span>
+rg -C 3 'panic!'</pre>
+      </div>
+
+      <div class="card">
+        <h3>fd — <span class="data-i18n="s9.fd.h">find, without the incantation</span></h3>
+        <p data-i18n="s9.fd.p">The syntax is <code>fd PATTERN</code>, the pattern is a regex on the file name, and it is recursive and gitignore-aware by default. Everything that took a manual page to learn in find is a flag: <code>-e</code> for extension, <code>-x</code> to run a command per result, <code>-X</code> to run one command with all of them. On Debian and Ubuntu the package installs the binary as <code>fdfind</code> to avoid a name clash, which is the single most common "it did not install" report.</p>
+        <pre>cargo install --locked fd-find        <span class="c"># binary: fd</span>
+
+fd '\.rs$'                          <span class="c"># regex on names</span>
+fd -e rs -e toml                    <span class="c"># by extension</span>
+fd -H -I 'config'                   <span class="c"># include hidden and ignored</span>
+fd -e jpg -x convert {} {.}.webp    <span class="c"># per file; {.} is the stem</span>
+fd -e log -X rm                    <span class="c"># one invocation, all paths</span>
+fd -td -d 2                         <span class="c"># directories, two levels down</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>bat — <span data-i18n="s9.bt.h">cat with syntax colours and a pager</span></h3>
+        <p data-i18n="s9.bt.p">A <code>cat</code> that highlights the file by its language, shows line numbers when the output is a terminal, adds a header with the file name and size, and pages long files. It also integrates with git to mark changed lines, which turns "read this file" into "see what changed in this file" without opening a diff.</p>
+        <pre>cargo install --locked bat
+
+bat src/main.rs
+bat --diff src/main.rs              <span class="c"># git changes in the margin</span>
+bat -A .env                         <span class="c"># show invisible characters</span>
+bat --plain --language json x.json  <span class="c"># no decoration, for piping</span>
+bat --list-themes | head
+
+<span class="c"># as the pager for man pages, in ~/.bashrc</span>
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"</pre>
+      </div>
+
+      <div class="card">
+        <h3>eza — <span class="data-i18n="s9.ez.h">ls with the columns you wanted</span></h3>
+        <p data-i18n="s9.ez.p">Git status per file, a tree view, icons, human-readable sizes, and a grid that stays readable in a narrow terminal. The one that changes daily use is <code>--git</code>: a directory listing that also says which files are modified or untracked, without a second command.</p>
+        <pre>cargo install --locked eza
+
+eza -la --git --group-directories-first
+eza --tree -L 2 --git-ignore
+eza -l --sort=modified --reverse | head
+eza --icons=auto -T -L 1</pre>
+      </div>
+    </section>
+
+    <section id="text">
+      <h2><span class="num">10</span><span data-i18n="s10.title">Text surgery, counting, bytes, Markdown</span></h2>
+      <p class="sub" data-i18n="s10.sub">
+        Four small tools with sharp edges. <strong>sd</strong> does find-and-replace with a syntax
+        you can remember, <strong>tokei</strong> counts code the way a report needs it,
+        <strong>hexyl</strong> makes a hex dump legible, and <strong>mdcat</strong> renders Markdown
+        in a terminal that can show pictures.
+      </p>
+
+      <div class="card">
+        <h3>sd — <span data-i18n="s10.sd.h">search and displace</span></h3>
+        <p data-i18n="s10.sd.p">The signature is <code>sd PATTERN REPLACEMENT [FILES]</code>, the pattern is a regex, and the default is to write in place. That last part is the danger and the point: no <code>-i</code> flag to remember, no backup file to clean up, and a preview mode when you want to look first.</p>
+        <pre>cargo install --locked sd
+
+sd 'foo' 'bar' file.txt             <span class="c"># in place</span>
+sd -p 'foo' 'bar' file.txt          <span class="c"># preview only</span>
+sd '(\d{4})-(\d{2})-(\d{2})' '$3/$2/$1' dates.txt
+fd -e md -x sd 'localhost:8080' 'example.com' {}
+sd 'fn (\w+)\(' 'pub fn $1(' src/lib.rs</pre>
+      </div>
+
+      <div class="card">
+        <h3>tokei — <span data-i18n="s10.tk.h">how much code is actually here</span></h3>
+        <p data-i18n="s10.tk.p">Counts lines, code, comments and blanks per language, in parallel, with the language detected from the extension. It respects <code>.gitignore</code>, excludes vendored directories by default in the common cases, and outputs JSON or YAML when the number is going into a report rather than a terminal.</p>
+        <pre>cargo install --locked tokei
+
+tokei
+tokei --sort code
+tokei -e target,node_modules,dist
+tokei --output json | jq '.Rust.code'
+tokei src tests --compact</pre>
+      </div>
+
+      <div class="card">
+        <h3>hexyl — <span data-i18n="s10.hx.h">a hex dump with colour</span></h3>
+        <p data-i18n="s10.hx.p">The columns are offset, bytes and ASCII, and the colours distinguish printable characters, whitespace, control codes and the null byte. That sounds cosmetic until you are looking for a stray <code>\r\n</code> in a protocol capture or a BOM at the start of a file; then the colour is the whole feature.</p>
+        <pre>cargo install --locked hexyl
+
+hexyl firmware.bin
+hexyl -n 64 secrets.txt             <span class="c"># first 64 bytes only</span>
+hexyl -s 128 -n 32 data.bin         <span class="c"># a window</span>
+hexyl --border none --color always dump.bin | head</pre>
+      </div>
+
+      <div class="card">
+        <h3>mdcat — <span data-i18n="s10.md.h">read a README without leaving the shell</span></h3>
+        <p data-i18n="s10.md.p">Renders Markdown with headings, tables, lists, syntax highlighting and, in terminals that support it, inline images. The renderer is strict about CommonMark and picks up local links, so a document with a table of contents behaves like a document. For a repository you have just cloned, it is the fastest way to read the instructions you are about to ignore.</p>
+        <pre>cargo install --locked mdcat
+
+mdcat README.md
+mdcat docs/guide.md | less -R
+mdcat --paginate CHANGELOG.md</pre>
+      </div>
+    </section>
+
+    <section id="machine">
+      <h2><span class="num">11</span><span data-i18n="s11.title">The machine: processes, disk, and who is using the network</span></h2>
+      <p class="sub" data-i18n="s11.sub">
+        <strong>bottom</strong> is top with graphs, <strong>procs</strong> is ps with colour and real
+        sorting, <strong>dust</strong> is du that finishes, and <strong>bandwhich</strong> answers
+        the question none of the others can: which process is using the bandwidth right now.
+      </p>
+
+      <div class="card">
+        <h3>bottom — <span data-i18n="s11.bt.h">top, if top had been designed this decade</span></h3>
+        <p data-i18n="s11.bt.p">CPU, memory, network, disk and temperature in widgets you can rearrange, with mouse support, zoom, filters and a config file. It runs over SSH without complaint, and the search-and-kill flow (<code>/</code> then <code>dd</code>) is the reason to keep it open on a server.</p>
+        <pre>cargo install --locked bottom        <span class="c"># binary: btm</span>
+
+btm
+btm --basic                          <span class="c"># no graphs, for a slow link</span>
+btm --battery
+btm -t 500                           <span class="c"># sample every 500 ms</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>procs — <span class="data-i18n-placeholder"></span><span data-i18n="s11.pr.h">ps with the columns that matter</span></h3>
+        <p data-i18n="s11.pr.p">Readable by default: colour per process state, a tree view, sortable by CPU or memory as a number rather than as a string. It also shows the command with its arguments wrapped instead of truncated, which is the difference between seeing a process and guessing at it.</p>
+        <pre>cargo install --locked procs
+
+procs
+procs --tree
+procs firefox
+procs --sortd cpu | head -15
+procs --or --and --watch 1</pre>
+      </div>
+
+      <div class="card">
+        <h3>dust — <span class="data-i18n="s11.du.h">du, drawn as a tree</span></h3>
+        <p data-i18n="s11.du.p">It walks directories in parallel, then prints a tree of the largest entries with bars, so the answer to "what is eating the disk" is the first screen rather than a sorted list you have to read. The binary is <code>dust</code>; the crate is <code>du-dust</code>, which is the kind of registry detail this manual exists to record.</p>
+        <pre>cargo install --locked du-dust        <span class="c"># binary: dust</span>
+
+dust
+dust -d 2                            <span class="c"># two levels</span>
+dust -n 15                           <span class="c"># fifteen lines</span>
+dust -r                              <span class="c"># smallest first</span>
+dust -X target                       <span class="c"># skip a directory</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>bandwhich — <span data-i18n="s11.bw.h">the network, per process</span></h3>
+        <p data-i18n="s11.bw.p">Shows connections grouped by process and by remote address, with current throughput and totals, refreshing in place. It needs raw socket access to see other processes' traffic: run it with <code>sudo</code>, or grant the binary the capability once so it does not need a password. It is a diagnostic, not a firewall — nothing it shows is blocked by it.</p>
+        <pre>cargo install --locked bandwhich
+
+sudo bandwhich
+sudo bandwhich -i wlan0
+sudo setcap cap_net_raw,cap_net_admin=eip ~/.cargo/bin/bandwhich
+bandwhich --total-utilization</pre>
+      </div>
+    </section>

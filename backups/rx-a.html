@@ -1,0 +1,335 @@
+  <header class="hero">
+    <div class="wrap">
+      <div class="topbar">
+        <a class="mark" href="index.html">Monkey Blog · Rust in the Shell</a>
+        <div class="topbar-tools">
+          <a class="home-link" href="index.html"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" focusable="false"><path d="M8 1.5 1.5 7h1.8v6.5h3.4V9.8h2.6v3.7h3.4V7h1.8L8 1.5Z" fill="currentColor"/></svg><span data-i18n="nav.home">Home</span></a>
+          <div class="lang-switch" role="group" aria-label="Language / Idioma">
+            <button type="button" data-lang="en" aria-pressed="true" lang="en">EN</button>
+            <button type="button" data-lang="pt" aria-pressed="false" lang="pt">PT</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="kicker" data-i18n="hero.kicker">Compiled tools · a manual in nineteen parts</p>
+      <h1 data-i18n="hero.title">Rust in the Shell</h1>
+      <p class="lede" data-i18n="hero.lede">
+        The tools that replaced half of the classic Unix commands were not written in C. The
+        faster grep, the friendlier find, the cat with syntax colours, the prompt that draws
+        itself, the fuzzy finder, the test runner — a surprising number of them are Rust
+        binaries you install with one line. This manual is about the toolchain that compiles
+        them, the register they come from, and thirty projects worth the wait.
+      </p>
+      <ul class="facts">
+        <li data-i18n="hero.f1">Nineteen parts</li>
+        <li data-i18n="hero.f2">Thirty crates</li>
+        <li data-i18n="hero.f3">MSRVs checked</li>
+        <li data-i18n="hero.f4">Install builder</li>
+        <li data-i18n="hero.f5">Route chooser</li>
+        <li data-i18n="hero.f6">Every repo linked</li>
+      </ul>
+
+      <div class="reading-paths">
+        <a class="path" href="#toolchain">
+          <strong data-i18n="path.a.h">I have never installed Rust</strong>
+          <span data-i18n="path.a.p">Part 02: one script, one toolchain, and a compiler that is ready in four minutes.</span>
+        </a>
+        <a class="path" href="#builder">
+          <strong data-i18n="path.b.h">Show me the tools first</strong>
+          <span data-i18n="path.b.p">Part 06: every crate with its version, MSRV, home page and what it does, plus the command for your machine.</span>
+        </a>
+        <a class="path" href="#install">
+          <strong data-i18n="path.c.h">Just give me the command</strong>
+          <span data-i18n="path.c.p">Part 03: cargo install, the pinned version, and where the binary lands.</span>
+        </a>
+        <a class="path" href="#errors">
+          <strong data-i18n="path.d.h">A build just failed</strong>
+          <span data-i18n="path.d.p">Part 16: the messages that stop people, from a missing linker to an MSRV one release too new.</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Sections">
+    <div class="wrap">
+      <ul>
+        <li><a href="#rule" data-i18n="nav.rule">The rule</a></li>
+        <li><a href="#toolchain" data-i18n="nav.toolchain">rustup</a></li>
+        <li><a href="#install" data-i18n="nav.install">cargo install</a></li>
+        <li><a href="#layout" data-i18n="nav.layout">Layout</a></li>
+        <li><a href="#path" data-i18n="nav.path">PATH</a></li>
+        <li><a href="#builder" data-i18n="nav.builder">Builder</a></li>
+        <li><a href="#prompt" data-i18n="nav.prompt">Prompt</a></li>
+        <li><a href="#shell" data-i18n="nav.shell">Shell</a></li>
+        <li><a href="#files" data-i18n="nav.files">Files</a></li>
+        <li><a href="#text" data-i18n="nav.text">Text</a></li>
+        <li><a href="#machine" data-i18n="nav.machine">Machine</a></li>
+        <li><a href="#network" data-i18n="nav.network">Network</a></li>
+        <li><a href="#tasks" data-i18n="nav.tasks">Tasks</a></li>
+        <li><a href="#cargo" data-i18n="nav.cargo">Cargo</a></li>
+        <li><a href="#git" data-i18n="nav.git">Git</a></li>
+        <li><a href="#errors" data-i18n="nav.errors">Errors</a></li>
+        <li><a href="#route" data-i18n="nav.route">Route</a></li>
+        <li><a href="#sources" data-i18n="nav.sources">Sources</a></li>
+        <li><a href="#glossary" data-i18n="nav.glossary">Glossary</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section id="rule">
+      <h2><span class="num">01</span><span data-i18n="s1.title">One register, three rules, a compiler you keep</span></h2>
+      <p class="sub" data-i18n="s1.sub">
+        Rust is not a scripting language, and that is the first thing to accept: installing a
+        tool means compiling it, and compiling it needs a compiler. In exchange there is one
+        register (crates.io), one command (<code>cargo install</code>), and no runtime to keep
+        alive afterwards — the result is a single executable that runs on a machine with nothing
+        installed. These three rules are the whole of it; the rest of this manual is detail.
+      </p>
+
+      <ol class="steps">
+        <li>
+          <h3 data-i18n="s1.r1.h">One: rustup owns the compiler, cargo owns the crates</h3>
+          <p data-i18n="s1.r1.p"><code>rustup</code> installs and switches toolchains; <code>cargo</code> builds and fetches crates. They are separate programs that agree on a directory. Do not install a second <code>rustc</code> from your distribution and expect the two to coexist politely: whichever comes first on PATH wins, and half the "this crate needs a newer Rust" reports are a distribution compiler from two years ago answering the phone.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s1.r2.h">Two: binaries go to ~/.cargo/bin, never to /usr/local</h3>
+          <p data-i18n="s1.r2.p">By default <code>cargo install</code> writes into <code>$CARGO_HOME/bin</code>, which is <code>~/.cargo/bin</code> — a directory you own. Never prefix it with <code>sudo</code>: root's home is not your home, and the binary you just spent four minutes compiling will be invisible. <code>--root</code> changes the destination; nothing else should.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s1.r3.h">Three: PATH and the compiler are the two things that break</h3>
+          <p data-i18n="s1.r3.p">A successful install and a <code>command not found</code> mean PATH. A <code>cargo install</code> that dies in a build script means a missing system library or a toolchain that is too old. There is almost no third category — part 05 covers the first, part 16 covers the second.</p>
+        </li>
+      </ol>
+
+      <div class="note">
+        <strong data-i18n="s1.note.h">Why "compiled" changes the maintenance story</strong>
+        <p data-i18n="s1.note.p">A Python tool breaks when its interpreter moves; a Go tool is one file; a Rust tool is one file too, statically linked against everything except the C library. Copy it to another machine of the same OS and architecture and it runs — no crates, no toolchain, no compiler needed on the target. The cost is paid once, at install time, and it is not small: a first install of a large crate can take minutes. Part 03 is mostly about not paying that cost twice.</p>
+      </div>
+
+      <h3 data-i18n="s1.which.h">Four commands that people confuse</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.command">Command</th>
+              <th data-i18n="t.does">What it does</th>
+              <th data-i18n="t.when">Use it when</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>cargo install crate</code></th>
+              <td data-i18n="s1.c1.a">Compiles the crate's binary targets and copies them into <code>~/.cargo/bin</code>. Works outside any project.</td>
+              <td data-i18n="s1.c1.b">Always, for a tool you want to keep. This is the command of the manual.</td>
+            </tr>
+            <tr>
+              <th><code>cargo install --path .</code></th>
+              <td data-i18n="s1.c2.a">Compiles the crate in the current directory from its working tree.</td>
+              <td data-i18n="s1.c2.b">You are developing that tool, or testing a patch before proposing it.</td>
+            </tr>
+            <tr>
+              <th><code>cargo binstall crate</code></th>
+              <td data-i18n="s1.c3.a">Downloads a prebuilt binary from the project's releases when one exists, and falls back to <code>cargo install</code> when it does not.</td>
+              <td data-i18n="s1.c3.b">You want the tool now and not in six minutes. Part 13 installs binstall itself.</td>
+            </tr>
+            <tr>
+              <th><code>cargo add crate</code></th>
+              <td data-i18n="s1.c4.a">Adds a dependency to the current project's <code>Cargo.toml</code>. Puts nothing on your PATH.</td>
+              <td data-i18n="s1.c4.b">You are writing Rust code that imports the crate as a library.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p data-i18n="s1.after">One nuance that surprises people coming from Go: a crate can be both a library and a binary, and <code>cargo install</code> only cares about the binary targets. Installing <code>ripgrep</code> does not put a library on your system for other programs to use; it puts <code>rg</code> in your PATH. The two lives are separate, which is why an install never disturbs a project that happens to depend on the same crate.</p>
+    </section>
+
+    <section id="toolchain">
+      <h2><span class="num">02</span><span data-i18n="s2.title">The toolchain, from rustup</span></h2>
+      <p class="sub" data-i18n="s2.sub">
+        Rust ships as a toolchain manager and three programs. <code>rustup</code> decides which
+        compiler is current; <code>rustc</code> compiles; <code>cargo</code> resolves, builds and
+        installs. A stable release lands every six weeks, and the line at the time of writing is
+        <strong>1.99</strong> — which matters, because several crates in part 06 ask for 1.95 or
+        newer and cannot be built by anything older.
+      </p>
+
+      <h3 data-i18n="s2.linux.h">Linux and macOS, the official way</h3>
+      <pre>curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+<span class="c"># it asks one question; the default profile is right for a workstation</span>
+<span class="c"># 1) Proceed with standard installation</span>
+
+source "$HOME/.cargo/env"      <span class="c"># or open a new terminal</span>
+rustc --version               <span class="c"># rustc 1.99.0 (…)</span>
+cargo --version               <span class="c"># cargo 1.100.0 (…)</span></pre>
+
+      <p data-i18n="s2.linux.after">The script is a shell program you can read before running it, and it writes only inside <code>~/.cargo</code> and <code>~/.rustup</code>. Two profiles exist: <code>default</code> adds rustfmt, clippy and the documentation, <code>minimal</code> adds nothing but the compiler — the second is what a CI image wants, because it is half the download. To change later: <code>rustup set profile default</code>, then <code>rustup component add rustfmt clippy</code>.</p>
+
+      <h3 data-i18n="s2.win.h">Windows</h3>
+      <p data-i18n="s2.win.p">Download <code>rustup-init.exe</code> from rustup.rs. It will offer to install the Visual Studio C++ build tools for you, and you should accept: Rust on Windows links with <code>link.exe</code>, and without it every build fails at the last step with a linker error that mentions no missing package. If you already have Visual Studio with the C++ workload, skip that part. The MSYS2 toolchain is an alternative, not an addition — pick one.</p>
+
+      <h3 data-i18n="s2.comp.h">The components worth knowing</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.component">Component</th>
+              <th data-i18n="t.gives">What it gives you</th>
+              <th data-i18n="t.install">Install it</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>rustfmt</code></th>
+              <td data-i18n="s2.cp1.a">The formatter behind <code>cargo fmt</code>, and the reason Rust code looks the same in every repository.</td>
+              <td><code>rustup component add rustfmt</code></td>
+            </tr>
+            <tr>
+              <th><code>clippy</code></th>
+              <td data-i18n="s2.cp2.a">The linter behind <code>cargo clippy</code>: several hundred checks, most of them about a construct that compiles and should not.</td>
+              <td><code>rustup component add clippy</code></td>
+            </tr>
+            <tr>
+              <th><code>rust-analyzer</code></th>
+              <td data-i18n="s2.cp3.a">The language server your editor talks to. Installing it through rustup keeps it in step with the compiler.</td>
+              <td><code>rustup component add rust-analyzer</code></td>
+            </tr>
+            <tr>
+              <th><code>rust-src</code></th>
+              <td data-i18n="s2.cp4.a">The standard library's source, for reading <code>Option</code> instead of guessing and for some debugger setups.</td>
+              <td><code>rustup component add rust-src</code></td>
+            </tr>
+            <tr>
+              <th><code>llvm-tools</code></th>
+              <td data-i18n="s2.cp5.a"><code>llvm-cov</code> and friends, for coverage and binary inspection.</td>
+              <td><code>rustup component add llvm-tools</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 data-i18n="s2.pin.h">Pinning a project to a toolchain</h3>
+      <p data-i18n="s2.pin.p">A <code>rust-toolchain.toml</code> in the repository root is the honest way to say "this builds with 1.95". rustup reads it when you enter the directory and installs that toolchain if it is missing; nobody has to remember which version the project wanted.</p>
+      <pre><span class="c"># rust-toolchain.toml</span>
+[toolchain]
+channel = "1.95.0"
+components = ["rustfmt", "clippy"]
+
+<span class="c"># or, for a one-off directory you do not want to commit</span>
+rustup override set 1.95.0
+rustup override unset
+
+<span class="c"># what is installed, and which one is answering</span>
+rustup show
+rustup toolchain list</pre>
+      <p data-i18n="s2.pin.after">Prefer <code>channel = "1.95.0"</code> to <code>"stable"</code> for anything you will come back to: stable moves under you six weeks at a time, which is fine for a program and unkind to a build that has to reproduce. Nightly exists for unstable features and is a legitimate answer only when a crate says so in its README.</p>
+
+      <div class="note">
+        <strong data-i18n="s2.distro.h">The distribution package, and why it is a trap here</strong>
+        <p data-i18n="s2.distro.p">Debian, Fedora and Arch all package <code>rustc</code> and <code>cargo</code>. They work, they are fast to install, and they are usually several releases behind — which is exactly the failure mode of part 06, where eight crates declare an MSRV above 1.90. Worse, if both exist, your shell may run the distribution <code>cargo</code> while your <code>~/.cargo/bin</code> holds another, and the error messages will not tell you which. Either use rustup, or use the distribution package and never mix; do not install both and hope.</p>
+      </div>
+    </section>
+
+    <section id="install">
+      <h2><span class="num">03</span><span data-i18n="s3.title">cargo install: the whole installation story</span></h2>
+      <p class="sub" data-i18n="s3.sub">
+        One command, one register, one destination. <code>cargo install ripgrep</code> resolves the
+        newest compatible version of the crate, downloads it and its dependency tree, compiles
+        everything in release mode, and copies the resulting executables into
+        <code>~/.cargo/bin</code>. There is no resolver choosing a version for you beyond "newest
+        that fits", no environment to activate, and no record to consult afterwards except
+        <code>cargo install --list</code>.
+      </p>
+
+      <h3 data-i18n="s3.basic.h">The command, with the flag that matters</h3>
+      <pre>cargo install --locked ripgrep
+rg --version</pre>
+      <p data-i18n="s3.basic.p"><code>--locked</code> is not decoration. Without it, Cargo is allowed to update the versions of dependencies to the newest semver-compatible ones, which is how a tool that compiled for everyone else fails on your machine because a transitive crate published a minor release an hour ago. With it, Cargo uses the <code>Cargo.lock</code> the author tested. Almost every project in part 06 publishes a lock file for exactly this reason, and the manual always passes the flag.</p>
+
+      <h3 data-i18n="s3.flags.h">The flags worth memorising</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.flag">Flag</th>
+              <th data-i18n="t.does">What it does</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>--locked</code></th>
+              <td data-i18n="s3.f1">Uses the crate's <code>Cargo.lock</code> exactly. Fewer surprises, occasionally an older dependency than you expected.</td>
+            </tr>
+            <tr>
+              <th><code>--version 15.2.0</code></th>
+              <td data-i18n="s3.f2">Pins the crate. The value is the registry version without a <code>v</code>, unlike Go's tags.</td>
+            </tr>
+            <tr>
+              <th><code>--root ~/.local</code></th>
+              <td data-i18n="s3.f3">Writes to <code>~/.local/bin</code> instead of <code>~/.cargo/bin</code>. Useful when that directory is already on PATH.</td>
+            </tr>
+            <tr>
+              <th><code>--git https://…</code></th>
+              <td data-i18n="s3.f4">Builds from a repository instead of the registry, at the default branch unless <code>--branch</code> or <code>--tag</code> is added.</td>
+            </tr>
+            <tr>
+              <th><code>--no-default-features</code></th>
+              <td data-i18n="s3.f5">Compiles without the crate's default feature set — fewer dependencies, less code, sometimes no GUI or no TLS.</td>
+            </tr>
+            <tr>
+              <th><code>--features git</code></th>
+              <td data-i18n="s3.f6">Adds a named feature. Read the crate's README before guessing: feature names are the crate's own vocabulary.</td>
+            </tr>
+            <tr>
+              <th><code>--force</code></th>
+              <td data-i18n="s3.f7">Overwrites an existing binary. Needed when two crates ship a target with the same name, or when you reinstall the same version.</td>
+            </tr>
+            <tr>
+              <th><code>--list</code> / <code>--root</code></th>
+              <td data-i18n="s3.f8">Lists what cargo installed and where. The only inventory you have.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 data-i18n="s3.pin.h">Pin, or float</h3>
+      <p data-i18n="s3.pin.p"><code>cargo install crate</code> always takes the newest published version; there is no <code>@latest</code> to argue about. Pin when the tool is part of a pipeline — a formatter in CI, a linter in a hook, a test runner that defines what "passing" means. Float when the tool's job is to track a moving target, and reinstall monthly. Either way, write the version down somewhere outside your shell history; the builder in part 06 does it for you.</p>
+
+      <h3 data-i18n="s3.up.h">Upgrading, and the tool that upgrades everything</h3>
+      <pre>cargo install --locked ripgrep          <span class="c"># newest, over the old binary</span>
+cargo install --list                    <span class="c"># what is here, with versions</span>
+cargo uninstall ripgrep                 <span class="c"># remove the binary, keep the cache</span>
+
+<span class="c"># cargo-update adds the missing verb</span>
+cargo install --locked cargo-update
+cargo install-update --all</pre>
+      <p data-i18n="s3.up.after">Rust has no equivalent of Go's "download a toolchain because the module asked". The compiler you have is the compiler that compiles, and a crate that requires more fails with a clear message naming the version. That is why the check below exists: it answers, before a four-minute build, whether the crates you picked are inside your compiler's reach.</p>
+
+      <h3 data-i18n="s3.tc.h">Check the MSRV before you compile</h3>
+      <p data-i18n="s3.tc.p">Each crate may declare a <em>minimum supported Rust version</em> in its published metadata. It is a promise, not a guess: below it the crate is not expected to build, and above it the author has agreed not to raise the floor without a semver-minor release. The builder in part 06 shows the number for every tool; this check compares it with yours.</p>
+
+      <div class="tool" id="tc-tool">
+        <div class="tool-head">
+          <h3 data-i18n="s3.tc.tool.h">MSRV check</h3>
+          <span class="badge" data-i18n="s3.tc.tool.badge">before you install</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s3.tc.yours">Your Rust</span>
+            <select id="tc-mine"></select>
+          </label>
+          <label class="field"><span data-i18n="s3.tc.app">The tool</span>
+            <select id="tc-app"></select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s3.tc.out.need">Needs</dt><dd id="tc-need">—</dd>
+          <dt data-i18n="s3.tc.out.verdict">Verdict</dt><dd id="tc-verdict">—</dd>
+          <dt data-i18n="s3.tc.out.how">What happens</dt><dd id="tc-how">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="tc-copy" data-i18n="s3.tc.copy">Copy</button>
+          <pre id="tc-out">—</pre>
+        </div>
+      </div>
+    </section>

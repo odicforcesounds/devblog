@@ -56,7 +56,7 @@ runbooks live in the `blog-ops` skill; load it too when a page touches an existi
 | `docs/images/` | Icons and pictures (`svg`, `png`, `webp`). Reference them as `./images/name.svg`. |
 | `docs/article.css`, `index.css`, `style.css` | Shared styles. A new page carries its own `<style>`. |
 | `docs/sitemap.xml`, `docs/robots.txt` | Generated — never hand-edit. |
-| `docs/api/index.json`, `docs/api/text/*.json` | Generated index + text chunks. |
+| `docs/api/index.json`, `docs/api/dates.json`, `docs/api/text/*.json` | Generated index, date map + text chunks. |
 | `docs/tools/` | Feed pipeline for `index.html` (`feeds.json`, `build.mjs`, `template.html`). |
 | `tools/` | Local build/scan scripts (`bg_scan.py`). **Gitignored** — nothing durable goes here. |
 | `tmp/` | Scratch space for one-off scripts. **Gitignored.** |
@@ -306,7 +306,7 @@ Run all three, in this order, from the repository root:
 
 ```sh
 python3 .agents/skills/blog-ops/build_sitemap.py    # sitemap.xml + robots.txt
-python3 .agents/skills/blog-ops/build_api.py        # docs/api/index.json + text chunks
+python3 .agents/skills/blog-ops/build_api.py        # docs/api/index.json + dates.json + text chunks
 python3 .agents/skills/blog-ops/check_site.py       # head contract, sitemap and API coverage
 ```
 

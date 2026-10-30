@@ -1,0 +1,203 @@
+    <section id="errors">
+      <h2><span class="num">16</span><span data-i18n="s16.title">The ten messages that stop a build</span></h2>
+      <p class="sub" data-i18n="s16.sub">
+        Rust's errors are precise about the source code and vague about the machine, which is why
+        the ones below are the ones people paste into a search engine. Each row links the message to
+        the cause, because the cause is usually one package, one directory, or one version away.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.message">Message</th>
+              <th data-i18n="t.cause">What it means</th>
+              <th data-i18n="t.fix">Fix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>error: linker `cc` not found</code></th>
+              <td data-i18n="s16.e1.b">There is a compiler but no C linker. Every Rust binary links against the system C library, so a bare container fails here.</td>
+              <td data-i18n="s16.e1.c">Install <code>build-essential</code> (Debian), <code>base-devel</code> (Arch), <code>xcode-select --install</code> (macOS), or the C++ build tools on Windows.</td>
+            </tr>
+            <tr>
+              <th><code>failed to run custom build command for `openssl-sys`</code></th>
+              <td data-i18n="s16.e2.b">A crate wants to link a C library and its headers or <code>pkg-config</code> are missing.</td>
+              <td data-i18n="s16.e2.c">Install <code>pkg-config libssl-dev</code>, or build with <code>--no-default-features</code> and a rustls feature if the project offers one.</td>
+            </tr>
+            <tr>
+              <th><code>package `x` cannot be built because it requires rustc 1.95 or newer</code></th>
+              <td data-i18n="s16.e3.b">The crate's declared MSRV is above your compiler. Nothing is wrong with the crate.</td>
+              <td data-i18n="s16.e3.c"><code>rustup update stable</code>. If you are pinned in a <code>rust-toolchain.toml</code>, raise it deliberately — or install an older version of the tool.</td>
+            </tr>
+            <tr>
+              <th><code>error: could not compile `x` (signal: 9, SIGKILL: kill)</code></th>
+              <td data-i18n="s16.e4.b">The linker ran out of memory. Rust's final link step is the memory-hungry part, and a container with 2 GB will be killed.</td>
+              <td data-i18n="s16.e4.c">Build with fewer jobs (<code>cargo install -j 1</code>), add swap, or use a linker that uses less memory such as lld.</td>
+            </tr>
+            <tr>
+              <th><code>No space left on device</code></th>
+              <td data-i18n="s16.e5.b">The build directory filled the disk — usually several gigabytes for one large crate.</td>
+              <td data-i18n="s16.e5.c">Clear old <code>target</code> directories and the registry cache; part 04 has the commands and the sizes.</td>
+            </tr>
+            <tr>
+              <th><code>error: failed to select a version for the requirement `x = "^2"`</code></th>
+              <td data-i18n="s16.e6.b">No published version satisfies the resolver, often because a dependency was yanked after the lock file was written.</td>
+              <td data-i18n="s16.e6.c">Drop <code>--locked</code> to let Cargo re-resolve, or <code>cargo update -p x</code> in the project. A yanked crate can still be built if it is in your lock file.</td>
+            </tr>
+            <tr>
+              <th><code>error: binary `fd` already exists in destination</code></th>
+              <td data-i18n="s16.e7.b">Another crate ships a binary with the same name, or you are reinstalling the same version.</td>
+              <td data-i18n="s16.e7.c">Add <code>--force</code> if you meant to overwrite. Check <code>cargo install --list</code> to see what was there first.</td>
+            </tr>
+            <tr>
+              <th><code>error: no such command: `binstall`</code></th>
+              <td data-i18n="s16.e8.b">Cargo looks for subcommands as binaries named <code>cargo-*</code> on PATH. The binary is installed somewhere your shell does not see, or not at all.</td>
+              <td data-i18n="s16.e8.c">Install it (<code>cargo install --locked cargo-binstall</code>) and check <code>command -v cargo-binstall</code> before blaming the tool.</td>
+            </tr>
+            <tr>
+              <th><code>warning: be sure to add `~/.cargo/bin` to your PATH</code></th>
+              <td data-i18n="s16.e9.b">The install worked; the shell cannot find the result. Part 05.</td>
+              <td data-i18n="s16.e9.c"><code>export PATH="$HOME/.cargo/bin:$PATH"</code> in the profile your shell actually reads, then start a login shell.</td>
+            </tr>
+            <tr>
+              <th><code>error: failed to download ... SSL certificate problem</code></th>
+              <td data-i18n="s16.e10.b">A proxy, a corporate TLS inspection certificate, or a missing CA bundle between you and crates.io.</td>
+              <td data-i18n="s16.e10.c">Set <code>https_proxy</code>, point <code>CARGO_HTTP_CAINFO</code> at the corporate bundle, or use <code>CARGO_NET_GIT_FETCH_WITH_CLI=true</code> for git dependencies.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <strong data-i18n="s16.note.h">The two failures that look like the machine dying</strong>
+        <p data-i18n="s16.note.p">A build that ends in <code>Killed</code> ran out of memory at the link step — add swap or reduce jobs, and it will finish. A build that takes eight minutes the first time and three seconds the second is the incremental and registry caches doing their job; <code>cargo clean</code> resets it to the slow version, so there is no reason to. Neither is a sign that the tool is broken.</p>
+      </div>
+    </section>
+
+    <section id="route">
+      <h2><span class="num">17</span><span data-i18n="s17.title">Which route for this tool</span></h2>
+      <p class="sub" data-i18n="s17.sub">
+        There are four honest ways to get a Rust binary onto a machine, and the right one depends on
+        who will run it and where. Answer three questions and the verdict below names the route, the
+        reason, and the command — including the case where the answer is "do not compile this here".
+      </p>
+
+      <div class="tool" id="route-tool">
+        <div class="tool-head">
+          <h3 data-i18n="s17.tool.h">Route chooser</h3>
+          <span class="badge" data-i18n="s17.tool.badge">four routes</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s17.q1">Does your own code import it?</span>
+            <select id="rt-code">
+              <option value="no" data-i18n="s17.q1.no">No — it is a command I run</option>
+              <option value="yes" data-i18n="s17.q1.yes">Yes — it is a library</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s17.q2">Will it run where there is no compiler?</span>
+            <select id="rt-target">
+              <option value="no" data-i18n="s17.q2.no">No — this machine builds</option>
+              <option value="yes" data-i18n="s17.q2.yes">Yes — a server or a laptop without Rust</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s17.q3">Is it packaged by your distribution or nix?</span>
+            <select id="rt-distro">
+              <option value="no" data-i18n="s17.q3.no">No</option>
+              <option value="yes" data-i18n="s17.q3.yes">Yes, and it is current</option>
+            </select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s17.out.route">Route</dt><dd id="rt-route">—</dd>
+          <dt data-i18n="s17.out.verdict">Verdict</dt><dd id="rt-verdict">—</dd>
+          <dt data-i18n="s17.out.why">Why</dt><dd id="rt-why">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="rt-copy" data-i18n="s17.copy">Copy</button>
+          <pre id="rt-out">—</pre>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.route">Route</th>
+              <th data-i18n="t.good">Good for</th>
+              <th data-i18n="t.cost">What it costs</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>cargo install --locked</code></th>
+              <td data-i18n="s17.r1.a">Your workstation, the newest version, reproducibility.</td>
+              <td data-i18n="s17.r1.b">Minutes of compile time, and a dependency tree that must compile cleanly.</td>
+            </tr>
+            <tr>
+              <th><code>cargo binstall</code></th>
+              <td data-i18n="s17.r2.a">Any machine that can download a release artefact, especially a CI image.</td>
+              <td data-i18n="s17.r2.b">Trust in the project's release pipeline, and the fallback compile when there is no artefact.</td>
+            </tr>
+            <tr>
+              <th><code>distro</code> / <code>nix</code></th>
+              <td data-i18n="s17.r3.a">A fleet you do not want compiling, and a version that arrives with the system's updates.</td>
+              <td data-i18n="s17.r3.b">An older version than upstream — occasionally far older — and names that differ from upstream's.</td>
+            </tr>
+            <tr>
+              <th><code>cargo build --release</code> + copy</th>
+              <td data-i18n="s17.r4.a">A server with no toolchain: build once here, copy the binary, done.</td>
+              <td data-i18n="s17.r4.b">You own the build: matching libc and architecture, and the update is your problem.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p data-i18n="s17.after">The cross-compilation footnote is worth knowing before it surprises you: a binary built on a glibc distribution will not run on a musl system such as Alpine. Build with the <code>x86_64-unknown-linux-musl</code> target for a static binary, or build inside the image you will deploy.</p>
+    </section>
+
+    <section id="sources">
+      <h2><span class="num">18</span><span data-i18n="s18.title">Sources, and what each one settles</span></h2>
+      <p class="sub" data-i18n="s18.sub">
+        The manual is built from the projects' own documentation and from the metadata each crate
+        publishes. Every tool in part 06 links to its repository, which is the authority on its own
+        flags — and the pages below are the authority on the toolchain itself.
+      </p>
+
+      <ul class="sources">
+        <li><a href="https://rustup.rs/" target="_blank" rel="noopener">rustup.rs</a> — <span data-i18n="src.1">The installer used in part 02, with the profiles and the components it can add.</span></li>
+        <li><a href="https://rust-lang.github.io/rustup/" target="_blank" rel="noopener">The rustup book</a> — <span data-i18n="src.2">Toolchains, overrides, <code>rust-toolchain.toml</code> and what <code>rustup show</code> is telling you.</span></li>
+        <li><a href="https://doc.rust-lang.org/cargo/commands/cargo-install.html" target="_blank" rel="noopener">cargo install</a> — <span data-i18n="src.3">Every flag in the table of part 03, including <code>--locked</code>, <code>--root</code> and <code>--git</code>.</span></li>
+        <li><a href="https://doc.rust-lang.org/cargo/reference/config.html" target="_blank" rel="noopener">Cargo configuration</a> — <span data-i18n="src.4">Where <code>config.toml</code> lives, and the environment variables that override it, including the registry and proxy settings.</span></li>
+        <li><a href="https://crates.io/" target="_blank" rel="noopener">crates.io</a> — <span data-i18n="src.5">The register itself: every crate, version, MSRV and repository link used here.</span></li>
+        <li><a href="https://doc.rust-lang.org/edition-guide/" target="_blank" rel="noopener">The edition guide</a> — <span data-i18n="src.6">What an edition changes, which editions a compiler supports, and why edition 2024 needs Rust 1.85.</span></li>
+        <li><a href="https://blog.rust-lang.org/" target="_blank" rel="noopener">The Rust blog</a> — <span data-i18n="src.7">Release announcements every six weeks, the source of the version numbers quoted here.</span></li>
+        <li><a href="https://doc.rust-lang.org/cargo/reference/manifest.html" target="_blank" rel="noopener">The manifest reference</a> — <span data-i18n="src.8">The <code>rust-version</code> field, which is where a crate's declared MSRV actually lives.</span></li>
+        <li><a href="https://github.com/cargo-bins/cargo-binstall" target="_blank" rel="noopener">cargo-binstall</a> — <span data-i18n="src.9">How a prebuilt artefact is located for each platform, and what happens when none exists.</span></li>
+        <li><a href="https://rustsec.org/" target="_blank" rel="noopener">RustSec</a> — <span data-i18n="src.10">The advisory database behind <code>cargo audit</code>, and the format of the entries it matches.</span></li>
+        <li><a href="https://doc.rust-lang.org/rustc/platform-support.html" target="_blank" rel="noopener">Platform support</a> — <span data-i18n="src.11">Which targets are tier 1, tier 2 or tier 3, and therefore which cross-compiles are expected to work.</span></li>
+        <li><a href="https://doc.rust-lang.org/cargo/reference/build-scripts.html" target="_blank" rel="noopener">Build scripts</a> — <span data-i18n="src.12">Why a crate can fail before your code compiles, and what <code>pkg-config</code> is doing in a Rust build.</span></li>
+      </ul>
+      <p data-i18n="s18.after">The versions in part 06 are the newest published crates on 29 October 2026, and each MSRV is the one declared in that release's metadata. Both will move; the repository remains the authority, and the trailing <code>--locked</code> is how you keep today's build tomorrow.</p>
+    </section>
+
+    <section id="glossary">
+      <h2><span class="num">19</span><span data-i18n="s19.title">Glossary</span></h2>
+      <p class="sub" data-i18n="s19.sub">Twelve words that explain most of the confusion in this manual.</p>
+      <ul class="glossary" id="glossary-list"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p data-i18n="footer.p">
+        Written from a Linux terminal and checked against each crate's published metadata on the
+        day of publication: version, declared MSRV and binary names read from crates.io, and every
+        command taken from the project's own documentation. Where the manual says "usually", it is
+        because a distribution package name or a binary name differs — the repository is the final
+        word.
+      </p>
+      <a class="back" href="index.html"><span data-i18n="footer.back">&larr; Back to the archive</span></a>
+      <p class="cross" data-i18n="footer.cross">The rest of the series: <a href="python-cli.html">The Shell, Extended</a> for the Python half of the same idea, <a href="golang-cli.html">Go in the Shell</a> for the compiled-toolchain argument without a borrow checker, <a href="hydroponics.html">Hydroponics at Home</a> for a garden without soil, and <a href="recycling.html">Nothing Is Garbage</a> for the second life of everything the house throws away.</p>
+    </div>
+  </footer>

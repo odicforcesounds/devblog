@@ -1,0 +1,458 @@
+  <header class="hero">
+    <div class="wrap">
+      <div class="topbar">
+        <a class="mark" href="index.html">Monkey Blog · The Shell, Extended</a>
+        <div class="topbar-tools">
+          <a class="home-link" href="index.html"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" focusable="false"><path d="M8 1.5 1.5 7h1.8v6.5h3.4V9.8h2.6v3.7h3.4V7h1.8L8 1.5Z" fill="currentColor"/></svg><span data-i18n="nav.home">Home</span></a>
+          <div class="lang-switch" role="group" aria-label="Language / Idioma">
+            <button type="button" data-lang="en" aria-pressed="true" lang="en">EN</button>
+            <button type="button" data-lang="pt" aria-pressed="false" lang="pt">PT</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="kicker" data-i18n="hero.kicker">Terminal tools · a manual in twenty parts</p>
+      <h1 data-i18n="hero.title">The Shell, Extended</h1>
+      <p class="lede" data-i18n="hero.lede">
+        Python's best software does not live in an app store. It lives in a terminal, in a
+        repository with a README, behind one command that installs it. This manual is about that
+        command: how to build a virtual environment, how to keep it out of the system, and thirty
+        real GitHub projects worth the trouble — from posting to Mastodon to OCR on a scanned
+        contract.
+      </p>
+      <ul class="facts">
+        <li data-i18n="hero.f1">Twenty parts</li>
+        <li data-i18n="hero.f2">Thirty apps</li>
+        <li data-i18n="hero.f3">venv · pipx · uv</li>
+        <li data-i18n="hero.f4">Install builder</li>
+        <li data-i18n="hero.f5">Ten errors, solved</li>
+        <li data-i18n="hero.f6">Every repo linked</li>
+      </ul>
+
+      <div class="reading-paths">
+        <a class="path" href="#venv">
+          <strong data-i18n="path.a.h">I have never made a venv</strong>
+          <span data-i18n="path.a.p">Part 02: seven commands, one afternoon, and nothing else on your machine changes.</span>
+        </a>
+        <a class="path" href="#apps">
+          <strong data-i18n="path.b.h">Show me the apps first</strong>
+          <span data-i18n="path.b.p">Part 07: thirty projects with what they do, what they need, and whether they are worth a slot.</span>
+        </a>
+        <a class="path" href="#builder">
+          <strong data-i18n="path.c.h">Just give me the command</strong>
+          <span data-i18n="path.c.p">Part 06: pick an app, a method and an operating system, and copy the block.</span>
+        </a>
+        <a class="path" href="#errors">
+          <strong data-i18n="path.d.h">An install just failed</strong>
+          <span data-i18n="path.d.p">Part 17: the ten messages that stop people, and the fix for each one.</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Sections">
+    <div class="wrap">
+      <ul>
+        <li><a href="#rule" data-i18n="nav.rule">The rule</a></li>
+        <li><a href="#venv" data-i18n="nav.venv">venv</a></li>
+        <li><a href="#pipx" data-i18n="nav.pipx">pipx</a></li>
+        <li><a href="#uv" data-i18n="nav.uv">uv</a></li>
+        <li><a href="#path" data-i18n="nav.path">PATH</a></li>
+        <li><a href="#builder" data-i18n="nav.builder">Builder</a></li>
+        <li><a href="#apps" data-i18n="nav.apps">The apps</a></li>
+        <li><a href="#social" data-i18n="nav.social">Social</a></li>
+        <li><a href="#media" data-i18n="nav.media">Media</a></li>
+        <li><a href="#machine" data-i18n="nav.machine">Machine</a></li>
+        <li><a href="#data" data-i18n="nav.data">Data</a></li>
+        <li><a href="#docs" data-i18n="nav.docs">Documents</a></li>
+        <li><a href="#terminal" data-i18n="nav.terminal">Terminal</a></li>
+        <li><a href="#library" data-i18n="nav.library">Library</a></li>
+        <li><a href="#servers" data-i18n="nav.servers">Servers</a></li>
+        <li><a href="#maintain" data-i18n="nav.maintain">Upkeep</a></li>
+        <li><a href="#errors" data-i18n="nav.errors">Errors</a></li>
+        <li><a href="#decide" data-i18n="nav.decide">Which one</a></li>
+        <li><a href="#sources" data-i18n="nav.sources">Sources</a></li>
+        <li><a href="#glossary" data-i18n="nav.glossary">Glossary</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section id="rule">
+      <h2><span class="num">01</span><span data-i18n="s1.title">Never install into the system Python</span></h2>
+      <p class="sub" data-i18n="s1.sub">
+        Almost every broken Python install starts with one of two sentences: "it worked on my
+        machine" and "I ran it with sudo". Both are the same mistake — installing a project's
+        dependencies into the one interpreter your operating system uses to run itself. There is a
+        rule that removes the whole class of problem, and it fits in three lines.
+      </p>
+
+      <ol class="steps">
+        <li>
+          <h3 data-i18n="s1.r1.h">One: the system Python belongs to the system</h3>
+          <p data-i18n="s1.r1.p">Debian, Ubuntu, Fedora, macOS and Arch all ship Python because parts of the operating system are written in it. Installing packages into it means two projects can demand two versions of the same library, and the loser is usually your desktop. Modern distributions now refuse: pip exits with <code>error: externally-managed-environment</code>, which is not a bug, it is a locked door with a reason.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s1.r2.h">Two: a project gets a venv, an app gets pipx</h3>
+          <p data-i18n="s1.r2.p">If you will <code>import</code> the thing from your own code, it belongs in a virtual environment inside the project folder. If you will only type its name at the prompt, it belongs in pipx (or uv), which gives the app its own private venv and puts a single launcher on your PATH. Nothing else on the machine sees it.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s1.r3.h">Three: no sudo, ever, for pip</h3>
+          <p data-i18n="s1.r3.p">The single exception is your distribution's package manager — <code>apt install python3-venv</code>, <code>dnf install python3-pip</code> — which installs the tooling, never a project's dependencies. If a README tells you to <code>sudo pip install</code>, the README is old; use the project's pyproject or the PyPI name with pipx.</p>
+        </li>
+      </ol>
+
+      <div class="note">
+        <strong data-i18n="s1.note.h">What that error actually says</strong>
+        <p data-i18n="s1.note.p">PEP 668 lets a distribution mark its interpreter as externally managed, with an <code>EXTERNALLY-MANAGED</code> marker file next to the standard library. pip reads it and stops. You can override it with <code>--break-system-packages</code>; you should not, and no command in this manual needs it. The escape hatch is a venv, which is one command away.</p>
+      </div>
+
+      <h3 data-i18n="s1.which.h">Three tools, three jobs</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.tool">Tool</th>
+              <th data-i18n="t.job">What it is for</th>
+              <th data-i18n="t.when">Use it when</th>
+              <th data-i18n="t.cost">What it costs</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>venv</code></th>
+              <td data-i18n="s1.v1.a">A folder with its own Python, its own <code>pip</code> and its own site-packages. Built into Python since 3.3.</td>
+              <td data-i18n="s1.v1.b">You are writing code that imports the library, or you need an exact pinned set of versions for one project.</td>
+              <td data-i18n="s1.v1.c">20–200 MB per environment, and one activation command per terminal.</td>
+            </tr>
+            <tr>
+              <th><code>pipx</code></th>
+              <td data-i18n="s1.v2.a">A manager of isolated environments, one per command-line app, with a launcher symlinked into <code>~/.local/bin</code>.</td>
+              <td data-i18n="s1.v2.b">The package provides a command you run (yt-dlp, toot, csvkit) and you never import it.</td>
+              <td data-i18n="s1.v2.c">A few MB per app; the disk cost is the price of never having a dependency conflict again.</td>
+            </tr>
+            <tr>
+              <th><code>uv</code></th>
+              <td data-i18n="s1.v3.a">A single fast binary that does venvs, pip installs, Python version downloads and tool installs — the same jobs, in seconds.</td>
+              <td data-i18n="s1.v3.b">You install tools often, or you are tired of waiting for a resolver. <code>uvx</code> also runs an app without installing it at all.</td>
+              <td data-i18n="s1.v3.c">One more binary to trust and to update; it is written in Rust, not Python.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 data-i18n="s1.quick.h">The whole idea, on one screen</h3>
+      <p data-i18n="s1.quick.p">One environment per app, no activation needed, and the command is addressed by its full path. This is the pattern the rest of the manual refines; everything else is convenience built on top of it.</p>
+      <pre>python3 -m venv ~/.venvs/media
+~/.venvs/media/bin/pip install --upgrade pip
+~/.venvs/media/bin/pip install yt-dlp
+~/.venvs/media/bin/yt-dlp --version</pre>
+      <p class="sub" data-i18n="s1.quick.after">Nothing was installed system-wide, nothing needs sudo, and deleting <code>~/.venvs/media</code> removes every trace. The three drawbacks are that the path is long, that each app needs its own folder, and that you have to remember which folder holds what — which is exactly what pipx removes.</p>
+    </section>
+
+    <section id="venv">
+      <h2><span class="num">02</span><span data-i18n="s2.title">The virtual environment, from zero</span></h2>
+      <p class="sub" data-i18n="s2.sub">
+        A venv is not a virtual machine and it is not magic: it is a directory containing a
+        symlink to your Python, a copy of the launcher scripts, and a <code>site-packages</code>
+        folder that pip writes into. Activating it changes one environment variable,
+        <code>PATH</code>, so that <code>python</code> means this folder instead of the system one.
+        That is the entire mechanism.
+      </p>
+
+      <h3 data-i18n="s2.steps.h">Seven commands, in order</h3>
+      <ol class="steps">
+        <li>
+          <h3 data-i18n="s2.r1.h">Check what you have</h3>
+          <p data-i18n="s2.r1.p"><code>python3 --version</code> should print 3.11 or newer for most of the apps in this manual (ArchiveBox wants 3.13, mitmproxy 3.12 — each project states its floor on PyPI). If the version is older than a project needs, install a newer interpreter next to the old one rather than replacing the system's.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s2.r2.h">Install the venv module, if your distribution split it out</h3>
+          <p data-i18n="s2.r2.p">Debian and Ubuntu ship Python without <code>ensurepip</code>, which makes <code>python3 -m venv</code> fail with "ensurepip is not available". One package fixes it permanently: <code>sudo apt install python3-venv</code>. Fedora and Arch already include it; macOS from python.org includes it; Homebrew's Python does too.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s2.r3.h">Create it inside the project</h3>
+          <p data-i18n="s2.r3.p">Name it <code>.venv</code> and put it in the project root — editors, linters and every tutorial already look there. The folder is disposable: no data lives in it, only symlinks and wheels.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s2.r4.h">Activate it</h3>
+          <p data-i18n="s2.r4.p">Activation is a convenience, not a requirement. It exists so that typing <code>python</code> and <code>pip</code> does the right thing; the environment works identically if you call <code>.venv/bin/python</code> directly, which is what cron jobs and scripts should do.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s2.r5.h">Install with pip, then freeze</h3>
+          <p data-i18n="s2.r5.p">Install what you need, confirm it imports, then write the exact versions to a file. <code>pip freeze</code> records everything including transitive dependencies; a hand-written <code>requirements.txt</code> records only your intent. For applications, freeze. For libraries, pin the direct dependencies and let the resolver work.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s2.r6.h">Leave, and come back later</h3>
+          <p data-i18n="s2.r6.p"><code>deactivate</code> restores the old PATH. Next session, activate again, or skip activation and use the full path. On a server, always skip it: a script that depends on an activated shell breaks the first time it runs from cron.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s2.r7.h">Delete it when it rots</h3>
+          <p data-i18n="s2.r7.p">When upgrades go wrong, the fastest fix is <code>rm -rf .venv</code> and create it again from <code>requirements.txt</code>. Ten seconds, no residue. This is the habit that makes the rest of this manual safe: environments are cheap, so never repair one for an hour.</p>
+        </li>
+      </ol>
+
+      <h3 data-i18n="s2.os.h">The same three commands on each system</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.system">System</th>
+              <th data-i18n="t.create">Create</th>
+              <th data-i18n="t.activate">Activate</th>
+              <th data-i18n="t.deactivate">Leave</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Linux / macOS (bash, zsh)</th>
+              <td><code>python3 -m venv .venv</code></td>
+              <td><code>source .venv/bin/activate</code></td>
+              <td><code>deactivate</code></td>
+            </tr>
+            <tr>
+              <th>fish</th>
+              <td><code>python3 -m venv .venv</code></td>
+              <td><code>source .venv/bin/activate.fish</code></td>
+              <td><code>deactivate</code></td>
+            </tr>
+            <tr>
+              <th>Windows (PowerShell)</th>
+              <td><code>py -m venv .venv</code></td>
+              <td><code>.venv\Scripts\Activate.ps1</code></td>
+              <td><code>deactivate</code></td>
+            </tr>
+            <tr>
+              <th>Windows (cmd)</th>
+              <td><code>py -m venv .venv</code></td>
+              <td><code>.venv\Scripts\activate.bat</code></td>
+              <td><code>deactivate</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">
+        <strong data-i18n="s2.note.h">PowerShell blocks the activation script</strong>
+        <p data-i18n="s2.note.p">By default Windows refuses to run <code>Activate.ps1</code> because it is an unsigned script. The fix is per-user, not per-machine: <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code>. If you would rather not touch policy at all, call <code>.venv\Scripts\python.exe</code> directly and never activate.</p>
+      </div>
+
+      <h3 data-i18n="s2.session.h">A real session, with the output it should give</h3>
+      <pre>cd ~/projects/scrape
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install requests beautifulsoup4
+python -c "import requests, bs4; print(requests.__version__, bs4.__version__)"
+pip freeze &gt; requirements.txt
+deactivate</pre>
+      <p data-i18n="s2.session.after">From another machine, or after deleting the folder: <code>python3 -m venv .venv &amp;&amp; source .venv/bin/activate &amp;&amp; pip install -r requirements.txt</code>. That one line is the entire portability story of a Python project, and it is why <code>requirements.txt</code> is committed while <code>.venv</code> is not.</p>
+
+      <div class="two">
+        <div class="card">
+          <h3 data-i18n="s2.git.h">What goes into git</h3>
+          <p data-i18n="s2.git.p">Commit <code>requirements.txt</code> (or <code>pyproject.toml</code> with a lock file). Never commit <code>.venv</code>: it contains absolute paths, platform-specific binaries and tens of megabytes. One line in <code>.gitignore</code> — <code>.venv/</code> — prevents a hundred confusing clones.</p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="s2.bad.h">The two flags that cause trouble</h3>
+          <p data-i18n="s2.bad.p"><code>--system-site-packages</code> lets an environment see the system's packages, which quietly reintroduces the conflict you were escaping. <code>--without-pip</code> creates an environment with no installer; you then need <code>python -m ensurepip</code>. Neither is needed for anything in this manual.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="pipx">
+      <h2><span class="num">03</span><span data-i18n="s3.title">pipx: one command per app, no conflicts</span></h2>
+      <p class="sub" data-i18n="s3.sub">
+        pipx is the answer to a specific question: what if I want the command, not the library?
+        It creates a private venv for each app under <code>~/.local/pipx/venvs</code>, installs the
+        package there with the right interpreter, and symlinks only the launcher into
+        <code>~/.local/bin</code>. Two apps can then depend on two incompatible versions of the
+        same library and neither notices the other exists.
+      </p>
+
+      <h3 data-i18n="s3.start.h">Start here</h3>
+      <pre><span class="c"># Debian / Ubuntu</span>
+sudo apt install pipx
+<span class="c"># Fedora</span>
+sudo dnf install pipx
+<span class="c"># macOS (Homebrew)</span>
+brew install pipx
+<span class="c"># or, with any Python already installed</span>
+python3 -m pip install --user pipx
+
+pipx ensurepath
+<span class="c"># open a new terminal, then</span>
+pipx install toot
+toot --help</pre>
+      <p data-i18n="s3.start.after"><code>ensurepath</code> writes the PATH line in your shell's startup file. If the next shell still says <code>command not found</code>, the file was the wrong one — see part 05 — or the shell cached its command list and needs <code>hash -r</code>.</p>
+
+      <h3 data-i18n="s3.cmds.h">The eight pipx commands worth memorising</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.command">Command</th>
+              <th data-i18n="t.does">What it does</th>
+              <th data-i18n="t.why">Why you would type it</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th><code>pipx install NAME</code></th><td data-i18n="s3.c1.a">Creates a venv and links the launcher.</td><td data-i18n="s3.c1.b">The normal case. Add extras in quotes: <code>pipx install "qrcode[pil]"</code>.</td></tr>
+            <tr><th><code>pipx list</code></th><td data-i18n="s3.c2.a">Shows every app, its version and its command names.</td><td data-i18n="s3.c2.b">When you cannot remember whether you already installed something.</td></tr>
+            <tr><th><code>pipx upgrade NAME</code></th><td data-i18n="s3.c3.a">Upgrades that app only, in its own venv.</td><td data-i18n="s3.c3.b">yt-dlp and gallery-dl need this often: sites change weekly.</td></tr>
+            <tr><th><code>pipx upgrade-all</code></th><td data-i18n="s3.c4.a">Upgrades every app pipx manages.</td><td data-i18n="s3.c4.b">A monthly habit, not a daily one.</td></tr>
+            <tr><th><code>pipx uninstall NAME</code></th><td data-i18n="s3.c5.a">Removes the venv and the launcher.</td><td data-i18n="s3.c5.b">A clean removal with no leftovers in site-packages.</td></tr>
+            <tr><th><code>pipx inject NAME PKG</code></th><td data-i18n="s3.c6.a">Adds a library to that app's venv.</td><td data-i18n="s3.c6.b">For plugins and optional backends, without touching other apps.</td></tr>
+            <tr><th><code>pipx run NAME</code></th><td data-i18n="s3.c7.a">Runs the app in a temporary venv that is thrown away.</td><td data-i18n="s3.c7.b">Trying something once without committing to it.</td></tr>
+            <tr><th><code>pipx reinstall NAME --python 3.12</code></th><td data-i18n="s3.c8.a">Rebuilds that app's venv with another interpreter.</td><td data-i18n="s3.c8.b">When an app needs a newer (or older) Python than the default.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="two">
+        <div class="card">
+          <h3 data-i18n="s3.inject.h">The plugin pattern</h3>
+          <p data-i18n="s3.inject.p">A command with an ecosystem — beets, llm, mkdocs — usually wants a plugin. Install the app, then <code>pipx inject beets beets-fetchart</code>. The plugin lands in the same private venv, so it cannot break any other tool, and <code>pipx upgrade beets</code> leaves it alone.</p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="s3.pin.h">When an app must not move</h3>
+          <p data-i18n="s3.pin.p">pipx has no lock file by design: it is for tools you want current. If a version must be frozen — a publishing pipeline, a scraper with brittle selectors — use a venv with a pinned requirements file, or <code>uv tool install NAME==1.2.3</code>, and treat it as a project rather than a tool.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="uv">
+      <h2><span class="num">04</span><span data-i18n="s4.title">uv: the same jobs, in seconds</span></h2>
+      <p class="sub" data-i18n="s4.sub">
+        uv is a single binary from Astral that replaces the slow parts of the Python toolchain:
+        creating environments, resolving dependencies, downloading interpreters, installing
+        command-line tools. It is not a Python package (there is a pip-installable wheel, but the
+        supported install is the binary), and it is the one tool in this manual that is worth
+        learning for its own sake.
+      </p>
+
+      <pre><span class="c"># install the binary (Linux / macOS)</span>
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+<span class="c"># a tool, isolated, with its launcher on PATH</span>
+uv tool install yt-dlp
+uv tool list
+uv tool upgrade --all
+uv tool uninstall yt-dlp
+
+<span class="c"># run something once, without installing it</span>
+uvx csvlook data.csv
+
+<span class="c"># a project environment, pip-compatible</span>
+uv venv .venv
+uv pip install -r requirements.txt
+uv python install 3.12</pre>
+
+      <div class="note">
+        <strong data-i18n="s4.note.h">uvx is the feature that changes habits</strong>
+        <p data-i18n="s4.note.p"><code>uvx NAME</code> downloads the app into a cached environment, runs it with the arguments you gave, and leaves your PATH untouched. For a one-off conversion, a single <code>csvsql</code> query or a quick <code>gallery-dl</code> run, that is faster than deciding whether you want the tool permanently. The cache means the second run is instant.</p>
+      </div>
+
+      <h3 data-i18n="s4.pick.h">pipx or uv?</h3>
+      <p data-i18n="s4.pick.p">Both produce the same result: an isolated environment and a launcher in <code>~/.local/bin</code>. pipx is the conservative choice — it is packaged by every major distribution, its behaviour is stable, and it only manages tools. uv is faster and broader, and it will also manage your project environments and Python versions, which is either convenient or one dependency too many, depending on your taste. The manual uses pipx in its commands and notes the uv equivalent; nothing here needs both.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th data-i18n="t.task">Task</th><th>pipx</th><th>uv</th></tr>
+          </thead>
+          <tbody>
+            <tr><th data-i18n="s4.t1">Install a tool</th><td><code>pipx install X</code></td><td><code>uv tool install X</code></td></tr>
+            <tr><th data-i18n="s4.t2">Run once</th><td><code>pipx run X</code></td><td><code>uvx X</code></td></tr>
+            <tr><th data-i18n="s4.t3">Upgrade everything</th><td><code>pipx upgrade-all</code></td><td><code>uv tool upgrade --all</code></td></tr>
+            <tr><th data-i18n="s4.t4">Choose the interpreter</th><td><code>--python 3.12</code></td><td><code>--python 3.12</code></td></tr>
+            <tr><th data-i18n="s4.t5">Add a plugin</th><td><code>pipx inject X Y</code></td><td><code>uv tool install X --with Y</code></td></tr>
+            <tr><th data-i18n="s4.t6">Project environment</th><td data-i18n="s4.t6.a">not its job</td><td><code>uv venv</code>, <code>uv pip</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="path">
+      <h2><span class="num">05</span><span data-i18n="s5.title">PATH, and where things actually go</span></h2>
+      <p class="sub" data-i18n="s5.sub">
+        The most common failure in this manual is not a broken package. It is a correct install
+        whose command cannot be found, because the launcher was written to a directory your shell
+        does not search. Knowing the four directories removes the mystery.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th data-i18n="t.dir">Directory</th><th data-i18n="t.holds">What lives there</th><th data-i18n="t.touch">Should you touch it?</th></tr>
+          </thead>
+          <tbody>
+            <tr><th><code>~/.local/bin</code></th><td data-i18n="s5.d1.a">Launchers from pipx and uv, plus any <code>pip install --user</code> script.</td><td data-i18n="s5.d1.b">No — but it must be on PATH. This is the directory <code>ensurepath</code> adds.</td></tr>
+            <tr><th><code>~/.local/pipx/venvs/&lt;app&gt;</code></th><td data-i18n="s5.d2.a">The private environment of each pipx app, with its dependencies.</td><td data-i18n="s5.d2.b">Never by hand. pipx owns it; edit through <code>inject</code> or reinstall.</td></tr>
+            <tr><th><code>~/.venvs</code></th><td data-i18n="s5.d3.a">Environments that belong to no project — a scratch toolbox of your own.</td><td data-i18n="s5.d3.b">Yes, freely. It is just folders you invented; delete them when bored.</td></tr>
+            <tr><th><code>/usr/local/bin</code></th><td data-i18n="s5.d4.a">System-wide launchers, usually from your distribution or a make install.</td><td data-i18n="s5.d4.b">Only with sudo, and only for things the package manager did not provide.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 data-i18n="s5.add.h">Adding it once, per shell</h3>
+      <pre><span class="c"># bash — ~/.bashrc     zsh — ~/.zshrc</span>
+export PATH="$HOME/.local/bin:$PATH"
+
+<span class="c"># fish</span>
+fish_add_path ~/.local/bin
+
+<span class="c"># then, in the current shell</span>
+source ~/.bashrc
+command -v toot</pre>
+      <p data-i18n="s5.add.after">On Windows the equivalent is <code>setx PATH "%PATH%;%USERPROFILE%\AppData\Roaming\Python\Scripts"</code> in a fresh cmd, and a restart of the terminal. If <code>command -v</code> prints nothing but the file exists, the shell is using a cached list: <code>hash -r</code> in bash, <code>rehash</code> in zsh, or simply open a new window.</p>
+
+      <div class="note">
+        <strong data-i18n="s5.note.h">The check that settles it</strong>
+        <p data-i18n="s5.note.p"><code>ls ~/.local/bin | head</code> shows whether the launcher exists; <code>echo $PATH | tr ':' '\n' | grep local</code> shows whether the shell looks there. Those two commands answer "why is my command not found" in five seconds, and they are always the first thing to run before reading an error message twice.</p>
+      </div>
+    </section>
+
+    <section id="builder">
+      <h2><span class="num">06</span><span data-i18n="s6.title">Build the command for your machine</span></h2>
+      <p class="sub" data-i18n="s6.sub">
+        Three choices — the app, the method, the operating system — and the block below is what
+        you paste. It includes the system packages that app usually needs, because that is the
+        step the README assumes you already did.
+      </p>
+
+      <div class="tool" id="builder-tool">
+        <div class="tool-head">
+          <h3 data-i18n="s6.tool.h">Install builder</h3>
+          <span class="badge" data-i18n="s6.tool.badge">thirty apps</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s6.app">App</span>
+            <select id="b-app"></select>
+          </label>
+          <label class="field"><span data-i18n="s6.method">Method</span>
+            <select id="b-method">
+              <option value="pipx" data-i18n="s6.m.pipx">pipx (recommended)</option>
+              <option value="uv" data-i18n="s6.m.uv">uv (fastest)</option>
+              <option value="venv" data-i18n="s6.m.venv">venv (manual)</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s6.os">System</span>
+            <select id="b-os">
+              <option value="linux" data-i18n="s6.os.linux">Linux</option>
+              <option value="mac" data-i18n="s6.os.mac">macOS</option>
+              <option value="win" data-i18n="s6.os.win">Windows</option>
+            </select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s6.out.app">App</dt><dd id="b-name">—</dd>
+          <dt data-i18n="s6.out.pkg">Package</dt><dd id="b-pkg">—</dd>
+          <dt data-i18n="s6.out.cmd">Command</dt><dd id="b-cmd">—</dd>
+          <dt data-i18n="s6.out.deps">System packages</dt><dd id="b-deps">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="b-copy" data-i18n="s6.copy">Copy</button>
+          <pre id="b-out">—</pre>
+        </div>
+        <p class="sub" id="b-note"></p>
+      </div>
+    </section>

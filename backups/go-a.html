@@ -1,0 +1,376 @@
+  <header class="hero">
+    <div class="wrap">
+      <div class="topbar">
+        <a class="mark" href="index.html">Monkey Blog · Go in the Shell</a>
+        <div class="topbar-tools">
+          <a class="home-link" href="index.html"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" focusable="false"><path d="M8 1.5 1.5 7h1.8v6.5h3.4V9.8h2.6v3.7h3.4V7h1.8L8 1.5Z" fill="currentColor"/></svg><span data-i18n="nav.home">Home</span></a>
+          <div class="lang-switch" role="group" aria-label="Language / Idioma">
+            <button type="button" data-lang="en" aria-pressed="true" lang="en">EN</button>
+            <button type="button" data-lang="pt" aria-pressed="false" lang="pt">PT</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="kicker" data-i18n="hero.kicker">Compiled tools · a manual in twenty parts</p>
+      <h1 data-i18n="hero.title">Go in the Shell</h1>
+      <p class="lede" data-i18n="hero.lede">
+        Go produces one file per program: no interpreter, no runtime to install, nothing to keep
+        in sync. That is why so much of the software you already use in a terminal — the fuzzy
+        finder, the git interface, the container dashboards, the vulnerability scanner — is
+        written in it. This manual is about the toolchain that builds those binaries, the one
+        command that installs them, and thirty projects worth compiling.
+      </p>
+      <ul class="facts">
+        <li data-i18n="hero.f1">Twenty parts</li>
+        <li data-i18n="hero.f2">Thirty binaries</li>
+        <li data-i18n="hero.f3">Versions checked</li>
+        <li data-i18n="hero.f4">Install builder</li>
+        <li data-i18n="hero.f5">Toolchain check</li>
+        <li data-i18n="hero.f6">Every repo linked</li>
+      </ul>
+
+      <div class="reading-paths">
+        <a class="path" href="#toolchain">
+          <strong data-i18n="path.a.h">I have never installed Go</strong>
+          <span data-i18n="path.a.p">Part 02: one tarball, one PATH line, and a compiler that is finished in a minute.</span>
+        </a>
+        <a class="path" href="#apps">
+          <strong data-i18n="path.b.h">Show me the apps first</strong>
+          <span data-i18n="path.b.p">Part 07: thirty tools, their module paths, their versions, and the Go each one needs.</span>
+        </a>
+        <a class="path" href="#builder">
+          <strong data-i18n="path.c.h">Just give me the command</strong>
+          <span data-i18n="path.c.p">Part 06: pick a tool, a method and a system, and copy the block.</span>
+        </a>
+        <a class="path" href="#errors">
+          <strong data-i18n="path.d.h">A build just failed</strong>
+          <span data-i18n="path.d.p">Part 18: the ten messages that stop people, from GOBIN to a toolchain that is too old.</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Sections">
+    <div class="wrap">
+      <ul>
+        <li><a href="#rule" data-i18n="nav.rule">The rule</a></li>
+        <li><a href="#toolchain" data-i18n="nav.toolchain">Toolchain</a></li>
+        <li><a href="#install" data-i18n="nav.install">go install</a></li>
+        <li><a href="#layout" data-i18n="nav.layout">Layout</a></li>
+        <li><a href="#path" data-i18n="nav.path">GOBIN</a></li>
+        <li><a href="#builder" data-i18n="nav.builder">Builder</a></li>
+        <li><a href="#apps" data-i18n="nav.apps">The apps</a></li>
+        <li><a href="#shell" data-i18n="nav.shell">Shell</a></li>
+        <li><a href="#git" data-i18n="nav.git">Git</a></li>
+        <li><a href="#containers" data-i18n="nav.containers">Containers</a></li>
+        <li><a href="#docs" data-i18n="nav.docs">Documents</a></li>
+        <li><a href="#build" data-i18n="nav.build">Build</a></li>
+        <li><a href="#data" data-i18n="nav.data">Data</a></li>
+        <li><a href="#machine" data-i18n="nav.machine">Machine</a></li>
+        <li><a href="#security" data-i18n="nav.security">Security</a></li>
+        <li><a href="#sync" data-i18n="nav.sync">Sync</a></li>
+        <li><a href="#servers" data-i18n="nav.servers">Servers</a></li>
+        <li><a href="#errors" data-i18n="nav.errors">Errors</a></li>
+        <li><a href="#sources" data-i18n="nav.sources">Sources</a></li>
+        <li><a href="#glossary" data-i18n="nav.glossary">Glossary</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section id="rule">
+      <h2><span class="num">01</span><span data-i18n="s1.title">One command, three rules, no runtime</span></h2>
+      <p class="sub" data-i18n="s1.sub">
+        A Go tool is a single executable. There is no interpreter to match, no environment to
+        activate, no shared library to break: `go install` compiles the program and drops one file
+        on your disk. That simplicity is also why the three rules below are enough — almost every
+        Go installation problem is a path, a version, or a directory that the shell cannot see.
+      </p>
+
+      <ol class="steps">
+        <li>
+          <h3 data-i18n="s1.r1.h">One: install with a version, not with a mood</h3>
+          <p data-i18n="s1.r1.p">Since Go 1.17, <code>go get</code> only edits a <code>go.mod</code>; it no longer installs binaries. The command for tools is <code>go install module/path@version</code>. Writing <code>@latest</code> is allowed and is what the manual mostly does — but a published article ages, and <code>@v1.2.3</code> is the line that will still compile the same code next year.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s1.r2.h">Two: the binary goes to GOBIN, never to /usr/local</h3>
+          <p data-i18n="s1.r2.p">By default the result lands in <code>$(go env GOPATH)/bin</code>, a directory you own. Never prefix the command with <code>sudo</code>: the compiler will happily write into root's home, and the binary you just built will be invisible to your user. If you want another destination, set <code>GOBIN</code> — not a different compiler flag.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s1.r3.h">Three: put that directory on PATH once</h3>
+          <p data-i18n="s1.r3.p">Installation succeeds and the shell still says <code>command not found</code>, because <code>~/go/bin</code> is not on PATH on a fresh system. One export line in your shell profile fixes it forever; <code>go env -w GOBIN=…</code> fixes the destination instead. Part 05 has both, with the check that tells you which one you are missing.</p>
+        </li>
+      </ol>
+
+      <div class="note">
+        <strong data-i18n="s1.note.h">Why "no runtime" changes the maintenance story</strong>
+        <p data-i18n="s1.note.p">A Python tool needs the interpreter that installed it, a Node tool needs its package tree, a Go tool needs nothing. Copy the file to another machine of the same OS and architecture and it runs. That also means an upgrade is a replacement, not a merge: install the new version, and the old file is gone. There is no uninstall command and no leftovers to clean, which is either liberating or alarming, depending on how much you enjoy housekeeping.</p>
+      </div>
+
+      <h3 data-i18n="s1.which.h">Four commands that people confuse</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.command">Command</th>
+              <th data-i18n="t.does">What it does</th>
+              <th data-i18n="t.when">Use it when</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>go install pkg@version</code></th>
+              <td data-i18n="s1.c1.a">Compiles a main package and writes the executable to GOBIN. Works outside any module.</td>
+              <td data-i18n="s1.c1.b">Always, for a tool you want to keep. This is the command of the manual.</td>
+            </tr>
+            <tr>
+              <th><code>go install ./cmd/tool</code></th>
+              <td data-i18n="s1.c2.a">Compiles from the source in the current module, at the working tree's state.</td>
+              <td data-i18n="s1.c2.b">You are developing that tool, or testing a patch before proposing it.</td>
+            </tr>
+            <tr>
+              <th><code>go get pkg@version</code></th>
+              <td data-i18n="s1.c3.a">Adds or updates a dependency in <code>go.mod</code>. It does not put anything on your PATH.</td>
+              <td data-i18n="s1.c3.b">You are writing Go code that imports the package as a library.</td>
+            </tr>
+            <tr>
+              <th><code>go build -o out ./cmd/tool</code></th>
+              <td data-i18n="s1.c4.a">Writes the binary to a path you choose, and keeps the whole toolchain cache warm.</td>
+              <td data-i18n="s1.c4.b">Cross-compiling, embedding version flags, or producing an artifact for release.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="sub" data-i18n="s1.after">One nuance worth knowing before it surprises you: inside a module directory, <code>go install pkg@version</code> still ignores your <code>go.mod</code> and installs the published version. That is deliberate — the <code>@version</code> is the request, and the module you happen to be standing in is not.</p>
+    </section>
+
+    <section id="toolchain">
+      <h2><span class="num">02</span><span data-i18n="s2.title">The toolchain, from zero</span></h2>
+      <p class="sub" data-i18n="s2.sub">
+        Go ships as a tarball, an installer or a package. Whatever route you take, the result is
+        the same two things: a directory with the compiler and standard library, and a
+        <code>go</code> command that knows where it lives. The manual's numbers assume Go 1.27,
+        which is the current release line at the time of writing; the projects in part 07 state
+        their own minimums, and one of them is fine with 1.22.
+      </p>
+
+      <h3 data-i18n="s2.linux.h">Linux, the honest way</h3>
+      <pre><span class="c"># download the archive for your architecture from go.dev/dl</span>
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf go1.27.3.linux-amd64.tar.gz
+
+<span class="c"># add to ~/.profile or ~/.bashrc, once</span>
+export PATH="$PATH:/usr/local/go/bin"
+
+go version</pre>
+      <p data-i18n="s2.linux.after">Removing the old directory first is not optional: the tarball extracts into <code>/usr/local/go</code>, and merging two versions leaves a compiler with one standard library and another's tools. The distribution package (<code>sudo apt install golang-go</code>) is usually several releases behind; it is fine for running something, not for building the newest tools.</p>
+
+      <h3 data-i18n="s2.other.h">macOS and Windows</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th data-i18n="t.system">System</th><th data-i18n="t.route">Route</th><th data-i18n="t.check">Check</th></tr>
+          </thead>
+          <tbody>
+            <tr><th>macOS</th><td><code>brew install go</code>, or the pkg installer from go.dev/dl</td><td><code>go version</code>, <code>go env GOROOT</code></td></tr>
+            <tr><th>Windows</th><td>The MSI from go.dev/dl, which sets PATH itself</td><td><code>go version</code> in a new terminal</td></tr>
+            <tr><th>Debian / Ubuntu</th><td>tarball preferred; <code>apt install golang-go</code> lags</td><td><code>go version</code></td></tr>
+            <tr><th>Fedora / Arch</th><td><code>dnf install golang</code> / <code>pacman -S go</code></td><td><code>go version</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 data-i18n="s2.env.h">The five variables that matter</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th data-i18n="t.var">Variable</th><th data-i18n="t.meaning">What it is</th><th data-i18n="t.default">Default</th></tr>
+          </thead>
+          <tbody>
+            <tr><th><code>GOROOT</code></th><td data-i18n="s2.v1">Where the compiler and standard library live. The <code>go</code> command finds it on its own.</td><td><code>/usr/local/go</code></td></tr>
+            <tr><th><code>GOPATH</code></th><td data-i18n="s2.v2">Your workspace: module cache, and the default home of installed binaries.</td><td><code>~/go</code></td></tr>
+            <tr><th><code>GOBIN</code></th><td data-i18n="s2.v3">If set, <code>go install</code> writes binaries here instead of <code>GOPATH/bin</code>.</td><td data-i18n="s2.v3d">unset</td></tr>
+            <tr><th><code>GOMODCACHE</code></th><td data-i18n="s2.v4">Downloaded module sources, shared by every project on the machine.</td><td><code>~/go/pkg/mod</code></td></tr>
+            <tr><th><code>GOTOOLCHAIN</code></th><td data-i18n="s2.v5">Whether Go may download a newer toolchain when a module asks for one.</td><td><code>auto</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <pre>go env GOROOT GOPATH GOBIN GOMODCACHE GOTOOLCHAIN
+go env -w GOBIN="$HOME/.local/bin"    <span class="c"># persists in the Go env file</span>
+go env -u GOBIN                       <span class="c"># undo it</span></pre>
+      <p data-i18n="s2.env.after"><code>go env -w</code> writes to the file that <code>go env GOENV</code> names — usually <code>~/.config/go/env</code> — so the setting survives shells without an export line. It is the right place for <code>GOBIN</code> and <code>GOPROXY</code>; the wrong place for anything secret, because the file is plain text.</p>
+    </section>
+
+    <section id="install">
+      <h2><span class="num">03</span><span data-i18n="s3.title">go install: the whole installation story</span></h2>
+      <p class="sub" data-i18n="s3.sub">
+        No registry to browse, no resolver to argue with: the module path in the command is both
+        the address and the identity. Go downloads the module at the version you named, builds the
+        package and its dependencies with the toolchain currently in use, and writes the result
+        into GOBIN.
+      </p>
+
+      <pre>go install github.com/junegunn/fzf@latest
+go install github.com/mikefarah/yq/v4@v4.54.1
+go install github.com/cli/cli/v2/cmd/gh@latest
+
+<span class="c"># where did it go, and what is in it</span>
+ls "$(go env GOPATH)/bin"
+go version -m "$(go env GOPATH)/bin/lazygit"</pre>
+      <p data-i18n="s3.after"><code>go version -m</code> is the audit tool nobody remembers: it prints the module path, the exact version, the build flags and the VCS revision of any Go binary. When a tool behaves differently from its documentation, that line tells you whether you are running what you think you are.</p>
+
+      <div class="two">
+        <div class="card">
+          <h3 data-i18n="s3.pin.h">Pin or float</h3>
+          <p data-i18n="s3.pin.p"><code>@latest</code> is a promise that the author's newest tag is better; <code>@v4.54.1</code> is a promise that today's behaviour is tomorrow's. For tools you script against — a formatter in CI, a linter in a hook — pin. For tools whose job is to keep up with a moving target (fzf, rclone), float and rerun the install monthly.</p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="s3.name.h">The binary's name is not the module's</h3>
+          <p data-i18n="s3.name.p">The executable is named after the package, which is normally the last element of the path: <code>…/cmd/goose</code> gives <code>goose</code>, <code>mvdan.cc/sh/v3/cmd/shfmt</code> gives <code>shfmt</code>. When a project's README says "install with go install X" and the command is different, the last path element is the clue.</p>
+        </div>
+      </div>
+
+      <h3 data-i18n="s3.tc.h">When the tool wants a newer Go than you have</h3>
+      <p data-i18n="s3.tc.p">Since Go 1.21, <code>GOTOOLCHAIN=auto</code> (the default) makes the <code>go</code> command download and run the toolchain a module requires. You will see a line like <code>go: downloading go1.27.3</code> and the build proceeds with that version — no manual upgrade, and no risk of breaking your main installation. The download is cached, so it happens once per version.</p>
+      <p data-i18n="s3.tc.p2">The table in part 07 lists the Go each project asks for, taken from its published module file. Use the check below when you are about to install something and want to know whether it will pull a toolchain, or fail because yours is pinned to <code>local</code>.</p>
+
+      <div class="tool" id="tc-tool">
+        <div class="tool-head">
+          <h3 data-i18n="s3.tc.tool.h">Toolchain check</h3>
+          <span class="badge" data-i18n="s3.tc.tool.badge">before you install</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s3.tc.yours">Your Go version</span>
+            <select id="tc-mine"></select>
+          </label>
+          <label class="field"><span data-i18n="s3.tc.app">The tool</span>
+            <select id="tc-app"></select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s3.tc.out.need">Needs</dt><dd id="tc-need">—</dd>
+          <dt data-i18n="s3.tc.out.verdict">Verdict</dt><dd id="tc-verdict">—</dd>
+          <dt data-i18n="s3.tc.out.how">What happens</dt><dd id="tc-how">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="tc-copy" data-i18n="s3.tc.copy">Copy</button>
+          <pre id="tc-out">—</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="layout">
+      <h2><span class="num">04</span><span data-i18n="s4.title">Where the bytes go, and how to get them back</span></h2>
+      <p class="sub" data-i18n="s4.sub">
+        A Go toolchain is not shy about disk: the module cache keeps every source archive it has
+        ever downloaded, and the build cache keeps compiled objects so the next build is fast. Both
+        are safe to delete, and both grow back. Knowing the five directories turns "my disk is
+        full" into a two-command answer.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th data-i18n="t.dir">Directory</th><th data-i18n="t.holds">What lives there</th><th data-i18n="t.touch">Should you touch it?</th></tr>
+          </thead>
+          <tbody>
+            <tr><th><code>/usr/local/go</code></th><td data-i18n="s4.d1.a">The toolchain itself: compiler, linker, standard library. Replaced wholesale on upgrade.</td><td data-i18n="s4.d1.b">Only by extracting a new tarball over it — after removing the old one.</td></tr>
+            <tr><th><code>~/go/bin</code></th><td data-i18n="s4.d2.a">Every binary installed by <code>go install</code>, unless GOBIN says otherwise.</td><td data-i18n="s4.d2.b">Yes: deleting a file here is how you uninstall a Go tool.</td></tr>
+            <tr><th><code>~/go/pkg/mod</code></th><td data-i18n="s4.d3.a">Downloaded module sources, shared by all projects. Often the largest directory.</td><td data-i18n="s4.d3.b">With <code>go clean -modcache</code>, never by hand.</td></tr>
+            <tr><th><code>~/.cache/go-build</code></th><td data-i18n="s4.d4.a">Compiled package objects, keyed by content and toolchain version.</td><td data-i18n="s4.d4.b">With <code>go clean -cache</code>. Costs rebuild time, nothing else.</td></tr>
+            <tr><th><code>~/.config/go/env</code></th><td data-i18n="s4.d5.a">The persistent settings written by <code>go env -w</code>.</td><td data-i18n="s4.d5.b">With <code>go env -w</code> / <code>-u</code>, so the file stays well-formed.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <pre>du -sh "$(go env GOMODCACHE)" "$(go env GOCACHE)" 2&gt;/dev/null
+go clean -modcache          <span class="c"># frees the module sources; nothing else breaks</span>
+go clean -cache             <span class="c"># frees compiled objects; next build is slower</span>
+go clean -testcache         <span class="c"># forgets cached test results</span></pre>
+
+      <div class="two">
+        <div class="card">
+          <h3 data-i18n="s4.up.h">Upgrading a tool</h3>
+          <p data-i18n="s4.up.p">Rerun the same install line with a newer tag. Go writes the new binary over the old one in a single move, so there is no half-upgraded state and no uninstall step. If the new version misbehaves, reinstall the previous tag — the module cache may still have it, and the download is quick either way.</p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="s4.off.h">Working offline, or behind a proxy</h3>
+          <p data-i18n="s4.off.p"><code>GOPROXY</code> is a list of module proxies, <code>https://proxy.golang.org,direct</code> by default. Behind a company mirror, point it at the mirror and keep <code>direct</code> as fallback. <code>GONOSUMDB</code>/<code>GOSUMDB</code> and <code>GOFLAGS=-mod=mod</code> are the other two knobs; setting them blindly is how checksum errors become permanent.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="path">
+      <h2><span class="num">05</span><span data-i18n="s5.title">GOBIN, PATH, and the five-second check</span></h2>
+      <p class="sub" data-i18n="s5.sub">
+        A Go install cannot fail quietly in the way a Python one can — but it can succeed into a
+        directory your shell does not search. Two commands tell you everything: where the binary
+        went, and whether that directory is on PATH.
+      </p>
+
+      <pre>ls "$(go env GOPATH)/bin" | head
+echo "$PATH" | tr ':' '\n' | grep -E "go/bin|local/bin"</pre>
+
+      <h3 data-i18n="s5.add.h">Adding it once, per shell</h3>
+      <pre><span class="c"># bash — ~/.bashrc     zsh — ~/.zshrc</span>
+export PATH="$PATH:$(go env GOPATH)/bin"
+
+<span class="c"># fish</span>
+fish_add_path (go env GOPATH)/bin
+
+<span class="c"># Windows, PowerShell, once</span>
+[Environment]::SetEnvironmentVariable("Path", "$env:Path;$env:USERPROFILE\go\bin", "User")</pre>
+      <p data-i18n="s5.add.after">If you would rather keep tools in a directory that is already on PATH, set <code>GOBIN</code> instead of editing the profile twice: <code>go env -w GOBIN="$HOME/.local/bin"</code>. Pick one — GOBIN or a PATH entry — and do not maintain both, because the next person to debug your machine will find two directories and trust neither.</p>
+
+      <div class="note">
+        <strong data-i18n="s5.note.h">The check that settles it</strong>
+        <p data-i18n="s5.note.p"><code>command -v lazygit</code> prints the resolved path or nothing. If it prints nothing but the file exists in <code>$(go env GOPATH)/bin</code>, the problem is PATH, not Go. If the file does not exist either, the install failed earlier — and the error is in the install output, not in your shell configuration.</p>
+      </div>
+    </section>
+
+    <section id="builder">
+      <h2><span class="num">06</span><span data-i18n="s6.title">Build the command for your machine</span></h2>
+      <p class="sub" data-i18n="s6.sub">
+        Three choices — the tool, the method, the system — and the block below is what you paste.
+        The pinned method uses the exact version verified for this manual; the source method
+        clones the repository when you want to read the code before trusting it.
+      </p>
+
+      <div class="tool" id="builder-tool">
+        <div class="tool-head">
+          <h3 data-i18n="s6.tool.h">Install builder</h3>
+          <span class="badge" data-i18n="s6.tool.badge">thirty tools</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s6.app">Tool</span>
+            <select id="b-app"></select>
+          </label>
+          <label class="field"><span data-i18n="s6.method">Method</span>
+            <select id="b-method">
+              <option value="latest" data-i18n="s6.m.latest">go install @latest</option>
+              <option value="pinned" data-i18n="s6.m.pinned">go install @version</option>
+              <option value="source" data-i18n="s6.m.source">from source</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s6.os">System</span>
+            <select id="b-os">
+              <option value="linux" data-i18n="s6.os.linux">Linux</option>
+              <option value="mac" data-i18n="s6.os.mac">macOS</option>
+              <option value="win" data-i18n="s6.os.win">Windows</option>
+            </select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s6.out.app">Tool</dt><dd id="b-name">—</dd>
+          <dt data-i18n="s6.out.pkg">Module</dt><dd id="b-pkg">—</dd>
+          <dt data-i18n="s6.out.ver">Version</dt><dd id="b-ver">—</dd>
+          <dt data-i18n="s6.out.cmd">Command</dt><dd id="b-cmd">—</dd>
+          <dt data-i18n="s6.out.need">Needs Go</dt><dd id="b-need">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="b-copy" data-i18n="s6.copy">Copy</button>
+          <pre id="b-out">—</pre>
+        </div>
+        <p class="sub" id="b-note"></p>
+      </div>
+    </section>

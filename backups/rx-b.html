@@ -1,0 +1,157 @@
+    <section id="layout">
+      <h2><span class="num">04</span><span data-i18n="s4.title">Where the bytes go, and how to take them back</span></h2>
+      <p class="sub" data-i18n="s4.sub">
+        Rust is not shy about disk. A toolchain is about 1.5 GB once you add components; the
+        dependency sources of a few dozen tools add another gigabyte; a single release build of a
+        big crate leaves a <code>target</code> directory measured in hundreds of megabytes. None of
+        it is precious, and all of it is forgettable — which is how a laptop ends up with twelve
+        gigabytes of compiler artefacts.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.dir">Directory</th>
+              <th data-i18n="t.holds">What it holds</th>
+              <th data-i18n="t.touch">Should you touch it?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>~/.rustup/toolchains</code></th>
+              <td data-i18n="s4.d1.a">Every installed toolchain: compiler, standard library, docs, components. One directory per channel.</td>
+              <td data-i18n="s4.d1.b">Never by hand. Remove a channel with <code>rustup toolchain uninstall</code>.</td>
+            </tr>
+            <tr>
+              <th><code>~/.cargo/bin</code></th>
+              <td data-i18n="s4.d2.a">Everything on your PATH from this ecosystem: cargo, rustc, rustup, and every tool you installed.</td>
+              <td data-i18n="s4.d2.b">Only through <code>cargo uninstall</code>, which knows which binaries a crate owns.</td>
+            </tr>
+            <tr>
+              <th><code>~/.cargo/registry</code></th>
+              <td data-i18n="s4.d3.a">Downloaded <code>.crate</code> archives and their extracted sources — shared by every build, usually the largest directory here.</td>
+              <td data-i18n="s4.d3.b">With <code>cargo cache -a</code> if you have cargo-cache, or by deleting <code>cache</code> and <code>src</code>; both regrow on demand.</td>
+            </tr>
+            <tr>
+              <th><code>~/.cargo/git</code></th>
+              <td data-i18n="s4.d4.a">Clones made by <code>--git</code> dependencies and installs. Often stale, rarely large.</td>
+              <td data-i18n="s4.d4.b">Yes, when a git install behaves like an older commit — but delete, do not edit.</td>
+            </tr>
+            <tr>
+              <th><code>~/project/target</code></th>
+              <td data-i18n="s4.d5.a">Compiled dependencies, incremental state, the final binaries. The directory that surprises people.</td>
+              <td data-i18n="s4.d5.b">With <code>cargo clean</code>, and add it to <code>.gitignore</code> — it is nobody's source code.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 data-i18n="s4.clean.h">Three commands that reclaim most of it</h3>
+      <pre>du -sh ~/.rustup ~/.cargo ~/code/*/target 2&gt;/dev/null | sort -h | tail -5
+
+rustup toolchain uninstall nightly          <span class="c"># ~1 GB back</span>
+cargo clean                                 <span class="c"># the current project's target/</span>
+rm -rf ~/.cargo/registry/cache ~/.cargo/registry/src   <span class="c"># sources, re-downloadable</span></pre>
+      <p data-i18n="s4.clean.after">The last line is safe but not free: the next build of each tool downloads its dependencies again. Do it when disk pressure is real, not as tidying. A toolchain you never use is the better target — nightly builds are large, and installing one to try a feature is exactly how three of them accumulate.</p>
+
+      <h3 data-i18n="s4.speed.h">Making the wait shorter</h3>
+      <p data-i18n="s4.speed.p">A first install compiles the crate and its whole dependency graph in release mode, which is why <code>rg</code> takes thirty seconds and a browser engine takes an hour. Three things help and none of them is a trick. <code>cargo install</code> reuses the shared registry, so the second install of a similar tool is faster. A faster linker matters more than a faster CPU for large builds: <code>-C link-arg=-fuse-ld=lld</code> in <code>~/.cargo/config.toml</code>, or mold, can cut link time in half. And a compiler cache such as <code>sccache</code> helps when you rebuild the same dependencies repeatedly — for one-off installs it is overhead.</p>
+      <pre><span class="c"># ~/.cargo/config.toml — faster links, if lld is installed</span>
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "link-arg=-fuse-ld=lld"]</pre>
+      <p data-i18n="s4.speed.after">If disk and bandwidth are the constraint rather than patience, <code>cargo binstall</code> is the answer, not a faster compiler: it downloads the binary the project's CI already built. Part 13 covers it, including its one real limitation — not every project publishes binaries.</p>
+
+      <div class="note">
+        <strong data-i18n="s4.cache.h">The shared target directory, and why not to share one</strong>
+        <p data-i18n="s4.cache.p"><code>CARGO_TARGET_DIR</code> points every project at one build directory. It looks like a saving and behaves like a bug hunt: profile settings, feature flags and target triples collide, and a rebuild can pick artefacts compiled with another project's configuration. The one legitimate use is CI, where each job starts from nothing anyway. On a workstation, let each project keep its own <code>target</code> and delete it when the branch is merged.</p>
+      </div>
+    </section>
+
+    <section id="path">
+      <h2><span class="num">05</span><span data-i18n="s5.title">PATH, and the check that settles it</span></h2>
+      <p class="sub" data-i18n="s5.sub">
+        The rustup installer already appended <code>~/.cargo/bin</code> to your shell profile, which
+        is why most people never see this problem. It appears in three situations: a shell that
+        does not read the file rustup edited, a container built without a login shell, and a
+        machine where a distribution <code>cargo</code> comes first.
+      </p>
+
+      <h3 data-i18n="s5.add.h">Add it once, for your shell</h3>
+      <pre><span class="c"># bash / zsh</span>
+echo 'export PATH="$HOME/.cargo/bin:$PATH"' &gt;&gt; ~/.bashrc   <span class="c"># or ~/.zshrc</span>
+exec "$SHELL" -l
+
+<span class="c"># fish</span>
+fish_add_path ~/.cargo/bin
+
+<span class="c"># the line the installer writes, if you want the canonical version</span>
+. "$HOME/.cargo/env"</pre>
+      <p data-i18n="s5.add.after">Put it in front, not behind. Prepending is what makes your rustup toolchain win against <code>/usr/bin/cargo</code>; appending is how the distribution compiler keeps answering while your toolchain sits unused. And run <code>exec "$SHELL" -l</code> rather than opening a new window — the difference between "it works now" and "it works sometimes" is usually a non-login shell.</p>
+
+      <h3 data-i18n="s5.check.h">Two commands, one answer</h3>
+      <pre>command -v cargo           <span class="c"># /home/you/.cargo/bin/cargo  →  good</span>
+which -a cargo             <span class="c"># every cargo on PATH, in order</span>
+rustup which cargo         <span class="c"># the one rustup considers current</span>
+cargo --version            <span class="c"># 1.100.0  →  this is cargo 0.100, Rust 1.99</span></pre>
+      <p data-i18n="s5.check.p">If <code>which -a</code> prints two paths, the order decides. If it prints one and your installed tool is missing, the binary directory is not on PATH at all. If <code>cargo --version</code> reports something older than <code>rustc --version</code> expects, you have found the mixed installation from part 02 and the fix is to remove the distribution package, not to add another export.</p>
+
+      <div class="note">
+        <strong data-i18n="s5.note.h">A tool that vanishes after an upgrade</strong>
+        <p data-i18n="s5.note.p">Two crates can ship a binary with the same name, and the second install overwrites the first with no warning beyond a line of output. <code>cargo install --list</code> shows both crates as installed while only one binary exists. When a tool changes behaviour after an unrelated install, this is the first thing to check — and <code>--force</code> on the one you meant to keep is the fix.</p>
+      </div>
+    </section>
+
+    <section id="builder">
+      <h2><span class="num">06</span><span data-i18n="s6.title">Build the command for your machine</span></h2>
+      <p class="sub" data-i18n="s6.sub">
+        Three choices — the tool, the method, the system — and the block below is what you paste.
+        The pinned method uses the exact version verified for this manual; the source method clones
+        the repository when you want to read the code before trusting it; the prebuilt method asks
+        <code>cargo binstall</code> for a binary first. Above the block, each tool shows its crate,
+        version, MSRV, home page, family and what it does.
+      </p>
+
+      <div class="tool" id="builder-tool">
+        <div class="tool-head">
+          <h3 data-i18n="s6.tool.h">Install builder</h3>
+          <span class="badge" data-i18n="s6.tool.badge">thirty tools</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s6.app">Tool</span>
+            <select id="b-app"></select>
+          </label>
+          <label class="field"><span data-i18n="s6.method">Method</span>
+            <select id="b-method">
+              <option value="latest" data-i18n="s6.m.latest">cargo install --locked</option>
+              <option value="pinned" data-i18n="s6.m.pinned">pinned version</option>
+              <option value="binstall" data-i18n="s6.m.binstall">prebuilt binary</option>
+              <option value="source" data-i18n="s6.m.source">from source</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s6.os">System</span>
+            <select id="b-os">
+              <option value="linux" data-i18n="s6.os.linux">Linux</option>
+              <option value="mac" data-i18n="s6.os.mac">macOS</option>
+              <option value="win" data-i18n="s6.os.win">Windows</option>
+            </select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s6.out.app">Tool</dt><dd id="b-name">—</dd>
+          <dt data-i18n="s6.out.pkg">Crate</dt><dd id="b-pkg">—</dd>
+          <dt data-i18n="s6.out.ver">Version</dt><dd id="b-ver">—</dd>
+          <dt data-i18n="s6.out.cmd">Command</dt><dd id="b-cmd">—</dd>
+          <dt data-i18n="s6.out.need">Needs Rust</dt><dd id="b-need">—</dd>
+          <dt data-i18n="s6.out.what">What it does</dt><dd id="b-what">—</dd>
+          <dt data-i18n="s6.out.home">Home</dt><dd id="b-home">—</dd>
+          <dt data-i18n="s6.out.family">Family</dt><dd id="b-family">—</dd>
+          <dt data-i18n="s6.out.deps">Needs installed</dt><dd id="b-deps">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="b-copy" data-i18n="s6.copy">Copy</button>
+          <pre id="b-out">—</pre>
+        </div>
+        <p class="sub" id="b-note"></p>
+      </div>
+    </section>

@@ -1,0 +1,317 @@
+    <section id="machine">
+      <h2><span class="num">14</span><span data-i18n="s14.title">The machine: what is using the disk</span></h2>
+      <p class="sub" data-i18n="s14.sub">
+        Two answers to one question. <strong>duf</strong> shows the filesystems — which mount has
+        room, which is full, what is mounted but forgotten. <strong>gdu</strong> shows the folders
+        inside one of them, sorted by weight, fast enough to point at a home directory.
+      </p>
+
+      <div class="card">
+        <h3>duf — <span data-i18n="s14.duf.h">df, with the columns you wanted</span></h3>
+        <p data-i18n="s14.duf.p">Mount points grouped by device, usage bars, inode counts and a JSON output for scripts. It reads better than <code>df -h</code> because it stops pretending a network mount and a USB stick are the same kind of thing, and it works on Linux, macOS and Windows.</p>
+        <pre>go install github.com/muesli/duf@v0.9.1
+duf
+duf -only local
+duf --json | head -20</pre>
+      </div>
+
+      <div class="card">
+        <h3>gdu — <span data-i18n="s14.gdu.h">disk usage, in parallel</span></h3>
+        <p data-i18n="s14.gdu.p">An interactive tree of what is large, with the option to delete without leaving the interface. It uses goroutines to read directories in parallel, which is why it finishes on a home folder while <code>du</code> is still thinking about it.</p>
+        <pre>go install github.com/dundee/gdu/v5/cmd/gdu@v5.38.0
+gdu
+gdu ~/Downloads
+gdu -n /            <span class="c"># non-interactive, for scripts</span></pre>
+      </div>
+    </section>
+
+    <section id="security">
+      <h2><span class="num">15</span><span data-i18n="s15.title">Security: scan, sign, store, encrypt</span></h2>
+      <p class="sub" data-i18n="s15.sub">
+        Four tools with four different jobs: <strong>trivy</strong> finds known vulnerabilities,
+        <strong>gitleaks</strong> finds secrets that should not be in a repository,
+        <strong>gopass</strong> keeps the passwords, and <strong>age</strong> encrypts a file with a
+        key you can hold in your head.
+      </p>
+
+      <div class="card">
+        <h3>Trivy — <span data-i18n="s15.tr.h">what is vulnerable, exactly</span></h3>
+        <p data-i18n="s15.tr.p">Scans container images, filesystems, repositories and IaC files against vulnerability and misconfiguration databases, with severity filters and a JSON output for CI. It needs no daemon and no agent: point it at an image name and it downloads the metadata it needs.</p>
+        <pre>go install github.com/aquasecurity/trivy/cmd/trivy@v0.76.1
+trivy image alpine:3.20
+trivy fs --severity HIGH,CRITICAL .
+trivy repo https://github.com/owner/project
+trivy config .</pre>
+      </div>
+
+      <div class="card">
+        <h3>gitleaks — <span data-i18n="s15.gl.h">secrets do not belong in git</span></h3>
+        <p data-i18n="s15.gl.p">Scans a repository's history for API keys, tokens and private keys, using a rule set of provider patterns and entropy checks. It also runs as a pre-commit hook, which is the only moment when removing a leaked key is still cheap.</p>
+        <pre>go install github.com/gitleaks/gitleaks/v8@v8.30.1
+gitleaks git . --verbose
+gitleaks dir . --verbose
+gitleaks git --staged          <span class="c"># pre-commit</span></pre>
+        <p data-i18n="s15.gl.after">A secret committed once is compromised the moment it is pushed. Rotate it first, then clean the history — rewriting the past without rotating the credential cleans the evidence, not the problem.</p>
+      </div>
+
+      <div class="card">
+        <h3>gopass — <span data-i18n="s15.gp.h">passwords in a git repository</span></h3>
+        <p data-i18n="s15.gp.p">A pass-compatible password store: each secret is a GPG-encrypted file in a git repository you control, with recipients per folder and a clipboard mode. No account, no sync service, and a backup that is just a clone.</p>
+        <pre>go install github.com/gopasspw/gopass@v1.17.4
+gopass init
+gopass insert -c work/mail
+gopass show -c work/mail
+gopass generate -c web/github 32
+gopass ls</pre>
+      </div>
+
+      <div class="card">
+        <h3>age — <span data-i18n="s15.age.h">encryption with one key, one line</span></h3>
+        <p data-i18n="s15.age.p">Modern file encryption with a deliberately small design: an X25519 key pair, a passphrase mode, and a format you can read in a spec. It replaced GPG for the case "encrypt this file for that person", and it composes: <code>tar</code> into <code>age</code> into <code>ssh</code> is a backup in one pipe.</p>
+        <pre>go install filippo.io/age/cmd/age@latest
+age-keygen -o key.txt
+age -r age1ql3z7... -o backup.tar.age backup.tar
+age -d -i key.txt backup.tar.age &gt; backup.tar
+age -p -o secret.age secret.txt      <span class="c"># passphrase instead of a key</span></pre>
+      </div>
+    </section>
+
+    <section id="sync">
+      <h2><span class="num">16</span><span data-i18n="s16.title">Sync and backup: the two that must not lie</span></h2>
+      <p class="sub" data-i18n="s16.sub">
+        <strong>rclone</strong> moves files between anything and anything — local disk, S3, Drive,
+        SFTP, WebDAV. <strong>restic</strong> keeps encrypted, deduplicated snapshots that you can
+        restore selectively. Sync is not backup, and the pair makes the difference obvious.
+      </p>
+
+      <div class="card">
+        <h3>rclone — <span data-i18n="s16.rc.h">one client for every remote</span></h3>
+        <p data-i18n="s16.rc.p">Configure a remote once, then copy, sync, check, mount or serve it with the same flags. <code>sync</code> makes the destination match the source — including deletions — so it is a mirror, not an archive; <code>copy</code> only adds. Knowing which one you typed is the whole discipline.</p>
+        <pre>go install github.com/rclone/rclone@v1.75.2
+rclone config
+rclone copy ~/Photos remote:backup/Photos -P
+rclone sync ~/Docs remote:docs --dry-run
+rclone check ~/Docs remote:docs
+rclone mount remote: /mnt/remote</pre>
+      </div>
+
+      <div class="card">
+        <h3>restic — <span data-i18n="s16.rs.h">encrypted snapshots with retention</span></h3>
+        <p data-i18n="s16.rs.p">A repository holds snapshots; each snapshot references deduplicated, encrypted chunks. <code>forget --prune</code> applies a retention policy, and <code>restore</code> can bring back one file from three years ago. The repository can live on a local disk, an SFTP host or an S3 bucket.</p>
+        <pre>go install github.com/restic/restic/cmd/restic@v0.19.1
+export RESTIC_REPOSITORY=/mnt/backup/restic
+export RESTIC_PASSWORD_FILE=~/.restic-pass
+restic init
+restic backup ~/Documents ~/Projects
+restic snapshots
+restic restore latest --target /tmp/restore --include "Projects/x"
+restic forget --keep-daily 7 --keep-weekly 4 --prune
+restic check</pre>
+        <p data-i18n="s16.rs.after">Test the restore before you trust the backup. A repository that has never been restored is a hypothesis, and <code>restic check --read-data</code> is the command that turns it into evidence.</p>
+      </div>
+    </section>
+
+    <section id="servers">
+      <h2><span class="num">17</span><span data-i18n="s17.title">Serve and reach: sites, TLS, network</span></h2>
+      <p class="sub" data-i18n="s17.sub">
+        <strong>Hugo</strong> builds a site from Markdown in milliseconds, <strong>Caddy</strong>
+        serves it with automatic HTTPS, and <strong>Tailscale</strong> makes the machine reachable
+        without opening a port. Three binaries, no runtime, one small server.
+      </p>
+
+      <div class="card">
+        <h3>Hugo — <span data-i18n="s17.hu.h">a static site in one binary</span></h3>
+        <p data-i18n="s17.hu.p">Content in Markdown, layouts in Go templates, output as files. It is the generator this blog's neighbours use when a build has to finish before a coffee does, and it ships as a single executable with no plugin runtime.</p>
+        <pre>go install github.com/gohugoio/hugo@v0.169.0
+hugo new site myblog
+cd myblog
+hugo new content posts/hello.md
+hugo server -D
+hugo --minify</pre>
+      </div>
+
+      <div class="card">
+        <h3>Caddy — <span data-i18n="s17.ca.h">a web server with certificates included</span></h3>
+        <p data-i18n="s17.ca.p">A Caddyfile is four lines, and HTTPS is not one of them: certificates are obtained and renewed automatically for any domain that resolves to the machine. It also proxies, rewrites and serves PHP or FastCGI when asked, with a JSON config for anything the Caddyfile cannot express.</p>
+        <pre>go install github.com/caddyserver/caddy/v2/cmd/caddy@v2.11.7
+<span class="c"># Caddyfile</span>
+example.com {
+    root * /srv/site
+    file_server
+}
+caddy validate --config Caddyfile
+caddy run
+caddy fmt --overwrite Caddyfile</pre>
+      </div>
+
+      <div class="card">
+        <h3>Tailscale — <span data-i18n="s17.ts.h">your own private network</span></h3>
+        <p data-i18n="s17.ts.p">A WireGuard mesh that connects your machines wherever they are, with identity instead of firewall rules. <code>tailscale serve</code> exposes a local port to your own devices only; <code>tailscale ssh</code> authenticates with the same identity, so a home server stops needing a public IP or an open port.</p>
+        <pre>go install tailscale.com/cmd/tailscale@latest
+sudo tailscale up
+tailscale status
+tailscale ip -4
+tailscale serve 8080
+tailscale ssh server</pre>
+        <p data-i18n="s17.ts.after">On Linux the daemon needs root; the client does not. That is why the install line is followed by <code>sudo tailscale up</code> and not by <code>sudo go install</code> — the binary belongs to you, the network interface belongs to the system.</p>
+      </div>
+    </section>
+
+    <section id="errors">
+      <h2><span class="num">18</span><span data-i18n="s18.title">The ten messages that stop a build</span></h2>
+      <p class="sub" data-i18n="s18.sub">
+        Go's errors are unusually literal, which is a gift: each line below names the thing that is
+        wrong. The table maps the message to the cause, because the cause is usually one directory
+        or one version away from the message.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.message">Message</th>
+              <th data-i18n="t.cause">What it means</th>
+              <th data-i18n="t.fix">Fix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>go: command not found</code></th>
+              <td data-i18n="s18.e1.b">The toolchain is not on PATH — either not installed, or installed into <code>/usr/local/go</code> without the export line.</td>
+              <td data-i18n="s18.e1.c">Add <code>/usr/local/go/bin</code> to PATH, open a new shell, then <code>go version</code>.</td>
+            </tr>
+            <tr>
+              <th><code>command not found: lazygit</code> after a successful install</th>
+              <td data-i18n="s18.e2.b">The binary is in <code>$(go env GOPATH)/bin</code> (or GOBIN) and the shell does not search there.</td>
+              <td data-i18n="s18.e2.c">Add that directory to PATH, or set <code>GOBIN</code> to one already on it. Part 05.</td>
+            </tr>
+            <tr>
+              <th><code>go: go.mod file not found in current directory or any parent directory</code></th>
+              <td data-i18n="s18.e3.b">You ran <code>go build</code>, <code>go run</code> or <code>go test</code> outside a module.</td>
+              <td data-i18n="s18.e3.c"><code>go mod init example.com/me/thing</code> in the project root — or use <code>go install pkg@version</code>, which needs no module.</td>
+            </tr>
+            <tr>
+              <th><code>cannot use path@version syntax in GOPATH mode</code></th>
+              <td data-i18n="s18.e4.b"><code>GO111MODULE=off</code> is set, which disables modules entirely.</td>
+              <td data-i18n="s18.e4.c"><code>go env -u GO111MODULE</code> and retry. Modules are the only supported mode.</td>
+            </tr>
+            <tr>
+              <th><code>go: go.mod requires go &gt;= 1.26.0 (running go 1.22.1; GOTOOLCHAIN=local)</code></th>
+              <td data-i18n="s18.e5.b">The project needs a newer Go, and automatic toolchain switching is disabled.</td>
+              <td data-i18n="s18.e5.c"><code>go env -w GOTOOLCHAIN=auto</code>, or install the newer release from go.dev/dl.</td>
+            </tr>
+            <tr>
+              <th><code>no required module provides package X; to add it: go get X</code></th>
+              <td data-i18n="s18.e6.b">The import exists in the code but not in <code>go.mod</code>.</td>
+              <td data-i18n="s18.e6.c"><code>go get X</code> then <code>go mod tidy</code>.</td>
+            </tr>
+            <tr>
+              <th><code>module github.com/a/b@latest found (v1.2.3), but does not contain package github.com/a/b/cmd/c</code></th>
+              <td data-i18n="s18.e7.b">The module is right; the subdirectory in the path is not. The main package lives elsewhere.</td>
+              <td data-i18n="s18.e7.c">Look at the repository tree for the directory holding <code>main.go</code>, and use that path.</td>
+            </tr>
+            <tr>
+              <th><code>verifying github.com/a/b@v1.2.3: checksum mismatch</code></th>
+              <td data-i18n="s18.e8.b">The cached copy does not match the recorded hash, usually a corrupted download or a retagged release.</td>
+              <td data-i18n="s18.e8.c"><code>go clean -modcache</code> and retry. If it persists, the upstream tag genuinely changed — do not disable the checksum database to silence it.</td>
+            </tr>
+            <tr>
+              <th><code>dial tcp … i/o timeout</code> or <code>403 Forbidden</code> fetching a module</th>
+              <td data-i18n="s18.e9.b">The module proxy is unreachable, blocked, or the module is private.</td>
+              <td data-i18n="s18.e9.c">Check <code>GOPROXY</code>; for private modules set <code>GOPRIVATE=github.com/yourorg/*</code> and use SSH credentials.</td>
+            </tr>
+            <tr>
+              <th><code>permission denied</code> writing to <code>/usr/local/bin</code></th>
+              <td data-i18n="s18.e10.b"><code>GOBIN</code> points at a root-owned directory, or the command was run with sudo.</td>
+              <td data-i18n="s18.e10.c">Unset GOBIN and let it write to <code>~/go/bin</code>. Never <code>sudo go install</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <strong data-i18n="s18.note.h">The two failures that look like the machine dying</strong>
+        <p data-i18n="s18.note.p">A build that ends in <code>Killed</code> ran out of memory — add swap, or build the specific package instead of the whole module. A build that compiles for twenty minutes the first time and two seconds afterwards is the build cache doing its job; <code>go clean -cache</code> resets it, and the long wait is not a sign that something is wrong.</p>
+      </div>
+    </section>
+
+    <section id="sources">
+      <h2><span class="num">19</span><span data-i18n="s19.title">Sources, and what each one settles</span></h2>
+      <p class="sub" data-i18n="s19.sub">
+        The manual is built from the Go project's own documentation and from the module metadata
+        each tool publishes. Every tool in part 07 links to its repository, which is the authority
+        on its own flags.
+      </p>
+
+      <ul class="sources">
+        <li>
+          <a href="https://go.dev/dl/" target="_blank" rel="noopener">go.dev/dl — downloads</a>
+          <span data-i18n="src.1">Every release archive and installer, with checksums, for every supported platform.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/doc/install" target="_blank" rel="noopener">go.dev — install</a>
+          <span data-i18n="src.2">The official removal-and-extract procedure used in part 02, per operating system.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/ref/mod" target="_blank" rel="noopener">Go modules reference</a>
+          <span data-i18n="src.3">Module paths, versions, the module cache, and the exact semantics of <code>go install pkg@version</code>.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/doc/toolchain" target="_blank" rel="noopener">Go toolchains</a>
+          <span data-i18n="src.4">How GOTOOLCHAIN decides to download a newer compiler, and what <code>auto</code> and <code>local</code> mean.</span>
+        </li>
+        <li>
+          <a href="https://pkg.go.dev/cmd/go" target="_blank" rel="noopener">cmd/go documentation</a>
+          <span data-i18n="src.5">The command reference, including the environment variables table used in part 02.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/doc/gopath_code" target="_blank" rel="noopener">GOPATH and workspaces</a>
+          <span data-i18n="src.6">What GOPATH still governs now that modules own dependency resolution.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/ref/mod#goproxy-protocol" target="_blank" rel="noopener">Module proxy protocol</a>
+          <span data-i18n="src.7">The protocol <code>go install</code> speaks — and the reason a plain URL can be checked for a version.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/doc/devel/release" target="_blank" rel="noopener">Release and support policy</a>
+          <span data-i18n="src.8">Which Go versions still receive fixes, and why the newest two matter for a tool you install.</span>
+        </li>
+        <li>
+          <a href="https://pkg.go.dev/" target="_blank" rel="noopener">pkg.go.dev</a>
+          <span data-i18n="src.9">The package index: module paths, versions and documentation for everything named here.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/doc/go-get-install-deprecation" target="_blank" rel="noopener">Deprecation of go get for executables</a>
+          <span data-i18n="src.10">The change that split installing a tool from adding a dependency, and the migration it asks for.</span>
+        </li>
+        <li>
+          <a href="https://go.dev/wiki/Modules" target="_blank" rel="noopener">Go wiki — modules</a>
+          <span data-i18n="src.11">The community-maintained notes on module behaviour, including the corner cases the reference leaves implicit.</span>
+        </li>
+        <li>
+          <a href="https://golangci-lint.run/" target="_blank" rel="noopener">golangci-lint documentation</a>
+          <span data-i18n="src.12">Configuration, the linter list and the formatter command used in part 12.</span>
+        </li>
+      </ul>
+      <p class="sub" data-i18n="s19.after">Versions in part 07 are the newest tags resolved through the public module proxy on 29 October 2026, and the Go requirement is the one written in each version's <code>go.mod</code>. Both will move; the repository remains the authority.</p>
+    </section>
+
+    <section id="glossary">
+      <h2><span class="num">20</span><span data-i18n="s20.title">Glossary</span></h2>
+      <p class="sub" data-i18n="s20.sub">Twelve words that explain most of the confusion in this manual.</p>
+      <dl class="glossary" id="glossary-list"></dl>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p data-i18n="footer.p">
+        Written from a Linux terminal and checked against each project's published module on the
+        day of publication: thirty tools that compiled, ran and printed their own help. Where the
+        manual says "usually", it is because a module path or a distribution package differs —
+        the repository is the final word.
+      </p>
+      <a class="back" href="index.html"><span data-i18n="footer.back">&larr; Back to the archive</span></a>
+      <p class="cross" data-i18n="footer.cross">The rest of the series: <a href="python-cli.html">The Shell, Extended</a> for the Python half of the same idea, <a href="hydroponics.html">Hydroponics at Home</a> for a garden without soil, and <a href="recycling.html">Nothing Is Garbage</a> for the second life of everything the house throws away.</p>
+    </div>
+  </footer>

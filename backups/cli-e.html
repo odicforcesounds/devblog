@@ -1,0 +1,561 @@
+  <script>
+    (function () {
+      "use strict";
+
+      /* ---------- the thirty apps ---------- */
+      var APPS = [
+        { key: "pipx", family: "install", name: "pipx", pkg: "pipx", cmd: "pipx", repo: "pypa/pipx", py: "3.11",
+          what: { en: "The installer that gives every command-line app its own environment; the rest of this table assumes it.",
+                  pt: "O instalador que dá a cada aplicação de linha de comando o seu próprio ambiente; o resto desta tabela conta com ele." },
+          deps: { en: "None beyond Python", pt: "Nada além do Python" } },
+        { key: "toot", family: "social", name: "toot", pkg: "toot", cmd: "toot", repo: "ihabunek/toot", py: "3.9",
+          what: { en: "Mastodon and compatible servers from the terminal: post, thread, upload media, read timelines, or open a full TUI.",
+                  pt: "Mastodon e servidores compatíveis a partir do terminal: publicar, encadear, carregar media, ler timelines ou abrir uma TUI completa." },
+          deps: { en: "A Mastodon account", pt: "Uma conta Mastodon" } },
+        { key: "posting", family: "social", name: "posting", pkg: "posting", cmd: "posting", repo: "darrenburns/posting", py: "3.11",
+          what: { en: "A keyboard-only HTTP client: requests as YAML files, environments, variables, syntax highlighting.",
+                  pt: "Um cliente HTTP só de teclado: pedidos em ficheiros YAML, ambientes, variáveis, realce de sintaxe." },
+          deps: { en: "None — the PyPI package is Python; the repository also ships a Go binary",
+                  pt: "Nenhuma — o pacote no PyPI é Python; o repositório também publica um binário em Go" } },
+        { key: "httpie", family: "social", name: "HTTPie", pkg: "httpie", cmd: "http", repo: "httpie/cli", py: "3.7",
+          what: { en: "curl with sentences instead of flags: JSON by default, coloured headers, formatted responses.",
+                  pt: "curl com frases em vez de opções: JSON por omissão, cabeçalhos coloridos, respostas formatadas." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "yt-dlp", family: "media", name: "yt-dlp", pkg: "yt-dlp", cmd: "yt-dlp", repo: "yt-dlp/yt-dlp", py: "3.11",
+          what: { en: "Downloads from over a thousand sites: formats, subtitles, chapters, playlists, and an archive of what you already have.",
+                  pt: "Descarrega de mais de mil sites: formatos, legendas, capítulos, playlists e um registo do que já tem." },
+          deps: { en: "ffmpeg, to merge video and audio and to extract sound", pt: "ffmpeg, para juntar vídeo e áudio e extrair o som" },
+          sys: { apt: "ffmpeg", brew: "ffmpeg" } },
+        { key: "gallery-dl", family: "media", name: "gallery-dl", pkg: "gallery-dl", cmd: "gallery-dl", repo: "mikf/gallery-dl", py: "3.8",
+          what: { en: "Image and gallery downloads that yt-dlp does not cover, with JSON metadata written beside every file.",
+                  pt: "Descarregamentos de imagens e galerias que o yt-dlp não cobre, com metadados JSON ao lado de cada ficheiro." },
+          deps: { en: "ffmpeg for video posts", pt: "ffmpeg para publicações de vídeo" },
+          sys: { apt: "ffmpeg", brew: "ffmpeg" } },
+        { key: "streamlink", family: "media", name: "streamlink", pkg: "streamlink", cmd: "streamlink", repo: "streamlink/streamlink", py: "3.10",
+          what: { en: "Hands a live stream to mpv or VLC at the quality you choose, and records it if you ask.",
+                  pt: "Entrega uma emissão em direto ao mpv ou ao VLC na qualidade que escolher, e grava-a se pedir." },
+          deps: { en: "mpv or VLC; ffmpeg to save the stream", pt: "mpv ou VLC; ffmpeg para gravar a emissão" },
+          sys: { apt: "mpv ffmpeg", brew: "mpv ffmpeg" } },
+        { key: "spotdl", family: "media", name: "spotdl", pkg: "spotdl", cmd: "spotdl", repo: "spotDL/spotify-downloader", py: "3.11",
+          what: { en: "Playlists and tracks to tagged audio files with cover art, named from a template.",
+                  pt: "Playlists e faixas para ficheiros de áudio com etiquetas e capa, nomeados a partir de um modelo." },
+          deps: { en: "ffmpeg", pt: "ffmpeg" },
+          sys: { apt: "ffmpeg", brew: "ffmpeg" } },
+        { key: "glances", family: "machine", name: "Glances", pkg: "glances", cmd: "glances", repo: "nicolargo/glances", py: "3.10",
+          what: { en: "The whole machine on one screen: CPU, memory, disks, network, sensors, containers — and the same view over HTTP.",
+                  pt: "A máquina inteira num ecrã: CPU, memória, discos, rede, sensores, contentores — e a mesma vista por HTTP." },
+          deps: { en: "None; sensors need lm-sensors", pt: "Nenhuma; os sensores precisam de lm-sensors" } },
+        { key: "pyinstrument", family: "machine", name: "pyinstrument", pkg: "pyinstrument", cmd: "pyinstrument", repo: "joerick/pyinstrument", py: "3.8",
+          what: { en: "A statistical profiler with a readable call tree and an HTML report you can keep.",
+                  pt: "Um profiler estatístico com uma árvore de chamadas legível e um relatório HTML para guardar." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "nvitop", family: "machine", name: "Nvitop", pkg: "nvitop", cmd: "nvitop", repo: "XuehaiPan/nvitop", py: "3.8",
+          what: { en: "Per-process GPU memory, utilisation and temperature, with the process tree that owns each card.",
+                  pt: "Memória, utilização e temperatura da GPU por processo, com a árvore de processos dona de cada placa." },
+          deps: { en: "An NVIDIA driver; no CUDA toolkit needed", pt: "Um driver NVIDIA; não é preciso CUDA toolkit" } },
+        { key: "datasette", family: "data", name: "Datasette", pkg: "datasette", cmd: "datasette", repo: "simonw/datasette", py: "3.10",
+          what: { en: "Publishes a SQLite file as a browsable, filterable site with a JSON API on every table.",
+                  pt: "Publica um ficheiro SQLite como site navegável e filtrável, com uma API JSON em cada tabela." },
+          deps: { en: "None — SQLite ships with Python", pt: "Nenhuma — o SQLite vem com o Python" } },
+        { key: "sqlite-utils", family: "data", name: "sqlite-utils", pkg: "sqlite-utils", cmd: "sqlite-utils", repo: "simonw/sqlite-utils", py: "3.10",
+          what: { en: "Inserts CSV and JSON into SQLite, creates tables from the data's shape, queries and converts columns.",
+                  pt: "Insere CSV e JSON em SQLite, cria tabelas a partir da forma dos dados, consulta e converte colunas." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "csvkit", family: "data", name: "csvkit", pkg: "csvkit", cmd: "csvlook", repo: "wireservice/csvkit", py: "3.9",
+          what: { en: "Fourteen commands that cut, filter, sort, join, describe and SQL-query CSV — and read XLSX.",
+                  pt: "Catorze comandos que cortam, filtram, ordenam, juntam, descrevem e consultam CSV com SQL — e leem XLSX." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "jc", family: "data", name: "jc", pkg: "jc", cmd: "jc", repo: "kellyjonbrazil/jc", py: "3.6",
+          what: { en: "Turns the output of ls, ps, df, ip, dig and a hundred others into JSON, so jq can take over.",
+                  pt: "Converte a saída de ls, ps, df, ip, dig e uma centena de outros em JSON, para o jq assumir." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "pgcli", family: "data", name: "pgcli", pkg: "pgcli", cmd: "pgcli", repo: "dbcli/pgcli", py: "3.10",
+          what: { en: "Postgres with schema-aware autocomplete, colours and paging; mycli and litecli are the siblings.",
+                  pt: "Postgres com autocompletar que conhece o esquema, cores e paginação; mycli e litecli são os irmãos." },
+          deps: { en: "A Postgres server to connect to", pt: "Um servidor Postgres para onde ligar" } },
+        { key: "llm", family: "data", name: "llm", pkg: "llm", cmd: "llm", repo: "simonw/llm", py: "3.10",
+          what: { en: "Prompts and models from the terminal, every conversation logged in SQLite, plugins for local or hosted models.",
+                  pt: "Prompts e modelos a partir do terminal, cada conversa registada em SQLite, plugins para modelos locais ou alojados." },
+          deps: { en: "An API key, or a local model plugin", pt: "Uma chave de API, ou um plugin de modelo local" } },
+        { key: "rich-cli", family: "terminal", name: "rich-cli", pkg: "rich-cli", cmd: "rich", repo: "Textualize/rich-cli", py: "3.9",
+          what: { en: "Prints Markdown, JSON, CSV and source code with the formatting they deserve.",
+                  pt: "Imprime Markdown, JSON, CSV e código-fonte com a formatação que merecem." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "thefuck", family: "terminal", name: "thefuck", pkg: "thefuck", cmd: "fuck", repo: "nvbn/thefuck", py: "3.8",
+          what: { en: "Corrects the command you just mistyped, from the error it produced instead of from your intentions.",
+                  pt: "Corrige o comando que acabou de escrever mal, a partir do erro que produziu e não das suas intenções." },
+          deps: { en: "A shell alias: eval $(thefuck --alias)", pt: "Um alias na shell: eval $(thefuck --alias)" } },
+        { key: "tldr", family: "terminal", name: "tldr", pkg: "tldr", cmd: "tldr", repo: "tldr-pages/tldr-python-client", py: "3.10",
+          what: { en: "The manual page that shows the five invocations people actually use, cached locally.",
+                  pt: "A página de manual que mostra as cinco invocações que as pessoas usam de facto, em cache local." },
+          deps: { en: "None; a network for the first update", pt: "Nenhuma; rede para a primeira atualização" } },
+        { key: "ranger", family: "terminal", name: "ranger", pkg: "ranger-fm", cmd: "ranger", repo: "ranger/ranger", py: "3.8",
+          what: { en: "A three-column file manager with previews, bulk rename and a shell in the current folder.",
+                  pt: "Um gestor de ficheiros de três colunas com pré-visualização, renomeação em lote e uma shell na pasta atual." },
+          deps: { en: "file and less; w3m for image previews", pt: "file e less; w3m para pré-visualizar imagens" },
+          sys: { apt: "file less", brew: "file less" } },
+        { key: "ocrmypdf", family: "docs", name: "OCRmyPDF", pkg: "ocrmypdf", cmd: "ocrmypdf", repo: "ocrmypdf/OCRmyPDF", py: "3.11",
+          what: { en: "Adds a searchable text layer to a scanned PDF without touching the scan underneath.",
+                  pt: "Acrescenta uma camada de texto pesquisável a um PDF digitalizado, sem tocar no documento original." },
+          deps: { en: "tesseract-ocr, the language pack, ghostscript", pt: "tesseract-ocr, o pacote de língua, ghostscript" },
+          sys: { apt: "tesseract-ocr tesseract-ocr-por ghostscript", brew: "tesseract ghostscript" } },
+        { key: "weasyprint", family: "docs", name: "WeasyPrint", pkg: "weasyprint", cmd: "weasyprint", repo: "Kozea/WeasyPrint", py: "3.10",
+          what: { en: "HTML and CSS to a print-quality PDF, with page numbers, margins and running headers.",
+                  pt: "HTML e CSS para um PDF de qualidade de impressão, com números de página, margens e cabeçalhos correntes." },
+          deps: { en: "pango and fontconfig", pt: "pango e fontconfig" },
+          sys: { apt: "libpango-1.0-0 libpangoft2-1.0-0", brew: "pango" } },
+        { key: "qrcode", family: "docs", name: "qrcode", pkg: "qrcode[pil]", cmd: "qr", repo: "lincolnloop/python-qrcode", py: "3.9",
+          what: { en: "QR codes as PNG or SVG, straight to stdout, for labels, cards and walls.",
+                  pt: "Códigos QR em PNG ou SVG, direto para o stdout, para etiquetas, cartões e paredes." },
+          deps: { en: "Pillow, installed by the [pil] extra", pt: "Pillow, instalado pelo extra [pil]" } },
+        { key: "beets", family: "library", name: "beets", pkg: "beets", cmd: "beet", repo: "beetbox/beets", py: "3.10",
+          what: { en: "Imports, fingerprints, tags, renames and organises a music library; the files remain the archive.",
+                  pt: "Importa, identifica, etiqueta, renomeia e organiza uma biblioteca de música; os ficheiros continuam a ser o arquivo." },
+          deps: { en: "ffmpeg for lossy formats", pt: "ffmpeg para formatos com perdas" },
+          sys: { apt: "ffmpeg", brew: "ffmpeg" } },
+        { key: "buku", family: "library", name: "buku", pkg: "buku", cmd: "buku", repo: "jarun/buku", py: "3.10",
+          what: { en: "Bookmarks with tags and full-text search in one SQLite file you can copy anywhere.",
+                  pt: "Marcadores com etiquetas e pesquisa em texto completo num único ficheiro SQLite que pode copiar para qualquer lado." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "khal", family: "library", name: "khal", pkg: "khal", cmd: "khal", repo: "pimutils/khal", py: "3.10",
+          what: { en: "A calendar read from iCalendar files, with a list view and an interactive editor.",
+                  pt: "Um calendário lido de ficheiros iCalendar, com vista em lista e um editor interativo." },
+          deps: { en: "vdirsyncer to sync with a server", pt: "vdirsyncer para sincronizar com um servidor" } },
+        { key: "todoman", family: "library", name: "todoman", pkg: "todoman", cmd: "todo", repo: "pimutils/todoman", py: "3.10",
+          what: { en: "Tasks stored as iCalendar files, one per task, listed and edited from the shell.",
+                  pt: "Tarefas guardadas como ficheiros iCalendar, uma por tarefa, listadas e editadas a partir da shell." },
+          deps: { en: "vdirsyncer to sync with a server", pt: "vdirsyncer para sincronizar com um servidor" } },
+        { key: "mkdocs", family: "servers", name: "MkDocs", pkg: "mkdocs", cmd: "mkdocs", repo: "mkdocs/mkdocs", py: "3.8",
+          what: { en: "Markdown to a documentation site, with live reload and a one-command publish to GitHub Pages.",
+                  pt: "Markdown para um site de documentação, com recarregamento automático e publicação em GitHub Pages com um comando." },
+          deps: { en: "None", pt: "Nenhuma" } },
+        { key: "mitmproxy", family: "servers", name: "mitmproxy", pkg: "mitmproxy", cmd: "mitmproxy", repo: "mitmproxy/mitmproxy", py: "3.12",
+          what: { en: "An intercepting HTTPS proxy with a console, a web interface and a scripting mode.",
+                  pt: "Um proxy HTTPS que interceta, com consola, interface web e modo de scripting." },
+          deps: { en: "Its CA certificate on the client you test", pt: "O certificado CA no cliente que está a testar" } }
+      ];
+
+      var FAMILIES = ["install", "social", "media", "machine", "data", "docs", "terminal", "library", "servers"];
+      var FAMILY_LABEL = {
+        en: { install: "Installer", social: "Social", media: "Media", machine: "Machine", data: "Data & text",
+              docs: "Documents", terminal: "Terminal", library: "Library", servers: "Servers" },
+        pt: { install: "Instalador", social: "Social", media: "Média", machine: "Máquina", data: "Dados e texto",
+              docs: "Documentos", terminal: "Terminal", library: "Biblioteca", servers: "Servidores" }
+      };
+
+      var GLOSSARY = [
+        { en: ["Virtual environment", "A folder with its own Python launcher and its own site-packages. Activating it changes only PATH; calling its python directly changes nothing at all."],
+          pt: ["Ambiente virtual", "Uma pasta com o seu próprio lançador Python e as suas próprias site-packages. Ativá-la muda apenas o PATH; chamar o python dela diretamente não muda nada."] },
+        { en: ["site-packages", "The directory where pip writes installed packages — inside an environment, or inside the system Python, which is the case the rule in part 01 avoids."],
+          pt: ["site-packages", "A pasta onde o pip escreve os pacotes instalados — dentro de um ambiente, ou dentro do Python do sistema, que é o caso que a regra da parte 01 evita."] },
+        { en: ["PATH", "The list of directories the shell searches for a command, in order. A launcher outside that list is invisible even when the install succeeded."],
+          pt: ["PATH", "A lista de pastas onde a shell procura um comando, por ordem. Um lançador fora dessa lista é invisível mesmo quando a instalação correu bem."] },
+        { en: ["Entry point", "The function a package declares in its metadata so that installing it creates a command with a name — toot, yt-dlp, csvlook."],
+          pt: ["Entry point", "A função que um pacote declara nos seus metadados para que a instalação crie um comando com nome — toot, yt-dlp, csvlook."] },
+        { en: ["Wheel", "A prebuilt binary package (.whl). If a wheel exists for your platform and Python version, nothing is compiled and nothing can fail to compile."],
+          pt: ["Wheel", "Um pacote binário já construído (.whl). Se existir uma wheel para a sua plataforma e versão de Python, nada é compilado e nada pode falhar na compilação."] },
+        { en: ["sdist", "The source archive. Installing it means building it, which needs a compiler, headers and the system libraries the project links against."],
+          pt: ["sdist", "O arquivo de código-fonte. Instalá-lo significa compilá-lo, o que exige compilador, headers e as bibliotecas de sistema contra as quais o projeto liga."] },
+        { en: ["Resolver", "The part of pip that chooses versions satisfying every constraint at once. A conflict is the resolver telling you two requirements cannot both be true."],
+          pt: ["Resolver", "A parte do pip que escolhe versões que satisfazem todas as restrições ao mesmo tempo. Um conflito é o resolver a dizer que dois requisitos não podem ser verdadeiros em simultâneo."] },
+        { en: ["Pin", "Writing ==version so an install is reproducible. A range (>=1,<2) is a policy, not a pin: it guarantees nothing about tomorrow."],
+          pt: ["Pin", "Escrever ==versão para que a instalação seja reproduzível. Um intervalo (>=1,<2) é uma política, não um pin: não garante nada sobre amanhã."] },
+        { en: ["Lock file", "A generated record of the exact version of every dependency, transitive ones included, so two machines resolve to the same set."],
+          pt: ["Lock file", "Um registo gerado com a versão exata de cada dependência, incluindo as transitivas, para que duas máquinas resolvam para o mesmo conjunto."] },
+        { en: ["PEP 668", "The standard that lets a distribution mark its Python as externally managed, which is what produces the error this manual keeps referring to."],
+          pt: ["PEP 668", "A norma que permite a uma distribuição marcar o seu Python como gerido externamente, e que produz o erro a que este manual volta sempre."] },
+        { en: ["Isolation", "The property that lets two apps depend on incompatible versions of the same library and both keep working: one environment each."],
+          pt: ["Isolamento", "A propriedade que permite a duas aplicações depender de versões incompatíveis da mesma biblioteca e ambas continuarem a funcionar: um ambiente para cada."] },
+        { en: ["Cache", "Downloaded wheels kept for reuse. Deleting it costs time and bandwidth, never correctness — so it is always a safe thing to clear."],
+          pt: ["Cache", "Wheels descarregadas e guardadas para reutilização. Apagá-la custa tempo e largura de banda, nunca correção — por isso é sempre seguro limpá-la."] }
+      ];
+
+      /* ---------- DOM helpers ---------- */
+      function byId(id) {
+        return document.getElementById(id);
+      }
+
+      function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) {
+          node.className = className;
+        }
+        if (text != null) {
+          node.textContent = text;
+        }
+        return node;
+      }
+
+      var lang = "en";
+      var activeFamily = "all";
+      var activeSearch = "";
+      var EN = {};
+
+      /* ---------- apps table ---------- */
+      function matches(app) {
+        if (activeFamily !== "all" && app.family !== activeFamily) {
+          return false;
+        }
+        if (!activeSearch) {
+          return true;
+        }
+        var hay = [app.name, app.pkg, app.cmd, app.repo, app.family,
+                   app.what.en, app.what.pt, FAMILY_LABEL.en[app.family], FAMILY_LABEL.pt[app.family]]
+          .join(" ").toLowerCase();
+        return hay.indexOf(activeSearch) !== -1;
+      }
+
+      function renderApps() {
+        var body = byId("apps-body");
+        if (!body) {
+          return;
+        }
+        body.innerHTML = "";
+        var shown = 0;
+        APPS.forEach(function (app) {
+          if (!matches(app)) {
+            return;
+          }
+          shown += 1;
+          var tr = el("tr");
+
+          var th = el("th");
+          var link = el("a", null, app.name);
+          link.href = "https://github.com/" + app.repo;
+          link.target = "_blank";
+          link.rel = "noopener";
+          th.appendChild(link);
+          var tag = el("span", "family-tag", FAMILY_LABEL[lang][app.family]);
+          th.appendChild(document.createElement("br"));
+          th.appendChild(tag);
+          tr.appendChild(th);
+
+          var what = el("td", null, app.what[lang]);
+          tr.appendChild(what);
+
+          var install = el("td");
+          var code = el("code", null, 'pipx install "' + app.pkg + '"');
+          install.appendChild(code);
+          tr.appendChild(install);
+
+          var cmdCell = el("td");
+          var cmd = el("code", null, app.cmd);
+          cmdCell.appendChild(cmd);
+          tr.appendChild(cmdCell);
+
+          body.appendChild(tr);
+        });
+
+        var empty = byId("apps-empty");
+        if (empty) {
+          empty.hidden = shown !== 0;
+        }
+        var count = byId("app-count");
+        if (count) {
+          count.textContent = shown + " / " + APPS.length;
+        }
+      }
+
+      function renderChips() {
+        var wrap = byId("app-chips");
+        if (!wrap) {
+          return;
+        }
+        wrap.innerHTML = "";
+        var all = el("button", "chip", lang === "pt" ? "Tudo" : "All");
+        all.type = "button";
+        all.setAttribute("aria-pressed", activeFamily === "all" ? "true" : "false");
+        all.addEventListener("click", function () {
+          activeFamily = "all";
+          renderChips();
+          renderApps();
+        });
+        wrap.appendChild(all);
+
+        FAMILIES.forEach(function (family) {
+          var chip = el("button", "chip", FAMILY_LABEL[lang][family]);
+          chip.type = "button";
+          chip.setAttribute("aria-pressed", activeFamily === family ? "true" : "false");
+          chip.addEventListener("click", function () {
+            activeFamily = family;
+            renderChips();
+            renderApps();
+          });
+          wrap.appendChild(chip);
+        });
+      }
+
+      /* ---------- install builder ---------- */
+      function systemsLine(app, os) {
+        if (!app.sys) {
+          return "";
+        }
+        if (os === "linux" && app.sys.apt) {
+          return "sudo apt install " + app.sys.apt + "\n\n";
+        }
+        if (os === "mac" && app.sys.brew) {
+          return "brew install " + app.sys.brew + "\n\n";
+        }
+        return "";
+      }
+
+      function builderText(app, method, os) {
+        var s = systemsLine(app, os);
+        var qty = app.pkg.indexOf("[") !== -1 ? '"' + app.pkg + '"' : app.pkg;
+        var win = os === "win";
+        var py = win ? "py" : "python3";
+
+        if (method === "pipx") {
+          s += "# pipx, once per machine\n";
+          s += win ? "py -m pip install --user pipx\npy -m pipx ensurepath\n"
+                   : py + " -m pip install --user pipx\n" + py + " -m pipx ensurepath\n";
+          s += "# open a new terminal\n\n";
+          s += "pipx install " + qty + "\n";
+          s += app.cmd + " --help";
+          return s;
+        }
+
+        if (method === "uv") {
+          s += "# uv, once per machine\n";
+          s += win ? 'powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"'
+                   : "curl -LsSf https://astral.sh/uv/install.sh | sh";
+          s += "\n\nuv tool install " + qty + "\n" + app.cmd + " --help";
+          return s;
+        }
+
+        var dir = win ? "%USERPROFILE%\\.venvs\\" + app.key : "~/.venvs/" + app.key;
+        var bin = win ? dir + "\\Scripts" : dir + "/bin";
+        s += py + " -m venv " + dir + "\n";
+        s += bin + (win ? "\\pip" : "/pip") + " install " + qty + "\n";
+        s += bin + (win ? "\\" + app.cmd + ".exe" : "/" + app.cmd) + " --help";
+        return s;
+      }
+
+      function updateBuilder() {
+        var appSel = byId("b-app");
+        var methodSel = byId("b-method");
+        var osSel = byId("b-os");
+        if (!appSel || !methodSel || !osSel) {
+          return;
+        }
+        var app = APPS[parseInt(appSel.value, 10)] || APPS[0];
+        var method = methodSel.value;
+        var os = osSel.value;
+
+        byId("b-name").textContent = app.name;
+        byId("b-pkg").textContent = app.pkg;
+        byId("b-cmd").textContent = app.cmd;
+        byId("b-deps").textContent = app.deps[lang];
+        byId("b-out").textContent = builderText(app, method, os);
+        byId("b-note").textContent = lang === "pt"
+          ? "Python " + app.py + " ou mais recente. Se o comando não for encontrado depois de instalar, a parte 05 tem a resposta."
+          : "Python " + app.py + " or newer. If the command is not found after installing, part 05 has the answer.";
+      }
+
+      function fillBuilder() {
+        var appSel = byId("b-app");
+        if (!appSel) {
+          return;
+        }
+        appSel.innerHTML = "";
+        APPS.forEach(function (app, index) {
+          var option = el("option", null, app.name);
+          option.value = String(index);
+          appSel.appendChild(option);
+        });
+        updateBuilder();
+      }
+
+      /* ---------- decision tool ---------- */
+      function verdict() {
+        var imports = byId("d-import").value === "yes";
+        var often = byId("d-often").value;
+        var uv = byId("d-uv").value === "yes";
+
+        if (imports) {
+          return {
+            state: "ok",
+            title: lang === "pt" ? "Um ambiente virtual, dentro do projeto" : "A virtual environment, inside the project",
+            why: lang === "pt"
+              ? "O seu código vai fazer import do pacote, por isso precisa das versões certas no interpretador que corre esse código — e nada disso deve tocar no Python do sistema."
+              : "Your code will import the package, so it needs the right versions in the interpreter that runs that code — and none of that should touch the system Python.",
+            cmd: "cd ~/projects/myapp\npython3 -m venv .venv\nsource .venv/bin/activate\npython -m pip install --upgrade pip\npip install PACKAGE\npip freeze > requirements.txt"
+          };
+        }
+        if (often === "once") {
+          return {
+            state: "mid",
+            title: lang === "pt" ? "Não instale: execute uma vez" : "Do not install it: run it once",
+            why: lang === "pt"
+              ? "Se é para experimentar, um ambiente temporário é suficiente e não deixa nada no PATH. Se gostar, instale a seguir com pipx."
+              : "If it is an experiment, a throwaway environment is enough and leaves nothing on your PATH. If you like it, install it properly afterwards.",
+            cmd: uv ? "uvx PACKAGE --help" : "pipx run PACKAGE --help"
+          };
+        }
+        if (uv) {
+          return {
+            state: "ok",
+            title: lang === "pt" ? "uv tool install" : "uv tool install",
+            why: lang === "pt"
+              ? "Já usa uv: instale como ferramenta, com o seu próprio ambiente e o lançador em ~/.local/bin, e atualize tudo com um comando."
+              : "You already use uv: install it as a tool, with its own environment and its launcher in ~/.local/bin, and upgrade everything with one command.",
+            cmd: "uv tool install PACKAGE\nPACKAGE --help\nuv tool upgrade --all"
+          };
+        }
+        return {
+          state: "ok",
+          title: lang === "pt" ? "pipx install" : "pipx install",
+          why: lang === "pt"
+            ? "Uma aplicação, um ambiente, um lançador. É o caminho com menos decisões e o que este manual usa por omissão."
+            : "One app, one environment, one launcher. It is the path with the fewest decisions, and the one this manual uses by default.",
+          cmd: "python3 -m pip install --user pipx\npython3 -m pipx ensurepath\npipx install PACKAGE\nPACKAGE --help"
+        };
+      }
+
+      function updateDecision() {
+        var v = verdict();
+        var out = byId("d-verdict");
+        if (!out) {
+          return;
+        }
+        out.textContent = v.title;
+        out.dataset.state = v.state;
+        byId("d-why").textContent = v.why;
+        byId("d-out").textContent = v.cmd;
+      }
+
+      /* ---------- glossary ---------- */
+      function renderGlossary() {
+        var list = byId("glossary-list");
+        if (!list) {
+          return;
+        }
+        list.innerHTML = "";
+        GLOSSARY.forEach(function (entry) {
+          var pair = entry[lang];
+          list.appendChild(el("dt", null, pair[0]));
+          list.appendChild(el("dd", null, pair[1]));
+        });
+      }
+
+      /* ---------- copy ---------- */
+      function wireCopy(buttonId, sourceId) {
+        var button = byId(buttonId);
+        var source = byId(sourceId);
+        if (!button || !source) {
+          return;
+        }
+        button.addEventListener("click", function () {
+          var text = source.textContent;
+          var done = function () {
+            var previous = button.getAttribute("data-label") || button.textContent;
+            button.setAttribute("data-label", previous);
+            button.textContent = lang === "pt" ? "copiado" : "copied";
+            window.setTimeout(function () {
+              button.textContent = lang === "pt" ? "copiar" : "copy";
+            }, 1400);
+          };
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(done, done);
+              return;
+            }
+          } catch (error) {
+            /* fall through to the textarea */
+          }
+          var area = document.createElement("textarea");
+          area.value = text;
+          document.body.appendChild(area);
+          area.select();
+          try {
+            document.execCommand("copy");
+          } catch (error) {
+            /* nothing left to try */
+          }
+          document.body.removeChild(area);
+          done();
+        });
+      }
+
+      /* ---------- language ---------- */
+      var TITLE = {
+        en: "The Shell, Extended — Thirty Python Apps and One Clean Install",
+        pt: "A Shell, Alargada — Trinta Aplicações Python e Uma Instalação Limpa"
+      };
+      var DESCRIPTION = {
+        en: "A practical manual for running Python tools from the terminal: virtual environments, pipx, uv, thirty GitHub apps, the errors that stop an install, and the sources behind each command.",
+        pt: "Manual prático para correr ferramentas Python a partir do terminal: ambientes virtuais, pipx, uv, trinta aplicações do GitHub, os erros que travam uma instalação e as fontes de cada comando."
+      };
+
+      var langButtons = [];
+      var PT = {};
+
+      function applyLanguage(next) {
+        lang = next;
+        document.documentElement.lang = next;
+        document.querySelectorAll("[data-i18n]").forEach(function (node) {
+          var key = node.getAttribute("data-i18n");
+          node.innerHTML = next === "pt" && PT[key] != null ? PT[key] : EN[key];
+        });
+        langButtons.forEach(function (button) {
+          button.setAttribute("aria-pressed", button.dataset.lang === next ? "true" : "false");
+        });
+        document.title = TITLE[next];
+        ["description", "og:description", "twitter:description"].forEach(function (name) {
+          var node = name === "description"
+            ? document.querySelector('meta[name="description"]')
+            : document.querySelector('meta[property="' + name + '"]');
+          if (node) {
+            node.setAttribute("content", DESCRIPTION[next]);
+          }
+        });
+        renderChips();
+        renderApps();
+        renderGlossary();
+        updateBuilder();
+        updateDecision();
+      }
+
+      /* ---------- start ---------- */
+      langButtons = Array.prototype.slice.call(document.querySelectorAll(".lang-switch button"));
+      langButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          applyLanguage(button.dataset.lang);
+        });
+      });
+
+      document.querySelectorAll("[data-i18n]").forEach(function (node) {
+        EN[node.getAttribute("data-i18n")] = node.innerHTML;
+      });
+
+      var search = byId("app-search");
+      if (search) {
+        search.addEventListener("input", function () {
+          activeSearch = search.value.trim().toLowerCase();
+          renderApps();
+        });
+      }
+
+      ["b-app", "b-method", "b-os"].forEach(function (id) {
+        var node = byId(id);
+        if (node) {
+          node.addEventListener("change", updateBuilder);
+        }
+      });
+      ["d-import", "d-often", "d-uv"].forEach(function (id) {
+        var node = byId(id);
+        if (node) {
+          node.addEventListener("change", updateDecision);
+        }
+      });
+
+      wireCopy("b-copy", "b-out");
+      wireCopy("d-copy", "d-out");
+
+      fillBuilder();
+      renderChips();
+      renderApps();
+      renderGlossary();
+      updateDecision();
+    })();
+  </script>

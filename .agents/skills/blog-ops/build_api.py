@@ -4,6 +4,7 @@
 Reads every docs/*.html, writes:
 
   docs/api/index.json      metadata for all articles + chunk manifest
+  docs/api/dates.json      name -> publication instant, for the home page
   docs/api/text/NNN.json   article text, split into fetch-on-demand chunks
 
 Everything is plain JSON served as files: no server, no database, no third
@@ -238,8 +239,10 @@ def main():
     languages = sorted({a["lang"] for a in articles})
     years = sorted({a["published"][:4] for a in articles if a["published"]}, reverse=True)
 
+    generated = max(a["modified"] for a in articles if a["modified"])
+
     index_bytes = write_json(os.path.join(OUT, "index.json"), {
-        "generated": max(a["modified"] for a in articles if a["modified"]),
+        "generated": generated,
         "origin": ORIGIN,
         "count": len(articles),
         "languages": languages,
@@ -248,10 +251,21 @@ def main():
         "articles": articles,
     })
 
+    # The home page needs nothing but the publication instant: one badge per
+    # link and the sort order of "Last 5 publications". Serving it the whole
+    # index (~360 KB) to read one field was wasteful, so it gets this map,
+    # roughly a tenth of the size, built from the same git dates.
+    published = {a["path"]: a["published_at"] for a in articles if a["published_at"]}
+    dates_bytes = write_json(os.path.join(OUT, "dates.json"), {
+        "generated": generated,
+        "count": len(published),
+        "published": published,
+    })
+
     print("articles %d | languages %d | years %s..%s" %
           (len(articles), len(languages), years[-1], years[0]))
-    print("index.json %.1f KB | %d text chunks %.1f KB" %
-          (index_bytes / 1024, len(manifest), total / 1024))
+    print("index.json %.1f KB | dates.json %.1f KB | %d text chunks %.1f KB" %
+          (index_bytes / 1024, dates_bytes / 1024, len(manifest), total / 1024))
     return 0
 
 

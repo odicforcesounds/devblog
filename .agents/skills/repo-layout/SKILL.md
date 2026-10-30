@@ -16,7 +16,7 @@ in the wrong directory is either published by accident, lost by accident, or bot
 | `docs/*.html` | The site: 524 pages (`index.html`, `404.html`, the `home.html` stub, the articles). | Yes |
 | `docs/*` (non-HTML) | A fixed infrastructure set, listed below. No new file type without a reason. | Yes |
 | `docs/images/` | Every image the pages reference: icons (`.svg`), pictures (`.webp`, `.jpg`, `.jpeg`, `.png`). | Yes |
-| `docs/api/` | **Generated** by `.agents/skills/blog-ops/build_api.py`: `index.json` + `text/NNN.json`. | Yes |
+| `docs/api/` | **Generated** by `.agents/skills/blog-ops/build_api.py`: `index.json`, `dates.json` + `text/NNN.json`. | Yes |
 | `docs/tools/` | The feed pipeline for `index.html` (`feeds.json`, `build.mjs`, `template.html`). | Yes |
 | `docs/archive/`, `docs/obsdRouter/` | Third-party snapshots. Read-only, excluded in `robots.txt`, absent from sitemap and API. | Yes |
 | `docs/pdfs/` | Downloadable PDFs linked from articles. | Yes |

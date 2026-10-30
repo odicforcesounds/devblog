@@ -1,0 +1,523 @@
+  <script>
+    (function () {
+      "use strict";
+
+      /* ---------- the thirty tools (module paths and versions resolved via proxy.golang.org) ---------- */
+      var APPS = [
+        { key: "fzf", family: "shell", name: "fzf", module: "github.com/junegunn/fzf", cmd: "fzf", repo: "junegunn/fzf", dir: ".", ver: "v0.74.5", need: "1.23.0",
+          what: { en: "A fuzzy selector for any list: files, history, branches, a menu you invent. The Ctrl+R and Ctrl+T bindings are the ones that stay.",
+                  pt: "Um seletor difuso para qualquer lista: ficheiros, histórico, ramos, um menu inventado. Atalhos Ctrl+R e Ctrl+T são os que ficam." } },
+        { key: "gum", family: "shell", name: "gum", module: "charm.land/gum/v2", cmd: "gum", repo: "charmbracelet/gum", dir: ".", ver: "v2.0.2", need: "1.26.7",
+          what: { en: "Choose, confirm, input, filter, spin, format — the primitives a shell script needs to stop feeling like a script.",
+                  pt: "Escolher, confirmar, pedir, filtrar, girar, formatar — as primitivas que um script precisa para deixar de parecer um script." } },
+        { key: "direnv", family: "shell", name: "direnv", module: "github.com/direnv/direnv/v2", cmd: "direnv", repo: "direnv/direnv", dir: ".", ver: "v2.38.2", need: "1.26.0",
+          what: { en: "Loads a directory's environment when you enter it and unloads it when you leave, after you approve the .envrc once.",
+                  pt: "Carrega o ambiente de uma pasta quando entra nela e descarrega-o quando sai, depois de aprovar o .envrc uma vez." } },
+        { key: "lazygit", family: "git", name: "lazygit", module: "github.com/jesseduffield/lazygit", cmd: "lazygit", repo: "jesseduffield/lazygit", dir: ".", ver: "v0.66.2", need: "1.26.0",
+          what: { en: "A keyboard interface to git: stage hunk by hunk, commit, rebase, resolve conflicts, without typing the plumbing.",
+                  pt: "Uma interface de teclado para o git: preparar pedaço a pedaço, commit, rebase, resolver conflitos, sem escrever o encanamento." } },
+        { key: "gh", family: "git", name: "GitHub CLI", module: "github.com/cli/cli/v2/cmd/gh", cmd: "gh", repo: "cli/cli", dir: "cmd/gh", ver: "v2.103.3", need: "1.27.3",
+          what: { en: "Repositories, issues, pull requests, releases and Actions as subcommands, authenticated once.",
+                  pt: "Repositórios, issues, pull requests, releases e Actions como subcomandos, autenticados uma vez." } },
+        { key: "lazydocker", family: "containers", name: "lazydocker", module: "github.com/jesseduffield/lazydocker", cmd: "lazydocker", repo: "jesseduffield/lazydocker", dir: ".", ver: "v0.25.2", need: "1.22",
+          what: { en: "Containers, services, images, volumes and logs in one screen, with the actions you actually take.",
+                  pt: "Contentores, serviços, imagens, volumes e registos num ecrã, com as ações que se tomam de facto." } },
+        { key: "k9s", family: "containers", name: "k9s", module: "github.com/derailed/k9s", cmd: "k9s", repo: "derailed/k9s", dir: ".", ver: "v0.51.0", need: "1.25.8",
+          what: { en: "A terminal UI over kubectl: pods, deployments, services, events and logs, refreshed continuously.",
+                  pt: "Uma interface de terminal sobre o kubectl: pods, deployments, serviços, eventos e registos, sempre atualizados." } },
+        { key: "dive", family: "containers", name: "dive", module: "github.com/wagoodman/dive", cmd: "dive", repo: "wagoodman/dive", dir: ".", ver: "v0.13.1", need: "1.24",
+          what: { en: "Every layer of a container image, what each instruction added, and how much of it is wasted space.",
+                  pt: "Cada camada de uma imagem de contentor, o que cada instrução acrescentou, e quanto disso é espaço desperdiçado." } },
+        { key: "glow", family: "docs", name: "glow", module: "charm.land/glow/v3", cmd: "glow", repo: "charmbracelet/glow", dir: ".", ver: "v3.0.0", need: "1.26.5",
+          what: { en: "Renders Markdown — local, remote or a GitHub README — with headings, tables and highlighted code.",
+                  pt: "Renderiza Markdown — local, remoto ou um README do GitHub — com títulos, tabelas e código realçado." } },
+        { key: "vhs", family: "docs", name: "VHS", module: "github.com/charmbracelet/vhs", cmd: "vhs", repo: "charmbracelet/vhs", dir: ".", ver: "v0.12.1", need: "1.26.7",
+          what: { en: "Records a terminal session from a .tape script into a GIF or MP4, reproducibly.",
+                  pt: "Grava uma sessão de terminal a partir de um guião .tape para GIF ou MP4, de forma reproduzível." } },
+        { key: "task", family: "build", name: "Task", module: "github.com/go-task/task/v3/cmd/task", cmd: "task", repo: "go-task/task", dir: "cmd/task", ver: "v3.54.0", need: "1.26.4",
+          what: { en: "A task runner with a readable Taskfile, real dependencies and no tab-versus-space argument.",
+                  pt: "Um executor de tarefas com um Taskfile legível, dependências a sério e sem a discussão de tabs contra espaços." } },
+        { key: "golangci", family: "build", name: "golangci-lint", module: "github.com/golangci/golangci-lint/v2/cmd/golangci-lint", cmd: "golangci-lint", repo: "golangci/golangci-lint", dir: "cmd/golangci-lint", ver: "v2.15.0", need: "1.26.0",
+          what: { en: "A hundred linters behind one command, one configuration file and one exit code.",
+                  pt: "Uma centena de linters atrás de um comando, um ficheiro de configuração e um código de saída." } },
+        { key: "gofumpt", family: "build", name: "gofumpt", module: "mvdan.cc/gofumpt", cmd: "gofumpt", repo: "mvdan/gofumpt", dir: ".", ver: "v0.12.0", need: "1.26.0",
+          what: { en: "gofmt plus the rules the Go team could not add without breaking compatibility.",
+                  pt: "O gofmt mais as regras que a equipa do Go não pôde acrescentar sem quebrar compatibilidade." } },
+        { key: "shfmt", family: "build", name: "shfmt", module: "mvdan.cc/sh/v3/cmd/shfmt", cmd: "shfmt", repo: "mvdan/sh", dir: "cmd/shfmt", ver: "v3.14.1", need: "1.26.0",
+          what: { en: "Parses and formats shell scripts, with checks that catch the quoting bug before bash does.",
+                  pt: "Analisa e formata scripts de shell, com verificações que apanham o erro de aspas antes do bash." } },
+        { key: "air", family: "build", name: "Air", module: "github.com/air-verse/air", cmd: "air", repo: "air-verse/air", dir: ".", ver: "v1.67.4", need: "1.26.0",
+          what: { en: "Rebuilds and restarts a Go server when a file changes, and proxies the port.",
+                  pt: "Recompila e reinicia um servidor Go quando um ficheiro muda, e faz proxy da porta." } },
+        { key: "dlv", family: "build", name: "Delve", module: "github.com/go-delve/delve/cmd/dlv", cmd: "dlv", repo: "go-delve/delve", dir: "cmd/dlv", ver: "v1.27.2", need: "1.25.0",
+          what: { en: "A real debugger for Go: breakpoints, stepping, goroutines and remote sessions.",
+                  pt: "Um depurador a sério para Go: pontos de paragem, passo a passo, goroutines e sessões remotas." } },
+        { key: "yq", family: "data", name: "yq", module: "github.com/mikefarah/yq/v4", cmd: "yq", repo: "mikefarah/yq", dir: ".", ver: "v4.54.1", need: "1.26.0",
+          what: { en: "jq's expression language for YAML, JSON, XML and CSV, with comment-preserving edits.",
+                  pt: "A linguagem de expressões do jq para YAML, JSON, XML e CSV, com edições que preservam comentários." } },
+        { key: "sqlc", family: "data", name: "sqlc", module: "github.com/sqlc-dev/sqlc/cmd/sqlc", cmd: "sqlc", repo: "sqlc-dev/sqlc", dir: "cmd/sqlc", ver: "v1.31.1", need: "1.26.2",
+          what: { en: "Generates type-safe Go from SQL queries and a schema, checked at generation time.",
+                  pt: "Gera Go com tipos a partir de consultas SQL e de um esquema, verificado na geração." } },
+        { key: "goose", family: "data", name: "goose", module: "github.com/pressly/goose/v3/cmd/goose", cmd: "goose", repo: "pressly/goose", dir: "cmd/goose", ver: "v3.29.0", need: "1.26.0",
+          what: { en: "Versioned database migrations with up, down and status, usable as a CLI or a library.",
+                  pt: "Migrações de base de dados versionadas com up, down e status, como CLI ou biblioteca." } },
+        { key: "duf", family: "machine", name: "duf", module: "github.com/muesli/duf", cmd: "duf", repo: "muesli/duf", dir: ".", ver: "v0.9.1", need: "1.23.0",
+          what: { en: "Filesystems and free space in a table you can read, with a JSON mode for scripts.",
+                  pt: "Sistemas de ficheiros e espaço livre numa tabela legível, com modo JSON para scripts." } },
+        { key: "gdu", family: "machine", name: "gdu", module: "github.com/dundee/gdu/v5/cmd/gdu", cmd: "gdu", repo: "dundee/gdu", dir: "cmd/gdu", ver: "v5.38.0", need: "1.26.0",
+          what: { en: "Parallel disk usage analysis with an interactive tree and deletion in place.",
+                  pt: "Análise de uso de disco em paralelo, com árvore interativa e remoção no local." } },
+        { key: "trivy", family: "security", name: "Trivy", module: "github.com/aquasecurity/trivy/cmd/trivy", cmd: "trivy", repo: "aquasecurity/trivy", dir: "cmd/trivy", ver: "v0.76.1", need: "1.27.0",
+          what: { en: "Scans images, filesystems, repositories and IaC for known vulnerabilities and misconfigurations.",
+                  pt: "Analisa imagens, sistemas de ficheiros, repositórios e IaC à procura de vulnerabilidades e configurações erradas." } },
+        { key: "gitleaks", family: "security", name: "gitleaks", module: "github.com/gitleaks/gitleaks/v8", cmd: "gitleaks", repo: "gitleaks/gitleaks", dir: ".", ver: "v8.30.1", need: "1.24.11",
+          what: { en: "Finds API keys, tokens and private keys in a repository or its history, from a rule set of provider patterns.",
+                  pt: "Encontra chaves de API, tokens e chaves privadas num repositório ou no seu histórico, a partir de um conjunto de regras." } },
+        { key: "gopass", family: "security", name: "gopass", module: "github.com/gopasspw/gopass", cmd: "gopass", repo: "gopasspw/gopass", dir: ".", ver: "v1.17.4", need: "1.26.0",
+          what: { en: "A pass-compatible password store: GPG-encrypted files in a git repository you control.",
+                  pt: "Um cofre de palavras-passe compatível com o pass: ficheiros cifrados com GPG num repositório git seu." } },
+        { key: "age", family: "security", name: "age", module: "filippo.io/age/cmd/age", cmd: "age", repo: "FiloSottile/age", dir: "cmd/age", ver: "v1.3.2", need: "1.25.0",
+          what: { en: "Small, modern file encryption: one key pair, one passphrase mode, a readable spec.",
+                  pt: "Cifra de ficheiros pequena e moderna: um par de chaves, um modo com frase-passe, uma especificação legível." } },
+        { key: "rclone", family: "sync", name: "rclone", module: "github.com/rclone/rclone", cmd: "rclone", repo: "rclone/rclone", dir: ".", ver: "v1.75.2", need: "1.26.0",
+          what: { en: "Copy, sync, check, mount and serve any remote — S3, Drive, SFTP, WebDAV — with one set of flags.",
+                  pt: "Copiar, sincronizar, verificar, montar e servir qualquer remoto — S3, Drive, SFTP, WebDAV — com as mesmas opções." } },
+        { key: "restic", family: "sync", name: "restic", module: "github.com/restic/restic/cmd/restic", cmd: "restic", repo: "restic/restic", dir: "cmd/restic", ver: "v0.19.1", need: "1.25.10",
+          what: { en: "Encrypted, deduplicated snapshots with retention policies and selective restore.",
+                  pt: "Instantâneos cifrados e desduplicados, com políticas de retenção e restauro seletivo." } },
+        { key: "hugo", family: "servers", name: "Hugo", module: "github.com/gohugoio/hugo", cmd: "hugo", repo: "gohugoio/hugo", dir: ".", ver: "v0.169.0", need: "1.27.0",
+          what: { en: "Markdown plus templates into a static site, built in milliseconds by one binary.",
+                  pt: "Markdown mais modelos num site estático, construído em milissegundos por um único binário." } },
+        { key: "caddy", family: "servers", name: "Caddy", module: "github.com/caddyserver/caddy/v2/cmd/caddy", cmd: "caddy", repo: "caddyserver/caddy", dir: "cmd/caddy", ver: "v2.11.7", need: "1.26.0",
+          what: { en: "A web server and reverse proxy that obtains and renews HTTPS certificates by itself.",
+                  pt: "Um servidor web e proxy inverso que obtém e renova certificados HTTPS sozinho." } },
+        { key: "tailscale", family: "servers", name: "Tailscale", module: "tailscale.com/cmd/tailscale", cmd: "tailscale", repo: "tailscale/tailscale", dir: "cmd/tailscale", ver: "v1.104.4", need: "1.27.3",
+          what: { en: "A WireGuard mesh between your machines, addressed by identity instead of firewall rules.",
+                  pt: "Uma rede WireGuard entre as suas máquinas, endereçada por identidade em vez de regras de firewall." } }
+      ];
+
+      var FAMILIES = ["shell", "git", "containers", "docs", "build", "data", "machine", "security", "sync", "servers"];
+      var FAMILY_LABEL = {
+        en: { shell: "Shell", git: "Git", containers: "Containers", docs: "Documents", build: "Build",
+              data: "Data", machine: "Machine", security: "Security", sync: "Sync", servers: "Servers" },
+        pt: { shell: "Shell", git: "Git", containers: "Contentores", docs: "Documentos", build: "Compilação",
+              data: "Dados", machine: "Máquina", security: "Segurança", sync: "Sincronização", servers: "Servidores" }
+      };
+
+      var GLOSSARY = [
+        { en: ["Module", "A versioned collection of packages published at a path — <code>github.com/jesseduffield/lazygit</code> — which is also the address you install from."],
+          pt: ["Módulo", "Uma coleção versionada de pacotes publicada num caminho — <code>github.com/jesseduffield/lazygit</code> — que é também o endereço de onde se instala."] },
+        { en: ["Module path", "The import path that identifies a module, ending in a major-version suffix (v2, v3) when the API broke compatibility. It is not a URL, though it usually looks like one."],
+          pt: ["Caminho de módulo", "O caminho de importação que identifica um módulo, terminado num sufixo de versão maior (v2, v3) quando a API quebrou compatibilidade. Não é um URL, embora pareça."] },
+        { en: ["Version", "A tag like v1.27.2. For a tool, the version you name is the version you compile; there is no resolver deciding for you."],
+          pt: ["Versão", "Uma etiqueta como v1.27.2. Para uma ferramenta, a versão que indica é a versão que compila; não há resolver a decidir por si."] },
+        { en: ["go.mod", "The file that declares a module's path, its Go requirement and its dependencies. Every build inside the project reads it."],
+          pt: ["go.mod", "O ficheiro que declara o caminho de um módulo, o requisito de Go e as dependências. Todas as compilações dentro do projeto o leem."] },
+        { en: ["go.sum", "The recorded hashes of the modules a project uses. It is what makes a build verifiable rather than merely repeatable."],
+          pt: ["go.sum", "Os hashes registados dos módulos que um projeto usa. É o que torna uma compilação verificável e não apenas repetível."] },
+        { en: ["GOROOT", "Where the toolchain lives: compiler, linker, standard library. Replaced as a whole when you upgrade Go."],
+          pt: ["GOROOT", "Onde vive a cadeia de ferramentas: compilador, linker, biblioteca padrão. Substituído por inteiro quando atualiza o Go."] },
+        { en: ["GOPATH", "Your workspace. It still owns the default binary directory and the module cache, even though modules ended its role as the source tree."],
+          pt: ["GOPATH", "O seu espaço de trabalho. Ainda é dono da pasta de binários por omissão e da cache de módulos, apesar de os módulos terem acabado com o seu papel de árvore de código."] },
+        { en: ["GOBIN", "If set, the single directory <code>go install</code> writes executables to. Set it with <code>go env -w</code>, not with an export in one shell."],
+          pt: ["GOBIN", "Se definido, a única pasta onde o <code>go install</code> escreve executáveis. Defina-o com <code>go env -w</code>, não com um export numa shell."] },
+        { en: ["Module proxy", "An HTTP service that serves module archives and metadata — proxy.golang.org by default. It is what <code>go install</code> talks to."],
+          pt: ["Proxy de módulos", "Um serviço HTTP que serve arquivos e metadados de módulos — proxy.golang.org por omissão. É com ele que o <code>go install</code> fala."] },
+        { en: ["Toolchain", "A specific Go release, including its compiler. <code>GOTOOLCHAIN=auto</code> lets the go command download and use the one a module requires."],
+          pt: ["Toolchain", "Uma versão específica de Go, incluindo o compilador. <code>GOTOOLCHAIN=auto</code> deixa o comando go descarregar e usar a que o módulo exige."] },
+        { en: ["Build cache", "Compiled objects keyed by content, so the second build is fast. Safe to delete; the only cost is time."],
+          pt: ["Cache de compilação", "Objetos compilados indexados por conteúdo, para a segunda compilação ser rápida. Seguro apagar; o único custo é tempo."] },
+        { en: ["Main package", "A package named <code>main</code> with a <code>func main()</code>. Only main packages produce an executable, and only they can be installed with <code>go install</code>."],
+          pt: ["Pacote main", "Um pacote chamado <code>main</code> com uma <code>func main()</code>. Só pacotes main produzem executável, e só eles se instalam com <code>go install</code>."] }
+      ];
+
+      var GO_VERSIONS = ["1.21", "1.22", "1.23", "1.24", "1.25", "1.26", "1.27"];
+
+      function byId(id) {
+        return document.getElementById(id);
+      }
+
+      function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) {
+          node.className = className;
+        }
+        if (text != null) {
+          node.textContent = text;
+        }
+        return node;
+      }
+
+      var lang = "en";
+      var activeFamily = "all";
+      var activeSearch = "";
+      var EN = {};
+
+      /* ---------- table ---------- */
+      function matches(app) {
+        if (activeFamily !== "all" && app.family !== activeFamily) {
+          return false;
+        }
+        if (!activeSearch) {
+          return true;
+        }
+        var hay = [app.name, app.module, app.cmd, app.repo, app.family, app.what.en, app.what.pt,
+                   FAMILY_LABEL.en[app.family], FAMILY_LABEL.pt[app.family]].join(" ").toLowerCase();
+        return hay.indexOf(activeSearch) !== -1;
+      }
+
+      function renderApps() {
+        var body = byId("apps-body");
+        if (!body) {
+          return;
+        }
+        body.innerHTML = "";
+        var shown = 0;
+        APPS.forEach(function (app) {
+          if (!matches(app)) {
+            return;
+          }
+          shown += 1;
+          var tr = el("tr");
+
+          var th = el("th");
+          var link = el("a", null, app.name);
+          link.href = "https://github.com/" + app.repo;
+          link.target = "_blank";
+          link.rel = "noopener";
+          th.appendChild(link);
+          th.appendChild(document.createElement("br"));
+          th.appendChild(el("span", "family-tag", FAMILY_LABEL[lang][app.family]));
+          tr.appendChild(th);
+
+          tr.appendChild(el("td", null, app.what[lang]));
+
+          var install = el("td");
+          install.appendChild(el("code", null, "go install " + app.module + "@" + app.ver));
+          tr.appendChild(install);
+
+          var cmdCell = el("td");
+          cmdCell.appendChild(el("code", null, app.cmd));
+          tr.appendChild(cmdCell);
+
+          tr.appendChild(el("td", null, "≥ " + app.need));
+
+          body.appendChild(tr);
+        });
+
+        var empty = byId("apps-empty");
+        if (empty) {
+          empty.hidden = shown !== 0;
+        }
+        var count = byId("app-count");
+        if (count) {
+          count.textContent = shown + " / " + APPS.length;
+        }
+      }
+
+      function renderChips() {
+        var wrap = byId("app-chips");
+        if (!wrap) {
+          return;
+        }
+        wrap.innerHTML = "";
+        var all = el("button", "chip", lang === "pt" ? "Tudo" : "All");
+        all.type = "button";
+        all.setAttribute("aria-pressed", activeFamily === "all" ? "true" : "false");
+        all.addEventListener("click", function () {
+          activeFamily = "all";
+          renderChips();
+          renderApps();
+        });
+        wrap.appendChild(all);
+
+        FAMILIES.forEach(function (family) {
+          var chip = el("button", "chip", FAMILY_LABEL[lang][family]);
+          chip.type = "button";
+          chip.setAttribute("aria-pressed", activeFamily === family ? "true" : "false");
+          chip.addEventListener("click", function () {
+            activeFamily = family;
+            renderChips();
+            renderApps();
+          });
+          wrap.appendChild(chip);
+        });
+      }
+
+      /* ---------- builder ---------- */
+      function builderText(app, method, os) {
+        var win = os === "win";
+        var local = win ? "%USERPROFILE%\\go\\bin\\" + app.cmd + ".exe"
+                        : '"$(go env GOPATH)/bin/' + app.cmd + '"';
+        var s = "go version    # needs " + app.need + " or newer\n\n";
+
+        if (method === "source") {
+          s += "git clone https://github.com/" + app.repo + "\n";
+          s += "cd " + app.repo.split("/")[1] + "\n";
+          s += app.dir === "." ? "go build -o " + app.cmd + " .\n" : "go build -o " + app.cmd + " ./" + app.dir + "\n";
+          s += "install -m 0755 " + app.cmd + " \"$(go env GOPATH)/bin/\"\n\n";
+        } else {
+          s += "go install " + app.module + "@" + (method === "pinned" ? app.ver : "latest") + "\n\n";
+        }
+
+        s += app.cmd + " --help\n\n";
+        s += "# the binary: " + local;
+        return s;
+      }
+
+      function updateBuilder() {
+        var appSel = byId("b-app");
+        if (!appSel) {
+          return;
+        }
+        var app = APPS[parseInt(appSel.value, 10)] || APPS[0];
+        var method = byId("b-method").value;
+        var os = byId("b-os").value;
+
+        byId("b-name").textContent = app.name;
+        byId("b-pkg").textContent = app.module;
+        byId("b-ver").textContent = app.ver;
+        byId("b-cmd").textContent = app.cmd;
+        byId("b-need").textContent = app.need;
+        byId("b-out").textContent = builderText(app, method, os);
+        byId("b-note").textContent = lang === "pt"
+          ? "Se o comando não for encontrado depois de instalar, a pasta dos binários não está no PATH — parte 05. O código-fonte compila com o mesmo go install, sem sudo."
+          : "If the command is not found after installing, the binary directory is not on PATH — part 05. The source method builds with the same toolchain, and never needs sudo.";
+      }
+
+      function fillBuilder() {
+        var appSel = byId("b-app");
+        if (!appSel) {
+          return;
+        }
+        appSel.innerHTML = "";
+        APPS.forEach(function (app, index) {
+          var option = el("option", null, app.name);
+          option.value = String(index);
+          appSel.appendChild(option);
+        });
+        updateBuilder();
+      }
+
+      /* ---------- toolchain check ---------- */
+      function cmpVersion(a, b) {
+        var pa = String(a).split(".").map(Number);
+        var pb = String(b).split(".").map(Number);
+        for (var i = 0; i < 3; i += 1) {
+          var x = pa[i] || 0;
+          var y = pb[i] || 0;
+          if (x !== y) {
+            return x < y ? -1 : 1;
+          }
+        }
+        return 0;
+      }
+
+      function updateCheck() {
+        var appSel = byId("tc-app");
+        var mineSel = byId("tc-mine");
+        if (!appSel || !mineSel) {
+          return;
+        }
+        var app = APPS[parseInt(appSel.value, 10)] || APPS[0];
+        var mine = mineSel.value;
+        var verdict = byId("tc-verdict");
+        var how = byId("tc-how");
+        var out = byId("tc-out");
+
+        byId("tc-need").textContent = app.need + " (" + app.name + ")";
+
+        var installCmd = "go install " + app.module + "@" + app.ver;
+
+        if (cmpVersion(mine, app.need) >= 0) {
+          verdict.textContent = lang === "pt"
+            ? "Suficiente: nada extra é descarregado."
+            : "Fine: nothing extra gets downloaded.";
+          verdict.dataset.state = "ok";
+          how.textContent = lang === "pt"
+            ? "O seu Go (" + mine + ") compila " + app.name + " diretamente."
+            : "Your Go (" + mine + ") compiles " + app.name + " directly.";
+          out.textContent = installCmd + "\n" + app.cmd + " --help";
+          return;
+        }
+
+        if (mine === "1.21") {
+          verdict.textContent = lang === "pt"
+            ? "Demasiado antigo, e anterior à troca automática de toolchain."
+            : "Too old, and older than automatic toolchain switching.";
+          verdict.dataset.state = "bad";
+          how.textContent = lang === "pt"
+            ? "Instale o Go " + app.need + " a partir de go.dev/dl e repita a instalação."
+            : "Install Go " + app.need + " from go.dev/dl, then rerun the install.";
+          out.textContent = "# install Go " + app.need + " from https://go.dev/dl/\n" + installCmd;
+          return;
+        }
+
+        verdict.textContent = lang === "pt"
+          ? "O go descarrega o toolchain go" + app.need + " sozinho."
+          : "The go command downloads toolchain go" + app.need + " itself.";
+        verdict.dataset.state = "mid";
+        how.textContent = lang === "pt"
+          ? "Com GOTOOLCHAIN=auto (o padrão), verá «go: downloading go" + app.need + "» e a compilação continua. Para forçar, defina GOTOOLCHAIN=go" + app.need + "."
+          : "With GOTOOLCHAIN=auto (the default) you will see \"go: downloading go" + app.need + "\" and the build continues. To be explicit, set GOTOOLCHAIN=go" + app.need + ".";
+        out.textContent = "GOTOOLCHAIN=go" + app.need + " " + installCmd + "\n" + app.cmd + " --help";
+      }
+
+      function fillCheck() {
+        var appSel = byId("tc-app");
+        var mineSel = byId("tc-mine");
+        if (!appSel || !mineSel) {
+          return;
+        }
+        appSel.innerHTML = "";
+        APPS.forEach(function (app, index) {
+          var option = el("option", null, app.name);
+          option.value = String(index);
+          appSel.appendChild(option);
+        });
+        mineSel.innerHTML = "";
+        GO_VERSIONS.forEach(function (v) {
+          var option = el("option", null, v);
+          option.value = v;
+          if (v === "1.26") {
+            option.selected = true;
+          }
+          mineSel.appendChild(option);
+        });
+        updateCheck();
+      }
+
+      /* ---------- glossary ---------- */
+      function renderGlossary() {
+        var list = byId("glossary-list");
+        if (!list) {
+          return;
+        }
+        list.innerHTML = "";
+        GLOSSARY.forEach(function (entry) {
+          var pair = entry[lang];
+          list.appendChild(el("dt", null, pair[0]));
+          var dd = el("dd");
+          dd.innerHTML = pair[1];
+          list.appendChild(dd);
+        });
+      }
+
+      /* ---------- copy ---------- */
+      function wireCopy(buttonId, sourceId) {
+        var button = byId(buttonId);
+        var source = byId(sourceId);
+        if (!button || !source) {
+          return;
+        }
+        button.addEventListener("click", function () {
+          var text = source.textContent;
+          var done = function () {
+            button.textContent = lang === "pt" ? "copiado" : "copied";
+            window.setTimeout(function () {
+              button.textContent = lang === "pt" ? "copiar" : "copy";
+            }, 1400);
+          };
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(done, done);
+              return;
+            }
+          } catch (error) {
+            /* fall through */
+          }
+          var area = document.createElement("textarea");
+          area.value = text;
+          document.body.appendChild(area);
+          area.select();
+          try {
+            document.execCommand("copy");
+          } catch (error) {
+            /* nothing left to try */
+          }
+          document.body.removeChild(area);
+          done();
+        });
+      }
+
+      /* ---------- language ---------- */
+      var TITLE = {
+        en: "Go in the Shell — Thirty Binaries, One Toolchain",
+        pt: "Go na Shell — Trinta Binários, Uma Toolchain"
+      };
+      var DESCRIPTION = {
+        en: "Go from the terminal: the toolchain, go install, GOBIN on PATH, thirty GitHub apps with verified versions, and the errors that stop a build.",
+        pt: "Go a partir do terminal: a toolchain, o go install, o GOBIN no PATH, trinta aplicações do GitHub com versões verificadas e os erros que travam uma compilação."
+      };
+
+      var langButtons = [];
+      var PT = {};
+
+      function applyLanguage(next) {
+        lang = next;
+        document.documentElement.lang = next;
+        document.querySelectorAll("[data-i18n]").forEach(function (node) {
+          var key = node.getAttribute("data-i18n");
+          node.innerHTML = next === "pt" && PT[key] != null ? PT[key] : EN[key];
+        });
+        langButtons.forEach(function (button) {
+          button.setAttribute("aria-pressed", button.dataset.lang === next ? "true" : "false");
+        });
+        document.title = TITLE[next];
+        ["description", "og:description", "twitter:description"].forEach(function (name) {
+          var node = name === "description"
+            ? document.querySelector('meta[name="description"]')
+            : document.querySelector('meta[property="' + name + '"]');
+          if (node) {
+            node.setAttribute("content", DESCRIPTION[next]);
+          }
+        });
+        renderChips();
+        renderApps();
+        renderGlossary();
+        updateBuilder();
+        updateCheck();
+      }
+
+      langButtons = Array.prototype.slice.call(document.querySelectorAll(".lang-switch button"));
+      langButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          applyLanguage(button.dataset.lang);
+        });
+      });
+
+      document.querySelectorAll("[data-i18n]").forEach(function (node) {
+        EN[node.getAttribute("data-i18n")] = node.innerHTML;
+      });
+
+      var search = byId("app-search");
+      if (search) {
+        search.addEventListener("input", function () {
+          activeSearch = search.value.trim().toLowerCase();
+          renderApps();
+        });
+      }
+
+      ["b-app", "b-method", "b-os"].forEach(function (id) {
+        var node = byId(id);
+        if (node) {
+          node.addEventListener("change", updateBuilder);
+        }
+      });
+      ["tc-app", "tc-mine"].forEach(function (id) {
+        var node = byId(id);
+        if (node) {
+          node.addEventListener("change", updateCheck);
+        }
+      });
+
+      wireCopy("b-copy", "b-out");
+      wireCopy("tc-copy", "tc-out");
+
+      fillBuilder();
+      fillCheck();
+      renderChips();
+      renderApps();
+      renderGlossary();
+    })();
+  </script>

@@ -1,0 +1,237 @@
+    <section id="data">
+      <h2><span class="num">11</span><span data-i18n="s11.title">Data: SQLite, CSV, JSON, Postgres</span></h2>
+      <p class="sub" data-i18n="s11.sub">
+        Most "data work" is not a notebook. It is a file with rows, a question about those rows,
+        and a shell where the file already is. These five tools answer the question without opening
+        an editor: <strong>datasette</strong> publishes a database as a browsable site,
+        <strong>sqlite-utils</strong> builds and edits it, <strong>csvkit</strong> slices text
+        files, <strong>jc</strong> converts any command's output to JSON, and
+        <strong>pgcli</strong> gives Postgres autocomplete.
+      </p>
+
+      <div class="card">
+        <h3>Datasette — <span data-i18n="s11.ds.h">a database with a URL</span></h3>
+        <p data-i18n="s11.ds.p">Point it at a SQLite file and it serves a browsable, filterable, facetable interface with a JSON API on every table. It is the fastest way to let someone else look at your data without sending them the file, and it needs no server configuration at all.</p>
+        <pre>pipx install datasette
+datasette mydata.db                    <span class="c"># http://127.0.0.1:8001</span>
+datasette mydata.db -m metadata.json --port 8080
+datasette mydata.db --cors --setting sql_time_limit_ms 5000</pre>
+        <p data-i18n="s11.ds.after">Every table also answers as JSON: append <code>.json</code> to the URL. That single feature replaces a small API project more often than people expect.</p>
+      </div>
+
+      <div class="card">
+        <h3>sqlite-utils — <span data-i18n="s11.su.h">the database, from the command line</span></h3>
+        <p data-i18n="s11.su.p">Inserts CSV and JSON into SQLite, creates tables from the data's shape, runs queries, alters schemas and converts columns — the operations you would otherwise write twelve lines of Python for, every time.</p>
+        <pre>pipx install sqlite-utils
+sqlite-utils insert data.db readings readings.csv --csv --detect-types
+sqlite-utils schema data.db
+sqlite-utils query data.db "select month, avg(value) from readings group by 1"
+sqlite-utils convert data.db readings value 'float(value.strip())'</pre>
+      </div>
+
+      <div class="card">
+        <h3>csvkit — <span data-i18n="s11.ck.h">fourteen commands, one idea</span></h3>
+        <p data-i18n="s11.ck.p">Each utility does one transformation and writes CSV to stdout, so they compose in a pipe: cut columns, filter rows, sort, join, describe, then query the result with SQL. It also reads XLSX, which makes it the bridge between a spreadsheet and everything else.</p>
+        <pre>pipx install csvkit
+csvlook sales.csv
+csvcut -c 1,3,7 sales.csv | csvsort -c 3 -r | head
+csvgrep -c country -m "PT" sales.csv
+in2csv report.xlsx &gt; report.csv
+csvsql --query "select country, sum(total) from sales group by 1" sales.csv</pre>
+      </div>
+
+      <div class="card">
+        <h3>jc — <span data-i18n="s11.jc.h">JSON from any command</span></h3>
+        <p data-i18n="s11.jc.p">Takes the text output of a hundred familiar commands — <code>ls</code>, <code>ps</code>, <code>df</code>, <code>ip</code>, <code>dig</code>, <code>systemctl</code> — and returns structured JSON, so the next step can be <code>jq</code> instead of <code>awk</code>. It also parses the formats that have no parser: ini, csv, yaml, syslog, crontab.</p>
+        <pre>pipx install jc
+ls -l | jc --ls -p | jq '.[] | select(.size &gt; 1000000) | .filename'
+df -h | jc --df -p
+cat /etc/hosts | jc --hosts -p</pre>
+      </div>
+
+      <div class="card">
+        <h3>pgcli — <span data-i18n="s11.pg.h">Postgres with autocomplete</span></h3>
+        <p data-i18n="s11.pg.p">A Postgres client that knows your schema: table and column names complete as you type, syntax is coloured, and the results page themselves. The same family includes <code>mycli</code> for MySQL and <code>litecli</code> for SQLite, from the same maintainers.</p>
+        <pre>pipx install pgcli
+pgcli postgresql://user@localhost:5432/mydb
+<span class="c"># inside the prompt</span>
+\d                     <span class="c"># tables, views, sequences</span>
+\d+ users              <span class="c"># columns, indexes, constraints</span>
+\dp                    <span class="c"># permissions</span></pre>
+      </div>
+    </section>
+
+    <section id="docs">
+      <h2><span class="num">12</span><span data-i18n="s12.title">Documents: scan, print, label</span></h2>
+      <p class="sub" data-i18n="s12.sub">
+        Three small tools with the same shape: input on the left, a file on the right, no
+        application window. OCR turns a scan into text, WeasyPrint turns HTML and CSS into a print
+        PDF, and qrcode turns a string into something a phone can read.
+      </p>
+
+      <div class="card">
+        <h3>OCRmyPDF — <span data-i18n="s12.oc.h">a scanned PDF that can be searched</span></h3>
+        <p data-i18n="s12.oc.p">Adds a text layer to an image-only PDF, keeping the original scan underneath: it looks identical, and Ctrl+F works. It is the difference between an archive and a pile of pictures of documents. Tesseract and Ghostscript are system packages, not pip packages.</p>
+        <pre>sudo apt install tesseract-ocr tesseract-ocr-por ghostscript
+pipx install ocrmypdf
+ocrmypdf scan.pdf searchable.pdf -l por
+ocrmypdf --skip-text batch.pdf out.pdf      <span class="c"># leave existing text alone</span>
+ocrmypdf --deskew --clean --rotate-pages in.pdf out.pdf
+ocrmypdf -l por+eng --jobs 4 in.pdf out.pdf</pre>
+        <p data-i18n="s12.oc.after">Language packs are the usual surprise: <code>tesseract-ocr-por</code> for Portuguese, <code>-eng</code> for English, <code>-spa</code> for Spanish. Without the pack, OCR runs with an English model and mangles every accent.</p>
+      </div>
+
+      <div class="card">
+        <h3>WeasyPrint — <span data-i18n="s12.wp.h">HTML to PDF, properly</span></h3>
+        <p data-i18n="s12.wp.p">Renders HTML with real CSS support, including paged media: margins, running headers, page numbers, footnotes and page breaks. It is how a generated invoice, a report or a book stops being a screenshot of a browser.</p>
+        <pre>sudo apt install libpango-1.0-0 libpangoft2-1.0-0     <span class="c"># Debian 12+</span>
+brew install pango                                    <span class="c"># macOS</span>
+pipx install weasyprint
+weasyprint invoice.html invoice.pdf
+weasyprint --base-url ./assets report.html report.pdf</pre>
+        <p data-i18n="s12.wp.after">The CSS to learn is small: <code>@page { size: A4; margin: 2cm }</code>, <code>@page { @bottom-center { content: counter(page) } }</code>, and <code>break-before: page</code>. That is most of a printable document.</p>
+      </div>
+
+      <div class="card">
+        <h3>qrcode — <span data-i18n="s12.qr.h">a QR code from the prompt</span></h3>
+        <p data-i18n="s12.qr.p">Small, old, and still the quickest way to put a URL into a room: generate a PNG or an SVG, print it, stick it on a shelf label or a business card. The CLI is called <code>qr</code>, and it needs the image extra.</p>
+        <pre>pipx install "qrcode[pil]"
+qr "https://blog.odicforcesounds.com" &gt; qr.png
+qr --factory=svg "wifi://..." &gt; qr.svg
+qr --version=5 --error-correction=H "long text here" &gt; big.png</pre>
+        <p data-i18n="s12.qr.after">Higher error correction means a denser image that still reads when partly covered — worth it for anything printed small or placed outdoors.</p>
+      </div>
+    </section>
+
+    <section id="terminal">
+      <h2><span class="num">13</span><span data-i18n="s13.title">Terminal craft: files, mistakes, memory</span></h2>
+      <p class="sub" data-i18n="s13.sub">
+        Four tools that make the shell itself better: a file manager that never leaves the
+        keyboard, a corrector for the command you just mistyped, a manual with examples instead of
+        flags, and a renderer that makes Markdown and code readable at the prompt.
+      </p>
+
+      <div class="card">
+        <h3>ranger — <span data-i18n="s13.ra.h">three columns, no mouse</span></h3>
+        <p data-i18n="s13.ra.p">A terminal file manager with a preview pane: text, images (in a suitable terminal), PDFs, archives. Moving, copying, bulk renaming and opening a shell in the current directory are single keys. It is the answer for a server where <code>ls</code> is not enough and a desktop is not available.</p>
+        <pre>pipx install ranger-fm
+ranger
+<span class="c"># hjkl move, space select, yy copy, dd cut, pp paste</span>
+<span class="c"># :mkdir name   :rename   S  shell here   ?  keys</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>thefuck — <span data-i18n="s13.tf.h">the correction after the swear word</span></h3>
+        <p data-i18n="s13.tf.p">When a command fails because of a typo or a missing sudo, type <code>fuck</code> and it proposes the corrected command, which you accept with Enter. It reads the previous command and its error, not your intentions — which is why it works so often.</p>
+        <pre>pipx install thefuck
+<span class="c"># add once to ~/.bashrc or ~/.zshrc</span>
+eval $(thefuck --alias)
+<span class="c"># then</span>
+fuck
+fuck --yeah      <span class="c"># accept without asking</span>
+fuck --repeat    <span class="c"># keep fixing until it works</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>tldr — <span data-i18n="s13.tl.h">the manual, with examples</span></h3>
+        <p data-i18n="s13.tl.p">Man pages list every flag; tldr pages show the five invocations people actually use. The Python client downloads the community pages and caches them locally, so lookups are instant and offline after the first update.</p>
+        <pre>pipx install tldr
+tldr tar
+tldr --update
+tldr --list | head</pre>
+      </div>
+
+      <div class="card">
+        <h3>rich-cli — <span data-i18n="s13.rc.h">Markdown and code, rendered</span></h3>
+        <p data-i18n="s13.rc.p">Prints a file the way it was meant to look: Markdown with headings and tables, source code with syntax highlighting and line numbers, JSON pretty-printed, CSV as a table. Useful for READMEs over SSH and for checking generated output before it ships.</p>
+        <pre>pipx install rich-cli
+rich README.md
+rich --syntax python script.py
+rich --json data.json
+rich --csv table.csv --columns 1,3</pre>
+      </div>
+    </section>
+
+    <section id="library">
+      <h2><span class="num">14</span><span data-i18n="s14.title">A personal library that outlives the app</span></h2>
+      <p class="sub" data-i18n="s14.sub">
+        The best argument for command-line tools is not speed, it is ownership: the music library
+        is a folder of tagged files, the bookmarks are a SQLite database, the calendar is a
+        directory of <code>.ics</code> files. Nothing here needs an account, and everything can be
+        backed up with <code>rsync</code>.
+      </p>
+
+      <div class="card">
+        <h3>beets — <span data-i18n="s14.be.h">the music library that fixes itself</span></h3>
+        <p data-i18n="s14.be.p">Imports a folder, fingerprints the audio, looks up the release, writes correct tags, moves the files into a clean tree and stores everything in a queryable database. Once set up, <code>beet import</code> is the only command you need for a new album.</p>
+        <pre>pipx install beets
+beet import ~/Downloads/album
+beet ls -a artist:radiohead
+beet fetchart
+beet lyrics
+beet write          <span class="c"># push database changes back to the files</span></pre>
+        <p data-i18n="s14.be.after">Configuration lives in <code>~/.config/beets/config.yaml</code>: library path, directory format, plugins. The important habit is <code>beet write</code> — the database is a convenience, the files are the archive.</p>
+      </div>
+
+      <div class="card">
+        <h3>buku — <span data-i18n="s14.bu.h">bookmarks you own</span></h3>
+        <p data-i18n="s14.bu.p">A bookmark manager for the terminal with tags, full-text search and an HTML export. The database is one SQLite file, so it syncs, greps, and survives the death of any company.</p>
+        <pre>pipx install buku
+buku -a https://example.com/article python cli reading
+buku -s "sqlite"
+buku --export bookmarks.html
+buku -p          <span class="c"># print the database path</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>khal — <span data-i18n="s14.kh.h">the calendar as files</span></h3>
+        <p data-i18n="s14.kh.p">Reads and writes calendars stored as iCalendar files in a folder — the same format every phone and mail client understands. Paired with <code>vdirsyncer</code>, it keeps a local copy in sync with a CalDAV server, so the terminal and the pocket agree.</p>
+        <pre>pipx install khal vdirsyncer
+khal list
+khal list today 7d
+khal new tomorrow 18:00 19:00 Dinner with Ana
+ikhal          <span class="c"># interactive editor</span></pre>
+        <p data-i18n="s14.kh.after">The config is <code>~/.config/khal/config</code>: one section per calendar, a path, a colour. Start with a single local calendar before adding a server; syncing is a second problem.</p>
+      </div>
+
+      <div class="card">
+        <h3>todoman — <span data-i18n="s14.td.h">tasks as text, not as an app</span></h3>
+        <p data-i18n="s14.td.p">Manages tasks in the same iCalendar format, one file per task, with lists, due dates, priorities and a compact table view. Because the storage is plain text, a task can be edited with any editor and still be found by the tool.</p>
+        <pre>pipx install todoman
+todo list
+todo new "renew the passport" --due 2026-11-15 --list Personal
+todo done 3
+todo edit 3</pre>
+      </div>
+    </section>
+
+    <section id="servers">
+      <h2><span class="num">15</span><span data-i18n="s15.title">Serve and ship: docs, traffic, inspection</span></h2>
+      <p class="sub" data-i18n="s15.sub">
+        Two tools for putting something on the network, and one for understanding what a program
+        sends over it. Both are Python apps that install with a single command and run from a
+        folder, which is the whole aesthetic of this manual.
+      </p>
+
+      <div class="card">
+        <h3>MkDocs — <span data-i18n="s15.mk.h">Markdown in, site out</span></h3>
+        <p data-i18n="s15.mk.p">A documentation generator with a live-reload server: write Markdown, keep a small <code>mkdocs.yml</code>, and <code>mkdocs serve</code> shows the site while you type. <code>mkdocs build</code> produces static files that any host will serve. It is also a perfectly good blog engine if you stop at the first theme.</p>
+        <pre>pipx install mkdocs
+mkdocs new my-docs
+cd my-docs
+mkdocs serve            <span class="c"># http://127.0.0.1:8000</span>
+mkdocs build --strict
+mkdocs gh-deploy        <span class="c"># publish to GitHub Pages</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>mitmproxy — <span data-i18n="s15.mm.h">look at the traffic</span></h3>
+        <p data-i18n="s15.mm.p">An intercepting proxy with three front ends: an interactive console, a web UI, and a non-interactive mode for scripts. It is how you find out what an app actually sends — which headers, which endpoint, which payload — and how you replay a request until it behaves.</p>
+        <pre>pipx install mitmproxy
+mitmproxy               <span class="c"># console, on port 8080</span>
+mitmweb                 <span class="c"># browser UI</span>
+mitmdump -w session.flows
+mitmdump -nr session.flows --set flow_detail=1</pre>
+        <p data-i18n="s15.mm.after">To see HTTPS you install mitmproxy's CA certificate in the client you are testing — the project documents it per platform. Use it on your own devices and your own traffic: intercepting someone else's is not a debugging technique, it is an attack.</p>
+      </div>
+    </section>

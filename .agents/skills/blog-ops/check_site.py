@@ -419,6 +419,23 @@ def check_api(names):
         if not article.get("description"):
             problems.append("%s has no description in the API" % article.get("path"))
             break
+
+    # dates.json is what index.html actually fetches; it must not drift.
+    dates_path = os.path.join(DOCS, "api", "dates.json")
+    if not os.path.exists(dates_path):
+        problems.append("docs/api/dates.json is missing — run python3 .agents/skills/blog-ops/build_api.py")
+    else:
+        try:
+            with open(dates_path, encoding="utf-8") as fh:
+                date_map = json.load(fh)
+        except ValueError as exc:
+            problems.append("docs/api/dates.json does not parse: %s" % exc)
+        else:
+            dated = set((date_map.get("published") or {}).keys())
+            undated = sorted(got - dated)
+            if undated:
+                problems.append("dates.json has no instant for %d pages (e.g. %s) — rerun build_api.py"
+                                % (len(undated), ", ".join(undated[:4])))
     return problems
 
 

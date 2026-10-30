@@ -1,0 +1,244 @@
+    <section id="maintain">
+      <h2><span class="num">16</span><span data-i18n="s16.title">Keeping it clean for a year</span></h2>
+      <p class="sub" data-i18n="s16.sub">
+        An install is a decision you keep paying for: every tool has a version, a cache and a
+        folder. The maintenance is small if it is regular — five minutes a month, four commands,
+        and the machine never accumulates the kind of Python installation nobody dares touch.
+      </p>
+
+      <pre>pipx upgrade-all                 <span class="c"># every app, in its own venv</span>
+uv tool upgrade --all            <span class="c"># if you use uv</span>
+pip cache purge                  <span class="c"># wheels you will never need again</span>
+uv cache clean
+du -sh ~/.venvs/* | sort -h      <span class="c"># the environments you forgot</span></pre>
+
+      <div class="two">
+        <div class="card">
+          <h3 data-i18n="s16.a.h">Audit before you trust</h3>
+          <p data-i18n="s16.a.p">A tool's dependencies are code you run with your permissions. <code>pipx run pip-audit</code> checks an environment against the public vulnerability database, and <code>pipx list --include-injected</code> reminds you what you added by hand. Neither is a guarantee; both catch the obvious.</p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="s16.b.h">The rule of the second install</h3>
+          <p data-i18n="s16.b.p">Install a tool the first time because you need it. Install it the second time — after removing it, with a different method — because you now know how you use it. Everything installed "just in case" becomes the folder you skip when backing up.</p>
+        </div>
+      </div>
+
+      <h3 data-i18n="s16.c.h">What to back up, and what not to</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th data-i18n="t.path">Path</th><th data-i18n="t.backup">Back it up?</th><th data-i18n="t.why2">Why</th></tr>
+          </thead>
+          <tbody>
+            <tr><th><code>~/.config/toot</code>, <code>~/.config/khal</code>, <code>~/.config/beets</code></th><td data-i18n="s16.b1.a">Yes</td><td data-i18n="s16.b1.b">Configuration and tokens: half an hour to recreate, impossible to remember.</td></tr>
+            <tr><th><code>~/.local/share/buku</code>, the beets database</th><td data-i18n="s16.b2.a">Yes</td><td data-i18n="s16.b2.b">Your bookmarks and library index. Small files, years of decisions.</td></tr>
+            <tr><th><code>~/.local/pipx/venvs</code>, <code>~/.cache/uv</code></th><td data-i18n="s16.b3.a">No</td><td data-i18n="s16.b3.b">Rebuilt from a name and a version in one command.</td></tr>
+            <tr><th>Your media and your documents</th><td data-i18n="s16.b4.a">Twice</td><td data-i18n="s16.b4.b">The tools are replaceable. This is the part that is not.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="errors">
+      <h2><span class="num">17</span><span data-i18n="s17.title">The ten messages that stop an install</span></h2>
+      <p class="sub" data-i18n="s17.sub">
+        These are not ten problems. They are three: the wrong interpreter, a missing system
+        library, or a directory the shell cannot see. The table maps the message to the cause,
+        because the message is almost never the cause.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="t.message">Message</th>
+              <th data-i18n="t.cause">What it means</th>
+              <th data-i18n="t.fix">Fix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>error: externally-managed-environment</code></th>
+              <td data-i18n="s17.e1.b">You are installing into the distribution's Python, which PEP 668 now blocks on purpose.</td>
+              <td data-i18n="s17.e1.c">Create a venv, or use <code>pipx install</code>. Do not use <code>--break-system-packages</code>.</td>
+            </tr>
+            <tr>
+              <th><code>command not found: yt-dlp</code> after a successful install</th>
+              <td data-i18n="s17.e2.b">The launcher is in <code>~/.local/bin</code>, which is not on PATH in this shell.</td>
+              <td data-i18n="s17.e2.c">Run <code>pipx ensurepath</code>, open a new terminal, or <code>export PATH="$HOME/.local/bin:$PATH"</code> and <code>hash -r</code>.</td>
+            </tr>
+            <tr>
+              <th><code>ModuleNotFoundError: No module named 'X'</code></th>
+              <td data-i18n="s17.e3.b">The package is installed for a different interpreter than the one running the script.</td>
+              <td data-i18n="s17.e3.c">Compare <code>which python</code> with the install line, then reinstall using <code>python -m pip</code> from the same environment.</td>
+            </tr>
+            <tr>
+              <th><code>error: Microsoft Visual C++ 14.0 or greater is required</code></th>
+              <td data-i18n="s17.e4.b">No prebuilt wheel exists for this package and this Python on Windows.</td>
+              <td data-i18n="s17.e4.c">Try a newer Python (more wheels), use <code>--only-binary :all:</code> to see what is available, or install the Build Tools.</td>
+            </tr>
+            <tr>
+              <th><code>fatal error: Python.h: No such file or directory</code></th>
+              <td data-i18n="s17.e5.b">The package compiles a C extension and the Python development headers are missing.</td>
+              <td data-i18n="s17.e5.c"><code>sudo apt install python3-dev</code> (Debian), <code>python3-devel</code> (Fedora), then retry.</td>
+            </tr>
+            <tr>
+              <th><code>ERROR: No matching distribution found for X</code></th>
+              <td data-i18n="s17.e6.b">Usually a Python version below the project's floor, a misspelled name, or no network.</td>
+              <td data-i18n="s17.e6.c">Check the project's <code>Requires-Python</code> on PyPI, confirm the exact package name, then try a newer interpreter.</td>
+            </tr>
+            <tr>
+              <th><code>SSL: CERTIFICATE_VERIFY_FAILED</code></th>
+              <td data-i18n="s17.e7.b">The Python from python.org on macOS ships without a certificate bundle, or a proxy intercepts TLS.</td>
+              <td data-i18n="s17.e7.c">Run <code>Install Certificates.command</code> in the Python folder, or <code>pip install --upgrade certifi</code>. On a corporate proxy, set <code>REQUESTS_CA_BUNDLE</code>.</td>
+            </tr>
+            <tr>
+              <th><code>Killed</code> while building a package</th>
+              <td data-i18n="s17.e8.b">The compiler ran out of memory — common on a 1 GB VPS with a large source build.</td>
+              <td data-i18n="s17.e8.c">Add swap, or avoid compiling: prefer <code>--only-binary :all:</code>, or install the app where wheels exist for your platform.</td>
+            </tr>
+            <tr>
+              <th><code>Permission denied: /usr/lib/python3/dist-packages</code></th>
+              <td data-i18n="s17.e9.b">A previous <code>sudo pip install</code> left root-owned files, and now pip cannot clean up after itself.</td>
+              <td data-i18n="s17.e9.c">Stop using sudo for pip. Uninstall what you added with sudo, fix ownership if needed (<code>sudo chown -R $USER</code> on the user-writable parts), and move to venv or pipx.</td>
+            </tr>
+            <tr>
+              <th><code>Could not build wheels for X, which is required to install pyproject.toml-based projects</code></th>
+              <td data-i18n="s17.e10.b">The package needs a system library or a compiler the machine does not have — pango, ffmpeg, tesseract, libpq.</td>
+              <td data-i18n="s17.e10.c">Install the system package named in the error, then retry. The app chapters in this manual list which one each tool needs.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <strong data-i18n="s17.note.h">Read the last line, not the first</strong>
+        <p data-i18n="s17.note.p">pip prints a page of resolver output and the useful sentence is at the very end, after <code>ERROR:</code>. Copy the last ten lines, not the whole log, when you search for the message — and add the Python version and the operating system, because half the answers online are for a different pair.</p>
+      </div>
+    </section>
+
+    <section id="decide">
+      <h2><span class="num">18</span><span data-i18n="s18.title">Which method, for this thing, today</span></h2>
+      <p class="sub" data-i18n="s18.sub">
+        Three answers decide it: whether your code imports the package, how often you will run
+        the command, and whether you already have a fast installer. The tool below asks those three
+        and gives one answer, with the command that follows from it.
+      </p>
+
+      <div class="tool">
+        <div class="tool-head">
+          <h3 data-i18n="s18.tool.h">venv, pipx or uv?</h3>
+          <span class="badge" data-i18n="s18.tool.badge">one answer</span>
+        </div>
+        <div class="grid">
+          <label class="field"><span data-i18n="s18.q1">Will your own Python code import it?</span>
+            <select id="d-import">
+              <option value="no" data-i18n="s18.q1.no">No — I only run its command</option>
+              <option value="yes" data-i18n="s18.q1.yes">Yes — I need it as a library</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s18.q2">How often will you run it?</span>
+            <select id="d-often">
+              <option value="daily" data-i18n="s18.q2.daily">Daily or weekly</option>
+              <option value="sometimes" data-i18n="s18.q2.sometimes">Now and then</option>
+              <option value="once" data-i18n="s18.q2.once">Once, to try it</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="s18.q3">Already using uv?</span>
+            <select id="d-uv">
+              <option value="no" data-i18n="s18.q3.no">No, and I would rather not</option>
+              <option value="yes" data-i18n="s18.q3.yes">Yes</option>
+            </select>
+          </label>
+        </div>
+        <dl class="kv">
+          <dt data-i18n="s18.out.verdict">Verdict</dt><dd id="d-verdict">—</dd>
+          <dt data-i18n="s18.out.why">Because</dt><dd id="d-why">—</dd>
+        </dl>
+        <div class="cmd-block">
+          <button type="button" id="d-copy" data-i18n="s18.copy">Copy</button>
+          <pre id="d-out">—</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="sources">
+      <h2><span class="num">19</span><span data-i18n="s19.title">Sources, and what each one is good for</span></h2>
+      <p class="sub" data-i18n="s19.sub">
+        The manual is built from primary documentation, not from tutorials. Each link below is the
+        page that settles the question; every app in the table links to its own repository, which
+        is the authority on its own flags.
+      </p>
+
+      <ul class="sources">
+        <li>
+          <a href="https://docs.python.org/3/library/venv.html" target="_blank" rel="noopener">Python documentation — venv</a>
+          <span data-i18n="src.1">The reference for creating environments, including the activation scripts per shell and the --system-site-packages flag.</span>
+        </li>
+        <li>
+          <a href="https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/" target="_blank" rel="noopener">Python Packaging User Guide — installing packages</a>
+          <span data-i18n="src.2">The official walkthrough of venv plus pip, with the same commands on Windows and POSIX.</span>
+        </li>
+        <li>
+          <a href="https://peps.python.org/pep-0668/" target="_blank" rel="noopener">PEP 668 — externally managed environments</a>
+          <span data-i18n="src.3">Why the externally-managed-environment error exists, and what its authors expect you to do instead.</span>
+        </li>
+        <li>
+          <a href="https://pip.pypa.io/en/stable/user_guide/" target="_blank" rel="noopener">pip — user guide</a>
+          <span data-i18n="src.4">Requirements files, constraints, wheels and the options used in part 02.</span>
+        </li>
+        <li>
+          <a href="https://pipx.pypa.io/stable/" target="_blank" rel="noopener">pipx documentation</a>
+          <span data-i18n="src.5">The tool's own manual: inject, run, upgrade-all, and where environments are stored.</span>
+        </li>
+        <li>
+          <a href="https://docs.astral.sh/uv/" target="_blank" rel="noopener">uv documentation</a>
+          <span data-i18n="src.6">Installation, tool management and project environments, from the project that makes the binary.</span>
+        </li>
+        <li>
+          <a href="https://docs.astral.sh/uv/guides/tools/" target="_blank" rel="noopener">uv — tools guide</a>
+          <span data-i18n="src.7">The uv tool install and uvx behaviour described in part 04, with the equivalents to pipx.</span>
+        </li>
+        <li>
+          <a href="https://packaging.python.org/en/latest/tutorials/managing-dependencies/" target="_blank" rel="noopener">Python Packaging — managing dependencies</a>
+          <span data-i18n="src.8">When to freeze, when to pin and when a lock file is the honest answer.</span>
+        </li>
+        <li>
+          <a href="https://pypi.org/" target="_blank" rel="noopener">PyPI</a>
+          <span data-i18n="src.9">The version, the Python floor and the release date for every package named here.</span>
+        </li>
+        <li>
+          <a href="https://github.com/pypa/pipx" target="_blank" rel="noopener">pipx repository</a>
+          <span data-i18n="src.10">Issues and changelog; the place to check before assuming a bug is yours.</span>
+        </li>
+        <li>
+          <a href="https://tldr.sh/" target="_blank" rel="noopener">tldr pages</a>
+          <span data-i18n="src.11">The community project behind the examples the tldr client downloads.</span>
+        </li>
+        <li>
+          <a href="https://github.com/ihabunek/toot" target="_blank" rel="noopener">toot repository</a>
+          <span data-i18n="src.12">Mastodon client flags, the TUI, and the config format used for tokens.</span>
+        </li>
+      </ul>
+      <p class="sub" data-i18n="s19.after">Where a project's documentation and its README disagree, the README of the tagged release is what installs — the docs site can be a version ahead. That is not a defect of this manual, it is a property of software that ships weekly.</p>
+    </section>
+
+    <section id="glossary">
+      <h2><span class="num">20</span><span data-i18n="s20.title">Glossary</span></h2>
+      <p class="sub" data-i18n="s20.sub">Twelve words that explain most of the confusion in this manual.</p>
+      <dl class="glossary" id="glossary-list"></dl>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p data-i18n="footer.p">
+        Written from a Linux terminal and checked against PyPI and each project's repository on
+        the day of publication: thirty apps that installed, ran, and printed their own help. Where
+        the manual says "usually", it is because the system package names differ between
+        distributions — the project's README is the final word.
+      </p>
+      <a class="back" href="index.html"><span data-i18n="footer.back">&larr; Back to the archive</span></a>
+      <p class="cross" data-i18n="footer.cross">The rest of the series: <a href="hydroponics.html">Hydroponics at Home</a> for a garden without soil, and <a href="recycling.html">Nothing Is Garbage</a> for the second life of everything the house throws away.</p>
+    </div>
+  </footer>

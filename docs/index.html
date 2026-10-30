@@ -2564,9 +2564,11 @@ width: min(1120px, calc(100% - 9rem));
   "use strict";
 
   // Publication dates are not stored in this page: they come from git, via the
-  // generated API (docs/api/index.json, built by
+  // generated API (docs/api/dates.json, built by
   // .agents/skills/blog-ops/build_api.py). One fetch, one source of truth.
-  var API_URL = "./api/index.json";
+  // dates.json carries only name -> instant; the full index is fifteen times
+  // bigger and this page would use one field of it.
+  var API_URL = "./api/dates.json";
 
   // Keep the archive self-organising: categories alphabetically, then each
   // publication inside its category. This runs on every load, so a link added
@@ -3059,10 +3061,9 @@ width: min(1120px, calc(100% - 9rem));
       })
       .then(function (api) {
         var changed = false;
-        var articles = (api && api.articles) || [];
-        articles.forEach(function (article) {
-          var file = article.path || (article.slug ? article.slug + ".html" : "index.html");
-          var stamp = article.published_at || article.published;
+        var published = (api && api.published) || {};
+        Object.keys(published).forEach(function (file) {
+          var stamp = published[file];
           if (!file || !stamp || dates[file] === stamp) {
             return;
           }

@@ -22,8 +22,9 @@ chunks — plus the scripts that regenerate them.
   `backups/firebase-rules.txt`; what was broken and how it was fixed in
   `backups/comments-login-failure.md`; how to add back Facebook or GitHub in
   `backups/setup-facebook-github.md`.
-- **A static JSON API** — `docs/api/index.json` (metadata and a chunk manifest) and
-  `docs/api/text/*.json` (article text, 14 chunks). Built by
+- **A static JSON API** — `docs/api/index.json` (metadata and a chunk manifest),
+  `docs/api/dates.json` (name → publication instant, 24 KB, what `index.html` loads)
+  and `docs/api/text/*.json` (article text, 14 chunks). Built by
   `.agents/skills/blog-ops/build_api.py`, read by
   `docs/api.js`.
 - **Shared styling** — `docs/article.css`, `docs/index.css`, `docs/style.css`.
@@ -187,9 +188,11 @@ page's JSON-LD come from git — the first commit that touched the file and the 
 git log -1 --format=%ad --date=short -- docs/Page.html
 ```
 
-There is no `dates.json` and no date object inside `index.html`: the home page reads
-`published_at` from `docs/api/index.json` at load time, so the generated API is the only
-copy of the dates the browser sees.
+There is no date object inside `index.html`: the home page fetches `docs/api/dates.json`
+(24 KB, `name → published_at`) and uses it for the date badges and the ordering of
+"Last 5 publications". The full `docs/api/index.json` (362 KB) is for `docs/api.js` and
+the JSON consumers, not for the home page. Either way the generated API is the only copy
+of the dates the browser sees.
 
 Because that is a `fetch`, the home page needs to be served over HTTP: opened from disk
 (`file://`) the request fails and the archive shows no dates.

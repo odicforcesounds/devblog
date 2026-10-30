@@ -1,0 +1,195 @@
+    <section id="network">
+      <h2><span class="num">12</span><span data-i18n="s12.title">The network, measured rather than guessed</span></h2>
+      <p class="sub" data-i18n="s12.sub">
+        <strong>gping</strong> draws latency over time, <strong>trippy</strong> shows where the
+        packets stop, and <strong>oha</strong> measures what a server does under load. Three
+        answers to three different questions, and all three are better than the tool they replace
+        for the simple reason that they keep history instead of printing one number.
+      </p>
+
+      <div class="card">
+        <h3>gping — <span data-i18n="s12.gp.h">ping with a graph</span></h3>
+        <p data-i18n="s12.gp.p">The same ICMP request, plotted over time, with several hosts on the same axes. A latency problem is almost never visible in one number and is obvious in a shape: the periodic spike every sixty seconds is a cron job, the sawtooth is bufferbloat, the flat line at 300 ms is a route you should not be taking.</p>
+        <pre>cargo install --locked gping
+
+gping 1.1.1.1
+gping google.com cloudflare.com     <span class="c"># several hosts, one chart</span>
+gping --simple-graphics 8.8.8.8     <span class="c"># for a limited terminal</span>
+gping -n 200 1.1.1.1                <span class="c"># history depth</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>trippy — <span data-i18n="s12.tr.h">traceroute, live</span></h3>
+        <p data-i18n="s12.tr.p">A traceroute that keeps probing while you watch: each hop shows its latency distribution, packet loss per hop, and a map of where the loss begins. That last part is the whole point — a traceroute tells you the hops, and this tells you which hop is actually dropping packets rather than inheriting the loss from the one before it.</p>
+        <pre>cargo install --locked trippy        <span class="c"># binary: trip</span>
+
+sudo trip example.com
+sudo trip -u example.com            <span class="c"># UDP instead of ICMP</span>
+sudo trip --dns-resolve-method cloudflare
+sudo setcap cap_net_raw,cap_net_admin+eip ~/.cargo/bin/trip</pre>
+        <p data-i18n="s12.tr.after">Raw sockets are the reason for <code>sudo</code>, and the capability is the reason you only need it once. On macOS the tool needs to run as root as well; there is no capability equivalent.</p>
+      </div>
+
+      <div class="card">
+        <h3>oha — <span data-i18n="s12.oh.h">load, with a live histogram</span></h3>
+        <p data-i18n="s12.oh.p">An HTTP load generator with a terminal interface that updates while the test runs: requests per second, latency percentiles, status codes, and a histogram that shows whether the tail is a tail or a cliff. It can hold a connection open, send a JSON body, follow redirects, and stop on a duration instead of a count — which is how you reproduce a real traffic shape.</p>
+        <pre>cargo install --locked oha
+
+oha -n 1000 -c 50 https://example.com
+oha -z 30s -c 20 https://example.com/health
+oha --no-tui -n 200 -c 10 https://example.com | tail -20
+oha -m POST -H 'content-type: application/json' \
+    -d '{"id":1}' https://example.com/api/items
+oha --latency-correction -q 50 -n 500 https://example.com</pre>
+        <p data-i18n="s12.oh.after">Point it at something you own, on a network you are allowed to load. A load generator is indistinguishable from an attack from the other side of the wire, and "it was only a thousand requests" is not a defence anyone accepts twice.</p>
+      </div>
+    </section>
+
+    <section id="tasks">
+      <h2><span class="num">13</span><span data-i18n="s13.title">Tasks, watching, and the shortcut that skips compiling</span></h2>
+      <p class="sub" data-i18n="s13.sub">
+        <strong>just</strong> runs the commands you keep forgetting, <strong>watchexec</strong> runs
+        them when a file changes, and <strong>cargo-binstall</strong> downloads a binary instead of
+        building one. The third is not a task tool, but it belongs here: it is how you install the
+        other two in four seconds.
+      </p>
+
+      <div class="card">
+        <h3>just — <span data-i18n="s13.ju.h">a makefile without the make</span></h3>
+        <p data-i18n="s13.ju.p">Recipes with names, dependencies, arguments and no tab-versus-space argument. It is not a build system and does not pretend to be: it does not check timestamps, so a recipe runs when you ask. That limitation is why a <code>justfile</code> usually sits beside cargo rather than replacing it — <code>just test</code> expands to the three commands you would otherwise look up.</p>
+        <pre>cargo install --locked just
+
+<span class="c"># justfile</span>
+default: build
+
+build:
+    cargo build --release
+
+test *args:
+    cargo nextest run {{args}}
+
+fmt:
+    cargo fmt --all
+    cargo clippy --all-targets -- -D warnings
+
+<span class="c"># then</span>
+just --list
+just test --no-capture
+just --choose                       <span class="c"># fuzzy pick a recipe</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>watchexec — <span class="data-i18n" style="display:none">x</span><span data-i18n="s13.wx.h">run it again when a file changes</span></h3>
+        <p data-i18n="s13.wx.p">A general-purpose file watcher: it runs a command, watches a set of paths, and restarts the command when something changes. It knows about gitignore, debounces editor save storms, and can restart the process group on change — which is what makes it usable for a server rather than only for a test run.</p>
+        <pre>cargo install --locked watchexec-cli        <span class="c"># binary: watchexec</span>
+
+watchexec -e rs,toml -- cargo test
+watchexec -w src -c -- cargo run
+watchexec -r -e py -- python app.py          <span class="c"># restart on change</span>
+watchexec --shell=bash -- 'echo changed: $WATCHEXEC_COMMON_PATH'</pre>
+      </div>
+
+      <div class="card">
+        <h3>cargo-binstall — <span data-i18n="s13.bi.h">the binary the release already built</span></h3>
+        <p data-i18n="s13.bi.p">Most of the projects in this manual publish prebuilt binaries on their GitHub releases. binstall looks for the one matching your platform and installs it, falling back to <code>cargo install</code> when there is none — with the same version resolution, the same destination, and the same <code>--locked</code> discipline. It is the single biggest quality-of-life improvement in this ecosystem, and it is itself a Rust binary.</p>
+        <pre>cargo install --locked cargo-binstall
+cargo binstall ripgrep
+cargo binstall --no-confirm zellij
+cargo binstall --strategies crate-meta-data ripgrep
+cargo binstall --version 15.2.0 ripgrep</pre>
+        <p data-i18n="s13.bi.after">The fallback is the important part: a project without release artefacts still installs, only slowly. That means binstall is safe to alias over the whole workflow — <code>cargo binstall</code> first, and let it decide.</p>
+      </div>
+    </section>
+
+    <section id="cargo">
+      <h2><span class="num">14</span><span data-i18n="s14.title">Three subcommands that make a Rust project defensible</span></h2>
+      <p class="sub" data-i18n="s14.sub">
+        <strong>cargo-nextest</strong> runs tests faster and reports them better,
+        <strong>cargo-audit</strong> checks the dependency tree against the vulnerability database,
+        and <strong>cargo-deny</strong> enforces the policies a team actually agreed on. They are
+        subcommands, not separate tools: installed once, they extend the <code>cargo</code> you
+        already type.
+      </p>
+
+      <div class="card">
+        <h3>cargo-nextest — <span data-i18n="s14.nt.h">a test runner with a queue</span></h3>
+        <p data-i18n="s14.nt.p">It runs each test binary's tests in a separate process, in parallel, with per-test timeouts and retries, then prints a summary grouped by outcome instead of a scroll of dots. The practical difference is on a suite of a few hundred tests: <code>cargo test</code> takes a minute and hides which one is slow; <code>cargo nextest run</code> takes twenty seconds and names it.</p>
+        <pre>cargo install --locked cargo-nextest
+
+cargo nextest run
+cargo nextest run --no-capture
+cargo nextest run --retries 2 -E 'test(flaky)'
+cargo nextest list -T junit &gt; report.xml
+cargo nextest run --profile ci</pre>
+        <p data-i18n="s14.nt.after">One difference to know before you switch: nextest does not run doctests, because they need the compiler rather than a test binary. The CI recipe is both — <code>cargo nextest run</code> and <code>cargo test --doc</code>.</p>
+      </div>
+
+      <div class="card">
+        <h3>cargo-audit — <span data-i18n="s14.au.h">the advisories, against your lock file</span></h3>
+        <p data-i18n="s14.au.p">It reads <code>Cargo.lock</code>, compares every crate and version against the RustSec advisory database, and exits non-zero when something matches. Because it works on the lock file it can run in CI before anything is built, which is the cheapest possible place to find out that a dependency you added last week has a published CVE.</p>
+        <pre>cargo install --locked cargo-audit
+
+cargo audit
+cargo audit --json | jq '.vulnerabilities.count'
+cargo audit --deny warnings
+cargo audit fix --dry-run           <span class="c"># what it would bump</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>cargo-deny — <span class="data-i18n="s14.dn.h">licences, bans, sources, advisories</span></h3>
+        <p data-i18n="s14.dn.p">Four checks in one configuration file: which licences are allowed, which crates are banned or pinned to one version, which registries and git sources are trusted, and which advisories apply. It is the tool that makes an audit trail out of a dependency tree, and the reason a company can answer "what is in this binary" without a spreadsheet.</p>
+        <pre>cargo install --locked cargo-deny
+
+cargo deny init                     <span class="c"># writes deny.toml</span>
+cargo deny check
+cargo deny check licenses bans
+cargo deny check advisories</pre>
+      </div>
+    </section>
+
+    <section id="git">
+      <h2><span class="num">15</span><span data-i18n="s15.title">Git, changelogs, and spelling</span></h2>
+      <p class="sub" data-i18n="s15.sub">
+        <strong>delta</strong> makes a diff readable, <strong>git-cliff</strong> turns commit
+        messages into a changelog, and <strong>typos</strong> finds the spelling mistakes in
+        identifiers and comments that a compiler cannot see. Between them they cover the three
+        things that rot in a repository nobody is paid to maintain.
+      </p>
+
+      <div class="card">
+        <h3>delta — <span data-i18n="s15.dt.h">a diff with a sense of structure</span></h3>
+        <p data-i18n="s15.dt.p">Side-by-side or unified, syntax-highlighted by language, with line numbers in both columns and moved lines detected as moves rather than as a deletion plus an addition. It installs as a pager, so it improves every command that produces a diff — including the ones you did not know produced one.</p>
+        <pre>cargo install --locked git-delta        <span class="c"># binary: delta</span>
+
+git config --global core.pager delta
+git config --global interactive.diffFilter 'delta --color-only'
+git config --global delta.navigate true
+git config --global merge.conflictStyle zdiff3
+
+delta a.txt b.txt                   <span class="c"># two files, no git</span>
+git diff --stat                    <span class="c"># now readable by default</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>git-cliff — <span data-i18n="s15.gc.h">a changelog from the commits you wrote</span></h3>
+        <p data-i18n="s15.gc.p">It parses conventional commits, groups them by type, links the pull requests and authors, and renders a changelog from a template you can edit. The section of a release that nobody enjoys writing becomes a command in the release workflow, and the result is consistent because it is generated rather than remembered.</p>
+        <pre>cargo install --locked git-cliff
+
+git cliff -o CHANGELOG.md
+git cliff --unreleased --tag v0.4.0 -o CHANGELOG.md
+git cliff v0.3.0..v0.4.0 --strip header
+git cliff --latest --body | head -40</pre>
+      </div>
+
+      <div class="card">
+        <h3>typos — <span data-i18n="s15.ty.h">spelling, for code</span></h3>
+        <p data-i18n="s15.ty.p">It checks identifiers, comments, strings and documentation for misspellings, using a dictionary of common mistakes in source code rather than a general English one — so <code>ba</code>, <code>ser</code> and <code>nd</code> are not flagged, and <code>recieve</code> is. Corrections are suggested as a diff, and <code>-w</code> applies them after you have looked.</p>
+        <pre>cargo install --locked typos-cli        <span class="c"># binary: typos</span>
+
+typos
+typos -w                            <span class="c"># write the corrections</span>
+typos --diff                        <span class="c"># as a patch, for review</span>
+typos src/ docs/
+typos --format brief</pre>
+      </div>
+    </section>

@@ -1,0 +1,187 @@
+    <section id="apps">
+      <h2><span class="num">07</span><span data-i18n="s7.title">Thirty apps, and what each one replaces</span></h2>
+      <p class="sub" data-i18n="s7.sub">
+        Every entry below is a real repository, installable today with one command, and useful
+        without writing code. The table is the manual's index: filter it by family or type a word,
+        and the install column is the string you give pipx or uv.
+      </p>
+
+      <div class="tool">
+        <div class="tool-head">
+          <h3 data-i18n="s7.tool.h">Find an app</h3>
+          <span class="badge" id="app-count">30</span>
+        </div>
+        <label class="field">
+          <span data-i18n="s7.search">Search by name, task or package</span>
+          <input class="search" id="app-search" type="search" placeholder="mastodon, pdf, sqlite, monitor…" autocomplete="off">
+        </label>
+        <div class="chips" id="app-chips" role="group" aria-label="Families"></div>
+        <div class="table-wrap scroll">
+          <table class="apps-table">
+            <thead>
+              <tr>
+                <th data-i18n="t.app">App</th>
+                <th data-i18n="t.what">What it does</th>
+                <th data-i18n="t.install">Install</th>
+                <th data-i18n="t.command">Command</th>
+              </tr>
+            </thead>
+            <tbody id="apps-body"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="apps-empty" hidden data-i18n="s7.empty">Nothing matches that word. Try "pdf", "sqlite", "video" or clear the filter.</p>
+      </div>
+
+      <div class="note">
+        <strong data-i18n="s7.note.h">How the list was chosen</strong>
+        <p data-i18n="s7.note.p">Only projects that are maintained (a release or a commit in the last year), that install from PyPI or their own repo with a documented command, and that do something a shell user does repeatedly. The version and the Python floor are not frozen here on purpose: they change, and the repository is the authority. Every name in the table links to its own source.</p>
+      </div>
+    </section>
+
+    <section id="social">
+      <h2><span class="num">08</span><span data-i18n="s8.title">Posting: Mastodon, APIs and the web, from the prompt</span></h2>
+      <p class="sub" data-i18n="s8.sub">
+        Two of the most useful tools in this manual do the thing a browser tab does, without the
+        tab: <strong>toot</strong> speaks the Mastodon API, and <strong>posting</strong> is a
+        terminal client for any HTTP API. Between them, publishing and testing an endpoint stop
+        being a reason to open a window.
+      </p>
+
+      <div class="card">
+        <h3>toot — <span data-i18n="s8.toot.h">a Mastodon client in the terminal</span></h3>
+        <p data-i18n="s8.toot.p">A Python CLI for Mastodon and compatible servers (Pleroma, GoToSocial, Akkoma). It authenticates with an app token stored in your config, so the password never appears in a command line. It posts, threads, uploads media, reads timelines and can run scheduled posts through cron.</p>
+        <pre>pipx install toot
+toot login                      <span class="c"># choose the instance, paste the code</span>
+toot post "first post from the shell"
+toot post "a thread" --visibility unlisted
+toot tui                        <span class="c"># a full terminal interface</span>
+toot timeline --local --num 20
+toot upload photo.jpg --description "a caption for screen readers"</pre>
+        <p data-i18n="s8.toot.after">The TUI is the part people miss: <code>toot tui</code> gives a keyboard-driven timeline with replies and boosts, useful on a server over SSH. For automation, <code>toot post</code> returns the new status URL, so a script can chain it.</p>
+      </div>
+
+      <div class="card">
+        <h3>posting — <span data-i18n="s8.post.h">an API client that lives in the terminal</span></h3>
+        <p data-i18n="s8.post.p">Postman, for people who live in a shell: requests stored as YAML files in a collection, environments with variables, syntax highlighting, and keyboard-only editing. It is the fastest way to exercise an endpoint you are building, and the collection is a text file you can commit.</p>
+        <pre>pipx install posting     <span class="c"># the PyPI package is Python; the repo now also ships a Go build</span>
+posting                  <span class="c"># opens the TUI, current folder as collection</span>
+posting --collection ~/api/requests
+posting request.posting.yaml --environment dev</pre>
+        <p data-i18n="s8.post.after">A request file is a small YAML document — method, URL, headers, body — so it reviews in a diff and travels with the repository. The Python distribution on PyPI is what pipx installs; the project's README documents the newer standalone binary if you prefer that route.</p>
+      </div>
+
+      <div class="card">
+        <h3>HTTPie — <span data-i18n="s8.http.h">the readable curl</span></h3>
+        <p data-i18n="s8.http.p">curl is always there and always cryptic. HTTPie turns a request into something closer to a sentence: JSON is assumed, headers are coloured, and the response is formatted instead of concatenated. It is the tool to reach for when you are debugging an API by hand.</p>
+        <pre>pipx install httpie
+http GET https://api.github.com/repos/pypa/pipx
+http POST https://httpbin.org/post name=oscar tags:= '["shell","python"]'
+http --auth user:token GET https://api.example.com/me
+http --download https://example.com/file.tar.gz
+https example.com          <span class="c"># the same, over TLS, in three letters</span></pre>
+      </div>
+
+      <div class="note">
+        <strong data-i18n="s8.note.h">Tokens are files, not arguments</strong>
+        <p data-i18n="s8.note.p">A token typed after a command is stored in your shell history, and shell history is world-readable more often than people think. <code>toot login</code> keeps its token in <code>~/.config/toot/config.json</code>; for HTTPie, put the credential in a session (<code>--session=api</code>) or read it from an environment variable. If you have already leaked one, revoke it — do not edit the history and hope.</p>
+      </div>
+    </section>
+
+    <section id="media">
+      <h2><span class="num">09</span><span data-i18n="s9.title">Media: download, archive, convert</span></h2>
+      <p class="sub" data-i18n="s9.sub">
+        The most-installed command-line Python apps in the world are media downloaders, and for
+        good reason: they do one job better than any website, they are scriptable, and they keep
+        working after the site changes. All four here want <strong>ffmpeg</strong> installed by the
+        system, not by pip — that is the single most common reason a download "succeeds" and
+        produces no file.
+      </p>
+
+      <pre><span class="c"># the system dependency all four share</span>
+sudo apt install ffmpeg        <span class="c"># Debian / Ubuntu</span>
+sudo dnf install ffmpeg        <span class="c"># Fedora (RPM Fusion)</span>
+brew install ffmpeg            <span class="c"># macOS</span></pre>
+
+      <div class="card">
+        <h3>yt-dlp — <span data-i18n="s9.yt.h">the reference implementation of "download that"</span></h3>
+        <p data-i18n="s9.yt.p">A fork of youtube-dl that is updated weekly and supports well over a thousand sites. Formats, subtitles, chapters, playlists, archives that skip what you already have, and a config file for the options you always pass.</p>
+        <pre>pipx install yt-dlp
+yt-dlp "https://example.com/video"
+yt-dlp -f "bestvideo[height&lt;=1080]+bestaudio/best" URL
+yt-dlp -x --audio-format mp3 URL
+yt-dlp --write-subs --sub-langs "pt.*,en.*" URL
+yt-dlp --download-archive seen.txt URL     <span class="c"># a channel, once, cleanly</span></pre>
+        <p data-i18n="s9.yt.after">The <code>--download-archive</code> flag is the one that turns a downloader into a subscription: run it from cron, and each pass fetches only what is new. Keep the archive file with the media, not in <code>/tmp</code>.</p>
+      </div>
+
+      <div class="card">
+        <h3>gallery-dl — <span data-i18n="s9.gal.h">image galleries, not videos</span></h3>
+        <p data-i18n="s9.gal.p">The companion tool for the sites yt-dlp does not cover: image boards, artist pages, manga readers, photo feeds. It preserves the post metadata as JSON next to the files, which makes an archive searchable years later.</p>
+        <pre>pipx install gallery-dl
+gallery-dl "https://example.com/artist"
+gallery-dl --range 1-50 "https://example.com/gallery"
+gallery-dl -g URL                <span class="c"># print the URLs instead of downloading</span>
+gallery-dl --write-metadata URL  <span class="c"># JSON sidecars</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>streamlink — <span data-i18n="s9.sl.h">live streams into a player</span></h3>
+        <p data-i18n="s9.sl.p">Takes a page URL that is playing a stream and hands the stream itself to mpv or VLC, at a quality you choose. No browser, no ads, no compositor. It also records, which is the difference between "I watched it" and "I have it".</p>
+        <pre>pipx install streamlink
+streamlink URL best              <span class="c"># default player</span>
+streamlink --player mpv URL 720p
+streamlink --output stream.ts URL best</pre>
+      </div>
+
+      <div class="card">
+        <h3>spotdl — <span data-i18n="s9.spot.h">playlists to files</span></h3>
+        <p data-i18n="s9.spot.p">Reads a Spotify playlist or track, finds a matching audio source, and writes tagged files with cover art. Treat it as a tool for material you already have the right to keep: it matches audio from public sources, and what it writes is your responsibility, not the tool's.</p>
+        <pre>pipx install spotdl
+spotdl "https://open.spotify.com/playlist/..."
+spotdl URL --output "{artist}/{album}/{title}.{output-ext}"
+spotdl --list tracks.txt</pre>
+      </div>
+
+      <div class="danger">
+        <strong data-i18n="s9.warn.h">The legal line, in one paragraph</strong>
+        <p data-i18n="s9.warn.p">Downloading is not the same as owning. Copyright applies to the file, the site's terms apply to the access, and neither is suspended because the tool is open source. Keep what you have the right to keep, archive your own uploads, use the tools for research and accessibility where the law allows it, and do not build a business on redistributing other people's work. The four projects above document their limits; read them once.</p>
+      </div>
+    </section>
+
+    <section id="machine">
+      <h2><span class="num">10</span><span data-i18n="s10.title">Watching the machine: CPU, GPU, and why it is slow</span></h2>
+      <p class="sub" data-i18n="s10.sub">
+        Three tools, three questions. What is the whole machine doing right now? Is the GPU the
+        bottleneck? And which line of my Python is spending the time? None of them needs root, and
+        all three produce output you can paste into a bug report.
+      </p>
+
+      <div class="card">
+        <h3>Glances — <span data-i18n="s10.gl.h">the whole machine, on one screen</span></h3>
+        <p data-i18n="s10.gl.p">CPU, memory, disks, network, sensors, containers and the top processes, in a layout that fits an 80-column terminal and refreshes itself. The same process can serve that view over HTTP, which makes it a monitoring dashboard for a headless box with no agent to install.</p>
+        <pre>pipx install glances
+glances                          <span class="c"># interactive</span>
+glances -w                       <span class="c"># web mode: open http://localhost:61208</span>
+glances -t 2                     <span class="c"># refresh every two seconds</span>
+glances --export csv --export-csv-file load.csv</pre>
+      </div>
+
+      <div class="card">
+        <h3>Nvitop — <span data-i18n="s10.nv.h">the GPU answer</span></h3>
+        <p data-i18n="s10.nv.p">An NVIDIA GPU monitor that shows per-process memory, utilisation and temperature, with the tree of processes that own each card — the thing <code>nvidia-smi</code> almost does. It installs as a Python app but talks to the driver directly; no CUDA toolkit is required, only a working driver.</p>
+        <pre>pipx install nvitop
+nvitop                           <span class="c"># full monitor</span>
+nvitop -m                        <span class="c"># compact, one line per GPU</span>
+nvitop --once                    <span class="c"># print and exit, for scripts</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>pyinstrument — <span data-i18n="s10.py.h">a profiler you can read</span></h3>
+        <p data-i18n="s10.py.p">Statistical profiler with a human-first report: it shows the call stack as a tree of time, not a wall of numbers. Run it on a script, or attach it to a running process, and export an HTML file you can open later.</p>
+        <pre>pipx install pyinstrument
+pyinstrument script.py
+pyinstrument -r html -o profile.html script.py
+pyinstrument -m mypackage.cli</pre>
+        <p data-i18n="s10.py.after">For a web request that feels slow, the useful pattern is to wrap the handler rather than the server: profile the function, not the framework. And profile twice — a single run is an anecdote, two runs with the same shape are a measurement.</p>
+      </div>
+    </section>

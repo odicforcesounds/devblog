@@ -56,13 +56,16 @@ PUBLISHED_OVERRIDES = {"OneHumanSong.html": "2026-10-16T22:49:01+01:00"}
 | --- | --- | --- |
 | Page `<head>` JSON-LD | `datePublished`, `dateModified` | the page itself (`enrich_schema.py` can rewrite the graph) |
 | `docs/api/index.json` | `published`, `modified`, `published_at`, `modified_at` | `.agents/skills/blog-ops/build_api.py` from git (`--diff-filter=A` / `-1`) |
+| `docs/api/dates.json` | `published` map: name → instant | same script, same dates, compact form |
 | `docs/sitemap.xml` | `lastmod` | `.agents/skills/blog-ops/build_sitemap.py` |
-| `docs/index.html` | `published_at` read from the API | the page itself, at load time (no date object is stored in it) |
+| `docs/index.html` | `published_at` read from `dates.json` | the page itself, at load time (no date object is stored in it) |
 
-`index.html` keeps no dates of its own: it fetches `./api/index.json` and uses
-`published_at` for the "Last 5 publications" block and the date badges. A page missing
-from the API simply has no badge — the honest fix is deriving the date from history, not
-typing today's clock.
+`index.html` keeps no dates of its own: it fetches `./api/dates.json` and uses the
+`published` map for the "Last 5 publications" block and the date badges. A page missing
+from that map simply has no badge — the honest fix is deriving the date from history, not
+typing today's clock. Both JSON files come from the same `git_dates()` run, so they cannot
+disagree; `check_site.py` fails if `dates.json` has no instant for a page listed in
+`index.json`.
 
 ## Procedure for a wrong date
 
@@ -85,7 +88,9 @@ ld = [json.loads(b) for b in re.findall(r'<script type="application/ld\+json">(.
 print("page:", ld[0]["@graph"][0]["datePublished"], ld[0]["@graph"][0]["dateModified"])
 api = json.load(open("docs/api/index.json"))
 slug = page.split("/")[-1][:-5]
-print("api :", [(a["published_at"], a["modified_at"]) for a in api["articles"] if a["slug"] == slug])
+print("api  :", [(a["published_at"], a["modified_at"]) for a in api["articles"] if a["slug"] == slug])
+dates = json.load(open("docs/api/dates.json"))["published"]
+print("dates:", dates.get(page.split("/")[-1]))
 PY
 ```
 

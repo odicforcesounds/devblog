@@ -1,0 +1,303 @@
+    <section id="apps">
+      <h2><span class="num">07</span><span data-i18n="s7.title">Thirty binaries, and the Go each one needs</span></h2>
+      <p class="sub" data-i18n="s7.sub">
+        Every row is a real repository, its module path as published today, the version this
+        manual verified, and the Go version its module file asks for. The install column is the
+        exact string to paste; the command column is the binary you get.
+      </p>
+
+      <div class="tool">
+        <div class="tool-head">
+          <h3 data-i18n="s7.tool.h">Find a tool</h3>
+          <span class="badge" id="app-count">30</span>
+        </div>
+        <label class="field">
+          <span data-i18n="s7.search">Search by name, task or module</span>
+          <input class="search" id="app-search" type="search" placeholder="git, yaml, container, backup…" autocomplete="off">
+        </label>
+        <div class="chips" id="app-chips" role="group" aria-label="Families"></div>
+        <div class="table-wrap scroll">
+          <table class="apps-table">
+            <thead>
+              <tr>
+                <th data-i18n="t.app">Tool</th>
+                <th data-i18n="t.what">What it does</th>
+                <th data-i18n="t.install">Install</th>
+                <th data-i18n="t.command">Command</th>
+                <th data-i18n="t.go">Go</th>
+              </tr>
+            </thead>
+            <tbody id="apps-body"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="apps-empty" hidden data-i18n="s7.empty">Nothing matches that word. Try "yaml", "git", "backup" or clear the filter.</p>
+      </div>
+
+      <div class="note">
+        <strong data-i18n="s7.note.h">How the list was checked</strong>
+        <p data-i18n="s7.note.p">Each module path was resolved through the public Go module proxy, which is the same service <code>go install</code> uses: the version shown is the newest tag on the day of publication, and the Go requirement comes from that version's own <code>go.mod</code>. Nothing here is quoted from a blog post. A tool that needs a newer toolchain than yours is not a problem — see part 03 — and every project links to its own repository.</p>
+      </div>
+    </section>
+
+    <section id="shell">
+      <h2><span class="num">08</span><span data-i18n="s8.title">The shell itself: find, ask, load</span></h2>
+      <p class="sub" data-i18n="s8.sub">
+        Three tools that change how the prompt behaves rather than what it runs: <strong>fzf</strong>
+        turns any list into a searchable menu, <strong>gum</strong> gives shell scripts a usable
+        interface, and <strong>direnv</strong> loads a directory's environment when you enter it.
+      </p>
+
+      <div class="card">
+        <h3>fzf — <span data-i18n="s8.fzf.h">the fuzzy finder everything plugs into</span></h3>
+        <p data-i18n="s8.fzf.p">A general-purpose selector: it reads lines from stdin and gives back the one you picked. That is the whole program, which is why it appears inside editors, git workflows and history search. The key bindings are the part that changes your day: Ctrl+R for history, Ctrl+T for files, Alt+C to cd into a directory.</p>
+        <pre>go install github.com/junegunn/fzf@v0.74.5
+<span class="c"># key bindings and completion, bash / zsh / fish</span>
+eval "$(fzf --bash)"
+source &lt;(fzf --zsh)
+fzf --fish | source
+
+<span class="c"># anywhere a list exists</span>
+git ls-files | fzf
+vim "$(fzf)"
+fzf --preview 'head -40 {}'</pre>
+      </div>
+
+      <div class="card">
+        <h3>gum — <span data-i18n="s8.gum.h">a UI for shell scripts</span></h3>
+        <p data-i18n="s8.gum.p">Choose, confirm, input, filter, spin, style text. It is not a TUI framework; it is the six or seven primitives a script needs before it stops feeling like a script. A backup script that asks which disk, with an arrow key and a spinner, is a different object from one that takes an argument you have to remember.</p>
+        <pre>go install charm.land/gum/v2@latest
+gum choose "backup" "restore" "quit"
+gum confirm "Delete the old snapshots?" &amp;&amp; restic forget --prune
+name=$(gum input --placeholder "project name")
+gum spin --spinner dot --title "Compressing" -- tar czf out.tgz dir
+gum format -- "# Report" "generated $(date +%F)"</pre>
+      </div>
+
+      <div class="card">
+        <h3>direnv — <span data-i18n="s8.direnv.h">environment per directory</span></h3>
+        <p data-i18n="s8.direnv.p">Put an <code>.envrc</code> in a folder, approve it once, and the variables load when you cd in and unload when you leave. It is the tool that stops "export API_URL=…" from being pasted into every terminal, and it works for Go projects exactly as it does for anything else: <code>export GOPATH=$PWD/.gopath</code>, or a project-specific <code>GOFLAGS</code>.</p>
+        <pre>go install github.com/direnv/direnv/v2@latest
+eval "$(direnv hook bash)"     <span class="c"># or zsh / fish</span>
+
+<span class="c"># in the project folder, .envrc</span>
+export API_URL=http://localhost:8080
+export GOFLAGS=-mod=mod
+
+direnv allow
+<span class="c"># later, after editing .envrc</span>
+direnv reload</pre>
+        <p data-i18n="s8.direnv.after">Approval is a security feature, not a formality: an <code>.envrc</code> is executable shell, so a cloned repository cannot silently change your environment until you read it and allow it.</p>
+      </div>
+    </section>
+
+    <section id="git">
+      <h2><span class="num">09</span><span data-i18n="s9.title">Git, without the ceremony</span></h2>
+      <p class="sub" data-i18n="s9.sub">
+        <strong>lazygit</strong> is a keyboard interface to the commands you already know, and
+        <strong>gh</strong> is the GitHub API as a command. Between them, the two operations that
+        still need a browser — reviewing a diff hunk by hunk, and opening a pull request — stop
+        needing one.
+      </p>
+
+      <div class="card">
+        <h3>lazygit — <span data-i18n="s9.lg.h">stage, commit, rebase, resolve</span></h3>
+        <p data-i18n="s9.lg.p">Five panels: status, files, branches, commits, stash. Space stages a file or a hunk, <code>c</code> commits, <code>P</code> pushes, <code>?</code> lists every key. Conflict resolution is the part where it earns its place: the conflicted file opens in your editor with the markers, and the panel tracks what is left.</p>
+        <pre>go install github.com/jesseduffield/lazygit@v0.66.2
+lazygit
+<span class="c"># space stage · c commit · P push · p pull · ? help · q quit</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>gh — <span data-i18n="s9.gh.h">the GitHub CLI</span></h3>
+        <p data-i18n="s9.gh.p">Authenticates with a device code or a token, then treats repositories, issues, pull requests, releases and Actions as subcommands. <code>gh pr create --fill</code> is the one-liner that replaces a browser form; <code>gh run watch</code> is the one that replaces refreshing a tab.</p>
+        <pre>go install github.com/cli/cli/v2/cmd/gh@latest
+gh auth login
+gh repo clone owner/project
+gh pr create --fill --base main
+gh pr checks
+gh run watch
+gh release create v1.2.0 --generate-notes</pre>
+      </div>
+    </section>
+
+    <section id="containers">
+      <h2><span class="num">10</span><span data-i18n="s10.title">Containers: look inside, and look at the bill</span></h2>
+      <p class="sub" data-i18n="s10.sub">
+        Two dashboards and one microscope. <strong>lazydocker</strong> for a single machine's
+        containers and images, <strong>k9s</strong> for a cluster, and <strong>dive</strong> for the
+        question neither answers: why is this image 900 MB?
+      </p>
+
+      <div class="card">
+        <h3>lazydocker — <span data-i18n="s10.ld.h">docker compose, as a keyboard</span></h3>
+        <p data-i18n="s10.ld.p">Lists containers, services, images, volumes and logs, with the actions you actually take: restart, attach a shell, prune, view the compose file. It talks to the same Docker socket as the CLI, so nothing needs to be installed inside the containers.</p>
+        <pre>go install github.com/jesseduffield/lazydocker@latest
+lazydocker
+<span class="c"># r restart · s stop · d remove · l logs · e shell · ? help</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>k9s — <span data-i18n="s10.k9.h">a cluster in one screen</span></h3>
+        <p data-i18n="s10.k9.p">A terminal UI over kubectl: pods, deployments, services, events and logs, refreshed continuously, with a command bar for resources the menus do not cover. The details that matter are the two keys <code>l</code> for logs and <code>d</code> for describe, which is where most debugging happens.</p>
+        <pre>go install github.com/derailed/k9s@v0.51.0
+k9s
+<span class="c"># :pods  :ns  :ctx  :deploy  ·  l logs  d describe  y yaml</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>dive — <span data-i18n="s10.dive.h">every layer of an image</span></h3>
+        <p data-i18n="s10.dive.p">Shows what each Dockerfile instruction added or removed, with a score for wasted space and a file tree you can walk. It is the fastest way to find the 400 MB build cache someone forgot to delete, and it runs in CI with a failure threshold.</p>
+        <pre>go install github.com/wagoodman/dive@v0.13.1
+dive myimage:latest
+dive build -t myimage .
+CI=true dive myimage:latest        <span class="c"># non-interactive, for pipelines</span></pre>
+      </div>
+    </section>
+
+    <section id="docs">
+      <h2><span class="num">11</span><span data-i18n="s11.title">Documents and demonstrations</span></h2>
+      <p class="sub" data-i18n="s11.sub">
+        <strong>glow</strong> renders Markdown at the prompt, which is where most READMEs are first
+        read. <strong>VHS</strong> records a terminal session from a script, which is how a
+        demonstration stops being a screen recording with a mouse in it.
+      </p>
+
+      <div class="card">
+        <h3>glow — <span data-i18n="s11.gl.h">Markdown that looks like Markdown</span></h3>
+        <p data-i18n="s11.gl.p">Renders a file, a URL or a repository's README with headings, tables, lists and syntax highlighting, in the terminal or through a pager. It also creates and edits snippets, which makes it a small note system for people who never leave the shell.</p>
+        <pre>go install charm.land/glow/v3@latest
+glow README.md
+glow -p README.md                 <span class="c"># through a pager</span>
+glow github.com/charmbracelet/glow
+glow -s dark -w 100 notes.md</pre>
+      </div>
+
+      <div class="card">
+        <h3>VHS — <span data-i18n="s11.vhs.h">a terminal recording you can diff</span></h3>
+        <p data-i18n="s11.vhs.p">Writes a <code>.tape</code> file: the commands, the typing speed, the size, the font. Running it produces a GIF, MP4 or WebM that is reproducible — regenerate it when the interface changes instead of re-recording by hand. It needs <code>ttyd</code> and <code>ffmpeg</code> at run time.</p>
+        <pre>go install github.com/charmbracelet/vhs@v0.12.1
+<span class="c"># demo.tape</span>
+Output demo.gif
+Set FontSize 22
+Type "lazygit"
+Enter
+Sleep 2s
+<span class="c"># then</span>
+vhs demo.tape</pre>
+      </div>
+    </section>
+
+    <section id="build">
+      <h2><span class="num">12</span><span data-i18n="s12.title">Build, format, lint, debug, reload</span></h2>
+      <p class="sub" data-i18n="s12.sub">
+        Six tools that form a working Go setup, in the order a day uses them: a task runner, a
+        linter, two formatters, a live reload, and a debugger. All of them install the same way,
+        which is the point of this manual.
+      </p>
+
+      <div class="card">
+        <h3>Task — <span data-i18n="s12.task.h">a Makefile that is honest about being YAML</span></h3>
+        <p data-i18n="s12.task.p">Dependencies, checksums that skip unchanged work, cross-platform variables and no tab-versus-space war. A <code>Taskfile.yml</code> is readable by someone who has never used make, which is most of the reason to choose it for a project that others will clone.</p>
+        <pre>go install github.com/go-task/task/v3/cmd/task@latest
+<span class="c"># Taskfile.yml</span>
+version: '3'
+tasks:
+  build:
+    cmds:
+      - go build -o bin/app ./cmd/app
+  test:
+    cmds:
+      - go test ./...
+  lint:
+    deps: [build]
+    cmds:
+      - golangci-lint run
+<span class="c"># then</span>
+task --list
+task test</pre>
+      </div>
+
+      <div class="card">
+        <h3>golangci-lint — <span data-i18n="s12.gcl.h">one command, a hundred linters</span></h3>
+        <p data-i18n="s12.gcl.p">Runs the linters that agree with each other, in parallel, with one configuration file and one exit code. It is the standard answer to "which linter should I use" in Go, and version 2 added a formatter command so it can replace gofmt in the same pass.</p>
+        <pre>go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0
+golangci-lint run
+golangci-lint run --fix
+golangci-lint fmt
+golangci-lint linters | head</pre>
+      </div>
+
+      <div class="card">
+        <h3>gofumpt and shfmt — <span data-i18n="s12.fmt.h">formatting, settled</span></h3>
+        <p data-i18n="s12.fmt.p"><code>gofumpt</code> is gofmt with the rules the Go team would have added if compatibility had not stopped them: no empty lines at the start of a block, no unnecessary parentheses, grouped imports. <code>shfmt</code> does the same job for shell scripts, which is where formatting arguments usually survive longest.</p>
+        <pre>go install mvdan.cc/gofumpt@latest
+go install mvdan.cc/sh/v3/cmd/shfmt@latest
+
+gofumpt -l -w .
+shfmt -l -w scripts/
+shfmt -i 2 -ci -d deploy.sh</pre>
+      </div>
+
+      <div class="card">
+        <h3>Air — <span data-i18n="s12.air.h">restart on save</span></h3>
+        <p data-i18n="s12.air.p">Watches the project, rebuilds and restarts the binary when a Go file changes, and proxies the port so the browser reconnects. It is the development loop for a server, without a second terminal and without remembering which process to kill.</p>
+        <pre>go install github.com/air-verse/air@v1.67.4
+air init          <span class="c"># writes .air.toml</span>
+air
+<span class="c"># in .air.toml</span>
+<span class="c"># cmd = "go build -o ./tmp/main ./cmd/server"</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>Delve — <span data-i18n="s12.dlv.h">a real debugger</span></h3>
+        <p data-i18n="s12.dlv.p">Breakpoints, stepping, goroutine inspection and remote debugging, with a CLI that mirrors gdb's habits. <code>dlv debug</code> compiles with debug information and stops at your first breakpoint; <code>dlv test</code> does the same for a failing test, which is where it is most useful.</p>
+        <pre>go install github.com/go-delve/delve/cmd/dlv@v1.27.2
+dlv debug ./cmd/server
+<span class="c"># (dlv) break main.main</span>
+<span class="c"># (dlv) continue</span>
+<span class="c"># (dlv) next</span>
+<span class="c"># (dlv) print someVar</span>
+dlv test ./internal/store</pre>
+      </div>
+    </section>
+
+    <section id="data">
+      <h2><span class="num">13</span><span data-i18n="s13.title">Data: YAML, SQL and migrations</span></h2>
+      <p class="sub" data-i18n="s13.sub">
+        <strong>yq</strong> is jq for YAML and XML, <strong>sqlc</strong> turns SQL into type-safe
+        Go code, and <strong>goose</strong> runs the migrations that keep a schema honest. All three
+        are small, fast, and designed to sit in a pipeline.
+      </p>
+
+      <div class="card">
+        <h3>yq — <span data-i18n="s13.yq.h">jq's YAML-speaking sibling</span></h3>
+        <p data-i18n="s13.yq.p">Reads and writes YAML, JSON, XML, CSV and properties with the same expression language, including in-place edits that preserve comments and ordering. It is the tool that makes a Kubernetes manifest editable from a script without a templating engine.</p>
+        <pre>go install github.com/mikefarah/yq/v4@v4.54.1
+yq '.services.web.image' compose.yaml
+yq -i '.services.web.environment.MODE = "production"' compose.yaml
+yq -o=json '.' config.yaml
+yq '.[] | select(.age &gt; 30) | .name' people.yaml</pre>
+      </div>
+
+      <div class="card">
+        <h3>sqlc — <span data-i18n="s13.sqlc.h">SQL in, Go out</span></h3>
+        <p data-i18n="s13.sqlc.p">You write queries and a schema; it generates the Go functions and structs, checking the SQL against the schema at generation time. No ORM, no reflection at run time, no mismatch between the query and the type it returns.</p>
+        <pre>go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
+sqlc init
+sqlc generate
+sqlc vet
+sqlc compile</pre>
+      </div>
+
+      <div class="card">
+        <h3>goose — <span data-i18n="s13.goose.h">migrations that run anywhere</span></h3>
+        <p data-i18n="s13.goose.p">Versioned SQL (or Go) migrations with up, down and status, usable as a CLI or embedded as a library. It supports Postgres, MySQL, SQLite and more, and it records what it has applied in a table you can read.</p>
+        <pre>go install github.com/pressly/goose/v3/cmd/goose@v3.29.0
+goose create add_users sql
+export GOOSE_DRIVER=postgres
+export GOOSE_DBSTRING="postgres://localhost/app?sslmode=disable"
+goose status
+goose up
+goose down</pre>
+      </div>
+    </section>
