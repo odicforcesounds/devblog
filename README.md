@@ -9,7 +9,7 @@ chunks — plus the scripts that regenerate them.
 
 ## What this repository contains
 
-- **The archive** — 520 HTML files at the root of `docs/`: 517 articles, plus
+- **The archive** — 524 HTML files at the root of `docs/`: 521 articles, plus
   `index.html` (the landing page), `404.html` and `home.html` (a redirect stub kept for
   old links). The subject range is deliberately wide; see
   [Topics covered](#topics-covered).
@@ -23,7 +23,8 @@ chunks — plus the scripts that regenerate them.
   `backups/comments-login-failure.md`; how to add back Facebook or GitHub in
   `backups/setup-facebook-github.md`.
 - **A static JSON API** — `docs/api/index.json` (metadata and a chunk manifest) and
-  `docs/api/text/*.json` (article text, 13 chunks). Built by `build_api.py`, read by
+  `docs/api/text/*.json` (article text, 14 chunks). Built by
+  `.agents/skills/blog-ops/build_api.py`, read by
   `docs/api.js`.
 - **Shared styling** — `docs/article.css`, `docs/index.css`, `docs/style.css`.
 - **A page template** — `templates/dataDossier.html`.
@@ -33,8 +34,11 @@ chunks — plus the scripts that regenerate them.
   headers, HSTS), `GOOGLE.md` (structured data, Search Console order of operations),
   the two comment documents above. None of them is published: `backups/` sits outside
   `docs/`.
-- **The `blog-ops` skill** — `.agents/skills/blog-ops/`, with `check_site.py` (audit),
-  `build_sitemap.py` (sitemap + robots) and `enrich_schema.py` (JSON-LD graph).
+- **The skills, in `.agents/skills/`** — `blog-ops` (the audit and build scripts:
+  `check_site.py`, `build_sitemap.py`, `enrich_schema.py`), `new-page` (how a page is
+  written and compiled), `repo-layout` (what belongs in which directory), `git-dates`
+  (publication and update dates from git history), `tmp-tools` (scripts and scratch in
+  `tmp/` and `tools/`) and `assets-backups` (templates, runbooks, images).
 - **Archive collections** — third-party snapshots under `docs/archive/` and
   `docs/obsdRouter/`, kept for readers and excluded in `robots.txt`.
 
@@ -43,15 +47,15 @@ chunks — plus the scripts that regenerate them.
 ```text
 devblog/
 ├── README.md
-├── build_api.py               rebuilds docs/api/ from docs/*.html
 ├── pushit.sh, update.sh       deploy helpers (ksh)
-├── .agents/skills/blog-ops/   check_site.py, build_sitemap.py, enrich_schema.py, SKILL.md
+├── .agents/skills/blog-ops/   build_api.py, check_site.py, build_sitemap.py, enrich_schema.py
+├── .agents/skills/*/          SKILL.md per skill (new-page, repo-layout, git-dates, tmp-tools, assets-backups)
 ├── backups/                   runbooks, originals, maps, firebase-rules.txt
 ├── docs/                      ← published site root
 │   ├── index.html             landing page, categories, search, comment form
 │   ├── 404.html               error page (noindex), search over the API
 │   ├── home.html              redirect stub for the old page name
-│   ├── *.html                 the 517 articles
+│   ├── *.html                 the 521 articles
 │   ├── api/                   generated: index.json + text/NNN.json
 │   ├── api.js                 vanilla ES module that reads the API
 │   ├── archive/, obsdRouter/, pdfs/, images/
@@ -94,7 +98,7 @@ is served, with a 404 status, for any path that does not exist.
 
    ```sh
    python3 .agents/skills/blog-ops/enrich_schema.py        # JSON-LD graph (idempotent)
-   python3 build_api.py                                    # docs/api/
+   python3 .agents/skills/blog-ops/build_api.py            # docs/api/
    python3 .agents/skills/blog-ops/build_sitemap.py        # sitemap.xml + robots.txt
    python3 .agents/skills/blog-ops/check_site.py           # exit 0 = consistent
    ```
@@ -139,10 +143,10 @@ curl -s https://blog.odicforcesounds.com/api/index.json | jq '{count, languages,
 ```
 
 `index.json` carries `generated`, `origin`, `count`, `languages`, `years`, `chunks`
-(the text manifest) and `articles` (518 entries, `index.html` among them). Each entry has
+(the text manifest) and `articles` (522 entries, `index.html` among them). Each entry has
 `slug`, `url`, `path`,
-`title`, `description`, `lang`, `published`, `modified`, `h1`, `headings`, `words`,
-`chars`.
+`title`, `description`, `lang`, `published`, `modified`, `published_at`, `modified_at`,
+`h1`, `headings`, `words`, `chars`.
 
 ```js
 import { BlogAPI } from "/api.js";
@@ -170,15 +174,9 @@ contract above and then verifies that `sitemap.xml`, `robots.txt` and `docs/api/
 describe the same set of pages. It exits non-zero on any failure and prints short
 descriptions as warnings rather than errors.
 
-Current run: 520 pages, 51 short-description warnings, and two failures, for a content
-reason rather than a markup one:
-
-- `docs/ArtOfCreation.html` contains three HTML documents concatenated — everything
-  after the first `</html>` is merged into the page body by the browser.
-- `docs/JS4Children.html` contains two.
-
-Each needs to be split into separate files. `check_site.py` reports them and leaves them
-alone.
+Current run: 524 pages, 0 short-description warnings, 0 failures. The two pages that used
+to carry a second pasted document (`ArtOfCreation.html`, `JS4Children.html`) were split;
+`check_site.py` reports any page that merges two documents again.
 
 ## Publication dates
 
@@ -189,7 +187,12 @@ page's JSON-LD come from git — the first commit that touched the file and the 
 git log -1 --format=%ad --date=short -- docs/Page.html
 ```
 
-There is no `dates.json`; that file is gone and nothing reads it.
+There is no `dates.json` and no date object inside `index.html`: the home page reads
+`published_at` from `docs/api/index.json` at load time, so the generated API is the only
+copy of the dates the browser sees.
+
+Because that is a `fetch`, the home page needs to be served over HTTP: opened from disk
+(`file://`) the request fails and the archive shows no dates.
 
 ## CSS and layout
 
@@ -217,7 +220,7 @@ Some of it is intentionally provocative.
   readable but disallowed in `robots.txt` and absent from the sitemap.
 - `docs/questions.html` is the loose thread: entries that were moved, retitled or
   grouped.
-- `tmp/`, `tools/`, `free/` and `.agents/*` (except `.agents/skills/blog-ops/`) are
+- `tmp/`, `tools/`, `free/` and `.agents/*` (except `.agents/skills/`) are
   gitignored. Scripts that must survive belong at the repository root or in
   `.agents/skills/` — `pushit.sh` runs `git add .`, so scratch files left outside those
   paths get committed.
@@ -227,6 +230,6 @@ Some of it is intentionally provocative.
 
 ## Current state
 
-Branch `main`, deployed by GitHub Pages. 517 articles across four language tags
+Branch `main`, deployed by GitHub Pages. 521 articles across four language tags
 (`en`, `pt`, `pt-PT`, `es`), dated 2025–2026. Publishing has no fixed cadence; the
 repository activity is the way to follow it.

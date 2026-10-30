@@ -58,7 +58,7 @@ runbooks live in the `blog-ops` skill; load it too when a page touches an existi
 | `docs/sitemap.xml`, `docs/robots.txt` | Generated — never hand-edit. |
 | `docs/api/index.json`, `docs/api/text/*.json` | Generated index + text chunks. |
 | `docs/tools/` | Feed pipeline for `index.html` (`feeds.json`, `build.mjs`, `template.html`). |
-| `tools/` | Project scripts, including `build_api.py`. **Gitignored** — nothing durable goes here. |
+| `tools/` | Local build/scan scripts (`bg_scan.py`). **Gitignored** — nothing durable goes here. |
 | `tmp/` | Scratch space for one-off scripts. **Gitignored.** |
 | `templates/` | Starting points (`dataDossier.html`). |
 | `.agents/skills/blog-ops/` | The audit and build scripts this page must satisfy. |
@@ -294,7 +294,9 @@ A bilingual page is listed once — never in both the English and the Portuguese
 the switch already carries the other language. Then:
 
 - bump the `<h3 class="lang-head">` count for that list and the category's `<h2 … class="count">`;
-- add the page's date to `CREATION_DATES` in `index.html` (the object near the page script);
+- the page's date comes from git, not from the clock: commit the page, then rebuild the
+  API so its `published_at` is that commit's instant — never edit a date by hand (see the
+  `git-dates` skill);
 - use the category's anchor (`#category-…`) in the JSON-LD breadcrumb;
 - `articleSection` must be the category title exactly as written on `index.html`.
 
@@ -304,7 +306,7 @@ Run all three, in this order, from the repository root:
 
 ```sh
 python3 .agents/skills/blog-ops/build_sitemap.py    # sitemap.xml + robots.txt
-python3 tools/build_api.py                          # docs/api/index.json + text chunks
+python3 .agents/skills/blog-ops/build_api.py        # docs/api/index.json + text chunks
 python3 .agents/skills/blog-ops/check_site.py       # head contract, sitemap and API coverage
 ```
 
@@ -349,7 +351,8 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/Name.html   # exp
       lookups match; no duplicate `id` in the document.
 - [ ] Both languages complete and consistent; option links coloured; internal links verified
       by reading the target's headings; external sources linked on the word.
-- [ ] Archive row added once, counts updated, `CREATION_DATES` updated, breadcrumb matches.
+- [ ] Archive row added once, counts updated, breadcrumb matches, and the API
+      `published_at` is the instant git reports for the file.
 - [ ] `build_sitemap.py`, `build_api.py` and `check_site.py` run; no new failure.
 - [ ] `git diff --numstat` shows only the new page, `index.html`, and the regenerated
       `sitemap.xml` / `api/*`.

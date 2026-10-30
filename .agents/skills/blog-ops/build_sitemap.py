@@ -7,7 +7,7 @@
 Every root docs/*.html becomes one URL; `index.html` is published as the site root.
 `lastmod` is the date of the last commit that touched the file, falling back to its
 mtime for pages that were never committed. Run this after adding or renaming a page,
-before build_api.py.
+before `.agents/skills/blog-ops/build_api.py`.
 
 Standard library only.
 """

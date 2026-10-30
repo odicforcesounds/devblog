@@ -391,7 +391,7 @@ def check_sitemap(names):
 def check_api(names):
     path = os.path.join(DOCS, "api", "index.json")
     if not os.path.exists(path):
-        return ["docs/api/index.json is missing — run python3 build_api.py"]
+        return ["docs/api/index.json is missing — run python3 .agents/skills/blog-ops/build_api.py"]
     try:
         with open(path, encoding="utf-8") as fh:
             data = json.load(fh)
@@ -407,7 +407,7 @@ def check_api(names):
     missing = sorted(want - got)
     extra = sorted(got - want)
     if missing:
-        problems.append("API missing %d pages (e.g. %s) — rerun build_api.py"
+        problems.append("API missing %d pages (e.g. %s) — rerun .agents/skills/blog-ops/build_api.py"
                         % (len(missing), ", ".join(missing[:4])))
     if extra:
         problems.append("API lists %d unknown pages (e.g. %s)" % (len(extra), ", ".join(extra[:3])))
