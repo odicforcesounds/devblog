@@ -196,6 +196,29 @@ h2.q { margin: .1rem 0 .8rem; font-family: var(--serif); font-size: clamp(1.4rem
 
 footer.site { width: min(var(--max),100%); margin: 0 auto; padding: 1.2rem 1.1rem 2.5rem; border-top: 1px solid var(--line); color: var(--muted); font-family: var(--mono); font-size: .72rem; display: flex; gap: .7rem; flex-wrap: wrap; }
 footer.site a { color: var(--accent); }
+/* game account — one line in the HUD, one panel at the end of a level */
+.ga { display: inline-flex; align-items: center; gap: .35rem; margin-left: auto; }
+.ga-slot { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin: .8rem 0 .2rem; }
+.ga-note .ga-slot { margin: .1rem 0 .5rem; }
+.ga-slot .ga { margin-left: 0; }
+.ga-name { text-transform: none; letter-spacing: 0; color: var(--ink); max-width: 12rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ga img { width: 20px; height: 20px; border-radius: 999px; display: block; }
+.ga-btn { font-family: var(--mono); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; padding: .28rem .7rem; color: var(--accent); background: transparent; border: 1px solid var(--accent); border-radius: 999px; cursor: pointer; }
+.ga-btn.primary { color: var(--bg); background: var(--accent); }
+.ga-btn:hover, .ga-btn:focus-visible { color: var(--bg); background: var(--warm); border-color: var(--warm); }
+.ga-btn:disabled { cursor: progress; opacity: .55; }
+.ga-note { margin: .9rem 0 0; padding: .75rem .85rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.ga-note h3 { margin: 0 0 .25rem; font-family: var(--mono); font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; color: var(--warm); }
+.ga-note p { margin: 0 0 .45rem; font-size: .82rem; color: var(--muted); }
+.ga-note .ga-input { width: 100%; min-height: 2.9rem; resize: vertical; padding: .45rem .55rem; color: var(--ink); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; font: .86rem/1.45 var(--sans); }
+.ga-row { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .4rem; }
+.ga-status { font-family: var(--mono); font-size: .62rem; letter-spacing: .06em; color: var(--muted); }
+.ga-form { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; width: 100%; margin-top: .35rem; }
+.ga-form .ga-input { flex: 1 1 9rem; min-width: 7rem; padding: .3rem .5rem; color: var(--ink); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; font: .8rem var(--sans); }
+.ga-notes { margin: .6rem 0 0; padding: 0; list-style: none; display: grid; gap: .35rem; }
+.ga-notes li { padding-left: .5rem; border-left: 2px solid var(--line); font-size: .84rem; }
+.ga-notes .who { display: block; font-family: var(--mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.ga-notes .ga-empty { border-left: 0; padding-left: 0; color: var(--muted); font-size: .8rem; }
 </style>
 </head>
 <body>
@@ -6199,6 +6222,13 @@ footer.site a { color: var(--accent); }
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify({ points: state.points, answers: state.answers, screen: state.screen })); }
     catch (err) { /* session only */ }
+    if (window.GameAccount) {
+      window.GameAccount.save({
+        game: 'advogado', points: state.points, max: MAX, levels: LVLS.pt.length,
+        level: levelOf(answeredCount()), answered: answeredCount(), total: CASES.length,
+        certificate: answeredCount() === CASES.length
+      });
+    }
   }
   function statusFor(points) {
     for (var i = 0; i < LADDER.length; i++) { if (points >= LADDER[i].min) { return LADDER[i]; } }
@@ -6307,6 +6337,7 @@ footer.site a { color: var(--accent); }
       '<p class="mini">' + esc(t.levelDone(lvl)) + '</p>' +
       '<h2 class="q">' + esc(t.fundamentals) + '</h2>' +
       '<ol class="facts">' + FUNDAMENTALS[state.lang].map(function (line) { return '<li>' + esc(line) + '</li>'; }).join('') + '</ol>' +
+      (window.GameAccount ? window.GameAccount.level({ game: 'advogado', level: lvl, lang: state.lang, points: state.points, max: MAX }) : '') +
       '<button type="button" class="next" data-go="' + Math.min(lastScreen, state.screen + 1) + '">' + esc(label) + '</button>' +
       '<button type="button" class="next ghost" data-go="' + Math.max(0, state.screen - 1) + '">← ' + esc(t.back) + '</button>';
   }
@@ -6333,6 +6364,13 @@ footer.site a { color: var(--accent); }
       '<button type="button" class="next ghost" data-go="' + Math.max(0, state.screen - 1) + '">← ' + esc(t.back) + '</button>';
   }
 
+  function paint(html) {
+    var board = document.getElementById('board');
+    if (!board) { return; }
+    board.innerHTML = html;
+    if (window.GameAccount) { window.GameAccount.afterRender(); }
+  }
+
   function render(focusTitle) {
     var board = document.getElementById('board');
     if (!board) { return; }
@@ -6346,10 +6384,10 @@ footer.site a { color: var(--accent); }
     if (game) { game.hidden = !playing; }
     if (!playing) { board.innerHTML = ''; return; }
 
-    if (cur.kind === 'level') { board.innerHTML = viewLevel(cur.lvl); return; }
-    if (cur.kind === 'closing') { board.innerHTML = viewClosing(cur.lvl); return; }
-    if (cur.kind === 'record') { board.innerHTML = viewRecord(); return; }
-    board.innerHTML = cur.kind === 'case' ? viewCase(cur.index) : viewDecision(cur.index);
+    if (cur.kind === 'level') { paint(viewLevel(cur.lvl)); return; }
+    if (cur.kind === 'closing') { paint(viewClosing(cur.lvl)); return; }
+    if (cur.kind === 'record') { paint(viewRecord()); return; }
+    paint(cur.kind === 'case' ? viewCase(cur.index) : viewDecision(cur.index));
     if (cur.kind === 'case' && focusTitle) {
       var title = document.getElementById('case-title');
       if (title) { title.focus(); }
@@ -6379,7 +6417,10 @@ footer.site a { color: var(--accent); }
     go(decisionScreen[index]);
   }
 
+  document.addEventListener("ga:change", function () { render(false); });
+
   document.addEventListener('click', function (event) {
+    if (window.GameAccount && window.GameAccount.click(event)) { return; }
     if (event.target.closest('[data-play]')) { go(answeredCount() ? firstOpen() : 1); return; }
     var pickBtn = event.target.closest('[data-pick]');
     if (pickBtn) {
@@ -6455,5 +6496,6 @@ footer.site a { color: var(--accent); }
 })();
 
 </script>
+<script type="module" src="./gameAccount.js"></script>
 </body>
 </html>
