@@ -159,6 +159,9 @@ pre{margin:0;padding:14px 16px;overflow:auto;font-size:13.5px;line-height:1.5;co
 }
 
 .seo-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap;border:0}
+.topnav a.lang{font-family:var(--mono);font-size:12px;letter-spacing:.06em}
+.topnav a.lang[aria-current="true"]{color:var(--text);border-color:var(--accent);background:#2a1714}
+@media print{.topnav a.lang{display:none}}
   </style>
 
     <link rel="canonical" href="https://blog.odicforcesounds.com/FreeBSDReference.html">
@@ -256,6 +259,8 @@ pre{margin:0;padding:14px 16px;overflow:auto;font-size:13.5px;line-height:1.5;co
     <a href="#/bad">Bad decisions</a>
     <a href="#/platforms">Known platforms</a>
     <a href="#/exam">Hero exam</a>
+    <a class="lang" href="?lang=pt" data-set-lang="pt" lang="pt-PT">PT</a>
+    <a class="lang" href="?lang=en" data-set-lang="en" aria-current="true" lang="en">EN</a>
   </nav>
   <div class="progress-top" id="prog-top"></div>
 </header>
@@ -278,7 +283,7 @@ const table = (head, rows) => `<table class="tbl"><thead><tr>${head.map(h=>`<th>
 const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
 
 /* ============ content (filled in by sections) ============ */
-const LEVELS = [
+const LEVELS_EN = [
 { n:0, code:'CH-00', short:'Orientation', time:'20 min', title:'Orientation: what FreeBSD is',
   lead:'Before you type a single command, understand the lineage, the release model, and the three layers of software you will manage.',
   sections:[
@@ -591,7 +596,7 @@ daily_clean_tmps_enable="YES"`) + `<p>Schedule your own jobs with <code>crontab 
 },
 /*LEVELS*/
 ];
-const BADS = [
+const BADS_EN = [
 {t:'Working as root all day', d:`Logging in as root for everything, because it is faster.`, w:`Every typo and every compromised program runs with full power, and there is no per-person audit trail. Attackers who land a shell as your user have to escalate; a root-only workflow gives them the finish line.`, f:`A named user in wheel, sudo for administrative commands, and su -l only for emergencies (Chapter 2).`},
  {t:'Root SSH with passwords', d:`PermitRootLogin yes and PasswordAuthentication yes, "until the keys are ready".`, w:`Root is a known username, so bots only need to guess a password. Scanning starts within minutes of a public address appearing, and temporary settings persist for years.`, f:`Keys for a named admin, PermitRootLogin no, AllowGroups wheel, and sshguard for the noise (Chapter 3).`},
  {t:'Temporary pass all in pf', d:`pass in all added to debug a connection problem.`, w:`Temporary rules outlive the debugging session. A default deny is your main control, and one allow-all rule removes it for every port.`, f:`Add a narrow, logged rule for the exact flow, test it, and remove it. Use the anti-lockout rollback when editing over SSH (Chapter 4).`},
@@ -605,7 +610,7 @@ const BADS = [
  {t:'Jails as root with raw sockets and no caps', d:`Running each service as root inside a jail, with broad privileges, and no resource limits.`, w:`A root process with raw sockets and no limits widens what a compromised service can reach and lets one tenant starve the others. A jail is a containment layer, not a license to be careless.`, f:`Unprivileged service users, the allow.* settings left at their defaults, memory and resource caps with rctl, and a jail manager for consistency (Chapter 5).`}
 /*BADS*/
 ];
-const PLATFORMS = [
+const PLATFORMS_EN = [
 {name:'pfSense (Netgate)', kind:'Firewall', tone:'ok', what:`Open-source firewall and router distribution built on FreeBSD. Its packet filter is pf, the same one you configured in Chapter 4.`, url:'https://www.pfsense.org/'},
  {name:'OPNsense', kind:'Firewall', tone:'ok', what:`Firewall and routing platform built on FreeBSD, with pf and a web administration interface. A good example of a FreeBSD appliance in production.`, url:'https://opnsense.org/'},
  {name:'TrueNAS CORE', kind:'Storage', tone:'ok', what:`NAS platform built on FreeBSD with ZFS at its core. The sibling TrueNAS SCALE line is Linux-based, so check which one you are looking at.`, url:'https://www.truenas.com/'},
@@ -619,6 +624,326 @@ const PLATFORMS = [
 /*PLATFORMS*/
 ];
 
+const LEVELS_PT = [
+{ n:0, code:'CH-00', short:'Orientação', time:'20 min', title:'Orientação: o que é o FreeBSD',
+  lead:'Antes de escrever um único comando, compreenda a linhagem, o modelo de lançamentos e as três camadas de software que vai administrar.',
+  sections:[
+  {h:'Linhagem e filosofia', html:`<p>O FreeBSD é um sistema operativo do tipo Unix descendente da Berkeley Software Distribution (BSD). É desenvolvido por um projecto de voluntários apoiado pela FreeBSD Foundation. A diferença mais importante em relação à maioria das distribuições Linux: o kernel e o espaço de utilizador base são desenvolvidos, testados e lançados em conjunto, como uma só árvore.</p>
+<p>O projecto usa uma licença permissiva ao estilo BSD, e é por isso que fabricantes comerciais podem distribuir derivados (ver <a href="#/platforms">Plataformas conhecidas</a>). Leia o ficheiro <code>LICENSE</code> em <code>/usr/src</code> quando tiver o código-fonte.</p>
+<ul class="k"><li>ZFS como sistema de ficheiros de primeira classe, com somas de verificação e snapshots</li><li>Jails: virtualização ao nível do sistema operativo integrada no kernel</li><li>pf: o filtro de pacotes com estado herdado do OpenBSD</li><li>bhyve: um hipervisor nativo no sistema base</li><li>DTrace: rastreio ao vivo do kernel e do espaço de utilizador</li></ul>`},
+  {h:'O modelo de lançamentos', html:`<p>Escolha um ramo com intenção. As datas abaixo são o fim de vida mais cedo previsto pelo Security Officer; confirme-as na página de segurança antes de planear.</p>` + table(['Ramo / versão','Estado (Out 2026)','Use para'],[
+    ['<code>15.1-RELEASE</code>','<span class="tag ok">produção actual</span> lançado em 2026-06-16','Servidores e postos novos'],
+    ['<code>14.5-RELEASE</code>','<span class="tag warn">suportado</span> fim de vida previsto 2027-06-30','Frotas 14.x existentes'],
+    ['<code>14.4-RELEASE</code>','<span class="tag warn">a terminar</span> fim de vida previsto 2026-12-31','Planeie já a migração'],
+    ['<code>15.0-RELEASE</code>','<span class="tag bad">fim de vida</span> 2026-09-30','Não instale'],
+    ['<code>stable/15</code>','ramo de desenvolvimento do próximo nível de correcção','Laboratório e testes'],
+    ['<code>main</code> (CURRENT)','última linha','Apenas colaboradores']
+  ]) + note('bad','Má decisão: instalar num ramo que está prestes a morrer', '<p>Cada mês depois do fim de vida é um mês de exposição sem correcções. Escolha o lançamento de produção mais recente na instalação e escreva a data de fim de vida no seu calendário de operações.</p>')},
+  {h:'Três camadas que vai administrar', html:`<ul class="k"><li><b>Sistema base</b>: kernel, libc, <code>/bin</code>, <code>/sbin</code>, <code>/usr/bin</code>. Actualizado com <code>freebsd-update</code> para binários, ou compilado a partir do código.</li><li><b>Pacotes</b>: software binário do <code>pkg(8)</code>, instalado em <code>/usr/local</code>.</li><li><b>Ports</b>: receitas de compilação em <code>/usr/ports</code>. Controla as opções de compilação com <code>make config</code>.</li></ul>` + code('sh — verificação de laboratório', `freebsd-version -ku\nuname -a\nman -k firewall | head -5\nman 5 pf.conf | head -20`)},
+  {h:'Leia o manual antes de perguntar', html:`<p>As páginas de manual vêm no sistema base e são a referência autorizada. As secções importam: <code>man 8</code> são comandos de administração, <code>man 5</code> são formatos de ficheiro, <code>man 4</code> são dispositivos. As cópias em linha estão em man.freebsd.org.</p>` + note('warn','Armadilha comum','<p>Perguntar num fórum antes de ler o Handbook e a página <code>man</code> normalmente rende um link para a mesma página, ao fim de um dia de espera.</p>')}
+  ],
+  refs:[['FreeBSD Handbook: Introdução','https://docs.freebsd.org/en/books/handbook/introduction/'],['Lançamentos do FreeBSD','https://www.freebsd.org/releases/'],['Lançamentos suportados e política de segurança','https://www.freebsd.org/security/'],['Páginas man em linha','https://man.freebsd.org/'],['FreeBSD Foundation: primeiros passos','https://freebsdfoundation.org/resource/getting-started-with-freebsd/']],
+  quiz:[
+   {q:'Que família de licenças usa o FreeBSD no sistema base?', o:['Apenas GPL v3','Licença permissiva ao estilo BSD (2 ou 3 cláusulas)','Um EULA proprietário','Creative Commons BY-NC'], a:1, w:'O FreeBSD usa licenças permissivas ao estilo BSD, que permitem derivados comerciais. Veja o ficheiro LICENSE em /usr/src.'},
+   {q:'Onde param normalmente os pacotes instalados com pkg install?', o:['Apenas /usr/ports','/usr/local','/opt/freebsd','/var/tmp'], a:1, w:'O software de terceiros vive em /usr/local, separado do sistema base.'},
+   {q:'Que comando mostra a página man que documenta o formato do pf.conf?', o:['pf --help','man 5 pf.conf','systemctl cat pf','pfctl --manual'], a:1, w:'A secção 5 cobre formatos de ficheiro. O pf.conf está documentado em pf.conf(5).'},
+   {q:'Para um servidor novo de produção em Outubro de 2026, que lançamento é o padrão sensato?', o:['CURRENT','14.4-RELEASE','15.1-RELEASE','Um snapshot de 2019'], a:2, w:'O 15.1-RELEASE é o lançamento de produção actual. O 14.4 chega ao fim de vida previsto no fim de 2026, por isso começar aí significa migrar logo.'}
+  ]
+},
+{ n:1, code:'CH-01', short:'Instalação', time:'30 min', title:'Instalação com bsdinstall',
+  lead:'Verifique o suporte, percorra o instalador e compreenda o que o Guided Root-on-ZFS lhe dá antes de aceitar os valores por omissão.',
+  sections:[
+  {h:'Obter o suporte e verificá-lo', html:`<p>Descarregue a imagem memstick amd64 e o respectivo ficheiro <code>CHECKSUM.SHA256</code> da página de lançamentos. Compare os hashes antes de escrever o que seja num disco.</p>` + code('sh — posto de trabalho (Linux ou macOS)', `sha256sum FreeBSD-15.1-RELEASE-amd64-memstick.img\ngrep memstick CHECKSUM.SHA256-FreeBSD-15.1-RELEASE-amd64`) + code('sh — escrever no USB (Linux: confirme o dispositivo com lsblk)', `lsblk\nsudo dd if=FreeBSD-15.1-RELEASE-amd64-memstick.img of=/dev/sdX bs=4M conv=fsync status=progress`) + note('bad','Má decisão: escrever no disco errado','<p>O <code>dd</code> não pergunta duas vezes. Identifique o dispositivo amovível pelo tamanho e modelo antes de premir Enter. Escrever no SSD do portátil é um dia mau.</p>')},
+  {h:'Percorrer o bsdinstall', html:`<ol class="k"><li><b>Keymap</b>: escolha o mapa da consola. Pode mudá-lo depois em <code>/etc/rc.conf</code>.</li><li><b>Hostname</b>: use um nome completamente qualificado, p. ex. <code>bsd01.lab.example</code>.</li><li><b>Conjuntos de distribuição</b>: <code>base</code> e <code>kernel</code> são obrigatórios. Acrescente <code>src</code> só se for compilar um kernel (Capítulo 6). Salte <code>lib32</code> a menos que corra binários de 32 bits.</li><li><b>Particionamento</b>: escolha <i>Guided Root-on-ZFS</i>. Nome da pool <code>zroot</code>. Esquema: stripe para um disco, mirror para dois, raidz1 para três ou mais.</li><li><b>Rede</b>: DHCP por agora. O endereçamento estático fica no Capítulo 2.</li><li><b>Palavra-passe de root, fuso horário</b> (UTC é um padrão sensato para servidores), <b>serviços</b>: active <code>sshd</code> e <code>ntpd</code>.</li><li><b>Acrescentar um utilizador</b>: crie uma conta de administração com nome. Não trabalhe no dia-a-dia como root.</li></ol>`},
+  {h:'Primeira verificação após o arranque', html:`<p>Confirme que o sistema, a pool e os ambientes de arranque são o que espera antes de mudar o que quer que seja.</p>` + code('sh', `freebsd-version -ku\nzpool status zroot\nzfs list -o name,used,avail,mountpoint\nbectl list`) + note('info','Rede de segurança gratuita','<p>O Guided ZFS cria ambientes de arranque por si. Vai usar o <code>bectl</code> no Capítulo 8 como caminho de retrocesso para cada mudança arriscada.</p>') + note('bad','Má decisão: um só disco sem plano de cópias','<p>As somas de verificação do ZFS detectam corrupção. Não substituem uma segunda cópia. Uma pool pode estar perfeitamente saudável e perder tudo com um <code>rm -rf</code> ou ransomware.</p>')}
+  ],
+  refs:[['FreeBSD Handbook: bsdinstall','https://docs.freebsd.org/en/books/handbook/bsdinstall/'],['FreeBSD Handbook: ZFS','https://docs.freebsd.org/en/books/handbook/zfs/'],['Obter o FreeBSD (suportes)','https://www.freebsd.org/where/'],['zpool(8)','https://man.freebsd.org/cgi/man.cgi?query=zpool']],
+  quiz:[
+   {q:'Que instalador vem no sistema base do FreeBSD?', o:['anaconda','bsdinstall','ubiquity','yast'], a:1, w:'O bsdinstall é o instalador de texto do suporte de instalação. Também é usado mais tarde para criar jails.'},
+   {q:'O que lhe dá o Guided Root-on-ZFS?', o:['Uma partição raiz FAT32','Uma pool ZFS que contém a raiz, com somas de verificação e ambientes de arranque','Uma raiz ext4 com LVM','Um disco em RAM'], a:1, w:'O sistema de ficheiros raiz fica em ZFS, que oferece somas de verificação, snapshots e ambientes de arranque.'},
+   {q:'Porque verificar a soma da imagem antes de a escrever num USB?', o:['Para tornar o instalador mais rápido','Para confirmar que a transferência corresponde ao hash publicado, ou seja, que não está corrompida nem adulterada','Para activar o Secure Boot','Para registar a licença'], a:1, w:'Um SHA256 publicado permite detectar transferências corrompidas ou alteradas antes de confiar nelas.'},
+   {q:'Que comando relata a saúde de uma pool ZFS?', o:['zpool status','zfs health','fsck_zfs --all','pool --check'], a:0, w:'O zpool status mostra o estado da pool, os erros e qualquer resilver ou scrub em curso.'}
+  ]
+},
+{ n:2, code:'CH-02', short:'Pós-instalação e configuração', time:'35 min', title:'Planeamento pós-instalação e primeira configuração',
+  lead:'Planear vence improvisar. Decida hardware, discos, rede e nomes antes do instalador e torne o primeiro arranque reprodutível com sysrc e ficheiros de configuração simples.',
+  sections:[
+  {h:'Lista de verificação pós-instalação', html:`<ul class="k"><li><b>Firmware</b>: UEFI ou BIOS, coerente em toda a frota. Active VT-x ou AMD-V se planear VMs com bhyve.</li><li><b>Controlador de disco</b>: modo AHCI, não um RAID de fabricante que esconde os discos ao ZFS.</li><li><b>Memória</b>: o ZFS gosta de RAM para a cache ARC. ECC é fortemente recomendado em servidores.</li><li><b>Nomes e endereços</b>: escreva hostname, plano de IP, zona DNS e destino de cópias antes do primeiro arranque.</li><li><b>Suporte verificado</b>: hashes do Capítulo 1 conferidos.</li></ul>`},
+  {h:'sysrc: a forma correcta de definir variáveis rc', html:`<p>O <code>sysrc</code> edita <code>/etc/rc.conf</code> em segurança e relê valores. O nome da interface varia com o hardware: <code>vtnet0</code> em virtio, <code>em0</code>, <code>igc0</code> ou <code>re0</code> em máquinas físicas. Confirme com <code>ifconfig -l</code>.</p>` + code('sh', `sysrc hostname="bsd01.lab.example"\nsysrc ifconfig_vtnet0="inet 192.0.2.10/24"\nsysrc defaultrouter="192.0.2.1"\nsysrc sshd_enable="YES"\nsysrc ntpd_enable="YES"\nsysrc ntpd_sync_on_start="YES"\nsysrc -n hostname                 # reler um valor\necho 'nameserver 192.0.2.53' > /etc/resolv.conf\nservice netif restart && service routing restart`)},
+  {h:'Configuração de pacotes e ports', html:`<p>O repositório de pacotes por omissão serve. Para o substituir, ponha um ficheiro em <code>/usr/local/etc/pkg/repos/</code> e deixe os originais em paz. Use o ramo <code>quarterly</code> em servidores sensíveis à estabilidade; <code>latest</code> acompanha as mudanças dos ports mais depressa.</p>` + code('conf — /usr/local/etc/pkg/repos/FreeBSD.conf', `FreeBSD: {\n  url: "pkg+https://pkg.FreeBSD.org/\${ABI}/quarterly",\n  enabled: yes\n}`) + code('sh', `pkg update\npkg upgrade -y\npkg install -y vim tmux git bash\n\n# árvore de ports (opcional, para compilar do código)\ngit clone --depth 1 https://git.freebsd.org/ports.git /usr/ports\n\n# /etc/make.conf: paralelismo de compilação dos ports\nMAKE_JOBS_NUMBER=4`)},
+  {h:'Utilizadores, grupos e sudo', html:`<p>Nunca faça o trabalho diário como root. Crie um utilizador com nome, meta-o em <code>wheel</code> e dê-lhe direitos de sudo.</p>` + code('sh', `pw useradd -n alice -m -G wheel -s /bin/sh   # -m cria a directoria pessoal\npasswd alice\npkg install -y sudo\nvisudo                                 # descomente: %wheel ALL=(ALL:ALL) ALL\nsu -l alice\nsudo -l`) + note('warn','Edite o sudoers só com visudo','<p>O visudo verifica a sintaxe antes de gravar. Um ficheiro sudoers partido pode trancar todos os administradores fora do root.</p>')}
+  ],
+  refs:[['FreeBSD Handbook: Noções de configuração','https://docs.freebsd.org/en/books/handbook/config/'],['FreeBSD Handbook: Utilizadores e contas','https://docs.freebsd.org/en/books/handbook/users/'],['FreeBSD Handbook: Ports e pacotes','https://docs.freebsd.org/en/books/handbook/ports/'],['rc.conf(5)','https://man.freebsd.org/cgi/man.cgi?query=rc.conf'],['pkg(8)','https://man.freebsd.org/cgi/man.cgi?query=pkg']],
+  quiz:[
+   {q:'Qual é a forma recomendada de definir variáveis em /etc/rc.conf?', o:['Editá-lo com sed a partir do cron','sysrc','systemctl enable','Escrevê-las em /boot/loader.conf'], a:1, w:'O sysrc define e relê variáveis do rc.conf sem erros de edição manual.'},
+   {q:'Onde substituir o repositório de pacotes sem tocar nos originais?', o:['/etc/pkg.conf','/usr/local/etc/pkg/repos/','/var/db/pkg','/root/.pkgrc'], a:1, w:'Os ficheiros de substituição de repositórios vão em /usr/local/etc/pkg/repos/.'},
+   {q:'Que ficheiro contém as regras do sudo, editado em segurança com visudo?', o:['/etc/sudoers','/usr/local/etc/sudoers','/etc/security/sudo','/root/.sudoers'], a:1, w:'O sudo é um pacote, por isso a sua configuração vive em /usr/local/etc.'},
+   {q:'O que faz o ntpd_sync_on_start?', o:['Arranca o NTP no boot e força uma sincronização inicial do relógio','Desliga o NTP','Sincroniza a pool ZFS','Sincroniza a árvore de ports'], a:0, w:'Faz um acerto imediato quando o ntpd arranca, para que registos e certificados TLS tenham a hora certa desde cedo.'}
+  ]
+},
+{ n:3, code:'CH-03', short:'Base de segurança', time:'40 min', title:'Base de segurança',
+  lead:'Uma instalação nova não é uma instalação segura. Construa uma base defensável: chaves em vez de palavras-passe, binários corrigidos, uma lista curta de serviços à escuta e registos que realmente lê.',
+  sections:[
+  {h:'Modelo de ameaça num parágrafo', html:`<p>Decida o que protege, de quem e o que aceita. Num servidor exposto à internet as principais exposições são o acesso remoto, a latência das correcções e o raio de destruição. Num posto de trabalho são o acesso físico e o navegador (Capítulo 7). Escreva a resposta antes de configurar o que quer que seja.</p>`},
+  {h:'Endurecer o SSH', html:`<p>Edite <code>/etc/ssh/sshd_config</code> no servidor (excerto):</p>` + code('conf — /etc/ssh/sshd_config', `PermitRootLogin no\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nPubkeyAuthentication yes\nAllowGroups wheel\nMaxAuthTries 3\nX11Forwarding no`) + code('sh — posto de trabalho', `ssh-keygen -t ed25519 -C "alice@laptop"\nssh-copy-id -i ~/.ssh/id_ed25519.pub alice@bsd01.lab.example`) + code('sh — servidor, testar ANTES de recarregar', `sshd -t && service sshd reload`) + note('warn','Mantenha uma segunda sessão aberta','<p>Teste a nova política a partir de um terminal novo enquanto a sessão actual continua autenticada. Se o novo login falhar, ainda tem por onde voltar.</p>')},
+  {h:'Corrigir o sistema base e os pacotes', html:`<p>Dois fluxos de correcções: o sistema base (actualizações binárias via <code>freebsd-update</code>) e os pacotes de terceiros (verificados contra a base VuXML).</p>` + code('sh', `freebsd-update fetch install     # correcções de segurança binárias do sistema base\npkg audit -F                     # actualiza a base VuXML e reporta pacotes vulneráveis\npkg upgrade -y\nshutdown -r now                  # reinicie se o kernel foi corrigido`) + note('info','De onde vêm os dados de vulnerabilidade','<p>A VuXML é a lista pública de vulnerabilidades que o <code>pkg audit</code> lê. Os atacantes também a leem, por isso corrija primeiro o que lá está listado.</p>')},
+  {h:'Securelevel do kernel e visibilidade dos processos', html:`<p>O securelevel restringe operações perigosas do kernel, como escrever em discos crus montados. Teste o nível 2 numa máquina que não seja de produção.</p>` + code('sh', `sysrc kern_securelevel_enable="YES"\nsysrc kern_securelevel="2"\necho 'security.bsd.see_other_uids=0' >> /etc/sysctl.conf   # os utilizadores não vêem processos alheios\nsysctl kern.securelevel security.bsd.see_other_uids`)},
+  {h:'Saber o que escuta e quem entrou', html:`<p>O que não conseguir explicar não deve estar à escuta.</p>` + code('sh', `sockstat -4 -6 -l      # sockets IPv4 e IPv6 à escuta e os seus donos\nservice -e             # serviços rc activos\nlast -n 20             # inícios de sessão recentes\ntail -n 50 /var/log/auth.log`)},
+  {h:'Força bruta e relatórios nocturnos', html:`<p>Um SSH exposto à internet é sondado em minutos. O <a href="https://www.sshguard.net/" target="_blank" rel="noopener noreferrer" class="external">sshguard</a> vigia os registos de autenticação e mete os reincidentes numa tabela do pf (Capítulo 4). O <code>periodic</code> corre os relatórios nocturnos e o resumo de segurança.</p>` + code('conf — /etc/periodic.conf', `daily_status_security_enable="YES"\ndaily_clean_tmps_enable="YES"`) + note('bad','Má decisão: "PermitRootLogin yes até as chaves estarem prontas"','<p>Os bots começam a tentar o root minutos depois de um novo endereço público aparecer, e a definição "temporária" fica lá durante anos. Configure as chaves primeiro e só depois desactive a palavra-passe.</p>')}
+  ],
+  refs:[['FreeBSD Handbook: Segurança','https://docs.freebsd.org/en/books/handbook/security/'],['Avisos de segurança do FreeBSD','https://www.freebsd.org/security/advisories/'],['Base de vulnerabilidades VuXML','https://vuxml.freebsd.org/freebsd/'],['sshd_config(5)','https://man.freebsd.org/cgi/man.cgi?query=sshd_config'],['securelevel(7)','https://man.freebsd.org/cgi/man.cgi?query=securelevel'],['sshguard','https://www.sshguard.net/']],
+  quiz:[
+   {q:'Qual é o passo de endurecimento mais importante no sshd?', o:['PermitRootLogin no','Mudar o banner','Aumentar MaxSessions','Ouvir só numa porta alta'], a:0, w:'O root é uma conta conhecida em qualquer sistema. Desactivar o login directo de root obriga o atacante a adivinhar um utilizador e depois escalar. Junte-lhe chaves.'},
+   {q:'Que comando verifica os pacotes instalados contra vulnerabilidades conhecidas?', o:['pkg audit -F','pkg list --security','freebsd-update audit','pkg check -v'], a:0, w:'O pkg audit lê a base VuXML. A opção -F actualiza-a primeiro.'},
+   {q:'O que restringe o kern.securelevel?', o:['Que utilizadores podem entrar','Operações perigosas do kernel, como escrever em discos crus montados','O débito da rede','A instalação de pacotes'], a:1, w:'Depois de elevado, o securelevel bloqueia operações sensíveis do kernel até ao reinício, que é o objectivo.'},
+   {q:'Que comando lista os sockets à escuta com o processo dono?', o:['sockstat -4 -6 -l','netstat -rn','pfctl -si','top -l'], a:0, w:'O sockstat -l mostra o que está à escuta. O netstat -rn imprime antes a tabela de rotas.'}
+  ]
+},
+
+{ n:4, code:'CH-04', short:'Firewall pf', time:'45 min', title:'O filtro de pacotes pf',
+  lead:'O pf é o filtro de pacotes com estado herdado do OpenBSD. Aprenda regras de negação por omissão, o ciclo de teste e o hábito anti-bloqueio antes de tocar numa máquina remota.',
+  sections:[
+  {h:'Activar o pf', html:`<p>O pf configura-se em <code>/etc/pf.conf</code>. O registo vai para <code>pflog0</code>.</p>` + code('sh', `sysrc pf_enable="YES"\nsysrc pf_rules="/etc/pf.conf"\nsysrc pflog_enable="YES"`)},
+  {h:'Um conjunto de regras com negação por omissão', html:`<p>A entrada é negada por omissão. A saída é permitida e com estado, para que o tráfego de retorno seja tratado pelas entradas de estado.</p>` + code('conf — /etc/pf.conf', `ext_if  = "vtnet0"\ntcp_svc = "{ 80, 443 }"\n\nset skip on lo0\nset block-policy drop\nscrub in on $ext_if all fragment reassemble\n\ntable <admins> persist { 192.0.2.10/32 }\n\nblock log all                                    # negar por omissão, registar as quedas\npass out quick on $ext_if keep state             # o nosso tráfego de saída\npass in quick on $ext_if proto tcp from <admins> to any port 22 keep state\npass in quick on $ext_if proto tcp to any port $tcp_svc keep state\npass in quick on $ext_if inet proto icmp icmp-type echoreq keep state`) + note('info','Porque o SSH é só para administradores','<p>A porta 22 só é permitida a partir da tabela <code>&lt;admins&gt;</code>. Tudo o resto na internet recebe silêncio.</p>')},
+  {h:'Testar antes de carregar', html:`<p>Primeiro analisar, depois carregar, e então inspeccionar o que o kernel tem de facto.</p>` + code('sh', `pfctl -nvf /etc/pf.conf      # só analisar (-n), verboso\npfctl -f /etc/pf.conf        # carregar as regras\npfctl -e                     # activar o pf se não estiver a correr\npfctl -sr                    # mostrar as regras activas\npfctl -ss | head            # mostrar a tabela de estados\ntcpdump -n -e -ttt -i pflog0 # ver o que está a ser descartado`)},
+  {h:'Padrão anti-bloqueio', html:`<p>Antes de uma mudança arriscada por SSH, agende um retrocesso automático, aplique a mudança e teste numa segunda sessão. Se o teste correr bem, cancele o retrocesso.</p>` + code('sh', `(sleep 300 && pfctl -d) &     # desactiva o pf em 5 minutos a menos que seja cancelado\n# aplique a mudança e teste num SEGUNDO terminal\njobs                          # encontrar a tarefa de retrocesso\nkill %1                       # cancelá-la quando estiver satisfeito`) + note('bad','Má decisão: pass in all "só para depurar"','<p>As regras temporárias de permitir tudo sobrevivem à sessão de depuração. A negação por omissão é o seu controlo principal; acrescente uma regra estreita e registada e remova-a no fim.</p>')},
+  {h:'Tabelas e resposta a abusos', html:`<p>As tabelas persistentes permitem acrescentar e remover endereços sem recarregar o conjunto de regras todo. O sshguard usa este mecanismo.</p>` + code('sh', `pfctl -t admins -T show\npfctl -t admins -T add 198.51.100.7\npfctl -t admins -T delete 198.51.100.7`)}
+  ],
+  refs:[['FreeBSD Handbook: Firewalls (pf)','https://docs.freebsd.org/en/books/handbook/firewalls/'],['pf.conf(5)','https://man.freebsd.org/cgi/man.cgi?query=pf.conf'],['pfctl(8)','https://man.freebsd.org/cgi/man.cgi?query=pfctl'],['Guia PF do OpenBSD (a origem do pf)','https://www.openbsd.org/faq/pf/']],
+  quiz:[
+   {q:'Qual é a postura correcta por omissão para o tráfego de entrada num servidor exposto?', o:['Permitir tudo, bloquear o que é sabidamente mau','Negar por omissão e depois permitir só o que é explicitamente necessário','Desligar o pf e confiar no router','Permitir apenas ICMP'], a:1, w:'Negar por omissão limita a exposição aos serviços que escolheu de propósito.'},
+   {q:'Que comando analisa /etc/pf.conf sem o carregar?', o:['pfctl -nvf /etc/pf.conf','pfctl -f /etc/pf.conf -n','pf check','pfctl -sr'], a:0, w:'-n analisa sem carregar; -v dá saída verbosa.'},
+   {q:'O que faz "keep state"?', o:['Mantém as regras em memória depois do reinício','Cria uma entrada de estado para que o tráfego de retorno de uma ligação permitida passe','Regista todos os pacotes','Fixa o processo a uma CPU'], a:1, w:'O seguimento de estados deixa os pacotes de retorno de uma ligação permitida passar sem regra de entrada separada.'},
+   {q:'Qual é a técnica anti-bloqueio certa antes de editar regras de firewall por SSH?', o:['Editar com a ligação aberta e reiniciar se ficar bloqueado','Agendar um retrocesso automático, como (sleep 300 && pfctl -d) &, e testar numa segunda sessão','Desactivar o SSH','Manter uma sessão telnet como reserva'], a:1, w:'Um retrocesso agendado garante que recupera o acesso mesmo que as regras lhe cortem a sessão.'}
+  ]
+},
+{ n:5, code:'CH-05', short:'Jails', time:'40 min', title:'Jails e contenção',
+  lead:'As jails são a virtualização ao nível do sistema operativo integrada no FreeBSD. Partilham o kernel do anfitrião, por isso o kernel do anfitrião é a fronteira de confiança: mantenha-o corrigido e limite o que cada jail pode fazer.',
+  sections:[
+  {h:'O que é uma jail', html:`<p>Uma jail é um contentor de processos com o seu próprio sistema de ficheiros raiz, hostname e utilizadores. Com VNET tem também a sua pilha de rede. Todas as jails partilham o kernel do anfitrião, o que as torna muito mais leves do que uma VM mas com isolamento mais fraco.</p>` + note('info','Fronteira de confiança','<p>Um bug no kernel pode escapar de uma jail. Trate o anfitrião como o perímetro de segurança e corrija-o com a mesma disciplina do Capítulo 3.</p>')},
+  {h:'Criar uma jail base', html:`<p>Instale um sistema base numa directoria nova. Precisa de acesso à rede para os conjuntos de distribuição.</p>` + code('sh', `bsdinstall jail /usr/jails/www\n# actualizações posteriores do sistema base da jail:\nfreebsd-update -b /usr/jails/www fetch install`)},
+  {h:'Descrevê-la em /etc/jail.conf', html:`<p>Cada jail recebe um nome, um caminho e um endereço. Aqui a jail usa uma gama privada 10.0.0.0/24 na interface do anfitrião.</p>` + code('conf — /etc/jail.conf', `www {\n    host.hostname     = "www.lab.example";\n    path              = "/usr/jails/$name";\n    ip4.addr          = 10.0.0.20;\n    interface         = "vtnet0";\n    exec.start        = "/bin/sh /etc/rc";\n    exec.stop         = "/bin/sh /etc/rc.shutdown";\n    exec.clean;\n    mount.devfs;\n}`)},
+  {h:'Arrancar, inspeccionar e entrar', html:code('sh', `sysrc jail_enable="YES"\nsysrc jail_list="www"\nservice jail start www\njls                      # listar as jails em execução\njexec www /bin/sh        # shell dentro da jail`)},
+  {h:'Deixar a jail chegar ao exterior (pf)', html:`<p>O tráfego de saída da sub-rede da jail é traduzido (NAT) atrás do endereço do anfitrião. A porta 80 do anfitrião é redireccionada para a jail. Acrescente estas linhas a <code>/etc/pf.conf</code> acima das regras de filtro do Capítulo 4.</p>` + code('conf — acrescentos a /etc/pf.conf', `nat on vtnet0 from 10.0.0.0/24 to any -> (vtnet0)\nrdr on vtnet0 proto tcp to (vtnet0) port 80 -> 10.0.0.20`) + note('warn','Os redireccionamentos abrem caminhos','<p>Cada <code>rdr</code> é um serviço exposto. Acrescente a regra <code>pass</code> correspondente de propósito e nada mais.</p>')},
+  {h:'Limitar o raio de destruição com rctl', html:`<p>Os limites de recursos precisam de suporte RACCT no kernel, activado no arranque. Depois limite o que uma jail pode consumir.</p>` + code('conf — /boot/loader.conf', `kern.racct.enable="1"`) + code('sh', `rctl -a jail:www:memoryuse:deny=2G\nrctl -l jail:www`) + note('bad','Má decisão: uma jail por serviço, todas como root, todas com sockets crus','<p>Um processo root dentro de uma jail com privilégios largos e sem limites transforma um serviço comprometido num problema para todo o anfitrião. Corra os serviços sem privilégios e limite a memória por jail.</p>')},
+  {h:'Gestores de jails', html:`<p>Um jail.conf escrito à mão funciona bem para meia dúzia de jails. Para muitas, use um gestor: <a href="https://bastillebsd.org/" target="_blank" rel="noopener noreferrer" class="external">Bastille</a>, iocage ou ezjail da árvore de ports. Automatizam exactamente os passos acima.</p>`}
+  ],
+  refs:[['FreeBSD Handbook: Jails e contentores','https://docs.freebsd.org/en/books/handbook/jails/'],['jail(8)','https://man.freebsd.org/cgi/man.cgi?query=jail'],['jail.conf(5)','https://man.freebsd.org/cgi/man.cgi?query=jail.conf'],['rctl(8)','https://man.freebsd.org/cgi/man.cgi?query=rctl'],['Gestor de jails Bastille','https://bastillebsd.org/']],
+  quiz:[
+   {q:'O que é partilhado entre o anfitrião e as suas jails?', o:['Nada','O kernel','Apenas a base de utilizadores','Apenas /usr/local'], a:1, w:'As jails partilham o kernel do anfitrião, e é por isso que corrigir o kernel importa tanto.'},
+   {q:'Que comando lista as jails em execução?', o:['jls','jps','jexec --list','zjail'], a:0, w:'O jls imprime as jails em execução com os seus IDs, caminhos e endereços.'},
+   {q:'Que comando instala um sistema base numa nova directoria de jail?', o:['bsdinstall jail /usr/jails/www','pkg jail www','jail -c www','zfs clone jail'], a:0, w:'O bsdinstall jail instala os conjuntos de distribuição base no caminho indicado.'},
+   {q:'O que faz rctl -a jail:www:memoryuse:deny=2G?', o:['Limita a memória da jail e nega alocações acima de 2 GB','Cria 2 GB de swap','Acrescenta 2 GB de RAM','Faz cópia de segurança da jail'], a:0, w:'Impõe um limite de recursos por jail. Requer kern.racct.enable=1 no loader.conf.'}
+  ]
+},
+{ n:6, code:'CH-06', short:'Kernel', time:'45 min', title:'Kernel: compilar, afinar e reverter',
+  lead:'O kernel é aquilo que raramente deve personalizar. Aprenda a compilar e instalar o seu em condições, para saber quando precisa dele e como voltar atrás.',
+  sections:[
+  {h:'Anatomia', html:`<ul class="k"><li><code>/boot/kernel</code>: o kernel activo e os seus módulos (<code>.ko</code>).</li><li><code>/boot/kernel.old</code>: o kernel anterior, guardado pelo <code>installkernel</code>.</li><li><code>/boot/loader.conf</code>: parâmetros de arranque e módulos.</li><li><code>/usr/src/sys/amd64/conf/GENERIC</code>: a configuração de kernel de referência.</li><li><code>kldstat</code>, <code>kldload</code>, <code>kldunload</code>: gerir módulos carregáveis em execução.</li></ul>`},
+  {h:'Obter o código correspondente', html:`<p>Faça corresponder o ramo do código ao lançamento que corre (<code>freebsd-version -u</code>).</p>` + code('sh', `pkg install -y git\ngit clone -b releng/15.1 --depth 1 https://git.freebsd.org/src.git /usr/src`) + note('bad','Má decisão: código e espaço de utilizador desencontrados','<p>Compilar um kernel de um ramo diferente do espaço de utilizador em execução é uma forma clássica de partir um servidor. Faça-os corresponder.</p>')},
+  {h:'Escrever uma configuração pequena', html:`<p>Comece pelo GENERIC e mude só o que precisa.</p>` + code('sh', `cd /usr/src/sys/amd64/conf\ncp GENERIC MYKERNEL`) + code('conf — /usr/src/sys/amd64/conf/MYKERNEL', `include GENERIC\nident   MYKERNEL\n\n# exemplo: um depurador no kernel para análise de falhas\noptions DDB`)},
+  {h:'Compilar, instalar, reiniciar', html:code('sh', `cd /usr/src\nmake -j$(sysctl -n hw.ncpu) buildkernel KERNCONF=MYKERNEL\nmake installkernel KERNCONF=MYKERNEL\nshutdown -r now\n\n# depois do reinício\nuname -i                  # deve imprimir MYKERNEL`)},
+  {h:'Afinar sem recompilar', html:`<p>A maioria dos parâmetros são sysctls em execução. Os que têm de existir antes de o kernel arrancar vão em <code>loader.conf</code>.</p>` + code('conf — /boot/loader.conf', `kern.racct.enable="1"       # limites de recursos para jails (Capítulo 5)\nautoboot_delay="3"`) + code('conf — /etc/sysctl.conf', `kern.ipc.somaxconn=4096\nsecurity.bsd.see_other_uids=0`)},
+  {h:'O caminho de retrocesso', html:`<p>Crie um ambiente de arranque antes de cada mudança de kernel. O retrocesso passa a ser uma escolha de menu em vez de uma sessão de salvamento.</p>` + code('sh', `bectl create before-kernel\nls /boot | grep kernel         # kernel.old é o seu segundo caminho`) + note('bad','Má decisão: mexer no kernel na única máquina de produção','<p>Sem consola, sem ambiente de arranque e sem recuperação testada: é assim que uma mudança de 10 minutos se torna um salvamento às 3 da manhã. Compile primeiro numa máquina de teste.</p>')}
+  ],
+  refs:[['FreeBSD Handbook: Configuração do kernel','https://docs.freebsd.org/en/books/handbook/kernelconfig/'],['FreeBSD Handbook: Actualizar o FreeBSD','https://docs.freebsd.org/en/books/handbook/cutting-edge/'],['loader.conf(5)','https://man.freebsd.org/cgi/man.cgi?query=loader.conf'],['config(8)','https://man.freebsd.org/cgi/man.cgi?query=config'],['sysctl(8)','https://man.freebsd.org/cgi/man.cgi?query=sysctl']],
+  quiz:[
+   {q:'Onde ficam as configurações de kernel amd64 na árvore de código?', o:['/etc/kernel','sys/amd64/conf','/boot/config','usr/src/kernel.d'], a:1, w:'Configurações como o GENERIC ficam em sys/amd64/conf na árvore de código.'},
+   {q:'O que guarda o installkernel como cópia de retrocesso?', o:['/boot/kernel.old','/var/backups/kernel.tgz','/boot/kernel.bak.1','Nada'], a:0, w:'O kernel anterior é guardado em /boot/kernel.old.'},
+   {q:'Que alvo compila apenas o kernel?', o:['make buildworld','make buildkernel KERNCONF=MYKERNEL','make kernel-all-now','make world'], a:1, w:'O buildkernel compila só o kernel. O buildworld compila todo o espaço de utilizador base.'},
+   {q:'Onde pertencem os parâmetros que têm de valer no arranque, como kern.racct.enable?', o:['Apenas /etc/sysctl.conf','/boot/loader.conf','/etc/rc.local','/usr/src/Makefile'], a:1, w:'O loader.conf é lido antes de o kernel arrancar. O sysctl.conf aplica parâmetros em execução depois do arranque.'}
+  ]
+},
+{ n:7, code:'CH-07', short:'Ambiente gráfico: Xorg + i3', time:'40 min', title:'Ambiente gráfico: Xorg, rato, teclado e i3',
+  lead:'Um ambiente gráfico mínimo, conduzido por teclado: o servidor Xorg, um gestor de janelas em mosaico e dispositivos de entrada configurados uma vez e documentados.',
+  sections:[
+  {h:'Instalar a pilha', html:code('sh', `pkg install -y xorg xinit xterm xinput i3 i3status i3lock dmenu dbus xf86-input-libinput\nsysrc dbus_enable="YES"\nservice dbus start\npw groupmod video -m alice          # acesso ao dispositivo gráfico (os nomes dos grupos variam)`)},
+  {h:'Controlador gráfico', html:`<p>A aceleração de hardware precisa dos controladores em modo kernel do <code>drm-kmod</code>. Veja o que o seu lançamento oferece e carregue o módulo certo para a sua GPU. Sem ele, o Xorg recorre a um framebuffer genérico: serve para testar, é lento para trabalhar.</p>` + code('sh', `pkg search drm-                     # listar os controladores drm do seu lançamento\npkg install -y drm-kmod             # Intel e AMD; confirme o nome exacto para o seu lançamento\nsysrc kld_list+="i915kms"           # exemplo Intel; a AMD usa amdgpu, verifique o dmesg`)},
+  {h:'Rato e touchpad', html:`<p>O daemon de rato da consola serve <code>/dev/sysmouse</code>. Dentro do Xorg, o controlador libinput trata dos dispositivos apontadores depois de instalado.</p>` + code('sh', `sysrc moused_enable="YES"\nservice moused start\nxinput list                         # confirmar os dispositivos que o Xorg vê`)},
+  {h:'Mapa de teclado', html:`<p>Defina o mapa da consola em <code>rc.conf</code> e o do Xorg num ficheiro drop-in. Substitua <code>us</code> pelo seu mapa.</p>` + code('sh', `sysrc keymap="us.iso.kbd"`) + code('conf — /usr/local/etc/X11/xorg.conf.d/10-keyboard.conf', `Section "InputClass"\n    Identifier "keyboard-layout"\n    MatchIsKeyboard "on"\n    Option "XkbLayout" "us"\n    Option "XkbVariant" "intl"\nEndSection`)},
+  {h:'Arrancar o X e ligar o i3', html:`<p>Entregue a sessão ao i3 com <code>~/.xinitrc</code> e arranque o X a partir de uma consola. O <code>i3-config-wizard</code> gera uma configuração inicial.</p>` + code('sh', `echo "exec i3" > ~/.xinitrc\nstartx`) + code('conf — ~/.config/i3/config (excerto)', `set $mod Mod4\nfont pango:monospace 10\nfloating_modifier $mod\nbindsym $mod+Return exec xterm\nbindsym $mod+d exec dmenu_run\nbindsym $mod+Shift+q kill\nbindsym $mod+Shift+x exec i3lock -c 000000\nbindsym $mod+1 workspace number 1\nbindsym $mod+2 workspace number 2`)},
+  {h:'Segurança no ambiente gráfico', html:`<p>Uma sessão gráfica é uma vista privilegiada do que escreve. Mantenha o controlo de acesso ao X ligado, corra a sessão como utilizador normal e bloqueie o ecrã quando sair.</p>` + note('bad','Má decisão: xhost + e startx como root','<p>O <code>xhost +</code> desliga o controlo de acesso ao X, e qualquer processo local pode ler as suas teclas e o ecrã. Correr a sessão como root multiplica os danos. Ambos são "correcções" para scripts que falham; corrija os scripts.</p>') + `<p>O Wayland é a alternativa moderna; o Handbook cobre o Sway como substituto do i3 em Wayland.</p>`}
+  ],
+  refs:[['FreeBSD Handbook: O sistema X Window','https://docs.freebsd.org/en/books/handbook/x11/'],['FreeBSD Handbook: Ambientes gráficos','https://docs.freebsd.org/en/books/handbook/desktop/'],['FreeBSD Handbook: Wayland','https://docs.freebsd.org/en/books/handbook/wayland/'],['Guia do utilizador do i3','https://i3wm.org/docs/userguide.html'],['moused(8)','https://man.freebsd.org/cgi/man.cgi?query=moused']],
+  quiz:[
+   {q:'Que pacote fornece o controlador de entrada libinput para o Xorg?', o:['xf86-input-libinput','xinput-kbd','libinput-tools-x','x11-drivers-all'], a:0, w:'O xf86-input-libinput é o controlador do Xorg que fala com o libinput para ratos, touchpads e teclados.'},
+   {q:'Que comando arranca uma sessão X a partir da consola?', o:['startx','xinit-now','x11 start','desktop-start'], a:0, w:'O startx lê o ~/.xinitrc e arranca o servidor X com a sua sessão.'},
+   {q:'No i3 e na maioria das configurações X, qual é a tecla Mod4 habitual?', o:['Alt','Ctrl','Super (a tecla Windows ou Command)','Shift'], a:2, w:'Mod4 é a tecla Super. Mod1 é normalmente Alt.'},
+   {q:'Porque é má ideia correr xhost +?', o:['Torna a GPU mais lenta','Desliga o controlo de acesso ao X, deixando qualquer cliente local ligar-se e capturar a entrada','Remove tipos de letra','Reinicia o dbus'], a:1, w:'Com o controlo de acesso desligado, qualquer processo local pode ligar-se ao seu servidor X.'}
+  ]
+},
+{ n:8, code:'CH-08', short:'Operações de herói', time:'50 min', title:'Operações de herói: recuperar, medir, provar',
+  lead:'O herói não é quem sabe todos os parâmetros. É quem consegue recuperar, medir e provar. Ambientes de arranque, snapshots e scrubs, rastreio e uma lista de verificação repetível.',
+  sections:[
+  {h:'Ambientes de arranque: a rede de segurança', html:code('sh', `bectl list\nbectl create before-upgrade\nfreebsd-update fetch install        # ou: pkg upgrade -y\nbectl list                          # o novo estado é visível\nbectl activate before-upgrade       # o próximo arranque usa o estado antigo se for preciso`) + note('info','Reverter é uma escolha de arranque','<p>O <code>bectl activate</code> marca um ambiente para o próximo arranque. Mantenha pelo menos um ambiente bom conhecido até o novo provar o seu valor.</p>')},
+  {h:'Snapshots, scrubs e replicação', html:code('sh', `zfs snapshot -r zroot@daily-2026-10-19\nzfs list -t snapshot\nzpool scrub zroot                   # verificar todas as somas de blocos, mensalmente\nzpool status zroot                  # acompanhar progresso e erros\nzfs send -R zroot/data@daily-2026-10-19 | ssh backup zfs receive -u backup/bsd01/data`) + note('ok','Pratique o restauro','<p>Uma cópia que nunca restaurou é uma esperança, não uma cópia. Restaure um único ficheiro a partir da réplica uma vez por trimestre.</p>')},
+  {h:'Observar a máquina', html:code('sh', `top -SH                # threads e actividade do kernel\nvmstat 1              # memória, paginação e CPU a cada segundo\niostat -x 1           # detalhe de I/O de disco\ngstat -p              # percentagem de ocupação dos discos GEOM`)},
+  {h:'DTrace em um minuto', html:`<p>O DTrace está integrado e não precisa de recompilação. Carregue os módulos do provider e faça uma pergunta.</p>` + code('sh', `kldload dtraceall\n# que processos fazem mais chamadas read(2) em cinco segundos\ndtrace -n 'syscall::read:entry { @[execname] = count(); } tick-5s { exit(0); }'`)},
+  {h:'Hipervisor: bhyve e vm-bhyve', html:`<p>O bhyve é o hipervisor nativo do FreeBSD. O vm-bhyve é uma interface de gestão que guarda os discos das VMs como datasets ZFS.</p>` + code('sh', `pkg install -y vm-bhyve bhyve-firmware\nzfs create zroot/vm\nsysrc vm_enable="YES"\nsysrc vm_dir="zfs:zroot/vm"\nvm init`) + `<p>Depois siga a documentação do vm-bhyve para criar e instalar hóspedes.</p>`},
+  {h:'Automatizar o aborrecido', html:code('conf — /etc/periodic.conf', `daily_status_security_enable="YES"    # relatório de segurança nocturno\ndaily_clean_tmps_enable="YES"`) + `<p>Agende as suas próprias tarefas com <code>crontab -e</code>. Mantenha-as em controlo de versões, não na cabeça.</p>`},
+  {h:'A lista de verificação do herói', html:`<ol class="k"><li>Lançamento suportado mais recente, com a data de fim de vida no calendário.</li><li>Utilizador administrador com nome, sudo, SSH só por chave, login de root desligado.</li><li>pf com negação por omissão e retrocesso anti-bloqueio documentado.</li><li>Correcções: freebsd-update, pkg audit, janela de reinício.</li><li>Ambiente de arranque antes de cada mudança arriscada.</li><li>Scrubs e snapshots agendados, com replicação fora da máquina.</li><li>Exercício de restauro feito neste trimestre.</li><li>Jails com limites de recursos e serviços sem privilégios.</li><li>Registos e serviços à escuta revistos periodicamente.</li></ol>`}
+  ],
+  refs:[['FreeBSD Handbook: ZFS','https://docs.freebsd.org/en/books/handbook/zfs/'],['FreeBSD Handbook: DTrace','https://docs.freebsd.org/en/books/handbook/dtrace/'],['FreeBSD Handbook: Virtualização','https://docs.freebsd.org/en/books/handbook/virtualization/'],['bectl(8)','https://man.freebsd.org/cgi/man.cgi?query=bectl'],['dtrace(1)','https://man.freebsd.org/cgi/man.cgi?query=dtrace'],['periodic(8)','https://man.freebsd.org/cgi/man.cgi?query=periodic']],
+  quiz:[
+   {q:'Qual é o retrocesso seguro mais rápido para uma actualização falhada?', o:['Reinstalar a partir do DVD','Activar o ambiente de arranque criado antes da actualização','Editar o rc.conf em modo mono-utilizador','Restaurar da memória'], a:1, w:'Um ambiente de arranque anterior à actualização é um alvo de retrocesso instantâneo e bom conhecido.'},
+   {q:'Que comando verifica todas as somas de blocos de uma pool ZFS?', o:['zpool scrub','zfs mount -a','zpool import','zfs check'], a:0, w:'Um scrub lê todos os dados e verifica as somas, reparando a partir da redundância quando possível.'},
+   {q:'Que hipervisor vem no sistema base do FreeBSD?', o:['VirtualBox','QEMU','bhyve','KVM'], a:2, w:'O bhyve é o hipervisor nativo do FreeBSD e faz parte do sistema base.'},
+   {q:'Que sonda dispara quando um programa entra na chamada ao sistema read(2)?', o:['syscall::read:entry','proc:read:start','kernel::read','read:begin'], a:0, w:'O provider syscall expõe sondas de entrada e de retorno para cada chamada ao sistema.'}
+  ]
+},
+];
+const BADS_PT = [
+{t:'Trabalhar como root o dia inteiro', d:`Entrar como root para tudo, porque é mais rápido.`, w:`Cada gralha e cada programa comprometido corre com poder total, e não há rasto de auditoria por pessoa. Um atacante que consiga uma shell como o seu utilizador tem de escalar; um fluxo só de root dá-lhe a linha de chegada.`, f:`Um utilizador com nome em wheel, sudo para comandos administrativos e su -l apenas para emergências (Capítulo 2).`},
+ {t:'SSH de root com palavras-passe', d:`PermitRootLogin yes e PasswordAuthentication yes, "até as chaves estarem prontas".`, w:`O root é um nome de utilizador conhecido, por isso os bots só precisam de adivinhar uma palavra-passe. A sondagem começa minutos depois de um endereço público aparecer, e as definições temporárias duram anos.`, f:`Chaves para um administrador com nome, PermitRootLogin no, AllowGroups wheel e sshguard para o ruído (Capítulo 3).`},
+ {t:'Permitir tudo no pf à socapa', d:`pass in all acrescentado para depurar um problema de ligação.`, w:`As regras temporárias sobrevivem à sessão de depuração. A negação por omissão é o seu controlo principal, e uma regra de permitir tudo elimina-a para todas as portas.`, f:`Acrescente uma regra estreita e registada para o fluxo exacto, teste-a e remova-a. Use o retrocesso anti-bloqueio quando editar por SSH (Capítulo 4).`},
+ {t:'Saltar as actualizações porque funciona', d:`O servidor corre, por isso ninguém lhe toca durante um ano.`, w:`As vulnerabilidades no sistema base e nos pacotes são publicadas em avisos e na VuXML. Os atacantes leem as mesmas listas públicas, por isso uma máquina sem correcções é um alvo conhecido.`, f:`Uma janela de manutenção agendada: freebsd-update, pkg audit -F, pkg upgrade, reinício, tudo com um ambiente de arranque (Capítulos 3 e 8).`},
+ {t:'Repositórios de terceiros ao acaso e curl | sh', d:`Acrescentar um repositório de pacotes desconhecido ou passar um script de instalação ao sh como root.`, w:`Entrega o root a um mantenedor desconhecido sem revisão. Um repositório ou script comprometido é um ataque à cadeia de fornecimento que passa por cima de tudo o resto que fez.`, f:`O repositório oficial do pkg, a árvore de ports de git.freebsd.org e verificação de somas para tudo o que descarregar à mão.`},
+ {t:'chmod 777 para fazer funcionar', d:`Tornar um ficheiro de configuração ou uma directoria gravável por todos para resolver um erro de permissões.`, w:`Qualquer utilizador local, e qualquer serviço que corra como outro utilizador, pode alterá-lo. Uma aplicação web que escreve configuração como 777 transforma um ficheiro num caminho para o root.`, f:`Descubra o dono e o grupo de que o serviço precisa. Use ls -l para verificar, chown e chmod no mínimo e documente a razão.`},
+ {t:'Deduplicação ZFS numa máquina modesta', d:`Activar a deduplicação num servidor pequeno porque soa a espaço grátis.`, w:`A tabela de deduplicação tem de viver em RAM para ser rápida. Com pouca memória, o desempenho pode colapsar e a pool torna-se penosa de operar. A deduplicação também multiplica o custo de cada escrita.`, f:`Use compressão lz4, que normalmente dá ganho líquido. Considere a deduplicação só depois de medir dados reais e orçamentar RAM para a tabela.`},
+ {t:'RAID é cópia de segurança', d:`Confiar num mirror ou raidz como estratégia de cópia de segurança.`, w:`A redundância protege contra falha de disco. Não protege contra eliminação, ransomware, uma migração mal feita ou um sistema de ficheiros corrompido replicado para todos os discos.`, f:`Snapshots ZFS mais zfs send para uma segunda máquina, com um exercício de restauro por trimestre (Capítulo 8).`},
+ {t:'Mexer no kernel na única máquina', d:`Compilar e instalar um kernel próprio no único servidor de produção, sem consola nem ambiente de arranque.`, w:`Um arranque falhado sem retrocesso torna-se uma sessão de salvamento às 3 da manhã. Os erros de kernel são os mais difíceis de desfazer remotamente.`, f:`Compile primeiro numa máquina de teste, mantenha uma consola série ou KVM, crie um ambiente de arranque antes da mudança e guarde o kernel.old (Capítulo 6).`},
+ {t:'xhost + e X como root', d:`Abrir o servidor X a todos para um script funcionar e correr a sessão como root.`, w:`Qualquer processo local pode ler as suas teclas e o ecrã. O root multiplica cada erro no ambiente gráfico.`, f:`Corra a sessão como o seu utilizador, mantenha o controlo de acesso ligado e corrija o script em vez do modelo de segurança (Capítulo 7).`},
+ {t:'Jails como root, com sockets crus e sem limites', d:`Correr cada serviço como root dentro de uma jail, com privilégios largos e sem limites de recursos.`, w:`Um processo root com sockets crus e sem limites alarga o alcance de um serviço comprometido e deixa um inquilino esfomear os outros. Uma jail é uma camada de contenção, não uma licença para ser descuidado.`, f:`Utilizadores de serviço sem privilégios, as definições allow.* nos valores por omissão, limites de memória e recursos com rctl e um gestor de jails para consistência (Capítulo 5).`}
+];
+const PLATFORMS_PT = [
+{name:'pfSense (Netgate)', kind:'Firewall', tone:'ok', what:`Distribuição de firewall e router de código aberto construída sobre FreeBSD. O seu filtro de pacotes é o pf, o mesmo que configurou no Capítulo 4.`, url:'https://www.pfsense.org/'},
+ {name:'OPNsense', kind:'Firewall', tone:'ok', what:`Plataforma de firewall e encaminhamento construída sobre FreeBSD, com pf e uma interface web de administração. Um bom exemplo de electrodoméstico FreeBSD em produção.`, url:'https://opnsense.org/'},
+ {name:'TrueNAS CORE', kind:'Armazenamento', tone:'ok', what:`Plataforma NAS construída sobre FreeBSD com ZFS no centro. A linha irmã TrueNAS SCALE é baseada em Linux, por isso confirme qual está a ver.`, url:'https://www.truenas.com/'},
+ {name:'Juniper Junos OS', kind:'Redes', tone:'ok', what:`Sistema operativo de rede nos routers e switches Juniper. O kernel e o espaço de utilizador baseiam-se em código FreeBSD. Confirme os detalhes actuais na documentação da Juniper antes de os citar.`, url:'https://www.juniper.net/'},
+ {name:'Software de sistema da PlayStation 4 e 5', kind:'Consumo', tone:'warn', what:`O software de sistema das consolas Sony é amplamente descrito como derivado do FreeBSD. A Sony não publica um detalhe completo, por isso trate a versão e os componentes exactos como reportados, não oficiais.`, url:'https://en.wikipedia.org/wiki/FreeBSD'},
+ {name:'Netflix Open Connect', kind:'CDN', tone:'ok', what:`A Netflix descreveu publicamente electrodomésticos Open Connect baseados em FreeBSD que servem vídeo de dentro das redes dos operadores. As suas contribuições para a rede do FreeBSD também são públicas.`, url:'https://openconnect.netflix.com/'},
+ {name:'WhatsApp (histórico)', kind:'Mensagens', tone:'warn', what:`O backend inicial do WhatsApp foi amplamente reportado como correndo FreeBSD com Erlang. A pilha de produção actual mudou ao longo do tempo, por isso trate isto como história.`, url:'https://en.wikipedia.org/wiki/WhatsApp'},
+ {name:'macOS e iOS', kind:'Não é FreeBSD', tone:'bad', what:`Os sistemas da Apple partilham uma linhagem BSD (kernel XNU, espaço de utilizador BSD) mas não são FreeBSD. Nomes de pacotes, scripts rc e opções diferem. Não copie passos de FreeBSD para eles.`, url:'https://opensource.apple.com/'},
+ {name:'FreeBSD Foundation', kind:'Projecto', tone:'ok', what:`A organização sem fins lucrativos que apoia o desenvolvimento do FreeBSD, detém a marca e financia trabalho de segurança e infraestrutura.`, url:'https://freebsdfoundation.org/'},
+ {name:'FreshPorts', kind:'Índice de ports', tone:'ok', what:`Índice independente da árvore de ports do FreeBSD, com histórico de vulnerabilidades e actualizações por port. Útil antes de instalar o que quer que seja.`, url:'https://www.freshports.org/'}
+];
+
+
+/* ============ i18n strings ============ */
+const STR = {
+en:{
+  prog:'Progress', levelsValidated:(a,b)=>`${a} / ${b} levels validated`, manual:'Manual · levels', field:'Field notes',
+  top:(a,b)=>`validated ${a}/${b}`, bad:'Bad decisions', platforms:'Known platforms', exam:'Hero exam',
+  answerAll:'Answer every question before validating.', correct:'Correct.', notQuite:'Not quite.',
+  score:(s,n,ok,th)=>`Score ${s}/${n} · ${ok?'VALIDATED':'NOT VALIDATED (need '+th+')'}`,
+  review:'Review the sections above, then press Reset quiz to try again.',
+  validate:'Validate answers', reset:'Reset quiz',
+  doc:'Doc FBSD-ZTH', chapter:'Chapter', revShort:'Rev', pub:'Public',
+  est:t=>`Est. ${t}`, valChip:'Validation 3/4', statusOk:'Status: VALIDATED', statusOpen:'Status: OPEN',
+  refs:'External references', valHead:c=>`Validation · ${c}`, heroExamNext:'the hero exam',
+  valIntro:next=>`Answer all four questions, then validate. 3 correct unlocks ${next}.`,
+  validated:'Chapter validated.', open:c=>`Open ${c} →`,
+  lockedTitle:'Chapter locked', lockedBody:prev=>`${prev} must be validated first (3/4). Open it and pass the quiz.`,
+  goTo:c=>`Go to ${c}`,
+  kicker:'FreeBSD field manual · zero to hero',
+  heroBig:'FreeBSD <em>from</em> zero<br>to hero.',
+  heroSub:'A practical, opinionated manual for installing, configuring, hardening and operating FreeBSD. Real commands, real files, real references, and a validation gate on every level: you unlock the next chapter by proving you understood the last one.',
+  start:'Start at CH-00', cont:c=>`Continue at ${c}`, readBad:'Read the bad decisions',
+  seePlat:'See known platforms', resetProg:'Reset my progress',
+  rows:[['Document','FBSD-ZTH · Rev '+REV],['Target','FreeBSD 15.1-RELEASE (amd64). Level notes flag where 14.x differs.'],
+        ['Prerequisites','Basic command line. A spare machine or VM, and a console you can reach.'],
+        ['Gate','Each chapter has a 4-question validation. 3/4 unlocks the next chapter. Hero exam requires 12/15.']],
+  toc:'Table of contents', how:'How this manual works',
+  howBullets:['<b>Forced progression.</b> Level n+1 stays locked until you validate level n. Progress is stored in this browser only.',
+    '<b>Real examples.</b> Every block is meant to be typed on a FreeBSD 15.1 system. Files are shown in full, not as fragments.',
+    '<b>Explained bad decisions.</b> Each chapter flags the common mistake and why it hurts. A dedicated page collects them.',
+    '<b>Primary sources.</b> Every chapter links to the FreeBSD Handbook, the man pages and the security pages. Check them: they are authoritative and they change.'],
+  beforeTitle:'Before you start',
+  beforeBody:'<p>Run every experiment on a VM or spare box first. pf, kernel and ZFS changes can lock you out or stop a boot. Chapter 4 and Chapter 6 show the safety nets.</p>',
+  trademark:'FreeBSD is a registered trademark of The FreeBSD Foundation. This manual is independent educational material and is not affiliated with the FreeBSD Project.',
+  fn1:'Bad decisions', fn1s:'Eleven mistakes, why they hurt, and what to do instead',
+  fn2:'Known platforms', fn2s:'Where FreeBSD runs in products you already use',
+  fn3:'Hero exam', fn3s:'15 random questions across every chapter',
+  resetConfirm:'Erase all validation progress in this browser?',
+  badTitle:'Bad decisions, explained',
+  badLead:'Experienced administrators make these mistakes too. Each one looks reasonable on the day it is made, and each one costs the most later. Know them before they happen to you.',
+  badChips:['Field note','11 entries','Each links back to a chapter'],
+  platTitle:'Known platforms built on FreeBSD',
+  platLead:'FreeBSD is not only a hobby system. Firewalls, storage, network operating systems and game consoles ship it, or code derived from it. Verify each claim against the vendor documentation before you cite it in a design review.',
+  platChips:['Field note','Public references','Status as of Oct 2026'],
+  platNote:'<p>macOS and iOS share a BSD heritage (XNU kernel, BSD userland) but are not FreeBSD. Package names, rc scripts and tool flags differ, so do not copy FreeBSD steps onto them.</p>',
+  examLead:n=>`15 random questions drawn from all ${n} chapter questions. Pass mark 12/15. Retake as often as you like.`,
+  examLockedLead:'The exam unlocks when every chapter is validated.',
+  examLockedBody:n=>`${n} chapters validated. Finish the remaining chapters first.`,
+  examPass:'<b>HERO.</b> You validated every chapter and the exam. Now go break something on purpose, in a VM, and fix it.',
+  contManual:'Continue the manual',
+  footer:c=>`FBSD-ZTH · ${c} · Rev ${REV}`
+},
+pt:{
+  prog:'Progresso', levelsValidated:(a,b)=>`${a} / ${b} níveis validados`, manual:'Manual · níveis', field:'Notas de campo',
+  top:(a,b)=>`validados ${a}/${b}`, bad:'Más decisões', platforms:'Plataformas conhecidas', exam:'Exame de herói',
+  answerAll:'Responda a todas as perguntas antes de validar.', correct:'Correcto.', notQuite:'Não exactamente.',
+  score:(s,n,ok,th)=>`Pontuação ${s}/${n} · ${ok?'VALIDADO':'NÃO VALIDADO (precisa de '+th+')'}`,
+  review:'Releia as secções acima e carregue em Reiniciar questionário para tentar outra vez.',
+  validate:'Validar respostas', reset:'Reiniciar questionário',
+  doc:'Doc FBSD-ZTH', chapter:'Capítulo', revShort:'Rev', pub:'Público',
+  est:t=>`Est. ${t}`, valChip:'Validação 3/4', statusOk:'Estado: VALIDADO', statusOpen:'Estado: ABERTO',
+  refs:'Referências externas', valHead:c=>`Validação · ${c}`, heroExamNext:'o exame de herói',
+  valIntro:next=>`Responda às quatro perguntas e valide. 3 certas desbloqueiam ${next}.`,
+  validated:'Capítulo validado.', open:c=>`Abrir ${c} →`,
+  lockedTitle:'Capítulo bloqueado', lockedBody:prev=>`${prev} tem de ser validado primeiro (3/4). Abra-o e passe o questionário.`,
+  goTo:c=>`Ir para ${c}`,
+  kicker:'Manual de campo FreeBSD · de zero a herói',
+  heroBig:'FreeBSD <em>de</em> zero<br>a herói.',
+  heroSub:'Um manual prático e opinativo para instalar, configurar, endurecer e operar FreeBSD. Comandos reais, ficheiros reais, referências reais e uma validação em cada nível: desbloqueia o capítulo seguinte provando que compreendeu o anterior.',
+  start:'Começar no CH-00', cont:c=>`Continuar no ${c}`, readBad:'Ler as más decisões',
+  seePlat:'Ver as plataformas conhecidas', resetProg:'Repor o meu progresso',
+  rows:[['Documento','FBSD-ZTH · Rev '+REV],['Alvo','FreeBSD 15.1-RELEASE (amd64). As notas de nível assinalam onde o 14.x difere.'],
+        ['Pré-requisitos','Linha de comandos básica. Uma máquina livre ou VM, e uma consola acessível.'],
+        ['Validação','Cada capítulo tem um questionário de 4 perguntas. 3/4 desbloqueia o capítulo seguinte. O exame de herói exige 12/15.']],
+  toc:'Índice', how:'Como funciona este manual',
+  howBullets:['<b>Progressão forçada.</b> O nível n+1 fica bloqueado até validar o nível n. O progresso fica guardado apenas neste navegador.',
+    '<b>Exemplos reais.</b> Cada bloco foi pensado para ser escrito num sistema FreeBSD 15.1. Os ficheiros são mostrados por inteiro, não em fragmentos.',
+    '<b>Más decisões explicadas.</b> Cada capítulo assinala o erro comum e porque dói. Há uma página dedicada a reuni-los.',
+    '<b>Fontes primárias.</b> Cada capítulo remete para o FreeBSD Handbook, as páginas man e as páginas de segurança. Confirme-as: são autorizadas e mudam.'],
+  beforeTitle:'Antes de começar',
+  beforeBody:'<p>Faça todas as experiências primeiro numa VM ou numa máquina de reserva. Mudanças de pf, kernel e ZFS podem bloquear o acesso ou impedir o arranque. Os capítulos 4 e 6 mostram as redes de segurança.</p>',
+  trademark:'FreeBSD é marca registada da The FreeBSD Foundation. Este manual é material educativo independente e não é afiliado ao FreeBSD Project.',
+  fn1:'Más decisões', fn1s:'Onze erros, porque doem e o que fazer em vez disso',
+  fn2:'Plataformas conhecidas', fn2s:'Onde o FreeBSD corre em produtos que já usa',
+  fn3:'Exame de herói', fn3s:'15 perguntas aleatórias de todos os capítulos',
+  resetConfirm:'Apagar todo o progresso de validação neste navegador?',
+  badTitle:'Más decisões, explicadas',
+  badLead:'Administradores experientes também cometem estes erros. Cada um parece razoável no dia em que é tomado, e cada um custa mais tarde. Conheça-os antes que lhe aconteçam.',
+  badChips:['Nota de campo','11 entradas','Cada uma remete a um capítulo'],
+  platTitle:'Plataformas conhecidas construídas sobre FreeBSD',
+  platLead:'O FreeBSD não é apenas um sistema de passatempo. Firewalls, armazenamento, sistemas operativos de rede e consolas incluem-no, ou código dele derivado. Confirme cada afirmação na documentação do fabricante antes de a citar numa revisão de arquitectura.',
+  platChips:['Nota de campo','Referências públicas','Estado em Out 2026'],
+  platNote:'<p>macOS e iOS partilham herança BSD (kernel XNU, espaço de utilizador BSD) mas não são FreeBSD. Nomes de pacotes, scripts rc e opções de ferramentas diferem, por isso não copie passos de FreeBSD para eles.</p>',
+  examLead:n=>`15 perguntas aleatórias retiradas das ${n} perguntas dos capítulos. Nota de passagem 12/15. Repita as vezes que quiser.`,
+  examLockedLead:'O exame desbloqueia quando todos os capítulos estiverem validados.',
+  examLockedBody:n=>`${n} capítulos validados. Termine os que faltam primeiro.`,
+  examPass:'<b>HERÓI.</b> Validou todos os capítulos e o exame. Agora vá partir algo de propósito, numa VM, e conserte-o.',
+  contManual:'Continuar o manual',
+  footer:c=>`FBSD-ZTH · ${c} · Rev ${REV}`
+}
+};
+
+/* ============ language ============ */
+let LANG = 'en';
+let LEVELS = LEVELS_EN, BADS = BADS_EN, PLATFORMS = PLATFORMS_EN;
+const S = () => STR[LANG];
+
+function applyLang(lang){
+  LANG = (lang === 'pt') ? 'pt' : 'en';
+  LEVELS = LANG === 'pt' ? LEVELS_PT : LEVELS_EN;
+  BADS = LANG === 'pt' ? BADS_PT : BADS_EN;
+  PLATFORMS = LANG === 'pt' ? PLATFORMS_PT : PLATFORMS_EN;
+  document.documentElement.lang = LANG === 'pt' ? 'pt-PT' : 'en';
+  document.querySelectorAll('[data-set-lang]').forEach(a => {
+    if (a.getAttribute('data-set-lang') === LANG) a.setAttribute('aria-current', 'true');
+    else a.removeAttribute('aria-current');
+  });
+}
+document.querySelectorAll('[data-set-lang]').forEach(a => {
+  a.addEventListener('click', ev => {
+    if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button) return;
+    ev.preventDefault();
+    applyLang(a.getAttribute('data-set-lang'));
+    route();
+  });
+});
+
 /* ============ state ============ */
 let progress = load();
 function load(){ try { return JSON.parse(localStorage.getItem(KEY)) || {passed:{}, exam:false}; } catch(e){ return {passed:{}, exam:false}; } }
@@ -630,19 +955,20 @@ const passedCount = () => LEVELS.filter(l => isPassed(l.n)).length;
 
 /* ============ navigation ============ */
 function renderNav(active){
+  const s = S();
   const items = LEVELS.map(l => {
     const st = isPassed(l.n) ? ['done','■'] : isUnlocked(l.n) ? ['open','□'] : ['lock','×'];
     const cls = (active === 'level/'+l.n ? 'on ' : '') + (isUnlocked(l.n) ? '' : 'locked');
     return `<li><a class="${cls}" href="#/level/${l.n}"><span class="st ${st[0]}">${st[1]}</span>${esc(l.code)} · ${esc(l.short)}</a></li>`;
   }).join('');
   const field = [
-    ['bad','Bad decisions'], ['platforms','Known platforms'], ['exam','Hero exam']
+    ['bad',s.bad], ['platforms',s.platforms], ['exam',s.exam]
   ].map(([k,t]) => `<li><a class="${active===k?'on':''}" href="#/${k}"><span class="st">›</span>${t}</a></li>`).join('');
   document.getElementById('toc').innerHTML =
-    `<h4>Progress</h4><div class="bar"><i style="width:${Math.round(passedCount()/LEVELS.length*100)}%"></i></div>
-     <div class="muted mono" style="font-size:12px;margin:0 8px 4px">${passedCount()} / ${LEVELS.length} levels validated</div>
-     <h4>Manual · levels</h4><ul>${items}</ul><h4>Field notes</h4><ul>${field}</ul>`;
-  document.getElementById('prog-top').textContent = `validated ${passedCount()}/${LEVELS.length}` + (progress.exam ? ' · HERO' : '');
+    `<h4>${s.prog}</h4><div class="bar"><i style="width:${Math.round(passedCount()/LEVELS.length*100)}%"></i></div>
+     <div class="muted mono" style="font-size:12px;margin:0 8px 4px">${s.levelsValidated(passedCount(), LEVELS.length)}</div>
+     <h4>${s.manual}</h4><ul>${items}</ul><h4>${s.field}</h4><ul>${field}</ul>`;
+  document.getElementById('prog-top').textContent = s.top(passedCount(), LEVELS.length) + (progress.exam ? ' · HERO' : '');
 }
 
 function route(){
@@ -655,7 +981,6 @@ function route(){
   else if (h === 'manual') { renderIntro(); document.getElementById('view').scrollIntoView(); }
   else renderIntro();
   renderNav(h || 'intro');
-  if (!h || h==='manual') { /* intro */ }
   window.scrollTo(0,0);
 }
 window.addEventListener('hashchange', route);
@@ -665,20 +990,22 @@ document.addEventListener('click', async e => {
   const b = e.target.closest('[data-copy]');
   if (!b) return;
   const txt = b.closest('.codeblock').querySelector('code').textContent;
-  try { await navigator.clipboard.writeText(txt); b.textContent = 'copied'; }
-  catch(_) { b.textContent = 'select'; }
-  setTimeout(() => b.textContent = 'copy', 1200);
+  try { await navigator.clipboard.writeText(txt); b.textContent = LANG === 'pt' ? 'copiado' : 'copied'; }
+  catch(_) { b.textContent = LANG === 'pt' ? 'seleccione' : 'select'; }
+  setTimeout(() => b.textContent = LANG === 'pt' ? 'copiar' : 'copy', 1200);
 });
 
 /* ============ quiz engine ============ */
 function quizHTML(qs){
+  const s = S();
   return qs.map((q,i) => `<div class="qitem"><div class="qtext"><span class="qno">Q${i+1}</span>${esc(q.q)}</div>
     <div class="opts">${q.o.map((o,j) => `<button type="button" class="opt" data-qi="${i}" data-oi="${j}">${esc(o)}</button>`).join('')}</div>
     <div class="why" hidden></div></div>`).join('') +
-    `<div class="qactions"><button type="button" class="btn primary" data-check>Validate answers</button>
-     <button type="button" class="btn" data-reset>Reset quiz</button><span class="qmsg"></span></div><div class="qextra"></div>`;
+    `<div class="qactions"><button type="button" class="btn primary" data-check>${s.validate}</button>
+     <button type="button" class="btn" data-reset>${s.reset}</button><span class="qmsg"></span></div><div class="qextra"></div>`;
 }
 function mountQuiz(root, qs, threshold, onPass, redo){
+  const s = S();
   const sel = qs.map(() => -1);
   let done = false;
   root.innerHTML = quizHTML(qs);
@@ -696,7 +1023,7 @@ function mountQuiz(root, qs, threshold, onPass, redo){
   });
   function check(){
     const msg = root.querySelector('.qmsg');
-    if (sel.includes(-1)) { msg.className = 'qmsg warn'; msg.textContent = 'Answer every question before validating.'; return; }
+    if (sel.includes(-1)) { msg.className = 'qmsg warn'; msg.textContent = s.answerAll; return; }
     done = true;
     let score = 0;
     qs.forEach((q,i) => {
@@ -708,135 +1035,137 @@ function mountQuiz(root, qs, threshold, onPass, redo){
       const ok = sel[i] === q.a; if (ok) score++;
       const w = item.querySelector('.why');
       w.hidden = false;
-      w.innerHTML = `<b class="${ok?'t-ok':'t-bad'}">${ok?'Correct.':'Not quite.'}</b> ${esc(q.w)}`;
+      w.innerHTML = `<b class="${ok?'t-ok':'t-bad'}">${ok?s.correct:s.notQuite}</b> ${esc(q.w)}`;
     });
     const pass = score >= threshold;
     msg.className = 'qmsg ' + (pass ? 'ok' : 'bad');
-    msg.textContent = `Score ${score}/${qs.length} · ${pass ? 'VALIDATED' : 'NOT VALIDATED (need ' + threshold + ')'}`;
+    msg.textContent = s.score(score, qs.length, pass, threshold);
     if (pass) onPass(root.querySelector('.qextra'));
-    else root.querySelector('.qextra').innerHTML = `<p class="muted">Review the sections above, then press Reset quiz to try again.</p>`;
+    else root.querySelector('.qextra').innerHTML = `<p class="muted">${s.review}</p>`;
   }
 }
 
 /* ============ pages ============ */
 function pageHead(code_, title, lead, chips){
+  const s = S();
   return `<header class="doc-head">
-    <div class="doc-meta"><span>Doc FBSD-ZTH</span><span>Chapter ${esc(code_)}</span><span>Rev ${REV}</span><span>Public</span></div>
+    <div class="doc-meta"><span>${s.doc}</span><span>${s.chapter} ${esc(code_)}</span><span>${s.revShort} ${REV}</span><span>${s.pub}</span></div>
     <h1><span class="sec">${esc(code_)}</span>${title}</h1>
     <p class="lead">${lead}</p>
     <div class="chips">${chips.map(c=>`<span>${c}</span>`).join('')}</div></header>`;
 }
 
 function renderIntro(){
+  const s = S();
   const cards = LEVELS.map(l => {
-    const stamp = isPassed(l.n) ? '<span class="stamp">VALIDATED</span>' : '';
+    const stamp = isPassed(l.n) ? `<span class="stamp">${LANG === 'pt' ? 'VALIDADO' : 'VALIDATED'}</span>` : '';
     const lk = isUnlocked(l.n) ? '' : ' lk';
     return `<a class="${lk.trim()}" href="#/level/${l.n}">${stamp}<span class="pg">${esc(l.code)} · p.${(l.n+1)*12}</span><span class="t">${esc(l.title)}</span><span class="s">${esc(l.short)} · ${esc(l.time)}</span></a>`;
   }).join('');
   const next = LEVELS.find(l => !isPassed(l.n)) || LEVELS[0];
   document.getElementById('view').innerHTML = `<article class="page">
     <section class="hero">
-      <p class="mono muted" style="margin:0 0 10px">FreeBSD field manual · zero to hero</p>
-      <h1 class="big">FreeBSD <em>from</em> zero<br>to hero.</h1>
-      <p class="sub">A practical, opinionated manual for installing, configuring, hardening and operating FreeBSD. Real commands, real files, real references, and a validation gate on every level: you unlock the next chapter by proving you understood the last one.</p>
-      <div class="btns"><a class="btn primary" href="#/level/${next.n}">${passedCount() ? 'Continue at ' + esc(next.code) : 'Start at CH-00'}</a>
-        <a class="btn" href="#/bad">Read the bad decisions</a><a class="btn" href="#/platforms">See known platforms</a>
-        <button class="btn danger" type="button" id="reset-prog">Reset my progress</button></div>
+      <p class="mono muted" style="margin:0 0 10px">${s.kicker}</p>
+      <h1 class="big">${s.heroBig}</h1>
+      <p class="sub">${s.heroSub}</p>
+      <div class="btns"><a class="btn primary" href="#/level/${next.n}">${passedCount() ? s.cont(esc(next.code)) : s.start}</a>
+        <a class="btn" href="#/bad">${s.readBad}</a><a class="btn" href="#/platforms">${s.seePlat}</a>
+        <button class="btn danger" type="button" id="reset-prog">${s.resetProg}</button></div>
     </section>
     <table class="tbl" style="max-width:700px"><tbody>
-      <tr><th>Document</th><td class="mono">FBSD-ZTH · Rev ${REV}</td></tr>
-      <tr><th>Target</th><td>FreeBSD 15.1-RELEASE (amd64). Level notes flag where 14.x differs.</td></tr>
-      <tr><th>Prerequisites</th><td>Basic command line. A spare machine or VM, and a console you can reach.</td></tr>
-      <tr><th>Gate</th><td>Each chapter has a ${4}-question validation. ${PASS}/4 unlocks the next chapter. Hero exam requires ${EXAM_PASS}/15.</td></tr>
+      ${s.rows.map(([k,v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('')}
     </tbody></table>
-    <h2><span class="sec">00</span>Table of contents</h2>
+    <h2><span class="sec">00</span>${s.toc}</h2>
     <div class="toc">${cards}
-      <a href="#/bad"><span class="pg">FN-1</span><span class="t">Bad decisions</span><span class="s">Ten mistakes, why they hurt, and what to do instead</span></a>
-      <a href="#/platforms"><span class="pg">FN-2</span><span class="t">Known platforms</span><span class="s">Where FreeBSD runs in products you already use</span></a>
-      <a href="#/exam"><span class="pg">FN-3</span><span class="t">Hero exam</span><span class="s">15 random questions across every chapter</span></a>
+      <a href="#/bad"><span class="pg">FN-1</span><span class="t">${s.fn1}</span><span class="s">${s.fn1s}</span></a>
+      <a href="#/platforms"><span class="pg">FN-2</span><span class="t">${s.fn2}</span><span class="s">${s.fn2s}</span></a>
+      <a href="#/exam"><span class="pg">FN-3</span><span class="t">${s.fn3}</span><span class="s">${s.fn3s}</span></a>
     </div>
-    <h2><span class="sec">01</span>How this manual works</h2>
+    <h2><span class="sec">01</span>${s.how}</h2>
     <ul class="k">
-      <li><b>Forced progression.</b> Level n+1 stays locked until you validate level n. Progress is stored in this browser only.</li>
-      <li><b>Real examples.</b> Every block is meant to be typed on a FreeBSD 15.1 system. Files are shown in full, not as fragments.</li>
-      <li><b>Explained bad decisions.</b> Each chapter flags the common mistake and why it hurts. A dedicated page collects them.</li>
-      <li><b>Primary sources.</b> Every chapter links to the FreeBSD Handbook, the man pages and the security pages. Check them: they are authoritative and they change.</li>
+      ${s.howBullets.map(b => `<li>${b}</li>`).join('')}
     </ul>
-    ${note('warn','Before you start', '<p>Run every experiment on a VM or spare box first. pf, kernel and ZFS changes can lock you out or stop a boot. Chapter 4 and Chapter 6 show the safety nets.</p>')}
-    <p class="muted" style="font-size:13px;margin-top:40px">FreeBSD is a registered trademark of The FreeBSD Foundation. This manual is independent educational material and is not affiliated with the FreeBSD Project.</p>
+    ${note('warn', s.beforeTitle, s.beforeBody)}
+    <p class="muted" style="font-size:13px;margin-top:40px">${s.trademark}</p>
   </article>`;
   const r = document.getElementById('reset-prog');
-  if (r) r.onclick = () => { if (confirm('Erase all validation progress in this browser?')) { progress = {passed:{}, exam:false}; save(); route(); } };
+  if (r) r.onclick = () => { if (confirm(s.resetConfirm)) { progress = {passed:{}, exam:false}; save(); route(); } };
 }
 
 function renderLevel(n){
+  const s = S();
   const L = LEVELS[n];
   if (!L) return renderIntro();
   const view = document.getElementById('view');
   if (!isUnlocked(n)) {
-    view.innerHTML = `<article class="page">${note('bad','Chapter locked', `<p>${esc(LEVELS[n-1].code)} must be validated first (${PASS}/4). Open it and pass the quiz.</p>`)}
-      <div class="btns"><a class="btn primary" href="#/level/${n-1}">Go to ${esc(LEVELS[n-1].code)}</a></div></article>`;
+    view.innerHTML = `<article class="page">${note('bad', s.lockedTitle, `<p>${s.lockedBody(esc(LEVELS[n-1].code))}</p>`)}
+      <div class="btns"><a class="btn primary" href="#/level/${n-1}">${s.goTo(esc(LEVELS[n-1].code))}</a></div></article>`;
     return;
   }
-  const secs = L.sections.map((s,i) => `<section id="s-${i}"><h2><span class="sec">${esc(L.code)}.${i+1}</span>${s.h}</h2>${s.html}</section>`).join('');
-  const refs = `<section class="refs"><h2><span class="sec">REF</span>External references</h2><ul>${L.refs.map(([t,u]) => `<li><a href="${u}" target="_blank" rel="noopener noreferrer">${esc(t)}</a> <span class="muted mono" style="font-size:12px">${esc(u)}</span></li>`).join('')}</ul></section>`;
+  const secs = L.sections.map((sec,i) => `<section id="s-${i}"><h2><span class="sec">${esc(L.code)}.${i+1}</span>${sec.h}</h2>${sec.html}</section>`).join('');
+  const refs = `<section class="refs"><h2><span class="sec">REF</span>${s.refs}</h2><ul>${L.refs.map(([t,u]) => `<li><a href="${u}" target="_blank" rel="noopener noreferrer">${esc(t)}</a> <span class="muted mono" style="font-size:12px">${esc(u)}</span></li>`).join('')}</ul></section>`;
   view.innerHTML = `<article class="page">
-    ${pageHead(L.code, esc(L.title), L.lead, [`Est. ${esc(L.time)}`, `Validation ${PASS}/4`, isPassed(n) ? 'Status: VALIDATED' : 'Status: OPEN'])}
+    ${pageHead(L.code, esc(L.title), L.lead, [s.est(esc(L.time)), s.valChip, isPassed(n) ? s.statusOk : s.statusOpen])}
     ${secs}${refs}
-    <section class="quiz-wrap" id="quiz-sec"><h2 style="border:0;margin-top:0;padding:0"><span class="sec">VAL</span>Validation · ${esc(L.code)}</h2>
-      <p class="muted">Answer all four questions, then validate. ${PASS} correct unlocks ${n<LEVELS.length-1 ? esc(LEVELS[n+1].code) : 'the hero exam'}.</p>
+    <section class="quiz-wrap" id="quiz-sec"><h2 style="border:0;margin-top:0;padding:0"><span class="sec">VAL</span>${s.valHead(esc(L.code))}</h2>
+      <p class="muted">${s.valIntro(n<LEVELS.length-1 ? esc(LEVELS[n+1].code) : s.heroExamNext)}</p>
       <div id="quiz"></div></section>
     <nav class="pager">${n>0 ? `<a class="btn" href="#/level/${n-1}">← ${esc(LEVELS[n-1].code)}</a>` : '<span></span>'}
-      ${n<LEVELS.length-1 ? `<a class="btn" href="#/level/${n+1}">${esc(LEVELS[n+1].code)} →</a>` : `<a class="btn" href="#/bad">Field notes →</a>`}</nav>
-    <div class="footer">FBSD-ZTH · ${esc(L.code)} · Rev ${REV}</div></article>`;
+      ${n<LEVELS.length-1 ? `<a class="btn" href="#/level/${n+1}">${esc(LEVELS[n+1].code)} →</a>` : `<a class="btn" href="#/bad">${s.field} →</a>`}</nav>
+    <div class="footer">${s.footer(esc(L.code))}</div></article>`;
   mountQuiz(document.getElementById('quiz'), L.quiz, PASS, extra => {
     progress.passed[n] = true; save();
     renderNav('level/'+n);
-    extra.innerHTML = `<div class="next-box">Chapter validated. ${n<LEVELS.length-1 ? `<a href="#/level/${n+1}">Open ${esc(LEVELS[n+1].code)} →</a>` : (allPassed() ? '<a href="#/exam">Take the hero exam →</a>' : '')}</div>`;
+    extra.innerHTML = `<div class="next-box">${s.validated} ${n<LEVELS.length-1 ? `<a href="#/level/${n+1}">${s.open(esc(LEVELS[n+1].code))}</a>` : (allPassed() ? `<a href="#/exam">${s.fn3} →</a>` : '')}</div>`;
   }, () => renderLevel(n));
 }
 
 function renderBad(){
+  const s = S();
   const cards = BADS.map((b,i) => `<div class="card"><h3><span class="mono" style="color:var(--accent)">BD-${String(i+1).padStart(2,'0')}</span> ${esc(b.t)}</h3>
-    <div class="lbl d">The decision</div><p>${b.d}</p>
-    <div class="lbl w">Why it is bad</div><p>${b.w}</p>
-    <div class="lbl f">Do this instead</div><p>${b.f}</p></div>`).join('');
+    <div class="lbl d">${LANG === 'pt' ? 'A decisão' : 'The decision'}</div><p>${b.d}</p>
+    <div class="lbl w">${LANG === 'pt' ? 'Porque é má' : 'Why it is bad'}</div><p>${b.w}</p>
+    <div class="lbl f">${LANG === 'pt' ? 'Faça isto em vez disso' : 'Do this instead'}</div><p>${b.f}</p></div>`).join('');
   document.getElementById('view').innerHTML = `<article class="page">
-    ${pageHead('FN-1', 'Bad decisions, explained', 'Experienced administrators make these mistakes too. Each one looks reasonable on the day it is made, and each one costs the most later. Know them before they happen to you.', ['Field note','10 entries','Each links back to a chapter'])}
+    ${pageHead('FN-1', s.badTitle, s.badLead, s.badChips)}
     <div class="cards">${cards}</div>
-    <div class="pager"><a class="btn" href="#/platforms">Known platforms →</a></div></article>`;
+    <div class="pager"><a class="btn" href="#/platforms">${s.platforms} →</a></div></article>`;
 }
 
 function renderPlatforms(){
+  const s = S();
   const cards = PLATFORMS.map(p => `<div class="card"><h3>${esc(p.name)}</h3><span class="tag ${p.tone}">${esc(p.kind)}</span><p>${p.what}</p>
-    <p><a href="${p.url}" target="_blank" rel="noopener noreferrer">Reference ↗</a></p></div>`).join('');
+    <p><a href="${p.url}" target="_blank" rel="noopener noreferrer">${LANG === 'pt' ? 'Referência' : 'Reference'} ↗</a></p></div>`).join('');
   document.getElementById('view').innerHTML = `<article class="page">
-    ${pageHead('FN-2', 'Known platforms built on FreeBSD', 'FreeBSD is not only a hobby system. Firewalls, storage, network operating systems and game consoles ship it, or code derived from it. Verify each claim against the vendor documentation before you cite it in a design review.', ['Field note','Public references','Status as of Oct 2026'])}
+    ${pageHead('FN-2', s.platTitle, s.platLead, s.platChips)}
     <div class="cards">${cards}</div>
-    ${note('info','Easy confusion', '<p>macOS and iOS share a BSD heritage (XNU kernel, BSD userland) but are not FreeBSD. Package names, rc scripts and tool flags differ, so do not copy FreeBSD steps onto them.</p>')}
-    <div class="pager"><a class="btn" href="#/exam">Hero exam →</a></div></article>`;
+    ${note('info', LANG === 'pt' ? 'Confusão fácil' : 'Easy confusion', s.platNote)}
+    <div class="pager"><a class="btn" href="#/exam">${s.exam} →</a></div></article>`;
 }
 
 function renderExam(){
+  const s = S();
   const view = document.getElementById('view');
   const all = LEVELS.flatMap(l => l.quiz);
   if (!allPassed()) {
-    view.innerHTML = `<article class="page">${pageHead('FN-3','Hero exam','The exam unlocks when every chapter is validated.', ['Locked'])}
-      ${note('warn','Locked', `<p>${passedCount()}/${LEVELS.length} chapters validated. Finish the remaining chapters first.</p>`)}
-      <div class="btns"><a class="btn primary" href="#/level/${LEVELS.findIndex(l=>!isPassed(l.n))}">Continue the manual</a></div></article>`;
+    view.innerHTML = `<article class="page">${pageHead('FN-3', s.examTitle || s.fn3, s.examLockedLead, [LANG === 'pt' ? 'Bloqueado' : 'Locked'])}
+      ${note('warn', LANG === 'pt' ? 'Bloqueado' : 'Locked', `<p>${s.examLockedBody(passedCount()+'/'+LEVELS.length)}</p>`)}
+      <div class="btns"><a class="btn primary" href="#/level/${LEVELS.findIndex(l=>!isPassed(l.n))}">${s.contManual}</a></div></article>`;
     return;
   }
   const qs = shuffle(all).slice(0, 15);
-  view.innerHTML = `<article class="page">${pageHead('FN-3','Hero exam', `15 random questions drawn from all ${all.length} chapter questions. Pass mark ${EXAM_PASS}/15. Retake as often as you like.`, ['Field note','Pass 12/15'])}
+  view.innerHTML = `<article class="page">${pageHead('FN-3', s.fn3, s.examLead(all.length), [LANG === 'pt' ? 'Nota de campo' : 'Field note', LANG === 'pt' ? 'Passar 12/15' : 'Pass 12/15'])}
     <div class="quiz-wrap"><div id="quiz"></div></div></article>`;
   mountQuiz(document.getElementById('quiz'), qs, EXAM_PASS, extra => {
     progress.exam = true; save(); renderNav('exam');
-    extra.innerHTML = `<div class="next-box"><b>HERO.</b> You validated every chapter and the exam. Now go break something on purpose, in a VM, and fix it.</div>`;
+    extra.innerHTML = `<div class="next-box">${s.examPass}</div>`;
   }, renderExam);
 }
 
+(function(){ const w = new URLSearchParams(location.search).get('lang'); if (w === 'pt' || w === 'en') { applyLang(w); } })();
 window.addEventListener('DOMContentLoaded', route);
 if (document.readyState !== 'loading') route();
+
 </script>
 </body>
 </html>
