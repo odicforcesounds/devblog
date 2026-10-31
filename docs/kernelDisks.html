@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux Kernel Disk Options — Partitions, LVM, FAT32 and NTFS Built-In or Module</title>
+<meta name="description" content="Which Linux kernel disk symbols go built-in and which load as modules: block layer, GPT and MBR partitions, device mapper and LVM, FAT32 and NTFS.">
+<link rel="canonical" href="https://blog.odicforcesounds.com/kernelDisks.html">
+<meta property="og:title" content="Linux Kernel Disk Options — Partitions, LVM, FAT32 and NTFS Built-In or Module">
+<meta property="og:description" content="Which Linux kernel disk symbols go built-in and which load as modules: block layer, GPT and MBR partitions, device mapper and LVM, FAT32 and NTFS.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://blog.odicforcesounds.com/kernelDisks.html">
+<meta property="og:site_name" content="Monkey Blog">
+<meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Linux Kernel Disk Options — Partitions, LVM, FAT32 and NTFS Built-In or Module">
+<meta name="twitter:description" content="Which Linux kernel disk symbols go built-in and which load as modules: block layer, GPT and MBR partitions, device mapper and LVM, FAT32 and NTFS.">
+<meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/kernelDisks.html#article",
+      "headline": "Linux Kernel Disk Options — Partitions, LVM, FAT32 and NTFS Built-In or Module",
+      "description": "Which Linux kernel disk symbols go built-in and which load as modules: block layer, GPT and MBR partitions, device mapper and LVM, FAT32 and NTFS.",
+      "url": "https://blog.odicforcesounds.com/kernelDisks.html",
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://blog.odicforcesounds.com/kernelDisks.html" },
+      "image": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/peace.jpg", "width": 1496, "height": 960 },
+      "inLanguage": "en",
+      "author": { "@type": "Person", "name": "Oscar", "url": "https://blog.odicforcesounds.com/" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/",
+        "logo": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/three.jpg", "width": 1024, "height": 1024 }
+      },
+      "isPartOf": { "@type": "Blog", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/" },
+      "articleSection": "Linux & Open Source",
+      "keywords": "Linux kernel, Kconfig, block layer, GPT, MBR, device mapper, LVM, LUKS, FAT32, vfat, exFAT, NTFS, ntfs3",
+      "wordCount": 7777,
+      "datePublished": "2026-10-31",
+      "dateModified": "2026-10-31"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://blog.odicforcesounds.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Linux & Open Source", "item": "https://blog.odicforcesounds.com/#category-linux-and-open-source" },
+        { "@type": "ListItem", "position": 3, "name": "Kernel disks", "item": "https://blog.odicforcesounds.com/kernelDisks.html" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#05090b;
+  --ink:#e6f7f4;
+  --soft:#c1d8d4;
+  --muted:#8aa5a1;
+  --teal:#2dd4bf;
+  --green:#4ade80;
+  --amber:#f6b73c;
+  --line:rgba(255,255,255,.11);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;min-height:100vh;color:var(--ink);
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(940px 560px at 88% -8%,rgba(45,212,191,.18),transparent 62%),
+    radial-gradient(720px 500px at 0% 28%,rgba(74,222,128,.10),transparent 58%),
+    radial-gradient(900px 620px at 96% 82%,rgba(246,183,60,.08),transparent 58%),
+    linear-gradient(180deg,#05090b,#071513 55%,#03070a);
+  background-attachment:fixed;background-repeat:no-repeat;
+  font:16px/1.7 var(--sans);
+}
+a{color:#7fe9dc;text-decoration:none;border-bottom:1px solid rgba(45,212,191,.38);transition:color .15s,border-color .15s}
+a:hover{color:var(--amber);border-bottom-color:var(--amber)}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+[data-lang-block][hidden]{display:none!important}
+::selection{background:var(--teal);color:#04100e}
+
+.lang-switch{display:flex;justify-content:center;gap:.4rem;padding:.9rem 1rem .3rem;font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase}
+.lang-switch a{padding:.32rem .95rem;color:var(--teal);font-weight:600;background:transparent;border:1px solid rgba(45,212,191,.6);border-radius:999px;opacity:.85;transition:opacity .15s,background-color .15s,color .15s,border-color .15s}
+.lang-switch a[aria-current="true"]{color:#04100e;background:var(--teal);border-color:var(--teal);opacity:1}
+.lang-switch a:hover,.lang-switch a:focus-visible{color:#04100e;background:var(--amber);border-color:var(--amber);opacity:1}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(1rem,4vw,2rem)}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:.8rem;padding:.7rem 0;background:rgba(5,9,11,.9);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid transparent;border-image:linear-gradient(90deg,var(--teal),var(--green) 50%,var(--amber)) 1}
+.home{border:1px solid rgba(45,212,191,.55);border-radius:6px;padding:.28rem .7rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#7fe9dc;background:rgba(45,212,191,.09)}
+.home:hover{background:var(--amber);border-color:var(--amber);color:#04100e}
+.brand{margin-left:auto;font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+.brand b{color:var(--teal)}
+
+.hero{padding:clamp(2rem,6vw,3.4rem) 0 .6rem}
+.kicker{margin:0 0 .8rem;color:var(--green);font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase}
+h1,.seo-h2{margin:0;font-size:clamp(1.9rem,5vw,3.1rem);line-height:1.08;letter-spacing:-.02em;background:linear-gradient(100deg,#fff 6%,var(--teal) 42%,var(--green) 64%,var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{max-width:66ch;margin:1.1rem 0 0;color:var(--soft);font-size:1.02rem}
+.lede b{color:#fff}
+.meta-line{display:flex;flex-wrap:wrap;gap:.4rem;margin:1.1rem 0 0}
+.chip{border:1px solid rgba(45,212,191,.4);border-radius:99px;padding:.22rem .7rem;background:rgba(45,212,191,.08);font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#7fe9dc}
+.chip.dim{border-color:var(--line);background:rgba(255,255,255,.03);color:var(--muted)}
+
+.toc{margin:1.6rem 0 2rem;padding:1rem 1.1rem;border:1px solid var(--line);border-radius:12px;background:linear-gradient(160deg,rgba(7,21,19,.92),rgba(3,7,10,.92))}
+.toc h2{margin:0 0 .6rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.3rem}
+.toc a{display:flex;gap:.55rem;align-items:baseline;padding:.36rem .6rem;border:1px solid transparent;border-radius:7px;color:var(--soft);border-bottom:0}
+.toc a span{font-family:var(--mono);font-size:.62rem;color:var(--teal)}
+.toc a:hover,.toc a:focus-visible{background:rgba(45,212,191,.14);border-color:rgba(45,212,191,.5);color:#fff}
+
+main section{padding:1.6rem 0;border-top:1px solid var(--line)}
+main section:first-of-type{border-top:0}
+h2{font-size:clamp(1.35rem,3vw,1.8rem);line-height:1.2;margin:0 0 .7rem;letter-spacing:-.01em;color:#fff}
+h2 .no{font-family:var(--mono);font-size:.72em;color:var(--teal);margin-right:.4rem}
+h3{margin:1.5rem 0 .5rem;font-family:var(--mono);font-size:.92rem;letter-spacing:.08em;text-transform:uppercase;color:var(--green)}
+p{color:var(--soft);max-width:88ch}
+b,strong{color:#fff}
+em{color:var(--amber);font-style:normal}
+ul,ol{color:var(--soft);padding-left:1.2rem}
+li{margin:.32rem 0}
+li b{color:#fff}
+code{font-family:var(--mono);font-size:.84em;background:#0a2b28;color:#a7f3e8;padding:.06em .32em;border-radius:3px;word-break:break-word}
+pre{margin:1rem 0;padding:.9rem 1rem;overflow-x:auto;background:linear-gradient(180deg,#071a18,#030a09);border:1px solid rgba(45,212,191,.3);border-left:3px solid var(--teal);border-radius:9px;color:#c8f7ee;font:400 .76rem/1.65 var(--mono)}
+pre code{background:none;color:inherit;padding:0}
+pre .c{color:#7f9b97}
+pre .k{color:#ffd08a}
+
+.table-wrap{margin:1rem 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;background:rgba(0,0,0,.3)}
+table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:560px}
+th{text-align:left;padding:.6rem .7rem;white-space:nowrap;background:linear-gradient(180deg,#0b2724,#061513);color:var(--teal);border-bottom:2px solid var(--teal);font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase}
+td{padding:.55rem .7rem;border-bottom:1px solid var(--line);color:var(--soft);vertical-align:top}
+tbody tr:nth-child(even) td{background:rgba(45,212,191,.05)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{color:#fff;font-family:var(--mono);font-size:.72rem;white-space:nowrap}
+td code{white-space:nowrap}
+
+.callout{margin:1.2rem 0;padding:.95rem 1.1rem;border-radius:9px;border:1px solid var(--line);border-left:4px solid var(--teal);background:linear-gradient(100deg,rgba(45,212,191,.12),rgba(74,222,128,.05))}
+.callout h4{margin:0 0 .3rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--teal)}
+.callout.warn{border-left-color:var(--amber);background:linear-gradient(100deg,rgba(246,183,60,.12),rgba(45,212,191,.04))}
+.callout.warn h4{color:var(--amber)}
+.callout.gap{border-left-color:var(--green);background:linear-gradient(100deg,rgba(74,222,128,.12),rgba(45,212,191,.04))}
+.callout.gap h4{color:var(--green)}
+.callout p{margin:.3rem 0;font-size:.88rem;max-width:none}
+.callout p:last-child{margin-bottom:0}
+
+.next{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.4rem 0 0}
+.next a{border:1px solid rgba(246,183,60,.55);border-radius:8px;padding:.45rem .85rem;background:rgba(246,183,60,.1);font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#ffce8a}
+.next a:hover,.next a:focus-visible{background:var(--amber);border-color:var(--amber);color:#04100e}
+
+footer{margin-top:2rem;padding:1.6rem 0 2.4rem;text-align:center;border-top:2px solid transparent;background:linear-gradient(#06100f,#06100f) padding-box,linear-gradient(90deg,var(--teal),var(--green),var(--amber)) border-box}
+footer p{margin:.3rem auto;color:var(--muted);font-size:.78rem;max-width:80ch;text-align:center}
+footer .home{margin-top:.7rem;display:inline-block}
+@media (max-width:640px){table{min-width:470px}.toc ol{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+@media print{body{background:#fff;color:#111}.lang-switch,.topbar,footer .home{display:none!important}h1,.seo-h2{color:#111;-webkit-text-fill-color:#111}pre,table,.callout{background:#fff!important;border-color:#999!important}p,td,li,pre{color:#111!important}}
+</style>
+</head>
+<body>
+
+<nav class="lang-switch" aria-label="Language">
+  <a href="?lang=pt" data-lang-switch="pt" lang="pt-PT">Português</a>
+  <a href="?lang=en" data-lang-switch="en" aria-current="true" lang="en">English</a>
+</nav>
+
+<div id="lang-en" data-lang-block="en">
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Home</a>
+    <span class="brand">Kernel <b>/</b> Storage Kconfig</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Kconfig &middot; disks, partitions, LVM, FAT32, NTFS</p>
+    <h1>Kernel disks: bring the disk up before anything else</h1>
+    <p class="lede">
+      The storage stack is the one place where "make it a module" is answered by a single question: does the
+      kernel need it <b>before</b> it can load modules? This page walks the storage menu from the block layer down
+      to the filesystems — disk drivers, <code>MSDOS_PARTITION</code> and <code>EFI_PARTITION</code>, device
+      mapper and LVM, FAT32 for the ESP, and both NTFS drivers — so each letter is a decision with a reason.
+    </p>
+    <div class="meta-line">
+      <span class="chip">&lt;*&gt; vs &lt;M&gt;</span>
+      <span class="chip dim">GPT / MBR</span>
+      <span class="chip dim">device mapper + LVM</span>
+      <span class="chip dim">vfat + ntfs3</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="toc-title">
+    <h2 id="toc-title">Contents</h2>
+    <ol>
+      <li><a href="#rule"><span>01</span> The one rule that decides the letter</a></li>
+      <li><a href="#truth"><span>02</span> Where the truth lives</a></li>
+      <li><a href="#chain"><span>03</span> The chain to the root filesystem</a></li>
+      <li><a href="#drivers"><span>04</span> Disk drivers: SD, NVMe, virtio</a></li>
+      <li><a href="#partitions"><span>05</span> Partitions — and the one everybody forgets</a></li>
+      <li><a href="#block"><span>06</span> Block layer extras worth building</a></li>
+      <li><a href="#dm"><span>07</span> Device mapper and LVM</a></li>
+      <li><a href="#luks"><span>08</span> LUKS and the crypto that must exist first</a></li>
+      <li><a href="#fat"><span>09</span> FAT32: the format that boots machines</a></li>
+      <li><a href="#ntfs"><span>10</span> NTFS: ntfs3 against the legacy driver</a></li>
+      <li><a href="#extra"><span>11</span> Filesystems you actually mount</a></li>
+      <li><a href="#software"><span>12</span> Software that asks for the module</a></li>
+      <li><a href="#harden"><span>13</span> Hardening by removing</a></li>
+      <li><a href="#roles"><span>14</span> Three fragments</a></li>
+      <li><a href="#verify"><span>15</span> Prove it, and read the failures</a></li>
+      <li><a href="#sources"><span>16</span> Sources</a></li>
+    </ol>
+  </nav>
+
+  <section id="rule">
+    <h2><span class="no">01</span> The one rule that decides the letter</h2>
+    <p>
+      Networking can wait until userspace runs. Storage cannot: the kernel has to read the disk to find
+      <code>/sbin/init</code>, and it has to read it with code that is <em>already in memory</em>. Whatever sits
+      between the disk and the root mount is therefore a candidate for <code>=y</code>, and everything else is a
+      cheap module you can unload.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Marker</th><th>Type</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>&lt;*&gt;</code></td><td>tristate, <code>y</code></td><td>Inside the kernel image; available before any module is loaded</td></tr>
+          <tr><td><code>&lt;M&gt;</code></td><td>tristate, <code>m</code></td><td>A <code>.ko</code> file; loadable, unloadable, and absent if <code>/lib/modules</code> is wrong</td></tr>
+          <tr><td><code>&lt; &gt;</code></td><td>tristate, <code>n</code></td><td>Not compiled at all — the code does not exist on this machine</td></tr>
+          <tr><td><code>[*]</code></td><td>boolean</td><td>On or off; there is no module form, so the choice is real and permanent</td></tr>
+          <tr><td><code>{M}</code></td><td>forced</td><td>Selected by another option; you cannot make it <code>=y</code> unless the parent is <code>=y</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <h4>The practical test</h4>
+      <p>
+        Ask: <em>is this needed to mount the root filesystem, or to mount a filesystem that a boot service mounts
+        before userspace can rescue the machine?</em> If yes and there is no initramfs on the box — an appliance, a
+        vendor image, a kernel you boot directly with <code>-append root=/dev/nvme0n1p2</code> — then build it in.
+        If no, a module costs one <code>modprobe</code> and saves memory on every machine that never touches it.
+      </p>
+    </div>
+    <p>
+      The initramfs changes the arithmetic, and that is why most distributions ship all of this as modules: the
+      initramfs carries <code>sd_mod</code>, <code>dm-crypt</code>, <code>lvm</code> and <code>ext4</code>, loads
+      them, and only then switches root. Build in what the <em>image</em> would need if the initramfs were broken
+      or absent — which is exactly the failure mode you will meet at 3 a.m.
+    </p>
+  </section>
+
+  <section id="truth">
+    <h2><span class="no">02</span> Where the truth lives</h2>
+    <p>
+      Symbol names move between releases and the menu grouping is opinion, not documentation. The kernel tree
+      defines every symbol; the running kernel can tell you what it was built with.
+    </p>
+    <pre><code><span class="c"># what this kernel says about itself</span>
+uname -r
+zcat /proc/config.gz | grep -E "CONFIG_(EFI_PARTITION|BLK_DEV_DM|DM_CRYPT|VFAT_FS|NTFS3_FS)="
+ls /boot/config-"$(uname -r)" 2&gt;/dev/null
+
+<span class="c"># the authoritative definitions</span>
+grep -n "config EFI_PARTITION" -A 10 block/partitions/Kconfig
+grep -rn "config NTFS3_FS" -A 14 fs/ntfs3/Kconfig
+grep -n "config FAT_DEFAULT_IOCHARSET" -A 8 fs/fat/Kconfig
+
+<span class="c"># change without menuconfig, then see exactly what moved</span>
+cp .config .config.old
+scripts/config --file .config --enable  EFI_PARTITION
+scripts/config --file .config --module  VFAT_FS
+scripts/config --file .config --enable  DM_INIT
+make olddefconfig
+scripts/diffconfig .config.old .config</code></pre>
+    <p>
+      <code>scripts/config --state CONFIG_X</code> prints the current value without changing it, which is the
+      quickest way to audit a vendor config before you trust it. And <code>/proc/filesystems</code> lists what the
+      running kernel can actually mount — a name missing there is not a mount option problem.
+    </p>
+  </section>
+
+  <section id="chain">
+    <h2><span class="no">03</span> The chain to the root filesystem</h2>
+    <p>
+      Read it bottom-up: the bus driver finds the disk, the block layer exposes it, the partition parser splits it,
+      the mapper (if any) reassembles it, and the filesystem driver reads it. Any missing link produces a
+      <code>VFS: Cannot open root device</code> and a rescue prompt, with no clue about which link broke.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Link</th><th>Symbol</th><th>Why built-in without an initramfs</th></tr></thead>
+        <tbody>
+          <tr><td>Block layer</td><td><code>BLOCK</code> <code>[*]</code></td><td>Everything below is inside it; it is not optional</td></tr>
+          <tr><td>Disk driver</td><td><code>BLK_DEV_SD</code>, <code>BLK_DEV_NVME</code>, <code>VIRTIO_BLK</code></td><td>The root disk is not visible at all until this loads</td></tr>
+          <tr><td>Partition table</td><td><code>EFI_PARTITION</code>, <code>MSDOS_PARTITION</code></td><td>The disk appears, but no <code>p1</code> / <code>p2</code> nodes exist</td></tr>
+          <tr><td>Mapper</td><td><code>BLK_DEV_DM</code>, <code>DM_CRYPT</code>, LVM targets</td><td>Root on LUKS or on an LV is unreachable without it</td></tr>
+          <tr><td>Filesystem</td><td><code>EXT4_FS</code>, <code>XFS_FS</code>, <code>BTRFS_FS</code></td><td><code>VFS: Cannot open root device</code> even though it is there</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <h4>Two links that fail quietly</h4>
+      <p>
+        A missing <b>partition parser</b> is worse than a missing driver, because the disk still shows up: you get
+        <code>/dev/nvme0n1</code>, no partitions, and a filesystem signature nobody can mount. A missing
+        <b>filesystem</b> looks like "root device not found" too, even though <code>lsblk</code> is perfectly happy.
+        Both are one grep away in <code>/proc/config.gz</code>.
+      </p>
+    </div>
+  </section>
+
+  <section id="drivers">
+    <h2><span class="no">04</span> Disk drivers: SD, NVMe, virtio</h2>
+    <pre><code><span class="c"># SCSI/ATA low level</span>
+CONFIG_BLK_DEV_SD=y            <span class="c"># sd_mod: the sdX names, ATA and USB UAS disk</span>
+CONFIG_ATA=y
+CONFIG_SATA_AHCI=y
+CONFIG_ATA_PIIX=y              <span class="c"># IDE-emulated mode in older QEMU</span>
+CONFIG_SCSI=y
+CONFIG_SCSI_VIRTIO=y           <span class="c"># virtio-scsi controller</span>
+
+<span class="c"># NVMe</span>
+CONFIG_BLK_DEV_NVME=y          <span class="c"># the whole nvme stack; no sdX alias</span>
+
+<span class="c"># virtual and removable</span>
+CONFIG_VIRTIO_BLK=y
+CONFIG_MMC_BLOCK=m             <span class="c"># SD cards and eMMC</span>
+CONFIG_MMC_SDHCI=m
+CONFIG_USB_STORAGE=m
+CONFIG_BLK_DEV_SR=m            <span class="c"># optical / srX, needed to read install media</span>
+CONFIG_UAS=m                   <span class="c"># USB Attached SCSI, much faster than usb-storage</span></code></pre>
+    <p>
+      Note that <code>BLK_DEV_SD</code> is not "the SATA driver": it is the SCSI disk class driver, and every SATA
+      disk in AHCI mode, every USB mass-storage device and every <code>virtio-scsi</code> disk goes through it. A
+      kernel with <code>SATA_AHCI</code> but without <code>BLK_DEV_SD</code> finds the controller and shows no disk
+      at all — the most common "my build does not see the disk" answer.
+    </p>
+    <p>
+      NVMe is different: <code>BLK_DEV_NVME</code> registers its own block device, so there is no dependency on
+      <code>sd_mod</code>. On a machine that boots from NVMe with no initramfs, this one symbol must be
+      <code>=y</code>, and it is worth building in even with an initramfs, because the initramfs is written from
+      the module list of the machine that generated it.
+    </p>
+  </section>
+
+  <section id="partitions">
+    <h2><span class="no">05</span> Partitions — and the one everybody forgets</h2>
+    <pre><code>CONFIG_PARTITION_ADVANCED=y    <span class="c"># [*] the gate for everything below</span>
+CONFIG_EFI_PARTITION=y         <span class="c"># GPT — modern disks, and the reason pN vanished</span>
+CONFIG_MSDOS_PARTITION=y       <span class="c"># MBR — USB sticks, old VMs, hybrid images</span>
+CONFIG_OF_PARTITION=y          <span class="c"># devicetree partitions, ARM boards</span>
+CONFIG_BSD_DISKLABEL=m
+CONFIG_SOLARIS_X86_PARTITION=m
+CONFIG_UNIXWARE_DISKLABEL=m</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symbol</th><th>Form</th><th>Symptom when missing</th></tr></thead>
+        <tbody>
+          <tr><td><code>EFI_PARTITION</code></td><td>bool <code>[*]</code></td><td>GPT disk shows as one device; <code>lsblk</code> lists no children</td></tr>
+          <tr><td><code>MSDOS_PARTITION</code></td><td>bool <code>[*]</code></td><td>MBR USB stick mounts only as a whole disk</td></tr>
+          <tr><td><code>PARTITION_ADVANCED</code></td><td>bool <code>[*]</code></td><td>The exotic parsers are not even offered in the menu</td></tr>
+          <tr><td><code>BLK_DEV_LOOP</code></td><td>tristate</td><td><code>mount -o loop image.iso</code> fails; snap and AppImage break</td></tr>
+          <tr><td><code>BLK_DEV_NBD</code></td><td>tristate</td><td>Network block devices unavailable</td></tr>
+          <tr><td><code>BLK_DEV_RAM</code></td><td>tristate</td><td>No <code>/dev/ram0</code>; some rescue tooling assumes it</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      These are booleans, so "make GPT a module" is not on the table: either the kernel understands GPT or it does
+      not. Build both parsers in. <code>MSDOS_PARTITION</code> costs a few kilobytes and is the difference between
+      a rescue stick that mounts and one that does not.
+    </p>
+    <div class="callout gap">
+      <h4>Hybrid and 4K-sector disks</h4>
+      <p>
+        A hybrid MBR/GPT image needs both parsers, and a 4Kn disk needs nothing extra in the config — but a
+        partition table written for 512-byte sectors on a 4K-native disk will be rejected, and the message is about
+        the partition table, not about Kconfig. Check with <code>blockdev --getss /dev/sdX</code>.
+      </p>
+    </div>
+  </section>
+
+  <section id="block">
+    <h2><span class="no">06</span> Block layer extras worth building</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symbol</th><th>Recommended</th><th>What it buys</th></tr></thead>
+        <tbody>
+          <tr><td><code>BLK_DEV_INITRD</code></td><td><code>=y</code></td><td>Initramfs support; without it no modern distro kernel boots</td></tr>
+          <tr><td><code>BLK_DEV_BSG</code></td><td><code>=m</code></td><td><code>sg3_utils</code>, <code>smartctl</code>, SCSI generic access</td></tr>
+          <tr><td><code>BLK_CGROUP</code></td><td><code>=y</code></td><td>I/O limits per container and per systemd slice</td></tr>
+          <tr><td><code>IOSCHED_BFQ</code></td><td><code>=m</code></td><td>Desktop fairness; the scheduler itself is optional</td></tr>
+          <tr><td><code>MQ_IOSCHED_KYBER</code></td><td><code>=m</code></td><td>Low-latency reads on NVMe</td></tr>
+          <tr><td><code>BLK_DEV_THROTTLING</code></td><td><code>=y</code></td><td>Per-cgroup IOPS and bandwidth caps</td></tr>
+          <tr><td><code>BLK_DEV_INTEGRITY</code></td><td><code>=y</code> if T10-PI</td><td>End-to-end data integrity on enterprise disks</td></tr>
+          <tr><td><code>BLK_DEV_WRITE_MOUNTED</code></td><td><code>=n</code></td><td>Refuses writes to a mounted block device — a real footgun closed</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      <code>BLK_DEV_WRITE_MOUNTED</code> is recent and worth knowing: with it enabled (the historical default) root
+      can still <code>dd</code> over a mounted filesystem and corrupt it. Disabling it turns a silent disaster into
+      an <code>EBUSY</code>, which is the kind of change a kernel config makes better than any warning banner.
+    </p>
+  </section>
+
+  <section id="dm">
+    <h2><span class="no">07</span> Device mapper and LVM</h2>
+    <p>
+      The first correction: <b>there is no <code>CONFIG_LVM</code></b>. LVM is a userspace tool (<code>lvm2</code>)
+      that drives the kernel's device-mapper targets; the kernel side is a handful of <code>DM_*</code> symbols.
+      Searching a config for LVM and finding nothing is not a missing feature.
+    </p>
+    <pre><code>CONFIG_MD=y
+CONFIG_BLK_DEV_DM=y            <span class="c"># =y if root is on LVM/LUKS and there is no initramfs</span>
+CONFIG_DM_INIT=y               <span class="c"># [*] activate DM devices at boot, before the root mount</span>
+CONFIG_DM_CRYPT=y              <span class="c"># LUKS</span>
+CONFIG_DM_SNAPSHOT=m           <span class="c"># thin snapshots, backup windows</span>
+CONFIG_DM_THIN_PROVISIONING=m  <span class="c"># the modern LVM thin pool</span>
+CONFIG_DM_CACHE=m              <span class="c"># SSD cache in front of a slow LV</span>
+CONFIG_DM_MIRROR=m
+CONFIG_DM_RAID=m
+CONFIG_DM_VERITY=m             <span class="c"># read-only verified root images</span>
+CONFIG_DM_INTEGRITY=m
+CONFIG_DM_MULTIPATH=m          <span class="c"># two paths to the same SAN LUN</span>
+CONFIG_DM_ZERO=m               <span class="c"># sparse test devices</span>
+
+<span class="c"># md/RAID is a different subsystem, do not confuse it with DM RAID</span>
+CONFIG_MD_RAID0=m
+CONFIG_MD_RAID1=m
+CONFIG_MD_RAID456=m</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symbol</th><th>Form</th><th>Missing it means</th></tr></thead>
+        <tbody>
+          <tr><td><code>BLK_DEV_DM</code></td><td>tristate</td><td><code>dmsetup</code> cannot open <code>/dev/mapper/control</code>; no LVM at all</td></tr>
+          <tr><td><code>DM_INIT</code></td><td>bool <code>[*]</code></td><td>Root on an LV needs an initramfs; without one, boot hangs at the root prompt</td></tr>
+          <tr><td><code>DM_CRYPT</code></td><td>tristate</td><td><code>crypt: unknown target type</code>; LUKS unlock impossible</td></tr>
+          <tr><td><code>DM_THIN_PROVISIONING</code></td><td>tristate</td><td><code>lvcreate --thin</code> fails; the thin pool target is unknown</td></tr>
+          <tr><td><code>DM_CACHE</code>, <code>DM_RAID</code></td><td>tristate</td><td>Only that LV type refuses to activate; the rest of LVM works</td></tr>
+          <tr><td><code>MD_RAID456</code></td><td>tristate</td><td><code>mdadm</code> assembles nothing for RAID5/6</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Build <code>BLK_DEV_DM</code>, <code>DM_CRYPT</code> and the thin target in when the root volume lives on
+      them and the machine has no initramfs. Otherwise they are modules and the initramfs loads them — that is what
+      <code>update-initramfs</code> is for, and why a kernel upgrade with a broken initramfs is a separate failure
+      from a bad config.
+    </p>
+  </section>
+
+  <section id="luks">
+    <h2><span class="no">08</span> LUKS and the crypto that must exist first</h2>
+    <p>
+      <code>DM_CRYPT=y</code> is only half of an encrypted root. The cipher the volume was created with must be
+      available at unlock time, and the defaults are not free: <code>aes-xts-plain64</code> needs AES and XTS,
+      and the key derivation needs a hash.
+    </p>
+    <pre><code>CONFIG_DM_CRYPT=y
+CONFIG_CRYPTO_AES=y
+CONFIG_CRYPTO_XTS=y
+CONFIG_CRYPTO_SHA256=y
+CONFIG_CRYPTO_USER_API_SKCIPHER=m   <span class="c"># only if userspace asks for ciphers by name</span>
+CONFIG_KEYS=y
+CONFIG_ENCRYPTED_KEYS=y             <span class="c"># systemd asks for a TPM-bound key</span>
+CONFIG_BLK_INLINE_ENCRYPTION=m      <span class="c"># eMMC/UFS hardware encryption</span></code></pre>
+    <div class="callout warn">
+      <h4>The failure that looks like a wrong password</h4>
+      <p>
+        <code>cryptsetup: device-mapper: reload ioctl on &hellip; failed: Invalid argument</code> during unlock is
+        usually not a password problem: it is the cipher or hash module missing from the initramfs. Check
+        <code>/proc/crypto</code> for <code>xts(aes)</code> before deciding the disk is lost.
+      </p>
+    </div>
+    <p>
+      File-level encryption is a different stack: <code>FS_ENCRYPTION</code> (fscrypt) encrypts directories inside
+      ext4 and F2FS and needs no device mapper at all, while <code>DM_VERITY</code> gives a read-only root whose
+      blocks are hash-verified — the usual basis of an immutable appliance image.
+    </p>
+  </section>
+
+  <section id="fat">
+    <h2><span class="no">09</span> FAT32: the format that boots machines</h2>
+    <p>
+      FAT is not a legacy detail you can drop. The EFI system partition is FAT, most boot media is FAT, and camera
+      cards, dashcams and firmware updaters are FAT. Three symbols do the work, and a fourth decides which
+      characters survive the trip.
+    </p>
+    <pre><code>CONFIG_FAT_FS=y                <span class="c"># the core; vfat and msdos depend on it</span>
+CONFIG_VFAT_FS=y               <span class="c"># long names, the usual "vfat" — and the ESP</span>
+CONFIG_MSDOS_FS=m              <span class="c"># 8.3 names, FAT12/16; usually not needed</span>
+CONFIG_EXFAT_FS=m              <span class="c"># large cards, a different driver entirely</span>
+
+<span class="c"># the charset housekeeping people skip</span>
+CONFIG_NLS_CODEPAGE_437=y
+CONFIG_NLS_ISO8859_1=y
+CONFIG_NLS_UTF8=y
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="utf8"</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symbol</th><th>Form</th><th>Missing it means</th></tr></thead>
+        <tbody>
+          <tr><td><code>FAT_FS</code></td><td>tristate</td><td><code>unknown filesystem type 'vfat'</code>; <code>fat</code> is not even in <code>/proc/filesystems</code></td></tr>
+          <tr><td><code>VFAT_FS</code></td><td>tristate</td><td>The mount type named <code>vfat</code> does not exist — the common case</td></tr>
+          <tr><td><code>MSDOS_FS</code></td><td>tristate</td><td>Only <code>mount -t msdos</code> fails; <code>vfat</code> still mounts the same disk</td></tr>
+          <tr><td><code>NLS_UTF8</code></td><td>tristate, no prompt</td><td><code>FAT-fs: IO charset utf8 not found</code>, then unreadable names</td></tr>
+          <tr><td><code>NLS_CODEPAGE_437</code></td><td>tristate</td><td>Default codepage unavailable; the mount falls back or fails</td></tr>
+          <tr><td><code>EXFAT_FS</code></td><td>tristate</td><td>Big SD cards need <code>exfat</code>/<code>exfatprogs</code> instead of vfat</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      <code>FAT_DEFAULT_IOCHARSET</code> is a string, not a module, and it is the one setting that decides whether
+      a Portuguese or Japanese filename appears intact. <code>"utf8"</code> is the right default for anything
+      shared with another operating system; <code>"iso8859-1"</code> is the historic default and produces
+      replacement characters on any name outside Latin-1.
+    </p>
+    <div class="callout gap">
+      <h4>Is vfat boot-critical?</h4>
+      <p>
+        Only on machines whose <code>/boot</code> is the ESP itself — some ARM boards, some unified-kernel images,
+        and every setup that keeps kernels on the ESP. On ordinary x86 with a separate ext4 <code>/boot</code>, the
+        firmware reads FAT and the kernel never does, so <code>&lt;M&gt;</code> is correct and expected.
+      </p>
+    </div>
+  </section>
+
+  <section id="ntfs">
+    <h2><span class="no">10</span> NTFS: ntfs3 against the legacy driver</h2>
+    <p>
+      Two kernel drivers carry the NTFS name and they are not the same thing. <code>NTFS3_FS</code> is the in-kernel
+      read-write driver; <code>NTFS_FS</code> is the old read-mostly one that most people replaced years ago with
+      the userspace FUSE driver <code>ntfs-3g</code>.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symbol</th><th>What it is</th><th>Recommended</th></tr></thead>
+        <tbody>
+          <tr><td><code>NTFS3_FS</code></td><td>In-kernel driver, read-write, mount type <code>ntfs3</code></td><td><code>&lt;M&gt;</code>; <code>&lt;*&gt;</code> only if mounted before modules load</td></tr>
+          <tr><td><code>NTFS3_LZX_XPRESS</code></td><td>Decompression for compressed NTFS files</td><td><code>&lt;M&gt;</code> when the volume uses compression</td></tr>
+          <tr><td><code>NTFS_FS</code></td><td>Legacy driver, mount type <code>ntfs</code></td><td><code>&lt; &gt;</code> unless you have a reason</td></tr>
+          <tr><td><code>NTFS_RW</code></td><td>Limited write support for the legacy driver</td><td><code>&lt; &gt;</code> — it is the one that damages volumes</td></tr>
+          <tr><td><code>NLS_UTF8</code></td><td>Charset for non-ASCII filenames</td><td><code>&lt;*&gt;</code> or <code>&lt;M&gt;</code>, same reasoning as FAT</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code><span class="c"># the modern driver</span>
+CONFIG_NTFS3_FS=m
+CONFIG_NTFS3_LZX_XPRESS=m
+
+<span class="c"># the legacy pair — leave both off</span>
+<span class="c"># CONFIG_NTFS_FS is not set</span>
+<span class="c"># CONFIG_NTFS_RW is not set</span>
+
+<span class="c"># mount it, and check the driver that answered</span>
+mount -t ntfs3 /dev/sdb1 /mnt/win
+findmnt -no FSTYPE,SOURCE /mnt/win</code></pre>
+    <div class="callout warn">
+      <h4>What neither driver opens</h4>
+      <p>
+        BitLocker volumes and disks in Intel RST / RAID mode are not NTFS volumes to the kernel: the encryption or
+        the Intel metadata sits below the filesystem and no <code>NTFS*</code> symbol helps. Those need the volume
+        unlocked in firmware first, which is a different page and a different failure.
+      </p>
+    </div>
+    <p>
+      ntfs3 also handles the hibernated/fast-startup case badly: a Windows volume that was not shut down properly
+      still looks dirty, and the driver will mount it read-only rather than risk a corrupted <code>$LogFile</code>.
+      That is the intended behaviour, not a config problem — <code>dmesg | grep ntfs3</code> says so in one line.
+    </p>
+  </section>
+
+  <section id="extra">
+    <h2><span class="no">11</span> Filesystems you actually mount</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symbol</th><th>Recommended</th><th>Where it appears</th></tr></thead>
+        <tbody>
+          <tr><td><code>EXT4_FS</code></td><td><code>=y</code> if root</td><td>Almost every Debian and Ubuntu root; also <code>/boot</code></td></tr>
+          <tr><td><code>XFS_FS</code></td><td><code>=m</code></td><td>RHEL-family roots and large data volumes</td></tr>
+          <tr><td><code>BTRFS_FS</code></td><td><code>=m</code></td><td>Snapshots, subvolumes, openSUSE/Fedora defaults</td></tr>
+          <tr><td><code>F2FS_FS</code></td><td><code>=m</code></td><td>Flash-only devices, phones, some handhelds</td></tr>
+          <tr><td><code>SQUASHFS</code></td><td><code>=m</code></td><td>Live images, snap packages, read-only overlays</td></tr>
+          <tr><td><code>ISO9660_FS</code>, <code>UDF_FS</code></td><td><code>=m</code></td><td>CD/DVD and Blu-ray; UDF also covers large optical media</td></tr>
+          <tr><td><code>TMPFS</code></td><td><code>=y</code></td><td><code>/dev/shm</code> and <code>/run</code>; systemd needs it early</td></tr>
+          <tr><td><code>OVERLAY_FS</code></td><td><code>=m</code></td><td>Containers and live-system persistence</td></tr>
+          <tr><td><code>FUSE_FS</code></td><td><code>=m</code></td><td>ntfs-3g, sshfs, rclone, and every userspace filesystem</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      <code>TMPFS</code> is the odd one out in this table: it is not a disk filesystem, but a machine that cannot
+      mount <code>/run</code> early does not reach a login prompt. Treat it like the console — always in.
+    </p>
+  </section>
+
+  <section id="software">
+    <h2><span class="no">12</span> Software that asks for the module</h2>
+    <p>
+      A symbol name says nothing until you know which program calls it. The left column is the module, the middle is
+      the software that fails without it, and the right is what that program is doing with it. If none of the
+      software in a row is installed here, that module has no purpose on this machine.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Module</th><th>Software that needs it</th><th>What it does with it</th></tr></thead>
+        <tbody>
+          <tr><td><code>dm_mod</code></td><td><code>lvm2</code>, <code>cryptsetup</code>, <code>multipath-tools</code></td><td>Every mapper tool talks to <code>/dev/mapper/control</code>; no <code>dm_mod</code>, no LVM at all</td></tr>
+          <tr><td><code>dm_crypt</code></td><td><code>cryptsetup</code>, <code>systemd-cryptsetup</code>, <code>udisks2</code></td><td>Unlocks LUKS at boot and from the desktop file manager</td></tr>
+          <tr><td><code>dm_thin_pool</code></td><td><code>lvm2</code> (<code>lvcreate --thin</code>), <code>libvirt</code> snapshots</td><td>Overcommitted pools; a VM snapshot needs the target present</td></tr>
+          <tr><td><code>dm_snapshot</code></td><td><code>lvm2</code> (<code>lvcreate -s</code>)</td><td>Copy-on-write snapshots taken before an upgrade</td></tr>
+          <tr><td><code>dm_multipath</code></td><td><code>multipath-tools</code> (<code>multipathd</code>)</td><td>Two HBAs, one LUN; without it the second path becomes a second disk</td></tr>
+          <tr><td><code>dm_verity</code></td><td><code>veritysetup</code> (cryptsetup package), <code>systemd-veritysetup</code></td><td>Hash-verified read-only images</td></tr>
+          <tr><td><code>dm_integrity</code></td><td><code>integritysetup</code></td><td>Per-block checksums under a filesystem</td></tr>
+          <tr><td><code>loop</code></td><td><code>snapd</code>, <code>flatpak</code>, AppImage, <code>mount -o loop</code></td><td>Mounts a file as if it were a disk; snap packages are squashfs images behind loop devices</td></tr>
+          <tr><td><code>overlay</code></td><td><code>containerd</code>, <code>docker</code>, <code>podman</code></td><td>The container image layer stack</td></tr>
+          <tr><td><code>squashfs</code></td><td><code>snapd</code>, live installers, <code>unsquashfs</code></td><td>Read-only compressed images</td></tr>
+          <tr><td><code>fuse</code></td><td><code>ntfs-3g</code>, <code>sshfs</code>, <code>rclone</code>, <code>squashfuse</code></td><td>Userspace filesystems; without it those tools cannot mount anything</td></tr>
+          <tr><td><code>vfat</code></td><td><code>udisks2</code> (desktop automount), <code>grub-install</code> to the ESP, <code>mtools</code></td><td>Reading and writing the EFI system partition and USB sticks</td></tr>
+          <tr><td><code>exfat</code></td><td><code>exfatprogs</code> (<code>mkfs.exfat</code>, <code>fsck.exfat</code>), <code>udisks2</code></td><td>Large SD cards; the alternative is the <code>exfat-fuse</code> package</td></tr>
+          <tr><td><code>ntfs3</code></td><td><code>udisks2</code> (the default driver), <code>mount -t ntfs3</code></td><td>Reading and writing a Windows volume; <code>ntfs-3g</code> is the FUSE fallback</td></tr>
+          <tr><td><code>nls_utf8</code></td><td><code>udisks2</code>, any <code>mount -o iocharset=utf8</code></td><td>Turns FAT or NTFS names back into UTF-8 — accents survive or do not</td></tr>
+          <tr><td><code>bfq</code>, <code>kyber</code></td><td><code>tuned</code>, <code>systemd-udevd</code> scheduler rules</td><td>The I/O scheduler chosen per device by a profile or a udev rule</td></tr>
+          <tr><td><code>blk-throttle</code>, <code>blk-cgroup</code></td><td><code>systemd</code> (<code>IOReadBandwidthMax</code>), <code>docker --device-read-bps</code></td><td>Per-service and per-container I/O limits</td></tr>
+          <tr><td><code>bsg</code></td><td><code>smartmontools</code> (<code>smartctl</code>), <code>sg3_utils</code></td><td>SMART data and SCSI commands outside the block layer</td></tr>
+          <tr><td><code>nvme</code></td><td><code>nvme-cli</code> (<code>nvme list</code>, <code>nvme smart-log</code>)</td><td>Health, namespaces and firmware slots on NVMe</td></tr>
+          <tr><td><code>md_mod</code>, <code>raid456</code></td><td><code>mdadm</code></td><td>Software RAID assembly; <code>md</code> and <code>dm-raid</code> are not interchangeable here</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <h4>Read it backwards to prune</h4>
+      <p>
+        List the packages you actually have —
+        <code>dpkg -l | grep -E 'lvm2|cryptsetup|snapd|docker|smartmontools|mdadm'</code> — and turn off every target
+        whose row comes back empty. That is a config plan derived from the machine instead of from a blog, and it is
+        the same list that tells you what to put in an initramfs.
+      </p>
+    </div>
+  </section>
+
+  <section id="harden">
+    <h2><span class="no">13</span> Hardening by removing</h2>
+    <p>
+      Every filesystem driver you build is code running with kernel privilege, parsing bytes from media an attacker
+      may control — a USB stick in a parking lot is a delivered exploit. Removing the drivers removes the parser.
+    </p>
+    <pre><code><span class="c"># parsers worth deleting on a server that never uses them</span>
+<span class="c"># CONFIG_HFS_FS is not set</span>
+<span class="c"># CONFIG_HFSPLUS_FS is not set</span>
+<span class="c"># CONFIG_JFS_FS is not set</span>
+<span class="c"># CONFIG_UFS_FS is not set</span>
+<span class="c"># CONFIG_GFS2_FS is not set</span>
+<span class="c"># CONFIG_OCFS2_FS is not set</span>
+<span class="c"># CONFIG_NILFS2_FS is not set</span>
+<span class="c"># CONFIG_REISERFS_FS is not set</span>
+<span class="c"># CONFIG_AFFS_FS is not set</span>
+
+<span class="c"># and the block-level levers</span>
+CONFIG_BLK_DEV_LOOP=m          <span class="c"># needed by snap/flatpak, so module not built-in</span>
+<span class="c"># CONFIG_BLK_DEV_NBD is not set</span>
+<span class="c"># CONFIG_BLK_DEV_WRITE_MOUNTED is not set</span>
+CONFIG_DEVMEM=n               <span class="c"># already gone on most builds; /dev/mem is not a tool</span>
+CONFIG_STRICT_DEVMEM=y</code></pre>
+    <ul>
+      <li><b>Default mounts:</b> noexec, nosuid and nodev on <code>/tmp</code>, <code>/dev/shm</code> and removable media costs nothing and blocks a whole class of tricks.</li>
+      <li><b>Unloadable modules:</b> <code>MODULE_UNLOAD=n</code> plus signed modules means an attacker cannot swap a driver, and you cannot replace one without a reboot.</li>
+      <li><b>Verified root:</b> <code>DM_VERITY</code> plus a read-only image turns "the disk changed" into a boot failure instead of a compromise.</li>
+    </ul>
+    <div class="callout warn">
+      <h4>The cost is your rescue stick</h4>
+      <p>
+        Removing vfat, exfat and NTFS means a machine that cannot read the USB stick you brought to repair it. Keep
+        <code>VFAT_FS</code> as a module on anything you may have to fix in person — it is small, and it is the
+        format every rescue medium uses.
+      </p>
+    </div>
+  </section>
+
+  <section id="roles">
+    <h2><span class="no">14</span> Three fragments</h2>
+    <p>
+      Starting points for <code>make olddefconfig</code>, not gospel: names and defaults move between releases, and
+      your controller decides the driver lines.
+    </p>
+    <pre><code><span class="c"># A. Workstation with an initramfs (Debian-like)</span>
+CONFIG_BLOCK=y
+CONFIG_BLK_DEV_SD=m
+CONFIG_BLK_DEV_NVME=m
+CONFIG_SATA_AHCI=m
+CONFIG_EFI_PARTITION=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_BLK_DEV_DM=m
+CONFIG_DM_CRYPT=m
+CONFIG_DM_THIN_PROVISIONING=m
+CONFIG_EXT4_FS=m
+CONFIG_VFAT_FS=m
+CONFIG_EXFAT_FS=m
+CONFIG_NTFS3_FS=m
+CONFIG_NLS_UTF8=m
+CONFIG_BLK_DEV_WRITE_MOUNTED=n
+
+<span class="c"># B. Server, LVM + LUKS root, module loading allowed</span>
+CONFIG_BLK_DEV_NVME=y
+CONFIG_BLK_DEV_SD=y
+CONFIG_EFI_PARTITION=y
+CONFIG_BLK_DEV_DM=y
+CONFIG_DM_INIT=y
+CONFIG_DM_CRYPT=y
+CONFIG_DM_THIN_PROVISIONING=y
+CONFIG_CRYPTO_AES=y
+CONFIG_CRYPTO_XTS=y
+CONFIG_CRYPTO_SHA256=y
+CONFIG_EXT4_FS=y
+CONFIG_XFS_FS=m
+CONFIG_VFAT_FS=m
+
+<span class="c"># C. Appliance: no initramfs, modules disabled after boot</span>
+CONFIG_VIRTIO_BLK=y
+CONFIG_BLK_DEV_SD=y
+CONFIG_EFI_PARTITION=y
+CONFIG_BLK_DEV_DM=y
+CONFIG_DM_CRYPT=y
+CONFIG_DM_VERITY=y
+CONFIG_EXT4_FS=y
+CONFIG_VFAT_FS=y
+CONFIG_SQUASHFS=y
+CONFIG_TMPFS=y
+CONFIG_MODULE_SIG_FORCE=y
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y</code></pre>
+    <p>
+      Read the columns, not the letters: A depends on an initramfs and can afford to be lazy; B depends on an
+      initramfs only for <code>/</code> on LVM, and carries the cipher in the image; C has nowhere to turn, so every
+      link of the chain is in the image and nothing can be added later.
+    </p>
+  </section>
+
+  <section id="verify">
+    <h2><span class="no">15</span> Prove it, and read the failures</h2>
+    <pre><code><span class="c"># what the kernel can mount at all</span>
+cat /proc/filesystems
+zcat /proc/config.gz | grep -E "EFI_PARTITION|BLK_DEV_DM|DM_CRYPT|VFAT_FS|NTFS3_FS"
+
+<span class="c"># each layer, asked separately</span>
+lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINTS 
+blkid /dev/sdb1
+findmnt -no FSTYPE,SOURCE /mnt/win        <span class="c"># which driver answered</span>
+pvs; vgs; lvs                              <span class="c"># LVM metadata readable</span>
+dmsetup ls --tree                          <span class="c"># targets the mapper has</span>
+cryptsetup status luks-root                <span class="c"># cipher actually in use</span>
+cat /proc/crypto | grep -c "xts(aes)"
+mount -t vfat -o ro /dev/sdb1 /mnt/fat   <span class="c"># FAT, read-only, harmless</span>
+cat /proc/partitions</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symptom</th><th>Missing symbol</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Disk present, no partitions</td><td><code>EFI_PARTITION</code> / <code>MSDOS_PARTITION</code></td><td>Boolean — rebuild</td></tr>
+          <tr><td><code>unknown filesystem type 'vfat'</code></td><td><code>VFAT_FS</code> or <code>FAT_FS</code></td><td>Load both, or rebuild</td></tr>
+          <tr><td><code>FAT-fs: IO charset utf8 not found</code></td><td><code>NLS_UTF8</code></td><td>Module; mount with <code>iocharset=utf8</code></td></tr>
+          <tr><td><code>unknown filesystem type 'ntfs3'</code></td><td><code>NTFS3_FS</code></td><td>Load <code>ntfs3</code>, or fall back to <code>ntfs-3g</code></td></tr>
+          <tr><td><code>Volume group not found</code> at boot</td><td><code>BLK_DEV_DM</code> / <code>DM_INIT</code></td><td>Initramfs must load <code>dm-mod</code></td></tr>
+          <tr><td><code>crypt: unknown target type</code></td><td><code>DM_CRYPT</code></td><td>Module in the initramfs, then <code>update-initramfs -u</code></td></tr>
+          <tr><td>Unlock fails with <code>Invalid argument</code></td><td><code>CRYPTO_XTS</code> / <code>CRYPTO_AES</code></td><td>Add both to the initramfs</td></tr>
+          <tr><td><code>mount: /mnt: wrong fs type</code> on a USB stick</td><td><code>BLK_DEV_SD</code>, <code>USB_STORAGE</code></td><td>Driver chain, not a filesystem problem</td></tr>
+          <tr><td><code>dd</code> writes to a mounted disk without complaint</td><td><code>BLK_DEV_WRITE_MOUNTED=n</code></td><td>Set it; the corruption is already done</td></tr>
+          <tr><td>Works until the next reboot after an upgrade</td><td>Running kernel ≠ <code>/lib/modules</code></td><td>Boot the new image, or pin the old one</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Run <code>cat /proc/filesystems</code> first on any "it will not mount" ticket: if the type is absent, no
+      option, no permission and no <code>/etc/fstab</code> change will help, and you have saved yourself an hour.
+    </p>
+  </section>
+
+  <section id="sources">
+    <h2><span class="no">16</span> Sources</h2>
+    <ul>
+      <li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/block/partitions/Kconfig">Partition Kconfig</a> — where <code>EFI_PARTITION</code> and <code>MSDOS_PARTITION</code> are defined.</li>
+      <li><a href="https://docs.kernel.org/admin-guide/device-mapper/">Device mapper</a> — targets, the ioctl interface and activation at boot.</li>
+      <li><a href="https://docs.kernel.org/filesystems/fat.html">FAT</a> — codepage and iocharset behaviour, and why <code>utf8</code> is the sane default.</li>
+      <li><a href="https://docs.kernel.org/filesystems/ntfs3.html">ntfs3</a> — the in-kernel read-write NTFS driver and its limits.</li>
+      <li><a href="https://www.kernel.org/doc/html/latest/admin-guide/kernel-parameters.html">Kernel parameters</a> — <code>root=</code>, <code>rd.luks</code> and the rest of the boot-time storage options.</li>
+      <li><a href="https://wiki.debian.org/initramfs-tools">initramfs-tools</a> — how the image decides which storage modules to carry.</li>
+      <li><a href="https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project">KSPP</a> — the recommended settings this page's hardening section follows.</li>
+    </ul>
+    <p>
+      Where this touches the rest of the blog: <a href="kernelNetworking.html">kernel networking</a> for the same
+      built-in-or-module argument one layer up, <a href="kernelNetworking.html">Kconfig</a> tooling shared by both,
+      <a href="lfs.html">Linux From Scratch</a> for a build that has no initramfs to hide behind,
+      <a href="debian_upgrade.html">Debian upgrade</a> for the initramfs that keeps it booting, and
+      <a href="DebianSecurity.html">Debian security</a> for the hardening that surrounds the disk.
+    </p>
+    <div class="next">
+      <a href="kernelNetworking.html">Kernel networking</a>
+      <a href="lfs.html">Linux From Scratch</a>
+      <a href="DebianSecurity.html">Debian security</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Kernel disks</b> &middot; block layer, partitions, LVM, FAT32 and NTFS — built-in or module.</p>
+    <p>Vanilla HTML, CSS3 and JavaScript. No external styles, scripts, fonts or images.</p>
+    <a class="home" href="./index.html">Home</a>
+  </div>
+</footer>
+</div>
+
+<div id="lang-pt" data-lang-block="pt" hidden>
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Início</a>
+    <span class="brand">Kernel <b>/</b> Kconfig de armazenamento</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Kconfig &middot; discos, partições, LVM, FAT32, NTFS</p>
+    <h2 class="seo-h2">Discos no kernel: levantar o disco antes de tudo o resto</h2>
+    <p class="lede">
+      O armazenamento é o único sítio onde «fazer disto um módulo» é respondido por uma pergunta só: o kernel
+      precisa disto <b>antes</b> de conseguir carregar módulos? Esta página percorre o menu de armazenamento da
+      camada de blocos até aos sistemas de ficheiros — drivers de disco, <code>MSDOS_PARTITION</code> e
+      <code>EFI_PARTITION</code>, device mapper e LVM, FAT32 para a ESP e os dois drivers de NTFS — para cada letra
+      ser uma decisão com razão.
+    </p>
+    <div class="meta-line">
+      <span class="chip">&lt;*&gt; vs &lt;M&gt;</span>
+      <span class="chip dim">GPT / MBR</span>
+      <span class="chip dim">device mapper + LVM</span>
+      <span class="chip dim">vfat + ntfs3</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="pt-toc-title">
+    <h2 id="pt-toc-title">Índice</h2>
+    <ol>
+      <li><a href="#pt-rule"><span>01</span> A regra que decide a letra</a></li>
+      <li><a href="#pt-truth"><span>02</span> Onde está a verdade</a></li>
+      <li><a href="#pt-chain"><span>03</span> A cadeia até à raiz</a></li>
+      <li><a href="#pt-drivers"><span>04</span> Drivers: SD, NVMe, virtio</a></li>
+      <li><a href="#pt-partitions"><span>05</span> Partições — e a que todos esquecem</a></li>
+      <li><a href="#pt-block"><span>06</span> Extras da camada de blocos</a></li>
+      <li><a href="#pt-dm"><span>07</span> Device mapper e LVM</a></li>
+      <li><a href="#pt-luks"><span>08</span> LUKS e a criptografia que tem de existir</a></li>
+      <li><a href="#pt-fat"><span>09</span> FAT32: o formato que arranca máquinas</a></li>
+      <li><a href="#pt-ntfs"><span>10</span> NTFS: ntfs3 contra o driver antigo</a></li>
+      <li><a href="#pt-extra"><span>11</span> Sistemas de ficheiros que se montam</a></li>
+      <li><a href="#pt-software"><span>12</span> O software que pede o módulo</a></li>
+      <li><a href="#pt-harden"><span>13</span> Endurecer por remoção</a></li>
+      <li><a href="#pt-roles"><span>14</span> Três fragmentos</a></li>
+      <li><a href="#pt-verify"><span>15</span> Provar e ler as falhas</a></li>
+      <li><a href="#pt-sources"><span>16</span> Fontes</a></li>
+    </ol>
+  </nav>
+
+  <section id="pt-rule">
+    <h2><span class="no">01</span> A regra que decide a letra</h2>
+    <p>
+      A rede pode esperar até haver processos de utilizador. O armazenamento não: o kernel tem de ler o disco para
+      encontrar <code>/sbin/init</code>, e tem de o ler com código que já está <em>em memória</em>. Tudo o que está
+      entre o disco e a montagem da raiz é, portanto, candidato a <code>=y</code>; o resto é um módulo barato que se
+      pode descarregar.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Marcador</th><th>Tipo</th><th>Significa</th></tr></thead>
+        <tbody>
+          <tr><td><code>&lt;*&gt;</code></td><td>tristate, <code>y</code></td><td>Dentro da imagem; disponível antes de qualquer módulo</td></tr>
+          <tr><td><code>&lt;M&gt;</code></td><td>tristate, <code>m</code></td><td>Um ficheiro <code>.ko</code>; carregável, descarregável e ausente se <code>/lib/modules</code> estiver errado</td></tr>
+          <tr><td><code>&lt; &gt;</code></td><td>tristate, <code>n</code></td><td>Não é compilado; o código não existe nesta máquina</td></tr>
+          <tr><td><code>[*]</code></td><td>booleano</td><td>Ligado ou desligado; não há forma de módulo, a escolha é permanente</td></tr>
+          <tr><td><code>{M}</code></td><td>forçado</td><td>Selecionado por outra opção; só fica <code>=y</code> se o pai for <code>=y</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <h4>O teste prático</h4>
+      <p>
+        Pergunte: <em>isto é preciso para montar a raiz, ou para montar um sistema de ficheiros que um serviço de
+        arranque monta antes de haver utilizador para socorrer a máquina?</em> Se sim, e não existe initramfs — um
+        eletrodoméstico, uma imagem de fabricante, um kernel arrancado com
+        <code>-append root=/dev/nvme0n1p2</code> — compile dentro. Se não, um módulo custa um
+        <code>modprobe</code> e poupa memória em todas as máquinas que nunca o usam.
+      </p>
+    </div>
+    <p>
+      O initramfs muda a aritmética, e é por isso que quase todas as distribuições trazem isto como módulos: a
+      imagem leva <code>sd_mod</code>, <code>dm-crypt</code>, <code>lvm</code> e <code>ext4</code>, carrega-os e
+      só depois muda a raiz. Compile dentro o que a <em>imagem</em> precisaria se o initramfs estivesse partido ou
+      não existisse — que é exatamente o cenário das três da manhã.
+    </p>
+  </section>
+
+  <section id="pt-truth">
+    <h2><span class="no">02</span> Onde está a verdade</h2>
+    <p>
+      Os nomes dos símbolos mudam entre versões e a organização do menu é opinião, não documentação. A árvore do
+      kernel define cada símbolo; o kernel em execução diz com o que foi compilado.
+    </p>
+    <pre><code><span class="c"># o que este kernel diz de si próprio</span>
+uname -r
+zcat /proc/config.gz | grep -E "CONFIG_(EFI_PARTITION|BLK_DEV_DM|DM_CRYPT|VFAT_FS|NTFS3_FS)="
+ls /boot/config-"$(uname -r)" 2&gt;/dev/null
+
+<span class="c"># as definições autoritárias</span>
+grep -n "config EFI_PARTITION" -A 10 block/partitions/Kconfig
+grep -rn "config NTFS3_FS" -A 14 fs/ntfs3/Kconfig
+grep -n "config FAT_DEFAULT_IOCHARSET" -A 8 fs/fat/Kconfig
+
+<span class="c"># mudar sem menuconfig, e ver exatamente o que mudou</span>
+cp .config .config.old
+scripts/config --file .config --enable  EFI_PARTITION
+scripts/config --file .config --module  VFAT_FS
+scripts/config --file .config --enable  DM_INIT
+make olddefconfig
+scripts/diffconfig .config.old .config</code></pre>
+    <p>
+      <code>scripts/config --state CONFIG_X</code> imprime o valor atual sem mexer em nada, e é a forma mais rápida
+      de auditar uma configuração de fabricante antes de confiar nela. Já <code>/proc/filesystems</code> lista o
+      que o kernel em execução consegue montar — um nome ausente ali não é problema de opções de montagem.
+    </p>
+  </section>
+
+  <section id="pt-chain">
+    <h2><span class="no">03</span> A cadeia até à raiz</h2>
+    <p>
+      Leia-se de baixo para cima: o driver de bus encontra o disco, a camada de blocos expõe-no, o parser de
+      partições divide-o, o mapper (se existir) volta a juntá-lo e o driver do sistema de ficheiros lê-o. Qualquer
+      elo em falta dá <code>VFS: Cannot open root device</code> e um prompt de socorro, sem pista sobre o elo que
+      partiu.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Elo</th><th>Símbolo</th><th>Porque tem de ser built-in sem initramfs</th></tr></thead>
+        <tbody>
+          <tr><td>Camada de blocos</td><td><code>BLOCK</code> <code>[*]</code></td><td>Tudo o resto está dentro dela; não é opcional</td></tr>
+          <tr><td>Driver de disco</td><td><code>BLK_DEV_SD</code>, <code>BLK_DEV_NVME</code>, <code>VIRTIO_BLK</code></td><td>O disco da raiz não é visível de todo até isto carregar</td></tr>
+          <tr><td>Tabela de partições</td><td><code>EFI_PARTITION</code>, <code>MSDOS_PARTITION</code></td><td>O disco aparece, mas não existem nós <code>p1</code> / <code>p2</code></td></tr>
+          <tr><td>Mapper</td><td><code>BLK_DEV_DM</code>, <code>DM_CRYPT</code>, targets LVM</td><td>Raiz em LUKS ou num LV é inalcançável sem isto</td></tr>
+          <tr><td>Sistema de ficheiros</td><td><code>EXT4_FS</code>, <code>XFS_FS</code>, <code>BTRFS_FS</code></td><td><code>VFS: Cannot open root device</code> mesmo estando lá</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <h4>Dois elos que falham em silêncio</h4>
+      <p>
+        Um <b>parser de partições</b> em falta é pior do que um driver em falta, porque o disco aparece na mesma:
+        fica <code>/dev/nvme0n1</code>, sem partições, e uma assinatura de sistema de ficheiros que ninguém consegue
+        montar. Um <b>sistema de ficheiros</b> em falta parece «root device not found», apesar de o
+        <code>lsblk</code> estar perfeitamente satisfeito. Ambos a um grep de distância em <code>/proc/config.gz</code>.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-drivers">
+    <h2><span class="no">04</span> Drivers: SD, NVMe, virtio</h2>
+    <pre><code><span class="c"># SCSI/ATA de baixo nível</span>
+CONFIG_BLK_DEV_SD=y            <span class="c"># sd_mod: os nomes sdX, discos ATA e USB UAS</span>
+CONFIG_ATA=y
+CONFIG_SATA_AHCI=y
+CONFIG_ATA_PIIX=y              <span class="c"># modo IDE emulado em QEMU antigo</span>
+CONFIG_SCSI=y
+CONFIG_SCSI_VIRTIO=y           <span class="c"># controlador virtio-scsi</span>
+
+<span class="c"># NVMe</span>
+CONFIG_BLK_DEV_NVME=y          <span class="c"># a pilha nvme completa; sem alias sdX</span>
+
+<span class="c"># virtual e removível</span>
+CONFIG_VIRTIO_BLK=y
+CONFIG_MMC_BLOCK=m             <span class="c"># cartões SD e eMMC</span>
+CONFIG_MMC_SDHCI=m
+CONFIG_USB_STORAGE=m
+CONFIG_BLK_DEV_SR=m            <span class="c"># óptico / srX, necessário para ler a mídia de instalação</span>
+CONFIG_UAS=m                   <span class="c"># USB Attached SCSI, bem mais rápido que usb-storage</span></code></pre>
+    <p>
+      Repare que <code>BLK_DEV_SD</code> não é «o driver SATA»: é o driver da classe de disco SCSI, e todo o disco
+      SATA em modo AHCI, todo o dispositivo USB de armazenamento e todo o disco <code>virtio-scsi</code> passam por
+      ele. Um kernel com <code>SATA_AHCI</code> mas sem <code>BLK_DEV_SD</code> encontra o controlador e não mostra
+      disco nenhum — a resposta mais comum a «a minha compilação não vê o disco».
+    </p>
+    <p>
+      NVMe é diferente: <code>BLK_DEV_NVME</code> registra o seu próprio dispositivo de blocos, sem depender de
+      <code>sd_mod</code>. Numa máquina que arranca de NVMe sem initramfs este símbolo tem de ser <code>=y</code>,
+      e vale a pena compilá-lo dentro mesmo com initramfs, porque a imagem é feita a partir da lista de módulos da
+      máquina que a gerou.
+    </p>
+  </section>
+
+  <section id="pt-partitions">
+    <h2><span class="no">05</span> Partições — e a que todos esquecem</h2>
+    <pre><code>CONFIG_PARTITION_ADVANCED=y    <span class="c"># [*] o portão para tudo o que vem abaixo</span>
+CONFIG_EFI_PARTITION=y         <span class="c"># GPT — discos modernos, e a razão de os pN terem desaparecido</span>
+CONFIG_MSDOS_PARTITION=y       <span class="c"># MBR — pen drives, VMs antigas, imagens híbridas</span>
+CONFIG_OF_PARTITION=y          <span class="c"># partições por devicetree, placas ARM</span>
+CONFIG_BSD_DISKLABEL=m
+CONFIG_SOLARIS_X86_PARTITION=m
+CONFIG_UNIXWARE_DISKLABEL=m</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>Forma</th><th>Sintoma se faltar</th></tr></thead>
+        <tbody>
+          <tr><td><code>EFI_PARTITION</code></td><td>bool <code>[*]</code></td><td>O disco GPT aparece como um só dispositivo; o <code>lsblk</code> não mostra filhos</td></tr>
+          <tr><td><code>MSDOS_PARTITION</code></td><td>bool <code>[*]</code></td><td>Pen drive MBR só monta como disco inteiro</td></tr>
+          <tr><td><code>PARTITION_ADVANCED</code></td><td>bool <code>[*]</code></td><td>Os parsers exóticos nem são oferecidos no menu</td></tr>
+          <tr><td><code>BLK_DEV_LOOP</code></td><td>tristate</td><td><code>mount -o loop image.iso</code> falha; snap e AppImage quebram</td></tr>
+          <tr><td><code>BLK_DEV_NBD</code></td><td>tristate</td><td>Dispositivos de blocos por rede indisponíveis</td></tr>
+          <tr><td><code>BLK_DEV_RAM</code></td><td>tristate</td><td>Sem <code>/dev/ram0</code>; alguma ferramenta de socorro assume-o</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      São booleanos, portanto «fazer do GPT um módulo» não está em cima da mesa: ou o kernel entende GPT ou não
+      entende. Compile os dois parsers dentro. <code>MSDOS_PARTITION</code> custa uns kilobytes e é a diferença
+      entre uma pen de socorro que monta e outra que não monta.
+    </p>
+    <div class="callout gap">
+      <h4>Discos híbridos e de setor 4K</h4>
+      <p>
+        Uma imagem híbrida MBR/GPT precisa dos dois parsers, e um disco 4Kn não precisa de mais nada na
+        configuração — mas uma tabela escrita para setores de 512 bytes num disco 4K nativo é rejeitada, e a
+        mensagem é sobre a tabela, não sobre Kconfig. Confirme com <code>blockdev --getss /dev/sdX</code>.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-block">
+    <h2><span class="no">06</span> Extras da camada de blocos</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>Recomendado</th><th>O que compra</th></tr></thead>
+        <tbody>
+          <tr><td><code>BLK_DEV_INITRD</code></td><td><code>=y</code></td><td>Suporte a initramfs; sem ele nenhum kernel de distro arranca</td></tr>
+          <tr><td><code>BLK_DEV_BSG</code></td><td><code>=m</code></td><td><code>sg3_utils</code>, <code>smartctl</code>, acesso SCSI genérico</td></tr>
+          <tr><td><code>BLK_CGROUP</code></td><td><code>=y</code></td><td>Limites de I/O por contentor e por slice do systemd</td></tr>
+          <tr><td><code>IOSCHED_BFQ</code></td><td><code>=m</code></td><td>Justiça no ambiente gráfico; o agendador é opcional</td></tr>
+          <tr><td><code>MQ_IOSCHED_KYBER</code></td><td><code>=m</code></td><td>Leituras de baixa latência em NVMe</td></tr>
+          <tr><td><code>BLK_DEV_THROTTLING</code></td><td><code>=y</code></td><td>Limites de IOPS e de banda por cgroup</td></tr>
+          <tr><td><code>BLK_DEV_INTEGRITY</code></td><td><code>=y</code> se T10-PI</td><td>Integridade ponta a ponta em discos empresariais</td></tr>
+          <tr><td><code>BLK_DEV_WRITE_MOUNTED</code></td><td><code>=n</code></td><td>Recusa escrever num dispositivo montado — um pé-de-cabra a menos</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      <code>BLK_DEV_WRITE_MOUNTED</code> é recente e vale a pena conhecer: ligado (o histórico por omissão), a raiz
+      ainda pode fazer <code>dd</code> por cima de um sistema de ficheiros montado e corrompê-lo. Desligá-lo
+      transforma um desastre silencioso num <code>EBUSY</code>, que é o tipo de mudança que uma configuração de
+      kernel faz melhor do que qualquer aviso.
+    </p>
+  </section>
+
+  <section id="pt-dm">
+    <h2><span class="no">07</span> Device mapper e LVM</h2>
+    <p>
+      A primeira correção: <b>não existe <code>CONFIG_LVM</code></b>. O LVM é uma ferramenta de utilizador
+      (<code>lvm2</code>) que comanda os targets de device mapper do kernel; o lado do kernel são uns quantos
+      símbolos <code>DM_*</code>. Procurar LVM numa configuração e não encontrar nada não é uma funcionalidade em
+      falta.
+    </p>
+    <pre><code>CONFIG_MD=y
+CONFIG_BLK_DEV_DM=y            <span class="c"># =y se a raiz está em LVM/LUKS e não há initramfs</span>
+CONFIG_DM_INIT=y               <span class="c"># [*] ativa dispositivos DM no arranque, antes da raiz</span>
+CONFIG_DM_CRYPT=y              <span class="c"># LUKS</span>
+CONFIG_DM_SNAPSHOT=m           <span class="c"># snapshots thin, janelas de backup</span>
+CONFIG_DM_THIN_PROVISIONING=m  <span class="c"># o thin pool moderno do LVM</span>
+CONFIG_DM_CACHE=m              <span class="c"># cache SSD à frente de um LV lento</span>
+CONFIG_DM_MIRROR=m
+CONFIG_DM_RAID=m
+CONFIG_DM_VERITY=m             <span class="c"># imagens de raiz verificadas, só de leitura</span>
+CONFIG_DM_INTEGRITY=m
+CONFIG_DM_MULTIPATH=m          <span class="c"># dois caminhos para o mesmo LUN de SAN</span>
+CONFIG_DM_ZERO=m               <span class="c"># dispositivos esparsos para testes</span>
+
+<span class="c"># md/RAID é outro subsistema, não confundir com DM RAID</span>
+CONFIG_MD_RAID0=m
+CONFIG_MD_RAID1=m
+CONFIG_MD_RAID456=m</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>Forma</th><th>Faltar significa</th></tr></thead>
+        <tbody>
+          <tr><td><code>BLK_DEV_DM</code></td><td>tristate</td><td><code>dmsetup</code> não abre <code>/dev/mapper/control</code>; LVM nenhum</td></tr>
+          <tr><td><code>DM_INIT</code></td><td>bool <code>[*]</code></td><td>Raiz num LV precisa de initramfs; sem ele o arranque pára no prompt</td></tr>
+          <tr><td><code>DM_CRYPT</code></td><td>tristate</td><td><code>crypt: unknown target type</code>; desbloquear LUKS é impossível</td></tr>
+          <tr><td><code>DM_THIN_PROVISIONING</code></td><td>tristate</td><td><code>lvcreate --thin</code> falha; o target do thin pool é desconhecido</td></tr>
+          <tr><td><code>DM_CACHE</code>, <code>DM_RAID</code></td><td>tristate</td><td>Só esse tipo de LV recusa ativar; o resto do LVM funciona</td></tr>
+          <tr><td><code>MD_RAID456</code></td><td>tristate</td><td>O <code>mdadm</code> não monta nada para RAID5/6</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Compile <code>BLK_DEV_DM</code>, <code>DM_CRYPT</code> e o target thin dentro quando o volume da raiz vive
+      neles e a máquina não tem initramfs. Caso contrário são módulos e é o initramfs que os carrega — é para isso
+      que existe o <code>update-initramfs</code>, e é por isso que uma atualização de kernel com initramfs partido
+      é uma falha diferente de uma má configuração.
+    </p>
+  </section>
+
+  <section id="pt-luks">
+    <h2><span class="no">08</span> LUKS e a criptografia que tem de existir</h2>
+    <p>
+      <code>DM_CRYPT=y</code> é só metade de uma raiz cifrada. A cifra com que o volume foi criado tem de estar
+      disponível na hora de desbloquear, e as omissões não são gratuitas: <code>aes-xts-plain64</code> precisa de
+      AES e XTS, e a derivação da chave precisa de uma função de hash.
+    </p>
+    <pre><code>CONFIG_DM_CRYPT=y
+CONFIG_CRYPTO_AES=y
+CONFIG_CRYPTO_XTS=y
+CONFIG_CRYPTO_SHA256=y
+CONFIG_CRYPTO_USER_API_SKCIPHER=m   <span class="c"># só se o utilizador pedir cifras por nome</span>
+CONFIG_KEYS=y
+CONFIG_ENCRYPTED_KEYS=y             <span class="c"># o systemd pede uma chave ligada ao TPM</span>
+CONFIG_BLK_INLINE_ENCRYPTION=m      <span class="c"># cifra de hardware em eMMC/UFS</span></code></pre>
+    <div class="callout warn">
+      <h4>A falha que parece password errada</h4>
+      <p>
+        <code>cryptsetup: device-mapper: reload ioctl on &hellip; failed: Invalid argument</code> ao desbloquear
+        costuma não ser problema de password: é o módulo da cifra ou do hash em falta no initramfs. Verifique
+        <code>/proc/crypto</code> à procura de <code>xts(aes)</code> antes de decidir que o disco está perdido.
+      </p>
+    </div>
+    <p>
+      A cifra ao nível do ficheiro é outra pilha: <code>FS_ENCRYPTION</code> (fscrypt) cifra diretórios dentro de
+      ext4 e F2FS e não precisa de device mapper nenhum, enquanto <code>DM_VERITY</code> dá uma raiz só de leitura
+      com blocos verificados por hash — a base habitual de uma imagem de eletrodoméstico imutável.
+    </p>
+  </section>
+
+  <section id="pt-fat">
+    <h2><span class="no">09</span> FAT32: o formato que arranca máquinas</h2>
+    <p>
+      FAT não é um detalhe legado que se possa largar. A partição de sistema EFI é FAT, quase toda a mídia de
+      arranque é FAT, e cartões de câmara, dashcams e atualizadores de firmware são FAT. Três símbolos fazem o
+      trabalho, e um quarto decide que caracteres sobrevivem à viagem.
+    </p>
+    <pre><code>CONFIG_FAT_FS=y                <span class="c"># o núcleo; vfat e msdos dependem dele</span>
+CONFIG_VFAT_FS=y               <span class="c"># nomes longos, o "vfat" do dia a dia — e a ESP</span>
+CONFIG_MSDOS_FS=m              <span class="c"># nomes 8.3, FAT12/16; normalmente dispensável</span>
+CONFIG_EXFAT_FS=m              <span class="c"># cartões grandes, um driver completamente diferente</span>
+
+<span class="c"># a manutenção de charset que as pessoas saltam</span>
+CONFIG_NLS_CODEPAGE_437=y
+CONFIG_NLS_ISO8859_1=y
+CONFIG_NLS_UTF8=y
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="utf8"</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>Forma</th><th>Faltar significa</th></tr></thead>
+        <tbody>
+          <tr><td><code>FAT_FS</code></td><td>tristate</td><td><code>unknown filesystem type 'vfat'</code>; <code>fat</code> não está sequer em <code>/proc/filesystems</code></td></tr>
+          <tr><td><code>VFAT_FS</code></td><td>tristate</td><td>O tipo de montagem chamado <code>vfat</code> não existe — o caso comum</td></tr>
+          <tr><td><code>MSDOS_FS</code></td><td>tristate</td><td>Só falha <code>mount -t msdos</code>; o <code>vfat</code> monta o mesmo disco</td></tr>
+          <tr><td><code>NLS_UTF8</code></td><td>tristate, sem prompt</td><td><code>FAT-fs: IO charset utf8 not found</code>, e nomes ilegíveis</td></tr>
+          <tr><td><code>NLS_CODEPAGE_437</code></td><td>tristate</td><td>Codepage por omissão indisponível; a montagem recorre ou falha</td></tr>
+          <tr><td><code>EXFAT_FS</code></td><td>tristate</td><td>Cartões SD grandes precisam de <code>exfat</code>, não de vfat</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      <code>FAT_DEFAULT_IOCHARSET</code> é uma string, não um módulo, e é a única definição que decide se um nome
+      em português ou japonês aparece intacto. <code>"utf8"</code> é a omissão certa para tudo o que é partilhado
+      com outro sistema operacional; <code>"iso8859-1"</code> é a omissão histórica e produz caracteres de
+      substituição em qualquer nome fora do Latin-1.
+    </p>
+    <div class="callout gap">
+      <h4>O vfat é crítico para o arranque?</h4>
+      <p>
+        Só em máquinas cujo <code>/boot</code> é a própria ESP — algumas placas ARM, algumas imagens de kernel
+        unificado, e todas as montagens que guardam os kernels na ESP. Num x86 comum com um <code>/boot</code> ext4
+        separado, o firmware lê FAT e o kernel não, portanto <code>&lt;M&gt;</code> é o correto e o esperado.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-ntfs">
+    <h2><span class="no">10</span> NTFS: ntfs3 contra o driver antigo</h2>
+    <p>
+      Dois drivers de kernel usam o nome NTFS e não são a mesma coisa. <code>NTFS3_FS</code> é o driver dentro do
+      kernel, de leitura e escrita; <code>NTFS_FS</code> é o antigo, sobretudo de leitura, que a maioria das pessoas
+      substituiu há anos pelo driver FUSE <code>ntfs-3g</code>.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>O que é</th><th>Recomendado</th></tr></thead>
+        <tbody>
+          <tr><td><code>NTFS3_FS</code></td><td>Driver no kernel, leitura e escrita, tipo <code>ntfs3</code></td><td><code>&lt;M&gt;</code>; <code>&lt;*&gt;</code> só se montado antes dos módulos</td></tr>
+          <tr><td><code>NTFS3_LZX_XPRESS</code></td><td>Descompressão de ficheiros NTFS comprimidos</td><td><code>&lt;M&gt;</code> quando o volume usa compressão</td></tr>
+          <tr><td><code>NTFS_FS</code></td><td>Driver antigo, tipo <code>ntfs</code></td><td><code>&lt; &gt;</code> a menos que haja razão</td></tr>
+          <tr><td><code>NTFS_RW</code></td><td>Escrita limitada no driver antigo</td><td><code>&lt; &gt;</code> — é o que estraga volumes</td></tr>
+          <tr><td><code>NLS_UTF8</code></td><td>Charset para nomes não ASCII</td><td><code>&lt;*&gt;</code> ou <code>&lt;M&gt;</code>, o mesmo raciocínio do FAT</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code><span class="c"># o driver moderno</span>
+CONFIG_NTFS3_FS=m
+CONFIG_NTFS3_LZX_XPRESS=m
+
+<span class="c"># o par antigo — deixe os dois desligados</span>
+<span class="c"># CONFIG_NTFS_FS is not set</span>
+<span class="c"># CONFIG_NTFS_RW is not set</span>
+
+<span class="c"># montar, e confirmar que driver respondeu</span>
+mount -t ntfs3 /dev/sdb1 /mnt/win
+findmnt -no FSTYPE,SOURCE /mnt/win</code></pre>
+    <div class="callout warn">
+      <h4>O que nenhum dos dois abre</h4>
+      <p>
+        Volumes BitLocker e discos em modo Intel RST / RAID não são volumes NTFS para o kernel: a cifra ou os
+        metadados Intel estão abaixo do sistema de ficheiros e nenhum símbolo <code>NTFS*</code> ajuda. Isso exige
+        desbloquear o volume no firmware primeiro, o que é outra página e outra falha.
+      </p>
+    </div>
+    <p>
+      O ntfs3 também lida mal com o caso hibernado / arranque rápido: um volume Windows que não foi encerrado
+      corretamente continua marcado como sujo, e o driver monta-o só de leitura em vez de arriscar um
+      <code>$LogFile</code> corrompido. É o comportamento previsto, não um problema de configuração —
+      <code>dmesg | grep ntfs3</code> diz isso numa linha.
+    </p>
+  </section>
+
+  <section id="pt-extra">
+    <h2><span class="no">11</span> Sistemas de ficheiros que se montam</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>Recomendado</th><th>Onde aparece</th></tr></thead>
+        <tbody>
+          <tr><td><code>EXT4_FS</code></td><td><code>=y</code> se for a raiz</td><td>Quase toda a raiz Debian e Ubuntu; também <code>/boot</code></td></tr>
+          <tr><td><code>XFS_FS</code></td><td><code>=m</code></td><td>Raízes da família RHEL e volumes de dados grandes</td></tr>
+          <tr><td><code>BTRFS_FS</code></td><td><code>=m</code></td><td>Snapshots, subvolumes, omissões de openSUSE/Fedora</td></tr>
+          <tr><td><code>F2FS_FS</code></td><td><code>=m</code></td><td>Dispositivos só de flash, telefones, alguns portáteis</td></tr>
+          <tr><td><code>SQUASHFS</code></td><td><code>=m</code></td><td>Imagens live, pacotes snap, overlays só de leitura</td></tr>
+          <tr><td><code>ISO9660_FS</code>, <code>UDF_FS</code></td><td><code>=m</code></td><td>CD/DVD e Blu-ray; UDF cobre também mídia óptica grande</td></tr>
+          <tr><td><code>TMPFS</code></td><td><code>=y</code></td><td><code>/dev/shm</code> e <code>/run</code>; o systemd precisa cedo</td></tr>
+          <tr><td><code>OVERLAY_FS</code></td><td><code>=m</code></td><td>Contentores e persistência de sistema live</td></tr>
+          <tr><td><code>FUSE_FS</code></td><td><code>=m</code></td><td>ntfs-3g, sshfs, rclone e todos os sistemas de ficheiros de utilizador</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      <code>TMPFS</code> é o estranho da tabela: não é um sistema de ficheiros de disco, mas uma máquina que não
+      monta <code>/run</code> cedo não chega a um prompt de login. Trate-o como a consola — sempre dentro.
+    </p>
+  </section>
+
+  <section id="pt-software">
+    <h2><span class="no">12</span> O software que pede o módulo</h2>
+    <p>
+      Um nome de símbolo não diz nada até se saber que programa o chama. A coluna da esquerda é o módulo, a do
+      meio é o software que falha sem ele e a da direita é o que esse programa está a fazer com ele. Se nenhum dos
+      programas de uma linha estiver instalado aqui, o módulo não tem propósito nesta máquina.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Módulo</th><th>Software que precisa</th><th>O que faz com ele</th></tr></thead>
+        <tbody>
+          <tr><td><code>dm_mod</code></td><td><code>lvm2</code>, <code>cryptsetup</code>, <code>multipath-tools</code></td><td>Todas as ferramentas de mapper falam com <code>/dev/mapper/control</code>; sem <code>dm_mod</code>, LVM nenhum</td></tr>
+          <tr><td><code>dm_crypt</code></td><td><code>cryptsetup</code>, <code>systemd-cryptsetup</code>, <code>udisks2</code></td><td>Desbloqueia LUKS no arranque e pelo gestor de ficheiros do ambiente gráfico</td></tr>
+          <tr><td><code>dm_thin_pool</code></td><td><code>lvm2</code> (<code>lvcreate --thin</code>), snapshots do <code>libvirt</code></td><td>Pools sobrecomprometidos; um snapshot de VM precisa do target presente</td></tr>
+          <tr><td><code>dm_snapshot</code></td><td><code>lvm2</code> (<code>lvcreate -s</code>)</td><td>Snapshots copy-on-write tirados antes de uma atualização</td></tr>
+          <tr><td><code>dm_multipath</code></td><td><code>multipath-tools</code> (<code>multipathd</code>)</td><td>Dois HBAs, um LUN; sem ele o segundo caminho passa a ser um segundo disco</td></tr>
+          <tr><td><code>dm_verity</code></td><td><code>veritysetup</code> (pacote cryptsetup), <code>systemd-veritysetup</code></td><td>Imagens só de leitura verificadas por hash</td></tr>
+          <tr><td><code>dm_integrity</code></td><td><code>integritysetup</code></td><td>Somas de verificação por bloco abaixo do sistema de ficheiros</td></tr>
+          <tr><td><code>loop</code></td><td><code>snapd</code>, <code>flatpak</code>, AppImage, <code>mount -o loop</code></td><td>Monta um ficheiro como se fosse um disco; os pacotes snap são imagens squashfs atrás de dispositivos loop</td></tr>
+          <tr><td><code>overlay</code></td><td><code>containerd</code>, <code>docker</code>, <code>podman</code></td><td>A pilha de camadas das imagens de contentor</td></tr>
+          <tr><td><code>squashfs</code></td><td><code>snapd</code>, instaladores live, <code>unsquashfs</code></td><td>Imagens comprimidas só de leitura</td></tr>
+          <tr><td><code>fuse</code></td><td><code>ntfs-3g</code>, <code>sshfs</code>, <code>rclone</code>, <code>squashfuse</code></td><td>Sistemas de ficheiros em espaço de utilizador; sem ele essas ferramentas não montam nada</td></tr>
+          <tr><td><code>vfat</code></td><td><code>udisks2</code> (automontagem), <code>grub-install</code> para a ESP, <code>mtools</code></td><td>Ler e escrever a partição de sistema EFI e as pen drives</td></tr>
+          <tr><td><code>exfat</code></td><td><code>exfatprogs</code> (<code>mkfs.exfat</code>, <code>fsck.exfat</code>), <code>udisks2</code></td><td>Cartões SD grandes; a alternativa é o pacote <code>exfat-fuse</code></td></tr>
+          <tr><td><code>ntfs3</code></td><td><code>udisks2</code> (o driver por omissão), <code>mount -t ntfs3</code></td><td>Ler e escrever um volume Windows; o <code>ntfs-3g</code> é o recurso FUSE</td></tr>
+          <tr><td><code>nls_utf8</code></td><td><code>udisks2</code>, qualquer <code>mount -o iocharset=utf8</code></td><td>Devolve nomes de FAT ou NTFS em UTF-8 — os acentos sobrevivem ou não</td></tr>
+          <tr><td><code>bfq</code>, <code>kyber</code></td><td><code>tuned</code>, regras de agendador do <code>systemd-udevd</code></td><td>O agendador de I/O escolhido por dispositivo através de um perfil ou de uma regra udev</td></tr>
+          <tr><td><code>blk-throttle</code>, <code>blk-cgroup</code></td><td><code>systemd</code> (<code>IOReadBandwidthMax</code>), <code>docker --device-read-bps</code></td><td>Limites de I/O por serviço e por contentor</td></tr>
+          <tr><td><code>bsg</code></td><td><code>smartmontools</code> (<code>smartctl</code>), <code>sg3_utils</code></td><td>Dados SMART e comandos SCSI fora da camada de blocos</td></tr>
+          <tr><td><code>nvme</code></td><td><code>nvme-cli</code> (<code>nvme list</code>, <code>nvme smart-log</code>)</td><td>Saúde, namespaces e slots de firmware em NVMe</td></tr>
+          <tr><td><code>md_mod</code>, <code>raid456</code></td><td><code>mdadm</code></td><td>Montagem de RAID por software; <code>md</code> e <code>dm-raid</code> não são permutáveis aqui</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <h4>Ler ao contrário para podar</h4>
+      <p>
+        Liste os pacotes que tem de facto —
+        <code>dpkg -l | grep -E 'lvm2|cryptsetup|snapd|docker|smartmontools|mdadm'</code> — e desligue todos os
+        targets cuja linha volta vazia. É um plano de configuração tirado da máquina e não de um blog, e é a mesma
+        lista que diz o que meter num initramfs.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-harden">
+    <h2><span class="no">13</span> Endurecer por remoção</h2>
+    <p>
+      Cada driver de sistema de ficheiros que compila é código a correr com privilégio de kernel, a analisar bytes
+      de mídia que um atacante pode controlar — uma pen drive no estacionamento é um exploit entregue. Remover o
+      driver remove o parser.
+    </p>
+    <pre><code><span class="c"># parsers que vale a pena apagar num servidor que não os usa</span>
+<span class="c"># CONFIG_HFS_FS is not set</span>
+<span class="c"># CONFIG_HFSPLUS_FS is not set</span>
+<span class="c"># CONFIG_JFS_FS is not set</span>
+<span class="c"># CONFIG_UFS_FS is not set</span>
+<span class="c"># CONFIG_GFS2_FS is not set</span>
+<span class="c"># CONFIG_OCFS2_FS is not set</span>
+<span class="c"># CONFIG_NILFS2_FS is not set</span>
+<span class="c"># CONFIG_REISERFS_FS is not set</span>
+<span class="c"># CONFIG_AFFS_FS is not set</span>
+
+<span class="c"># e as alavancas ao nível dos blocos</span>
+CONFIG_BLK_DEV_LOOP=m          <span class="c"># snap/flatpak precisam, portanto módulo e não built-in</span>
+<span class="c"># CONFIG_BLK_DEV_NBD is not set</span>
+<span class="c"># CONFIG_BLK_DEV_WRITE_MOUNTED is not set</span>
+CONFIG_DEVMEM=n               <span class="c"># já desaparecido na maioria; /dev/mem não é ferramenta</span>
+CONFIG_STRICT_DEVMEM=y</code></pre>
+    <ul>
+      <li><b>Montagens por omissão:</b> noexec, nosuid e nodev em <code>/tmp</code>, <code>/dev/shm</code> e mídia removível não custam nada e bloqueiam uma classe inteira de truques.</li>
+      <li><b>Módulos não descarregáveis:</b> <code>MODULE_UNLOAD=n</code> com módulos assinados significa que ninguém troca um driver — e que você também não, sem reiniciar.</li>
+      <li><b>Raiz verificada:</b> <code>DM_VERITY</code> com uma imagem só de leitura transforma «o disco mudou» numa falha de arranque em vez de um compromisso.</li>
+    </ul>
+    <div class="callout warn">
+      <h4>O preço é a sua pen de socorro</h4>
+      <p>
+        Remover vfat, exfat e NTFS significa uma máquina que não lê a pen drive que trouxe para a reparar. Mantenha
+        <code>VFAT_FS</code> como módulo em tudo o que possa ter de consertar pessoalmente — é pequeno, e é o
+        formato de toda a mídia de resgate.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-roles">
+    <h2><span class="no">14</span> Três fragmentos</h2>
+    <p>
+      Pontos de partida para <code>make olddefconfig</code>, não evangelho: nomes e omissões mudam entre versões, e
+      o seu controlador decide as linhas de driver.
+    </p>
+    <pre><code><span class="c"># A. Estação de trabalho com initramfs (à Debian)</span>
+CONFIG_BLOCK=y
+CONFIG_BLK_DEV_SD=m
+CONFIG_BLK_DEV_NVME=m
+CONFIG_SATA_AHCI=m
+CONFIG_EFI_PARTITION=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_BLK_DEV_DM=m
+CONFIG_DM_CRYPT=m
+CONFIG_DM_THIN_PROVISIONING=m
+CONFIG_EXT4_FS=m
+CONFIG_VFAT_FS=m
+CONFIG_EXFAT_FS=m
+CONFIG_NTFS3_FS=m
+CONFIG_NLS_UTF8=m
+CONFIG_BLK_DEV_WRITE_MOUNTED=n
+
+<span class="c"># B. Servidor, raiz em LVM + LUKS, módulos permitidos</span>
+CONFIG_BLK_DEV_NVME=y
+CONFIG_BLK_DEV_SD=y
+CONFIG_EFI_PARTITION=y
+CONFIG_BLK_DEV_DM=y
+CONFIG_DM_INIT=y
+CONFIG_DM_CRYPT=y
+CONFIG_DM_THIN_PROVISIONING=y
+CONFIG_CRYPTO_AES=y
+CONFIG_CRYPTO_XTS=y
+CONFIG_CRYPTO_SHA256=y
+CONFIG_EXT4_FS=y
+CONFIG_XFS_FS=m
+CONFIG_VFAT_FS=m
+
+<span class="c"># C. Eletrodoméstico: sem initramfs, módulos desativados após arranque</span>
+CONFIG_VIRTIO_BLK=y
+CONFIG_BLK_DEV_SD=y
+CONFIG_EFI_PARTITION=y
+CONFIG_BLK_DEV_DM=y
+CONFIG_DM_CRYPT=y
+CONFIG_DM_VERITY=y
+CONFIG_EXT4_FS=y
+CONFIG_VFAT_FS=y
+CONFIG_SQUASHFS=y
+CONFIG_TMPFS=y
+CONFIG_MODULE_SIG_FORCE=y
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y</code></pre>
+    <p>
+      Leia as colunas, não as letras: A depende do initramfs e pode dar-se ao luxo de ser preguiçosa; B depende do
+      initramfs só para a raiz em LVM, e leva a cifra dentro da imagem; C não tem para onde fugir, portanto cada
+      elo da cadeia está na imagem e nada pode ser acrescentado depois.
+    </p>
+  </section>
+
+  <section id="pt-verify">
+    <h2><span class="no">15</span> Provar e ler as falhas</h2>
+    <pre><code><span class="c"># o que o kernel consegue montar de todo</span>
+cat /proc/filesystems
+zcat /proc/config.gz | grep -E "EFI_PARTITION|BLK_DEV_DM|DM_CRYPT|VFAT_FS|NTFS3_FS"
+
+<span class="c"># cada camada, perguntada em separado</span>
+lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINTS
+blkid /dev/sdb1
+findmnt -no FSTYPE,SOURCE /mnt/win        <span class="c"># que driver respondeu</span>
+pvs; vgs; lvs                              <span class="c"># metadados LVM legíveis</span>
+dmsetup ls --tree                          <span class="c"># targets que o mapper tem</span>
+cryptsetup status luks-root                <span class="c"># cifra realmente em uso</span>
+cat /proc/crypto | grep -c "xts(aes)"
+mount -t vfat -o ro /dev/sdb1 /mnt/fat   <span class="c"># FAT, só de leitura, inofensivo</span>
+cat /proc/partitions</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sintoma</th><th>Símbolo em falta</th><th>Correção</th></tr></thead>
+        <tbody>
+          <tr><td>Disco presente, sem partições</td><td><code>EFI_PARTITION</code> / <code>MSDOS_PARTITION</code></td><td>Booleano — recompilar</td></tr>
+          <tr><td><code>unknown filesystem type 'vfat'</code></td><td><code>VFAT_FS</code> ou <code>FAT_FS</code></td><td>Carregar os dois, ou recompilar</td></tr>
+          <tr><td><code>FAT-fs: IO charset utf8 not found</code></td><td><code>NLS_UTF8</code></td><td>Módulo; montar com <code>iocharset=utf8</code></td></tr>
+          <tr><td><code>unknown filesystem type 'ntfs3'</code></td><td><code>NTFS3_FS</code></td><td>Carregar <code>ntfs3</code>, ou recorrer ao <code>ntfs-3g</code></td></tr>
+          <tr><td><code>Volume group not found</code> no arranque</td><td><code>BLK_DEV_DM</code> / <code>DM_INIT</code></td><td>O initramfs tem de carregar <code>dm-mod</code></td></tr>
+          <tr><td><code>crypt: unknown target type</code></td><td><code>DM_CRYPT</code></td><td>Módulo no initramfs, depois <code>update-initramfs -u</code></td></tr>
+          <tr><td>Desbloqueio falha com <code>Invalid argument</code></td><td><code>CRYPTO_XTS</code> / <code>CRYPTO_AES</code></td><td>Acrescentar ambos ao initramfs</td></tr>
+          <tr><td><code>mount: /mnt: wrong fs type</code> numa pen</td><td><code>BLK_DEV_SD</code>, <code>USB_STORAGE</code></td><td>É a cadeia de drivers, não o sistema de ficheiros</td></tr>
+          <tr><td><code>dd</code> escreve num disco montado sem reclamar</td><td><code>BLK_DEV_WRITE_MOUNTED=n</code></td><td>Definir; a corrupção já está feita</td></tr>
+          <tr><td>Funciona até ao próximo reinício após atualização</td><td>Kernel em execução ≠ <code>/lib/modules</code></td><td>Arrancar a imagem nova, ou fixar a antiga</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Comece sempre por <code>cat /proc/filesystems</code> em qualquer bilhete de «não monta»: se o tipo estiver
+      ausente, nenhuma opção, permissão ou alteração ao <code>/etc/fstab</code> ajuda, e poupou uma hora.
+    </p>
+  </section>
+
+  <section id="pt-sources">
+    <h2><span class="no">16</span> Fontes</h2>
+    <ul>
+      <li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/block/partitions/Kconfig">Kconfig de partições</a> — onde <code>EFI_PARTITION</code> e <code>MSDOS_PARTITION</code> estão definidos.</li>
+      <li><a href="https://docs.kernel.org/admin-guide/device-mapper/">Device mapper</a> — targets, interface ioctl e ativação no arranque.</li>
+      <li><a href="https://docs.kernel.org/filesystems/fat.html">FAT</a> — comportamento de codepage e iocharset, e porque <code>utf8</code> é a omissão sensata.</li>
+      <li><a href="https://docs.kernel.org/filesystems/ntfs3.html">ntfs3</a> — o driver NTFS de leitura e escrita dentro do kernel e os seus limites.</li>
+      <li><a href="https://www.kernel.org/doc/html/latest/admin-guide/kernel-parameters.html">Parâmetros do kernel</a> — <code>root=</code>, <code>rd.luks</code> e o resto das opções de armazenamento no arranque.</li>
+      <li><a href="https://wiki.debian.org/initramfs-tools">initramfs-tools</a> — como a imagem decide que módulos de armazenamento leva.</li>
+      <li><a href="https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project">KSPP</a> — as definições recomendadas que a secção de endurecimento segue.</li>
+    </ul>
+    <p>
+      Onde isto toca o resto do blog: <a href="kernelNetworking.html">rede no kernel</a> para o mesmo argumento
+      built-in ou módulo uma camada acima, <a href="lfs.html">Linux From Scratch</a> para uma compilação que não
+      tem initramfs onde se esconder, <a href="debian_upgrade.html">atualizar Debian</a> para o initramfs que a
+      mantém a arrancar, e <a href="DebianSecurity.html">segurança em Debian</a> para o endurecimento que rodeia o
+      disco.
+    </p>
+    <div class="next">
+      <a href="kernelNetworking.html">Rede no kernel</a>
+      <a href="lfs.html">Linux From Scratch</a>
+      <a href="DebianSecurity.html">Segurança Debian</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Discos no kernel</b> &middot; camada de blocos, partições, LVM, FAT32 e NTFS — built-in ou módulo.</p>
+    <p>HTML simples, CSS3 e JavaScript. Sem estilos, scripts, tipos de letra ou imagens externas.</p>
+    <a class="home" href="./index.html">Início</a>
+  </div>
+</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var blocks = document.querySelectorAll("[data-lang-block]");
+  var links = document.querySelectorAll("[data-lang-switch]");
+
+  function apply(lang) {
+    Array.prototype.forEach.call(blocks, function (block) {
+      block.hidden = block.getAttribute("data-lang-block") !== lang;
+    });
+    Array.prototype.forEach.call(links, function (link) {
+      if (link.getAttribute("data-lang-switch") === lang) { link.setAttribute("aria-current", "true"); }
+      else { link.removeAttribute("aria-current"); }
+    });
+    document.documentElement.lang = lang === "pt" ? "pt-PT" : "en";
+  }
+
+  Array.prototype.forEach.call(links, function (link) {
+    link.addEventListener("click", function (event) {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button) { return; }
+      event.preventDefault();
+      apply(link.getAttribute("data-lang-switch"));
+    });
+  });
+
+  var wanted = new URLSearchParams(location.search).get("lang");
+  if (wanted === "en" || wanted === "pt") { apply(wanted); }
+  else if (location.hash.indexOf("#pt-") === 0) { apply("pt"); }
+})();
+</script>
+</body>
+</html>

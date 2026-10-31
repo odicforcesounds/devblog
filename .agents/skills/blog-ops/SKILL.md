@@ -31,7 +31,7 @@ problem you fix in the source.
 | `backups/setup-facebook-github.md` | How to enable another provider (console steps + the `AUTH_PROVIDERS` entry). |
 | `pushit.sh` | Deploy: pull, `git add .`, commit, push. Only run it when asked to publish. |
 | `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD). |
-| `.agents/skills/` | The other skills: `new-page` (write a page), `repo-layout` (what belongs where), `git-dates` (dates from git history), `tmp-tools` (scripts in `tmp/` and `tools/`), `assets-backups` (templates, runbooks, images). |
+| `.agents/skills/` | The other skills: `new-page` (write a page), `repo-layout` (what belongs where), `git-dates` (dates from git history), `tmp-tools` (scripts in `tmp/` and `tools/`), `tools-index` (the path index for every script and binary), `assets-backups` (templates, runbooks, images). |
 | `backups/GOOGLE.md` | Search Console runbook: what the structured data says, order of operations, known gaps. |
 | `backups/CLOUDFLARE.md` | Hosting runbook: DNS/proxy state, WebMCP, bot rules, redirects, cache, headers, HSTS. Read it before changing anything at the edge. |
 
