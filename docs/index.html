@@ -503,14 +503,6 @@ opacity: 0.85;
 color: var(--accent);
 }
 
-.recent-list time {
-flex: 0 0 auto;
-font-family: var(--mono);
-font-size: 0.63rem;
-letter-spacing: 0.06em;
-color: var(--accent-warm);
-opacity: 0.9;
-}
 
 @media (max-width: 640px) {
 .recent-list a {
@@ -1005,17 +997,7 @@ animation-duration: 0.01ms !important;
 }
 }
 
-.page-date {
-margin-top: 0.1rem;
-font-family: var(--mono);
-font-size: 0.6rem;
-letter-spacing: 0.06em;
-color: rgba(255, 190, 107, 0.74);
-}
 
-.page-date:empty {
-display: none;
-}
 
 .links li.is-target {
 border-color: var(--accent-warm);
@@ -1026,20 +1008,7 @@ box-shadow: 0 0 0 1px rgba(255, 190, 107, 0.32);
 color: var(--accent-warm);
 }
 
-.featured .page-date {
-font-size: 0.58rem;
-letter-spacing: 0.24em;
-}
 
-.ledger {
-margin: clamp(1.4rem, 3vw, 2rem) 0 0;
-font-family: var(--mono);
-font-size: 0.6rem;
-letter-spacing: 0.12em;
-text-transform: uppercase;
-text-align: center;
-color: rgba(148, 167, 188, 0.72);
-}
 
 /* Comments */
 .comments {
@@ -2454,7 +2423,6 @@ width: min(1120px, calc(100% - 9rem));
       </ul>
 </section>
 
-    <p class="ledger" aria-live="polite"></p>
 
   </footer>
 
@@ -2612,7 +2580,6 @@ width: min(1120px, calc(100% - 9rem));
   var featured = document.querySelector(".featured");
   var recentBlock = document.querySelector(".recent");
   var recentList = document.querySelector(".recent-list");
-  var ledger = document.querySelector(".ledger");
   var sutraHead = document.querySelector(".sutra-head .count");
   var sections = Array.prototype.slice.call(document.querySelectorAll(".category"));
   var catDetails = sections.map(function (section) { return section.querySelector(".cat"); });
@@ -2837,62 +2804,6 @@ width: min(1120px, calc(100% - 9rem));
   });
 
   var dates = {};
-  var dateCounts = { total: 0, dated: 0 };
-
-  function slotOf(item) {
-    var slot = item.querySelector(".page-date");
-    if (!slot) {
-      slot = document.createElement("span");
-      slot.className = "page-date";
-      item.appendChild(slot);
-    }
-    return slot;
-  }
-
-  var MONTH_INDEX = {
-    jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
-    jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12"
-  };
-
-  // Every stamp in the archive is printed as "2026-10-24 16:12". Two shapes
-  // reach this point: ISO 8601 ("2026-10-24T16:12:00+01:00") and RFC 2822
-  // ("Sat, 24 Oct 2026 18:17:23 +0100"). Both are read as written, so no
-  // time zone can shift the printed minute.
-  function readStamp(stamp) {
-    var value = String(stamp == null ? "" : stamp).trim();
-
-    var iso = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(?::\d{2})?(Z|[+-]\d{2}:?\d{2})?$/i.exec(value);
-    if (iso) {
-      var zone = iso[3] ? iso[3].toUpperCase() : "";
-      if (zone !== "Z" && zone.length === 5) {
-        zone = zone.slice(0, 3) + ":" + zone.slice(3);
-      }
-      return { date: iso[1], clock: iso[2], machine: iso[1] + "T" + iso[2] + ":00" + zone };
-    }
-
-    var rfc = /^[A-Za-z]{3},?\s+(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})\s+(\d{2}:\d{2})(?::\d{2})?\s*(?:([+-])(\d{2})(\d{2}))?$/.exec(value);
-    var month = rfc ? MONTH_INDEX[rfc[2].toLowerCase()] : "";
-    if (rfc && month) {
-      var date = rfc[3] + "-" + month + "-" + (rfc[1].length < 2 ? "0" + rfc[1] : rfc[1]);
-      var offset = rfc[5] ? rfc[5] + rfc[6] + ":" + rfc[7] : "";
-      return { date: date, clock: rfc[4], machine: date + "T" + rfc[4] + ":00" + offset };
-    }
-
-    var clock = /T(\d{2}:\d{2})/.exec(value);
-    return { date: value.slice(0, 10), clock: clock ? clock[1] : "", machine: value };
-  }
-
-  function prettyStamp(stamp) {
-    var parts = readStamp(stamp);
-    return parts.clock ? parts.date + " " + parts.clock : parts.date;
-  }
-
-  function paint(item, iso) {
-    var slot = slotOf(item);
-    slot.textContent = prettyStamp(iso);
-    slot.setAttribute("data-created", readStamp(iso).machine);
-    slot.title = "Creation date: " + prettyStamp(iso);
-  }
 
   function files() {
     var seen = {};
@@ -2918,15 +2829,6 @@ width: min(1120px, calc(100% - 9rem));
     return list;
   }
 
-  function updateLedger() {
-    if (!ledger) {
-      return;
-    }
-
-    ledger.textContent = "Publication ledger \u00b7 " + dateCounts.dated + " of " +
-      dateCounts.total + " files dated from the repository";
-  }
-
   function paintAll() {
     var targets = [];
     if (featured) {
@@ -2937,8 +2839,6 @@ width: min(1120px, calc(100% - 9rem));
     });
 
     var seen = {};
-    var total = 0;
-    var painted = 0;
 
     targets.forEach(function (item) {
       var file = fileOf(item);
@@ -2946,16 +2846,8 @@ width: min(1120px, calc(100% - 9rem));
         return;
       }
       seen[file] = true;
-      total += 1;
-      if (dates[file]) {
-        paint(item, dates[file]);
-        painted += 1;
-      }
     });
 
-    dateCounts.total = total;
-    dateCounts.dated = painted;
-    updateLedger();
     buildRecent();
   }
 
@@ -3004,18 +2896,14 @@ width: min(1120px, calc(100% - 9rem));
       var li = document.createElement("li");
       var link = document.createElement("a");
       var cat = document.createElement("span");
-      var time = document.createElement("time");
 
       link.href = entry.href;
       link.textContent = entry.title;
       cat.className = "recent-cat";
       cat.textContent = entry.category;
-      time.dateTime = readStamp(entry.stamp).machine;
-      time.textContent = prettyStamp(entry.stamp);
 
       li.appendChild(link);
       li.appendChild(cat);
-      li.appendChild(time);
       recentList.appendChild(li);
     });
 
