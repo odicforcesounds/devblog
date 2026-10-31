@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux, from the kernel out — files, processes, services and permissions</title>
+<meta name="description" content="A deep introduction to Linux: the file-system tree, inodes and links, PIDs and signals, systemd units and targets, devices, packages and permissions.">
+<link rel="canonical" href="https://blog.odicforcesounds.com/LinuxIntroduction.html">
+<meta property="og:title" content="Linux, from the kernel out — files, processes, services and permissions">
+<meta property="og:description" content="A deep introduction to Linux: the file-system tree, inodes and links, PIDs and signals, systemd units and targets, devices, packages and permissions.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://blog.odicforcesounds.com/LinuxIntroduction.html">
+<meta property="og:site_name" content="Monkey Blog">
+<meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Linux, from the kernel out — files, processes, services and permissions">
+<meta name="twitter:description" content="A deep introduction to Linux: the file-system tree, inodes and links, PIDs and signals, systemd units and targets, devices, packages and permissions.">
+<meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/LinuxIntroduction.html#article",
+      "headline": "Linux, from the kernel out — files, processes, services and permissions",
+      "description": "A deep introduction to Linux: the file-system tree, inodes and links, PIDs and signals, systemd units and targets, devices, packages and permissions.",
+      "url": "https://blog.odicforcesounds.com/LinuxIntroduction.html",
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://blog.odicforcesounds.com/LinuxIntroduction.html" },
+      "image": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/peace.jpg", "width": 1496, "height": 960 },
+      "inLanguage": "en",
+      "author": { "@type": "Person", "name": "Oscar", "url": "https://blog.odicforcesounds.com/" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/",
+        "logo": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/three.jpg", "width": 1024, "height": 1024 }
+      },
+      "isPartOf": { "@type": "Blog", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/" },
+      "articleSection": "Linux & Open Source",
+      "keywords": "file-system hierarchy, inodes, hard links, permissions, umask, setuid, signals, PIDs, systemd, targets, units, journald, devices, packages",
+      "wordCount": 2300,
+      "datePublished": "2026-10-31",
+      "dateModified": "2026-10-31"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://blog.odicforcesounds.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Linux & Open Source", "item": "https://blog.odicforcesounds.com/#category-linux-and-open-source" },
+        { "@type": "ListItem", "position": 3, "name": "Linux, from the kernel out", "item": "https://blog.odicforcesounds.com/LinuxIntroduction.html" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root {
+  --bg: #06090d; --panel: rgba(13, 20, 27, .9); --panel-2: rgba(19, 28, 37, .92);
+  --line: rgba(124, 227, 139, .16); --ink: #e6f1ec; --muted: #93a8a4;
+  --accent: #7ce38b; --warm: #e9b26a; --bad: #f08a8a;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --serif: Georgia, "Times New Roman", serif;
+  --max: 52rem; --radius: 14px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 1.5rem; }
+body { margin: 0; background: radial-gradient(820px 420px at 50% -12%, rgba(124,227,139,.08), transparent 70%), var(--bg); color: var(--ink); font: 16px/1.72 var(--sans); }
+a { color: var(--accent); text-decoration: none; }
+a:hover, a:focus-visible { color: var(--warm); text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--warm); outline-offset: 3px; border-radius: 4px; }
+.lang-switch { display: flex; justify-content: center; gap: .4rem; padding: .85rem 1rem .2rem; font-family: var(--mono); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; }
+.lang-switch a { padding: .3rem .95rem; border: 1px solid var(--accent); border-radius: 999px; opacity: .8; }
+.lang-switch a[aria-current="true"] { color: var(--bg); background: var(--accent); opacity: 1; }
+.lang-switch a:hover, .lang-switch a:focus-visible { color: var(--bg); background: var(--warm); border-color: var(--warm); opacity: 1; text-decoration: none; }
+[data-lang-block][hidden] { display: none !important; }
+header.site, main, footer.site { width: min(var(--max), 100%); margin: 0 auto; padding: 0 1.15rem; }
+.topbar { display: flex; align-items: center; gap: .8rem; padding: .6rem 0 1.4rem; font-family: var(--mono); font-size: .72rem; }
+.topbar .home { border: 1px solid var(--line); border-radius: 999px; padding: .2rem .7rem; font-weight: 700; }
+.topbar .brand { color: var(--muted); }
+.kicker { margin: 0 0 .6rem; font-family: var(--mono); font-size: .66rem; letter-spacing: .2em; text-transform: uppercase; color: var(--warm); }
+h1, .seo-h2 { margin: 0 0 .7rem; font-family: var(--serif); font-weight: 600; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.06; }
+.lede { margin: 0 0 1.4rem; color: var(--muted); max-width: 62ch; }
+nav.contents { margin: 0 0 2rem; padding: .85rem 1rem; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+nav.contents p { margin: 0 0 .4rem; font-family: var(--mono); font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; color: var(--warm); }
+nav.contents ol { margin: 0; padding-left: 1.2rem; columns: 2; column-gap: 1.6rem; font-size: .9rem; }
+nav.contents li { margin: .15rem 0; break-inside: avoid; }
+section { margin: 0 0 2.4rem; }
+h2 { margin: 2rem 0 .7rem; font-family: var(--serif); font-size: clamp(1.4rem, 3.6vw, 1.85rem); font-weight: 600; }
+h3 { margin: 1.4rem 0 .4rem; font-family: var(--mono); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+p { margin: 0 0 .9rem; }
+ul, ol { margin: 0 0 1rem; padding-left: 1.25rem; }
+li { margin: .18rem 0; }
+code { font-family: var(--mono); font-size: .88em; padding: .08rem .34rem; border: 1px solid var(--line); border-radius: 6px; background: rgba(10, 16, 22, .75); color: var(--ink); }
+pre { overflow-x: auto; margin: 0 0 1rem; padding: .8rem .95rem; border: 1px solid var(--line); border-radius: 10px; background: #070d13; font: .82rem/1.6 var(--mono); color: #cfe6d8; }
+table { width: 100%; margin: 0 0 1rem; border-collapse: collapse; font-size: .88rem; }
+caption { text-align: left; margin-bottom: .35rem; font-family: var(--mono); font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--warm); }
+th, td { padding: .42rem .5rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+th { font-family: var(--mono); font-size: .64rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.note { margin: 1.1rem 0; padding: .7rem .9rem; border-left: 3px solid var(--accent); background: rgba(124,227,139,.06); border-radius: 0 10px 10px 0; color: var(--muted); font-size: .93rem; }
+.note strong { color: var(--ink); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: .6rem; margin: 0 0 1rem; }
+.card { padding: .7rem .8rem; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.card h3 { margin-top: 0; }
+.card p { margin: 0; font-size: .9rem; color: var(--muted); }
+footer.site { padding: 1.4rem 1.15rem 2.6rem; border-top: 1px solid var(--line); color: var(--muted); font-family: var(--mono); font-size: .7rem; display: flex; flex-wrap: wrap; gap: .6rem; }
+footer.site a { color: var(--accent); }
+@media (max-width: 640px) { nav.contents ol { columns: 1; } }
+</style>
+</head>
+<body>
+
+<nav class="lang-switch" aria-label="Language">
+  <a href="?lang=pt" data-lang-switch="pt" lang="pt-PT">Português</a>
+  <a href="?lang=en" data-lang-switch="en" aria-current="true" lang="en">English</a>
+</nav>
+
+<div id="lang-en" data-lang-block="en">
+<header class="site">
+  <div class="topbar"><a class="home" href="./index.html">Home</a><span class="brand">Monkey Blog</span></div>
+  <p class="kicker">Introduction · one system, ten layers</p>
+  <h1>Linux, from the kernel out</h1>
+  <p class="lede">A Linux machine is not a desktop with hidden folders. It is a kernel, a tree of names, a table of processes and a set of permissions — and almost every mystery in <code>/var/log</code> is one of those four saying no. This page builds the model from the bottom: what a file really is, who a process is, how a service starts, and why <code>chmod 777</code> never fixed anything.</p>
+  <nav class="contents" aria-label="Contents">
+    <p>Contents</p>
+    <ol>
+      <li><a href="#layers">A machine in layers</a></li>
+      <li><a href="#tree">One tree: the file-system hierarchy</a></li>
+      <li><a href="#inodes">Inodes, links and what a file is</a></li>
+      <li><a href="#permissions">Who may do what</a></li>
+      <li><a href="#processes">Processes, PIDs and /proc</a></li>
+      <li><a href="#signals">Signals: how a process is asked to stop</a></li>
+      <li><a href="#systemd">Services, targets and systemd</a></li>
+      <li><a href="#devices">Devices, hardware and modules</a></li>
+      <li><a href="#software">Software and packages</a></li>
+      <li><a href="#logs">Logs, boot, and a checklist</a></li>
+    </ol>
+  </nav>
+</header>
+
+<main>
+<section id="layers">
+  <h2>1. A machine in layers</h2>
+  <p>Four layers matter, and each one has its own vocabulary. The <strong>kernel</strong> owns the hardware: it schedules the CPU, maps memory, talks to disks and exposes system calls. The <strong>C library and utilities</strong> turn those calls into programs. The <strong>init system</strong> (systemd on most distributions) starts and supervises everything else. The <strong>shell</strong> is just another program that reads text and calls <code>fork</code> and <code>exec</code>.</p>
+  <div class="grid">
+    <div class="card"><h3>Kernel</h3><p>Processes, memory, files, devices, network. It has no <code>ls</code>; it has system calls such as <code>openat</code>, <code>read</code>, <code>fork</code>, <code>execve</code> and <code>kill</code>.</p></div>
+    <div class="card"><h3>Userland</h3><p><code>/bin</code>, <code>/usr/bin</code>, libraries, the shell. Every command you type is a program that asks the kernel for something.</p></div>
+    <div class="card"><h3>Init</h3><p>PID 1. It starts services, evaluates targets, reaps orphans and is the parent of everything the boot produced.</p></div>
+    <div class="card"><h3>Distribution</h3><p>A packaging policy around the above: Debian's <code>apt</code>, Red Hat's <code>dnf</code>, Arch's <code>pacman</code>. Same kernel, different contracts.</p></div>
+  </div>
+  <p>The practical consequence: when something “does not work”, decide which layer refused. A permission error is the kernel; a missing command is userland; a service that did not start is init; a package that cannot be installed is the distribution.</p>
+</section>
+
+<section id="tree">
+  <h2>2. One tree: the file-system hierarchy</h2>
+  <p>Linux has a single namespace, rooted at <code>/</code>. Disks are not drives with letters; they are <em>mounted</em> onto empty directories. The Filesystem Hierarchy Standard (FHS) explains why the same word, <code>/etc</code>, gives you the same kind of thing on every distribution.</p>
+  <table>
+    <caption>Where things live, and what breaks if you improvise</caption>
+    <thead><tr><th>Path</th><th>Holds</th><th>Rule</th></tr></thead>
+    <tbody>
+      <tr><td><code>/</code></td><td>The root of everything; the first mount.</td><td>Never fill it. Separate <code>/var</code> or <code>/home</code> when you can.</td></tr>
+      <tr><td><code>/etc</code></td><td>Host-specific configuration: <code>fstab</code>, <code>ssh/sshd_config</code>, <code>systemd/</code>.</td><td>Text, versioned in git, never binaries or state.</td></tr>
+      <tr><td><code>/usr</code></td><td>The distribution's userland: <code>/usr/bin</code>, <code>/usr/lib</code>, <code>/usr/share</code>.</td><td>Package-owned. Do not drop files here by hand.</td></tr>
+      <tr><td><code>/bin</code>, <code>/sbin</code></td><td>Essential binaries; on modern systems symlinks into <code>/usr</code>.</td><td>Must exist to boot and repair.</td></tr>
+      <tr><td><code>/var</code></td><td>Variable data: logs, caches, spools, databases, <code>/var/lib</code>.</td><td>Grows without you. Watch it, do not delete blindly.</td></tr>
+      <tr><td><code>/home</code>, <code>/root</code></td><td>Users' files; root's own home is <code>/root</code>, not <code>/</code>.</td><td>Backups belong here; secrets do not belong in world-readable homes.</td></tr>
+      <tr><td><code>/tmp</code></td><td>Temporary files, sticky bit, often cleared on boot.</td><td>Never a permanent store; never a place for secrets.</td></tr>
+      <tr><td><code>/opt</code>, <code>/srv</code></td><td>Self-contained third-party software; data served by the host.</td><td>Keep vendor trees out of <code>/usr</code>.</td></tr>
+      <tr><td><code>/dev</code></td><td>Device nodes and pseudo-devices: <code>sda</code>, <code>null</code>, <code>tty</code>, <code>random</code>.</td><td>Managed by udev; do not create nodes by hand.</td></tr>
+      <tr><td><code>/proc</code></td><td>A live view of kernel and processes: <code>/proc/1</code>, <code>/proc/meminfo</code>.</td><td>Virtual: reads are questions, writes are commands.</td></tr>
+      <tr><td><code>/sys</code></td><td>Devices, buses and kernel objects as a tree of attributes.</td><td>Virtual; used to read and tune hardware.</td></tr>
+      <tr><td><code>/run</code></td><td>Volatile runtime state: sockets, PID files, locks.</td><td>tmpfs; empty after every boot.</td></tr>
+      <tr><td><code>/mnt</code>, <code>/media</code></td><td>Temporary mounts; removable media.</td><td>Mount points, not storage.</td></tr>
+    </tbody>
+  </table>
+  <p>Two rules carry most of the weight. <strong>Configuration is separate from state</strong> (<code>/etc</code> versus <code>/var</code>), which is what makes a machine reproducible. And <strong>the package manager owns <code>/usr</code></strong>: anything you compile yourself goes to <code>/usr/local</code> or <code>/opt</code>, or it will be overwritten or orphaned at the next upgrade.</p>
+</section>
+
+<section id="inodes">
+  <h2>3. Inodes, links and what a file is</h2>
+  <p>A directory is not a folder full of bytes; it is a table that maps <em>names</em> to <em>inode numbers</em>. The inode holds the metadata the kernel needs: type, mode, owner, group, size, timestamps, link count and the addresses of the data blocks. The name is not in the inode. That single sentence explains hard links, renames and why deleting a file can free nothing.</p>
+<pre>$ ls -li notes.txt
+131075 -rw-r--r-- 1 ana ana 2048 Oct 31 10:02 notes.txt
+$ stat notes.txt        # inode, links, blocks, times
+$ find / -inum 131075   # every name pointing at that inode</pre>
+  <h3>Hard links and symbolic links</h3>
+  <ul>
+    <li><strong>Hard link</strong> — a second name for the same inode, in the same filesystem. Both names are equal; the data disappears only when the link count reaches zero and no process holds it open. <code>ln target newname</code>.</li>
+    <li><strong>Symbolic link</strong> — a small file whose content is a path. It has its own inode, can cross filesystems, can dangle, and is resolved at access time. <code>ln -s target newname</code>.</li>
+  </ul>
+  <p>Consequences worth knowing before an incident: a hard link to a file with restrictive permissions gives you a second name but not new rights — permissions live in the inode, so they follow the link. A symlink in <code>/tmp</code> is an attack surface if a privileged program follows it blindly. And an open, deleted file still consumes disk: <code>df</code> shows the filesystem full while <code>du</code> cannot find the bytes, because the name is gone but the inode is alive. Find it with <code>lsof +L1</code> and restart the holder.</p>
+</section>
+
+<section id="permissions">
+  <h2>4. Who may do what</h2>
+  <p>Every inode carries a mode: read (4), write (2), execute (1) for the <strong>user</strong> who owns it, the <strong>group</strong> it belongs to, and <strong>everyone else</strong>. For a directory the meaning shifts: read lists names, write creates and deletes entries, execute lets you traverse it.</p>
+  <table>
+    <caption>The mode in one line</caption>
+    <thead><tr><th>Octal</th><th>Symbolic</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>644</td><td><code>-rw-r--r--</code></td><td>Owner writes, everyone reads. A normal document.</td></tr>
+      <tr><td>600</td><td><code>-rw-------</code></td><td>Private: keys, tokens, personal data.</td></tr>
+      <tr><td>755</td><td><code>-rwxr-xr-x</code></td><td>Executable programs and directories.</td></tr>
+      <tr><td>700</td><td><code>-rwx------</code></td><td>Private directory: nobody else may even list it.</td></tr>
+      <tr><td>640</td><td><code>-rw-r-----</code></td><td>Owner writes, group reads; common for configs.</td></tr>
+      <tr><td>1777</td><td><code>drwxrwxrwt</code></td><td>Shared directory with the sticky bit: delete only your own files (<code>/tmp</code>).</td></tr>
+      <tr><td>4755</td><td><code>-rwsr-xr-x</code></td><td>setuid: the program runs with the file owner's effective UID (<code>passwd</code>).</td></tr>
+      <tr><td>2755</td><td><code>-rwxr-sr-x</code></td><td>setgid: effective group of the file, or group inheritance in a directory.</td></tr>
+    </tbody>
+  </table>
+  <h3>Umask, the permission you did not type</h3>
+  <p>New files start from a base (666 for files, 777 for directories) and the umask removes bits. A umask of <code>022</code> therefore yields 644 for files and 755 for directories; <code>077</code> yields 600 and 700. Change it per session with <code>umask 077</code> and permanently in the login configuration, not by chmod-ing after the fact.</p>
+  <h3 ACLs and capabilities</h3>
+  <p>When three classes are not enough, POSIX ACLs add per-user and per-group entries: <code>setfacl -m u:bob:r-- report.txt</code>, inspected with <code>getfacl</code>. When “root” is too much, capabilities split it: <code>getcap</code> and <code>setcap cap_net_bind_service=+ep ./server</code> lets one binary bind a privileged port without running as root. Both are still permissions, just finer-grained, and both are invisible to <code>ls -l</code> beyond a <code>+</code> or a capability set.</p>
+  <div class="note"><strong>777 is not a fix.</strong> It is a decision to let any local account rewrite the file, and it usually hides a wrong owner, a wrong path, or a service running as the wrong user. Read the mode, the owner, the parent directory's execute bit and the ACL before changing anything.</div>
+</section>
+
+<section id="processes">
+  <h2>5. Processes, PIDs and /proc</h2>
+  <p>A process is a running program with an address space, a set of open file descriptors and a kernel identity: the <strong>PID</strong>. PID 1 is the init system and cannot be killed like a normal process. Every other process has a parent (<code>PPID</code>); when the parent dies first, the child is re-parented to PID 1 or to the nearest subreaper, which is why “orphan” processes still show up.</p>
+  <p><code>fork</code> duplicates the current process, <code>exec</code> replaces its image with another program. A shell runs a command by forking and exec-ing; that is why a child's PID differs from the shell's, while the program's PID stays the same across <code>exec</code>. Threads share the address space and appear as tasks under <code>/proc/PID/task</code>.</p>
+<pre>$ ps -eo pid,ppid,user,stat,cmd --sort=pid
+$ pstree -p 1
+$ ls -l /proc/$$/fd      # this shell's open descriptors
+$ cat /proc/1/cgroup     # which cgroup the process is in
+$ lsof -p 4242           # files, sockets and pipes held open</pre>
+  <ul>
+    <li><strong>Zombie</strong> — the process has exited; its parent has not called <code>wait</code>. It holds a PID and a status, not memory. You cannot kill it; the parent must reap it (or be restarted).</li>
+    <li><strong>D state</strong> — uninterruptible sleep, usually waiting on I/O. Kill does nothing until the I/O returns.</li>
+    <li><strong>cgroups</strong> — how the kernel groups processes for CPU, memory and I/O limits; systemd uses them for every service. <code>systemd-cgtop</code> shows the tree.</li>
+    <li><strong>Namespaces</strong> — isolated views of PIDs, mounts, network and users; the foundation of containers. A container is a process with namespaces and cgroups, not a small virtual machine.</li>
+  </ul>
+  <p><code>/proc</code> turns all of this into files: <code>/proc/PID/cmdline</code>, <code>/proc/PID/environ</code>, <code>/proc/PID/fd</code>, <code>/proc/PID/status</code>. Reading them is a legitimate, fast diagnosis; writing to some of them changes the running kernel.</p>
+</section>
+
+<section id="signals">
+  <h2>6. Signals: how a process is asked to stop</h2>
+  <p>A signal is an asynchronous notification delivered by the kernel. Programs can catch, block or ignore most of them; two are reserved: <code>SIGKILL</code> and <code>SIGSTOP</code> cannot be caught, blocked or ignored, which is exactly why they are the last resort.</p>
+  <table>
+    <caption>The signals you will actually use</caption>
+    <thead><tr><th>Signal</th><th>No.</th><th>Meaning and habit</th></tr></thead>
+    <tbody>
+      <tr><td><code>SIGTERM</code></td><td>15</td><td>“Please shut down cleanly.” The default for <code>kill</code> and for systemd. Catchable, so the program can flush and close.</td></tr>
+      <tr><td><code>SIGKILL</code></td><td>9</td><td>Immediate death, no cleanup, no handler. Leaves temp files, locks and half-written data.</td></tr>
+      <tr><td><code>SIGINT</code></td><td>2</td><td>Ctrl-C in a normal terminal. Catchable; a TUI usually handles it as a key.</td></tr>
+      <tr><td><code>SIGQUIT</code></td><td>3</td><td>Ctrl-\; often dumps core.</td></tr>
+      <tr><td><code>SIGHUP</code></td><td>1</td><td>Terminal closed; conventionally “reload configuration”. Daemons reinterpret it.</td></tr>
+      <tr><td><code>SIGSTOP</code> / <code>SIGCONT</code></td><td>19 / 18</td><td>Freeze and resume. STOP cannot be caught; a stopped process still holds memory and ports.</td></tr>
+      <tr><td><code>SIGUSR1</code> / <code>SIGUSR2</code></td><td>10 / 12</td><td>Application-defined: reopen logs, rotate, dump state.</td></tr>
+      <tr><td><code>SIGCHLD</code></td><td>17</td><td>Child changed state; sent to the parent so it can reap.</td></tr>
+      <tr><td><code>SIGWINCH</code></td><td>28</td><td>Terminal resized; TUIs redraw.</td></tr>
+    </tbody>
+  </table>
+  <p>Delivery is not a conversation: the sender gets success even if the receiver ignores the signal. A process that exits because of a signal reports status <code>128 + number</code> — 137 for SIGKILL, 143 for SIGTERM. That is why a shell script's <code>$?</code> of 143 means “terminated”, not “failed with 143”.</p>
+<pre>$ kill -TERM 4242        # ask
+$ kill -KILL 4242        # insist, after giving it a moment
+$ pkill -TERM -u www-data nginx
+$ kill -l                # the whole list</pre>
+</section>
+
+<section id="systemd">
+  <h2>7. Services, targets and systemd</h2>
+  <p>Older systems used SysV runlevels 0–6. systemd replaced them with <strong>targets</strong>: named groups of units that pull in other units. The old numbers survive as compatibility aliases (<code>runlevel3.target</code>), but the model is a dependency graph, not a numbered ladder.</p>
+  <table>
+    <caption>Targets you will meet</caption>
+    <thead><tr><th>Target</th><th>Old runlevel</th><th>What it means</th></tr></thead>
+    <tbody>
+      <tr><td><code>poweroff.target</code></td><td>0</td><td>Shut down.</td></tr>
+      <tr><td><code>rescue.target</code></td><td>1</td><td>Single user, root shell, minimal services.</td></tr>
+      <tr><td><code>multi-user.target</code></td><td>3</td><td>Networking and services, no graphical session. The normal server default.</td></tr>
+      <tr><td><code>graphical.target</code></td><td>5</td><td>Multi-user plus a display manager.</td></tr>
+      <tr><td><code>reboot.target</code></td><td>6</td><td>Reboot.</td></tr>
+    </tbody>
+  </table>
+  <p><code>systemctl get-default</code> prints the target the machine boots into; <code>systemctl isolate rescue.target</code> switches at runtime; <code>systemctl set-default multi-user.target</code> makes it permanent.</p>
+  <h3>A unit is a contract, not a script</h3>
+<pre>[Unit]
+Description=Backup worker
+After=network-online.target
+
+[Service]
+Type=simple
+User=backup
+ExecStart=/usr/local/bin/backup --once
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target</pre>
+  <p>Unit types cover more than daemons: <code>.service</code> (a process), <code>.socket</code> (activation on connection), <code>.timer</code> (a schedule, replacing cron), <code>.mount</code> and <code>.automount</code>, <code>.target</code> (a group), <code>.slice</code> (a cgroup subtree), <code>.path</code> (watch a path).</p>
+  <ul>
+    <li><code>systemctl start x</code> runs it now; <code>enable</code> only wires it into a target for the next boot; <code>enable --now</code> does both; <code>mask</code> makes it impossible to start.</li>
+    <li>After editing a unit: <code>systemctl daemon-reload</code>, then <code>restart</code>. Without the reload systemd runs the old definition and the file looks correct while behaviour is stale.</li>
+    <li><code>systemctl status x</code> gives state, PID, cgroup and the last log lines; <code>journalctl -u x -b</code> gives the history of this boot.</li>
+    <li><code>systemctl cat x</code> shows the unit plus drop-ins; <code>systemctl edit x</code> creates an override in <code>/etc/systemd/system/x.service.d/</code> instead of editing the package's file.</li>
+    <li>Units live in <code>/usr/lib/systemd/system</code> (packages) and <code>/etc/systemd/system</code> (the administrator). The latter wins.</li>
+  </ul>
+  <p>On stop, systemd sends <code>SIGTERM</code>, waits (default 90&nbsp;s, <code>TimeoutStopSec</code>), then <code>SIGKILL</code>. A service that “takes ten seconds to die” usually ignores SIGTERM; fix the handler rather than lowering the timeout.</p>
+</section>
+
+<section id="devices">
+  <h2>8. Devices, hardware and modules</h2>
+  <p>Hardware is not addressed by name. The kernel exposes devices as files in <code>/dev</code> with a <strong>major</strong> number (which driver) and a <strong>minor</strong> number (which instance). <code>ls -l /dev/sda</code> shows <code>8, 0</code>; udev creates the names and the symlinks (<code>/dev/disk/by-uuid/…</code>) when the device appears.</p>
+  <div class="grid">
+    <div class="card"><h3>Discs and partitions</h3><p><code>lsblk -f</code>, <code>blkid</code>, <code>findmnt</code>. Mounts are declared in <code>/etc/fstab</code> and activated with <code>mount -a</code> or a systemd <code>.mount</code> unit.</p></div>
+    <div class="card"><h3>Buses</h3><p><code>lspci -k</code>, <code>lsusb</code>, <code>lscpu</code>. The <code>-k</code> flag names the kernel driver in use.</p></div>
+    <div class="card"><h3>Kernel messages</h3><p><code>dmesg -T</code> (timestamps) shows detection, firmware and driver errors. It is the first place to look when a device is missing.</p></div>
+    <div class="card"><h3>Modules</h3><p><code>lsmod</code>, <code>modinfo</code>, <code>modprobe</code>. Persistent module options go in <code>/etc/modprobe.d/</code>, not in a shell script.</p></div>
+  </div>
+  <p><code>/sys</code> is the same hardware as a tree of attributes: read <code>/sys/class/net/eth0/mtu</code>, write to it to change it (or use <code>ip</code>, which does both sides properly). <code>/proc</code> answers kernel questions (<code>meminfo</code>, <code>loadavg</code>, <code>interrupts</code>), <code>/sys</code> answers device questions, <code>/dev</code> is the device itself.</p>
+  <p>The distinction that saves time in an incident: hardware is what the kernel detected, software is what the distribution installed, and configuration is what you changed. A missing interface can be any of the three — check <code>dmesg</code>, <code>lspci -k</code> and <code>ip link</code> before reinstalling anything.</p>
+</section>
+
+<section id="software">
+  <h2>9. Software and packages</h2>
+  <p>On Debian and Ubuntu, <code>dpkg</code> owns the installed database and <code>apt</code> resolves dependencies and fetches from repositories. On Red Hat and Fedora, <code>rpm</code> and <code>dnf</code> play the same roles. A repository entry is a promise about signatures and versions; a <code>.deb</code> downloaded from a blog is not.</p>
+<pre># Debian / Ubuntu
+apt update && apt upgrade
+apt install nginx
+dpkg -S /usr/sbin/nginx      # which package owns this file
+apt-file search nginx.conf   # which package would provide it
+
+# Red Hat / Fedora
+dnf install nginx
+rpm -qf /usr/sbin/nginx</pre>
+  <table>
+    <caption>What lives where, once installed</caption>
+    <thead><tr><th>Place</th><th>Content</th><th>Who owns it</th></tr></thead>
+    <tbody>
+      <tr><td><code>/usr/bin</code>, <code>/usr/lib</code></td><td>Distribution binaries and libraries.</td><td>The package manager.</td></tr>
+      <tr><td><code>/usr/local</code></td><td>Locally compiled software, by convention prefix <code>--prefix=/usr/local</code>.</td><td>You. Never overwritten by packages.</td></tr>
+      <tr><td><code>/opt</code></td><td>Vendor trees that bring their own layout (browsers, agents).</td><td>The vendor's installer.</td></tr>
+      <tr><td><code>/etc</code></td><td>Configuration files, often marked <code>.dpkg-dist</code> during upgrades.</td><td>The package initially, you afterwards.</td></tr>
+      <tr><td><code>/var/lib</code></td><td>State: databases, package lists, service data.</td><td>The service; back it up deliberately.</td></tr>
+      <tr><td><code>/var/log</code></td><td>Text logs and archives; journald's binary store is <code>/var/log/journal</code>.</td><td>Log rotation, not you.</td></tr>
+    </tbody>
+  </table>
+  <p>Upgrades are not the only lifecycle: pin a version when a service depends on it, read the changelog before a major jump, and keep configuration in version control so the question “what changed?” has an answer other than memory.</p>
+</section>
+
+<section id="logs">
+  <h2>10. Logs, boot, and a checklist</h2>
+  <p>The journal is the default log sink: structured, indexed and queried with <code>journalctl</code>. Text files under <code>/var/log</code> still exist and still matter (nginx, application logs, <code>auth.log</code> on Debian).</p>
+<pre>$ journalctl -b -p err          # this boot, errors and worse
+$ journalctl -u nginx --since "1 hour ago"
+$ journalctl -k                 # kernel messages only
+$ journalctl --disk-usage</pre>
+  <p>A normal boot is a chain: firmware → bootloader → kernel and initramfs → PID 1 → target → units. <code>systemd-analyze</code>, <code>systemd-analyze blame</code> and <code>systemctl list-units --failed</code> locate the slow or broken link. If the graphical target never arrives, ask which unit failed, not which pixel is missing.</p>
+  <h3>The ten-minute checklist</h3>
+  <ol>
+    <li><strong>Which layer?</strong> Kernel (<code>dmesg</code>), userland (<code>command -v</code>), init (<code>systemctl status</code>), package (<code>dpkg -S</code>).</li>
+    <li><strong>Is the file there, with which mode and owner?</strong> <code>ls -l</code>, <code>stat</code>, <code>getfacl</code>.</li>
+    <li><strong>Can the service's user reach it?</strong> Check every directory on the path, not just the file.</li>
+    <li><strong>Is the process running, and as whom?</strong> <code>ps -o user,pid,ppid,stat,cmd -p PID</code>, <code>/proc/PID/status</code>.</li>
+    <li><strong>Did it die from a signal?</strong> Exit status 137/143, <code>journalctl -u</code>.</li>
+    <li><strong>Is it enabled for the next boot?</strong> <code>systemctl is-enabled</code>, <code>is-active</code>.</li>
+    <li><strong>Is the disk full?</strong> <code>df -h</code>, <code>df -i</code> (inodes), <code>lsof +L1</code> (deleted open files).</li>
+    <li><strong>Is the device seen?</strong> <code>lsblk</code>, <code>lspci -k</code>, <code>dmesg -T</code>.</li>
+    <li><strong>What changed?</strong> Package history, configuration diff, unit drop-ins.</li>
+    <li><strong>Write it down.</strong> The next person will be you, six months later.</li>
+  </ol>
+  <p>None of this requires memorising flags. It requires keeping four models straight: the tree, the inode, the process and the unit. Once those are clear, most “Linux problems” become a sentence you can finish: the service cannot read its key because it runs as <code>www-data</code>, the file is <code>600 root:root</code>, and the directory above it is <code>700</code>.</p>
+</section>
+
+<section id="sources">
+  <h2>Sources</h2>
+  <ul>
+    <li><a href="https://refspecs.linuxfoundation.org/FHS_3.0/fhs/index.html" rel="noopener noreferrer">FHS 3.0</a> — the hierarchy this page follows.</li>
+    <li><a href="https://man7.org/linux/man-pages/man7/inode.7.html" rel="noopener noreferrer">inode(7)</a> and <a href="https://man7.org/linux/man-pages/man7/signal.7.html" rel="noopener noreferrer">signal(7)</a> — the kernel's own definitions.</li>
+    <li><a href="https://www.freedesktop.org/software/systemd/man/systemd.unit.html" rel="noopener noreferrer">systemd.unit</a> — units, targets and drop-ins.</li>
+    <li><a href="https://man7.org/linux/man-pages/man7/capabilities.7.html" rel="noopener noreferrer">capabilities(7)</a> — why root is a set of bits.</li>
+    <li>Internal: <a href="./bashScripting.html">Bash</a>, <a href="./DebianSecurity.html">Debian</a>, <a href="./redhatCert.html">Red Hat</a>, <a href="./SELinux.html">SELinux</a>.</li>
+  </ul>
+</section>
+</main>
+
+<footer class="site">
+  <span>Monkey Blog · <a href="./index.html">Home</a></span>
+  <span><a href="./oJogoDoOperador.html">O Jogo do Operador</a></span>
+</footer>
+</div>
+
+<div id="lang-pt" data-lang-block="pt" hidden>
+<header class="site">
+  <div class="topbar"><a class="home" href="./index.html">Início</a><span class="brand">Monkey Blog</span></div>
+  <p class="kicker">Introdução · um sistema, dez camadas</p>
+  <h2 class="seo-h2">Linux, do kernel para fora</h2>
+  <p class="lede">Uma máquina Linux não é um ambiente gráfico com pastas escondidas. É um kernel, uma árvore de nomes, uma tabela de processos e um conjunto de permissões — e quase todo o mistério em <code>/var/log</code> é uma dessas quatro coisas a dizer não. Esta página constrói o modelo de baixo para cima: o que é realmente um ficheiro, quem é um processo, como arranca um serviço e porque é que <code>chmod 777</code> nunca resolveu nada.</p>
+  <nav class="contents" aria-label="Conteúdo">
+    <p>Conteúdo</p>
+    <ol>
+      <li><a href="#pt-layers">A máquina em camadas</a></li>
+      <li><a href="#pt-tree">Uma árvore: a hierarquia</a></li>
+      <li><a href="#pt-inodes">Inodes, ligações e o ficheiro</a></li>
+      <li><a href="#pt-permissions">Quem pode fazer o quê</a></li>
+      <li><a href="#pt-processes">Processos, PIDs e /proc</a></li>
+      <li><a href="#pt-signals">Sinais: pedir a paragem</a></li>
+      <li><a href="#pt-systemd">Serviços, targets e systemd</a></li>
+      <li><a href="#pt-devices">Dispositivos, hardware e módulos</a></li>
+      <li><a href="#pt-software">Software e pacotes</a></li>
+      <li><a href="#pt-logs">Logs, arranque e lista final</a></li>
+    </ol>
+  </nav>
+</header>
+
+<main>
+<section id="pt-layers">
+  <h2>1. A máquina em camadas</h2>
+  <p>Quatro camadas importam, e cada uma tem o seu vocabulário. O <strong>kernel</strong> é dono do hardware: escalona a CPU, mapeia memória, fala com discos e expõe chamadas de sistema. A <strong>libc e os utilitários</strong> transformam essas chamadas em programas. O <strong>init</strong> (systemd na maioria das distribuições) arranca e supervisiona tudo o resto. A <strong>shell</strong> é apenas mais um programa que lê texto e chama <code>fork</code> e <code>exec</code>.</p>
+  <div class="grid">
+    <div class="card"><h3>Kernel</h3><p>Processos, memória, ficheiros, dispositivos e rede. Não tem <code>ls</code>; tem chamadas como <code>openat</code>, <code>read</code>, <code>fork</code>, <code>execve</code> e <code>kill</code>.</p></div>
+    <div class="card"><h3>Userland</h3><p><code>/bin</code>, <code>/usr/bin</code>, bibliotecas, a shell. Cada comando é um programa que pede algo ao kernel.</p></div>
+    <div class="card"><h3>Init</h3><p>PID 1. Arranca serviços, avalia targets, recolhe órfãos e é o pai de tudo o que o arranque produziu.</p></div>
+    <div class="card"><h3>Distribuição</h3><p>Uma política de pacotes à volta do resto: <code>apt</code> no Debian, <code>dnf</code> no Red Hat, <code>pacman</code> no Arch. Mesmo kernel, contratos diferentes.</p></div>
+  </div>
+  <p>Consequência prática: quando algo «não funciona», decide que camada recusou. Um erro de permissão é o kernel; um comando em falta é userland; um serviço que não arrancou é o init; um pacote que não instala é a distribuição.</p>
+</section>
+
+<section id="pt-tree">
+  <h2>2. Uma árvore: a hierarquia do sistema de ficheiros</h2>
+  <p>O Linux tem um único espaço de nomes, com raiz em <code>/</code>. Os discos não são letras; são <em>montados</em> em directórios vazios. O FHS explica porque é que <code>/etc</code> contém o mesmo tipo de coisa em qualquer distribuição.</p>
+  <table>
+    <caption>Onde vive cada coisa, e o que se estraga ao improvisar</caption>
+    <thead><tr><th>Caminho</th><th>Contém</th><th>Regra</th></tr></thead>
+    <tbody>
+      <tr><td><code>/</code></td><td>A raiz de tudo; a primeira montagem.</td><td>Nunca encher. Separar <code>/var</code> ou <code>/home</code> quando possível.</td></tr>
+      <tr><td><code>/etc</code></td><td>Configuração específica da máquina: <code>fstab</code>, <code>ssh/sshd_config</code>, <code>systemd/</code>.</td><td>Texto, versionado em git; nunca binários nem estado.</td></tr>
+      <tr><td><code>/usr</code></td><td>O userland da distribuição: <code>/usr/bin</code>, <code>/usr/lib</code>, <code>/usr/share</code>.</td><td>Pertence aos pacotes. Não colocar ficheiros à mão.</td></tr>
+      <tr><td><code>/bin</code>, <code>/sbin</code></td><td>Binários essenciais; hoje são ligações para <code>/usr</code>.</td><td>Têm de existir para arrancar e reparar.</td></tr>
+      <tr><td><code>/var</code></td><td>Dados variáveis: logs, caches, spools, bases de dados, <code>/var/lib</code>.</td><td>Cresce sozinho. Vigiar, não apagar às cegas.</td></tr>
+      <tr><td><code>/home</code>, <code>/root</code></td><td>Ficheiros dos utilizadores; a casa do root é <code>/root</code>, não <code>/</code>.</td><td>Backups aqui; segredos não.</td></tr>
+      <tr><td><code>/tmp</code></td><td>Temporários, sticky bit, muitas vezes limpo no arranque.</td><td>Nunca armazenamento permanente nem segredos.</td></tr>
+      <tr><td><code>/opt</code>, <code>/srv</code></td><td>Software de terceiros auto-contido; dados servidos pela máquina.</td><td>Manter árvores de fornecedor fora de <code>/usr</code>.</td></tr>
+      <tr><td><code>/dev</code></td><td>Nós de dispositivo: <code>sda</code>, <code>null</code>, <code>tty</code>, <code>random</code>.</td><td>Gerido pelo udev; não criar nós à mão.</td></tr>
+      <tr><td><code>/proc</code></td><td>Vista viva do kernel e dos processos: <code>/proc/1</code>, <code>/proc/meminfo</code>.</td><td>Virtual: ler é perguntar, escrever é mandar.</td></tr>
+      <tr><td><code>/sys</code></td><td>Dispositivos e buses como árvore de atributos.</td><td>Virtual; lê-se e afina-se hardware.</td></tr>
+      <tr><td><code>/run</code></td><td>Estado volátil: sockets, ficheiros PID, locks.</td><td>tmpfs; vazio a cada arranque.</td></tr>
+      <tr><td><code>/mnt</code>, <code>/media</code></td><td>Montagens temporárias; suportes removíveis.</td><td>Pontos de montagem, não armazenamento.</td></tr>
+    </tbody>
+  </table>
+  <p>Duas regras carregam quase tudo. <strong>Configuração separada de estado</strong> (<code>/etc</code> versus <code>/var</code>) é o que torna uma máquina reproduzível. E <strong>o gestor de pacotes é dono de <code>/usr</code></strong>: o que compilares vai para <code>/usr/local</code> ou <code>/opt</code>, ou será substituído ou esquecido na próxima actualização.</p>
+</section>
+
+<section id="pt-inodes">
+  <h2>3. Inodes, ligações e o que é um ficheiro</h2>
+  <p>Um directório não é uma pasta cheia de bytes; é uma tabela que liga <em>nomes</em> a <em>números de inode</em>. O inode guarda os metadados de que o kernel precisa: tipo, modo, dono, grupo, tamanho, datas, contagem de ligações e endereços dos blocos. O nome não está no inode. Essa frase explica as ligações físicas, os renames e porque é que apagar um ficheiro pode não libertar nada.</p>
+<pre>$ ls -li notas.txt
+131075 -rw-r--r-- 1 ana ana 2048 Oct 31 10:02 notas.txt
+$ stat notas.txt        # inode, ligações, blocos, datas
+$ find / -inum 131075   # todos os nomes desse inode</pre>
+  <h3>Ligações físicas e simbólicas</h3>
+  <ul>
+    <li><strong>Ligação física</strong> — segundo nome para o mesmo inode, no mesmo sistema de ficheiros. Os dois nomes são iguais; os dados só desaparecem quando a contagem chega a zero e nenhum processo os tem abertos. <code>ln alvo novo</code>.</li>
+    <li><strong>Ligação simbólica</strong> — um ficheiro pequeno cujo conteúdo é um caminho. Tem inode próprio, atravessa sistemas de ficheiros, pode ficar pendurada e é resolvida no acesso. <code>ln -s alvo novo</code>.</li>
+  </ul>
+  <p>Consequências que valem antes de um incidente: uma ligação física a um ficheiro restrito dá um segundo nome mas não novos direitos — as permissões vivem no inode e seguem a ligação. Uma ligação simbólica em <code>/tmp</code> é superfície de ataque se um programa privilegiado a seguir às cegas. E um ficheiro aberto e apagado continua a ocupar disco: <code>df</code> mostra o sistema cheio enquanto <code>du</code> não encontra os bytes, porque o nome desapareceu mas o inode está vivo. Encontra-se com <code>lsof +L1</code> e resolve-se reiniciando quem o tem aberto.</p>
+</section>
+
+<section id="pt-permissions">
+  <h2>4. Quem pode fazer o quê</h2>
+  <p>Cada inode tem um modo: ler (4), escrever (2), executar (1) para o <strong>utilizador</strong> dono, o <strong>grupo</strong> e <strong>todos os outros</strong>. Num directório o significado muda: ler lista nomes, escrever cria e apaga entradas, executar permite atravessar.</p>
+  <table>
+    <caption>O modo numa linha</caption>
+    <thead><tr><th>Octal</th><th>Simbólico</th><th>Significado</th></tr></thead>
+    <tbody>
+      <tr><td>644</td><td><code>-rw-r--r--</code></td><td>Dono escreve, todos lêem. Documento normal.</td></tr>
+      <tr><td>600</td><td><code>-rw-------</code></td><td>Privado: chaves, tokens, dados pessoais.</td></tr>
+      <tr><td>755</td><td><code>-rwxr-xr-x</code></td><td>Programas executáveis e directórios.</td></tr>
+      <tr><td>700</td><td><code>-rwx------</code></td><td>Directório privado: ninguém lista.</td></tr>
+      <tr><td>640</td><td><code>-rw-r-----</code></td><td>Dono escreve, grupo lê; comum em configurações.</td></tr>
+      <tr><td>1777</td><td><code>drwxrwxrwt</code></td><td>Directório partilhado com sticky bit: só apaga o que é seu (<code>/tmp</code>).</td></tr>
+      <tr><td>4755</td><td><code>-rwsr-xr-x</code></td><td>setuid: corre com o UID efectivo do dono do ficheiro (<code>passwd</code>).</td></tr>
+      <tr><td>2755</td><td><code>-rwxr-sr-x</code></td><td>setgid: grupo efectivo do ficheiro, ou herança de grupo num directório.</td></tr>
+    </tbody>
+  </table>
+  <h3>Umask, a permissão que não escreveste</h3>
+  <p>Ficheiros novos partem de 666 e directórios de 777; a umask retira bits. Uma umask <code>022</code> dá 644 em ficheiros e 755 em directórios; <code>077</code> dá 600 e 700. Muda-se por sessão com <code>umask 077</code> e permanentemente na configuração de login, não com chmod depois do facto.</p>
+  <h3>ACLs e capabilities</h3>
+  <p>Quando três classes não chegam, as ACL POSIX acrescentam entradas por utilizador e por grupo: <code>setfacl -m u:bob:r-- relatorio.txt</code>, vistas com <code>getfacl</code>. Quando «root» é demasiado, as capabilities dividem-no: <code>getcap</code> e <code>setcap cap_net_bind_service=+ep ./server</code> deixam um binário abrir uma porta privilegiada sem correr como root. São permissões mais finas, e ambas invisíveis num <code>ls -l</code> para lá de um <code>+</code>.</p>
+  <div class="note"><strong>777 não é uma correcção.</strong> É a decisão de deixar qualquer conta local reescrever o ficheiro, e normalmente esconde um dono errado, um caminho errado ou um serviço a correr com o utilizador errado. Lê o modo, o dono, o bit de execução do directório pai e a ACL antes de mudar o que for.</div>
+</section>
+
+<section id="pt-processes">
+  <h2>5. Processos, PIDs e /proc</h2>
+  <p>Um processo é um programa em execução com espaço de endereçamento, descritores abertos e identidade no kernel: o <strong>PID</strong>. O PID 1 é o init e não se mata como os outros. Todos os restantes têm pai (<code>PPID</code>); quando o pai morre primeiro, o filho é adoptado pelo PID 1 ou pelo subreaper mais próximo — é por isso que processos «órfãos» continuam a aparecer.</p>
+  <p><code>fork</code> duplica o processo actual, <code>exec</code> substitui a imagem por outro programa. A shell executa um comando com fork e exec; daí o PID do filho diferir do da shell, enquanto o PID do programa se mantém através do <code>exec</code>. As threads partilham o espaço de endereçamento e aparecem como tarefas em <code>/proc/PID/task</code>.</p>
+<pre>$ ps -eo pid,ppid,user,stat,cmd --sort=pid
+$ pstree -p 1
+$ ls -l /proc/$$/fd      # descritores abertos desta shell
+$ cat /proc/1/cgroup     # o cgroup do processo
+$ lsof -p 4242           # ficheiros, sockets e pipes abertos</pre>
+  <ul>
+    <li><strong>Zombie</strong> — o processo terminou; o pai não chamou <code>wait</code>. Ocupa um PID e um estado, não memória. Não se mata; o pai tem de o recolher (ou ser reiniciado).</li>
+    <li><strong>Estado D</strong> — sono ininterrupto, quase sempre à espera de I/O. O kill não faz nada até o I/O voltar.</li>
+    <li><strong>cgroups</strong> — como o kernel agrupa processos para limites de CPU, memória e I/O; o systemd usa-os em cada serviço. <code>systemd-cgtop</code> mostra a árvore.</li>
+    <li><strong>Namespaces</strong> — vistas isoladas de PIDs, montagens, rede e utilizadores; a base dos contentores. Um contentor é um processo com namespaces e cgroups, não uma máquina virtual pequena.</li>
+  </ul>
+  <p>O <code>/proc</code> transforma tudo isto em ficheiros: <code>/proc/PID/cmdline</code>, <code>/proc/PID/environ</code>, <code>/proc/PID/fd</code>, <code>/proc/PID/status</code>. Lê-los é diagnóstico legítimo e rápido; escrever em alguns muda o kernel em execução.</p>
+</section>
+
+<section id="pt-signals">
+  <h2>6. Sinais: como se pede a paragem</h2>
+  <p>Um sinal é uma notificação assíncrona entregue pelo kernel. Os programas podem apanhar, bloquear ou ignorar a maioria; dois são reservados: <code>SIGKILL</code> e <code>SIGSTOP</code> não se apanham, bloqueiam nem ignoram — é exactamente por isso que são o último recurso.</p>
+  <table>
+    <caption>Os sinais que realmente se usam</caption>
+    <thead><tr><th>Sinal</th><th>Nº</th><th>Significado e hábito</th></tr></thead>
+    <tbody>
+      <tr><td><code>SIGTERM</code></td><td>15</td><td>«Termina com cuidado.» É o default de <code>kill</code> e do systemd. Apanhável, para o programa fechar e limpar.</td></tr>
+      <tr><td><code>SIGKILL</code></td><td>9</td><td>Morte imediata, sem limpeza nem handler. Deixa temporários, locks e dados a meio.</td></tr>
+      <tr><td><code>SIGINT</code></td><td>2</td><td>Ctrl-C num terminal normal. Apanhável; um TUI trata-o como tecla.</td></tr>
+      <tr><td><code>SIGQUIT</code></td><td>3</td><td>Ctrl-\; normalmente gera core.</td></tr>
+      <tr><td><code>SIGHUP</code></td><td>1</td><td>Terminal fechado; por convenção «recarrega configuração». Os daemons reinterpretam-no.</td></tr>
+      <tr><td><code>SIGSTOP</code> / <code>SIGCONT</code></td><td>19 / 18</td><td>Congelar e retomar. STOP não se apanha; um processo parado guarda memória e portas.</td></tr>
+      <tr><td><code>SIGUSR1</code> / <code>SIGUSR2</code></td><td>10 / 12</td><td>Definidos pela aplicação: reabrir logs, rodar, despejar estado.</td></tr>
+      <tr><td><code>SIGCHLD</code></td><td>17</td><td>Um filho mudou de estado; vai para o pai para ele o recolher.</td></tr>
+      <tr><td><code>SIGWINCH</code></td><td>28</td><td>Terminal redimensionado; os TUIs redesenham.</td></tr>
+    </tbody>
+  </table>
+  <p>A entrega não é uma conversa: quem envia recebe sucesso mesmo que o receptor ignore o sinal. Um processo que termina por sinal devolve estado <code>128 + número</code> — 137 para SIGKILL, 143 para SIGTERM. É por isso que um <code>$?</code> de 143 num script significa «terminado», não «falhou com 143».</p>
+<pre>$ kill -TERM 4242        # pedir
+$ kill -KILL 4242        # insistir, depois de dar um instante
+$ pkill -TERM -u www-data nginx
+$ kill -l                # a lista completa</pre>
+</section>
+
+<section id="pt-systemd">
+  <h2>7. Serviços, targets e systemd</h2>
+  <p>Sistemas antigos usavam runlevels SysV 0–6. O systemd substituiu-os por <strong>targets</strong>: grupos nomeados de units que puxam outras units. Os números sobrevivem como aliases (<code>runlevel3.target</code>), mas o modelo é um grafo de dependências, não uma escada numerada.</p>
+  <table>
+    <caption>Targets que se encontram</caption>
+    <thead><tr><th>Target</th><th>Runlevel antigo</th><th>Significa</th></tr></thead>
+    <tbody>
+      <tr><td><code>poweroff.target</code></td><td>0</td><td>Desligar.</td></tr>
+      <tr><td><code>rescue.target</code></td><td>1</td><td>Utilizador único, shell de root, serviços mínimos.</td></tr>
+      <tr><td><code>multi-user.target</code></td><td>3</td><td>Rede e serviços, sem sessão gráfica. O default normal de servidor.</td></tr>
+      <tr><td><code>graphical.target</code></td><td>5</td><td>Multi-utilizador mais gestor de ecrã.</td></tr>
+      <tr><td><code>reboot.target</code></td><td>6</td><td>Reiniciar.</td></tr>
+    </tbody>
+  </table>
+  <p><code>systemctl get-default</code> mostra o target de arranque; <code>systemctl isolate rescue.target</code> troca em execução; <code>systemctl set-default multi-user.target</code> torna-o permanente.</p>
+  <h3>Uma unit é um contrato, não um script</h3>
+<pre>[Unit]
+Description=Backup worker
+After=network-online.target
+
+[Service]
+Type=simple
+User=backup
+ExecStart=/usr/local/bin/backup --once
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target</pre>
+  <p>Os tipos de unit cobrem mais do que daemons: <code>.service</code> (um processo), <code>.socket</code> (activação por ligação), <code>.timer</code> (agenda, a substituir o cron), <code>.mount</code> e <code>.automount</code>, <code>.target</code> (um grupo), <code>.slice</code> (subárvore de cgroup), <code>.path</code> (vigiar um caminho).</p>
+  <ul>
+    <li><code>systemctl start x</code> corre agora; <code>enable</code> só liga ao target para o próximo arranque; <code>enable --now</code> faz os dois; <code>mask</code> impede o arranque.</li>
+    <li>Depois de editar uma unit: <code>systemctl daemon-reload</code> e <code>restart</code>. Sem o reload, o systemd usa a definição antiga e o ficheiro parece correcto enquanto o comportamento está velho.</li>
+    <li><code>systemctl status x</code> dá estado, PID, cgroup e as últimas linhas; <code>journalctl -u x -b</code> dá o histórico deste arranque.</li>
+    <li><code>systemctl cat x</code> mostra a unit e os drop-ins; <code>systemctl edit x</code> cria um override em <code>/etc/systemd/system/x.service.d/</code> em vez de editar o ficheiro do pacote.</li>
+    <li>As units vivem em <code>/usr/lib/systemd/system</code> (pacotes) e <code>/etc/systemd/system</code> (administrador). A segunda ganha.</li>
+  </ul>
+  <p>Ao parar, o systemd envia <code>SIGTERM</code>, espera (90&nbsp;s por omissão, <code>TimeoutStopSec</code>) e só depois <code>SIGKILL</code>. Um serviço que «demora dez segundos a morrer» normalmente ignora o SIGTERM; corrige-se o handler, não se baixa o timeout.</p>
+</section>
+
+<section id="pt-devices">
+  <h2>8. Dispositivos, hardware e módulos</h2>
+  <p>O hardware não é endereçado por nome. O kernel expõe dispositivos como ficheiros em <code>/dev</code> com um número <strong>major</strong> (que driver) e um <strong>minor</strong> (que instância). <code>ls -l /dev/sda</code> mostra <code>8, 0</code>; o udev cria os nomes e as ligações (<code>/dev/disk/by-uuid/…</code>) quando o dispositivo aparece.</p>
+  <div class="grid">
+    <div class="card"><h3>Discos e partições</h3><p><code>lsblk -f</code>, <code>blkid</code>, <code>findmnt</code>. As montagens declaram-se em <code>/etc/fstab</code> e activam-se com <code>mount -a</code> ou uma unit <code>.mount</code>.</p></div>
+    <div class="card"><h3>Buses</h3><p><code>lspci -k</code>, <code>lsusb</code>, <code>lscpu</code>. O <code>-k</code> nomeia o driver em uso.</p></div>
+    <div class="card"><h3>Mensagens do kernel</h3><p><code>dmesg -T</code> (com datas) mostra detecção, firmware e erros de driver. É o primeiro sítio a olhar quando falta um dispositivo.</p></div>
+    <div class="card"><h3>Módulos</h3><p><code>lsmod</code>, <code>modinfo</code>, <code>modprobe</code>. Opções persistentes vão em <code>/etc/modprobe.d/</code>, não num script.</p></div>
+  </div>
+  <p><code>/sys</code> é o mesmo hardware como árvore de atributos: lê-se <code>/sys/class/net/eth0/mtu</code> e escreve-se para o mudar (ou usa-se <code>ip</code>, que trata dos dois lados). <code>/proc</code> responde a perguntas do kernel (<code>meminfo</code>, <code>loadavg</code>, <code>interrupts</code>), <code>/sys</code> responde a perguntas de dispositivos, <code>/dev</code> é o dispositivo.</p>
+  <p>A distinção que poupa tempo num incidente: hardware é o que o kernel detectou, software é o que a distribuição instalou, configuração é o que tu mudaste. Uma interface em falta pode ser qualquer das três — vê <code>dmesg</code>, <code>lspci -k</code> e <code>ip link</code> antes de reinstalar seja o que for.</p>
+</section>
+
+<section id="pt-software">
+  <h2>9. Software e pacotes</h2>
+  <p>No Debian e Ubuntu, o <code>dpkg</code> é dono da base de dados instalada e o <code>apt</code> resolve dependências e descarrega dos repositórios. No Red Hat e Fedora, <code>rpm</code> e <code>dnf</code> fazem os mesmos papéis. Uma entrada de repositório é uma promessa sobre assinaturas e versões; um <code>.deb</code> descarregado de um blog não é.</p>
+<pre># Debian / Ubuntu
+apt update &amp;&amp; apt upgrade
+apt install nginx
+dpkg -S /usr/sbin/nginx      # que pacote é dono deste ficheiro
+apt-file search nginx.conf   # que pacote o forneceria
+
+# Red Hat / Fedora
+dnf install nginx
+rpm -qf /usr/sbin/nginx</pre>
+  <table>
+    <caption>O que fica onde, depois de instalado</caption>
+    <thead><tr><th>Sítio</th><th>Conteúdo</th><th>Dono</th></tr></thead>
+    <tbody>
+      <tr><td><code>/usr/bin</code>, <code>/usr/lib</code></td><td>Binários e bibliotecas da distribuição.</td><td>O gestor de pacotes.</td></tr>
+      <tr><td><code>/usr/local</code></td><td>Software compilado localmente, prefixo <code>--prefix=/usr/local</code>.</td><td>Tu. Nunca substituído por pacotes.</td></tr>
+      <tr><td><code>/opt</code></td><td>Árvores de fornecedor com layout próprio.</td><td>O instalador do fornecedor.</td></tr>
+      <tr><td><code>/etc</code></td><td>Configuração, muitas vezes com <code>.dpkg-dist</code> nas actualizações.</td><td>O pacote no início, tu depois.</td></tr>
+      <tr><td><code>/var/lib</code></td><td>Estado: bases de dados, listas de pacotes, dados de serviços.</td><td>O serviço; backup deliberado.</td></tr>
+      <tr><td><code>/var/log</code></td><td>Logs de texto e arquivos; o journal binário fica em <code>/var/log/journal</code>.</td><td>Rotação de logs, não tu.</td></tr>
+    </tbody>
+  </table>
+  <p>Actualizar não é o único ciclo de vida: fixa uma versão quando um serviço depende dela, lê o changelog antes de um salto major e mantém a configuração em controlo de versões para que «o que mudou?» tenha outra resposta além da memória.</p>
+</section>
+
+<section id="pt-logs">
+  <h2>10. Logs, arranque e lista final</h2>
+  <p>O journal é o destino por omissão: estruturado, indexado e consultado com <code>journalctl</code>. Os ficheiros em <code>/var/log</code> continuam a existir e a importar (nginx, aplicações, <code>auth.log</code> no Debian).</p>
+<pre>$ journalctl -b -p err          # este arranque, erros e pior
+$ journalctl -u nginx --since "1 hour ago"
+$ journalctl -k                 # só mensagens do kernel
+$ journalctl --disk-usage</pre>
+  <p>Um arranque normal é uma cadeia: firmware → bootloader → kernel e initramfs → PID 1 → target → units. <code>systemd-analyze</code>, <code>systemd-analyze blame</code> e <code>systemctl list-units --failed</code> localizam o elo lento ou partido. Se o target gráfico nunca chega, pergunta que unit falhou, não que pixel falta.</p>
+  <h3>A lista dos dez minutos</h3>
+  <ol>
+    <li><strong>Que camada?</strong> Kernel (<code>dmesg</code>), userland (<code>command -v</code>), init (<code>systemctl status</code>), pacote (<code>dpkg -S</code>).</li>
+    <li><strong>O ficheiro existe, com que modo e dono?</strong> <code>ls -l</code>, <code>stat</code>, <code>getfacl</code>.</li>
+    <li><strong>O utilizador do serviço lá chega?</strong> Verifica cada directório do caminho, não só o ficheiro.</li>
+    <li><strong>O processo corre, e como quem?</strong> <code>ps -o user,pid,ppid,stat,cmd -p PID</code>, <code>/proc/PID/status</code>.</li>
+    <li><strong>Morreu por sinal?</strong> Estado 137/143, <code>journalctl -u</code>.</li>
+    <li><strong>Está enabled para o próximo arranque?</strong> <code>systemctl is-enabled</code>, <code>is-active</code>.</li>
+    <li><strong>O disco está cheio?</strong> <code>df -h</code>, <code>df -i</code> (inodes), <code>lsof +L1</code> (apagados abertos).</li>
+    <li><strong>O dispositivo é visto?</strong> <code>lsblk</code>, <code>lspci -k</code>, <code>dmesg -T</code>.</li>
+    <li><strong>O que mudou?</strong> Histórico de pacotes, diff de configuração, drop-ins.</li>
+    <li><strong>Escreve-o.</strong> A próxima pessoa serás tu, seis meses depois.</li>
+  </ol>
+  <p>Nada disto exige decorar flags. Exige manter quatro modelos direitos: a árvore, o inode, o processo e a unit. Quando isso está claro, quase todos os «problemas de Linux» viram uma frase que se consegue terminar: o serviço não lê a chave porque corre como <code>www-data</code>, o ficheiro é <code>600 root:root</code> e o directório acima é <code>700</code>.</p>
+</section>
+
+<section id="pt-sources">
+  <h2>Fontes</h2>
+  <ul>
+    <li><a href="https://refspecs.linuxfoundation.org/FHS_3.0/fhs/index.html" rel="noopener noreferrer">FHS 3.0</a> — a hierarquia seguida aqui.</li>
+    <li><a href="https://man7.org/linux/man-pages/man7/inode.7.html" rel="noopener noreferrer">inode(7)</a> e <a href="https://man7.org/linux/man-pages/man7/signal.7.html" rel="noopener noreferrer">signal(7)</a> — as definições do kernel.</li>
+    <li><a href="https://www.freedesktop.org/software/systemd/man/systemd.unit.html" rel="noopener noreferrer">systemd.unit</a> — units, targets e drop-ins.</li>
+    <li><a href="https://man7.org/linux/man-pages/man7/capabilities.7.html" rel="noopener noreferrer">capabilities(7)</a> — porque root é um conjunto de bits.</li>
+    <li>Interno: <a href="./bashScripting.html">Bash</a>, <a href="./DebianSecurity.html">Debian</a>, <a href="./redhatCert.html">Red Hat</a>, <a href="./SELinux.html">SELinux</a>.</li>
+  </ul>
+</section>
+</main>
+
+<footer class="site">
+  <span>Monkey Blog · <a href="./index.html">Início</a></span>
+  <span><a href="./oJogoDoOperador.html">O Jogo do Operador</a></span>
+</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var blocks = document.querySelectorAll("[data-lang-block]");
+  var links = document.querySelectorAll("[data-lang-switch]");
+
+  function apply(lang) {
+    Array.prototype.forEach.call(blocks, function (block) {
+      block.hidden = block.getAttribute("data-lang-block") !== lang;
+    });
+    Array.prototype.forEach.call(links, function (link) {
+      if (link.getAttribute("data-lang-switch") === lang) { link.setAttribute("aria-current", "true"); }
+      else { link.removeAttribute("aria-current"); }
+    });
+    document.documentElement.lang = lang === "pt" ? "pt-PT" : "en";
+  }
+
+  Array.prototype.forEach.call(links, function (link) {
+    link.addEventListener("click", function (event) {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button) { return; }
+      event.preventDefault();
+      apply(link.getAttribute("data-lang-switch"));
+    });
+  });
+
+  var wanted = new URLSearchParams(location.search).get("lang");
+  if (wanted === "en" || wanted === "pt") { apply(wanted); }
+  else if (location.hash.indexOf("#pt-") === 0) { apply("pt"); }
+})();
+</script>
+</body>
+</html>
