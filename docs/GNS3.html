@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GNS3: Routed Labs with QEMU Nodes — Setup, Routing, Proof</title>
+<meta name="description" content="GNS3 for routed labs: QEMU node templates, link addressing, static and OSPF routes, NAT to the internet, and the checks that prove the path.">
+<link rel="canonical" href="https://blog.odicforcesounds.com/GNS3.html">
+<meta property="og:title" content="GNS3: Routed Labs with QEMU Nodes — Setup, Routing, Proof">
+<meta property="og:description" content="GNS3 for routed labs: QEMU node templates, link addressing, static and OSPF routes, NAT to the internet, and the checks that prove the path.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://blog.odicforcesounds.com/GNS3.html">
+<meta property="og:site_name" content="Monkey Blog">
+<meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="GNS3: Routed Labs with QEMU Nodes — Setup, Routing, Proof">
+<meta name="twitter:description" content="GNS3 for routed labs: QEMU node templates, link addressing, static and OSPF routes, NAT to the internet, and the checks that prove the path.">
+<meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/GNS3.html#article",
+      "headline": "GNS3: Routed Labs with QEMU Nodes — Setup, Routing, Proof",
+      "description": "GNS3 for routed labs: QEMU node templates, link addressing, static and OSPF routes, NAT to the internet, and the checks that prove the path.",
+      "url": "https://blog.odicforcesounds.com/GNS3.html",
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://blog.odicforcesounds.com/GNS3.html" },
+      "image": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/peace.jpg", "width": 1496, "height": 960 },
+      "inLanguage": "en",
+      "author": { "@type": "Person", "name": "Oscar", "url": "https://blog.odicforcesounds.com/" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/",
+        "logo": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/three.jpg", "width": 1024, "height": 1024 }
+      },
+      "isPartOf": { "@type": "Blog", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/" },
+      "articleSection": "Networking",
+      "keywords": "GNS3, QEMU, routing, static routes, OSPF, FRR, NAT, lab, virtio",
+      "wordCount": 5500,
+      "datePublished": "2026-10-31",
+      "dateModified": "2026-10-31"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://blog.odicforcesounds.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Networking", "item": "https://blog.odicforcesounds.com/#category-networking" },
+        { "@type": "ListItem", "position": 3, "name": "GNS3", "item": "https://blog.odicforcesounds.com/GNS3.html" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#06090f;
+  --panel:#0b1220;
+  --panel2:#0e1829;
+  --ink:#e8f0fa;
+  --soft:#c2d0e2;
+  --muted:#8ea0b8;
+  --blue:#4f9dff;
+  --cyan:#38bdf8;
+  --amber:#f6b73c;
+  --violet:#a78bfa;
+  --green:#34d399;
+  --line:rgba(255,255,255,.11);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--ink);
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(920px 560px at 86% -6%,rgba(79,157,255,.16),transparent 62%),
+    radial-gradient(760px 520px at 2% 24%,rgba(56,189,248,.10),transparent 58%),
+    radial-gradient(900px 640px at 94% 80%,rgba(167,139,250,.11),transparent 58%),
+    linear-gradient(180deg,#06090f,#081020 55%,#04070c);
+  background-attachment:fixed;
+  background-repeat:no-repeat;
+  font:16px/1.7 var(--sans);
+}
+a{color:#8fc2ff;text-decoration:none;border-bottom:1px solid rgba(79,157,255,.35);transition:color .15s,border-color .15s}
+a:hover{color:var(--amber);border-bottom-color:var(--amber)}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+[data-lang-block][hidden]{display:none!important}
+::selection{background:var(--blue);color:#04101f}
+
+.lang-switch{
+  display:flex;justify-content:center;gap:.4rem;
+  padding:.9rem 1rem .3rem;
+  font-family:var(--mono);font-size:.72rem;
+  letter-spacing:.18em;text-transform:uppercase;
+}
+.lang-switch a{
+  padding:.32rem .95rem;
+  color:var(--blue);font-weight:600;
+  background:transparent;
+  border:1px solid rgba(79,157,255,.6);border-radius:999px;
+  opacity:.85;
+  transition:opacity .15s,background-color .15s,color .15s,border-color .15s;
+}
+.lang-switch a[aria-current="true"]{color:var(--bg);background:var(--blue);border-color:var(--blue);opacity:1}
+.lang-switch a:hover,.lang-switch a:focus-visible{color:#04101f;background:var(--amber);border-color:var(--amber);opacity:1}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(1rem,4vw,2rem)}
+.topbar{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:.8rem;
+  padding:.7rem 0;
+  background:rgba(6,9,15,.9);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border-bottom:1px solid transparent;
+  border-image:linear-gradient(90deg,var(--blue),var(--cyan) 50%,var(--violet)) 1;
+}
+.home{
+  border:1px solid rgba(79,157,255,.55);border-radius:6px;
+  padding:.28rem .7rem;
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
+  color:#8fc2ff;background:rgba(79,157,255,.09);
+}
+.home:hover{background:var(--amber);border-color:var(--amber);color:#04101f}
+.brand{margin-left:auto;font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+.brand b{color:var(--blue)}
+
+.hero{padding:clamp(2rem,6vw,3.4rem) 0 .6rem}
+.kicker{margin:0 0 .8rem;color:var(--cyan);font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase}
+h1,.seo-h2{
+  margin:0;
+  font-size:clamp(1.9rem,5vw,3.1rem);
+  line-height:1.08;letter-spacing:-.02em;
+  background:linear-gradient(100deg,#fff 6%,var(--blue) 40%,var(--cyan) 62%,var(--amber));
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;
+}
+.lede{max-width:66ch;margin:1.1rem 0 0;color:var(--soft);font-size:1.02rem}
+.lede b{color:#fff}
+.meta-line{display:flex;flex-wrap:wrap;gap:.4rem;margin:1.1rem 0 0}
+.chip{
+  border:1px solid rgba(79,157,255,.38);border-radius:99px;
+  padding:.22rem .7rem;background:rgba(79,157,255,.08);
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#8fc2ff;
+}
+.chip.dim{border-color:var(--line);background:rgba(255,255,255,.03);color:var(--muted)}
+
+.toc{
+  margin:1.6rem 0 2rem;padding:1rem 1.1rem;
+  border:1px solid var(--line);border-radius:12px;
+  background:linear-gradient(160deg,rgba(14,24,41,.92),rgba(6,10,18,.92));
+}
+.toc h2{margin:0 0 .6rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.3rem}
+.toc a{
+  display:flex;gap:.55rem;align-items:baseline;
+  padding:.36rem .6rem;border:1px solid transparent;border-radius:7px;
+  color:var(--soft);border-bottom:0;
+}
+.toc a span{font-family:var(--mono);font-size:.62rem;color:var(--blue)}
+.toc a:hover,.toc a:focus-visible{background:rgba(79,157,255,.13);border-color:rgba(79,157,255,.5);color:#fff}
+
+main section{padding:1.6rem 0;border-top:1px solid var(--line)}
+main section:first-of-type{border-top:0}
+h2{font-size:clamp(1.35rem,3vw,1.8rem);line-height:1.2;margin:0 0 .7rem;letter-spacing:-.01em;color:#fff}
+h2 .no{font-family:var(--mono);font-size:.72em;color:var(--blue);margin-right:.4rem}
+h3{margin:1.5rem 0 .5rem;font-family:var(--mono);font-size:.92rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan)}
+p{color:var(--soft);max-width:88ch}
+b,strong{color:#fff}
+em{color:var(--amber);font-style:normal}
+ul,ol{color:var(--soft);padding-left:1.2rem}
+li{margin:.32rem 0}
+li b{color:#fff}
+code{font-family:var(--mono);font-size:.84em;background:#0a2340;color:var(--amber);padding:.06em .32em;border-radius:3px;word-break:break-word}
+pre{
+  margin:1rem 0;padding:.9rem 1rem;overflow-x:auto;
+  background:linear-gradient(180deg,#0a1526,#050a12);
+  border:1px solid rgba(79,157,255,.32);border-left:3px solid var(--blue);border-radius:9px;
+  color:#d6e8ff;font:400 .76rem/1.65 var(--mono);
+}
+pre code{background:none;color:inherit;padding:0}
+pre .c{color:#7f93ab}
+pre .k{color:#ffd08a}
+
+.table-wrap{margin:1rem 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;background:rgba(0,0,0,.28)}
+table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:560px}
+th{
+  text-align:left;padding:.6rem .7rem;white-space:nowrap;
+  background:linear-gradient(180deg,#0f2036,#0a1626);
+  color:var(--blue);border-bottom:2px solid var(--blue);
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
+}
+td{padding:.55rem .7rem;border-bottom:1px solid var(--line);color:var(--soft);vertical-align:top}
+tbody tr:nth-child(even) td{background:rgba(79,157,255,.05)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{color:#fff;font-family:var(--mono);font-size:.74rem;white-space:nowrap}
+
+.callout{
+  margin:1.2rem 0;padding:.95rem 1.1rem;border-radius:9px;
+  border:1px solid var(--line);border-left:4px solid var(--blue);
+  background:linear-gradient(100deg,rgba(79,157,255,.11),rgba(56,189,248,.05));
+}
+.callout h4{margin:0 0 .3rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--blue)}
+.callout.warn{border-left-color:var(--amber);background:linear-gradient(100deg,rgba(246,183,60,.12),rgba(79,157,255,.04))}
+.callout.warn h4{color:var(--amber)}
+.callout.gap{border-left-color:var(--violet);background:linear-gradient(100deg,rgba(167,139,250,.12),rgba(79,157,255,.04))}
+.callout.gap h4{color:#c4b5fd}
+.callout p{margin:.3rem 0;font-size:.88rem;max-width:none}
+.callout p:last-child{margin-bottom:0}
+
+.next{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.4rem 0 0}
+.next a{
+  border:1px solid rgba(167,139,250,.55);border-radius:8px;
+  padding:.45rem .85rem;background:rgba(167,139,250,.10);
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#c4b5fd;
+}
+.next a:hover,.next a:focus-visible{background:var(--amber);border-color:var(--amber);color:#04101f}
+
+footer{
+  margin-top:2rem;padding:1.6rem 0 2.4rem;text-align:center;
+  border-top:2px solid transparent;
+  background:
+    linear-gradient(#08101c,#08101c) padding-box,
+    linear-gradient(90deg,var(--blue),var(--cyan),var(--violet),var(--amber)) border-box;
+}
+footer p{margin:.3rem auto;color:var(--muted);font-size:.78rem;max-width:80ch;text-align:center}
+footer .home{margin-top:.7rem;display:inline-block}
+@media (max-width:640px){
+  table{min-width:470px}
+  .toc ol{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+@media print{
+  body{background:#fff;color:#111}
+  .lang-switch,.topbar,footer .home{display:none!important}
+  h1,.seo-h2{color:#111;-webkit-text-fill-color:#111}
+  pre,table,.callout{background:#fff!important;border-color:#999!important}
+  p,td,li,pre{color:#111!important}
+}
+</style>
+</head>
+<body>
+
+<nav class="lang-switch" aria-label="Language">
+  <a href="?lang=pt" data-lang-switch="pt" lang="pt-PT">Português</a>
+  <a href="?lang=en" data-lang-switch="en" aria-current="true" lang="en">English</a>
+</nav>
+
+<div id="lang-en" data-lang-block="en">
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Home</a>
+    <span class="brand">GNS3 <b>/</b> Routed Lab</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Network emulation &middot; QEMU nodes, routes, proof</p>
+    <h1>GNS3: building a routed lab that actually routes</h1>
+    <p class="lede">
+      GNS3 draws the topology; <b>you</b> build the routing. This page is the part the diagrams skip: how to
+      create QEMU nodes that boot reliably, how to address every link so two nodes agree on a subnet, how to
+      add static and OSPF routes, how to get out to the internet without leaking lab traffic, and how to
+      prove the path with counters instead of hope.
+    </p>
+    <div class="meta-line">
+      <span class="chip">KVM accelerated</span>
+      <span class="chip dim">static + OSPF</span>
+      <span class="chip dim">link capture</span>
+      <span class="chip dim">4-node topology</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="toc-title">
+    <h2 id="toc-title">Contents</h2>
+    <ol>
+      <li><a href="#what"><span>01</span> Emulation, not simulation</a></li>
+      <li><a href="#install"><span>02</span> Install the server and the GUI</a></li>
+      <li><a href="#design"><span>03</span> Design before you click</a></li>
+      <li><a href="#qemu"><span>04</span> QEMU nodes: disk, console, adapters</a></li>
+      <li><a href="#address"><span>05</span> Addressing and the first route</a></li>
+      <li><a href="#static"><span>06</span> Static routing across three segments</a></li>
+      <li><a href="#ospf"><span>07</span> Dynamic routing with FRR</a></li>
+      <li><a href="#test"><span>08</span> Testing routes the CCNA way</a></li>
+      <li><a href="#nat"><span>09</span> Internet access without leaking</a></li>
+      <li><a href="#vlan"><span>10</span> VLANs and switching</a></li>
+      <li><a href="#capture"><span>11</span> Capture and prove the path</a></li>
+      <li><a href="#checks"><span>12</span> The paranoid checklist</a></li>
+      <li><a href="#failures"><span>13</span> Common failures</a></li>
+      <li><a href="#sources"><span>14</span> Sources</a></li>
+    </ol>
+  </nav>
+
+  <section id="what">
+    <h2><span class="no">01</span> Emulation, not simulation</h2>
+    <p>
+      Packet Tracer simulates; GNS3 runs real operating systems and real routing daemons. That means real
+      kernel behaviour, real bugs, and real resource cost. Choose the node type by what you are testing.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Node type</th><th>What runs</th><th>Use it for</th><th>Cost</th></tr></thead>
+        <tbody>
+          <tr><td>QEMU VM</td><td>A full OS image on KVM</td><td>Linux routers, firewalls, appliances, anything with a kernel</td><td>RAM and CPU per node</td></tr>
+          <tr><td>Docker</td><td>A container on the GNS3 host</td><td>Quick Linux endpoints and services</td><td>Shares the host kernel</td></tr>
+          <tr><td>Ethernet switch</td><td>Virtual switch with ports</td><td>Layer-2 labs, VLAN tagging</td><td>Nearly free</td></tr>
+          <tr><td>Cloud / NAT node</td><td>A bridge to the host</td><td>Reaching the LAN or the internet</td><td>Easy to misconfigure</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      The rules of a routed lab are boring and absolute: every link is its own subnet, every node knows the
+      subnet of its own interfaces, and every node has a route for everything it cannot reach directly. When
+      that is true, ping works; when it is not, no amount of GNS3 icons will help.
+    </p>
+  </section>
+
+  <section id="install">
+    <h2><span class="no">02</span> Install the server and the GUI</h2>
+    <p>
+      Two shapes: the GNS3 VM (a packaged server, required for QEMU on Windows and macOS) or a headless
+      <code>gns3-server</code> on Linux, with the GUI talking to it over HTTP. The headless shape is easier to
+      back up and to keep off the internet.
+    </p>
+    <pre><code>sudo apt update
+sudo apt install -y gns3-server gns3-gui qemu-system-x86 qemu-utils \\
+  libvirt-daemon-system ovs-vswitchd
+
+gns3server --version
+systemctl --user status gns3-server 2&gt;/dev/null | head -5
+ss -ltnp | grep 3080        <span class="c"># the API port; keep it on 127.0.0.1</span>
+
+<span class="c"># KVM present, and usable by your user</span>
+kvm-ok 2&gt;/dev/null || egrep -c "(vmx|svm)" /proc/cpuinfo
+ls -l /dev/kvm</code></pre>
+    <div class="callout warn">
+      <h4>No KVM, no lab</h4>
+      <p>
+        Without <code>/dev/kvm</code> access, QEMU falls back to software emulation and a four-node lab crawls.
+        Add your user to the <code>kvm</code> group, or run the GNS3 server as the user who owns the images —
+        and never on a host where you also run production VMs you care about.
+      </p>
+    </div>
+    <p>
+      Bind the server to <code>127.0.0.1</code> in the server config unless you are deliberately running it
+      headless on another machine, and keep that machine on a management network, not on the internet.
+    </p>
+  </section>
+
+  <section id="design">
+    <h2><span class="no">03</span> Design before you click</h2>
+    <p>
+      Write the addressing plan first. It is the only part of the lab that cannot be fixed by clicking
+      harder, and it is what makes a route table readable.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Segment</th><th>Subnet</th><th>Nodes</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>transit-a</td><td>10.10.1.0/30</td><td>r1 .1, r2 .2</td><td>Point-to-point link, only two usable addresses</td></tr>
+          <tr><td>transit-b</td><td>10.10.2.0/30</td><td>r2 .1, r3 .2</td><td>Second hop of the path</td></tr>
+          <tr><td>lan-1</td><td>10.10.11.0/24</td><td>r1 .1, host .10</td><td>Where the client lives</td></tr>
+          <tr><td>lan-3</td><td>10.10.13.0/24</td><td>r3 .1, host .10</td><td>Destination segment</td></tr>
+          <tr><td>mgmt</td><td>GNS3 internal</td><td>Server only</td><td>The GUI and console traffic, never routed into the lab</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Four nodes are enough to learn everything on this page: <b>r1</b> and <b>r2</b> and <b>r3</b> as routers,
+      plus one host. Draw it on paper, then reproduce it. The diagram is documentation, not decoration.
+    </p>
+  </section>
+
+  <section id="qemu">
+    <h2><span class="no">04</span> QEMU nodes: disk, console, adapters</h2>
+    <p>
+      Create the image once, boot it outside GNS3 to install the OS, then register it as a template. Booting
+      inside GNS3 first is how people lose an afternoon to a black console.
+    </p>
+    <pre><code><span class="c"># one disk per node role, thin-provisioned</span>
+qemu-img create -f qcow2 r1.qcow2 8G
+
+<span class="c"># install the OS outside GNS3: serial console, one virtio NIC</span>
+qemu-system-x86_64 -enable-kvm -m 512 -smp 2 \
+  -drive file=r1.qcow2,if=virtio \
+  -netdev user,id=n0 -device virtio-net-pci,netdev=n0 \
+  -nographic</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Template field</th><th>Value</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Binary</td><td><code>qemu-system-x86_64</code></td><td>Match the architecture of the image</td></tr>
+          <tr><td>RAM / CPUs</td><td>512 MB, 2 vCPU for a router</td><td>Four routers must fit in the host's budget</td></tr>
+          <tr><td>Adapters</td><td><code>virtio-net-pci</code>, count set explicitly</td><td>The count must equal the links you will draw</td></tr>
+          <tr><td>Console</td><td>Telnet with <code>-nographic</code>, or VNC</td><td>Telnet needs a serial console configured in the guest</td></tr>
+          <tr><td>Options</td><td><code>-enable-kvm -smp 2</code></td><td>Without KVM the lab is unusable</td></tr>
+          <tr><td>Disk</td><td>Per-node qcow2 copy</td><td>Nodes must not share a writable disk</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout gap">
+      <h4>Serial console, or you cannot log in</h4>
+      <p>
+        Add <code>console=ttyS0</code> to the kernel command line (and enable a getty on it) before you register
+        the template. GNS3's telnet console is a serial line: without a getty, you get a blank screen and assume
+        the node failed.
+      </p>
+    </div>
+  </section>
+
+  <section id="address">
+    <h2><span class="no">05</span> Addressing and the first route</h2>
+    <p>
+      GNS3 connects cables; it does not assign addresses. Configure each interface inside the guest, with the
+      subnet from your plan, then verify before adding more.
+    </p>
+    <pre><code><span class="c"># inside r1</span>
+sudo ip addr add 10.10.1.1/30 dev ens3
+sudo ip addr add 10.10.11.1/24 dev ens4
+sudo ip link set ens3 up &amp;&amp; sudo ip link set ens4 up
+
+sudo sysctl -w net.ipv4.ip_forward=1
+<span class="c"># make it survive a reboot</span>
+echo 'net.ipv4.ip_forward=1' | sudo tee /etc/sysctl.d/99-lab.conf
+
+ip -br addr
+ip route
+ping -c2 10.10.11.10        <span class="c"># the host on the LAN segment</span></code></pre>
+    <p>
+      Two details catch almost everyone: the <code>/30</code> on a point-to-point link (so the two ends agree
+      on scope), and the interface names, which depend on how many virtio adapters the template created. Match
+      <code>ens3</code>/<code>ens4</code> to what the guest actually reports.
+    </p>
+  </section>
+
+  <section id="static">
+    <h2><span class="no">06</span> Static routing across three segments</h2>
+    <p>
+      With three routers, static routes make the forwarding logic visible: each router only needs to know its
+      directly connected subnets and a next hop for the rest.
+    </p>
+    <pre><code><span class="c"># r1: everything on the far side goes to r2</span>
+sudo ip route add 10.10.2.0/30 via 10.10.1.2
+sudo ip route add 10.10.13.0/24 via 10.10.1.2
+
+<span class="c"># r2: both LANs are behind neighbours</span>
+sudo ip route add 10.10.11.0/24 via 10.10.1.1
+sudo ip route add 10.10.13.0/24 via 10.10.2.2
+
+<span class="c"># r3: mirror image of r1</span>
+sudo ip route add 10.10.1.0/30 via 10.10.2.1
+sudo ip route add 10.10.11.0/24 via 10.10.2.1
+
+<span class="c"># prove it, hop by hop</span>
+ip route get 10.10.13.10
+traceroute -n 10.10.13.10
+ping -c2 10.10.13.10</code></pre>
+    <p>
+      A missing route shows up as "Destination Net Unreachable" or a silent timeout. Read
+      <code>ip route get</code> on each hop before blaming GNS3: the emulator is almost never the problem when
+      one subnet is unreachable.
+    </p>
+  </section>
+
+  <section id="ospf">
+    <h2><span class="no">07</span> Dynamic routing with FRR</h2>
+    <p>
+      Once the static version works, replace the routes with a routing protocol and watch the tables build
+      themselves. FRR installs from the distro and runs the same daemons as a real router.
+    </p>
+    <pre><code>sudo apt install -y frr
+<span class="c"># enable the daemon before it will run</span>
+sudo sed -i 's/^ospfd=no/ospfd=yes/' /etc/frr/daemons
+sudo systemctl restart frr
+
+sudo vtysh -c 'configure terminal' \
+  -c 'router ospf' \
+  -c 'network 10.10.0.0/16 area 0' \
+  -c 'exit' -c 'interface ens3' -c 'ip ospf area 0' \
+  -c 'exit' -c 'write memory'
+
+sudo vtysh -c 'show ip ospf neighbor'
+sudo vtysh -c 'show ip route ospf'</code></pre>
+    <ul>
+      <li><b>Same area on every router</b> for the first lab; multi-area is a second exercise.</li>
+      <li><b>Announce only lab subnets.</b> A stray default route can pull your management traffic into the emulator.</li>
+      <li><b>Check adjacency before routes:</b> no neighbour means no LSA exchange, and no routes to debug.</li>
+    </ul>
+    <p>
+      If you only need to test reachability, static routes are more honest: you can see every decision. Use
+      OSPF when convergence itself is the subject.
+    </p>
+  </section>
+
+  <section id="test">
+    <h2><span class="no">08</span> Testing routes the CCNA way</h2>
+    <p>
+      The CCNA asks you to read a routing table and predict the path before you touch a cable. In the lab you
+      can check that prediction in seconds — and explain <em>why</em> a /24 beat a /16 that was also in the table.
+    </p>
+    <pre><code><span class="c"># r2's whole world, on one screen</span>
+ip route show
+<span class="c"># 10.10.1.0/30 dev ens3 proto kernel scope link src 10.10.1.2</span>
+<span class="c"># 10.10.11.0/24 via 10.10.1.1 dev ens3</span>
+<span class="c"># 10.10.13.0/24 via 10.10.2.2 dev ens4</span>
+
+<span class="c"># the decision for one destination, with the winning prefix</span>
+ip route get 10.10.13.10
+<span class="c"># 10.10.13.10 via 10.10.2.2 dev ens4 src 10.10.2.1</span>
+
+<span class="c"># the same question through FRR, with its own codes</span>
+sudo vtysh -c 'show ip route 10.10.13.10'</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Candidate in r2's table</th><th>Matches 10.10.13.10?</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>0.0.0.0/0 via 10.10.1.2</td><td>Yes, length 0</td><td>Loses to every more specific route</td></tr>
+          <tr><td>10.10.0.0/16 via 10.10.1.2</td><td>Yes, length 16</td><td>Loses to the /24</td></tr>
+          <tr><td>10.10.13.0/24 via 10.10.2.2</td><td>Yes, length 24</td><td><b>Wins: longest prefix match</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Longest match is decided by prefix length, not by the order routes were added and not by metric. Change the
+      /24 to a /26 and watch a different rule take over.
+    </p>
+    <pre><code><span class="c"># two equal-cost paths, one prefix</span>
+sudo ip route replace 10.10.13.0/24 \
+  nexthop via 10.10.2.2 dev ens4 nexthop via 10.10.1.2 dev ens3
+ip route show 10.10.13.0/24
+<span class="c"># both next hops are used; counters must move on both links</span>
+
+<span class="c"># prove the loop, do not guess it</span>
+ping -c1 -t 2 10.10.13.10
+<span class="c"># From 10.10.2.1 icmp_seq=1 Time to live exceeded in transit</span>
+traceroute -n -m 6 10.10.13.10
+
+<span class="c"># drops and errors, per interface</span>
+ip -s link show ens4</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Test</th><th>Command</th><th>Pass</th><th>Otherwise</th></tr></thead>
+        <tbody>
+          <tr><td>Reachability</td><td><code>ping -c2 target</code></td><td>Replies, 0% loss</td><td>Route missing, ARP failing, or a firewall in the path</td></tr>
+          <tr><td>Path</td><td><code>traceroute -n target</code></td><td>Hops in the planned order</td><td>Asymmetric or looping path</td></tr>
+          <tr><td>Decision</td><td><code>ip route get target</code></td><td>Expected next hop and source address</td><td>Shadowed route or wrong prefix</td></tr>
+          <tr><td>Longest match</td><td>Add /16 and /24 for the same target</td><td>/24 wins</td><td>Table order or metric being blamed for prefix length</td></tr>
+          <tr><td>ECMP</td><td>Two next hops, then traffic</td><td>Counters rise on both links</td><td>One link dead, or hashing pinned to one path</td></tr>
+          <tr><td>TTL</td><td><code>ping -t 2</code>, increasing</td><td>TTL exceeded names the loop's router</td><td>Silent drop with no ICMP at all</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <h4>A ping proves the forward path, not the design</h4>
+      <p>
+        Return traffic can take a different route and still succeed; the lab is only understood when both
+        directions are captured. On FRR, compare <code>show ip route</code> (C/S/O codes and administrative
+        distance: static 1, OSPF 110) with the kernel table <code>ip route</code> — they should agree, and when
+        they do not, zebra is not installed the route you think it is.
+      </p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>OSPF state</th><th>Meaning in this lab</th></tr></thead>
+        <tbody>
+          <tr><td>Down</td><td>No hello received; interface not in the area, or the link is down</td></tr>
+          <tr><td>Init</td><td>Hello seen, but this router is not in the neighbour's hello</td></tr>
+          <tr><td>2-Way</td><td>Bidirectional on a broadcast segment; normal for non-DR/BDR</td></tr>
+          <tr><td>ExStart / Exchange</td><td>Leader election and database description exchange</td></tr>
+          <tr><td>Loading</td><td>LSAs requested; a stuck Loading is a database you need to read</td></tr>
+          <tr><td>Full</td><td>Databases synchronised — now routes can appear in <code>show ip route ospf</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      The prefix arithmetic and administrative-distance reasoning are worked through in the
+      <a href="ccna_ccnp.html">CCNA/CCNP manual</a>; the protocol-by-protocol background is in
+      <a href="networking.html">Networking</a>. Run each test here until the answer is obvious before you read it.
+    </p>
+  </section>
+
+  <section id="nat">
+    <h2><span class="no">09</span> Internet access without leaking</h2>
+    <p>
+      A lab that needs package updates needs a path out, and a lab that needs to stay contained needs that path
+      to be one-way and explicit. Put the NAT where you can see it — on the router that faces the host.
+    </p>
+    <pre><code><span class="c"># on the edge node, whose ens3 faces the GNS3 NAT/cloud node</span>
+sudo sysctl -w net.ipv4.ip_forward=1
+sudo iptables -t nat -A POSTROUTING -o ens3 -j MASQUERADE
+sudo iptables -A FORWARD -i ens4 -o ens3 -s 10.10.11.0/24 -j ACCEPT
+sudo iptables -A FORWARD -i ens3 -o ens4 -d 10.10.11.0/24 \
+  -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+sudo iptables -P FORWARD DROP
+
+<span class="c"># verify from a LAN host</span>
+ip route
+curl -sI https://deb.debian.org | head -1</code></pre>
+    <div class="callout warn">
+      <h4>Containment is part of the topology</h4>
+      <p>
+        Forward policy <code>DROP</code> and a stateful allow rule are what keep the lab from becoming a router
+        for your house. If the lab is for attack practice, isolate it completely and use a local package mirror —
+        the <a href="BlueTeams.html">defenders</a> page explains why stray lab traffic is a detection story you
+        do not want.
+      </p>
+    </div>
+  </section>
+
+  <section id="vlan">
+    <h2><span class="no">10</span> VLANs and switching</h2>
+    <p>
+      A routed lab eventually needs a switch between routers, and a switched lab eventually needs VLANs. GNS3
+      ships an Ethernet switch node; verify its tagging options in your version, and use an Open vSwitch node
+      when you need exact control.
+    </p>
+    <pre><code><span class="c"># inside an OVS node: two access ports and one trunk</span>
+ovs-vsctl add-br br0
+ovs-vsctl add-port br0 eth1 tag=10
+ovs-vsctl add-port br0 eth2 tag=20
+ovs-vsctl add-port br0 eth3 trunk=10,20
+ovs-vsctl show</code></pre>
+    <p>
+      Then address the VLANs on the router with sub-interfaces, and remember that the switch does not route:
+      <code>ip link add link ens4 name ens4.10 type vlan id 10</code> is what puts an address on a tag.
+    </p>
+  </section>
+
+  <section id="capture">
+    <h2><span class="no">11</span> Capture and prove the path</h2>
+    <p>
+      Right-click a link and start a capture: GNS3 shells out to dumpcap and shows the file in Wireshark. For
+      anything scripted, take the pcap and read it yourself — the same discipline as the
+      <a href="tcpdump.html">tcpdump</a> manual.
+    </p>
+    <pre><code>tshark -r link-r1-r2.pcapng -Y "icmp || ospf" -T fields \
+  -e ip.src -e ip.dst -e icmp.type -e ospf.msg | head -20
+
+<span class="c"># the two counters that prove forwarding worked</span>
+cat /proc/sys/net/ipv4/ip_forward
+nstat -az | grep -E "IpInReceives|IpOutRequests|IpInAddrErrors"</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symptom on the wire</th><th>What it means</th></tr></thead>
+        <tbody>
+          <tr><td>ICMP echo request arrives, no reply</td><td>Return route missing on the far node</td></tr>
+          <tr><td>OSPF hello one-way</td><td>One interface not in the area, or MTU mismatch</td></tr>
+          <tr><td>Repeated ARP for the gateway</td><td>Wrong subnet mask, or gateway address typo</td></tr>
+          <tr><td>Forty-byte window, no data</td><td>MTU black hole; test with <code>ping -M do -s 1400</code></td></tr>
+          <tr><td>Traffic only in one direction</td><td>Only one link is captured — check the SPAN or the second cable</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      For turning those captures into alerts, the <a href="Suricata.html">Suricata</a> build reads the same
+      files offline; for the protocol background, the <a href="networking.html">networking</a> manual.
+    </p>
+  </section>
+
+  <section id="checks">
+    <h2><span class="no">12</span> The paranoid checklist</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Check</th><th>Pass condition</th></tr></thead>
+        <tbody>
+          <tr><td>KVM active</td><td><code>/dev/kvm</code> accessible; guest boot under ten seconds</td></tr>
+          <tr><td>One subnet per link</td><td>Addressing plan written; no overlap with the GNS3 management net</td></tr>
+          <tr><td>Adapter count matches links</td><td>No "interface not found" after adding a cable</td></tr>
+          <tr><td>Forwarding on</td><td><code>ip_forward=1</code> persisted in <code>/etc/sysctl.d</code></td></tr>
+          <tr><td>Routes readable</td><td><code>ip route</code> on each node shows only what you planned</td></tr>
+          <tr><td>Return path tested</td><td><code>traceroute</code> works in both directions</td></tr>
+          <tr><td>Forward policy explicit</td><td><code>DROP</code> default, stateful allow rules, no open MASQUERADE</td></tr>
+          <tr><td>Capture kept</td><td>Pcap plus the command that produced it, stored with the project</td></tr>
+          <tr><td>Disk per node</td><td>No two nodes share a writable qcow2</td></tr>
+          <tr><td>Project exported</td><td>One archive you can rebuild from after a laptop dies</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="failures">
+    <h2><span class="no">13</span> Common failures</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Node boots to a black console</td><td>No getty on <code>ttyS0</code>, or console type mismatch</td><td>Add <code>console=ttyS0</code>, enable the serial getty, reboot</td></tr>
+          <tr><td>QEMU exits immediately</td><td>Image path moved, or no KVM permission</td><td>Check the template's disk path and <code>ls -l /dev/kvm</code></td></tr>
+          <tr><td>Only two NICs appear</td><td>Template adapter count too low</td><td>Edit the template, raise the count, restart the node</td></tr>
+          <tr><td>Ping fails one way</td><td>Missing return route or wrong netmask</td><td><code>ip route get</code> on both ends</td></tr>
+          <tr><td>OSPF neighbour stuck in EXSTART</td><td>MTU mismatch between neighbours</td><td>Align MTU on both interfaces, or fix the virtual link MTU</td></tr>
+          <tr><td>Everything is slow</td><td>Software emulation, or too many vCPUs per node</td><td>Enable KVM, reduce vCPU count, close the extra nodes</td></tr>
+          <tr><td>LAN host has no internet</td><td>NAT rule missing, forwarding off, or DNS absent</td><td>Recheck MASQUERADE, <code>ip_forward</code>, and the resolver</td></tr>
+          <tr><td>Lab traffic on the home network</td><td>Cloud node bridged without a firewall</td><td>Remove the bridge, use NAT with a <code>DROP</code> forward policy</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="sources">
+    <h2><span class="no">14</span> Sources</h2>
+    <ul>
+      <li><a href="https://docs.gns3.com/">GNS3</a> — the official documentation, including QEMU templates and server setup.</li>
+      <li><a href="https://www.qemu.org/docs/master/">QEMU</a> — the emulator reference for <code>-device</code>, <code>-netdev</code> and images.</li>
+      <li><a href="https://www.kernel.org/doc/html/latest/networking/">Kernel</a> — IP routing and sysctl behaviour.</li>
+      <li><a href="https://docs.frrouting.org/">FRR</a> — OSPF and BGP configuration reference.</li>
+      <li><a href="https://docs.openvswitch.org/">OVS</a> — bridges, ports, tags and trunks.</li>
+      <li><a href="https://wiki.debian.org/QEMU">Debian</a> — KVM setup and permissions on Debian.</li>
+    </ul>
+    <p>
+      The routed lab is also the ground for the attack and defence manuals: <a href="KaliLinux.html">Kali</a>
+      for what crosses it, <a href="RedTeams.html">attackers</a> for the exercises, and
+      <a href="BlueTeams.html">defenders</a> for the detections.
+    </p>
+    <div class="next">
+      <a href="networking.html">Networking</a>
+      <a href="tcpdump.html">tcpdump</a>
+      <a href="Suricata.html">Suricata</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>GNS3</b> &middot; routed labs with QEMU nodes &middot; part of the Networking manual set.</p>
+    <p>Vanilla HTML, CSS3 and JavaScript. No external styles, scripts, fonts or images.</p>
+    <a class="home" href="./index.html">Home</a>
+  </div>
+</footer>
+</div>
+
+<div id="lang-pt" data-lang-block="pt" hidden>
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Início</a>
+    <span class="brand">GNS3 <b>/</b> Laboratório</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Emulação de rede &middot; nós QEMU, rotas, prova</p>
+    <h2 class="seo-h2">GNS3: um laboratório encaminhado que realmente encaminha</h2>
+    <p class="lede">
+      O GNS3 desenha a topologia; <b>você</b> constrói o encaminhamento. Esta página é a parte que os diagramas
+      saltam: como criar nós QEMU que arrancam de forma fiável, como endereçar cada ligação para dois nós
+      concordarem numa sub-rede, como acrescentar rotas estáticas e OSPF, como sair para a internet sem deixar
+      escapar tráfego do laboratório e como provar o caminho com contadores em vez de esperança.
+    </p>
+    <div class="meta-line">
+      <span class="chip">acelerado por KVM</span>
+      <span class="chip dim">estático + OSPF</span>
+      <span class="chip dim">captura por ligação</span>
+      <span class="chip dim">topologia de 4 nós</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="pt-toc-title">
+    <h2 id="pt-toc-title">Índice</h2>
+    <ol>
+      <li><a href="#pt-what"><span>01</span> Emulação, não simulação</a></li>
+      <li><a href="#pt-install"><span>02</span> Instalar servidor e interface</a></li>
+      <li><a href="#pt-design"><span>03</span> Desenhar antes de clicar</a></li>
+      <li><a href="#pt-qemu"><span>04</span> Nós QEMU: disco, consola, adaptadores</a></li>
+      <li><a href="#pt-address"><span>05</span> Endereçamento e a primeira rota</a></li>
+      <li><a href="#pt-static"><span>06</span> Rotas estáticas por três segmentos</a></li>
+      <li><a href="#pt-ospf"><span>07</span> Encaminhamento dinâmico com FRR</a></li>
+      <li><a href="#pt-test"><span>08</span> Testar rotas à CCNA</a></li>
+      <li><a href="#pt-nat"><span>09</span> Internet sem fugas</a></li>
+      <li><a href="#pt-vlan"><span>10</span> VLANs e comutação</a></li>
+      <li><a href="#pt-capture"><span>11</span> Capturar e provar o caminho</a></li>
+      <li><a href="#pt-checks"><span>12</span> A lista paranoica</a></li>
+      <li><a href="#pt-failures"><span>13</span> Falhas comuns</a></li>
+      <li><a href="#pt-sources"><span>14</span> Fontes</a></li>
+    </ol>
+  </nav>
+
+  <section id="pt-what">
+    <h2><span class="no">01</span> Emulação, não simulação</h2>
+    <p>
+      O Packet Tracer simula; o GNS3 corre sistemas operativos e daemons de encaminhamento reais. Isso significa
+      comportamento real do kernel, bugs reais e custo real de recursos. Escolha o tipo de nó pelo que está a
+      testar.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tipo de nó</th><th>O que corre</th><th>Serve para</th><th>Custo</th></tr></thead>
+        <tbody>
+          <tr><td>VM QEMU</td><td>Uma imagem de SO completa em KVM</td><td>Routers Linux, firewalls, appliances</td><td>RAM e CPU por nó</td></tr>
+          <tr><td>Docker</td><td>Um contentor no host do GNS3</td><td>Endpoints e serviços rápidos</td><td>Partilha o kernel do host</td></tr>
+          <tr><td>Switch Ethernet</td><td>Switch virtual com portas</td><td>Laboratórios de camada 2, etiquetas VLAN</td><td>Quase gratuito</td></tr>
+          <tr><td>Nó cloud / NAT</td><td>Uma bridge para o host</td><td>Alcançar a LAN ou a internet</td><td>Fácil de configurar mal</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      As regras de um laboratório encaminhado são aborrecidas e absolutas: cada ligação é a sua própria
+      sub-rede, cada nó conhece a sub-rede das suas interfaces e cada nó tem rota para tudo o que não alcança
+      diretamente. Quando isso é verdade, o ping funciona; quando não é, nenhum ícone do GNS3 ajuda.
+    </p>
+  </section>
+
+  <section id="pt-install">
+    <h2><span class="no">02</span> Instalar servidor e interface</h2>
+    <p>
+      Duas formas: a GNS3 VM (servidor empacotado, necessário para QEMU em Windows e macOS) ou um
+      <code>gns3-server</code> headless em Linux, com a interface a falar com ele por HTTP. A forma headless é
+      mais fácil de salvaguardar e de manter fora da internet.
+    </p>
+    <pre><code>sudo apt update
+sudo apt install -y gns3-server gns3-gui qemu-system-x86 qemu-utils \\
+  libvirt-daemon-system ovs-vswitchd
+
+gns3server --version
+systemctl --user status gns3-server 2&gt;/dev/null | head -5
+ss -ltnp | grep 3080        <span class="c"># a porta da API; mantenha-a em 127.0.0.1</span>
+
+<span class="c"># KVM presente e utilizável pelo seu utilizador</span>
+kvm-ok 2&gt;/dev/null || egrep -c "(vmx|svm)" /proc/cpuinfo
+ls -l /dev/kvm</code></pre>
+    <div class="callout warn">
+      <h4>Sem KVM não há laboratório</h4>
+      <p>
+        Sem acesso a <code>/dev/kvm</code>, o QEMU cai para emulação por software e um laboratório de quatro nós
+        arrasta-se. Junte o seu utilizador ao grupo <code>kvm</code>, ou corra o servidor GNS3 com o utilizador
+        dono das imagens — e nunca num host onde corre VMs de produção que lhe importam.
+      </p>
+    </div>
+    <p>
+      Ligue o servidor a <code>127.0.0.1</code> na configuração, a menos que o esteja a correr de propósito numa
+      outra máquina, e mantenha essa máquina numa rede de gestão, não na internet.
+    </p>
+  </section>
+
+  <section id="pt-design">
+    <h2><span class="no">03</span> Desenhar antes de clicar</h2>
+    <p>
+      Escreva primeiro o plano de endereçamento. É a única parte do laboratório que não se corrige clicando com
+      mais força, e é o que torna uma tabela de rotas legível.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Segmento</th><th>Sub-rede</th><th>Nós</th><th>Objetivo</th></tr></thead>
+        <tbody>
+          <tr><td>transit-a</td><td>10.10.1.0/30</td><td>r1 .1, r2 .2</td><td>Ligação ponto a ponto, só dois endereços úteis</td></tr>
+          <tr><td>transit-b</td><td>10.10.2.0/30</td><td>r2 .1, r3 .2</td><td>Segundo salto do caminho</td></tr>
+          <tr><td>lan-1</td><td>10.10.11.0/24</td><td>r1 .1, host .10</td><td>Onde vive o cliente</td></tr>
+          <tr><td>lan-3</td><td>10.10.13.0/24</td><td>r3 .1, host .10</td><td>Segmento de destino</td></tr>
+          <tr><td>gestão</td><td>interna do GNS3</td><td>Só o servidor</td><td>Tráfego da interface e das consolas, nunca encaminhado para o laboratório</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Quatro nós chegam para aprender tudo nesta página: <b>r1</b>, <b>r2</b> e <b>r3</b> como routers, mais um
+      host. Desenhe em papel e depois reproduza. O diagrama é documentação, não decoração.
+    </p>
+  </section>
+
+  <section id="pt-qemu">
+    <h2><span class="no">04</span> Nós QEMU: disco, consola, adaptadores</h2>
+    <p>
+      Crie a imagem uma vez, arranque-a fora do GNS3 para instalar o sistema e só depois a registe como modelo.
+      Arrancar dentro do GNS3 primeiro é como se perde uma tarde com uma consola preta.
+    </p>
+    <pre><code><span class="c"># um disco por papel de nó, com aprovisionamento fino</span>
+qemu-img create -f qcow2 r1.qcow2 8G
+
+<span class="c"># instalar o sistema fora do GNS3: consola série, uma NIC virtio</span>
+qemu-system-x86_64 -enable-kvm -m 512 -smp 2 \\
+  -drive file=r1.qcow2,if=virtio \\
+  -netdev user,id=n0 -device virtio-net-pci,netdev=n0 \\
+  -nographic</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Campo do modelo</th><th>Valor</th><th>Porquê</th></tr></thead>
+        <tbody>
+          <tr><td>Binário</td><td><code>qemu-system-x86_64</code></td><td>Tem de corresponder à arquitetura da imagem</td></tr>
+          <tr><td>RAM / CPUs</td><td>512 MB, 2 vCPU para um router</td><td>Quatro routers têm de caber no orçamento do host</td></tr>
+          <tr><td>Adaptadores</td><td><code>virtio-net-pci</code>, contagem explícita</td><td>A contagem tem de igualar as ligações que vai desenhar</td></tr>
+          <tr><td>Consola</td><td>Telnet com <code>-nographic</code>, ou VNC</td><td>Telnet exige consola série configurada no convidado</td></tr>
+          <tr><td>Opções</td><td><code>-enable-kvm -smp 2</code></td><td>Sem KVM o laboratório é inutilizável</td></tr>
+          <tr><td>Disco</td><td>Cópia qcow2 por nó</td><td>Os nós não podem partilhar um disco gravável</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout gap">
+      <h4>Consola série, ou não entra</h4>
+      <p>
+        Acrescente <code>console=ttyS0</code> à linha de comando do kernel (e ative um getty nela) antes de
+        registar o modelo. A consola telnet do GNS3 é uma linha série: sem getty, obtém um ecrã em branco e
+        assume que o nó falhou.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-address">
+    <h2><span class="no">05</span> Endereçamento e a primeira rota</h2>
+    <p>
+      O GNS3 liga cabos; não atribui endereços. Configure cada interface dentro do convidado com a sub-rede do
+      plano e verifique antes de acrescentar mais.
+    </p>
+    <pre><code><span class="c"># dentro de r1</span>
+sudo ip addr add 10.10.1.1/30 dev ens3
+sudo ip addr add 10.10.11.1/24 dev ens4
+sudo ip link set ens3 up &amp;&amp; sudo ip link set ens4 up
+
+sudo sysctl -w net.ipv4.ip_forward=1
+<span class="c"># sobreviver ao reinício</span>
+echo 'net.ipv4.ip_forward=1' | sudo tee /etc/sysctl.d/99-lab.conf
+
+ip -br addr
+ip route
+ping -c2 10.10.11.10        <span class="c"># o host no segmento LAN</span></code></pre>
+    <p>
+      Dois detalhes apanham quase todos: o <code>/30</code> numa ligação ponto a ponto (para os dois extremos
+      concordarem no âmbito) e os nomes das interfaces, que dependem de quantos adaptadores virtio o modelo
+      criou. Faça corresponder <code>ens3</code>/<code>ens4</code> ao que o convidado reporta.
+    </p>
+  </section>
+
+  <section id="pt-static">
+    <h2><span class="no">06</span> Rotas estáticas por três segmentos</h2>
+    <p>
+      Com três routers, as rotas estáticas tornam a lógica de encaminhamento visível: cada router só precisa de
+      conhecer as sub-redes ligadas diretamente e um próximo salto para o resto.
+    </p>
+    <pre><code><span class="c"># r1: tudo do outro lado vai para r2</span>
+sudo ip route add 10.10.2.0/30 via 10.10.1.2
+sudo ip route add 10.10.13.0/24 via 10.10.1.2
+
+<span class="c"># r2: ambas as LANs estão atrás de vizinhos</span>
+sudo ip route add 10.10.11.0/24 via 10.10.1.1
+sudo ip route add 10.10.13.0/24 via 10.10.2.2
+
+<span class="c"># r3: imagem espelhada de r1</span>
+sudo ip route add 10.10.1.0/30 via 10.10.2.1
+sudo ip route add 10.10.11.0/24 via 10.10.2.1
+
+<span class="c"># provar, salto a salto</span>
+ip route get 10.10.13.10
+traceroute -n 10.10.13.10
+ping -c2 10.10.13.10</code></pre>
+    <p>
+      Uma rota em falta aparece como «Destination Net Unreachable» ou como um silêncio. Leia
+      <code>ip route get</code> em cada salto antes de culpar o GNS3: o emulador quase nunca é o problema quando
+      uma sub-rede é inalcançável.
+    </p>
+  </section>
+
+  <section id="pt-ospf">
+    <h2><span class="no">07</span> Encaminhamento dinâmico com FRR</h2>
+    <p>
+      Quando a versão estática funciona, substitua as rotas por um protocolo e veja as tabelas construírem-se
+      sozinhas. O FRR instala-se da distribuição e corre os mesmos daemons de um router real.
+    </p>
+    <pre><code>sudo apt install -y frr
+<span class="c"># ativar o daemon antes de ele arrancar</span>
+sudo sed -i 's/^ospfd=no/ospfd=yes/' /etc/frr/daemons
+sudo systemctl restart frr
+
+sudo vtysh -c 'configure terminal' \\
+  -c 'router ospf' \\
+  -c 'network 10.10.0.0/16 area 0' \\
+  -c 'exit' -c 'interface ens3' -c 'ip ospf area 0' \\
+  -c 'exit' -c 'write memory'
+
+sudo vtysh -c 'show ip ospf neighbor'
+sudo vtysh -c 'show ip route ospf'</code></pre>
+    <ul>
+      <li><b>Mesma área em todos os routers</b> no primeiro laboratório; multi-área é um segundo exercício.</li>
+      <li><b>Anuncie apenas sub-redes do laboratório.</b> Uma rota predefinida perdida pode puxar tráfego de gestão para o emulador.</li>
+      <li><b>Verifique a adjacência antes das rotas:</b> sem vizinho não há troca de LSA, e não há rotas para depurar.</li>
+    </ul>
+    <p>
+      Se só precisa de testar alcance, as rotas estáticas são mais honestas: vê cada decisão. Use OSPF quando a
+      convergência é o assunto.
+    </p>
+  </section>
+
+  <section id="pt-test">
+    <h2><span class="no">08</span> Testar rotas à maneira do CCNA</h2>
+    <p>
+      O CCNA pede que leia uma tabela de rotas e preveja o caminho antes de tocar num cabo. No laboratório
+      confirma a previsão em segundos — e explica <em>porque</em> um /24 venceu um /16 que também estava na
+      tabela.
+    </p>
+    <pre><code><span class="c"># o mundo inteiro de r2, num ecrã</span>
+ip route show
+<span class="c"># 10.10.1.0/30 dev ens3 proto kernel scope link src 10.10.1.2</span>
+<span class="c"># 10.10.11.0/24 via 10.10.1.1 dev ens3</span>
+<span class="c"># 10.10.13.0/24 via 10.10.2.2 dev ens4</span>
+
+<span class="c"># a decisão para um destino, com o prefixo vencedor</span>
+ip route get 10.10.13.10
+<span class="c"># 10.10.13.10 via 10.10.2.2 dev ens4 src 10.10.2.1</span>
+
+<span class="c"># a mesma pergunta através do FRR, com os seus códigos</span>
+sudo vtysh -c 'show ip route 10.10.13.10'</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Candidata na tabela de r2</th><th>Corresponde a 10.10.13.10?</th><th>Resultado</th></tr></thead>
+        <tbody>
+          <tr><td>0.0.0.0/0 via 10.10.1.2</td><td>Sim, comprimento 0</td><td>Perde para qualquer rota mais específica</td></tr>
+          <tr><td>10.10.0.0/16 via 10.10.1.2</td><td>Sim, comprimento 16</td><td>Perde para o /24</td></tr>
+          <tr><td>10.10.13.0/24 via 10.10.2.2</td><td>Sim, comprimento 24</td><td><b>Vence: maior correspondência de prefixo</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      A maior correspondência decide-se pelo comprimento do prefixo, não pela ordem em que as rotas foram
+      acrescentadas nem pela métrica. Mude o /24 para /26 e veja outra regra assumir o controlo.
+    </p>
+    <pre><code><span class="c"># dois caminhos de custo igual, um prefixo</span>
+sudo ip route replace 10.10.13.0/24 \
+  nexthop via 10.10.2.2 dev ens4 nexthop via 10.10.1.2 dev ens3
+ip route show 10.10.13.0/24
+<span class="c"># ambos os próximos saltos são usados; os contadores têm de mexer nas duas ligações</span>
+
+<span class="c"># provar o ciclo, não o adivinhar</span>
+ping -c1 -t 2 10.10.13.10
+<span class="c"># From 10.10.2.1 icmp_seq=1 Time to live exceeded in transit</span>
+traceroute -n -m 6 10.10.13.10
+
+<span class="c"># descartes e erros, por interface</span>
+ip -s link show ens4</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Teste</th><th>Comando</th><th>Aprovado</th><th>Caso contrário</th></tr></thead>
+        <tbody>
+          <tr><td>Alcance</td><td><code>ping -c2 destino</code></td><td>Respostas, 0% de perda</td><td>Rota em falta, ARP a falhar ou firewall no caminho</td></tr>
+          <tr><td>Caminho</td><td><code>traceroute -n destino</code></td><td>Saltos na ordem planeada</td><td>Caminho assimétrico ou em ciclo</td></tr>
+          <tr><td>Decisão</td><td><code>ip route get destino</code></td><td>Próximo salto e origem esperados</td><td>Rota sombreada ou prefixo errado</td></tr>
+          <tr><td>Maior prefixo</td><td>Acrescentar /16 e /24 ao mesmo destino</td><td>O /24 vence</td><td>Culpar a ordem da tabela ou a métrica</td></tr>
+          <tr><td>ECMP</td><td>Dois próximos saltos, depois tráfego</td><td>Contadores sobem nas duas ligações</td><td>Ligação morta, ou hashing preso a um caminho</td></tr>
+          <tr><td>TTL</td><td><code>ping -t 2</code>, a crescer</td><td>O TTL excedido nomeia o router do ciclo</td><td>Descarte silencioso, sem ICMP nenhum</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <h4>Um ping prova o caminho de ida, não o desenho</h4>
+      <p>
+        O tráfego de retorno pode seguir outra rota e mesmo assim funcionar; o laboratório só se compreende
+        quando se capturam os dois sentidos. No FRR, compare <code>show ip route</code> (códigos C/S/O e
+        distância administrativa: estática 1, OSPF 110) com a tabela do kernel <code>ip route</code> — devem
+        concordar, e quando não concordam, o zebra não instalou a rota que pensa.
+      </p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Estado OSPF</th><th>Significado neste laboratório</th></tr></thead>
+        <tbody>
+          <tr><td>Down</td><td>Nenhum hello recebido; interface fora da área ou ligação em baixo</td></tr>
+          <tr><td>Init</td><td>Hello visto, mas este router não consta no hello do vizinho</td></tr>
+          <tr><td>2-Way</td><td>Bidirecional num segmento broadcast; normal para quem não é DR/BDR</td></tr>
+          <tr><td>ExStart / Exchange</td><td>Eleição de líder e troca de descrições de base de dados</td></tr>
+          <tr><td>Loading</td><td>LSAs pedidas; um Loading preso é uma base de dados para ler</td></tr>
+          <tr><td>Full</td><td>Bases sincronizadas — só agora surgem rotas em <code>show ip route ospf</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      A aritmética de prefixos e o raciocínio de distância administrativa estão no
+      <a href="ccna_ccnp.html">manual CCNA/CCNP</a>; o fundo protocolo a protocolo está em
+      <a href="networking.html">Redes</a>. Corra cada teste aqui até a resposta ser óbvia, antes de a ler.
+    </p>
+  </section>
+
+  <section id="pt-nat">
+    <h2><span class="no">09</span> Internet sem fugas</h2>
+    <p>
+      Um laboratório que precisa de atualizações precisa de saída, e um laboratório que deve ficar contido
+      precisa que essa saída seja explícita e num só sentido. Coloque o NAT onde o consegue ver — no router que
+      enfrenta o host.
+    </p>
+    <pre><code><span class="c"># no nó de borda, cujo ens3 enfrenta o nó NAT/cloud do GNS3</span>
+sudo sysctl -w net.ipv4.ip_forward=1
+sudo iptables -t nat -A POSTROUTING -o ens3 -j MASQUERADE
+sudo iptables -A FORWARD -i ens4 -o ens3 -s 10.10.11.0/24 -j ACCEPT
+sudo iptables -A FORWARD -i ens3 -o ens4 -d 10.10.11.0/24 \
+  -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+sudo iptables -P FORWARD DROP
+
+<span class="c"># verificar a partir de um host da LAN</span>
+ip route
+curl -sI https://deb.debian.org | head -1</code></pre>
+    <div class="callout warn">
+      <h4>A contenção faz parte da topologia</h4>
+      <p>
+        Política <code>DROP</code> no forward e uma regra stateful são o que impede o laboratório de se tornar
+        um router da sua casa. Se o laboratório é para prática de ataque, isole-o por completo e use um espelho
+        local de pacotes — a página dos <a href="BlueTeams.html">defensores</a> explica porque o tráfego perdido
+        do laboratório é uma história de deteção que não quer.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-vlan">
+    <h2><span class="no">10</span> VLANs e comutação</h2>
+    <p>
+      Um laboratório encaminhado acaba por precisar de um switch entre routers, e um laboratório comutado acaba
+      por precisar de VLANs. O GNS3 traz um nó de switch Ethernet; confirme as opções de etiquetagem na sua
+      versão e use um nó Open vSwitch quando precisar de controlo exato.
+    </p>
+    <pre><code><span class="c"># dentro de um nó OVS: duas portas de acesso e um trunk</span>
+ovs-vsctl add-br br0
+ovs-vsctl add-port br0 eth1 tag=10
+ovs-vsctl add-port br0 eth2 tag=20
+ovs-vsctl add-port br0 eth3 trunk=10,20
+ovs-vsctl show</code></pre>
+    <p>
+      Depois endereçe as VLANs no router com sub-interfaces, e lembre-se de que o switch não encaminha:
+      <code>ip link add link ens4 name ens4.10 type vlan id 10</code> é o que põe um endereço numa etiqueta.
+    </p>
+  </section>
+
+  <section id="pt-capture">
+    <h2><span class="no">11</span> Capturar e provar o caminho</h2>
+    <p>
+      Clique com o botão direito numa ligação e inicie uma captura: o GNS3 chama o dumpcap e mostra o ficheiro
+      no Wireshark. Para qualquer coisa automatizada, leve a pcap e leia-a você — a mesma disciplina do manual
+      <a href="tcpdump.html">tcpdump</a>.
+    </p>
+    <pre><code>tshark -r ligacao-r1-r2.pcapng -Y "icmp || ospf" -T fields \\
+  -e ip.src -e ip.dst -e icmp.type -e ospf.msg | head -20
+
+<span class="c"># os dois contadores que provam o encaminhamento</span>
+cat /proc/sys/net/ipv4/ip_forward
+nstat -az | grep -E "IpInReceives|IpOutRequests|IpInAddrErrors"</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sintoma no fio</th><th>O que significa</th></tr></thead>
+        <tbody>
+          <tr><td>Pedido ICMP chega, não há resposta</td><td>Rota de retorno em falta no nó de destino</td></tr>
+          <tr><td>Hello OSPF num só sentido</td><td>Uma interface fora da área, ou MTU diferente</td></tr>
+          <tr><td>ARP repetido para o gateway</td><td>Máscara errada ou endereço do gateway mal escrito</td></tr>
+          <tr><td>Janela de quarenta bytes, sem dados</td><td>Buraco de MTU; testar com <code>ping -M do -s 1400</code></td></tr>
+          <tr><td>Tráfego só num sentido</td><td>Só uma ligação capturada — verificar o SPAN ou o segundo cabo</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Para transformar essas capturas em alertas, a construção <a href="Suricata.html">Suricata</a> lê os mesmos
+      ficheiros offline; para o fundo de protocolo, o manual de <a href="networking.html">redes</a>.
+    </p>
+  </section>
+
+  <section id="pt-checks">
+    <h2><span class="no">12</span> A lista paranoica</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Verificação</th><th>Critério de aprovação</th></tr></thead>
+        <tbody>
+          <tr><td>KVM ativo</td><td><code>/dev/kvm</code> acessível; convidado arranca em menos de dez segundos</td></tr>
+          <tr><td>Uma sub-rede por ligação</td><td>Plano escrito; sem sobreposição com a rede de gestão do GNS3</td></tr>
+          <tr><td>Adaptadores iguais às ligações</td><td>Sem «interface not found» ao acrescentar cabo</td></tr>
+          <tr><td>Forwarding ligado</td><td><code>ip_forward=1</code> persistido em <code>/etc/sysctl.d</code></td></tr>
+          <tr><td>Rotas legíveis</td><td><code>ip route</code> em cada nó mostra só o planeado</td></tr>
+          <tr><td>Caminho de volta testado</td><td><code>traceroute</code> funciona nos dois sentidos</td></tr>
+          <tr><td>Política explícita</td><td><code>DROP</code> por omissão, regras stateful, sem MASQUERADE aberto</td></tr>
+          <tr><td>Captura guardada</td><td>Pcap e o comando que a produziu, guardados com o projeto</td></tr>
+          <tr><td>Disco por nó</td><td>Nenhum par de nós partilha um qcow2 gravável</td></tr>
+          <tr><td>Projeto exportado</td><td>Um arquivo do qual se reconstrói tudo se o portátil morrer</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="pt-failures">
+    <h2><span class="no">13</span> Falhas comuns</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sintoma</th><th>Causa</th><th>Correção</th></tr></thead>
+        <tbody>
+          <tr><td>Nó arranca para uma consola preta</td><td>Sem getty em <code>ttyS0</code> ou tipo de consola errado</td><td>Acrescentar <code>console=ttyS0</code>, ativar o getty série, reiniciar</td></tr>
+          <tr><td>QEMU termina de imediato</td><td>Caminho da imagem mudou ou falta permissão de KVM</td><td>Ver o disco do modelo e <code>ls -l /dev/kvm</code></td></tr>
+          <tr><td>Só aparecem duas NICs</td><td>Contagem de adaptadores do modelo baixa</td><td>Editar o modelo, aumentar a contagem, reiniciar o nó</td></tr>
+          <tr><td>Ping falha num só sentido</td><td>Rota de retorno em falta ou máscara errada</td><td><code>ip route get</code> nos dois extremos</td></tr>
+          <tr><td>Vizinho OSPF preso em EXSTART</td><td>MTU diferente entre vizinhos</td><td>Alinhar MTU nas duas interfaces</td></tr>
+          <tr><td>Tudo lento</td><td>Emulação por software ou vCPUs a mais por nó</td><td>Ativar KVM, reduzir vCPUs, fechar nós extra</td></tr>
+          <tr><td>Host da LAN sem internet</td><td>Regra NAT em falta, forwarding desligado ou sem DNS</td><td>Rever MASQUERADE, <code>ip_forward</code> e o resolvedor</td></tr>
+          <tr><td>Tráfego do laboratório na rede de casa</td><td>Nó cloud em bridge sem firewall</td><td>Remover a bridge, usar NAT com política <code>DROP</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="pt-sources">
+    <h2><span class="no">14</span> Fontes</h2>
+    <ul>
+      <li><a href="https://docs.gns3.com/">GNS3</a> — documentação oficial, incluindo modelos QEMU e servidor.</li>
+      <li><a href="https://www.qemu.org/docs/master/">QEMU</a> — referência para <code>-device</code>, <code>-netdev</code> e imagens.</li>
+      <li><a href="https://www.kernel.org/doc/html/latest/networking/">Kernel</a> — encaminhamento IP e comportamento dos sysctl.</li>
+      <li><a href="https://docs.frrouting.org/">FRR</a> — referência de OSPF e BGP.</li>
+      <li><a href="https://docs.openvswitch.org/">OVS</a> — bridges, portas, etiquetas e trunks.</li>
+      <li><a href="https://wiki.debian.org/QEMU">Debian</a> — KVM e permissões em Debian.</li>
+    </ul>
+    <p>
+      O laboratório encaminhado é também o terreno dos manuais de ataque e defesa:
+      <a href="KaliLinux.html">Kali</a> para o que o atravessa, <a href="RedTeams.html">atacantes</a> para os
+      exercícios e <a href="BlueTeams.html">defensores</a> para as deteções.
+    </p>
+    <div class="next">
+      <a href="networking.html">Redes</a>
+      <a href="tcpdump.html">tcpdump</a>
+      <a href="Suricata.html">Suricata</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>GNS3</b> &middot; laboratórios encaminhados com nós QEMU &middot; parte do conjunto de Redes.</p>
+    <p>HTML simples, CSS3 e JavaScript. Sem estilos, scripts, tipos de letra ou imagens externas.</p>
+    <a class="home" href="./index.html">Início</a>
+  </div>
+</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var blocks = document.querySelectorAll("[data-lang-block]");
+  var links = document.querySelectorAll("[data-lang-switch]");
+
+  function apply(lang) {
+    Array.prototype.forEach.call(blocks, function (block) {
+      block.hidden = block.getAttribute("data-lang-block") !== lang;
+    });
+    Array.prototype.forEach.call(links, function (link) {
+      if (link.getAttribute("data-lang-switch") === lang) { link.setAttribute("aria-current", "true"); }
+      else { link.removeAttribute("aria-current"); }
+    });
+    document.documentElement.lang = lang === "pt" ? "pt-PT" : "en";
+  }
+
+  Array.prototype.forEach.call(links, function (link) {
+    link.addEventListener("click", function (event) {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button) { return; }
+      event.preventDefault();
+      apply(link.getAttribute("data-lang-switch"));
+    });
+  });
+
+  var wanted = new URLSearchParams(location.search).get("lang");
+  if (wanted === "en" || wanted === "pt") { apply(wanted); }
+  else if (location.hash.indexOf("#pt-") === 0) { apply("pt"); }
+})();
+</script>
+</body>
+</html>

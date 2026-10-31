@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snort 3: The Operator's Manual — Capture, Rules, IPS, Hardening</title>
+<meta name="description" content="Snort 3 manual: build and configure, DAQ capture, inline IPS, rule anatomy, tuning and hardening, plus the checks that prove alerts fire.">
+<link rel="canonical" href="https://blog.odicforcesounds.com/Snort.html">
+<meta property="og:title" content="Snort 3: The Operator's Manual — Capture, Rules, IPS, Hardening">
+<meta property="og:description" content="Snort 3 manual: build and configure, DAQ capture, inline IPS, rule anatomy, tuning and hardening, plus the checks that prove alerts fire.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://blog.odicforcesounds.com/Snort.html">
+<meta property="og:site_name" content="Monkey Blog">
+<meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Snort 3: The Operator's Manual — Capture, Rules, IPS, Hardening">
+<meta name="twitter:description" content="Snort 3 manual: build and configure, DAQ capture, inline IPS, rule anatomy, tuning and hardening, plus the checks that prove alerts fire.">
+<meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/Snort.html#article",
+      "headline": "Snort 3: The Operator's Manual — Capture, Rules, IPS, Hardening",
+      "description": "Snort 3 manual: build and configure, DAQ capture, inline IPS, rule anatomy, tuning and hardening, plus the checks that prove alerts fire.",
+      "url": "https://blog.odicforcesounds.com/Snort.html",
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://blog.odicforcesounds.com/Snort.html" },
+      "image": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/peace.jpg", "width": 1496, "height": 960 },
+      "inLanguage": "en",
+      "author": { "@type": "Person", "name": "Oscar", "url": "https://blog.odicforcesounds.com/" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/",
+        "logo": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/three.jpg", "width": 1024, "height": 1024 }
+      },
+      "isPartOf": { "@type": "Blog", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/" },
+      "articleSection": "Security & Hacking",
+      "keywords": "Snort, Snort 3, IDS, IPS, DAQ, rules, NFQUEUE, afpacket, hardening",
+      "wordCount": 4436,
+      "datePublished": "2026-10-31",
+      "dateModified": "2026-10-31"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://blog.odicforcesounds.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Security & Hacking", "item": "https://blog.odicforcesounds.com/#category-security-and-hacking" },
+        { "@type": "ListItem", "position": 3, "name": "Snort", "item": "https://blog.odicforcesounds.com/Snort.html" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#0a0608;
+  --panel:#150b10;
+  --ink:#f6e9ee;
+  --soft:#dcc6cf;
+  --muted:#a98d99;
+  --red:#ff5f6d;
+  --rose:#ff8fa3;
+  --amber:#f6b73c;
+  --green:#34d399;
+  --line:rgba(255,255,255,.11);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;min-height:100vh;color:var(--ink);
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(940px 560px at 88% -8%,rgba(255,95,109,.20),transparent 62%),
+    radial-gradient(720px 500px at 0% 26%,rgba(255,143,163,.10),transparent 58%),
+    radial-gradient(900px 620px at 96% 82%,rgba(246,183,60,.10),transparent 58%),
+    linear-gradient(180deg,#0a0608,#150a12 55%,#080406);
+  background-attachment:fixed;background-repeat:no-repeat;
+  font:16px/1.7 var(--sans);
+}
+a{color:#ffa7b4;text-decoration:none;border-bottom:1px solid rgba(255,95,109,.4);transition:color .15s,border-color .15s}
+a:hover{color:var(--amber);border-bottom-color:var(--amber)}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+[data-lang-block][hidden]{display:none!important}
+::selection{background:var(--red);color:#1a0509}
+
+.lang-switch{display:flex;justify-content:center;gap:.4rem;padding:.9rem 1rem .3rem;font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase}
+.lang-switch a{padding:.32rem .95rem;color:var(--red);font-weight:600;background:transparent;border:1px solid rgba(255,95,109,.6);border-radius:999px;opacity:.85;transition:opacity .15s,background-color .15s,color .15s,border-color .15s}
+.lang-switch a[aria-current="true"]{color:#160609;background:var(--red);border-color:var(--red);opacity:1}
+.lang-switch a:hover,.lang-switch a:focus-visible{color:#160609;background:var(--amber);border-color:var(--amber);opacity:1}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(1rem,4vw,2rem)}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:.8rem;padding:.7rem 0;background:rgba(10,6,8,.9);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid transparent;border-image:linear-gradient(90deg,var(--red),var(--rose) 50%,var(--amber)) 1}
+.home{border:1px solid rgba(255,95,109,.55);border-radius:6px;padding:.28rem .7rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#ffa7b4;background:rgba(255,95,109,.09)}
+.home:hover{background:var(--amber);border-color:var(--amber);color:#160609}
+.brand{margin-left:auto;font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+.brand b{color:var(--red)}
+
+.hero{padding:clamp(2rem,6vw,3.4rem) 0 .6rem}
+.kicker{margin:0 0 .8rem;color:var(--rose);font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase}
+h1,.seo-h2{margin:0;font-size:clamp(1.9rem,5vw,3.1rem);line-height:1.08;letter-spacing:-.02em;background:linear-gradient(100deg,#fff 6%,var(--red) 42%,var(--rose) 64%,var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{max-width:66ch;margin:1.1rem 0 0;color:var(--soft);font-size:1.02rem}
+.lede b{color:#fff}
+.meta-line{display:flex;flex-wrap:wrap;gap:.4rem;margin:1.1rem 0 0}
+.chip{border:1px solid rgba(255,95,109,.4);border-radius:99px;padding:.22rem .7rem;background:rgba(255,95,109,.08);font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#ffa7b4}
+.chip.dim{border-color:var(--line);background:rgba(255,255,255,.03);color:var(--muted)}
+
+.toc{margin:1.6rem 0 2rem;padding:1rem 1.1rem;border:1px solid var(--line);border-radius:12px;background:linear-gradient(160deg,rgba(21,11,16,.92),rgba(8,4,6,.92))}
+.toc h2{margin:0 0 .6rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.3rem}
+.toc a{display:flex;gap:.55rem;align-items:baseline;padding:.36rem .6rem;border:1px solid transparent;border-radius:7px;color:var(--soft);border-bottom:0}
+.toc a span{font-family:var(--mono);font-size:.62rem;color:var(--red)}
+.toc a:hover,.toc a:focus-visible{background:rgba(255,95,109,.14);border-color:rgba(255,95,109,.5);color:#fff}
+
+main section{padding:1.6rem 0;border-top:1px solid var(--line)}
+main section:first-of-type{border-top:0}
+h2{font-size:clamp(1.35rem,3vw,1.8rem);line-height:1.2;margin:0 0 .7rem;letter-spacing:-.01em;color:#fff}
+h2 .no{font-family:var(--mono);font-size:.72em;color:var(--red);margin-right:.4rem}
+h3{margin:1.5rem 0 .5rem;font-family:var(--mono);font-size:.92rem;letter-spacing:.08em;text-transform:uppercase;color:var(--rose)}
+p{color:var(--soft);max-width:88ch}
+b,strong{color:#fff}
+em{color:var(--amber);font-style:normal}
+ul,ol{color:var(--soft);padding-left:1.2rem}
+li{margin:.32rem 0}
+li b{color:#fff}
+code{font-family:var(--mono);font-size:.84em;background:#2a0d15;color:#ffbe8a;padding:.06em .32em;border-radius:3px;word-break:break-word}
+pre{margin:1rem 0;padding:.9rem 1rem;overflow-x:auto;background:linear-gradient(180deg,#1a0a11,#0a0407);border:1px solid rgba(255,95,109,.32);border-left:3px solid var(--red);border-radius:9px;color:#ffdde4;font:400 .76rem/1.65 var(--mono)}
+pre code{background:none;color:inherit;padding:0}
+pre .c{color:#a98d99}
+pre .k{color:#ffd08a}
+
+.table-wrap{margin:1rem 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;background:rgba(0,0,0,.3)}
+table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:560px}
+th{text-align:left;padding:.6rem .7rem;white-space:nowrap;background:linear-gradient(180deg,#25101a,#170a11);color:var(--rose);border-bottom:2px solid var(--red);font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase}
+td{padding:.55rem .7rem;border-bottom:1px solid var(--line);color:var(--soft);vertical-align:top}
+tbody tr:nth-child(even) td{background:rgba(255,95,109,.05)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{color:#fff;font-family:var(--mono);font-size:.74rem;white-space:nowrap}
+
+.callout{margin:1.2rem 0;padding:.95rem 1.1rem;border-radius:9px;border:1px solid var(--line);border-left:4px solid var(--red);background:linear-gradient(100deg,rgba(255,95,109,.12),rgba(255,143,163,.05))}
+.callout h4{margin:0 0 .3rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--red)}
+.callout.warn{border-left-color:var(--amber);background:linear-gradient(100deg,rgba(246,183,60,.12),rgba(255,95,109,.04))}
+.callout.warn h4{color:var(--amber)}
+.callout.gap{border-left-color:var(--rose);background:linear-gradient(100deg,rgba(255,143,163,.12),rgba(255,95,109,.04))}
+.callout.gap h4{color:var(--rose)}
+.callout p{margin:.3rem 0;font-size:.88rem;max-width:none}
+.callout p:last-child{margin-bottom:0}
+
+.next{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.4rem 0 0}
+.next a{border:1px solid rgba(246,183,60,.55);border-radius:8px;padding:.45rem .85rem;background:rgba(246,183,60,.1);font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#ffce8a}
+.next a:hover,.next a:focus-visible{background:var(--amber);border-color:var(--amber);color:#160609}
+
+footer{margin-top:2rem;padding:1.6rem 0 2.4rem;text-align:center;border-top:2px solid transparent;background:linear-gradient(#0d0609,#0d0609) padding-box,linear-gradient(90deg,var(--red),var(--rose),var(--amber)) border-box}
+footer p{margin:.3rem auto;color:var(--muted);font-size:.78rem;max-width:80ch;text-align:center}
+footer .home{margin-top:.7rem;display:inline-block}
+@media (max-width:640px){table{min-width:470px}.toc ol{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+@media print{body{background:#fff;color:#111}.lang-switch,.topbar,footer .home{display:none!important}h1,.seo-h2{color:#111;-webkit-text-fill-color:#111}pre,table,.callout{background:#fff!important;border-color:#999!important}p,td,li,pre{color:#111!important}}
+</style>
+</head>
+<body>
+
+<nav class="lang-switch" aria-label="Language">
+  <a href="?lang=pt" data-lang-switch="pt" lang="pt-PT">Português</a>
+  <a href="?lang=en" data-lang-switch="en" aria-current="true" lang="en">English</a>
+</nav>
+
+<div id="lang-en" data-lang-block="en">
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Home</a>
+    <span class="brand">Snort 3 <b>/</b> Operator</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Signature engine &middot; Snort 3, DAQ, inline drop</p>
+    <h1>Snort 3: the sensor you can explain line by line</h1>
+    <p class="lede">
+      Snort 3 replaced a C configuration file with Lua, replaced the old preprocessor maze with a modular pipeline
+      and kept the one thing that matters: a signature language simple enough to read at three in the morning.
+      This manual covers the build, the config, DAQ capture, rule anatomy, inline blocking and the hardening that
+      keeps a sensor from becoming another attack surface.
+    </p>
+    <div class="meta-line">
+      <span class="chip">snort.lua</span>
+      <span class="chip dim">afpacket + NFQUEUE</span>
+      <span class="chip dim">inline IPS</span>
+      <span class="chip dim">systemd caps</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="toc-title">
+    <h2 id="toc-title">Contents</h2>
+    <ol>
+      <li><a href="#modes"><span>01</span> One engine, three postures</a></li>
+      <li><a href="#install"><span>02</span> Build it (and verify the build)</a></li>
+      <li><a href="#config"><span>03</span> snort.lua is the product</a></li>
+      <li><a href="#capture"><span>04</span> DAQ capture and threads</a></li>
+      <li><a href="#rules"><span>05</span> Rule anatomy</a></li>
+      <li><a href="#test"><span>06</span> Test rules against a pcap</a></li>
+      <li><a href="#inline"><span>07</span> Inline IPS and NFQUEUE</a></li>
+      <li><a href="#lang3"><span>08</span> Snort 3 rule language changes</a></li>
+      <li><a href="#perf"><span>09</span> Tuning before tuning policies</a></li>
+      <li><a href="#harden"><span>10</span> Hardening the sensor</a></li>
+      <li><a href="#proof"><span>11</span> Three proofs</a></li>
+      <li><a href="#checks"><span>12</span> Paranoid checklist</a></li>
+      <li><a href="#failures"><span>13</span> Failure table</a></li>
+      <li><a href="#sources"><span>14</span> Sources</a></li>
+    </ol>
+  </nav>
+
+  <section id="modes">
+    <h2><span class="no">01</span> One engine, three postures</h2>
+    <p>
+      Snort is usually described as an IDS, which undersells the same code running three ways. The posture
+      decides where packets enter, whether Snort can drop them, and what a failure means.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Posture</th><th>Packet path</th><th>Can drop</th><th>Use it for</th></tr></thead>
+        <tbody>
+          <tr><td>IDS</td><td>Copy of traffic on a tap or SPAN</td><td>No</td><td>Detection, visibility, tuning rules without consequences</td></tr>
+          <tr><td>IPS</td><td>Traffic flows through Snort</td><td>Yes, in inline mode</td><td>Enforcing a small, well-tested rule set</td></tr>
+          <tr><td>Offline</td><td>Reading a pcap file</td><td>No</td><td>Proving a rule fires before you trust it in line</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Snort 2 and Snort 3 are different products with a shared name and rule syntax: the config file changed
+      language, the plugin interface changed, and some rule options were replaced. Check which one you have
+      before copying any tutorial.
+    </p>
+    <pre><code>snort -V
+<span class="c">#  ,,_     -*&gt; Snort! &lt;*-</span>
+<span class="c"># o"  )~   Version 3.1.x ...</span>
+
+snort --help | head -20
+snort --list-modules | head   <span class="c"># modules differ per build</span></code></pre>
+  </section>
+
+  <section id="install">
+    <h2><span class="no">02</span> Build it (and verify the build)</h2>
+    <p>
+      Distro packages exist, but they are often Snort 2.x with a different config layout. On Debian the honest
+      route for Snort 3 is a source build against the current DAQ library, installed under <code>/usr/local</code>
+      so the version is unambiguous.
+    </p>
+    <pre><code>sudo apt install -y build-essential libpcap-dev libpcre2-dev libdumbnet-dev \
+  bison flex liblzma-dev zlib1g-dev libssl-dev libhwloc-dev libluajit-5.1-dev \
+  pkg-config cmake git
+
+<span class="c"># DAQ first: Snort 3 needs a matching libdaq</span>
+git clone https://github.com/snort3/libdaq.git &amp;&amp; cd libdaq
+./bootstrap &amp;&amp; ./configure &amp;&amp; make -j"$(nproc)" &amp;&amp; sudo make install &amp;&amp; sudo ldconfig
+
+<span class="c"># then Snort itself</span>
+git clone https://github.com/snort3/snort3.git &amp;&amp; cd snort3
+./configure_cmake.sh --prefix=/usr/local
+cd build &amp;&amp; make -j"$(nproc)" &amp;&amp; sudo make install
+
+snort -V
+snort -c /usr/local/etc/snort/snort.lua -T</code></pre>
+    <div class="callout warn">
+      <h4>The build is part of the audit</h4>
+      <p>
+        Record how the binary was made: configure flags, DAQ version, whether Hyperscan was available. A sensor
+        nobody can rebuild is a sensor nobody can trust after an incident — the same argument as verifying a
+        package before installing it.
+      </p>
+    </div>
+  </section>
+
+  <section id="config">
+    <h2><span class="no">03</span> snort.lua is the product</h2>
+    <p>
+      The configuration is a Lua table tree. Read it as documentation: every block names a stage of the pipeline
+      and every value is a decision you can explain.
+    </p>
+    <pre><code><span class="c">-- /usr/local/etc/snort/snort.lua (the parts that matter)</span>
+HOME_NET = '10.10.0.0/16'
+EXTERNAL_NET = '!$HOME_NET'
+
+ips = {
+  enable_builtin_rules = false,
+  rules = [[include /usr/local/etc/snort/rules/local.rules]],
+}
+
+stream = { memcap = 268435456 }
+stream_tcp = { policy = 'linux', session_timeout = 180 }
+
+alert_fast = {
+  file = true,
+  packet = false,
+  limit = 10,
+}
+
+<span class="c">-- test the whole tree, and show every warning</span>
+snort -c /usr/local/etc/snort/snort.lua -T --warn-all</code></pre>
+    <ul>
+      <li><b>HOME_NET</b> from your asset list, never a guess: every <code>$HOME_NET</code> rule depends on it.</li>
+      <li><b>One include per rule file</b> you can name, so removing a rule set is one line, not an archaeology project.</li>
+      <li><b><code>-T</code> before every restart.</b> A typo in Lua is a sensor that silently runs with defaults.</li>
+    </ul>
+  </section>
+
+  <section id="capture">
+    <h2><span class="no">04</span> DAQ capture and threads</h2>
+    <p>
+      DAQ is the layer between Snort and the kernel. <code>afpacket</code> is the workhorse on Linux;
+      <code>pcap</code> is for portability and files; <code>nfq</code> is how inline works with iptables.
+    </p>
+    <pre><code><span class="c"># passive sensor on one interface</span>
+sudo snort -c /usr/local/etc/snort/snort.lua -i eth1 \
+  --daq afpacket --daq-var cluster_type=cluster_flow \
+  -A alert_fast -l /var/log/snort -q
+
+<span class="c"># see what the DAQ actually opened</span>
+snort --daq-list
+snort --daq-dir /usr/local/lib/daq --daq-list
+
+<span class="c"># capture only what matters, at the kernel</span>
+sudo snort -c /usr/local/etc/snort/snort.lua -i eth1 -q \
+  --daq afpacket --daq-var 'bpf_file=/etc/snort/tap.bpf'
+
+<span class="c"># read a file instead of a wire</span>
+snort -c /usr/local/etc/snort/snort.lua -r capture.pcap -A alert_fast -k none -q</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Setting</th><th>Meaning</th><th>Common mistake</th></tr></thead>
+        <tbody>
+          <tr><td><code>cluster_flow</code></td><td>One flow stays on one thread</td><td>Using <code>cluster_qm</code> on a tap without RSS queues</td></tr>
+          <tr><td><code>-k none</code></td><td>Skip checksum validation</td><td>Forgetting it on a NIC with offload, then blaming the rules</td></tr>
+          <tr><td>snaplen</td><td>Bytes kept per packet</td><td>Truncating exactly the payload a rule needs</td></tr>
+          <tr><td>BPF file</td><td>Kernel-side filter</td><td>Filtering out the traffic you later want to prove</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="rules">
+    <h2><span class="no">05</span> Rule anatomy</h2>
+    <p>
+      A Snort rule is a header that says who talks to whom, followed by options that say what the traffic must
+      contain. Read it left to right and it is almost English.
+    </p>
+    <pre><code><span class="c"># action proto src        sport -&gt; dst          dport (options)</span>
+alert tcp $HOME_NET any -&gt; $EXTERNAL_NET 80 (
+  msg:"LAB web scanner user agent";
+  flow:to_server,established;
+  content:"sqlmap"; http_header;
+  classtype:web-application-attack;
+  sid:1000001; rev:1;
+)</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Option</th><th>What it constrains</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>flow</code></td><td>Direction and connection state</td><td>Needs <code>stream</code> enabled; without it, no match</td></tr>
+          <tr><td><code>content</code></td><td>Byte string in the payload</td><td>Case-sensitive unless <code>nocase</code></td></tr>
+          <tr><td><code>http_header</code></td><td>Buffer for the match</td><td>Sticky buffer in Snort 3; replaces old <code>uricontent</code> tricks</td></tr>
+          <tr><td><code>classtype</code></td><td>Category and priority</td><td>Drives triage; set it honestly</td></tr>
+          <tr><td><code>sid</code></td><td>Unique identity</td><td>Local rules start at 1000000; never reuse a sid</td></tr>
+          <tr><td><code>rev</code></td><td>Revision of that sid</td><td>Bump it when you change a rule, always</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      For the semantics of the buffers and the full option list, use the official rule reference; for what a
+      detection should say about an attack, the <a href="BlueTeams.html">blue team</a> page explains the loop
+      around the rule.
+    </p>
+  </section>
+
+  <section id="test">
+    <h2><span class="no">06</span> Test rules against a pcap</h2>
+    <p>
+      Never deploy a rule you have not seen fire and stay silent. Two runs — one against traffic that should
+      match, one against traffic that must not — are the whole discipline.
+    </p>
+    <pre><code><span class="c"># 1. does the config still load?</span>
+snort -c /usr/local/etc/snort/snort.lua -T --warn-all
+
+<span class="c"># 2. does the rule fire on the malicious sample?</span>
+snort -c /usr/local/etc/snort/snort.lua \
+  -R /usr/local/etc/snort/rules/local.rules \
+  -r samples/scan.pcap -A alert_fast -k none -q -l /tmp/snort-test
+cat /tmp/snort-test/alert_fast.txt
+
+<span class="c"># 3. does it stay quiet on normal traffic?</span>
+snort -c /usr/local/etc/snort/snort.lua \
+  -R /usr/local/etc/snort/rules/local.rules \
+  -r samples/browsing.pcap -A alert_fast -k none -q -l /tmp/snort-clean
+wc -l /tmp/snort-clean/alert_fast.txt 2&gt;/dev/null || echo "0 alerts: good"
+
+<span class="c"># 4. JSON for machines</span>
+snort -c /usr/local/etc/snort/snort.lua -r samples/scan.pcap -A alert_json -q \
+  -l /tmp/snort-json
+jq -r '.msg' /tmp/snort-json/alert_json.txt | sort | uniq -c</code></pre>
+    <div class="callout">
+      <h4>A rule with no false-positive test is a rumour</h4>
+      <p>
+        Keep both pcaps in the repository next to the rule. Six months later, the sample is the regression test
+        that tells you a rule edit broke the detection — the same evidence habit as a checksum next to a binary.
+      </p>
+    </div>
+  </section>
+
+  <section id="inline">
+    <h2><span class="no">07</span> Inline IPS and NFQUEUE</h2>
+    <p>
+      Inline means Snort sees the packet before it is delivered, and can drop it. On Linux the least surprising
+      way is <code>nfq</code> with iptables sending traffic to a queue.
+    </p>
+    <pre><code><span class="c"># send inbound traffic for the lab web server to queue 0</span>
+sudo iptables -I FORWARD -p tcp --dport 80 -j NFQUEUE --queue-num 0
+
+<span class="c"># run Snort inline against that queue</span>
+sudo snort -c /usr/local/etc/snort/snort.lua -Q --daq nfq \
+  --daq-var queue=0 -A alert_fast -l /var/log/snort
+
+<span class="c"># in inline mode, drop is a real action</span>
+drop tcp any any -&gt; $HOME_NET 80 (
+  msg:"LAB blocked scanner"; flow:to_server,established;
+  content:"sqlmap"; http_header; sid:1000002; rev:1;
+)
+
+<span class="c"># prove the block, then prove the pass</span>
+curl -s -o /dev/null -w "%{http_code}\n" -A sqlmap http://10.10.11.10/
+curl -s -o /dev/null -w "%{http_code}\n" http://10.10.11.10/</code></pre>
+    <div class="callout warn">
+      <h4>Decide what a crash means before it happens</h4>
+      <p>
+        An inline sensor that dies is either a firewall that fails open or an outage that fails closed. Write the
+        choice down, test it by stopping the service, and put the rule set behind a reviewed change. Start with
+        one drop rule, not a downloaded feed of thirty thousand.
+      </p>
+    </div>
+  </section>
+
+  <section id="lang3">
+    <h2><span class="no">08</span> Snort 3 rule language changes</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Snort 2 habit</th><th>Snort 3 replacement</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr><td><code>uricontent</code></td><td><code>content ...; http_uri;</code></td><td>Sticky buffers instead of per-option prefix</td></tr>
+          <tr><td><code>http_client_body</code> option</td><td><code>http_client_body</code> buffer</td><td>Same idea, new placement in the option list</td></tr>
+          <tr><td>Preprocessor config</td><td>Module blocks in <code>snort.lua</code></td><td>One language for config and rules</td></tr>
+          <tr><td><code>alert_syslog</code> only</td><td><code>alert_fast</code>, <code>alert_json</code>, <code>alert_syslog</code></td><td>Machine-readable output without a parser</td></tr>
+          <tr><td>Unified2 consumers</td><td>JSON alerts plus pcap logging</td><td>Simpler pipeline, fewer broken parsers</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Migrated rule sets are the usual source of silent failure: a rule loads, warns about an unknown option, and
+      never matches. <code>-T --warn-all</code> is how you hear that warning before production does.
+    </p>
+  </section>
+
+  <section id="perf">
+    <h2><span class="no">09</span> Tuning before tuning policies</h2>
+    <p>
+      Almost every "Snort drops packets" report is a capture or inspection budget problem, not a rule problem.
+      Measure first: the interface counters, then Snort's own statistics.
+    </p>
+    <pre><code><span class="c"># kernel side: are we losing packets before Snort sees them?</span>
+ip -s link show eth1
+ethtool -S eth1 | grep -iE "drop|miss|error"
+
+<span class="c"># Snort side: which stage is expensive?</span>
+sudo snort -c /usr/local/etc/snort/snort.lua -i eth1 -q -A none \
+  --lua 'profiler = { modules = { show = true } }'
+
+<span class="c"># narrow the working set: HOME_NET, not the internet</span>
+grep -n "HOME_NET" /usr/local/etc/snort/snort.lua</code></pre>
+    <ul>
+      <li><b>Rule count is not the metric.</b> Rule content is: a thousand cheap rules can cost less than fifty expensive ones.</li>
+      <li><b>Turn off inspection you do not need</b> — file carving, appid, full HTTP body on a tap that only needs headers.</li>
+      <li><b>Match threads to queues,</b> not to core count; a flow that hops threads loses state.</li>
+      <li><b>Drop is a decision, silence is a metric.</b> Record alert counts per day before and after every tuning change.</li>
+    </ul>
+  </section>
+
+  <section id="harden">
+    <h2><span class="no">10</span> Hardening the sensor</h2>
+    <p>
+      A sensor is a privileged process reading hostile bytes. Give it the two capabilities it needs and nothing
+      else, and make sure the rest of the box cannot be edited by the account that Snort runs as.
+    </p>
+    <pre><code><span class="c"># /etc/systemd/system/snort.service</span>
+[Unit]
+Description=Snort 3 IDS
+After=network-online.target
+
+[Service]
+Type=simple
+User=snort
+Group=snort
+ExecStartPre=/usr/local/bin/snort -c /usr/local/etc/snort/snort.lua -T
+ExecStart=/usr/local/bin/snort -c /usr/local/etc/snort/snort.lua \
+  -i eth1 --daq afpacket -A alert_fast -l /var/log/snort -q
+Restart=on-failure
+AmbientCapabilities=CAP_NET_RAW CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_NET_RAW CAP_NET_ADMIN
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ReadWritePaths=/var/log/snort
+RestrictAddressFamilies=AF_PACKET AF_INET AF_UNIX
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+    <div class="callout gap">
+      <h4>Every hardening line can blind the sensor</h4>
+      <p>
+        After each change, confirm packets are still counted: restart, generate traffic, read one alert. A
+        sandbox that silently denies <code>AF_PACKET</code> looks exactly like a quiet network.
+      </p>
+    </div>
+  </section>
+
+  <section id="proof">
+    <h2><span class="no">11</span> Three proofs</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Proof</th><th>Command</th><th>Pass</th></tr></thead>
+        <tbody>
+          <tr><td>Config loads</td><td><code>snort -c snort.lua -T --warn-all</code></td><td>No error, no unknown-option warning</td></tr>
+          <tr><td>Rule fires</td><td>Replay the malicious pcap</td><td>Exactly the expected sid, once</td></tr>
+          <tr><td>Rule stays quiet</td><td>Replay the benign pcap</td><td>Zero alerts</td></tr>
+          <tr><td>Inline blocks</td><td><code>curl</code> with the blocked header</td><td>Connection dropped, alert logged</td></tr>
+          <tr><td>Sensor keeps up</td><td><code>ip -s link</code> + Snort stats</td><td>No kernel drops under normal load</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Keep the commands next to the config in the repository. For the same three proofs on the other engine, the
+      <a href="Suricata.html">Suricata manual</a> is the mirror image; for the lab these sensors watch, see
+      <a href="GNS3.html">GNS3</a>.
+    </p>
+  </section>
+
+  <section id="checks">
+    <h2><span class="no">12</span> Paranoid checklist</h2>
+    <ul>
+      <li>HOME_NET matches the asset list, and nothing else.</li>
+      <li>One local rule file, one sid range, one rev bump per edit.</li>
+      <li>Every rule has a malicious pcap and a benign pcap beside it.</li>
+      <li><code>-T --warn-all</code> is part of the service start, not a habit.</li>
+      <li>Inline mode has a documented fail-open or fail-closed decision, tested.</li>
+      <li>Runs as an unprivileged user with two capabilities.</li>
+      <li>Alert directory is writable, everything else is read-only.</li>
+      <li>Log rotation and retention are configured before the disk fills.</li>
+      <li>Rule set version and build flags recorded in one file.</li>
+      <li>One alert per day reviewed manually — the sensor is not a dashboard.</li>
+    </ul>
+  </section>
+
+  <section id="failures">
+    <h2><span class="no">13</span> Failure table</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Zero alerts on known-bad traffic</td><td>Rule not included, or <code>flow</code> without stream</td><td>Check the include path, then <code>-T --warn-all</code></td></tr>
+          <tr><td>Alerts on every packet</td><td>Missing <code>flow:to_server,established</code>, or a bare <code>content:"GET"</code></td><td>Constrain direction, protocol and buffer</td></tr>
+          <tr><td>Checksum errors fill the log</td><td>NIC offload with the tap seeing pre-checksum frames</td><td><code>-k none</code>, or fix the offload</td></tr>
+          <tr><td>Drops increase under load</td><td>Threads vs queues, snaplen, or expensive rules</td><td>Match cluster type, raise buffers, profile rules</td></tr>
+          <tr><td>Inline mode passes everything</td><td>No <code>-Q</code>, or iptables rule in the wrong chain</td><td>Verify the NFQUEUE rule and the DAQ queue number</td></tr>
+          <tr><td>Service runs, no traffic</td><td>Hardening removed <code>AF_PACKET</code> or interface access</td><td>Restore the capability, test with one packet</td></tr>
+          <tr><td>Rule loads but never matches</td><td>Snort 2 syntax on Snort 3</td><td>Rewrite with sticky buffers, re-test the pcap</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="sources">
+    <h2><span class="no">14</span> Sources</h2>
+    <ul>
+      <li><a href="https://www.snort.org/documents">Snort</a> — official documentation, rule reference and the DAQ guide.</li>
+      <li><a href="https://github.com/snort3/snort3">Snort 3</a> — source, build instructions and release notes.</li>
+      <li><a href="https://github.com/snort3/libdaq">DAQ</a> — the capture abstraction, including nfq and afpacket.</li>
+      <li><a href="https://www.kernel.org/doc/html/latest/networking/">Kernel</a> — packet sockets and netfilter queue behaviour.</li>
+      <li><a href="https://wiki.debian.org/iptables">Debian</a> — iptables and NFQUEUE usage.</li>
+      <li><a href="https://attack.mitre.org/">ATT&amp;CK</a> — the vocabulary a rule's <code>msg</code> should speak.</li>
+    </ul>
+    <div class="next">
+      <a href="Suricata.html">Suricata</a>
+      <a href="BlueTeams.html">Blue Teams</a>
+      <a href="GNS3.html">GNS3</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Snort 3</b> &middot; capture, rules, inline drop, hardening.</p>
+    <p>Vanilla HTML, CSS3 and JavaScript. No external styles, scripts, fonts or images.</p>
+    <a class="home" href="./index.html">Home</a>
+  </div>
+</footer>
+</div>
+
+<div id="lang-pt" data-lang-block="pt" hidden>
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Início</a>
+    <span class="brand">Snort 3 <b>/</b> Operador</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Motor de assinaturas &middot; Snort 3, DAQ, bloqueio inline</p>
+    <h2 class="seo-h2">Snort 3: o sensor que se explica linha a linha</h2>
+    <p class="lede">
+      O Snort 3 trocou um ficheiro de configuração em C por Lua, trocou o labirinto de preprocessadores por um
+      pipeline modular e manteve o que importa: uma linguagem de assinaturas simples o suficiente para ser lida
+      às três da manhã. Este manual cobre a compilação, a configuração, a captura por DAQ, a anatomia das regras,
+      o bloqueio inline e o endurecimento que impede o sensor de se tornar outra superfície de ataque.
+    </p>
+    <div class="meta-line">
+      <span class="chip">snort.lua</span>
+      <span class="chip dim">afpacket + NFQUEUE</span>
+      <span class="chip dim">IPS inline</span>
+      <span class="chip dim">caps no systemd</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="pt-toc-title">
+    <h2 id="pt-toc-title">Índice</h2>
+    <ol>
+      <li><a href="#pt-modes"><span>01</span> Um motor, três posturas</a></li>
+      <li><a href="#pt-install"><span>02</span> Compilar e verificar</a></li>
+      <li><a href="#pt-config"><span>03</span> O snort.lua é o produto</a></li>
+      <li><a href="#pt-capture"><span>04</span> Captura DAQ e threads</a></li>
+      <li><a href="#pt-rules"><span>05</span> Anatomia de uma regra</a></li>
+      <li><a href="#pt-test"><span>06</span> Testar regras com pcap</a></li>
+      <li><a href="#pt-inline"><span>07</span> IPS inline e NFQUEUE</a></li>
+      <li><a href="#pt-lang3"><span>08</span> Mudanças na linguagem 3</a></li>
+      <li><a href="#pt-perf"><span>09</span> Afinar antes das políticas</a></li>
+      <li><a href="#pt-harden"><span>10</span> Endurecer o sensor</a></li>
+      <li><a href="#pt-proof"><span>11</span> Três provas</a></li>
+      <li><a href="#pt-checks"><span>12</span> Lista paranoica</a></li>
+      <li><a href="#pt-failures"><span>13</span> Tabela de falhas</a></li>
+      <li><a href="#pt-sources"><span>14</span> Fontes</a></li>
+    </ol>
+  </nav>
+
+  <section id="pt-modes">
+    <h2><span class="no">01</span> Um motor, três posturas</h2>
+    <p>
+      O Snort é descrito como IDS, o que subestima o mesmo código a correr de três formas. A postura decide onde
+      entram os pacotes, se o Snort os pode descartar e o que significa uma falha.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Postura</th><th>Caminho do pacote</th><th>Pode descartar</th><th>Serve para</th></tr></thead>
+        <tbody>
+          <tr><td>IDS</td><td>Cópia do tráfego num tap ou SPAN</td><td>Não</td><td>Deteção, visibilidade, afinar regras sem consequências</td></tr>
+          <tr><td>IPS</td><td>O tráfego atravessa o Snort</td><td>Sim, em modo inline</td><td>Aplicar um conjunto pequeno e bem testado</td></tr>
+          <tr><td>Offline</td><td>Leitura de um ficheiro pcap</td><td>Não</td><td>Provar que uma regra dispara antes de confiar nela</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Snort 2 e Snort 3 são produtos diferentes com o mesmo nome e uma sintaxe de regras parecida: o ficheiro de
+      configuração mudou de linguagem, a interface de plugins mudou e algumas opções de regra foram substituídas.
+      Confirme qual tem antes de copiar qualquer tutorial.
+    </p>
+    <pre><code>snort -V
+<span class="c">#  ,,_     -*&gt; Snort! &lt;*-</span>
+<span class="c"># o"  )~   Version 3.1.x ...</span>
+
+snort --help | head -20
+snort --list-modules | head   <span class="c"># os módulos variam com a compilação</span></code></pre>
+  </section>
+
+  <section id="pt-install">
+    <h2><span class="no">02</span> Compilar e verificar</h2>
+    <p>
+      Há pacotes na distribuição, mas muitas vezes são Snort 2.x com outra estrutura de configuração. Em Debian, o
+      caminho honesto para o Snort 3 é compilar contra a biblioteca DAQ atual, instalado em <code>/usr/local</code>
+      para a versão não ser ambígua.
+    </p>
+    <pre><code>sudo apt install -y build-essential libpcap-dev libpcre2-dev libdumbnet-dev \
+  bison flex liblzma-dev zlib1g-dev libssl-dev libhwloc-dev libluajit-5.1-dev \
+  pkg-config cmake git
+
+<span class="c"># primeiro a DAQ: o Snort 3 precisa de uma libdaq compatível</span>
+git clone https://github.com/snort3/libdaq.git &amp;&amp; cd libdaq
+./bootstrap &amp;&amp; ./configure &amp;&amp; make -j"$(nproc)" &amp;&amp; sudo make install &amp;&amp; sudo ldconfig
+
+<span class="c"># depois o Snort</span>
+git clone https://github.com/snort3/snort3.git &amp;&amp; cd snort3
+./configure_cmake.sh --prefix=/usr/local
+cd build &amp;&amp; make -j"$(nproc)" &amp;&amp; sudo make install
+
+snort -V
+snort -c /usr/local/etc/snort/snort.lua -T</code></pre>
+    <div class="callout warn">
+      <h4>A compilação faz parte da auditoria</h4>
+      <p>
+        Registe como o binário foi feito: opções de configure, versão da DAQ, se havia Hyperscan. Um sensor que
+        ninguém consegue reconstruir é um sensor em que ninguém confia depois de um incidente — o mesmo argumento
+        de verificar um pacote antes de o instalar.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-config">
+    <h2><span class="no">03</span> O snort.lua é o produto</h2>
+    <p>
+      A configuração é uma árvore de tabelas Lua. Leia-a como documentação: cada bloco nomeia uma etapa do
+      pipeline e cada valor é uma decisão que consegue explicar.
+    </p>
+    <pre><code><span class="c">-- /usr/local/etc/snort/snort.lua (as partes que importam)</span>
+HOME_NET = '10.10.0.0/16'
+EXTERNAL_NET = '!$HOME_NET'
+
+ips = {
+  enable_builtin_rules = false,
+  rules = [[include /usr/local/etc/snort/rules/local.rules]],
+}
+
+stream = { memcap = 268435456 }
+stream_tcp = { policy = 'linux', session_timeout = 180 }
+
+alert_fast = {
+  file = true,
+  packet = false,
+  limit = 10,
+}
+
+<span class="c">-- testar a árvore inteira e mostrar todos os avisos</span>
+snort -c /usr/local/etc/snort/snort.lua -T --warn-all</code></pre>
+    <ul>
+      <li><b>HOME_NET</b> a partir da lista de ativos, nunca um palpite: todas as regras com <code>$HOME_NET</code> dependem disso.</li>
+      <li><b>Um include por ficheiro de regras</b> que consegue nomear, para remover um conjunto ser uma linha e não arqueologia.</li>
+      <li><b><code>-T</code> antes de cada reinício.</b> Um erro de Lua é um sensor a correr com valores por omissão, em silêncio.</li>
+    </ul>
+  </section>
+
+  <section id="pt-capture">
+    <h2><span class="no">04</span> Captura DAQ e threads</h2>
+    <p>
+      A DAQ é a camada entre o Snort e o kernel. <code>afpacket</code> é a cavalo de batalha em Linux;
+      <code>pcap</code> é para portabilidade e ficheiros; <code>nfq</code> é como o inline funciona com iptables.
+    </p>
+    <pre><code><span class="c"># sensor passivo numa interface</span>
+sudo snort -c /usr/local/etc/snort/snort.lua -i eth1 \
+  --daq afpacket --daq-var cluster_type=cluster_flow \
+  -A alert_fast -l /var/log/snort -q
+
+<span class="c"># ver o que a DAQ abriu de facto</span>
+snort --daq-list
+snort --daq-dir /usr/local/lib/daq --daq-list
+
+<span class="c"># capturar só o que importa, no kernel</span>
+sudo snort -c /usr/local/etc/snort/snort.lua -i eth1 -q \
+  --daq afpacket --daq-var 'bpf_file=/etc/snort/tap.bpf'
+
+<span class="c"># ler um ficheiro em vez de um fio</span>
+snort -c /usr/local/etc/snort/snort.lua -r captura.pcap -A alert_fast -k none -q</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Definição</th><th>Significado</th><th>Erro comum</th></tr></thead>
+        <tbody>
+          <tr><td><code>cluster_flow</code></td><td>Um fluxo fica numa só thread</td><td>Usar <code>cluster_qm</code> num tap sem filas RSS</td></tr>
+          <tr><td><code>-k none</code></td><td>Ignorar validação de checksum</td><td>Esquecer-se e culpar as regras</td></tr>
+          <tr><td>snaplen</td><td>Bytes guardados por pacote</td><td>Cortar exatamente o payload de que a regra precisa</td></tr>
+          <tr><td>Ficheiro BPF</td><td>Filtro no kernel</td><td>Filtrar o tráfego que depois quer provar</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="pt-rules">
+    <h2><span class="no">05</span> Anatomia de uma regra</h2>
+    <p>
+      Uma regra Snort é um cabeçalho que diz quem fala com quem, seguido de opções que dizem o que o tráfego tem de
+      conter. Lida da esquerda para a direita, é quase inglês.
+    </p>
+    <pre><code><span class="c"># ação proto origem  porta -&gt; destino       porta (opções)</span>
+alert tcp $HOME_NET any -&gt; $EXTERNAL_NET 80 (
+  msg:"LAB web scanner user agent";
+  flow:to_server,established;
+  content:"sqlmap"; http_header;
+  classtype:web-application-attack;
+  sid:1000001; rev:1;
+)</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Opção</th><th>O que restringe</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td><code>flow</code></td><td>Direção e estado da ligação</td><td>Exige <code>stream</code> ativo; sem ele, não dispara</td></tr>
+          <tr><td><code>content</code></td><td>Sequência de bytes no payload</td><td>Sensível a maiúsculas sem <code>nocase</code></td></tr>
+          <tr><td><code>http_header</code></td><td>Buffer onde procurar</td><td>Buffer sticky no Snort 3; substitui velhos truques com <code>uricontent</code></td></tr>
+          <tr><td><code>classtype</code></td><td>Categoria e prioridade</td><td>Guia o triage; classifique com honestidade</td></tr>
+          <tr><td><code>sid</code></td><td>Identidade única</td><td>Regras locais começam em 1000000; nunca reutilize um sid</td></tr>
+          <tr><td><code>rev</code></td><td>Revisão desse sid</td><td>Incremente sempre que alterar a regra</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Para a semântica dos buffers e a lista completa de opções, use a referência oficial; para o que uma deteção
+      deve dizer sobre um ataque, a página de <a href="BlueTeams.html">equipas azuis</a> explica o ciclo à volta da regra.
+    </p>
+  </section>
+
+  <section id="pt-test">
+    <h2><span class="no">06</span> Testar regras com pcap</h2>
+    <p>
+      Nunca implante uma regra que não viu disparar e ficar calada. Duas execuções — uma com tráfego que deve
+      corresponder e outra com tráfego que não pode — são a disciplina inteira.
+    </p>
+    <pre><code><span class="c"># 1. a configuração ainda carrega?</span>
+snort -c /usr/local/etc/snort/snort.lua -T --warn-all
+
+<span class="c"># 2. a regra dispara na amostra maliciosa?</span>
+snort -c /usr/local/etc/snort/snort.lua \
+  -R /usr/local/etc/snort/rules/local.rules \
+  -r amostras/scan.pcap -A alert_fast -k none -q -l /tmp/snort-teste
+cat /tmp/snort-teste/alert_fast.txt
+
+<span class="c"># 3. fica calada no tráfego normal?</span>
+snort -c /usr/local/etc/snort/snort.lua \
+  -R /usr/local/etc/snort/rules/local.rules \
+  -r amostras/navegacao.pcap -A alert_fast -k none -q -l /tmp/snort-limpo
+wc -l /tmp/snort-limpo/alert_fast.txt 2&gt;/dev/null || echo "0 alertas: bom"
+
+<span class="c"># 4. JSON para máquinas</span>
+snort -c /usr/local/etc/snort/snort.lua -r amostras/scan.pcap -A alert_json -q \
+  -l /tmp/snort-json
+jq -r '.msg' /tmp/snort-json/alert_json.txt | sort | uniq -c</code></pre>
+    <div class="callout">
+      <h4>Uma regra sem teste de falso positivo é um boato</h4>
+      <p>
+        Guarde as duas pcaps no repositório, ao lado da regra. Seis meses depois, a amostra é o teste de regressão
+        que diz que uma edição partiu a deteção — o mesmo hábito de evidência de um checksum ao lado de um binário.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-inline">
+    <h2><span class="no">07</span> IPS inline e NFQUEUE</h2>
+    <p>
+      Inline significa que o Snort vê o pacote antes de ser entregue e o pode descartar. Em Linux, a forma menos
+      surpreendente é <code>nfq</code> com o iptables a enviar tráfego para uma fila.
+    </p>
+    <pre><code><span class="c"># enviar o tráfego de entrada para o servidor web do laboratório para a fila 0</span>
+sudo iptables -I FORWARD -p tcp --dport 80 -j NFQUEUE --queue-num 0
+
+<span class="c"># correr o Snort inline contra essa fila</span>
+sudo snort -c /usr/local/etc/snort/snort.lua -Q --daq nfq \
+  --daq-var queue=0 -A alert_fast -l /var/log/snort
+
+<span class="c"># em modo inline, drop é uma ação real</span>
+drop tcp any any -&gt; $HOME_NET 80 (
+  msg:"LAB blocked scanner"; flow:to_server,established;
+  content:"sqlmap"; http_header; sid:1000002; rev:1;
+)
+
+<span class="c"># provar o bloqueio e depois provar a passagem</span>
+curl -s -o /dev/null -w "%{http_code}\n" -A sqlmap http://10.10.11.10/
+curl -s -o /dev/null -w "%{http_code}\n" http://10.10.11.10/</code></pre>
+    <div class="callout warn">
+      <h4>Decida o que significa uma falha antes de acontecer</h4>
+      <p>
+        Um sensor inline que morre é ou uma firewall que falha aberta, ou uma paragem que falha fechada. Escreva a
+        escolha, teste-a parando o serviço e coloque o conjunto de regras atrás de uma alteração revista. Comece
+        com uma regra de drop, não com um feed de trinta mil descarregado.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-lang3">
+    <h2><span class="no">08</span> Mudanças na linguagem 3</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Hábito do Snort 2</th><th>Substituto no Snort 3</th><th>Porque importa</th></tr></thead>
+        <tbody>
+          <tr><td><code>uricontent</code></td><td><code>content ...; http_uri;</code></td><td>Buffers sticky em vez de prefixo por opção</td></tr>
+          <tr><td>Opção <code>http_client_body</code></td><td>Buffer <code>http_client_body</code></td><td>Mesma ideia, novo lugar na lista de opções</td></tr>
+          <tr><td>Configuração de preprocessadores</td><td>Blocos de módulos em <code>snort.lua</code></td><td>Uma linguagem para configuração e regras</td></tr>
+          <tr><td>Só <code>alert_syslog</code></td><td><code>alert_fast</code>, <code>alert_json</code>, <code>alert_syslog</code></td><td>Saída legível por máquina sem parser</td></tr>
+          <tr><td>Consumidores Unified2</td><td>Alertas JSON com registo de pcap</td><td>Pipeline mais simples, menos parsers quebrados</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Conjuntos de regras migrados são a fonte habitual de falha silenciosa: a regra carrega, avisa de uma opção
+      desconhecida e nunca corresponde. <code>-T --warn-all</code> é como ouve esse aviso antes da produção.
+    </p>
+  </section>
+
+  <section id="pt-perf">
+    <h2><span class="no">09</span> Afinar antes das políticas</h2>
+    <p>
+      Quase todos os relatos de «o Snort perde pacotes» são um problema de captura ou de orçamento de inspeção, não
+      de regras. Meça primeiro: os contadores da interface, depois as estatísticas do próprio Snort.
+    </p>
+    <pre><code><span class="c"># lado do kernel: perdem-se pacotes antes de o Snort os ver?</span>
+ip -s link show eth1
+ethtool -S eth1 | grep -iE "drop|miss|error"
+
+<span class="c"># lado do Snort: que etapa é caro?</span>
+sudo snort -c /usr/local/etc/snort/snort.lua -i eth1 -q -A none \
+  --lua 'profiler = { modules = { show = true } }'
+
+<span class="c"># reduzir o conjunto de trabalho: HOME_NET, não a internet</span>
+grep -n "HOME_NET" /usr/local/etc/snort/snort.lua</code></pre>
+    <ul>
+      <li><b>O número de regras não é a métrica.</b> O conteúdo é: mil regras baratas podem custar menos do que cinquenta caras.</li>
+      <li><b>Desligue a inspeção de que não precisa</b> — carving de ficheiros, appid, corpo HTTP completo num tap que só precisa de cabeçalhos.</li>
+      <li><b>Case as threads com as filas,</b> não com os cores; um fluxo que salta de thread perde estado.</li>
+      <li><b>Drop é uma decisão, o silêncio é uma métrica.</b> Registe alertas por dia antes e depois de cada afinação.</li>
+    </ul>
+  </section>
+
+  <section id="pt-harden">
+    <h2><span class="no">10</span> Endurecer o sensor</h2>
+    <p>
+      Um sensor é um processo privilegiado a ler bytes hostis. Dê-lhe as duas capacidades de que precisa e mais
+      nenhuma, e garanta que o resto da máquina não pode ser editado pela conta com que o Snort corre.
+    </p>
+    <pre><code><span class="c"># /etc/systemd/system/snort.service</span>
+[Unit]
+Description=Snort 3 IDS
+After=network-online.target
+
+[Service]
+Type=simple
+User=snort
+Group=snort
+ExecStartPre=/usr/local/bin/snort -c /usr/local/etc/snort/snort.lua -T
+ExecStart=/usr/local/bin/snort -c /usr/local/etc/snort/snort.lua \
+  -i eth1 --daq afpacket -A alert_fast -l /var/log/snort -q
+Restart=on-failure
+AmbientCapabilities=CAP_NET_RAW CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_NET_RAW CAP_NET_ADMIN
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ReadWritePaths=/var/log/snort
+RestrictAddressFamilies=AF_PACKET AF_INET AF_UNIX
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+    <div class="callout gap">
+      <h4>Cada linha de endurecimento pode cegar o sensor</h4>
+      <p>
+        Depois de cada alteração, confirme que os pacotes ainda são contados: reinicie, gere tráfego, leia um
+        alerta. Uma sandbox que nega <code>AF_PACKET</code> em silêncio parece exatamente uma rede calma.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-proof">
+    <h2><span class="no">11</span> Três provas</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Prova</th><th>Comando</th><th>Aprovado</th></tr></thead>
+        <tbody>
+          <tr><td>A configuração carrega</td><td><code>snort -c snort.lua -T --warn-all</code></td><td>Sem erro, sem aviso de opção desconhecida</td></tr>
+          <tr><td>A regra dispara</td><td>Reproduzir a pcap maliciosa</td><td>Exatamente o sid esperado, uma vez</td></tr>
+          <tr><td>A regra fica calada</td><td>Reproduzir a pcap benigna</td><td>Zero alertas</td></tr>
+          <tr><td>O inline bloqueia</td><td><code>curl</code> com o cabeçalho bloqueado</td><td>Ligação cortada, alerta registado</td></tr>
+          <tr><td>O sensor acompanha</td><td><code>ip -s link</code> + estatísticas</td><td>Sem descartes do kernel em carga normal</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Guarde os comandos junto da configuração no repositório. Para as mesmas três provas no outro motor, o
+      <a href="Suricata.html">manual do Suricata</a> é a imagem espelhada; para o laboratório que estes sensores
+      observam, veja <a href="GNS3.html">GNS3</a>.
+    </p>
+  </section>
+
+  <section id="pt-checks">
+    <h2><span class="no">12</span> Lista paranoica</h2>
+    <ul>
+      <li>HOME_NET corresponde à lista de ativos, e a mais nada.</li>
+      <li>Um ficheiro de regras locais, um intervalo de sids, um incremento de rev por edição.</li>
+      <li>Cada regra tem uma pcap maliciosa e uma benigna ao lado.</li>
+      <li><code>-T --warn-all</code> faz parte do arranque do serviço, não é um hábito.</li>
+      <li>O modo inline tem uma decisão de falha aberta ou fechada, documentada e testada.</li>
+      <li>Corre como utilizador sem privilégios, com duas capacidades.</li>
+      <li>O diretório de alertas é gravável; tudo o resto é só de leitura.</li>
+      <li>Rotação e retenção de registos configuradas antes de o disco encher.</li>
+      <li>Versão do conjunto de regras e opções de compilação registadas num ficheiro.</li>
+      <li>Um alerta por dia revisto à mão — o sensor não é um painel decorativo.</li>
+    </ul>
+  </section>
+
+  <section id="pt-failures">
+    <h2><span class="no">13</span> Tabela de falhas</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sintoma</th><th>Causa</th><th>Correção</th></tr></thead>
+        <tbody>
+          <tr><td>Zero alertas em tráfego sabidamente mau</td><td>Regra não incluída, ou <code>flow</code> sem stream</td><td>Verificar o include e depois <code>-T --warn-all</code></td></tr>
+          <tr><td>Alertas em todos os pacotes</td><td>Falta <code>flow:to_server,established</code> ou <code>content:"GET"</code> solto</td><td>Restringir direção, protocolo e buffer</td></tr>
+          <tr><td>Erros de checksum a encher o registo</td><td>Offload da NIC com o tap a ver tramas pré-checksum</td><td><code>-k none</code>, ou corrigir o offload</td></tr>
+          <tr><td>Descartes a subir em carga</td><td>Threads vs filas, snaplen ou regras caras</td><td>Alinhar o cluster, aumentar buffers, perfilar regras</td></tr>
+          <tr><td>O inline deixa passar tudo</td><td>Sem <code>-Q</code>, ou regra iptables na cadeia errada</td><td>Verificar a regra NFQUEUE e o número da fila</td></tr>
+          <tr><td>Serviço corre, sem tráfego</td><td>O endurecimento retirou <code>AF_PACKET</code></td><td>Restaurar a capacidade, testar com um pacote</td></tr>
+          <tr><td>Regra carrega mas nunca corresponde</td><td>Sintaxe do Snort 2 no Snort 3</td><td>Reescrever com buffers sticky e testar a pcap</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="pt-sources">
+    <h2><span class="no">14</span> Fontes</h2>
+    <ul>
+      <li><a href="https://www.snort.org/documents">Snort</a> — documentação oficial, referência de regras e guia da DAQ.</li>
+      <li><a href="https://github.com/snort3/snort3">Snort 3</a> — código, instruções de compilação e notas de versão.</li>
+      <li><a href="https://github.com/snort3/libdaq">DAQ</a> — a abstração de captura, incluindo nfq e afpacket.</li>
+      <li><a href="https://www.kernel.org/doc/html/latest/networking/">Kernel</a> — packet sockets e comportamento da fila netfilter.</li>
+      <li><a href="https://wiki.debian.org/iptables">Debian</a> — iptables e uso de NFQUEUE.</li>
+      <li><a href="https://attack.mitre.org/">ATT&amp;CK</a> — o vocabulário que o <code>msg</code> de uma regra deve falar.</li>
+    </ul>
+    <div class="next">
+      <a href="Suricata.html">Suricata</a>
+      <a href="BlueTeams.html">Equipas Azuis</a>
+      <a href="GNS3.html">GNS3</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Snort 3</b> &middot; captura, regras, bloqueio inline, endurecimento.</p>
+    <p>HTML simples, CSS3 e JavaScript. Sem estilos, scripts, tipos de letra ou imagens externas.</p>
+    <a class="home" href="./index.html">Início</a>
+  </div>
+</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var blocks = document.querySelectorAll("[data-lang-block]");
+  var links = document.querySelectorAll("[data-lang-switch]");
+
+  function apply(lang) {
+    Array.prototype.forEach.call(blocks, function (block) {
+      block.hidden = block.getAttribute("data-lang-block") !== lang;
+    });
+    Array.prototype.forEach.call(links, function (link) {
+      if (link.getAttribute("data-lang-switch") === lang) { link.setAttribute("aria-current", "true"); }
+      else { link.removeAttribute("aria-current"); }
+    });
+    document.documentElement.lang = lang === "pt" ? "pt-PT" : "en";
+  }
+
+  Array.prototype.forEach.call(links, function (link) {
+    link.addEventListener("click", function (event) {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button) { return; }
+      event.preventDefault();
+      apply(link.getAttribute("data-lang-switch"));
+    });
+  });
+
+  var wanted = new URLSearchParams(location.search).get("lang");
+  if (wanted === "en" || wanted === "pt") { apply(wanted); }
+  else if (location.hash.indexOf("#pt-") === 0) { apply("pt"); }
+})();
+</script>
+</body>
+</html>

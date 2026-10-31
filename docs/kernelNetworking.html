@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux Kernel Networking Options — Built-In or Module?</title>
+<meta name="description" content="Which Linux kernel networking options belong built-in and which as modules: routing tables, netfilter, bridges, tunnels, traffic control and eBPF.">
+<link rel="canonical" href="https://blog.odicforcesounds.com/kernelNetworking.html">
+<meta property="og:title" content="Linux Kernel Networking Options — Built-In or Module?">
+<meta property="og:description" content="Which Linux kernel networking options belong built-in and which as modules: routing tables, netfilter, bridges, tunnels, traffic control and eBPF.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://blog.odicforcesounds.com/kernelNetworking.html">
+<meta property="og:site_name" content="Monkey Blog">
+<meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Linux Kernel Networking Options — Built-In or Module?">
+<meta name="twitter:description" content="Which Linux kernel networking options belong built-in and which as modules: routing tables, netfilter, bridges, tunnels, traffic control and eBPF.">
+<meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/kernelNetworking.html#article",
+      "headline": "Linux Kernel Networking Options — Built-In or Module?",
+      "description": "Which Linux kernel networking options belong built-in and which as modules: routing tables, netfilter, bridges, tunnels, traffic control and eBPF.",
+      "url": "https://blog.odicforcesounds.com/kernelNetworking.html",
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://blog.odicforcesounds.com/kernelNetworking.html" },
+      "image": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/peace.jpg", "width": 1496, "height": 960 },
+      "inLanguage": "en",
+      "author": { "@type": "Person", "name": "Oscar", "url": "https://blog.odicforcesounds.com/" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/",
+        "logo": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/three.jpg", "width": 1024, "height": 1024 }
+      },
+      "isPartOf": { "@type": "Blog", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/" },
+      "articleSection": "Linux & Open Source",
+      "keywords": "Linux kernel, Kconfig, networking, netfilter, conntrack, bridge, VLAN, WireGuard, tc, eBPF",
+      "wordCount": 4538,
+      "datePublished": "2026-10-31",
+      "dateModified": "2026-10-31"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://blog.odicforcesounds.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Linux & Open Source", "item": "https://blog.odicforcesounds.com/#category-linux-and-open-source" },
+        { "@type": "ListItem", "position": 3, "name": "Kernel networking", "item": "https://blog.odicforcesounds.com/kernelNetworking.html" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#05090b;
+  --ink:#e6f7f4;
+  --soft:#c1d8d4;
+  --muted:#8aa5a1;
+  --teal:#2dd4bf;
+  --green:#4ade80;
+  --amber:#f6b73c;
+  --line:rgba(255,255,255,.11);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;min-height:100vh;color:var(--ink);
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(940px 560px at 88% -8%,rgba(45,212,191,.18),transparent 62%),
+    radial-gradient(720px 500px at 0% 28%,rgba(74,222,128,.10),transparent 58%),
+    radial-gradient(900px 620px at 96% 82%,rgba(246,183,60,.08),transparent 58%),
+    linear-gradient(180deg,#05090b,#071513 55%,#03070a);
+  background-attachment:fixed;background-repeat:no-repeat;
+  font:16px/1.7 var(--sans);
+}
+a{color:#7fe9dc;text-decoration:none;border-bottom:1px solid rgba(45,212,191,.38);transition:color .15s,border-color .15s}
+a:hover{color:var(--amber);border-bottom-color:var(--amber)}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+[data-lang-block][hidden]{display:none!important}
+::selection{background:var(--teal);color:#04100e}
+
+.lang-switch{display:flex;justify-content:center;gap:.4rem;padding:.9rem 1rem .3rem;font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase}
+.lang-switch a{padding:.32rem .95rem;color:var(--teal);font-weight:600;background:transparent;border:1px solid rgba(45,212,191,.6);border-radius:999px;opacity:.85;transition:opacity .15s,background-color .15s,color .15s,border-color .15s}
+.lang-switch a[aria-current="true"]{color:#04100e;background:var(--teal);border-color:var(--teal);opacity:1}
+.lang-switch a:hover,.lang-switch a:focus-visible{color:#04100e;background:var(--amber);border-color:var(--amber);opacity:1}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(1rem,4vw,2rem)}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:.8rem;padding:.7rem 0;background:rgba(5,9,11,.9);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid transparent;border-image:linear-gradient(90deg,var(--teal),var(--green) 50%,var(--amber)) 1}
+.home{border:1px solid rgba(45,212,191,.55);border-radius:6px;padding:.28rem .7rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#7fe9dc;background:rgba(45,212,191,.09)}
+.home:hover{background:var(--amber);border-color:var(--amber);color:#04100e}
+.brand{margin-left:auto;font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+.brand b{color:var(--teal)}
+
+.hero{padding:clamp(2rem,6vw,3.4rem) 0 .6rem}
+.kicker{margin:0 0 .8rem;color:var(--green);font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase}
+h1,.seo-h2{margin:0;font-size:clamp(1.9rem,5vw,3.1rem);line-height:1.08;letter-spacing:-.02em;background:linear-gradient(100deg,#fff 6%,var(--teal) 42%,var(--green) 64%,var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{max-width:66ch;margin:1.1rem 0 0;color:var(--soft);font-size:1.02rem}
+.lede b{color:#fff}
+.meta-line{display:flex;flex-wrap:wrap;gap:.4rem;margin:1.1rem 0 0}
+.chip{border:1px solid rgba(45,212,191,.4);border-radius:99px;padding:.22rem .7rem;background:rgba(45,212,191,.08);font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#7fe9dc}
+.chip.dim{border-color:var(--line);background:rgba(255,255,255,.03);color:var(--muted)}
+
+.toc{margin:1.6rem 0 2rem;padding:1rem 1.1rem;border:1px solid var(--line);border-radius:12px;background:linear-gradient(160deg,rgba(7,21,19,.92),rgba(3,7,10,.92))}
+.toc h2{margin:0 0 .6rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.3rem}
+.toc a{display:flex;gap:.55rem;align-items:baseline;padding:.36rem .6rem;border:1px solid transparent;border-radius:7px;color:var(--soft);border-bottom:0}
+.toc a span{font-family:var(--mono);font-size:.62rem;color:var(--teal)}
+.toc a:hover,.toc a:focus-visible{background:rgba(45,212,191,.14);border-color:rgba(45,212,191,.5);color:#fff}
+
+main section{padding:1.6rem 0;border-top:1px solid var(--line)}
+main section:first-of-type{border-top:0}
+h2{font-size:clamp(1.35rem,3vw,1.8rem);line-height:1.2;margin:0 0 .7rem;letter-spacing:-.01em;color:#fff}
+h2 .no{font-family:var(--mono);font-size:.72em;color:var(--teal);margin-right:.4rem}
+h3{margin:1.5rem 0 .5rem;font-family:var(--mono);font-size:.92rem;letter-spacing:.08em;text-transform:uppercase;color:var(--green)}
+p{color:var(--soft);max-width:88ch}
+b,strong{color:#fff}
+em{color:var(--amber);font-style:normal}
+ul,ol{color:var(--soft);padding-left:1.2rem}
+li{margin:.32rem 0}
+li b{color:#fff}
+code{font-family:var(--mono);font-size:.84em;background:#0a2b28;color:#a7f3e8;padding:.06em .32em;border-radius:3px;word-break:break-word}
+pre{margin:1rem 0;padding:.9rem 1rem;overflow-x:auto;background:linear-gradient(180deg,#071a18,#030a09);border:1px solid rgba(45,212,191,.3);border-left:3px solid var(--teal);border-radius:9px;color:#c8f7ee;font:400 .76rem/1.65 var(--mono)}
+pre code{background:none;color:inherit;padding:0}
+pre .c{color:#7f9b97}
+pre .k{color:#ffd08a}
+
+.table-wrap{margin:1rem 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;background:rgba(0,0,0,.3)}
+table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:560px}
+th{text-align:left;padding:.6rem .7rem;white-space:nowrap;background:linear-gradient(180deg,#0b2724,#061513);color:var(--teal);border-bottom:2px solid var(--teal);font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase}
+td{padding:.55rem .7rem;border-bottom:1px solid var(--line);color:var(--soft);vertical-align:top}
+tbody tr:nth-child(even) td{background:rgba(45,212,191,.05)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{color:#fff;font-family:var(--mono);font-size:.72rem;white-space:nowrap}
+td code{white-space:nowrap}
+
+.callout{margin:1.2rem 0;padding:.95rem 1.1rem;border-radius:9px;border:1px solid var(--line);border-left:4px solid var(--teal);background:linear-gradient(100deg,rgba(45,212,191,.12),rgba(74,222,128,.05))}
+.callout h4{margin:0 0 .3rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--teal)}
+.callout.warn{border-left-color:var(--amber);background:linear-gradient(100deg,rgba(246,183,60,.12),rgba(45,212,191,.04))}
+.callout.warn h4{color:var(--amber)}
+.callout.gap{border-left-color:var(--green);background:linear-gradient(100deg,rgba(74,222,128,.12),rgba(45,212,191,.04))}
+.callout.gap h4{color:var(--green)}
+.callout p{margin:.3rem 0;font-size:.88rem;max-width:none}
+.callout p:last-child{margin-bottom:0}
+
+.next{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.4rem 0 0}
+.next a{border:1px solid rgba(246,183,60,.55);border-radius:8px;padding:.45rem .85rem;background:rgba(246,183,60,.1);font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#ffce8a}
+.next a:hover,.next a:focus-visible{background:var(--amber);border-color:var(--amber);color:#04100e}
+
+footer{margin-top:2rem;padding:1.6rem 0 2.4rem;text-align:center;border-top:2px solid transparent;background:linear-gradient(#06100f,#06100f) padding-box,linear-gradient(90deg,var(--teal),var(--green),var(--amber)) border-box}
+footer p{margin:.3rem auto;color:var(--muted);font-size:.78rem;max-width:80ch;text-align:center}
+footer .home{margin-top:.7rem;display:inline-block}
+@media (max-width:640px){table{min-width:470px}.toc ol{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+@media print{body{background:#fff;color:#111}.lang-switch,.topbar,footer .home{display:none!important}h1,.seo-h2{color:#111;-webkit-text-fill-color:#111}pre,table,.callout{background:#fff!important;border-color:#999!important}p,td,li,pre{color:#111!important}}
+</style>
+</head>
+<body>
+
+<nav class="lang-switch" aria-label="Language">
+  <a href="?lang=pt" data-lang-switch="pt" lang="pt-PT">Português</a>
+  <a href="?lang=en" data-lang-switch="en" aria-current="true" lang="en">English</a>
+</nav>
+
+<div id="lang-en" data-lang-block="en">
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Home</a>
+    <span class="brand">Kernel <b>/</b> Networking Kconfig</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Kconfig &middot; built-in vs module, symbol by symbol</p>
+    <h1>Kernel networking: what goes in, what gets loaded</h1>
+    <p class="lede">
+      Every networking failure that begins with "operation not supported" is usually a symbol set to the wrong
+      letter years earlier. This page explains the three markers in <code>make menuconfig</code>, gives the rule
+      that decides built-in versus module, and then walks the networking menu option by option — routing tables,
+      netfilter, bridges, tunnels, traffic control and eBPF — so the choice is a reason, not a reflex.
+    </p>
+    <div class="meta-line">
+      <span class="chip">&lt;*&gt; vs &lt;M&gt;</span>
+      <span class="chip dim">policy routing</span>
+      <span class="chip dim">netfilter + nftables</span>
+      <span class="chip dim">tc / XDP</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="toc-title">
+    <h2 id="toc-title">Contents</h2>
+    <ol>
+      <li><a href="#markers"><span>01</span> The markers, and what (*) really is</a></li>
+      <li><a href="#truth"><span>02</span> Where the truth lives</a></li>
+      <li><a href="#builtin"><span>03</span> What must be built in</a></li>
+      <li><a href="#routing"><span>04</span> Routing and policy routing</a></li>
+      <li><a href="#netfilter"><span>05</span> Netfilter, conntrack, NAT</a></li>
+      <li><a href="#links"><span>06</span> Bridges, VLANs, bonds, virtual links</a></li>
+      <li><a href="#tunnels"><span>07</span> Tunnels and VPNs</a></li>
+      <li><a href="#tc"><span>08</span> Traffic control and eBPF</a></li>
+      <li><a href="#observability"><span>09</span> Sockets that let you see</a></li>
+      <li><a href="#harden"><span>10</span> Options that harden by removing</a></li>
+      <li><a href="#roles"><span>11</span> Three role fragments</a></li>
+      <li><a href="#verify"><span>12</span> Prove the build</a></li>
+      <li><a href="#failures"><span>13</span> Failure table</a></li>
+      <li><a href="#sources"><span>14</span> Sources</a></li>
+    </ol>
+  </nav>
+
+  <section id="markers">
+    <h2><span class="no">01</span> The markers, and what (*) really is</h2>
+    <p>
+      The notation is the first thing tutorials blur. There is no <code>(*)</code> symbol in the kernel config;
+      menuconfig draws three different markers, and confusing them is how people "enable routing" by ticking a
+      boolean that only controls whether a <em>module</em> is even offered.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>You see</th><th>Symbol type</th><th>Means</th><th>Can be unloaded?</th></tr></thead>
+        <tbody>
+          <tr><td><code>&lt;*&gt;</code></td><td>tristate, value y</td><td>Compiled into the kernel image</td><td>No</td></tr>
+          <tr><td><code>&lt;M&gt;</code></td><td>tristate, value m</td><td>Compiled as a separate <code>.ko</code></td><td>Yes, unless in use</td></tr>
+          <tr><td><code>&lt; &gt;</code></td><td>tristate, value n</td><td>Not built at all</td><td>—</td></tr>
+          <tr><td><code>[*]</code></td><td>boolean</td><td>On or off only; there is no module form</td><td>No</td></tr>
+          <tr><td><code>{M}</code> / <code>{*}</code></td><td>forced</td><td>Selected by another option you enabled</td><td>Only by disabling the parent</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      That table answers half the question by itself: many routing features are <b>booleans</b>, so they show
+      as <code>[*]</code> and cannot be modules at all. Where a symbol is a tristate, the decision is real.
+    </p>
+    <div class="callout">
+      <h4>The rule that decides everything</h4>
+      <p>
+        Build in what the machine needs <b>before it can load modules</b>; make everything else a module. In
+        practice: storage, console, the NIC the initramfs brings up, and anything the initramfs needs to reach
+        the root filesystem. Networking beyond that is almost always a module — unless you intend to burn the
+        bridge by disabling module loading.
+      </p>
+    </div>
+  </section>
+
+  <section id="truth">
+    <h2><span class="no">02</span> Where the truth lives</h2>
+    <p>
+      Never trust a blog for a symbol name — including this one. The kernel tree names its own symbols, and the
+      running kernel can tell you what it was built with.
+    </p>
+    <pre><code><span class="c"># what am I running, and was this config even exposed?</span>
+uname -r
+zcat /proc/config.gz | grep -E "CONFIG_(IP_MULTIPLE_TABLES|NF_CONNTRACK)="
+ls /boot/config-"$(uname -r)"
+
+<span class="c"># the authoritative definition, in the source tree</span>
+grep -n "config IP_MULTIPLE_TABLES" -A 12 net/ipv4/Kconfig
+scripts/config --file .config --state CONFIG_BRIDGE
+
+<span class="c"># change the config without menuconfig</span>
+scripts/config --file .config --module BRIDGE
+make olddefconfig          <span class="c"># resolve new symbols with defaults</span>
+scripts/diffconfig .config.old .config   <span class="c"># exactly what you changed</span></code></pre>
+    <p>
+      <code>localmodconfig</code> is tempting — it keeps only the modules currently loaded. It is fine for a
+      laptop, and a trap for a router: the modules your firewall needs may simply not be loaded on the build
+      machine when you run it.
+    </p>
+  </section>
+
+  <section id="builtin">
+    <h2><span class="no">03</span> What must be built in</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symbol</th><th>Why it cannot be a module here</th></tr></thead>
+        <tbody>
+          <tr><td><code>VIRTIO_NET</code></td><td>Cloud and VM images whose root disk is virtual need the NIC before root mounts</td></tr>
+          <tr><td><code>E1000E</code>, <code>IGB</code>, <code>IXGBE</code></td><td>The physical port used for PXE, NFS root or iSCSI boot</td></tr>
+          <tr><td><code>BRIDGE</code></td><td>Only if the root filesystem is behind a bridge (rare) or modules are disabled</td></tr>
+          <tr><td><code>VLAN_8021Q</code></td><td>When the management interface is tagged and configured in the initramfs</td></tr>
+          <tr><td><code>BONDING</code></td><td>When the boot interface is a bond</td></tr>
+          <tr><td><code>PACKET</code></td><td>If the machine's only diagnostic is tcpdump on a rescue image with no modules</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Everything else on this page is a module in a sane configuration. The price of <code>=y</code> is permanent
+      memory and a permanently larger trusted computing base; the price of <code>=m</code> is a load step and the
+      risk that the module is not there after a kernel upgrade.
+    </p>
+  </section>
+
+  <section id="routing">
+    <h2><span class="no">04</span> Routing and policy routing</h2>
+    <pre><code><span class="c"># Networking support -&gt; Networking options</span>
+CONFIG_NET=y                     <span class="c"># [*] the whole stack</span>
+CONFIG_INET=y                    <span class="c"># [*] TCP/IP</span>
+CONFIG_IP_ADVANCED_ROUTER=y      <span class="c"># [*] unlocks the routing extras below</span>
+CONFIG_IP_MULTIPLE_TABLES=y      <span class="c"># [*] ip rule, policy routing</span>
+CONFIG_IP_ROUTE_MULTIPATH=y      <span class="c"># [*] several nexthops per route</span>
+CONFIG_IP_ROUTE_CLASSID=y        <span class="c"># [*] tc classification by route</span>
+CONFIG_IPV6_MULTIPLE_TABLES=y    <span class="c"># [*] the same for IPv6</span>
+CONFIG_IPV6_SUBTREES=y           <span class="c"># [*] source-based IPv6 lookups</span></code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symbol</th><th>Form</th><th>Turn it on when</th></tr></thead>
+        <tbody>
+          <tr><td><code>IP_ADVANCED_ROUTER</code></td><td>bool <code>[*]</code></td><td>Always on a router or firewall; it gates the rest</td></tr>
+          <tr><td><code>IP_MULTIPLE_TABLES</code></td><td>bool <code>[*]</code></td><td>You use <code>ip rule</code>, VRFs, or anything with multiple routing tables</td></tr>
+          <tr><td><code>IP_ROUTE_MULTIPATH</code></td><td>bool <code>[*]</code></td><td>Two uplinks, or the ECMP lab from the GNS3 page</td></tr>
+          <tr><td><code>IP_ROUTE_CLASSID</code></td><td>bool <code>[*]</code></td><td>Traffic control keyed on a route class</td></tr>
+          <tr><td><code>IPV6</code></td><td>tristate</td><td>You have IPv6 — build in if the address is assigned before modules load</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      These are booleans, so "make it a module" is not an option and the question becomes whether to enable them
+      at all. A kernel without <code>IP_MULTIPLE_TABLES</code> still routes; it just ignores every second table,
+      and <code>ip rule</code> commands appear to succeed while doing nothing.
+    </p>
+  </section>
+
+  <section id="netfilter">
+    <h2><span class="no">05</span> Netfilter, conntrack, NAT</h2>
+    <pre><code><span class="c"># core: everything else depends on these</span>
+CONFIG_NETFILTER=y
+CONFIG_NF_CONNTRACK=m            <span class="c">&lt;M&gt; the state table</span>
+CONFIG_NF_NAT=m                  <span class="c">&lt;M&gt; NAT engine, needed by MASQUERADE</span>
+CONFIG_NF_TABLES=m               <span class="c">&lt;M&gt; the nftables core</span>
+CONFIG_NF_TABLES_INET=m          <span class="c">&lt;M&gt; one table for v4 and v6</span>
+CONFIG_NFT_CT=m                  <span class="c">&lt;M&gt; ct expression</span>
+CONFIG_NETFILTER_XTABLES=m       <span class="c">&lt;M&gt; the xtables compatibility layer</span>
+CONFIG_NETFILTER_XT_TARGET_MASQUERADE=m
+CONFIG_NF_CONNTRACK_FTP=m        <span class="c"># helpers: load only what you need</span></code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symbol</th><th>Form</th><th>Effect if missing</th></tr></thead>
+        <tbody>
+          <tr><td><code>NF_CONNTRACK</code></td><td>tristate</td><td>No stateful rules, no NAT, no <code>conntrack</code> tool</td></tr>
+          <tr><td><code>NF_NAT</code></td><td>tristate</td><td>MASQUERADE and DNAT simply do not exist</td></tr>
+          <tr><td><code>NF_TABLES</code></td><td>tristate</td><td><code>nft</code> reports no such file or unsupported</td></tr>
+          <tr><td><code>NETFILTER_XTABLES</code></td><td>tristate</td><td>Legacy <code>iptables</code> rules fail to apply</td></tr>
+          <tr><td><code>NF_CONNTRACK_FTP</code> etc.</td><td>tristate</td><td>Only that protocol's helper is absent — good default</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <h4>Modules are fine here — until you disable modules</h4>
+      <p>
+        Debian and every mainstream distro ship netfilter as modules, and it works. Build it in when you plan to
+        set <code>kernel.modules_disabled=1</code> after boot, or when the firewall must be able to drop packets
+        before any userspace process has run.
+      </p>
+    </div>
+  </section>
+
+  <section id="links">
+    <h2><span class="no">06</span> Bridges, VLANs, bonds, virtual links</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symbol</th><th>Recommended</th><th>Needed by</th></tr></thead>
+        <tbody>
+          <tr><td><code>BRIDGE</code></td><td><code>&lt;M&gt;</code></td><td>Anything that bridges: VMs, containers, the GNS3 switch</td></tr>
+          <tr><td><code>BRIDGE_NETFILTER</code></td><td><code>&lt;M&gt;</code></td><td>iptables on bridged traffic; Docker needs it</td></tr>
+          <tr><td><code>VLAN_8021Q</code></td><td><code>&lt;M&gt;</code></td><td><code>ip link add ... type vlan</code></td></tr>
+          <tr><td><code>BONDING</code></td><td><code>&lt;M&gt;</code></td><td>LACP and failover bonds</td></tr>
+          <tr><td><code>MACVLAN</code> / <code>IPVLAN</code></td><td><code>&lt;M&gt;</code></td><td>Many addresses on one NIC, container networking</td></tr>
+          <tr><td><code>VETH</code></td><td><code>&lt;M&gt;</code></td><td>Namespaces, containers, test topologies</td></tr>
+          <tr><td><code>DUMMY</code></td><td><code>&lt;M&gt;</code></td><td>A stable interface that stays up with no cable</td></tr>
+          <tr><td><code>IFB</code></td><td><code>&lt;M&gt;</code></td><td>Ingress shaping — redirecting ingress into a qdisc</td></tr>
+          <tr><td><code>TUN</code></td><td><code>&lt;M&gt;</code></td><td>VPNs and user-space tunnels; also creates <code>tap</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      These are cheap modules and there is no security reason to build them in. The one exception is a host that
+      cannot load modules at all, where every link type the boot scripts create must be present in the image.
+    </p>
+  </section>
+
+  <section id="tunnels">
+    <h2><span class="no">07</span> Tunnels and VPNs</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symbol</th><th>Recommended</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td><code>WIREGUARD</code></td><td><code>&lt;M&gt;</code></td><td>One module, no dependencies; "Unknown device type" means it is missing</td></tr>
+          <tr><td><code>VXLAN</code></td><td><code>&lt;M&gt;</code></td><td>Overlay networks; needs a UDP tunnel port</td></tr>
+          <tr><td><code>GENEVE</code></td><td><code>&lt;M&gt;</code></td><td>The newer overlay encapsulation</td></tr>
+          <tr><td><code>NET_IPIP</code></td><td><code>&lt;M&gt;</code></td><td>Simple IPv4-in-IPv4</td></tr>
+          <tr><td><code>NET_IPGRE</code></td><td><code>&lt;M&gt;</code></td><td>GRE, including the keyed form</td></tr>
+          <tr><td><code>IPV6_SIT</code></td><td><code>&lt;M&gt;</code></td><td>IPv6 in IPv4, legacy but still used</td></tr>
+          <tr><td><code>XFRM_USER</code>, <code>INET_ESP</code></td><td><code>&lt;M&gt;</code></td><td>IPsec; the user interface plus the ESP transform</td></tr>
+          <tr><td><code>INET_AH</code></td><td><code>&lt;M&gt;</code></td><td>Authentication header, rarely the right choice today</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Tunnels are the classic "loads on demand" case: the interface type is requested by name from userspace, and
+      the kernel autoloads the module. If autoloading is disabled, the module has to be in the image or loaded
+      explicitly at boot.
+    </p>
+  </section>
+
+  <section id="tc">
+    <h2><span class="no">08</span> Traffic control and eBPF</h2>
+    <pre><code>CONFIG_NET_SCHED=y
+CONFIG_NET_SCH_HTB=m
+CONFIG_NET_SCH_CAKE=m
+CONFIG_NET_SCH_FQ_CODEL=m
+CONFIG_NET_SCH_INGRESS=m          <span class="c"># the hook for clsact</span>
+CONFIG_NET_CLS_ACT=y              <span class="c"># [*] actions are not optional once you classify</span>
+CONFIG_NET_ACT_MIRRED=m           <span class="c"># redirect: ingress shaping, mirroring</span>
+CONFIG_NET_CLS_FLOWER=m           <span class="c"># hardware-offloadable matching</span>
+CONFIG_NET_CLS_U32=m
+CONFIG_NET_CLS_BPF=m
+CONFIG_BPF_SYSCALL=y              <span class="c"># [*] required by every eBPF tool</span>
+CONFIG_BPF_JIT=y
+CONFIG_DEBUG_INFO_BTF=y           <span class="c"># [*] libbpf CO-RE needs this</span></code></pre>
+    <p>
+      <code>NET_SCHED</code> and <code>BPF_SYSCALL</code> are booleans; the qdiscs and classifiers are modules.
+      A "qdisc not found" error is a missing <code>sch_*.ko</code>, while "Operation not supported" on a
+      <code>flower</code> filter is a missing <code>cls_flower.ko</code> — two different messages, two different
+      symbols.
+    </p>
+    <div class="callout gap">
+      <h4>XDP is a driver property, not just a config option</h4>
+      <p>
+        eBPF itself is in the core, but XDP offload needs driver support and, for the native path, a driver that
+        implements it. On <code>veth</code> and <code>tun</code> you get the generic path; on a card that does not
+        support it, the program simply will not attach natively.
+      </p>
+    </div>
+  </section>
+
+  <section id="observability">
+    <h2><span class="no">09</span> Sockets that let you see</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symbol</th><th>Recommended</th><th>Tool that breaks without it</th></tr></thead>
+        <tbody>
+          <tr><td><code>PACKET</code></td><td><code>&lt;M&gt;</code></td><td><code>tcpdump</code>, Snort afpacket, Suricata</td></tr>
+          <tr><td><code>INET_DIAG</code></td><td><code>&lt;M&gt;</code></td><td><code>ss</code>, socket listings in monitoring agents</td></tr>
+          <tr><td><code>INET_TCP_DIAG</code>, <code>INET_UDP_DIAG</code></td><td><code>&lt;M&gt;</code></td><td>Per-protocol detail for <code>ss -t</code> / <code>-u</code></td></tr>
+          <tr><td><code>UNIX_DIAG</code></td><td><code>&lt;M&gt;</code></td><td><code>ss -x</code></td></tr>
+          <tr><td><code>NETLINK_DIAG</code></td><td><code>&lt;M&gt;</code></td><td>Netlink socket inspection</td></tr>
+          <tr><td><code>IKCONFIG</code> + <code>IKCONFIG_PROC</code></td><td><code>[*]</code></td><td><code>/proc/config.gz</code> — without it, no way to audit the build</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      <code>IKCONFIG</code> is the cheapest hardening decision on this page: it embeds the config so anyone can
+      check what was built, including you, two years later. Hide it if the config itself is sensitive; keep it if
+      you would rather be auditable.
+    </p>
+  </section>
+
+  <section id="harden">
+    <h2><span class="no">10</span> Options that harden by removing</h2>
+    <pre><code>CONFIG_MODULE_SIG=y
+CONFIG_MODULE_SIG_FORCE=y        <span class="c"># refuse unsigned modules entirely</span>
+CONFIG_MODULE_UNLOAD=n           <span class="c"># nothing can be unloaded</span>
+CONFIG_KEXEC=n
+CONFIG_STRICT_KERNEL_RWX=y
+CONFIG_DEBUG_WX=y
+
+<span class="c"># runtime, after everything is loaded</span>
+sysctl -w kernel.modules_disabled=1</code></pre>
+    <ul>
+      <li><b><code>MODULE_SIG_FORCE</code></b> makes every module signed and trusted; a third-party driver you built yourself needs a key in the kernel keyring.</li>
+      <li><b><code>MODULE_UNLOAD=n</code></b> removes the ability to replace a loaded module — and the ability to recover from a bad one without rebooting.</li>
+      <li><b><code>modules_disabled=1</code></b> is the strongest and least reversible: after it, no module loads. Everything the machine will ever need must already be loaded or built in.</li>
+    </ul>
+    <div class="callout warn">
+      <h4>Do the arithmetic before the reboot</h4>
+      <p>
+        A router that disables modules at boot must have bridging, VLAN, conntrack and the firewall built in —
+        and the tests on this page run <em>before</em> the setting is permanent. The usual outcome of doing it in
+        the other order is a machine that powers on and never passes a packet again.
+      </p>
+    </div>
+  </section>
+
+  <section id="roles">
+    <h2><span class="no">11</span> Three role fragments</h2>
+    <p>
+      These are starting points for <code>make olddefconfig</code>, not gospel: symbol names and defaults move
+      between versions, and your hardware decides the driver lines.
+    </p>
+    <pre><code><span class="c"># A. Router / firewall (Debian, netfilter as modules)</span>
+CONFIG_NET=y
+CONFIG_INET=y
+CONFIG_IP_ADVANCED_ROUTER=y
+CONFIG_IP_MULTIPLE_TABLES=y
+CONFIG_IP_ROUTE_MULTIPATH=y
+CONFIG_NETFILTER=y
+CONFIG_NF_CONNTRACK=m
+CONFIG_NF_NAT=m
+CONFIG_NF_TABLES=m
+CONFIG_NETFILTER_XTABLES=m
+CONFIG_BRIDGE=m
+CONFIG_VLAN_8021Q=m
+
+<span class="c"># B. Virtualisation host (everything a guest might ask for)</span>
+CONFIG_BRIDGE=m
+CONFIG_BRIDGE_NETFILTER=m
+CONFIG_VETH=m
+CONFIG_TUN=m
+CONFIG_MACVLAN=m
+CONFIG_VXLAN=m
+CONFIG_OPENVSWITCH=m
+
+<span class="c"># C. Hardened appliance (modules disabled after boot)</span>
+CONFIG_VIRTIO_NET=y
+CONFIG_NF_CONNTRACK=y
+CONFIG_NF_NAT=y
+CONFIG_NF_TABLES=y
+CONFIG_IP_NF_IPTABLES=y
+CONFIG_BRIDGE=y
+CONFIG_PACKET=y
+CONFIG_MODULE_SIG_FORCE=y
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y</code></pre>
+    <p>
+      The pattern is visible: same features, different letter. A is the mainstream choice and the easiest to
+      maintain; C is the one you can reason about at the packet level, at the cost of never being able to add a
+      feature without a rebuild.
+    </p>
+  </section>
+
+  <section id="verify">
+    <h2><span class="no">12</span> Prove the build</h2>
+    <pre><code><span class="c"># what is actually in this kernel</span>
+zcat /proc/config.gz | grep -E "IP_MULTIPLE_TABLES|NF_CONNTRACK|BRIDGE|PACKET" 
+lsmod | grep -E "nf_|bridge|vlan"
+
+<span class="c"># each subsystem, asked the only way that counts</span>
+ip rule add fwmark 1 table 100; ip rule show          <span class="c"># policy routing</span>
+nft list tables                                     <span class="c"># nftables</span>
+iptables -t nat -L -n | head -3                     <span class="c"># legacy NAT table</span>
+tc qdisc show dev lo                                <span class="c"># traffic control</span>
+ip link add vtest type veth peer name vtest2        <span class="c"># veth</span>
+tcpdump -i any -c1 -w /dev/null 2&gt;&amp;1                <span class="c"># AF_PACKET</span>
+conntrack -L 2&gt;/dev/null | wc -l                    <span class="c"># state table</span>
+ss -s                                               <span class="c"># socket diag</span></code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Check</th><th>Good sign</th><th>What a failure tells you</th></tr></thead>
+        <tbody>
+          <tr><td><code>ip rule add</code></td><td>Rule listed</td><td><code>IP_MULTIPLE_TABLES</code> off — the rule "works" but is ignored</td></tr>
+          <tr><td><code>nft list tables</code></td><td>Empty list, no error</td><td><code>NF_TABLES</code> missing</td></tr>
+          <tr><td><code>iptables -t nat</code></td><td>Table prints</td><td><code>NF_NAT</code> or xtables missing</td></tr>
+          <tr><td><code>tcpdump</code></td><td>One packet captured</td><td><code>PACKET</code> missing: every sensor on the box is blind</td></tr>
+          <tr><td><code>ip link add veth</code></td><td>Pair created</td><td><code>VETH</code> missing</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Run the same set after every kernel upgrade. The build you audited is not the build that boots tomorrow —
+      check the external references for the current symbol names when the output disagrees with the page.
+    </p>
+  </section>
+
+  <section id="failures">
+    <h2><span class="no">13</span> Failure table</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symptom</th><th>Missing symbol</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td><code>tcpdump: socket: Address family not supported</code></td><td><code>PACKET</code></td><td><code>&lt;M&gt;</code> and load <code>af_packet</code></td></tr>
+          <tr><td><code>iptables: Table does not exist</code></td><td><code>NF_NAT</code> / <code>IP_NF_NAT</code></td><td>Enable NAT, reload the firewall</td></tr>
+          <tr><td><code>nft: no such file or directory</code></td><td><code>NF_TABLES</code></td><td>Build the nftables core, not just xtables</td></tr>
+          <tr><td>A rule in table 100 is ignored</td><td><code>IP_MULTIPLE_TABLES</code></td><td>Boolean: rebuild required</td></tr>
+          <tr><td><code>RTNETLINK answers: Operation not supported</code> on a filter</td><td><code>NET_CLS_FLOWER</code></td><td>Load the classifier module</td></tr>
+          <tr><td><code>Unknown device type</code> for wg0</td><td><code>WIREGUARD</code></td><td>Module, not a userspace package</td></tr>
+          <tr><td>iptables rules never see bridged frames</td><td><code>BRIDGE_NETFILTER</code></td><td>Enable, then check <code>br_netfilter</code> is loaded</td></tr>
+          <tr><td>Works until reboot after an upgrade</td><td>Running kernel ≠ <code>/lib/modules</code></td><td>Reboot into the new image, or pin the kernel</td></tr>
+          <tr><td>A module cannot be loaded at all</td><td><code>MODULE_SIG_FORCE</code> or <code>modules_disabled</code></td><td>Sign it, or rebuild everything in</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="sources">
+    <h2><span class="no">14</span> Sources</h2>
+    <ul>
+      <li><a href="https://www.kernel.org/doc/html/latest/networking/">Kernel networking</a> — the authoritative documentation for routing, netfilter and tc.</li>
+      <li><a href="https://www.kernel.org/doc/html/latest/admin-guide/kernel-parameters.html">Kernel parameters</a> — boot and module options, including signature enforcement.</li>
+      <li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/net/ipv4/Kconfig">Kconfig</a> — where every symbol on this page is actually defined.</li>
+      <li><a href="https://docs.kernel.org/bpf/">eBPF</a> — verifier, maps and the XDP hook.</li>
+      <li><a href="https://wiki.nftables.org/">nftables</a> — the rule language that replaces iptables.</li>
+      <li><a href="https://wiki.debian.org/KernelConfiguration">Debian</a> — building and configuring a Debian kernel.</li>
+    </ul>
+    <p>
+      Where this touches the rest of the blog: <a href="networking.html">Networking</a> for protocol background,
+      <a href="GNS3.html">GNS3</a> for the routed lab, <a href="Snort.html">Snort</a> and
+      <a href="Suricata.html">Suricata</a> for the sensors that need <code>PACKET</code>, and
+      <a href="DebianSecurity.html">Debian security</a> for the rest of the hardening stack.
+    </p>
+    <div class="next">
+      <a href="DebianSecurity.html">Debian security</a>
+      <a href="networking.html">Networking</a>
+      <a href="Snort.html">Snort</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Kernel networking</b> &middot; Kconfig symbols, built-in versus module, verification.</p>
+    <p>Vanilla HTML, CSS3 and JavaScript. No external styles, scripts, fonts or images.</p>
+    <a class="home" href="./index.html">Home</a>
+  </div>
+</footer>
+</div>
+
+<div id="lang-pt" data-lang-block="pt" hidden>
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Início</a>
+    <span class="brand">Kernel <b>/</b> Kconfig de rede</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Kconfig &middot; built-in ou módulo, símbolo a símbolo</p>
+    <h2 class="seo-h2">Rede no kernel: o que entra na imagem e o que é carregado</h2>
+    <p class="lede">
+      Quase todas as falhas de rede que começam com «operation not supported» são um símbolo com a letra errada,
+      escolhida anos antes. Esta página explica os três marcadores do <code>make menuconfig</code>, dá a regra que
+      decide entre built-in e módulo e percorre o menu de rede opção a opção — tabelas de rotas, netfilter,
+      bridges, túneis, controlo de tráfego e eBPF — para a escolha ser uma razão e não um reflexo.
+    </p>
+    <div class="meta-line">
+      <span class="chip">&lt;*&gt; vs &lt;M&gt;</span>
+      <span class="chip dim">rotas por política</span>
+      <span class="chip dim">netfilter + nftables</span>
+      <span class="chip dim">tc / XDP</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="pt-toc-title">
+    <h2 id="pt-toc-title">Índice</h2>
+    <ol>
+      <li><a href="#pt-markers"><span>01</span> Os marcadores e o que é (*)</a></li>
+      <li><a href="#pt-truth"><span>02</span> Onde está a verdade</a></li>
+      <li><a href="#pt-builtin"><span>03</span> O que tem de ser built-in</a></li>
+      <li><a href="#pt-routing"><span>04</span> Rotas e rotas por política</a></li>
+      <li><a href="#pt-netfilter"><span>05</span> Netfilter, conntrack, NAT</a></li>
+      <li><a href="#pt-links"><span>06</span> Bridges, VLANs, bonds, links virtuais</a></li>
+      <li><a href="#pt-tunnels"><span>07</span> Túneis e VPNs</a></li>
+      <li><a href="#pt-tc"><span>08</span> Controlo de tráfego e eBPF</a></li>
+      <li><a href="#pt-observability"><span>09</span> Sockets que deixam ver</a></li>
+      <li><a href="#pt-harden"><span>10</span> Opções que endurecem por remoção</a></li>
+      <li><a href="#pt-roles"><span>11</span> Três fragmentos por papel</a></li>
+      <li><a href="#pt-verify"><span>12</span> Provar a compilação</a></li>
+      <li><a href="#pt-failures"><span>13</span> Tabela de falhas</a></li>
+      <li><a href="#pt-sources"><span>14</span> Fontes</a></li>
+    </ol>
+  </nav>
+
+  <section id="pt-markers">
+    <h2><span class="no">01</span> Os marcadores e o que é (*)</h2>
+    <p>
+      A notação é a primeira coisa que os tutoriais baralham. Não existe um símbolo <code>(*)</code> na
+      configuração do kernel: o menuconfig desenha três marcadores diferentes, e confundi-los é como alguém
+      «ativa o encaminhamento» carregando num booleano que só controla se um <em>módulo</em> é sequer oferecido.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Vê</th><th>Tipo de símbolo</th><th>Significa</th><th>Pode descarregar?</th></tr></thead>
+        <tbody>
+          <tr><td><code>&lt;*&gt;</code></td><td>tristate, valor y</td><td>Compilado dentro da imagem do kernel</td><td>Não</td></tr>
+          <tr><td><code>&lt;M&gt;</code></td><td>tristate, valor m</td><td>Compilado como <code>.ko</code> separado</td><td>Sim, se não estiver em uso</td></tr>
+          <tr><td><code>&lt; &gt;</code></td><td>tristate, valor n</td><td>Não é compilado de todo</td><td>—</td></tr>
+          <tr><td><code>[*]</code></td><td>booleano</td><td>Só ligado ou desligado; não há forma de módulo</td><td>Não</td></tr>
+          <tr><td><code>{M}</code> / <code>{*}</code></td><td>forçado</td><td>Selecionado por outra opção que ativou</td><td>Só desativando o pai</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Essa tabela responde a metade da pergunta: muitas funcionalidades de encaminhamento são <b>booleanas</b>,
+      aparecem como <code>[*]</code> e não podem ser módulos. Onde o símbolo é tristate, a decisão é real.
+    </p>
+    <div class="callout">
+      <h4>A regra que decide tudo</h4>
+      <p>
+        Compile dentro o que a máquina precisa <b>antes de conseguir carregar módulos</b>; o resto é módulo. Na
+        prática: armazenamento, consola, a NIC que o initramfs levanta e tudo o que o initramfs precisa para
+        chegar à raiz. Rede para além disso é quase sempre módulo — a menos que pretenda desativar o carregamento
+        de módulos de vez.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-truth">
+    <h2><span class="no">02</span> Onde está a verdade</h2>
+    <p>
+      Nunca confie num blog para um nome de símbolo — incluindo este. A árvore do kernel nomeia os seus símbolos,
+      e o kernel em execução sabe com o que foi compilado.
+    </p>
+    <pre><code><span class="c"># o que estou a correr, e a configuração foi exposta?</span>
+uname -r
+zcat /proc/config.gz | grep -E "CONFIG_(IP_MULTIPLE_TABLES|NF_CONNTRACK)="
+ls /boot/config-"$(uname -r)"
+
+<span class="c"># a definição autoritária, na árvore de código</span>
+grep -n "config IP_MULTIPLE_TABLES" -A 12 net/ipv4/Kconfig
+scripts/config --file .config --state CONFIG_BRIDGE
+
+<span class="c"># mudar a configuração sem menuconfig</span>
+scripts/config --file .config --module BRIDGE
+make olddefconfig          <span class="c"># resolver símbolos novos com omissões</span>
+scripts/diffconfig .config.old .config   <span class="c"># exatamente o que mudou</span></code></pre>
+    <p>
+      <code>localmodconfig</code> é tentador — mantém só os módulos carregados. Serve para um portátil e é uma
+      armadilha para um router: os módulos de que a firewall precisa podem simplesmente não estar carregados na
+      máquina de compilação quando o corre.
+    </p>
+  </section>
+
+  <section id="pt-builtin">
+    <h2><span class="no">03</span> O que tem de ser built-in</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>Porque não pode ser módulo aqui</th></tr></thead>
+        <tbody>
+          <tr><td><code>VIRTIO_NET</code></td><td>Imagens de cloud e VM com disco virtual precisam da NIC antes da raiz montar</td></tr>
+          <tr><td><code>E1000E</code>, <code>IGB</code>, <code>IXGBE</code></td><td>A porta física usada para PXE, raiz NFS ou boot iSCSI</td></tr>
+          <tr><td><code>BRIDGE</code></td><td>Só se a raiz estiver atrás de uma bridge (raro) ou com módulos desativados</td></tr>
+          <tr><td><code>VLAN_8021Q</code></td><td>Quando a interface de gestão é etiquetada e configurada no initramfs</td></tr>
+          <tr><td><code>BONDING</code></td><td>Quando a interface de arranque é um bond</td></tr>
+          <tr><td><code>PACKET</code></td><td>Se o único diagnóstico da máquina é tcpdump numa imagem de resgate sem módulos</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Todo o resto desta página é módulo numa configuração sensata. O preço de <code>=y</code> é memória
+      permanente e uma base de confiança maior; o preço de <code>=m</code> é um passo de carregamento e o risco de
+      o módulo não existir depois de uma atualização do kernel.
+    </p>
+  </section>
+
+  <section id="pt-routing">
+    <h2><span class="no">04</span> Rotas e rotas por política</h2>
+    <pre><code><span class="c"># Networking support -&gt; Networking options</span>
+CONFIG_NET=y                     <span class="c"># [*] a pilha inteira</span>
+CONFIG_INET=y                    <span class="c"># [*] TCP/IP</span>
+CONFIG_IP_ADVANCED_ROUTER=y      <span class="c"># [*] destranca o resto abaixo</span>
+CONFIG_IP_MULTIPLE_TABLES=y      <span class="c"># [*] ip rule, rotas por política</span>
+CONFIG_IP_ROUTE_MULTIPATH=y      <span class="c"># [*] vários nexthops por rota</span>
+CONFIG_IP_ROUTE_CLASSID=y        <span class="c"># [*] classificação tc pela rota</span>
+CONFIG_IPV6_MULTIPLE_TABLES=y    <span class="c"># [*] o mesmo para IPv6</span>
+CONFIG_IPV6_SUBTREES=y           <span class="c"># [*] procuras IPv6 por origem</span></code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>Forma</th><th>Ativar quando</th></tr></thead>
+        <tbody>
+          <tr><td><code>IP_ADVANCED_ROUTER</code></td><td>bool <code>[*]</code></td><td>Sempre num router ou firewall; abre caminho ao resto</td></tr>
+          <tr><td><code>IP_MULTIPLE_TABLES</code></td><td>bool <code>[*]</code></td><td>Usa <code>ip rule</code>, VRFs ou várias tabelas</td></tr>
+          <tr><td><code>IP_ROUTE_MULTIPATH</code></td><td>bool <code>[*]</code></td><td>Dois uplinks, ou o ECMP do laboratório GNS3</td></tr>
+          <tr><td><code>IP_ROUTE_CLASSID</code></td><td>bool <code>[*]</code></td><td>Controlo de tráfego indexado a uma classe de rota</td></tr>
+          <tr><td><code>IPV6</code></td><td>tristate</td><td>Tem IPv6 — built-in se o endereço é atribuído antes dos módulos</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      São booleanos, portanto «fazer disto um módulo» não é opção e a pergunta passa a ser se os ativar de todo. Um
+      kernel sem <code>IP_MULTIPLE_TABLES</code> continua a encaminhar; apenas ignora todas as tabelas secundárias,
+      e os comandos <code>ip rule</code> parecem funcionar sem fazer nada.
+    </p>
+  </section>
+
+  <section id="pt-netfilter">
+    <h2><span class="no">05</span> Netfilter, conntrack, NAT</h2>
+    <pre><code><span class="c"># núcleo: tudo o resto depende disto</span>
+CONFIG_NETFILTER=y
+CONFIG_NF_CONNTRACK=m            <span class="c">&lt;M&gt; a tabela de estados</span>
+CONFIG_NF_NAT=m                  <span class="c">&lt;M&gt; motor NAT, necessário ao MASQUERADE</span>
+CONFIG_NF_TABLES=m               <span class="c">&lt;M&gt; o núcleo do nftables</span>
+CONFIG_NF_TABLES_INET=m          <span class="c">&lt;M&gt; uma tabela para v4 e v6</span>
+CONFIG_NFT_CT=m                  <span class="c">&lt;M&gt; expressão ct</span>
+CONFIG_NETFILTER_XTABLES=m       <span class="c">&lt;M&gt; camada de compatibilidade xtables</span>
+CONFIG_NETFILTER_XT_TARGET_MASQUERADE=m
+CONFIG_NF_CONNTRACK_FTP=m        <span class="c"># helpers: carregar só o necessário</span></code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>Forma</th><th>Efeito se faltar</th></tr></thead>
+        <tbody>
+          <tr><td><code>NF_CONNTRACK</code></td><td>tristate</td><td>Sem regras com estado, sem NAT, sem ferramenta <code>conntrack</code></td></tr>
+          <tr><td><code>NF_NAT</code></td><td>tristate</td><td>MASQUERADE e DNAT simplesmente não existem</td></tr>
+          <tr><td><code>NF_TABLES</code></td><td>tristate</td><td><code>nft</code> responde que não existe ou não é suportado</td></tr>
+          <tr><td><code>NETFILTER_XTABLES</code></td><td>tristate</td><td>Regras <code>iptables</code> legadas falham ao aplicar</td></tr>
+          <tr><td><code>NF_CONNTRACK_FTP</code> etc.</td><td>tristate</td><td>Só falta o helper desse protocolo — bom padrão</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <h4>Módulos servem — até desativar módulos</h4>
+      <p>
+        Debian e todas as distribuições principais trazem o netfilter como módulos, e funciona. Compile dentro
+        quando pretende pôr <code>kernel.modules_disabled=1</code> depois do arranque, ou quando a firewall tem de
+        poder descartar pacotes antes de qualquer processo de utilizador correr.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-links">
+    <h2><span class="no">06</span> Bridges, VLANs, bonds, links virtuais</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>Recomendado</th><th>Necessário para</th></tr></thead>
+        <tbody>
+          <tr><td><code>BRIDGE</code></td><td><code>&lt;M&gt;</code></td><td>Tudo o que faz bridge: VMs, contentores, o switch do GNS3</td></tr>
+          <tr><td><code>BRIDGE_NETFILTER</code></td><td><code>&lt;M&gt;</code></td><td>iptables em tráfego comutado; o Docker precisa</td></tr>
+          <tr><td><code>VLAN_8021Q</code></td><td><code>&lt;M&gt;</code></td><td><code>ip link add ... type vlan</code></td></tr>
+          <tr><td><code>BONDING</code></td><td><code>&lt;M&gt;</code></td><td>Bonds LACP e de failover</td></tr>
+          <tr><td><code>MACVLAN</code> / <code>IPVLAN</code></td><td><code>&lt;M&gt;</code></td><td>Muitos endereços numa NIC, rede de contentores</td></tr>
+          <tr><td><code>VETH</code></td><td><code>&lt;M&gt;</code></td><td>Namespaces, contentores, topologias de teste</td></tr>
+          <tr><td><code>DUMMY</code></td><td><code>&lt;M&gt;</code></td><td>Interface estável que fica de pé sem cabo</td></tr>
+          <tr><td><code>IFB</code></td><td><code>&lt;M&gt;</code></td><td>Modelação de ingress — redirecionar entrada para uma qdisc</td></tr>
+          <tr><td><code>TUN</code></td><td><code>&lt;M&gt;</code></td><td>VPNs e túneis em espaço de utilizador; cria também <code>tap</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      São módulos baratos e não há razão de segurança para os compilar dentro. A exceção é um host que não consiga
+      carregar módulos, onde todos os tipos de link criados no arranque têm de estar na imagem.
+    </p>
+  </section>
+
+  <section id="pt-tunnels">
+    <h2><span class="no">07</span> Túneis e VPNs</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>Recomendado</th><th>Nota</th></tr></thead>
+        <tbody>
+          <tr><td><code>WIREGUARD</code></td><td><code>&lt;M&gt;</code></td><td>Um módulo, sem dependências; «Unknown device type» significa que falta</td></tr>
+          <tr><td><code>VXLAN</code></td><td><code>&lt;M&gt;</code></td><td>Redes overlay; precisa de porta UDP de túnel</td></tr>
+          <tr><td><code>GENEVE</code></td><td><code>&lt;M&gt;</code></td><td>A encapsulação overlay mais recente</td></tr>
+          <tr><td><code>NET_IPIP</code></td><td><code>&lt;M&gt;</code></td><td>IPv4 em IPv4 simples</td></tr>
+          <tr><td><code>NET_IPGRE</code></td><td><code>&lt;M&gt;</code></td><td>GRE, incluindo a forma com chave</td></tr>
+          <tr><td><code>IPV6_SIT</code></td><td><code>&lt;M&gt;</code></td><td>IPv6 em IPv4, legado mas ainda usado</td></tr>
+          <tr><td><code>XFRM_USER</code>, <code>INET_ESP</code></td><td><code>&lt;M&gt;</code></td><td>IPsec; a interface de utilizador e a transformação ESP</td></tr>
+          <tr><td><code>INET_AH</code></td><td><code>&lt;M&gt;</code></td><td>Cabeçalho de autenticação, raramente a escolha certa hoje</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Túneis são o caso clássico de «carrega a pedido»: o tipo de interface é pedido por nome a partir do espaço de
+      utilizador e o kernel carrega o módulo. Se o carregamento automático estiver desativado, o módulo tem de
+      estar na imagem ou ser carregado explicitamente no arranque.
+    </p>
+  </section>
+
+  <section id="pt-tc">
+    <h2><span class="no">08</span> Controlo de tráfego e eBPF</h2>
+    <pre><code>CONFIG_NET_SCHED=y
+CONFIG_NET_SCH_HTB=m
+CONFIG_NET_SCH_CAKE=m
+CONFIG_NET_SCH_FQ_CODEL=m
+CONFIG_NET_SCH_INGRESS=m          <span class="c"># o gancho para clsact</span>
+CONFIG_NET_CLS_ACT=y              <span class="c"># [*] ações deixam de ser opcionais</span>
+CONFIG_NET_ACT_MIRRED=m           <span class="c"># redirecionar: ingress shaping, espelhamento</span>
+CONFIG_NET_CLS_FLOWER=m           <span class="c"># matching com offload de hardware</span>
+CONFIG_NET_CLS_U32=m
+CONFIG_NET_CLS_BPF=m
+CONFIG_BPF_SYSCALL=y              <span class="c"># [*] exigido por todas as ferramentas eBPF</span>
+CONFIG_BPF_JIT=y
+CONFIG_DEBUG_INFO_BTF=y           <span class="c"># [*] o libbpf CO-RE precisa disto</span></code></pre>
+    <p>
+      <code>NET_SCHED</code> e <code>BPF_SYSCALL</code> são booleanos; as qdiscs e classificadores são módulos. Um
+      erro «qdisc not found» é um <code>sch_*.ko</code> em falta, enquanto «Operation not supported» num filtro
+      <code>flower</code> é um <code>cls_flower.ko</code> em falta — duas mensagens diferentes, dois símbolos
+      diferentes.
+    </p>
+    <div class="callout gap">
+      <h4>XDP é uma propriedade do driver, não só uma opção</h4>
+      <p>
+        O eBPF está no núcleo, mas o XDP precisa de suporte do driver e, para o caminho nativo, de um driver que o
+        implemente. Em <code>veth</code> e <code>tun</code> tem o caminho genérico; numa placa que não o suporta, o
+        programa simplesmente não se liga em modo nativo.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-observability">
+    <h2><span class="no">09</span> Sockets que deixam ver</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>Recomendado</th><th>Ferramenta que quebra sem ele</th></tr></thead>
+        <tbody>
+          <tr><td><code>PACKET</code></td><td><code>&lt;M&gt;</code></td><td><code>tcpdump</code>, Snort afpacket, Suricata</td></tr>
+          <tr><td><code>INET_DIAG</code></td><td><code>&lt;M&gt;</code></td><td><code>ss</code>, listagem de sockets em agentes de monitorização</td></tr>
+          <tr><td><code>INET_TCP_DIAG</code>, <code>INET_UDP_DIAG</code></td><td><code>&lt;M&gt;</code></td><td>Detalhe por protocolo em <code>ss -t</code> / <code>-u</code></td></tr>
+          <tr><td><code>UNIX_DIAG</code></td><td><code>&lt;M&gt;</code></td><td><code>ss -x</code></td></tr>
+          <tr><td><code>NETLINK_DIAG</code></td><td><code>&lt;M&gt;</code></td><td>Inspeção de sockets netlink</td></tr>
+          <tr><td><code>IKCONFIG</code> + <code>IKCONFIG_PROC</code></td><td><code>[*]</code></td><td><code>/proc/config.gz</code> — sem ele, não há auditoria da compilação</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      <code>IKCONFIG</code> é a decisão de endurecimento mais barata desta página: embute a configuração para que
+      qualquer pessoa possa verificar o que foi compilado, incluindo você, dois anos depois. Esconda-a se a
+      configuração for sensível; mantenha-a se preferir ser auditável.
+    </p>
+  </section>
+
+  <section id="pt-harden">
+    <h2><span class="no">10</span> Opções que endurecem por remoção</h2>
+    <pre><code>CONFIG_MODULE_SIG=y
+CONFIG_MODULE_SIG_FORCE=y        <span class="c"># recusar módulos não assinados</span>
+CONFIG_MODULE_UNLOAD=n           <span class="c"># nada pode ser descarregado</span>
+CONFIG_KEXEC=n
+CONFIG_STRICT_KERNEL_RWX=y
+CONFIG_DEBUG_WX=y
+
+<span class="c"># em tempo de execução, depois de tudo carregado</span>
+sysctl -w kernel.modules_disabled=1</code></pre>
+    <ul>
+      <li><b><code>MODULE_SIG_FORCE</code></b> torna todos os módulos assinados e de confiança; um driver de terceiros compilado por si precisa de uma chave no keyring do kernel.</li>
+      <li><b><code>MODULE_UNLOAD=n</code></b> retira a possibilidade de substituir um módulo carregado — e a de recuperar de um mau sem reiniciar.</li>
+      <li><b><code>modules_disabled=1</code></b> é o mais forte e menos reversível: depois disso, nenhum módulo carrega. Tudo o que a máquina precisar tem de estar carregado ou compilado dentro.</li>
+    </ul>
+    <div class="callout warn">
+      <h4>Faça as contas antes do reboot</h4>
+      <p>
+        Um router que desativa módulos no arranque tem de ter bridge, VLAN, conntrack e a firewall compilados
+        dentro — e os testes desta página correm <em>antes</em> de a definição ser permanente. O resultado habitual
+        da ordem inversa é uma máquina que liga e nunca mais passa um pacote.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-roles">
+    <h2><span class="no">11</span> Três fragmentos por papel</h2>
+    <p>
+      São pontos de partida para <code>make olddefconfig</code>, não evangelho: nomes de símbolos e omissões mudam
+      entre versões, e o seu hardware decide as linhas de driver.
+    </p>
+    <pre><code><span class="c"># A. Router / firewall (Debian, netfilter como módulos)</span>
+CONFIG_NET=y
+CONFIG_INET=y
+CONFIG_IP_ADVANCED_ROUTER=y
+CONFIG_IP_MULTIPLE_TABLES=y
+CONFIG_IP_ROUTE_MULTIPATH=y
+CONFIG_NETFILTER=y
+CONFIG_NF_CONNTRACK=m
+CONFIG_NF_NAT=m
+CONFIG_NF_TABLES=m
+CONFIG_NETFILTER_XTABLES=m
+CONFIG_BRIDGE=m
+CONFIG_VLAN_8021Q=m
+
+<span class="c"># B. Host de virtualização (tudo o que um convidado pode pedir)</span>
+CONFIG_BRIDGE=m
+CONFIG_BRIDGE_NETFILTER=m
+CONFIG_VETH=m
+CONFIG_TUN=m
+CONFIG_MACVLAN=m
+CONFIG_VXLAN=m
+CONFIG_OPENVSWITCH=m
+
+<span class="c"># C. Eletrodoméstico endurecido (módulos desativados após arranque)</span>
+CONFIG_VIRTIO_NET=y
+CONFIG_NF_CONNTRACK=y
+CONFIG_NF_NAT=y
+CONFIG_NF_TABLES=y
+CONFIG_IP_NF_IPTABLES=y
+CONFIG_BRIDGE=y
+CONFIG_PACKET=y
+CONFIG_MODULE_SIG_FORCE=y
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y</code></pre>
+    <p>
+      O padrão é visível: as mesmas funcionalidades, letra diferente. A é a escolha dominante e a mais fácil de
+      manter; C é a que se consegue explicar ao nível do pacote, ao custo de nunca poder acrescentar nada sem
+      recompilar.
+    </p>
+  </section>
+
+  <section id="pt-verify">
+    <h2><span class="no">12</span> Provar a compilação</h2>
+    <pre><code><span class="c"># o que está realmente neste kernel</span>
+zcat /proc/config.gz | grep -E "IP_MULTIPLE_TABLES|NF_CONNTRACK|BRIDGE|PACKET"
+lsmod | grep -E "nf_|bridge|vlan"
+
+<span class="c"># cada subsistema, interrogado da única forma que conta</span>
+ip rule add fwmark 1 table 100; ip rule show          <span class="c"># rotas por política</span>
+nft list tables                                     <span class="c"># nftables</span>
+iptables -t nat -L -n | head -3                     <span class="c"># tabela NAT legada</span>
+tc qdisc show dev lo                                <span class="c"># controlo de tráfego</span>
+ip link add vtest type veth peer name vtest2        <span class="c"># veth</span>
+tcpdump -i any -c1 -w /dev/null 2&gt;&amp;1                <span class="c"># AF_PACKET</span>
+conntrack -L 2&gt;/dev/null | wc -l                    <span class="c"># tabela de estados</span>
+ss -s                                               <span class="c"># socket diag</span></code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Verificação</th><th>Bom sinal</th><th>O que uma falha diz</th></tr></thead>
+        <tbody>
+          <tr><td><code>ip rule add</code></td><td>Regra listada</td><td><code>IP_MULTIPLE_TABLES</code> desligado — a regra «funciona» mas é ignorada</td></tr>
+          <tr><td><code>nft list tables</code></td><td>Lista vazia, sem erro</td><td><code>NF_TABLES</code> em falta</td></tr>
+          <tr><td><code>iptables -t nat</code></td><td>Tabela impressa</td><td><code>NF_NAT</code> ou xtables em falta</td></tr>
+          <tr><td><code>tcpdump</code></td><td>Um pacote capturado</td><td><code>PACKET</code> em falta: todos os sensores da máquina ficam cegos</td></tr>
+          <tr><td><code>ip link add veth</code></td><td>Par criado</td><td><code>VETH</code> em falta</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Corra o mesmo conjunto depois de cada atualização do kernel. A compilação que auditou não é a que arranca
+      amanhã — confira as referências externas para os nomes atuais quando a saída discordar desta página.
+    </p>
+  </section>
+
+  <section id="pt-failures">
+    <h2><span class="no">13</span> Tabela de falhas</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sintoma</th><th>Símbolo em falta</th><th>Correção</th></tr></thead>
+        <tbody>
+          <tr><td><code>tcpdump: socket: Address family not supported</code></td><td><code>PACKET</code></td><td><code>&lt;M&gt;</code> e carregar <code>af_packet</code></td></tr>
+          <tr><td><code>iptables: Table does not exist</code></td><td><code>NF_NAT</code> / <code>IP_NF_NAT</code></td><td>Ativar NAT, recarregar a firewall</td></tr>
+          <tr><td><code>nft: no such file or directory</code></td><td><code>NF_TABLES</code></td><td>Compilar o núcleo do nftables, não só xtables</td></tr>
+          <tr><td>Uma regra na tabela 100 é ignorada</td><td><code>IP_MULTIPLE_TABLES</code></td><td>Booleano: exige recompilar</td></tr>
+          <tr><td><code>RTNETLINK answers: Operation not supported</code> num filtro</td><td><code>NET_CLS_FLOWER</code></td><td>Carregar o módulo do classificador</td></tr>
+          <tr><td><code>Unknown device type</code> para wg0</td><td><code>WIREGUARD</code></td><td>É módulo, não pacote de utilizador</td></tr>
+          <tr><td>Regras iptables nunca veem tramas comutadas</td><td><code>BRIDGE_NETFILTER</code></td><td>Ativar e confirmar que <code>br_netfilter</code> está carregado</td></tr>
+          <tr><td>Funciona até reiniciar após atualização</td><td>Kernel em execução ≠ <code>/lib/modules</code></td><td>Reiniciar para a imagem nova, ou fixar o kernel</td></tr>
+          <tr><td>Um módulo não carrega de todo</td><td><code>MODULE_SIG_FORCE</code> ou <code>modules_disabled</code></td><td>Assinar, ou recompilar tudo dentro</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="pt-sources">
+    <h2><span class="no">14</span> Fontes</h2>
+    <ul>
+      <li><a href="https://www.kernel.org/doc/html/latest/networking/">Kernel networking</a> — a documentação autoritária de rotas, netfilter e tc.</li>
+      <li><a href="https://www.kernel.org/doc/html/latest/admin-guide/kernel-parameters.html">Parâmetros do kernel</a> — opções de arranque e de módulos, incluindo assinatura obrigatória.</li>
+      <li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/net/ipv4/Kconfig">Kconfig</a> — onde cada símbolo desta página é realmente definido.</li>
+      <li><a href="https://docs.kernel.org/bpf/">eBPF</a> — verificador, mapas e o gancho XDP.</li>
+      <li><a href="https://wiki.nftables.org/">nftables</a> — a linguagem de regras que substitui o iptables.</li>
+      <li><a href="https://wiki.debian.org/KernelConfiguration">Debian</a> — compilar e configurar um kernel Debian.</li>
+    </ul>
+    <p>
+      Onde isto toca o resto do blog: <a href="networking.html">Redes</a> para o fundo dos protocolos,
+      <a href="GNS3.html">GNS3</a> para o laboratório encaminhado, <a href="Snort.html">Snort</a> e
+      <a href="Suricata.html">Suricata</a> para os sensores que precisam de <code>PACKET</code>, e
+      <a href="DebianSecurity.html">segurança em Debian</a> para o resto da pilha de endurecimento.
+    </p>
+    <div class="next">
+      <a href="DebianSecurity.html">Segurança Debian</a>
+      <a href="networking.html">Redes</a>
+      <a href="Snort.html">Snort</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Rede no kernel</b> &middot; símbolos Kconfig, built-in versus módulo, verificação.</p>
+    <p>HTML simples, CSS3 e JavaScript. Sem estilos, scripts, tipos de letra ou imagens externas.</p>
+    <a class="home" href="./index.html">Início</a>
+  </div>
+</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var blocks = document.querySelectorAll("[data-lang-block]");
+  var links = document.querySelectorAll("[data-lang-switch]");
+
+  function apply(lang) {
+    Array.prototype.forEach.call(blocks, function (block) {
+      block.hidden = block.getAttribute("data-lang-block") !== lang;
+    });
+    Array.prototype.forEach.call(links, function (link) {
+      if (link.getAttribute("data-lang-switch") === lang) { link.setAttribute("aria-current", "true"); }
+      else { link.removeAttribute("aria-current"); }
+    });
+    document.documentElement.lang = lang === "pt" ? "pt-PT" : "en";
+  }
+
+  Array.prototype.forEach.call(links, function (link) {
+    link.addEventListener("click", function (event) {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button) { return; }
+      event.preventDefault();
+      apply(link.getAttribute("data-lang-switch"));
+    });
+  });
+
+  var wanted = new URLSearchParams(location.search).get("lang");
+  if (wanted === "en" || wanted === "pt") { apply(wanted); }
+  else if (location.hash.indexOf("#pt-") === 0) { apply("pt"); }
+})();
+</script>
+</body>
+</html>

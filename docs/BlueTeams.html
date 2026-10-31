@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blue Teams: Detection Engineering — Labs, Tools, Doctrine</title>
+<meta name="description" content="Blue team operations in depth: detection engineering, a buildable sensor lab, the telemetry and tool stack, and the standards a SOC is judged against.">
+<link rel="canonical" href="https://blog.odicforcesounds.com/BlueTeams.html">
+<meta property="og:title" content="Blue Teams: Detection Engineering — Labs, Tools, Doctrine">
+<meta property="og:description" content="Blue team operations in depth: detection engineering, a buildable sensor lab, the telemetry and tool stack, and the standards a SOC is judged against.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://blog.odicforcesounds.com/BlueTeams.html">
+<meta property="og:site_name" content="Monkey Blog">
+<meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Blue Teams: Detection Engineering — Labs, Tools, Doctrine">
+<meta name="twitter:description" content="Blue team operations in depth: detection engineering, a buildable sensor lab, the telemetry and tool stack, and the standards a SOC is judged against.">
+<meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/BlueTeams.html#article",
+      "headline": "Blue Teams: Detection Engineering — Labs, Tools, Doctrine",
+      "description": "Blue team operations in depth: detection engineering, a buildable sensor lab, the telemetry and tool stack, and the standards a SOC is judged against.",
+      "url": "https://blog.odicforcesounds.com/BlueTeams.html",
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://blog.odicforcesounds.com/BlueTeams.html" },
+      "image": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/peace.jpg", "width": 1496, "height": 960 },
+      "inLanguage": "en",
+      "author": { "@type": "Person", "name": "Oscar", "url": "https://blog.odicforcesounds.com/" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/",
+        "logo": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/three.jpg", "width": 1024, "height": 1024 }
+      },
+      "isPartOf": { "@type": "Blog", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/" },
+      "articleSection": "Security & Hacking",
+      "keywords": "blue team, SOC, detection engineering, Sigma, Sysmon, threat hunting, incident response, NIST",
+      "wordCount": 8937,
+      "datePublished": "2026-10-31",
+      "dateModified": "2026-10-31"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://blog.odicforcesounds.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Security & Hacking", "item": "https://blog.odicforcesounds.com/#category-security-and-hacking" },
+        { "@type": "ListItem", "position": 3, "name": "Blue Teams", "item": "https://blog.odicforcesounds.com/BlueTeams.html" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#05080f;
+  --panel:#0a1220;
+  --panel2:#0d1728;
+  --ink:#e9f1fb;
+  --soft:#c3d2e4;
+  --muted:#8ea2ba;
+  --azure:#38bdf8;
+  --teal:#2dd4bf;
+  --ice:#7dd3fc;
+  --gold:#ffd166;
+  --violet:#a78bfa;
+  --line:rgba(255,255,255,.11);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--ink);
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(940px 560px at 86% -6%,rgba(56,189,248,.16),transparent 62%),
+    radial-gradient(760px 520px at 2% 22%,rgba(45,212,191,.12),transparent 58%),
+    radial-gradient(900px 640px at 96% 78%,rgba(167,139,250,.12),transparent 58%),
+    linear-gradient(180deg,#05080f,#070d17 55%,#04070c);
+  background-attachment:fixed;
+  background-repeat:no-repeat;
+  font:16px/1.7 var(--sans);
+}
+a{color:var(--ice);text-decoration:none;border-bottom:1px solid rgba(56,189,248,.35);transition:color .15s,border-color .15s}
+a:hover{color:var(--gold);border-bottom-color:var(--gold)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+[data-lang-block][hidden]{display:none!important}
+::selection{background:var(--azure);color:#03131d}
+
+/* language switch */
+.lang-switch{
+  display:flex;justify-content:center;gap:.4rem;
+  padding:.9rem 1rem .3rem;
+  font-family:var(--mono);font-size:.72rem;
+  letter-spacing:.18em;text-transform:uppercase;
+}
+.lang-switch a{
+  padding:.32rem .95rem;
+  color:var(--azure);font-weight:600;
+  background:transparent;
+  border:1px solid rgba(56,189,248,.6);border-radius:999px;
+  opacity:.85;
+  transition:opacity .15s,background-color .15s,color .15s,border-color .15s;
+}
+.lang-switch a[aria-current="true"]{color:var(--bg);background:var(--azure);border-color:var(--azure);opacity:1}
+.lang-switch a:hover,.lang-switch a:focus-visible{color:#03131d;background:var(--gold);border-color:var(--gold);opacity:1}
+
+/* shell */
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(1rem,4vw,2rem)}
+.topbar{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:.8rem;
+  padding:.7rem 0;
+  background:rgba(5,8,15,.88);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border-bottom:1px solid transparent;
+  border-image:linear-gradient(90deg,var(--azure),var(--teal) 45%,var(--violet)) 1;
+}
+.home{
+  border:1px solid rgba(56,189,248,.55);border-radius:6px;
+  padding:.28rem .7rem;
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ice);background:rgba(56,189,248,.09);
+}
+.home:hover{background:var(--gold);border-color:var(--gold);color:#03131d}
+.brand{margin-left:auto;font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+.brand b{color:var(--azure)}
+
+/* hero */
+.hero{padding:clamp(2rem,6vw,3.4rem) 0 .6rem}
+.kicker{margin:0 0 .8rem;color:var(--teal);font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase}
+h1,.seo-h2{
+  margin:0;
+  font-size:clamp(1.9rem,5vw,3.2rem);
+  line-height:1.08;letter-spacing:-.02em;
+  background:linear-gradient(100deg,#fff 6%,var(--azure) 40%,var(--teal) 66%,var(--ice));
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;
+}
+.lede{max-width:66ch;margin:1.1rem 0 0;color:var(--soft);font-size:1.02rem}
+.lede b{color:#fff}
+.meta-line{display:flex;flex-wrap:wrap;gap:.4rem;margin:1.1rem 0 0}
+.chip{
+  border:1px solid rgba(56,189,248,.38);border-radius:99px;
+  padding:.22rem .7rem;background:rgba(56,189,248,.08);
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ice);
+}
+.chip.dim{border-color:var(--line);background:rgba(255,255,255,.03);color:var(--muted)}
+
+/* contents */
+.toc{
+  margin:1.6rem 0 2rem;padding:1rem 1.1rem;
+  border:1px solid var(--line);border-radius:12px;
+  background:linear-gradient(160deg,rgba(13,23,40,.92),rgba(7,12,21,.92));
+}
+.toc h2{margin:0 0 .6rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.3rem}
+.toc a{
+  display:flex;gap:.55rem;align-items:baseline;
+  padding:.36rem .6rem;border:1px solid transparent;border-radius:7px;
+  color:var(--soft);border-bottom:0;
+}
+.toc a span{font-family:var(--mono);font-size:.62rem;color:var(--azure)}
+.toc a:hover,.toc a:focus-visible{background:rgba(56,189,248,.13);border-color:rgba(56,189,248,.5);color:#fff}
+
+/* sections */
+main section{padding:1.6rem 0;border-top:1px solid var(--line)}
+main section:first-of-type{border-top:0}
+h2{font-size:clamp(1.35rem,3vw,1.8rem);line-height:1.2;margin:0 0 .7rem;letter-spacing:-.01em;color:#fff}
+h2 .no{font-family:var(--mono);font-size:.72em;color:var(--azure);margin-right:.4rem}
+h3{margin:1.5rem 0 .5rem;font-family:var(--mono);font-size:.92rem;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+p{color:var(--soft);max-width:88ch}
+b,strong{color:#fff}
+em{color:var(--gold);font-style:normal}
+ul,ol{color:var(--soft);padding-left:1.2rem}
+li{margin:.32rem 0}
+li b{color:#fff}
+code{font-family:var(--mono);font-size:.84em;background:#0b2a3a;color:var(--gold);padding:.06em .32em;border-radius:3px;word-break:break-word}
+pre{
+  margin:1rem 0;padding:.9rem 1rem;overflow-x:auto;
+  background:linear-gradient(180deg,#081420,#040a12);
+  border:1px solid rgba(56,189,248,.32);border-left:3px solid var(--azure);border-radius:9px;
+  color:#d6f1ff;font:400 .76rem/1.65 var(--mono);
+}
+pre code{background:none;color:inherit;padding:0}
+pre .c{color:#7f95a8}
+pre .k{color:#8be9c0}
+
+/* tables */
+.table-wrap{margin:1rem 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;background:rgba(0,0,0,.28)}
+table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:560px}
+th{
+  text-align:left;padding:.6rem .7rem;white-space:nowrap;
+  background:linear-gradient(180deg,#0e2033,#091626);
+  color:var(--azure);border-bottom:2px solid var(--azure);
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
+}
+td{padding:.55rem .7rem;border-bottom:1px solid var(--line);color:var(--soft);vertical-align:top}
+tbody tr:nth-child(even) td{background:rgba(56,189,248,.05)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{color:#fff;font-family:var(--mono);font-size:.74rem;white-space:nowrap}
+
+/* callouts */
+.callout{
+  margin:1.2rem 0;padding:.95rem 1.1rem;border-radius:9px;
+  border:1px solid var(--line);border-left:4px solid var(--azure);
+  background:linear-gradient(100deg,rgba(56,189,248,.11),rgba(45,212,191,.05));
+}
+.callout h4{margin:0 0 .3rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--azure)}
+.callout.warn{border-left-color:var(--gold);background:linear-gradient(100deg,rgba(255,209,102,.10),rgba(56,189,248,.05))}
+.callout.warn h4{color:var(--gold)}
+.callout.gap{border-left-color:var(--violet);background:linear-gradient(100deg,rgba(167,139,250,.13),rgba(56,189,248,.05))}
+.callout.gap h4{color:#c4b5fd}
+.callout p{margin:.3rem 0;font-size:.88rem;max-width:none}
+.callout p:last-child{margin-bottom:0}
+
+/* cross links */
+.next{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.4rem 0 0}
+.next a{
+  border:1px solid rgba(167,139,250,.55);border-radius:8px;
+  padding:.45rem .85rem;background:rgba(167,139,250,.10);
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#c4b5fd;
+}
+.next a:hover,.next a:focus-visible{background:var(--gold);border-color:var(--gold);color:#03131d}
+
+footer{
+  margin-top:2rem;padding:1.6rem 0 2.4rem;text-align:center;
+  border-top:2px solid transparent;
+  background:
+    linear-gradient(#070f1c,#070f1c) padding-box,
+    linear-gradient(90deg,var(--azure),var(--teal),var(--violet),var(--gold)) border-box;
+}
+footer p{margin:.3rem auto;color:var(--muted);font-size:.78rem;max-width:80ch;text-align:center}
+footer .home{margin-top:.7rem;display:inline-block}
+@media (max-width:640px){
+  table{min-width:480px}
+  .toc ol{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+@media print{
+  body{background:#fff;color:#111}
+  .lang-switch,.topbar,footer .home{display:none!important}
+  h1,.seo-h2{color:#111;-webkit-text-fill-color:#111}
+  pre,table,.callout{background:#fff!important;border-color:#999!important}
+  p,td,li,pre{color:#111!important}
+}
+</style>
+</head>
+<body>
+
+<nav class="lang-switch" aria-label="Language">
+  <a href="?lang=pt" data-lang-switch="pt" lang="pt-PT">Português</a>
+  <a href="?lang=en" data-lang-switch="en" aria-current="true" lang="en">English</a>
+</nav>
+
+<div id="lang-en" data-lang-block="en">
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Home</a>
+    <span class="brand">Blue <b>/</b> Teams</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Detection engineering &middot; telemetry, lab, doctrine</p>
+    <h1>Blue Teams: proving that you would have seen it</h1>
+    <p class="lede">
+      Defence is not a product you buy; it is a loop you run: collect telemetry, form a hypothesis, write a
+      detection, test it against real attack behaviour, and tune what it costs. This page documents the
+      loop — the <b>documents</b> behind it, a <b>lab</b> where detections are proved, and the <b>tools</b>
+      that turn raw logs into a defensible answer.
+    </p>
+    <div class="meta-line">
+      <span class="chip">assume breach</span>
+      <span class="chip dim">6 data sources</span>
+      <span class="chip dim">5 lab components</span>
+      <span class="chip dim">7 standards</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="toc-title">
+    <h2 id="toc-title">Contents</h2>
+    <ol>
+      <li><a href="#what"><span>01</span> Who does what in a blue team</a></li>
+      <li><a href="#doctrine"><span>02</span> The documents a SOC is judged against</a></li>
+      <li><a href="#lab"><span>03</span> Build a sensor lab</a></li>
+      <li><a href="#walkthrough"><span>04</span> Walkthrough: from nothing to protective master</a></li>
+      <li><a href="#telemetry"><span>05</span> Telemetry that actually answers questions</a></li>
+      <li><a href="#detection"><span>06</span> The detection engineering loop</a></li>
+      <li><a href="#stack"><span>07</span> SIEM, NSM and EDR stacks</a></li>
+      <li><a href="#setup"><span>08</span> Setup: installing the stack</a></li>
+      <li><a href="#hunting"><span>09</span> Threat hunting hypotheses</a></li>
+      <li><a href="#response"><span>10</span> Incident response</a></li>
+      <li><a href="#hardening"><span>11</span> Hardening quick wins</a></li>
+      <li><a href="#purple"><span>12</span> Purple loop and metrics</a></li>
+      <li><a href="#sources"><span>13</span> Sources and further reading</a></li>
+    </ol>
+  </nav>
+
+  <section id="what">
+    <h2><span class="no">01</span> Who does what in a blue team</h2>
+    <p>
+      "Blue team" is a bucket, and buckets leak. A SOC that only triages alerts is a queue; a SOC that
+      writes detections and hunts is a capability. The split below is the one that survives budget season,
+      because every function has a measurable output.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Function</th><th>Daily work</th><th>Output you can measure</th></tr></thead>
+        <tbody>
+          <tr><td>Tier 1 triage</td><td>Filter alerts, enrich, escalate or close</td><td>False-positive rate, time to triage</td></tr>
+          <tr><td>Tier 2/3 analysis</td><td>Scope an incident across hosts and identities</td><td>Time to contain, detection coverage found</td></tr>
+          <tr><td>Detection engineering</td><td>Write, test and version rules against attack behaviour</td><td>Techniques covered, rules with a test</td></tr>
+          <tr><td>Threat hunting</td><td>Answer a hypothesis with data, before an alert exists</td><td>New detections born from hunts</td></tr>
+          <tr><td>Incident response</td><td>Preserve, contain, eradicate, recover, explain</td><td>Dwell time, evidence quality, lessons closed</td></tr>
+          <tr><td>Vulnerability and hardening</td><td>Patch cadence, baselines, entitlement review</td><td>Exposure days, baseline compliance</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      The red side of this exchange is documented in <a href="RedTeams.html">red</a>, and the attack paths
+      themselves in <a href="Security.html">intrusions</a>. A blue team that does not understand the
+      attacker's next move writes detections for last year.
+    </p>
+  </section>
+
+  <section id="doctrine">
+    <h2><span class="no">02</span> The documents a SOC is judged against</h2>
+    <p>
+      Standards are not paperwork when they are used as a checklist for telemetry and decisions. The short
+      list below is enough to run a defensible programme; each item answers a question that comes up in
+      every audit and every incident review.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Document</th><th>Publisher</th><th>Question it settles</th></tr></thead>
+        <tbody>
+          <tr><td>CSF 2.0</td><td>NIST</td><td>What outcomes a security programme must produce, including governance</td></tr>
+          <tr><td>SP 800-61r3</td><td>NIST</td><td>How an incident is run, aligned with the CSF functions</td></tr>
+          <tr><td>SP 800-53</td><td>NIST</td><td>Which controls exist and what evidence satisfies them</td></tr>
+          <tr><td>CIS Controls v8.1</td><td>CIS</td><td>Which eighteen practices remove the most risk first</td></tr>
+          <tr><td>ATT&amp;CK</td><td>MITRE</td><td>Which behaviour a detection is supposed to catch</td></tr>
+          <tr><td>D3FEND</td><td>MITRE</td><td>Which countermeasure maps to that behaviour</td></tr>
+          <tr><td>Sigma</td><td>SigmaHQ</td><td>How a rule is written once and translated to any SIEM</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <h4>Map rules to techniques, not to products</h4>
+      <p>
+        A rule named after a vendor's alert text dies with the product. A rule tagged
+        <code>attack.t1059.001</code> survives a SIEM migration, tells you what it covers, and lets you
+        compare coverage with a red team report in the same vocabulary.
+      </p>
+    </div>
+  </section>
+
+  <section id="lab">
+    <h2><span class="no">03</span> Build a sensor lab</h2>
+    <p>
+      A detection you have never seen fire is a wish. The lab below pairs the attacker's topology with
+      sensors: an NSM host for network evidence, a log pipeline for endpoint and identity events, a target
+      domain to generate realistic traffic, and an attack generator to produce known-bad behaviour on
+      demand.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Layer</th><th>Build</th><th>What it proves</th><th>Reset</th></tr></thead>
+        <tbody>
+          <tr><td>NSM host</td><td>Security Onion on a mirrored/SPAN interface</td><td>Suricata alerts, Zeek logs, full packet capture</td><td>Rebuild weekly</td></tr>
+          <tr><td>Log pipeline</td><td>Wazuh or Elastic/OpenSearch with agents</td><td>Endpoint, authentication and file events in one index</td><td>Snapshot per rule change</td></tr>
+          <tr><td>Windows estate</td><td>DC plus two clients with Sysmon and a tuned config</td><td>Process, network, registry and DNS telemetry</td><td>Revert from template</td></tr>
+          <tr><td>Linux estate</td><td>One server with auditd rules and SSH login attempts</td><td>Privilege escalation and persistence evidence</td><td>Recreate container</td></tr>
+          <tr><td>Attack generator</td><td>Atomic Red Team and a Caldera agent, firing only at lab hosts</td><td>Known-bad behaviour with a timestamp to match</td><td>Stop after each run</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code><span class="c"># 1. sensors first: capture the traffic you will be asked about</span>
+sudo so-setup
+sudo so-status
+
+<span class="c"># 2. endpoint telemetry: one agent, one index, one time zone</span>
+sudo wazuh-agent --register
+sudo systemctl enable --now wazuh-agent
+
+<span class="c"># 3. the attack generator, inside the lab network only</span>
+pwsh -c "Invoke-AtomicTest T1059.001 -TestNumbers 1"
+
+<span class="c"># 4. did the rule fire, and what did it see?</span>
+grep -i "atomic" /var/ossec/logs/alerts/alerts.json | tail -n 5
+so-elasticsearch-query</code></pre>
+    <h3>Lab rules that keep detections honest</h3>
+    <ul>
+      <li><b>Time sync everywhere.</b> One NTP source for attack and defence, or your timeline is fiction.</li>
+      <li><b>Record the test plan</b> before the attack runs: technique, expected event, expected alert.</li>
+      <li><b>Break the sensor on purpose.</b> Stop an agent for a day and see what silently disappears — that is your real coverage.</li>
+      <li><b>Keep the data.</b> A week of Zeek and Sysmon in the lab is worth more than a year of theory.</li>
+      <li><b>Never fire the generator outside the lab.</b> The other half of this topology belongs to the <a href="RedTeams.html">attackers</a>.</li>
+    </ul>
+  </section>
+
+  <section id="walkthrough">
+    <h2><span class="no">04</span> Walkthrough: from nothing to protective master</h2>
+    <p>
+      The sensor lab table above is the shopping list; this is the build and the first test loop. Do it in
+      order: a sensor that is not seeing traffic makes every "no alert" conclusion worthless, so the lab
+      starts by proving the packets arrive.
+    </p>
+
+    <h3>0. Starting from nothing</h3>
+    <p>
+      A defender who cannot read a log is guessing. Before the sensors: Linux and the shell, how packets move,
+      then scripting so that analysis is repeatable — the same foundations as the attacker, used in the
+      opposite direction.
+    </p>
+    <ul>
+      <li><b>Linux and the shell.</b> <a href="bashScripting.html">Bash</a> first: <code>grep</code>, <code>awk</code>, <code>sort</code> and <code>uniq</code> are the first SIEM you will ever own.</li>
+      <li><b>Networking.</b> <a href="tcpudp.html">Packets</a>, <a href="dnsProtocol.html">DNS</a>, <a href="httpProtocol.html">HTTP</a> and the <a href="networking.html">networking</a> manual, so every log line describes something you can picture.</li>
+      <li><b>Coding.</b> <a href="pythonCert.html">Python</a> for parsing and metrics, <a href="curlManual.html">curl</a> for APIs — the SIEM is an API too.</li>
+      <li><b>Containers and capture.</b> <a href="docker.html">Docker</a> for disposable targets, <a href="tcpdump.html">tcpdump</a> for what the sensor is supposed to see.</li>
+    </ul>
+
+    <h3>1. The sensor host</h3>
+    <pre><code><span class="c"># Security Onion on a mirrored interface: the appliance route</span>
+sudo so-setup          <span class="c"># sniff NIC on red-target, management NIC on NAT</span>
+sudo so-status
+
+<span class="c"># or the light route, on Debian, when the appliance is too much for a laptop</span>
+sudo apt install -y zeek suricata jq auditd curl
+sudo suricata-update &amp;&amp; sudo zeekctl deploy
+sudo suricata -T -c /etc/suricata/suricata.yaml   <span class="c"># config test, always</span></code></pre>
+
+    <h3>2. See the traffic before you build detections</h3>
+    <p>
+      On a plain Linux bridge, broadcast-heavy protocols already reach the sensor; unicast between two guests
+      does not. Mirror the target network to the sensor's tap device, then prove it:
+    </p>
+    <pre><code>virsh domiflist sensor            <span class="c"># note the tap device, e.g. vnet3</span>
+sudo ip link set vnet3 promisc on
+sudo tc qdisc add dev virbr-redt handle ffff: ingress
+sudo tc filter add dev virbr-redt parent ffff: protocol all u32 match u32 0 0 \
+  action mirred egress mirror dev vnet3
+sudo tcpdump -i vnet3 -nn -c5     <span class="c"># frames from the guests, not just broadcasts</span></code></pre>
+
+    <h3>3. Endpoint telemetry, Windows and Linux</h3>
+    <pre><code><span class="c"># Windows: process ancestry, network, DNS, LSASS access</span>
+sysmon64.exe -accepteula -i sysmonconfig.xml
+auditpol /set /subcategory:"Process Creation" /success:enable
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" \
+  /v ProcessCreationIncludeCmdLine_Enabled /t REG_DWORD /d 1
+
+<span class="c"># Linux: the file, privilege and execution events a server actually produces</span>
+cat &gt;&gt; /etc/audit/rules.d/lab.rules &lt;&lt;'EOF'
+-w /etc/passwd -p wa -k identity
+-w /etc/sudoers -p wa -k sudoers
+-a always,exit -F arch=b64 -S execve -k exec
+EOF
+sudo augenrules --load &amp;&amp; sudo auditctl -l</code></pre>
+
+    <h3>4. Code your own analysis</h3>
+    <p>
+      Two scripts turn the lab into a habit: one ranks who talked to whom from <code>conn.log</code>, the other
+      computes time to detect from your detection log. Both come from the <a href="bashScripting.html">Bash</a>
+      and <a href="pythonCert.html">Python</a> manuals, and both are short enough to trust line by line.
+    </p>
+    <pre><code><span class="c"># top-talkers.sh — the first query of every incident</span>
+#!/usr/bin/env bash
+set -euo pipefail
+zeek-cut id.orig_h id.resp_h id.resp_p &lt; conn.log \
+  | sort | uniq -c | sort -rn | head -20 &gt; ev/top-talkers.txt
+column -t ev/top-talkers.txt</code></pre>
+    <pre><code><span class="c"># mttd.py — how long each technique took to surface</span>
+#!/usr/bin/env python3
+import csv, datetime as dt
+
+def gap(a, b):
+    fmt = "%H:%M:%S"
+    return (dt.datetime.strptime(b, fmt) - dt.datetime.strptime(a, fmt)).total_seconds()
+
+with open("detection-log.csv", newline="") as fh:
+    for row in csv.DictReader(fh):
+        if row.get("evidence_ts"):
+            print(row["technique"], int(gap(row["attack_ts"], row["evidence_ts"])), "s", row["alerted"])</code></pre>
+    <pre><code>chmod +x top-talkers.sh &amp;&amp; ./top-talkers.sh &amp;&amp; python3 mttd.py</code></pre>
+
+    <h3>5. Drills: run the attack, then find yourself</h3>
+    <p>
+      Generate each behaviour with the tool from the <a href="KaliLinux.html">Kali</a> manual, then find it in
+      the sensor. The right-hand column is the test: if you cannot produce the evidence, the detection is a
+      hypothesis, not a control.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Attack behaviour</th><th>Tool to generate it</th><th>Evidence to find</th><th>Check</th></tr></thead>
+        <tbody>
+          <tr><td>Port scan</td><td><code>nmap -sS -p- 10.66.10.50</code></td><td>One host with hundreds of SYNs, Zeek <code>conn.log</code></td><td><code>zeek-cut id.orig_h id.resp_p &lt; conn.log | sort | uniq -c | sort -rn | head</code></td></tr>
+          <tr><td>SSH guessing</td><td><code>hydra -L users.txt -P pass.txt ssh://10.66.10.20</code></td><td>sshd failures, Windows 4625, a <a href="banthemall.html">Fail2ban</a> ban</td><td><code>sudo fail2ban-client status sshd</code></td></tr>
+          <tr><td>Name-resolution poisoning</td><td><code>responder -I eth0</code></td><td>LLMNR/NBT-NS replies, Sysmon 22, Zeek <code>dns.log</code></td><td><code>zeek-cut query &lt; dns.log | sort | uniq -c | sort -rn | head</code></td></tr>
+          <tr><td>Web injection</td><td><code>sqlmap -u "http://10.66.10.51:3000/rest/products/search?q=1" --batch</code></td><td>Payload in <code>http.log</code>, a Suricata alert if you wrote one</td><td><code>zeek-cut host uri &lt; http.log | grep -i union</code></td></tr>
+          <tr><td>AD collection</td><td><code>bloodhound-python -c DCOnly --zip</code></td><td>LDAP bind volume, 4624 on the DC, 4769 bursts</td><td><code>jq 'select(.rule.id==&quot;5715&quot;)' alerts.json</code></td></tr>
+          <tr><td>Remote execution</td><td><code>impacket-wmiexec LAB/bob:'Passw0rd!'@10.66.10.20 whoami</code></td><td>Sysmon 1: <code>wmiprvse.exe</code> spawning <code>cmd.exe</code></td><td><code>jq 'select(.win.eventdata.parentImage|test(&quot;wmiprvse&quot;))'</code></td></tr>
+          <tr><td>ARP MITM</td><td><code>bettercap -iface eth0</code> then <code>arp.spoof on</code></td><td>Duplicate ARP replies on the wire</td><td><code>sudo tcpdump -i vnet3 -nn arp</code></td></tr>
+          <tr><td>Offline cracking</td><td><code>hashcat -m 22000 capture.hc22000 rockyou.txt</code></td><td>Nothing on the network at all</td><td>Record it as a visibility gap, not a pass</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>6. Change the arena: one detection per domain</h3>
+    <p>
+      Port scans are the easy part. Each domain below needs different telemetry and asks a different question,
+      and the attack that generates it comes from the same manual the red team uses.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Domain</th><th>Telemetry to add</th><th>Replay with</th><th>Detection to write</th></tr></thead>
+        <tbody>
+          <tr><td>System (Linux)</td><td>auditd <code>execve</code>, <code>/etc/passwd</code> and sudoers watches, cron</td><td>PEASS-ng, <code>sudo -l</code>, a cron edit</td><td>A shell spawned by a service account, or sudoers changed</td></tr>
+          <tr><td>System (Windows)</td><td>Sysmon 1/11/13, 7045, 4688 with command line</td><td>WinPEAS, <code>sc create</code>, wmiexec</td><td>New service whose binary sits in a user profile</td></tr>
+          <tr><td>Web</td><td>Zeek <code>http.log</code>, proxy, the application access log</td><td>sqlmap, ffuf, WPScan</td><td>UNION in a query string, scanner user agent, a 404 burst</td></tr>
+          <tr><td>Network</td><td>Zeek <code>conn</code> and <code>dns</code>, Suricata, ARP visibility</td><td>nmap, Responder, bettercap</td><td>One host touching 200 ports; LLMNR answers from a workstation</td></tr>
+          <tr><td>Wireless</td><td>Controller or hostapd logs, RADIUS authentication records</td><td>airodump-ng, deauth against your own AP</td><td>Deauthentication flood; an unknown station associating</td></tr>
+          <tr><td>Active Directory</td><td>4768, 4769, 4776, 4625 and LDAP query volume</td><td>GetUserSPNs, nxc, ntlmrelayx</td><td>RC4 service-ticket burst; failures spread across many accounts</td></tr>
+          <tr><td>Cloud</td><td>Sign-in and admin audit logs, enriched with ASN</td><td>The provider CLI, in a tenant you own</td><td>A new role assignment; impossible travel</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      The web rows pay first because the logs already exist: <a href="httpProtocol.html">HTTP</a>,
+      <a href="phpLovers.html">PHP</a> and <a href="wordpress_attacks.html">WordPress</a> cover the request
+      side, and the <a href="privacy.html">Privacy</a> manual covers not over-collecting the evidence. Host
+      baselines for the system rows come from the <a href="DebianSecurity.html">Debian</a>,
+      <a href="SELinux.html">SELinux</a> and <a href="fireJail.html">Firejail</a> manuals.
+    </p>
+
+    <h3>7. Turn a rule into a tested control</h3>
+    <pre><code><span class="c"># write once, deploy to whichever SIEM is in the lab</span>
+sigma convert -t elasticsearch -p ecs_windows rules/office-powershell.yml
+sigma convert -t splunk rules/office-powershell.yml
+
+<span class="c"># test a Wazuh rule against one real log line, without waiting for a replay</span>
+sudo /var/ossec/bin/wazuh-logtest
+
+<span class="c"># replay the same capture through both engines, offline</span>
+suricata -r ev/scan.pcap -c /etc/suricata/suricata.yaml -l ev/suricata
+zeek -r ev/scan.pcap local &amp;&amp; zeek-cut id.orig_h id.resp_p &lt; conn.log | head</code></pre>
+
+    <h3>8. Score the loop</h3>
+    <p>
+      For every row in the drill table, record four facts: the attack timestamp, the first evidence
+      timestamp, the rule that fired, and whether it was triaged. That small file is your detection backlog,
+      your MTTD and your retest evidence in one place.
+    </p>
+    <pre><code>cat &gt; detection-log.csv &lt;&lt;'CSV'
+technique,attack_ts,evidence_ts,rule,alerted,triaged
+T1046,10:02:11,10:02:40,zeek-scan-notice,yes,yes
+T1110,10:14:03,10:14:09,wazuh-5710,yes,no
+CSV
+sha256sum detection-log.csv ev/* &gt; ev/SHA256SUMS</code></pre>
+    <div class="callout gap">
+      <h4>A "no alert" is a finding, not a failure</h4>
+      <p>
+        The rows where nothing fired are the most valuable output of the lab: they are the exact list of
+        techniques your estate cannot see. Fix the telemetry first, the rule second — a rule without the
+        event is decoration.
+      </p>
+    </div>
+  </section>
+
+  <section id="telemetry">
+    <h2><span class="no">05</span> Telemetry that actually answers questions</h2>
+    <p>
+      Most "we had no visibility" findings are really "we had the log and never looked". The table lists the
+      events that answer the questions a SOC is actually asked, with the identifiers to search for.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Source</th><th>Key events</th><th>Question it answers</th></tr></thead>
+        <tbody>
+          <tr><td>Windows Security</td><td>4624, 4625, 4672, 4688, 4720, 4768, 4769, 7045</td><td>Who logged on, with what rights, and what was installed</td></tr>
+          <tr><td>Sysmon</td><td>1, 3, 7, 8, 10, 11, 13, 22</td><td>Process ancestry, network calls, LSASS access, registry and DNS</td></tr>
+          <tr><td>Linux auditd</td><td>execve, setuid, sudo, cron, sshd</td><td>Privilege change and persistence on servers</td></tr>
+          <tr><td>Zeek / DNS</td><td>dns, conn, ssl, http</td><td>Beaconing, tunnelling, first-seen domains</td></tr>
+          <tr><td>Proxy and TLS</td><td>User agent, SNI, bytes in/out, JA3</td><td>Which host talks to what, and looks unlike itself</td></tr>
+          <tr><td>Cloud and identity</td><td>Sign-in logs, audit trails, role changes</td><td>Impossible travel, consent grants, new admin roles</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout gap">
+      <h4>The gap nobody logs</h4>
+      <p>
+        Write down what you cannot see: encrypted east-west traffic, unmanaged laptops, SaaS tenants outside
+        the IdP, physical access. A detection strategy that ignores its own blind spots is worse than none,
+        because it produces confidence without evidence.
+      </p>
+    </div>
+    <p>
+      Packet-level detail for network evidence is in the <a href="Suricata.html">Suricata</a>
+      companion page.
+    </p>
+  </section>
+
+  <section id="detection">
+    <h2><span class="no">06</span> The detection engineering loop</h2>
+    <p>
+      Every useful rule starts as a hypothesis about attacker behaviour, not as a sentence copied from a
+      vendor blog. The loop is short and unglamorous: hypothesis, data, rule, test, tune, document.
+    </p>
+    <ol>
+      <li><b>Hypothesis.</b> "A user running an encoded PowerShell child of Office is unusual here."</li>
+      <li><b>Data.</b> Confirm the event exists, is parsed, and has the fields you need — before writing the rule.</li>
+      <li><b>Rule.</b> Write it in Sigma, keep it in git, tag it with the ATT&amp;CK technique it covers.</li>
+      <li><b>Test.</b> Fire the technique in the lab; the rule must fire once, with the right fields.</li>
+      <li><b>Tune.</b> Reduce noise with an explicit exception list, dated and owned by a person.</li>
+      <li><b>Document.</b> What the alert means, how to triage it, and what to do next — inside the rule file.</li>
+    </ol>
+    <pre><code><span class="k">title:</span> Encoded PowerShell from an Office process
+<span class="k">id:</span> 3f2c1a9e-lab-0001
+<span class="k">status:</span> experimental
+<span class="k">description:</span> Office spawning PowerShell with an encoded command
+<span class="k">logsource:</span>
+  product: windows
+  category: process_creation
+<span class="k">detection:</span>
+  parent:
+    Image|endswith: ['\\winword.exe', '\\excel.exe', '\\outlook.exe']
+  child:
+    Image|endswith: '\\powershell.exe'
+    CommandLine|contains: ['-enc', '-EncodedCommand']
+  condition: parent and child
+<span class="k">fields:</span> [CommandLine, ParentImage, User]
+<span class="k">falsepositives:</span>
+  - Macros maintained by finance (documented exception)
+<span class="k">level:</span> high
+<span class="k">tags:</span> [attack.execution, attack.t1059.001]</code></pre>
+    <p>
+      The test is the part everyone skips. Run the technique with
+      <a href="RedTeams.html">emulation</a>, time-stamp it, and check the alert in the same window. A rule
+      that has never fired in a lab will fail on the day it matters.
+    </p>
+  </section>
+
+  <section id="stack">
+    <h2><span class="no">07</span> SIEM, NSM and EDR stacks</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Stack</th><th>Best at</th><th>Cost of ownership</th></tr></thead>
+        <tbody>
+          <tr><td>Security Onion</td><td>Network evidence with Suricata, Zeek and PCAP in one place</td><td>One appliance to learn; storage grows fast</td></tr>
+          <tr><td>Wazuh</td><td>Host, file-integrity and compliance data with agent management</td><td>Modest; tuning required for scale</td></tr>
+          <tr><td>Elastic / OpenSearch</td><td>Search at volume, dashboards, flexible pipelines</td><td>Cluster operations are a real job</td></tr>
+          <tr><td>Splunk</td><td>Mature queries, apps, enterprise workflows</td><td>Licence by volume; expensive at full packet scale</td></tr>
+          <tr><td>Cloud-native SIEM</td><td>Identity and control-plane events with no agents</td><td>Ingest pricing; query language lock-in</td></tr>
+          <tr><td>EDR platform</td><td>Process-level behaviour, isolation, live response</td><td>Per-endpoint licence; limited network context</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      There is no single winner: most mature programmes run EDR for endpoints, an NSM sensor for the network
+      and one aggregator for identity and cloud. What matters is that the same rule can be expressed in all
+      of them — which is exactly why the rules live in Sigma.
+    </p>
+  </section>
+
+  <section id="setup">
+    <h2><span class="no">08</span> Setup: installing the defensive stack</h2>
+    <p>
+      The blue stack has three layers: <b>collect</b> (agents and sensors), <b>store</b> (an index you can
+      query) and <b>decide</b> (rules, hunts, dashboards). Install in that order, and verify each layer before
+      adding the next — a SIEM full of unparsed logs is a very expensive disk.
+    </p>
+
+    <h3>The sensor host in one pass</h3>
+    <pre><code>sudo apt update
+sudo apt install -y zeek suricata auditd audispd-plugins \
+  jq curl tshark wireshark fail2ban osquery
+
+<span class="c"># Zeek needs a deploy after any config change; Suricata needs its rules first</span>
+sudo zeekctl deploy
+sudo suricata-update &amp;&amp; sudo suricata -T -c /etc/suricata/suricata.yaml
+
+<span class="c"># let your user capture without sudo</span>
+sudo dpkg-reconfigure wireshark-common
+sudo usermod -aG wireshark "$USER"
+
+<span class="c"># every component answers</span>
+for t in zeek suricata jq tshark fail2ban-client osqueryi; do
+  printf '%-16s %s\n' "$t" "$(command -v "$t" || echo MISSING)"
+done</code></pre>
+
+    <h3>What each tool needs before it works</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tool</th><th>Install</th><th>First-run step</th></tr></thead>
+        <tbody>
+          <tr><td>Zeek</td><td><code>apt install zeek</code> (Kali/Debian; on Ubuntu add the Zeek repository)</td><td><code>sudo zeekctl deploy</code>, then read <code>/opt/zeek/logs/current/conn.log</code></td></tr>
+          <tr><td>Suricata</td><td><code>apt install suricata</code></td><td><code>sudo suricata-update</code>, test with <code>-T</code>, then point it at the mirrored interface</td></tr>
+          <tr><td>Security Onion</td><td>ISO appliance or <code>so-setup</code> on the imported image</td><td><code>sudo so-setup</code>, then <code>sudo so-status</code> until every service is green</td></tr>
+          <tr><td>Wazuh manager + agent</td><td>Official install script, or <code>apt install wazuh-agent</code></td><td>Register the agent, then confirm in <code>/var/ossec/logs/alerts/alerts.json</code></td></tr>
+          <tr><td>Elastic / OpenSearch</td><td>Docker Compose from the vendor's example</td><td><code>curl -s localhost:9200</code> answers; create one index template before shipping data</td></tr>
+          <tr><td>Splunk</td><td>Licensed: package plus a free daily-volume licence</td><td>Install an app for Windows/Sysmon field extractions before searching</td></tr>
+          <tr><td>Sysmon</td><td>Sysinternals zip (Windows)</td><td><code>sysmon64.exe -accepteula -i sysmonconfig.xml</code> with a community config, then <code>sysmon64 -c</code></td></tr>
+          <tr><td>auditd</td><td><code>apt install auditd audispd-plugins</code></td><td>Add rules to <code>/etc/audit/rules.d/</code>, then <code>sudo augenrules --load</code></td></tr>
+          <tr><td>Velociraptor</td><td>Single binary from the project's releases</td><td><code>velociraptor config generate -i</code> on the server, deploy the client MSI</td></tr>
+          <tr><td>osquery</td><td><code>apt install osquery</code> / MSI on Windows</td><td><code>osqueryi</code> then <code>SELECT * FROM processes LIMIT 5;</code></td></tr>
+          <tr><td>Sigma CLI</td><td><code>pipx install sigma-cli</code></td><td><code>sigma plugin install elasticsearch</code>, then <code>sigma convert -t elasticsearch rule.yml</code></td></tr>
+          <tr><td>Atomic Red Team</td><td>git clone, plus PowerShell 7</td><td><code>Invoke-AtomicTest -List</code>; run one test, watch the sensor, then <code>-Cleanup</code></td></tr>
+          <tr><td>Caldera</td><td>git clone plus Python requirements</td><td><code>python server.py --insecure</code> inside the lab network only</td></tr>
+          <tr><td>Wireshark / tshark</td><td><code>apt install tshark wireshark</code></td><td><code>sudo dpkg-reconfigure wireshark-common</code>, then add yourself to the <code>wireshark</code> group</td></tr>
+          <tr><td>Fail2ban</td><td><code>apt install fail2ban</code></td><td>Enable the <code>sshd</code> jail in <code>jail.local</code>, then <code>fail2ban-client status sshd</code></td></tr>
+          <tr><td>jq</td><td><code>apt install jq</code></td><td>Nothing; every JSON log becomes queryable with <code>jq 'select(.rule.level &gt; 10)'</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>One working chain, end to end</h3>
+    <pre><code><span class="c"># 1. collect: a capture from the mirrored interface</span>
+sudo tcpdump -i vnet3 -nn -w ev/scan.pcap 'tcp port 80 or tcp port 443'
+
+<span class="c"># 2. store: the same packets through both engines, offline</span>
+zeek -r ev/scan.pcap local
+suricata -r ev/scan.pcap -c /etc/suricata/suricata.yaml -l ev/out
+
+<span class="c"># 3. decide: a rule that fires, tested against that capture</span>
+sigma convert -t elasticsearch -p ecs_windows rules/office-powershell.yml &gt; ev/rule.json
+jq 'select(.rule.level &gt;= 10)' /var/ossec/logs/alerts/alerts.json | head</code></pre>
+
+    <h3>How to use them, by purpose</h3>
+    <p>
+      The same layer from the other side: what you run when the question is "what happened", not "what can I
+      reach". The attacks that generate this traffic come from the <a href="KaliLinux.html">Kali</a> and
+      <a href="metasploit.html">Metasploit</a> manuals.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Purpose</th><th>Command</th><th>What you get</th></tr></thead>
+        <tbody>
+          <tr><td>Capture evidence</td><td><code>sudo tcpdump -i vnet3 -nn -s0 -w ev/cap.pcap 'not port 22'</code></td><td>A capture you can replay forever</td></tr>
+          <tr><td>Replay through both engines</td><td><code>zeek -r ev/cap.pcap local</code> then <code>suricata -r ev/cap.pcap -c /etc/suricata/suricata.yaml -l ev/out</code></td><td>Logs plus signature alerts, offline</td></tr>
+          <tr><td>Rank who talked</td><td><code>zeek-cut id.orig_h id.resp_h id.resp_p &lt; conn.log | sort | uniq -c | sort -rn | head</code></td><td>The shortlist every incident starts with</td></tr>
+          <tr><td>Spot a scanner</td><td><code>zeek-cut id.orig_h id.resp_p &lt; conn.log | sort -u | awk '{c[$1]++} END {for (h in c) if (c[h] &gt; 50) print h, c[h]}'</code></td><td>Hosts touching far too many ports</td></tr>
+          <tr><td>Inspect DNS</td><td><code>zeek-cut query &lt; dns.log | sort | uniq -c | sort -rn | head -30</code></td><td>Beaconing and first-seen names</td></tr>
+          <tr><td>Inspect web requests</td><td><code>zeek-cut host uri user_agent &lt; http.log | grep -iE 'union|select|\.\./'</code></td><td>Payloads and scanner user agents</td></tr>
+          <tr><td>Find failed logons</td><td><code>jq 'select(.rule.id==&quot;5710&quot;)' alerts.json</code></td><td>Spray and guessing attempts</td></tr>
+          <tr><td>Write a rule once</td><td><code>sigma convert -t splunk rules/office-powershell.yml</code></td><td>The same detection in any SIEM</td></tr>
+          <tr><td>Test a rule offline</td><td><code>sudo /var/ossec/bin/wazuh-logtest</code></td><td>A rule that fires before it reaches production</td></tr>
+          <tr><td>Interrogate an endpoint</td><td><code>osqueryi 'select pid,name,cmdline from processes where name=&quot;cmd.exe&quot;;'</code></td><td>What is running, without a reboot</td></tr>
+          <tr><td>Read Sysmon quickly</td><td><code>Get-WinEvent -LogName Microsoft-Windows-Sysmon/Operational -MaxEvents 20</code></td><td>Process, network and DNS events</td></tr>
+          <tr><td>Ban a source</td><td><code>sudo fail2ban-client set sshd banip 10.66.0.50</code></td><td>Containment while you scope</td></tr>
+          <tr><td>Measure detection</td><td><code>python3 mttd.py</code> and <code>jq length alerts.json</code></td><td>MTTD, alert volume, retest evidence</td></tr>
+          <tr><td>Collect at scale</td><td><code>velociraptor artifacts collect Windows.System.Pslist</code></td><td>A repeatable artefact instead of a screenshot</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <h4>Commercial licences, not packages</h4>
+      <p>
+        Splunk, Sentinel, Chronicle and every commercial EDR are bought, not installed from a repository, and
+        a free tier is a lab licence with a volume limit. Build the lab on open components so the drill table
+        still works on the day the licence ends.
+      </p>
+    </div>
+    <p>
+      Two setup details decide whether the lab is trustworthy: one NTP source for every host, and one clock
+      format in every query. Everything else is configuration.
+    </p>
+  </section>
+
+  <section id="hunting">
+    <h2><span class="no">09</span> Threat hunting hypotheses</h2>
+    <p>
+      A hunt is a question with a deadline, not an exploration. Write the hypothesis, the data you need, and
+      the decision you will make if it is true — before you open the query editor.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Hypothesis</th><th>Data needed</th><th>If true, you get</th></tr></thead>
+        <tbody>
+          <tr><td>A new service was installed outside change windows</td><td>Event 7045, change tickets</td><td>Persistence candidate and a new rule</td></tr>
+          <tr><td>Something read LSASS outside the EDR inventory</td><td>Sysmon 10, process inventory</td><td>Credential theft path and a rule</td></tr>
+          <tr><td>Kerberos service tickets were requested in bulk</td><td>4769 with encryption type 0x17</td><td>Kerberoasting attempt and a rule</td></tr>
+          <tr><td>A host resolves a domain never seen in the estate</td><td>DNS/Zeek first-seen</td><td>C2 candidate and a block</td></tr>
+          <tr><td>An identity signed in from a new ASN and country pair</td><td>Sign-in logs with ASN enrichment</td><td>Credential misuse and a rule</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Every hunt ends in one of three states: a detection, a documented negative result, or a visibility gap
+      with a task attached. "Nothing found" without a note is how two quarters of hunting disappear.
+    </p>
+  </section>
+
+  <section id="response">
+    <h2><span class="no">10</span> Incident response</h2>
+    <p>
+      The current NIST incident-response guidance follows the CSF functions: govern, identify, protect,
+      detect, respond, recover. In practice an incident is four decisions — is this real, how far did it
+      reach, what do we cut, and what do we tell whom.
+    </p>
+    <h3>Order of operations</h3>
+    <ol>
+      <li><b>Preserve first.</b> Memory and volatile state before anything is rebooted; capture the timeline while it exists.</li>
+      <li><b>Scope with identity, not with IPs.</b> Which accounts, tokens, sessions and shares were touched — that is the blast radius.</li>
+      <li><b>Contain narrowly.</b> Disable the account, isolate the host, rotate the credential; avoid taking down the whole segment first.</li>
+      <li><b>Eradicate with evidence.</b> Remove persistence, verify removal, and keep the artefact you removed.</li>
+      <li><b>Recover and watch.</b> Restore from known-good, then hunt for the same technique again for a defined period.</li>
+      <li><b>Write the timeline</b> while memories are fresh, and close every lesson with an owner and a date.</li>
+    </ol>
+    <div class="callout warn">
+      <h4>Containment is a business decision</h4>
+      <p>
+        Isolating a domain controller at 10:00 stops an attack and a factory. Agree the containment options,
+        and who can authorise them, before the incident. A written playbook with named approvers is worth
+        more than any tool on this page.
+      </p>
+    </div>
+    <p>
+      Evidence handling on the endpoint side follows the same discipline as the forensic tooling described in
+      the <a href="KaliLinux.html">Kali</a> manual: hash first, work on copies, record the tool and version.
+    </p>
+  </section>
+
+  <section id="hardening">
+    <h2><span class="no">11</span> Hardening quick wins</h2>
+    <p>
+      Most intrusions still walk through the same open doors. These items are ordered by risk removed per
+      hour of work, and each one removes a technique rather than a symptom.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Control</th><th>Removes</th><th>Effort</th></tr></thead>
+        <tbody>
+          <tr><td>MFA on every remote and admin path</td><td>Password spraying, credential stuffing</td><td>Days, user friction</td></tr>
+          <tr><td>Patch cadence with a deadline</td><td>Public exploit reuse</td><td>Ongoing, process discipline</td></tr>
+          <tr><td>Tiered administration and LAPS</td><td>Lateral movement with reused local passwords</td><td>Weeks, AD cleanup</td></tr>
+          <tr><td>Disable LLMNR and NBT-NS, enforce SMB signing</td><td>Name-resolution credential capture, relay</td><td>Hours</td></tr>
+          <tr><td>Application allow-listing or WDAC</td><td>Unapproved binaries and many loaders</td><td>Weeks, packaging work</td></tr>
+          <tr><td>Backups offline, tested, documented</td><td>Ransomware impact and negotiation</td><td>Days, plus a restore drill</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Host-level guidance for the same platform is in the <a href="DebianSecurity.html">Debian</a> hardening manual
+      and the <a href="privacy.html">Privacy</a> manual, and rate limiting belongs in
+      <a href="banthemall.html">Fail2ban</a>.
+    </p>
+  </section>
+
+  <section id="purple">
+    <h2><span class="no">12</span> Purple loop and metrics</h2>
+    <p>
+      Purple is not a team; it is the habit of running an attack and a detection test in the same hour, with
+      both sides looking at the same timeline. The output is coverage you can defend in a board meeting.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Metric</th><th>Definition</th><th>Trap</th></tr></thead>
+        <tbody>
+          <tr><td>MTTD</td><td>Time from first attacker action to first alert</td><td>Averaging away the misses</td></tr>
+          <tr><td>MTTR</td><td>Time from alert to contained</td><td>Counting the ticket close, not the incident</td></tr>
+          <tr><td>Technique coverage</td><td>Tested techniques with a firing, triaged rule</td><td>Counting rules, not detections</td></tr>
+          <tr><td>Alert quality</td><td>Ratio of true to false positives per rule</td><td>Silencing rules instead of tuning them</td></tr>
+          <tr><td>Visibility gaps</td><td>Techniques with no telemetry at all</td><td>Not measuring the absence</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <h4>Close the loop with the attackers</h4>
+      <p>
+        Ask for the technique list, replay each one, and answer two questions per row: did we log it, and did
+        we alert on it. Anything with "logged but never alerted" is detection engineering work, not a
+        purchase order.
+      </p>
+    </div>
+    <div class="next">
+      <a href="RedTeams.html">Attackers</a>
+      <a href="learnHacking.html">Lab</a>
+      <a href="Security.html">Intrusions</a>
+    </div>
+  </section>
+
+  <section id="sources">
+    <h2><span class="no">13</span> Sources and further reading</h2>
+    <h3>Standards and frameworks</h3>
+    <ul>
+      <li><a href="https://www.nist.gov/cyberframework">CSF</a> — the cybersecurity framework, revision 2.0.</li>
+      <li><a href="https://csrc.nist.gov/pubs/sp/800/61/r3/final">NIST</a> — SP 800-61r3, incident response recommendations.</li>
+      <li><a href="https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final">Controls</a> — SP 800-53, the control catalogue.</li>
+      <li><a href="https://www.cisecurity.org/controls">CIS</a> — the eighteen critical security controls.</li>
+      <li><a href="https://attack.mitre.org/">ATT&amp;CK</a> and <a href="https://d3fend.mitre.org/">D3FEND</a> — behaviour and countermeasure.</li>
+      <li><a href="https://github.com/SigmaHQ/sigma">Sigma</a> — vendor-neutral detection rule format.</li>
+    </ul>
+    <h3>Labs and tooling</h3>
+    <ul>
+      <li><a href="https://docs.securityonion.net/">Onion</a> — Security Onion documentation for NSM deployments.</li>
+      <li><a href="https://documentation.wazuh.com/">Wazuh</a> — agents, rules and integrity monitoring.</li>
+      <li><a href="https://github.com/SwiftOnSecurity/sysmon-config">Sysmon</a> and <a href="https://github.com/olafhartong/sysmon-modular">Modular</a> — two widely used starting configs.</li>
+      <li><a href="https://github.com/Velocidex/velociraptor">Velociraptor</a> — endpoint interrogation at scale.</li>
+      <li><a href="https://github.com/osquery/osquery">osquery</a> — SQL over the operating system.</li>
+      <li><a href="https://zeek.org/">Zeek</a> and <a href="https://suricata.io/">Suricata</a> — network evidence and signatures.</li>
+    </ul>
+    <h3>From this blog</h3>
+    <ul>
+      <li><a href="learnHacking.html">Lab</a> for the red/blue exercise structure, and <a href="RedTeams.html">Red</a> for the attack side.</li>
+      <li><a href="KaliLinux.html">Kali</a> for what the attacker is running, and <a href="privacy.html">Privacy</a> for data handling in evidence.</li>
+    </ul>
+    <div class="callout warn">
+      <h4>Defence is a practice, not a certificate</h4>
+      <p>
+        A control that has never been tested is an assumption. Run the attack, watch the alert, and write
+        down what you saw. The rest is documentation.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Blue Teams</b> &middot; detection engineering, labs and doctrine &middot; part of the Security &amp; Hacking manual set.</p>
+    <p>Vanilla HTML, CSS3 and JavaScript. No external styles, scripts, fonts or images.</p>
+    <a class="home" href="./index.html">Home</a>
+  </div>
+</footer>
+</div>
+
+<div id="lang-pt" data-lang-block="pt" hidden>
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Início</a>
+    <span class="brand">Blue <b>/</b> Teams</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Engenharia de deteção &middot; telemetria, laboratório, doutrina</p>
+    <h2 class="seo-h2">Blue Teams: provar que teria visto o ataque</h2>
+    <p class="lede">
+      Defesa não é um produto que se compra; é um ciclo que se corre: recolher telemetria, formular uma
+      hipótese, escrever uma deteção, testá-la contra comportamento real de ataque e ajustar o que custa.
+      Esta página documenta o ciclo — os <b>documentos</b> que o sustentam, um <b>laboratório</b> onde as
+      deteções se provam e as <b>ferramentas</b> que transformam registos em respostas defensáveis.
+    </p>
+    <div class="meta-line">
+      <span class="chip">assumir intrusão</span>
+      <span class="chip dim">6 fontes de dados</span>
+      <span class="chip dim">5 componentes de laboratório</span>
+      <span class="chip dim">7 normas</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="pt-toc-title">
+    <h2 id="pt-toc-title">Índice</h2>
+    <ol>
+      <li><a href="#pt-what"><span>01</span> Quem faz o quê numa equipa azul</a></li>
+      <li><a href="#pt-doctrine"><span>02</span> Os documentos que avaliam um SOC</a></li>
+      <li><a href="#pt-lab"><span>03</span> Construir um laboratório de sensores</a></li>
+      <li><a href="#pt-walkthrough"><span>04</span> Passo a passo: do zero a mestre da proteção</a></li>
+      <li><a href="#pt-telemetry"><span>05</span> Telemetria que responde a perguntas</a></li>
+      <li><a href="#pt-detection"><span>06</span> O ciclo da engenharia de deteção</a></li>
+      <li><a href="#pt-stack"><span>07</span> Plataformas SIEM, NSM e EDR</a></li>
+      <li><a href="#pt-setup"><span>08</span> Instalação: a pilha</a></li>
+      <li><a href="#pt-hunting"><span>09</span> Hipóteses de caça à ameaça</a></li>
+      <li><a href="#pt-response"><span>10</span> Resposta a incidentes</a></li>
+      <li><a href="#pt-hardening"><span>11</span> Vitórias rápidas de endurecimento</a></li>
+      <li><a href="#pt-purple"><span>12</span> Ciclo púrpura e métricas</a></li>
+      <li><a href="#pt-sources"><span>13</span> Fontes e leitura recomendada</a></li>
+    </ol>
+  </nav>
+
+  <section id="pt-what">
+    <h2><span class="no">01</span> Quem faz o quê numa equipa azul</h2>
+    <p>
+      «Equipa azul» é um saco, e os sacos furam. Um SOC que só tria alertas é uma fila; um SOC que escreve
+      deteções e caça é uma capacidade. A divisão abaixo é a que sobrevive à época de orçamentos, porque
+      cada função tem um resultado mensurável.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Função</th><th>Trabalho diário</th><th>Resultado mensurável</th></tr></thead>
+        <tbody>
+          <tr><td>Triagem de nível 1</td><td>Filtrar alertas, enriquecer, escalar ou fechar</td><td>Taxa de falsos positivos, tempo de triagem</td></tr>
+          <tr><td>Análise de nível 2/3</td><td>Delimitar um incidente entre hosts e identidades</td><td>Tempo até conter, cobertura encontrada</td></tr>
+          <tr><td>Engenharia de deteção</td><td>Escrever, testar e versionar regras contra comportamento</td><td>Técnicas cobertas, regras com teste</td></tr>
+          <tr><td>Caça à ameaça</td><td>Responder a uma hipótese com dados, antes do alerta</td><td>Novas deteções nascidas da caça</td></tr>
+          <tr><td>Resposta a incidentes</td><td>Preservar, conter, erradicar, recuperar, explicar</td><td>Tempo de permanência, qualidade da evidência</td></tr>
+          <tr><td>Vulnerabilidades e endurecimento</td><td>Cadência de patches, baselines, revisão de acessos</td><td>Dias de exposição, conformidade da baseline</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      O lado vermelho deste intercâmbio está descrito em <a href="RedTeams.html">vermelho</a>, e os caminhos
+      de ataque em <a href="Security.html">intrusões</a>. Uma equipa azul que não entende o próximo passo do
+      atacante escreve deteções para o ano passado.
+    </p>
+  </section>
+
+  <section id="pt-doctrine">
+    <h2><span class="no">02</span> Os documentos que avaliam um SOC</h2>
+    <p>
+      As normas não são burocracia quando servem de lista para telemetria e decisões. A lista curta abaixo
+      chega para conduzir um programa defensável; cada item responde a uma pergunta que aparece em todas as
+      auditorias e revisões de incidente.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Documento</th><th>Autor</th><th>Pergunta que resolve</th></tr></thead>
+        <tbody>
+          <tr><td>CSF 2.0</td><td>NIST</td><td>Que resultados um programa de segurança tem de produzir, incluindo governação</td></tr>
+          <tr><td>SP 800-61r3</td><td>NIST</td><td>Como se conduz um incidente, alinhado com as funções do CSF</td></tr>
+          <tr><td>SP 800-53</td><td>NIST</td><td>Que controlos existem e que evidência os satisfaz</td></tr>
+          <tr><td>CIS Controls v8.1</td><td>CIS</td><td>Que dezoito práticas removem mais risco primeiro</td></tr>
+          <tr><td>ATT&amp;CK</td><td>MITRE</td><td>Que comportamento a deteção deve apanhar</td></tr>
+          <tr><td>D3FEND</td><td>MITRE</td><td>Que contramedida corresponde a esse comportamento</td></tr>
+          <tr><td>Sigma</td><td>SigmaHQ</td><td>Como escrever a regra uma vez e traduzi-la para qualquer SIEM</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <h4>Mapear regras a técnicas, não a produtos</h4>
+      <p>
+        Uma regra com o nome do alerta de um fornecedor morre com o produto. Uma regra marcada com
+        <code>attack.t1059.001</code> sobrevive a uma migração de SIEM, diz o que cobre e permite comparar
+        cobertura com o relatório da equipa vermelha no mesmo vocabulário.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-lab">
+    <h2><span class="no">03</span> Construir um laboratório de sensores</h2>
+    <p>
+      Uma deteção que nunca se viu disparar é um desejo. O laboratório abaixo junta a topologia do atacante
+      com sensores: um host NSM para evidência de rede, um pipeline de registos para endpoint e identidade,
+      um domínio alvo para gerar tráfego realista e um gerador de ataques para produzir comportamento
+      conhecidamente mau a pedido.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Camada</th><th>Construção</th><th>O que prova</th><th>Reposição</th></tr></thead>
+        <tbody>
+          <tr><td>Host NSM</td><td>Security Onion numa interface espelhada/SPAN</td><td>Alertas Suricata, registos Zeek, captura completa</td><td>Reconstrução semanal</td></tr>
+          <tr><td>Pipeline de registos</td><td>Wazuh ou Elastic/OpenSearch com agentes</td><td>Eventos de endpoint, autenticação e ficheiros num índice</td><td>Snapshot por alteração de regra</td></tr>
+          <tr><td>Parque Windows</td><td>DC e dois clientes com Sysmon e configuração afinada</td><td>Telemetria de processos, rede, registo e DNS</td><td>Reverter do modelo</td></tr>
+          <tr><td>Parque Linux</td><td>Um servidor com regras auditd e tentativas de SSH</td><td>Evidência de escalada e persistência</td><td>Recriar o contentor</td></tr>
+          <tr><td>Gerador de ataques</td><td>Atomic Red Team e um agente Caldera, só contra hosts do laboratório</td><td>Comportamento mau com hora para comparar</td><td>Parar após cada execução</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code><span class="c"># 1. primeiro os sensores: capturar o tráfego sobre o qual será interrogado</span>
+sudo so-setup
+sudo so-status
+
+<span class="c"># 2. telemetria de endpoint: um agente, um índice, um fuso horário</span>
+sudo wazuh-agent --register
+sudo systemctl enable --now wazuh-agent
+
+<span class="c"># 3. o gerador de ataques, só dentro da rede do laboratório</span>
+pwsh -c "Invoke-AtomicTest T1059.001 -TestNumbers 1"
+
+<span class="c"># 4. a regra disparou, e o que viu?</span>
+grep -i "atomic" /var/ossec/logs/alerts/alerts.json | tail -n 5
+so-elasticsearch-query</code></pre>
+    <h3>Regras que mantêm as deteções honestas</h3>
+    <ul>
+      <li><b>Sincronização de tempo em todo o lado.</b> Uma fonte NTP para ataque e defesa, ou a cronologia é ficção.</li>
+      <li><b>Registe o plano de teste</b> antes de o ataque correr: técnica, evento esperado, alerta esperado.</li>
+      <li><b>Quebre o sensor de propósito.</b> Pare um agente um dia e veja o que desaparece em silêncio — essa é a cobertura real.</li>
+      <li><b>Guarde os dados.</b> Uma semana de Zeek e Sysmon no laboratório vale mais que um ano de teoria.</li>
+      <li><b>Nunca dispare o gerador fora do laboratório.</b> A outra metade desta topologia pertence aos <a href="RedTeams.html">atacantes</a>.</li>
+    </ul>
+  </section>
+
+  <section id="pt-walkthrough">
+    <h2><span class="no">04</span> Passo a passo: do zero a mestre da proteção</h2>
+    <p>
+      A tabela do laboratório de sensores acima é a lista de compras; isto é a construção e o primeiro ciclo
+      de teste. Siga a ordem: um sensor que não vê tráfego torna qualquer conclusão de «nenhum alerta» sem
+      valor, por isso o laboratório começa por provar que os pacotes chegam.
+    </p>
+
+    <h3>0. Começar do zero</h3>
+    <p>
+      Um defensor que não sabe ler um registo está a adivinhar. Antes dos sensores: Linux e a shell, como os
+      pacotes se movem, e scripting para a análise ser repetível — as mesmas bases do atacante, usadas na
+      direção oposta.
+    </p>
+    <ul>
+      <li><b>Linux e a shell.</b> Primeiro <a href="bashScripting.html">Bash</a>: <code>grep</code>, <code>awk</code>, <code>sort</code> e <code>uniq</code> são o primeiro SIEM que vai ter.</li>
+      <li><b>Redes.</b> <a href="tcpudp.html">Pacotes</a>, <a href="dnsProtocol.html">DNS</a>, <a href="httpProtocol.html">HTTP</a> e o manual de <a href="networking.html">redes</a>, para cada linha de registo descrever algo que consegue imaginar.</li>
+      <li><b>Programação.</b> <a href="pythonCert.html">Python</a> para interpretar dados e métricas, <a href="curlManual.html">curl</a> para APIs — o SIEM também é uma API.</li>
+      <li><b>Contentores e captura.</b> <a href="docker.html">Docker</a> para alvos descartáveis, <a href="tcpdump.html">tcpdump</a> para o que o sensor devia ver.</li>
+    </ul>
+
+    <h3>1. O host dos sensores</h3>
+    <pre><code><span class="c"># Security Onion numa interface espelhada: a via do equipamento</span>
+sudo so-setup          <span class="c"># NIC de captura em red-target, NIC de gestão em NAT</span>
+sudo so-status
+
+<span class="c"># ou a via leve, em Debian, quando o equipamento é demasiado para um portátil</span>
+sudo apt install -y zeek suricata jq auditd curl
+sudo suricata-update &amp;&amp; sudo zeekctl deploy
+sudo suricata -T -c /etc/suricata/suricata.yaml   <span class="c"># testar a configuração, sempre</span></code></pre>
+
+    <h3>2. Ver o tráfego antes de escrever deteções</h3>
+    <p>
+      Numa bridge Linux simples, os protocolos de difusão já chegam ao sensor; o unicast entre dois convidados
+      não. Espelhe a rede alvo para o tap do sensor e prove-o:
+    </p>
+    <pre><code>virsh domiflist sensor            <span class="c"># anotar o tap, por exemplo vnet3</span>
+sudo ip link set vnet3 promisc on
+sudo tc qdisc add dev virbr-redt handle ffff: ingress
+sudo tc filter add dev virbr-redt parent ffff: protocol all u32 match u32 0 0 \
+  action mirred egress mirror dev vnet3
+sudo tcpdump -i vnet3 -nn -c5     <span class="c"># tramas dos convidados, não só difusão</span></code></pre>
+
+    <h3>3. Telemetria de endpoint, Windows e Linux</h3>
+    <pre><code><span class="c"># Windows: ancestralidade de processos, rede, DNS, acesso ao LSASS</span>
+sysmon64.exe -accepteula -i sysmonconfig.xml
+auditpol /set /subcategory:"Process Creation" /success:enable
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" \
+  /v ProcessCreationIncludeCmdLine_Enabled /t REG_DWORD /d 1
+
+<span class="c"># Linux: os eventos de ficheiro, privilégio e execução que um servidor produz</span>
+cat &gt;&gt; /etc/audit/rules.d/lab.rules &lt;&lt;'EOF'
+-w /etc/passwd -p wa -k identity
+-w /etc/sudoers -p wa -k sudoers
+-a always,exit -F arch=b64 -S execve -k exec
+EOF
+sudo augenrules --load &amp;&amp; sudo auditctl -l</code></pre>
+
+    <h3>4. Escrever a sua própria análise</h3>
+    <p>
+      Dois scripts transformam o laboratório num hábito: um ordena quem falou com quem a partir do
+      <code>conn.log</code>, o outro calcula o tempo até à deteção a partir do registo de deteções. Ambos vêm
+      dos manuais de <a href="bashScripting.html">Bash</a> e <a href="pythonCert.html">Python</a>, e ambos são
+      curtos o suficiente para confiar linha a linha.
+    </p>
+    <pre><code><span class="c"># top-talkers.sh — a primeira consulta de qualquer incidente</span>
+#!/usr/bin/env bash
+set -euo pipefail
+zeek-cut id.orig_h id.resp_h id.resp_p &lt; conn.log \
+  | sort | uniq -c | sort -rn | head -20 &gt; ev/top-talkers.txt
+column -t ev/top-talkers.txt</code></pre>
+    <pre><code><span class="c"># mttd.py — quanto tempo cada técnica levou a aparecer</span>
+#!/usr/bin/env python3
+import csv, datetime as dt
+
+def gap(a, b):
+    fmt = "%H:%M:%S"
+    return (dt.datetime.strptime(b, fmt) - dt.datetime.strptime(a, fmt)).total_seconds()
+
+with open("registo-deteccoes.csv", newline="") as fh:
+    for row in csv.DictReader(fh):
+        if row.get("hora_evidencia"):
+            print(row["tecnica"], int(gap(row["hora_ataque"], row["hora_evidencia"])), "s", row["alertou"])</code></pre>
+    <pre><code>chmod +x top-talkers.sh &amp;&amp; ./top-talkers.sh &amp;&amp; python3 mttd.py</code></pre>
+
+    <h3>5. Exercícios: lançar o ataque e encontrar-se</h3>
+    <p>
+      Gere cada comportamento com a ferramenta do manual <a href="KaliLinux.html">Kali</a> e depois encontre-o
+      no sensor. A coluna da direita é o teste: se não consegue produzir a evidência, a deteção é uma
+      hipótese, não um controlo.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Comportamento</th><th>Ferramenta que o gera</th><th>Evidência a encontrar</th><th>Verificação</th></tr></thead>
+        <tbody>
+          <tr><td>Varrimento de portas</td><td><code>nmap -sS -p- 10.66.10.50</code></td><td>Um host com centenas de SYNs, <code>conn.log</code> do Zeek</td><td><code>zeek-cut id.orig_h id.resp_p &lt; conn.log | sort | uniq -c | sort -rn | head</code></td></tr>
+          <tr><td>Adivinhar SSH</td><td><code>hydra -L users.txt -P pass.txt ssh://10.66.10.20</code></td><td>Falhas de sshd, 4625 no Windows, banimento do <a href="banthemall.html">Fail2ban</a></td><td><code>sudo fail2ban-client status sshd</code></td></tr>
+          <tr><td>Envenenamento de nomes</td><td><code>responder -I eth0</code></td><td>Respostas LLMNR/NBT-NS, Sysmon 22, <code>dns.log</code></td><td><code>zeek-cut query &lt; dns.log | sort | uniq -c | sort -rn | head</code></td></tr>
+          <tr><td>Injeção web</td><td><code>sqlmap -u "http://10.66.10.51:3000/rest/products/search?q=1" --batch</code></td><td>Payload no <code>http.log</code>, alerta Suricata se escreveu a regra</td><td><code>zeek-cut host uri &lt; http.log | grep -i union</code></td></tr>
+          <tr><td>Recolha em AD</td><td><code>bloodhound-python -c DCOnly --zip</code></td><td>Volume de binds LDAP, 4624 no DC, rajadas 4769</td><td><code>jq 'select(.rule.id==&quot;5715&quot;)' alerts.json</code></td></tr>
+          <tr><td>Execução remota</td><td><code>impacket-wmiexec LAB/bob:'Passw0rd!'@10.66.10.20 whoami</code></td><td>Sysmon 1: <code>wmiprvse.exe</code> a gerar <code>cmd.exe</code></td><td><code>jq 'select(.win.eventdata.parentImage|test(&quot;wmiprvse&quot;))'</code></td></tr>
+          <tr><td>MITM por ARP</td><td><code>bettercap -iface eth0</code> e <code>arp.spoof on</code></td><td>Respostas ARP duplicadas na rede</td><td><code>sudo tcpdump -i vnet3 -nn arp</code></td></tr>
+          <tr><td>Quebra offline</td><td><code>hashcat -m 22000 capture.hc22000 rockyou.txt</code></td><td>Nada na rede, de todo</td><td>Registar como lacuna de visibilidade, não como aprovação</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>6. Mudar de arena: uma deteção por domínio</h3>
+    <p>
+      Os varrimentos de portas são a parte fácil. Cada domínio abaixo exige telemetria diferente e coloca uma
+      pergunta diferente, e o ataque que a gera vem do mesmo manual que a equipa vermelha usa.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Domínio</th><th>Telemetria a acrescentar</th><th>Repetir com</th><th>Deteção a escrever</th></tr></thead>
+        <tbody>
+          <tr><td>Sistema (Linux)</td><td>auditd <code>execve</code>, vigilância de <code>/etc/passwd</code> e sudoers, cron</td><td>PEASS-ng, <code>sudo -l</code>, uma alteração de cron</td><td>Uma shell gerada por conta de serviço, ou sudoers alterado</td></tr>
+          <tr><td>Sistema (Windows)</td><td>Sysmon 1/11/13, 7045, 4688 com linha de comando</td><td>WinPEAS, <code>sc create</code>, wmiexec</td><td>Serviço novo cujo binário está no perfil de um utilizador</td></tr>
+          <tr><td>Web</td><td>Zeek <code>http.log</code>, proxy, registo de acesso da aplicação</td><td>sqlmap, ffuf, WPScan</td><td>UNION numa query, user agent de scanner, rajada de 404</td></tr>
+          <tr><td>Rede</td><td>Zeek <code>conn</code> e <code>dns</code>, Suricata, visibilidade ARP</td><td>nmap, Responder, bettercap</td><td>Um host a tocar 200 portas; respostas LLMNR de um posto</td></tr>
+          <tr><td>Sem fios</td><td>Registos do controlador ou hostapd, autenticações RADIUS</td><td>airodump-ng, deauth contra o seu próprio AP</td><td>Rajada de desautenticação; estação desconhecida a associar-se</td></tr>
+          <tr><td>Active Directory</td><td>4768, 4769, 4776, 4625 e volume de consultas LDAP</td><td>GetUserSPNs, nxc, ntlmrelayx</td><td>Rajada de bilhetes de serviço RC4; falhas espalhadas por muitas contas</td></tr>
+          <tr><td>Cloud</td><td>Registos de sessão e de auditoria administrativa, com ASN</td><td>A CLI do fornecedor, num tenant seu</td><td>Atribuição de novo papel; viagem impossível</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      As linhas web pagam primeiro porque os registos já existem: <a href="httpProtocol.html">HTTP</a>,
+      <a href="phpLovers.html">PHP</a> e <a href="wordpress_attacks.html">WordPress</a> cobrem o lado do
+      pedido, e o manual de <a href="privacy.html">Privacidade</a> cobre não recolher demasiada evidência. As
+      bases dos hosts para as linhas de sistema vêm dos manuais <a href="DebianSecurity.html">Debian</a>,
+      <a href="SELinux.html">SELinux</a> e <a href="fireJail.html">Firejail</a>.
+    </p>
+
+    <h3>7. Transformar uma regra num controlo testado</h3>
+    <pre><code><span class="c"># escrever uma vez, publicar no SIEM que estiver no laboratório</span>
+sigma convert -t elasticsearch -p ecs_windows rules/office-powershell.yml
+sigma convert -t splunk rules/office-powershell.yml
+
+<span class="c"># testar uma regra do Wazuh contra uma linha de registo real, sem esperar replay</span>
+sudo /var/ossec/bin/wazuh-logtest
+
+<span class="c"># repetir a mesma captura nos dois motores, offline</span>
+suricata -r ev/scan.pcap -c /etc/suricata/suricata.yaml -l ev/suricata
+zeek -r ev/scan.pcap local &amp;&amp; zeek-cut id.orig_h id.resp_p &lt; conn.log | head</code></pre>
+
+    <h3>8. Pontuar o ciclo</h3>
+    <p>
+      Para cada linha da tabela, registe quatro factos: a hora do ataque, a hora da primeira evidência, a regra
+      que disparou e se foi triada. Esse ficheiro pequeno é a sua lista de deteções por fazer, o seu MTTD e a
+      prova de reteste, tudo no mesmo lugar.
+    </p>
+    <pre><code>cat &gt; registo-deteccoes.csv &lt;&lt;'CSV'
+tecnica,hora_ataque,hora_evidencia,regra,alertou,triado
+T1046,10:02:11,10:02:40,zeek-scan-notice,sim,sim
+T1110,10:14:03,10:14:09,wazuh-5710,sim,nao
+CSV
+sha256sum registo-deteccoes.csv ev/* &gt; ev/SHA256SUMS</code></pre>
+    <div class="callout gap">
+      <h4>Um «sem alerta» é um achado, não uma falha</h4>
+      <p>
+        As linhas em que nada disparou são o resultado mais valioso do laboratório: são a lista exata de
+        técnicas que o seu parque não consegue ver. Corrija primeiro a telemetria, a regra depois — uma regra
+        sem o evento é decoração.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-telemetry">
+    <h2><span class="no">05</span> Telemetria que responde a perguntas</h2>
+    <p>
+      A maioria dos achados de «não tínhamos visibilidade» é na verdade «tínhamos o registo e nunca
+      olhámos». A tabela lista os eventos que respondem às perguntas que um SOC recebe, com os
+      identificadores a procurar.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Fonte</th><th>Eventos-chave</th><th>Pergunta que responde</th></tr></thead>
+        <tbody>
+          <tr><td>Windows Security</td><td>4624, 4625, 4672, 4688, 4720, 4768, 4769, 7045</td><td>Quem iniciou sessão, com que direitos, e o que foi instalado</td></tr>
+          <tr><td>Sysmon</td><td>1, 3, 7, 8, 10, 11, 13, 22</td><td>Ancestralidade de processos, chamadas de rede, acesso a LSASS, registo e DNS</td></tr>
+          <tr><td>auditd no Linux</td><td>execve, setuid, sudo, cron, sshd</td><td>Alteração de privilégios e persistência em servidores</td></tr>
+          <tr><td>Zeek / DNS</td><td>dns, conn, ssl, http</td><td>Beaconing, tunelamento, domínios vistos pela primeira vez</td></tr>
+          <tr><td>Proxy e TLS</td><td>User agent, SNI, bytes, JA3</td><td>Que host fala com o quê e parece diferente de si próprio</td></tr>
+          <tr><td>Cloud e identidade</td><td>Registos de início de sessão, auditoria, alteração de funções</td><td>Viagem impossível, consentimentos, novos papéis de administração</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout gap">
+      <h4>A lacuna que ninguém registra</h4>
+      <p>
+        Escreva o que não consegue ver: tráfego leste-oeste cifrado, portáteis não geridos, tenants SaaS fora
+        do IdP, acesso físico. Uma estratégia de deteção que ignora os seus próprios pontos cegos é pior que
+        nenhuma, porque produz confiança sem evidência.
+      </p>
+    </div>
+    <p>
+      O detalhe de pacotes para evidência de rede está na página companheira do
+      <a href="Suricata.html">Suricata</a>.
+    </p>
+  </section>
+
+  <section id="pt-detection">
+    <h2><span class="no">06</span> O ciclo da engenharia de deteção</h2>
+    <p>
+      Toda a regra útil começa como hipótese sobre comportamento do atacante, não como frase copiada de um
+      blogue de fornecedor. O ciclo é curto e pouco glamoroso: hipótese, dados, regra, teste, afinação,
+      documentação.
+    </p>
+    <ol>
+      <li><b>Hipótese.</b> «Um utilizador a correr PowerShell codificado como filho do Office é invulgar aqui.»</li>
+      <li><b>Dados.</b> Confirme que o evento existe, está interpretado e tem os campos necessários — antes da regra.</li>
+      <li><b>Regra.</b> Escreva-a em Sigma, guarde-a em git, marque-a com a técnica ATT&amp;CK que cobre.</li>
+      <li><b>Teste.</b> Dispare a técnica no laboratório; a regra deve disparar uma vez, com os campos certos.</li>
+      <li><b>Afinação.</b> Reduza ruído com uma lista de exceções explícita, datada e com dono.</li>
+      <li><b>Documentação.</b> O que o alerta significa, como triar e o que fazer a seguir — dentro do ficheiro da regra.</li>
+    </ol>
+    <pre><code><span class="k">title:</span> PowerShell codificado a partir de um processo Office
+<span class="k">id:</span> 3f2c1a9e-lab-0001
+<span class="k">status:</span> experimental
+<span class="k">description:</span> Office a gerar PowerShell com comando codificado
+<span class="k">logsource:</span>
+  product: windows
+  category: process_creation
+<span class="k">detection:</span>
+  parent:
+    Image|endswith: ['\\winword.exe', '\\excel.exe', '\\outlook.exe']
+  child:
+    Image|endswith: '\\powershell.exe'
+    CommandLine|contains: ['-enc', '-EncodedCommand']
+  condition: parent and child
+<span class="k">fields:</span> [CommandLine, ParentImage, User]
+<span class="k">falsepositives:</span>
+  - Macros mantidas pelas finanças (exceção documentada)
+<span class="k">level:</span> high
+<span class="k">tags:</span> [attack.execution, attack.t1059.001]</code></pre>
+    <p>
+      O teste é a parte que todos saltam. Corra a técnica com <a href="RedTeams.html">emulação</a>, marque a
+      hora e verifique o alerta na mesma janela. Uma regra que nunca disparou em laboratório vai falhar no
+      dia em que importa.
+    </p>
+  </section>
+
+  <section id="pt-stack">
+    <h2><span class="no">07</span> Plataformas SIEM, NSM e EDR</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Plataforma</th><th>Melhor em</th><th>Custo de operação</th></tr></thead>
+        <tbody>
+          <tr><td>Security Onion</td><td>Evidência de rede com Suricata, Zeek e PCAP no mesmo lugar</td><td>Um equipamento para aprender; o armazenamento cresce depressa</td></tr>
+          <tr><td>Wazuh</td><td>Host, integridade de ficheiros e conformidade com gestão de agentes</td><td>Moderado; exige afinação para escalar</td></tr>
+          <tr><td>Elastic / OpenSearch</td><td>Pesquisa em volume, painéis, pipelines flexíveis</td><td>Operar o cluster é um trabalho a sério</td></tr>
+          <tr><td>Splunk</td><td>Consultas maduras, aplicações, fluxos empresariais</td><td>Licença por volume; caro em escala de pacotes</td></tr>
+          <tr><td>SIEM nativo de cloud</td><td>Eventos de identidade e plano de controlo sem agentes</td><td>Preço por ingestão; dependência da linguagem</td></tr>
+          <tr><td>Plataforma EDR</td><td>Comportamento ao nível do processo, isolamento, resposta ao vivo</td><td>Licença por endpoint; pouco contexto de rede</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Não há vencedor único: os programas maduros usam EDR nos endpoints, um sensor NSM para a rede e um
+      agregador para identidade e cloud. O que importa é que a mesma regra se expresse em todos — é
+      exatamente por isso que as regras vivem em Sigma.
+    </p>
+  </section>
+
+  <section id="pt-setup">
+    <h2><span class="no">08</span> Instalação: a pilha defensiva</h2>
+    <p>
+      A pilha azul tem três camadas: <b>recolher</b> (agentes e sensores), <b>armazenar</b> (um índice que se
+      pode consultar) e <b>decidir</b> (regras, caças, painéis). Instale nessa ordem e valide cada camada antes
+      de acrescentar a seguinte — um SIEM cheio de registos não interpretados é um disco muito caro.
+    </p>
+
+    <h3>O host dos sensores numa passagem</h3>
+    <pre><code>sudo apt update
+sudo apt install -y zeek suricata auditd audispd-plugins \
+  jq curl tshark wireshark fail2ban osquery
+
+<span class="c"># o Zeek precisa de deploy após qualquer alteração; o Suricata, de regras</span>
+sudo zeekctl deploy
+sudo suricata-update &amp;&amp; sudo suricata -T -c /etc/suricata/suricata.yaml
+
+<span class="c"># capturar sem sudo</span>
+sudo dpkg-reconfigure wireshark-common
+sudo usermod -aG wireshark "$USER"
+
+<span class="c"># todos os componentes respondem</span>
+for t in zeek suricata jq tshark fail2ban-client osqueryi; do
+  printf '%-16s %s\n' "$t" "$(command -v "$t" || echo MISSING)"
+done</code></pre>
+
+    <h3>O que cada ferramenta precisa antes de funcionar</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Ferramenta</th><th>Instalação</th><th>Primeiro arranque</th></tr></thead>
+        <tbody>
+          <tr><td>Zeek</td><td><code>apt install zeek</code> (Kali/Debian; no Ubuntu juntar o repositório do Zeek)</td><td><code>sudo zeekctl deploy</code> e ler <code>/opt/zeek/logs/current/conn.log</code></td></tr>
+          <tr><td>Suricata</td><td><code>apt install suricata</code></td><td><code>sudo suricata-update</code>, testar com <code>-T</code> e apontar à interface espelhada</td></tr>
+          <tr><td>Security Onion</td><td>Imagem ISO, ou <code>so-setup</code> na imagem importada</td><td><code>sudo so-setup</code> e <code>sudo so-status</code> até todos os serviços estarem verdes</td></tr>
+          <tr><td>Wazuh manager + agente</td><td>Script oficial de instalação, ou <code>apt install wazuh-agent</code></td><td>Registar o agente e confirmar em <code>/var/ossec/logs/alerts/alerts.json</code></td></tr>
+          <tr><td>Elastic / OpenSearch</td><td>Docker Compose do exemplo do fornecedor</td><td><code>curl -s localhost:9200</code> responde; criar o template de índice antes de enviar dados</td></tr>
+          <tr><td>Splunk</td><td>Licenciado: pacote mais licença gratuita por volume diário</td><td>Instalar a aplicação de extrações para Windows/Sysmon antes de pesquisar</td></tr>
+          <tr><td>Sysmon</td><td>Arquivo Sysinternals (Windows)</td><td><code>sysmon64.exe -accepteula -i sysmonconfig.xml</code> com uma configuração comunitária, e <code>sysmon64 -c</code></td></tr>
+          <tr><td>auditd</td><td><code>apt install auditd audispd-plugins</code></td><td>Regras em <code>/etc/audit/rules.d/</code> e <code>sudo augenrules --load</code></td></tr>
+          <tr><td>Velociraptor</td><td>Binário único das releases do projeto</td><td><code>velociraptor config generate -i</code> no servidor e instalar o MSI do cliente</td></tr>
+          <tr><td>osquery</td><td><code>apt install osquery</code> / MSI no Windows</td><td><code>osqueryi</code> e <code>SELECT * FROM processes LIMIT 5;</code></td></tr>
+          <tr><td>Sigma CLI</td><td><code>pipx install sigma-cli</code></td><td><code>sigma plugin install elasticsearch</code> e <code>sigma convert -t elasticsearch regra.yml</code></td></tr>
+          <tr><td>Atomic Red Team</td><td>git clone, mais PowerShell 7</td><td><code>Invoke-AtomicTest -List</code>; correr um teste, ver o sensor e <code>-Cleanup</code></td></tr>
+          <tr><td>Caldera</td><td>git clone e requisitos Python</td><td><code>python server.py --insecure</code>, apenas dentro da rede do laboratório</td></tr>
+          <tr><td>Wireshark / tshark</td><td><code>apt install tshark wireshark</code></td><td><code>sudo dpkg-reconfigure wireshark-common</code> e juntar-se ao grupo <code>wireshark</code></td></tr>
+          <tr><td>Fail2ban</td><td><code>apt install fail2ban</code></td><td>Ativar a jail <code>sshd</code> em <code>jail.local</code> e <code>fail2ban-client status sshd</code></td></tr>
+          <tr><td>jq</td><td><code>apt install jq</code></td><td>Nada; qualquer registo JSON fica consultável com <code>jq 'select(.rule.level &gt; 10)'</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Uma cadeia funcional, de ponta a ponta</h3>
+    <pre><code><span class="c"># 1. recolher: uma captura da interface espelhada</span>
+sudo tcpdump -i vnet3 -nn -w ev/scan.pcap 'tcp port 80 or tcp port 443'
+
+<span class="c"># 2. armazenar: os mesmos pacotes nos dois motores, offline</span>
+zeek -r ev/scan.pcap local
+suricata -r ev/scan.pcap -c /etc/suricata/suricata.yaml -l ev/out
+
+<span class="c"># 3. decidir: uma regra que dispara, testada contra essa captura</span>
+sigma convert -t elasticsearch -p ecs_windows rules/office-powershell.yml &gt; ev/rule.json
+jq 'select(.rule.level &gt;= 10)' /var/ossec/logs/alerts/alerts.json | head</code></pre>
+
+    <h3>Como usar, por finalidade</h3>
+    <p>
+      A mesma camada vista do outro lado: o que se corre quando a pergunta é «o que aconteceu» e não «o que
+      consigo alcançar». Os ataques que geram este tráfego vêm dos manuais <a href="KaliLinux.html">Kali</a> e
+      <a href="metasploit.html">Metasploit</a>.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Finalidade</th><th>Comando</th><th>O que obtém</th></tr></thead>
+        <tbody>
+          <tr><td>Capturar evidência</td><td><code>sudo tcpdump -i vnet3 -nn -s0 -w ev/cap.pcap 'not port 22'</code></td><td>Uma captura que pode repetir sempre</td></tr>
+          <tr><td>Repetir nos dois motores</td><td><code>zeek -r ev/cap.pcap local</code> e <code>suricata -r ev/cap.pcap -c /etc/suricata/suricata.yaml -l ev/out</code></td><td>Registos e alertas de assinatura, offline</td></tr>
+          <tr><td>Ordenar quem falou</td><td><code>zeek-cut id.orig_h id.resp_h id.resp_p &lt; conn.log | sort | uniq -c | sort -rn | head</code></td><td>A lista curta com que qualquer incidente começa</td></tr>
+          <tr><td>Detetar um scanner</td><td><code>zeek-cut id.orig_h id.resp_p &lt; conn.log | sort -u | awk '{c[$1]++} END {for (h in c) if (c[h] &gt; 50) print h, c[h]}'</code></td><td>Hosts a tocar portas a mais</td></tr>
+          <tr><td>Inspecionar DNS</td><td><code>zeek-cut query &lt; dns.log | sort | uniq -c | sort -rn | head -30</code></td><td>Beaconing e nomes vistos pela primeira vez</td></tr>
+          <tr><td>Inspecionar pedidos web</td><td><code>zeek-cut host uri user_agent &lt; http.log | grep -iE 'union|select|\.\./'</code></td><td>Payloads e user agents de scanner</td></tr>
+          <tr><td>Encontrar falhas de sessão</td><td><code>jq 'select(.rule.id==&quot;5710&quot;)' alerts.json</code></td><td>Tentativas de pulverização e adivinhação</td></tr>
+          <tr><td>Escrever a regra uma vez</td><td><code>sigma convert -t splunk rules/office-powershell.yml</code></td><td>A mesma deteção em qualquer SIEM</td></tr>
+          <tr><td>Testar a regra offline</td><td><code>sudo /var/ossec/bin/wazuh-logtest</code></td><td>Uma regra que dispara antes de produção</td></tr>
+          <tr><td>Interrogar um endpoint</td><td><code>osqueryi 'select pid,name,cmdline from processes where name=&quot;cmd.exe&quot;;'</code></td><td>O que corre, sem reiniciar</td></tr>
+          <tr><td>Ler o Sysmon depressa</td><td><code>Get-WinEvent -LogName Microsoft-Windows-Sysmon/Operational -MaxEvents 20</code></td><td>Eventos de processo, rede e DNS</td></tr>
+          <tr><td>Bloquear uma origem</td><td><code>sudo fail2ban-client set sshd banip 10.66.0.50</code></td><td>Contenção enquanto delimita</td></tr>
+          <tr><td>Medir a deteção</td><td><code>python3 mttd.py</code> e <code>jq length alerts.json</code></td><td>MTTD, volume de alertas, prova de reteste</td></tr>
+          <tr><td>Recolher em escala</td><td><code>velociraptor artifacts collect Windows.System.Pslist</code></td><td>Um artefacto repetível em vez de uma captura</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <h4>Licenças comerciais, não pacotes</h4>
+      <p>
+        Splunk, Sentinel, Chronicle e todos os EDR comerciais compram-se, não se instalam de um repositório, e
+        um nível gratuito é uma licença de laboratório com limite de volume. Construa o laboratório com
+        componentes abertos para a tabela de exercícios continuar a funcionar no dia em que a licença acabar.
+      </p>
+    </div>
+    <p>
+      Dois detalhes decidem se o laboratório é fiável: uma só fonte NTP para todos os hosts e um só formato de
+      hora em todas as consultas. O resto é configuração.
+    </p>
+  </section>
+
+  <section id="pt-hunting">
+    <h2><span class="no">09</span> Hipóteses de caça à ameaça</h2>
+    <p>
+      Uma caça é uma pergunta com prazo, não uma exploração. Escreva a hipótese, os dados necessários e a
+      decisão que tomará se for verdadeira — antes de abrir o editor de consultas.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Hipótese</th><th>Dados necessários</th><th>Se for verdade</th></tr></thead>
+        <tbody>
+          <tr><td>Foi instalado um serviço novo fora das janelas de mudança</td><td>Evento 7045, pedidos de mudança</td><td>Candidato a persistência e uma regra nova</td></tr>
+          <tr><td>Algo leu o LSASS fora do inventário de EDR</td><td>Sysmon 10, inventário de processos</td><td>Caminho de roubo de credenciais e uma regra</td></tr>
+          <tr><td>Foram pedidos bilhetes de serviço Kerberos em massa</td><td>4769 com tipo de cifra 0x17</td><td>Tentativa de Kerberoasting e uma regra</td></tr>
+          <tr><td>Um host resolve um domínio nunca visto no parque</td><td>DNS/Zeek, primeiro avistamento</td><td>Candidato a C2 e um bloqueio</td></tr>
+          <tr><td>Uma identidade entrou a partir de um par ASN/país novo</td><td>Registos de sessão enriquecidos com ASN</td><td>Uso indevido de credenciais e uma regra</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Toda a caça termina num de três estados: uma deteção, um resultado negativo documentado, ou uma lacuna
+      de visibilidade com tarefa associada. «Não se encontrou nada» sem nota é como dois trimestres de caça
+      desaparecem.
+    </p>
+  </section>
+
+  <section id="pt-response">
+    <h2><span class="no">10</span> Resposta a incidentes</h2>
+    <p>
+      A orientação atual do NIST segue as funções do CSF: governar, identificar, proteger, detetar,
+      responder, recuperar. Na prática, um incidente são quatro decisões — é real, até onde chegou, o que
+      cortamos e a quem contamos.
+    </p>
+    <h3>Ordem de operações</h3>
+    <ol>
+      <li><b>Preservar primeiro.</b> Memória e estado volátil antes de qualquer reinício; capture a cronologia enquanto existe.</li>
+      <li><b>Delimitar por identidade, não por IPs.</b> Que contas, tokens, sessões e partilhas foram tocadas — esse é o raio de impacto.</li>
+      <li><b>Conter de forma estreita.</b> Desativar a conta, isolar o host, rodar a credencial; evite derrubar o segmento inteiro.</li>
+      <li><b>Erradicar com evidência.</b> Remover a persistência, verificar a remoção e guardar o artefacto removido.</li>
+      <li><b>Recuperar e vigiar.</b> Restaurar de fonte conhecida como boa e caçar a mesma técnica durante um período definido.</li>
+      <li><b>Escrever a cronologia</b> enquanto a memória está fresca e fechar cada lição com dono e data.</li>
+    </ol>
+    <div class="callout warn">
+      <h4>A contenção é uma decisão de negócio</h4>
+      <p>
+        Isolar um controlador de domínio às 10:00 pára um ataque e uma fábrica. Combine as opções de
+        contenção, e quem as pode autorizar, antes do incidente. Um manual escrito com aprovadores nomeados
+        vale mais que qualquer ferramenta desta página.
+      </p>
+    </div>
+    <p>
+      O tratamento de evidência no endpoint segue a mesma disciplina das ferramentas forenses descritas no
+      manual do <a href="KaliLinux.html">Kali</a>: hash primeiro, trabalhar sobre cópias, registar a
+      ferramenta e a versão.
+    </p>
+  </section>
+
+  <section id="pt-hardening">
+    <h2><span class="no">11</span> Vitórias rápidas de endurecimento</h2>
+    <p>
+      A maioria das intrusões continua a entrar pelas mesmas portas abertas. Os itens estão ordenados por
+      risco removido por hora de trabalho, e cada um remove uma técnica, não um sintoma.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Controlo</th><th>Remove</th><th>Esforço</th></tr></thead>
+        <tbody>
+          <tr><td>MFA em todo o acesso remoto e administrativo</td><td>Pulverização de passwords, credential stuffing</td><td>Dias, atrito com utilizadores</td></tr>
+          <tr><td>Cadência de patches com prazo</td><td>Reutilização de exploits públicos</td><td>Contínuo, disciplina de processo</td></tr>
+          <tr><td>Administração em camadas e LAPS</td><td>Movimento lateral com passwords locais repetidas</td><td>Semanas, limpeza de AD</td></tr>
+          <tr><td>Desativar LLMNR e NBT-NS, exigir SMB signing</td><td>Captura de credenciais por resolução de nomes, relay</td><td>Horas</td></tr>
+          <tr><td>Lista de aplicações permitidas ou WDAC</td><td>Binários não aprovados e muitos loaders</td><td>Semanas, trabalho de empacotamento</td></tr>
+          <tr><td>Backups offline, testados e documentados</td><td>Impacto de ransomware e negociação</td><td>Dias, mais um ensaio de restauro</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      A orientação ao nível do host para a mesma plataforma está no manual de endurecimento
+      <a href="DebianSecurity.html">Debian</a> e no manual de <a href="privacy.html">Privacidade</a>, e a
+      limitação de taxa pertence ao <a href="banthemall.html">Fail2ban</a>.
+    </p>
+  </section>
+
+  <section id="pt-purple">
+    <h2><span class="no">12</span> Ciclo púrpura e métricas</h2>
+    <p>
+      Púrpura não é uma equipa; é o hábito de correr um ataque e um teste de deteção na mesma hora, com os
+      dois lados a olhar para a mesma cronologia. O resultado é cobertura que se defende numa reunião de
+      administração.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Métrica</th><th>Definição</th><th>Armadilha</th></tr></thead>
+        <tbody>
+          <tr><td>MTTD</td><td>Tempo da primeira ação do atacante ao primeiro alerta</td><td>Diluir as falhas na média</td></tr>
+          <tr><td>MTTR</td><td>Tempo do alerta ao incidente contido</td><td>Contar o fecho do ticket, não o incidente</td></tr>
+          <tr><td>Cobertura de técnicas</td><td>Técnicas testadas com regra que dispara e é triada</td><td>Contar regras em vez de deteções</td></tr>
+          <tr><td>Qualidade do alerta</td><td>Rácio entre verdadeiros e falsos positivos por regra</td><td>Silenciar regras em vez de as afinar</td></tr>
+          <tr><td>Lacunas de visibilidade</td><td>Técnicas sem telemetria alguma</td><td>Não medir a ausência</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <h4>Fechar o ciclo com os atacantes</h4>
+      <p>
+        Peça a lista de técnicas, repita cada uma e responda a duas perguntas por linha: registámos e
+        alertámos? Tudo o que ficou em «registado mas nunca alertado» é trabalho de engenharia de deteção,
+        não uma encomenda.
+      </p>
+    </div>
+    <div class="next">
+      <a href="RedTeams.html">Atacantes</a>
+      <a href="learnHacking.html">Laboratório</a>
+      <a href="Security.html">Intrusões</a>
+    </div>
+  </section>
+
+  <section id="pt-sources">
+    <h2><span class="no">13</span> Fontes e leitura recomendada</h2>
+    <h3>Normas e quadros</h3>
+    <ul>
+      <li><a href="https://www.nist.gov/cyberframework">CSF</a> — o quadro de cibersegurança, revisão 2.0.</li>
+      <li><a href="https://csrc.nist.gov/pubs/sp/800/61/r3/final">NIST</a> — SP 800-61r3, recomendações de resposta a incidentes.</li>
+      <li><a href="https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final">Controlos</a> — SP 800-53, o catálogo de controlos.</li>
+      <li><a href="https://www.cisecurity.org/controls">CIS</a> — os dezoito controlos críticos de segurança.</li>
+      <li><a href="https://attack.mitre.org/">ATT&amp;CK</a> e <a href="https://d3fend.mitre.org/">D3FEND</a> — comportamento e contramedida.</li>
+      <li><a href="https://github.com/SigmaHQ/sigma">Sigma</a> — formato de regra de deteção independente do fornecedor.</li>
+    </ul>
+    <h3>Laboratórios e ferramentas</h3>
+    <ul>
+      <li><a href="https://docs.securityonion.net/">Onion</a> — documentação do Security Onion para NSM.</li>
+      <li><a href="https://documentation.wazuh.com/">Wazuh</a> — agentes, regras e monitorização de integridade.</li>
+      <li><a href="https://github.com/SwiftOnSecurity/sysmon-config">Sysmon</a> e <a href="https://github.com/olafhartong/sysmon-modular">Modular</a> — duas configurações iniciais muito usadas.</li>
+      <li><a href="https://github.com/Velocidex/velociraptor">Velociraptor</a> — interrogação de endpoints em escala.</li>
+      <li><a href="https://github.com/osquery/osquery">osquery</a> — SQL sobre o sistema operativo.</li>
+      <li><a href="https://zeek.org/">Zeek</a> e <a href="https://suricata.io/">Suricata</a> — evidência de rede e assinaturas.</li>
+    </ul>
+    <h3>Neste blogue</h3>
+    <ul>
+      <li><a href="learnHacking.html">Laboratório</a> para a estrutura de exercícios vermelho/azul, e <a href="RedTeams.html">Vermelho</a> para o lado do ataque.</li>
+      <li><a href="KaliLinux.html">Kali</a> para o que o atacante corre, e <a href="privacy.html">Privacidade</a> para o tratamento de dados na evidência.</li>
+    </ul>
+    <div class="callout warn">
+      <h4>Defesa é prática, não certificado</h4>
+      <p>
+        Um controlo que nunca foi testado é uma suposição. Corra o ataque, veja o alerta e escreva o que
+        viu. O resto é documentação.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Blue Teams</b> &middot; engenharia de deteção, laboratórios e doutrina &middot; parte do conjunto Security &amp; Hacking.</p>
+    <p>HTML simples, CSS3 e JavaScript. Sem estilos, scripts, tipos de letra ou imagens externas.</p>
+    <a class="home" href="./index.html">Início</a>
+  </div>
+</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var blocks = document.querySelectorAll("[data-lang-block]");
+  var links = document.querySelectorAll("[data-lang-switch]");
+
+  function apply(lang) {
+    Array.prototype.forEach.call(blocks, function (block) {
+      block.hidden = block.getAttribute("data-lang-block") !== lang;
+    });
+    Array.prototype.forEach.call(links, function (link) {
+      if (link.getAttribute("data-lang-switch") === lang) { link.setAttribute("aria-current", "true"); }
+      else { link.removeAttribute("aria-current"); }
+    });
+    document.documentElement.lang = lang === "pt" ? "pt-PT" : "en";
+  }
+
+  Array.prototype.forEach.call(links, function (link) {
+    link.addEventListener("click", function (event) {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button) { return; }
+      event.preventDefault();
+      apply(link.getAttribute("data-lang-switch"));
+    });
+  });
+
+  var wanted = new URLSearchParams(location.search).get("lang");
+  if (wanted === "en" || wanted === "pt") { apply(wanted); }
+  else if (location.hash.indexOf("#pt-") === 0) { apply("pt"); }
+})();
+</script>
+</body>
+</html>

