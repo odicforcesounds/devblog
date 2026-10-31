@@ -3,8 +3,10 @@
  * One shared, local module for the level games (oJogoDoAdvogado.html and
  * oJogoDoOperador.html). It gives them three things without touching their
  * design:
- *   1. Google sign-in, through the Firebase project already used by the
- *      comments widget on index.html.
+ *   1. E-mail sign-in, through the Firebase project already used by the
+ *      comments widget on index.html. E-mail is the only method offered here.
+ *      It works through Google (Firebase) as the identity backend, but the
+ *      player types an address and a password; no provider button is shown.
  *   2. Score and certificate storage per player, in Firestore.
  *   3. One message per level, written and read only on the closing screen of
  *      that level.
@@ -25,14 +27,10 @@ import {
   browserLocalPersistence,
   createUserWithEmailAndPassword,
   getAuth,
-  getRedirectResult,
-  GoogleAuthProvider,
   onAuthStateChanged,
   sendPasswordResetEmail,
   setPersistence,
   signInWithEmailAndPassword,
-  signInWithPopup,
-  signInWithRedirect,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
@@ -64,7 +62,6 @@ const MAX_NOTE = 280;
 const AVATAR_HOSTS = ["lh3.googleusercontent.com"];
 const LANG = {
   pt: {
-    signin: "Google",
     signout: "Sair",
     email: "E-mail",
     mailIn: "Entrar",
@@ -79,16 +76,13 @@ const LANG = {
     placeholder: "O que fica deste nível…",
     post: "Publicar",
     empty: "Ainda sem mensagens neste nível.",
-    needSign: "Entra com Google para publicar.",
+    needSign: "Entra com o teu e-mail para publicar.",
     tooLong: "A mensagem passa dos 280 caracteres.",
     posted: "Publicada. Está aqui e na lista de jogadores.",
     failed: "Não foi possível guardar. Tenta outra vez.",
-    saving: "A guardar…",
-    signFailed: "Não foi possível entrar. Tenta outra vez.",
-    blocked: "A janela de login foi bloqueada. Autoriza pop-ups neste site."
+    saving: "A guardar…"
   },
   en: {
-    signin: "Google",
     signout: "Sign out",
     email: "Email",
     mailIn: "Sign in",
@@ -103,13 +97,11 @@ const LANG = {
     placeholder: "What this level leaves you…",
     post: "Post",
     empty: "No messages on this level yet.",
-    needSign: "Sign in with Google to post.",
+    needSign: "Sign in with your e-mail to post.",
     tooLong: "The message is over 280 characters.",
     posted: "Posted. It is here and on the players list.",
     failed: "Could not save. Try again.",
-    saving: "Saving…",
-    signFailed: "Could not sign you in. Try again.",
-    blocked: "The sign-in window was blocked. Allow pop-ups for this site."
+    saving: "Saving…"
   }
 };
 
@@ -127,7 +119,6 @@ try {
   auth = getAuth(app);
   db = getFirestore(app);
   setPersistence(auth, browserLocalPersistence).catch(function () {});
-  getRedirectResult(auth).catch(function () {});
   onAuthStateChanged(auth, function (next) {
     user = next || null;
     if (user && window.localStorage) {
@@ -194,8 +185,7 @@ function hud(lang) {
     '</div>';
   }
   return '<div class="ga">' +
-    '<button type="button" class="ga-btn primary" data-ga="in">' + esc(text.signin) + '</button>' +
-    '<button type="button" class="ga-btn" data-ga="email" aria-expanded="false">' + esc(text.email) + '</button>' +
+    '<button type="button" class="ga-btn primary" data-ga="email" aria-expanded="false">' + esc(text.email) + '</button>' +
     '<form class="ga-form" data-ga-form="mail" hidden>' +
       '<input class="ga-input" type="email" name="mail" autocomplete="email" maxlength="254" placeholder="you@example.com" aria-label="' + esc(text.email) + '">' +
       '<input class="ga-input" type="password" name="pass" autocomplete="current-password" minlength="6" maxlength="128" placeholder="••••••" aria-label="' + esc(text.mailIn) + '">' +
@@ -223,7 +213,7 @@ function level(opts) {
     '<h3>' + esc(text.noteTitle) + '</h3>' +
     '<p>' + esc(text.noteHint) + '</p>' +
     '<div class="ga-slot">' + hud(lang) + '</div>' +
-    '<textarea class="ga-input" maxlength="' + MAX_NOTE + '" rows="2" aria-label="' +
+    '<textarea class="ga-input" maxlength="' + MAX_NOTE + '" rows="4" aria-label="' +
       esc(text.noteTitle) + '" placeholder="' + esc(text.placeholder) + '"' +
       (user ? "" : " disabled") + '></textarea>' +
     '<div class="ga-row">' +
@@ -355,7 +345,7 @@ function flush() {
     uid: user.uid,
     name: nameOf(),
     photo: avatarOf(),
-    provider: "google.com",
+    provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || "password",
     updatedAt: stamp,
     games: {}
   };
@@ -376,23 +366,6 @@ function flush() {
 }
 
 /* ------------------------------------------------------------------- auth */
-
-function signIn(button) {
-  if (!auth) { return; }
-  button.disabled = true;
-  const text = t(context ? context.lang : "pt");
-  signInWithPopup(auth, new GoogleAuthProvider()).catch(function (error) {
-    const code = error && error.code;
-    if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
-      return signInWithRedirect(auth, new GoogleAuthProvider());
-    }
-    const panel = document.querySelector("[data-ga-game]");
-    if (panel) { statusIn(panel, code === "auth/popup-closed-by-user" ? "" : text.signFailed); }
-    return null;
-  }).finally(function () {
-    button.disabled = false;
-  });
-}
 
 function mailStatus(form, message) {
   const line = form && form.querySelector("[data-ga-mail]");
@@ -455,7 +428,6 @@ function click(event) {
     mail(action, button);
     return true;
   }
-  if (action === "in") { signIn(button); return true; }
   if (action === "out") {
     button.disabled = true;
     signOut(auth).catch(function () {}).finally(function () { button.disabled = false; });
