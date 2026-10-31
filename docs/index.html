@@ -2467,6 +2467,7 @@ width: min(1120px, calc(100% - 9rem));
           <p class="comments-identity-name" id="comment-identity-name"></p>
           <p class="comments-identity-provider" id="comment-identity-provider"></p>
         </div>
+        <button type="button" class="comments-signout" id="comment-verify" hidden>Resend confirmation</button>
         <button type="button" class="comments-signout" id="comment-signout">Sign out</button>
       </div>
     </div>
@@ -3065,6 +3066,7 @@ width: min(1120px, calc(100% - 9rem));
       getRedirectResult,
       GoogleAuthProvider,
       onAuthStateChanged,
+      sendEmailVerification,
       sendPasswordResetEmail,
       setPersistence,
       signInWithEmailAndPassword,
@@ -3134,6 +3136,7 @@ width: min(1120px, calc(100% - 9rem));
     const identityName = document.getElementById("comment-identity-name");
     const identityProvider = document.getElementById("comment-identity-provider");
     const avatar = document.getElementById("comment-avatar");
+    const verifyButton = document.getElementById("comment-verify");
     const signOutButton = document.getElementById("comment-signout");
     const emailForm = document.getElementById("email-form");
     const emailAddress = document.getElementById("email-address");
@@ -3143,7 +3146,7 @@ width: min(1120px, calc(100% - 9rem));
     const emailReset = document.getElementById("email-reset");
 
     if (form && messageInput && submitButton && status && counter && list && empty && count &&
-        signinPanel && providersBox && identity && identityName && identityProvider && avatar && signOutButton &&
+        signinPanel && providersBox && identity && identityName && identityProvider && avatar && verifyButton && signOutButton &&
         emailForm && emailAddress && emailPassword && emailSignIn && emailSignUp && emailReset) {
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
@@ -3246,7 +3249,22 @@ width: min(1120px, calc(100% - 9rem));
         });
       }
 
-      function submitEmail(action) {
+      /* Firebase is the only party that can say an address exists: the account
+         is created there and the link it mails has to be opened from that
+         inbox. Until emailVerified turns true the comment box stays locked, so
+         a typed address has to be real and belong to whoever typed it. */
+      function confirmedMailbox(user) {
+        if (!user) {
+          return false;
+        }
+        if (user.emailVerified) {
+          return true;
+        }
+        /* Google and the other OAuth providers check the address themselves. */
+        return providerIdOf(user) !== "password";
+      }
+
+      async function submitEmail(action) {
         const address = emailAddress.value.trim();
         const password = emailPassword.value;
 
@@ -3258,20 +3276,27 @@ width: min(1120px, calc(100% - 9rem));
         setStatus(action === "signup" ? "Creating the account..." : "Signing in...", "");
         busy([emailSignIn, emailSignUp, emailReset], true);
 
-        const call = action === "signup"
-          ? createUserWithEmailAndPassword(auth, address, password)
-          : signInWithEmailAndPassword(auth, address, password);
-
-        call.then(function () {
-          emailPassword.value = "";
+        try {
           if (action === "signup") {
-            setStatus("Account created. You can post now.", "success");
+            const created = await createUserWithEmailAndPassword(auth, address, password);
+            await sendEmailVerification(created.user);
+            emailPassword.value = "";
+            setStatus("Account created. Open the link sent to " + address +
+              " and the comment box turns on.", "success");
+            return;
           }
-        }).catch(function (error) {
+
+          const signed = await signInWithEmailAndPassword(auth, address, password);
+          emailPassword.value = "";
+          if (!confirmedMailbox(signed.user)) {
+            setStatus("Confirm the email sent to " + address +
+              " before commenting. Use \u201cResend confirmation\u201d if it never arrived.", "error");
+          }
+        } catch (error) {
           setStatus(credentialMessage(error), "error");
-        }).finally(function () {
+        } finally {
           busy([emailSignIn, emailSignUp, emailReset], false);
-        });
+        }
       }
 
       function providerLabel(user) {
@@ -3335,13 +3360,17 @@ width: min(1120px, calc(100% - 9rem));
       function applyUser(user) {
         currentUser = user || null;
         const signedIn = Boolean(user);
+        const ready = confirmedMailbox(user);
 
         signinPanel.hidden = signedIn;
         identity.hidden = !signedIn;
-        form.dataset.locked = signedIn ? "false" : "true";
-        messageInput.disabled = !signedIn;
-        submitButton.disabled = !signedIn;
-        submitButton.textContent = signedIn ? "Post comment" : "Sign in to post";
+        verifyButton.hidden = !signedIn || ready;
+        form.dataset.locked = ready ? "false" : "true";
+        messageInput.disabled = !ready;
+        submitButton.disabled = !ready;
+        submitButton.textContent = ready
+          ? "Post comment"
+          : (signedIn ? "Confirm your email to post" : "Sign in to post");
 
         if (!signedIn) {
           displayName = "";
@@ -3355,7 +3384,8 @@ width: min(1120px, calc(100% - 9rem));
         displayName = clean(user.displayName ||
           (user.email ? String(user.email).split("@")[0] : "") || "Reader", MAX_NAME);
         identityName.textContent = displayName;
-        identityProvider.textContent = "via " + providerLabel(user);
+        identityProvider.textContent = "via " + providerLabel(user) +
+          (ready ? "" : " \u2014 email not confirmed");
 
         const face = safeAvatar(user.photoURL);
         if (face) {
@@ -3405,6 +3435,37 @@ width: min(1120px, calc(100% - 9rem));
           }).finally(function () {
             busy([emailReset], false);
           });
+        });
+
+        verifyButton.addEventListener("click", function () {
+          if (!currentUser) {
+            return;
+          }
+          verifyButton.disabled = true;
+          sendEmailVerification(currentUser).then(function () {
+            setStatus("Confirmation email sent again. Check your inbox.", "success");
+          }).catch(function (error) {
+            const code = (error && error.code) || "";
+            setStatus(code === "auth/too-many-requests"
+              ? "Too many attempts. Wait a minute and try again."
+              : credentialMessage(error), "error");
+          }).finally(function () {
+            verifyButton.disabled = false;
+          });
+        });
+
+        /* Back from the inbox in another tab: reload the account and unlock the
+           box without a page reload. */
+        window.addEventListener("focus", function () {
+          if (!currentUser || confirmedMailbox(currentUser)) {
+            return;
+          }
+          currentUser.reload().then(function () {
+            if (confirmedMailbox(currentUser)) {
+              applyUser(currentUser);
+              setStatus("Email confirmed. You can comment now.", "success");
+            }
+          }).catch(function () {});
         });
 
         signOutButton.addEventListener("click", function () {
@@ -3516,6 +3577,12 @@ width: min(1120px, calc(100% - 9rem));
 
         if (!user) {
           setStatus("Sign in to post a comment. Anonymous posting is off.", "error");
+          return;
+        }
+
+        if (!confirmedMailbox(user)) {
+          setStatus("Confirm the email sent to your inbox before commenting. " +
+            "\u201cResend confirmation\u201d is next to your name.", "error");
           return;
         }
 
