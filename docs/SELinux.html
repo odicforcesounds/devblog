@@ -145,6 +145,13 @@ figcaption{font-family:var(--mono);font-size:.72rem;color:#555;margin-top:6px}
 .toc-toggle{display:none}
 @media(max-width:900px){.toc{position:static;max-height:none}.toc-toggle{display:block;width:100%;font-family:var(--mono);padding:10px;background:#111;color:#ffe600;border:0;cursor:pointer}}
 .rank{font-family:var(--mono);background:var(--green);color:#fff;padding:2px 8px;font-size:.7rem}
+/* bilingual switch */
+.lang-switch{display:flex;gap:8px;justify-content:flex-end;padding:6px 18px;background:#000;font-family:var(--mono);font-size:.75rem;border-bottom:1px solid #333}
+.lang-switch a{color:#ffb3b3;text-decoration:none;border:1px solid #555;padding:3px 8px}
+.lang-switch a[aria-current="true"]{background:var(--stamp-red);border-color:var(--stamp-red);color:#fff}
+.cover h2.seo-h2{font-family:var(--mono);font-size:clamp(1.8rem,4vw,3.1rem);line-height:1.1;margin:18px 0 8px;text-transform:uppercase}
+.cover h2.seo-h2 span{color:var(--stamp-red)}
+@media print{.lang-switch{display:none!important}}
 </style>
 
     <link rel="canonical" href="https://blog.odicforcesounds.com/SELinux.html">
@@ -245,6 +252,12 @@ figcaption{font-family:var(--mono);font-size:.72rem;color:#555;margin-top:6px}
 </head>
 <body>
 
+<nav class="lang-switch" aria-label="Language">
+  <a href="?lang=pt" data-lang-switch="pt" lang="pt-PT">Português</a>
+  <a href="?lang=en" data-lang-switch="en" aria-current="true" lang="en">English</a>
+</nav>
+
+<div id="lang-en" data-lang-block="en">
 <div class="topbar">
   <span class="docno">TM-SEL-2026 REV.C</span>
   <strong style="font-family:var(--mono);letter-spacing:.08em">SELINUX // PARANOID FIELD MANUAL</strong>
@@ -634,124 +647,645 @@ allow myapp_t myapp_data_t:file { read getattr open };
   </main>
 </div>
 
+
+</div>
+
+<div id="lang-pt" data-lang-block="pt" hidden>
+
+<div class="topbar">
+  <span class="docno">TM-SEL-2026 REV.C</span>
+  <strong style="font-family:var(--mono);letter-spacing:.08em">SELINUX // MANUAL DE CAMPO PARANÓICO</strong>
+  <nav>
+    <a class="home-link" href="index.html">⌂ Início</a>
+    <a href="#level-0-pt">N0</a><a href="#level-1-pt">N1</a><a href="#level-2-pt">N2</a>
+    <a href="#level-3-pt">N3</a><a href="#level-4-pt">N4</a><a href="#level-5-pt">N5</a>
+    <a href="#level-6-pt">N6</a><a href="#level-7-pt">N7</a><a href="#sources-pt">Fontes</a>
+  </nav>
+</div>
+<div class="progress-wrap">
+  <span class="lbl">PROGRESSO DA CREDENCIAL: <span id="pct-pt">0%</span> — CONCLUA A VALIDAÇÃO DE CADA NÍVEL PARA DESBLOQUEAR O SEGUINTE. SEM ATALHOS, OPERADOR.</span>
+  <div class="progress"><i id="bar-pt"></i></div>
+</div>
+
+<div class="shell">
+  <aside class="toc" id="toc-pt">
+    <h3>▤ ÍNDICE</h3>
+    <button class="toc-toggle" onclick="document.getElementById('toclist-pt').style.display=document.getElementById('toclist-pt').style.display==='none'?'block':'none'">MOSTRAR / OCULTAR ÍNDICE</button>
+    <ol id="toclist-pt">
+      <li data-toc="level-0"><a href="#level-0-pt">N0 — Porque o DAC lhe falha</a></li>
+      <li data-toc="level-1"><a href="#level-1-pt">N1 — Arquitectura e modos</a></li>
+      <li data-toc="level-2"><a href="#level-2-pt">N2 — Contextos e laboratório de ficheiros</a></li>
+      <li data-toc="level-3"><a href="#level-3-pt">N3 — Imposição de tipos (TE)</a></li>
+      <li data-toc="level-4"><a href="#level-4-pt">N4 — RBAC: utilizadores e papéis</a></li>
+      <li data-toc="level-5"><a href="#level-5-pt">N5 — MLS / MCS</a></li>
+      <li data-toc="level-6"><a href="#level-6-pt">N6 — Booleanos, portas, ferramentas</a></li>
+      <li data-toc="level-7"><a href="#level-7-pt">N7 — Herói: endurecimento paranóico</a></li>
+      <li><a href="#sources-pt">Apêndice — Fontes</a></li>
+    </ol>
+    <div style="padding:0 14px 14px;font-family:var(--mono);font-size:.72rem;color:#555">Regra 0: <b>Nunca faça setenforce 0 e vá à sua vida.</b><br><button onclick="resetProgress('pt')" style="margin-top:8px;font-family:var(--mono);cursor:pointer">REPOR CREDENCIAL</button></div>
+  </aside>
+
+  <main class="page">
+    <div class="cover">
+      <div class="stamp">Aprovado<br>por paranóicos</div>
+      <span class="class">NÃO CLASSIFICADO // PARA ADMINISTRADORES PARANÓICOS</span>
+      <h2 class="seo-h2">SELinux <span>Zero&nbsp;a&nbsp;Herói</span></h2>
+      <div class="sub">FLASK • LSM • IMPOSIÇÃO DE TIPOS • RBAC • MLS/MCS • AVC • TARGETED → STRICT</div>
+      <p style="max-width:70ch">Isto não é um artigo de blogue. É um <b>manual técnico com progressão imposta</b>. Começa com confiança zero — até no <code class="inline">root</code> — e conquista cada credencial provando que compreendeu a anterior. Cada conceito vem com um <b>modelo animado em CSS/JS puro</b> que pode correr offline, transcrições reais de terminal e um laboratório prático de contextos de ficheiro. Sem CDN. Sem frameworks. Um único ficheiro: <code class="inline">index.html</code>.</p>
+      <div class="meta-grid">
+        <div><b>DOCUMENTO</b>TM-SEL-2026 / index.html</div>
+        <div><b>CLASSIFICAÇÃO</b>Não classificado — seja paranóico mesmo assim</div>
+        <div><b>PRÉ-REQUISITO</b>Linux, root, desconfiança de tudo</div>
+        <div><b>POLÍTICA</b>Targeted → MLS (percurso paranóico)</div>
+        <div><b>VALIDAÇÃO</b>8 questionários • 1 laboratório • 1 auditoria</div>
+        <div><b>INÍCIO</b><a href="index.html">index.html</a> (este ficheiro)</div>
+      </div>
+      <p style="font-family:var(--mono);font-size:.8rem">COMO USAR: leia de cima para baixo. As secções fechadas ficam seladas até passar o questionário anterior. A sua credencial é guardada em <code class="inline">localStorage</code>. Fazer batota só engana o seu eu futuro já comprometido.</p>
+    </div>
+
+    <!-- ================= N0 ================= -->
+    <section class="level" id="level-0-pt" data-level="0">
+      <span class="level-num">NÍVEL 0 — RECRUTA</span>
+      <h2>Porque o DAC lhe falha <span class="clearance">CREDENCIAL 0</span></h2>
+      <div class="parable"><b>Parábola da chave roubada.</b> O Discretionary Access Control (DAC) é um hotel onde o hóspede decide quem recebe uma cópia da chave do quarto. Se o <code class="inline">root</code> (ou qualquer processo com uid 0, ou um bug de setuid, ou o seu próprio <code class="inline">chmod -R 777</code> às duas da manhã) for comprometido, todas as fechaduras se abrem. O Mandatory Access Control (MAC) é uma prisão: até o director precisa de uma política assinada para abrir uma cela. O SELinux é essa prisão — criada pela NSA como FLASK e integrada no kernel como o framework Linux Security Modules (LSM).</div>
+      <h3>0.1 DAC vs MAC — veja falhar</h3>
+      <p>Carregue em reproduzir mentalmente: ambas as animações correm em CSS puro. Não é preciso JavaScript para a física da traição.</p>
+      <div class="anim-stage anim-dac">
+        <h5>FIG 0-A — DAC: O UID 0 PASSA SEM PARAR (o dono disse sim uma vez, o atacante agradece para sempre)</h5>
+        <div class="lane"><span class="actor hacker">atacante uid=0</span><span class="dot"></span><div class="gate">DAC<br>teste<br>rwx?</div><div class="filebox">/etc/shadow<br>-rw-------<br>dono: root</div></div>
+        <p style="color:#9dff9d">Resultado: <b>PERMITIDO</b> — o DAC só pergunta “é o dono / é root?”. Root comprometido = tudo comprometido.</p>
+      </div>
+      <div class="anim-stage anim-mac">
+        <h5>FIG 0-B — MAC (SELinux): ATÉ O ROOT É INTERROGADO</h5>
+        <div class="lane"><span class="actor">httpd uid=0?</span><span class="dot"></span><span class="dot dot2"></span><div class="gate">SELinux<br>AVC<br>permitir?</div><div class="filebox">/etc/shadow<br>shadow_t<br>httpd_t ✗</div></div>
+        <p style="color:#ffb3b3">Resultado: <b>NEGADO + REGISTO AVC</b> — o kernel pergunta à política: “pode o domínio <code class="inline">httpd_t</code> ler o tipo <code class="inline">shadow_t</code>?” Resposta: nunca. Exploração contida.</p>
+      </div>
+      <h3>0.2 Os benefícios paranóicos (para que serve)</h3>
+      <table class="spec"><tr><th>Ameaça</th><th>Sem SELinux</th><th>Com SELinux em Enforcing</th></tr>
+      <tr><td>RCE na web (bug do httpd)</td><td>O atacante lê <code>/etc/shadow</code>, escreve no cron, pivota</td><td>Confinado a <code>httpd_t</code>: só lê <code>httpd_sys_content_t</code>, não executa shell, não toca em <code>shadow_t</code> <span class="badge deny">CONTIDO</span></td></tr>
+      <tr><td>0-day no nginx + escalada</td><td>Root = fim do jogo</td><td>Root <b>sem domínio</b> continua negado <span class="badge deny">MENOR PRIVILÉGIO</span></td></tr>
+      <tr><td>Insider / má configuração <code>chmod 777</code></td><td>O DAC diz sim</td><td>O MAC continua a dizer não <span class="badge allow">DEFESA EM PROFUNDIDADE</span></td></tr>
+      <tr><td>Movimento lateral</td><td>Via livre</td><td>Cada socket, ficheiro e capacidade é mediado <span class="badge info">AUDITADO</span></td></tr></table>
+      <div class="warn"><b class="t">⚠ PRINCÍPIO PARANÓICO N.º 0</b>O SELinux <b>não</b> substitui firewall, actualizações ou DAC. É a <b>última muralha</b> quando tudo o resto falha. Corra-o em <b>Enforcing</b> sempre. Permissive é escuta telefónica, não muro.</div>
+      <h3>0.3 Jargão que tem de dominar</h3>
+      <table class="spec"><tr><th>Termo</th><th>Verdade em uma linha</th></tr>
+      <tr><td><code>Subject</code> (domínio)</td><td>Um processo confinado, p. ex. <code>httpd_t</code>. Os sujeitos agem.</td></tr>
+      <tr><td><code>Object</code> (tipo)</td><td>Ficheiros, portas e sockets etiquetados com um tipo, p. ex. <code>httpd_sys_content_t</code>.</td></tr>
+      <tr><td><code>Contexto / etiqueta</code></td><td><code>user:role:type:level</code> — o crachá de segurança completo de cada sujeito e objecto.</td></tr>
+      <tr><td><code>Política</code></td><td>O livro da lei: milhares de regras <code>allow domínio tipo:classe { perms }</code>. O kernel impõe; não se discute.</td></tr>
+      <tr><td><code>AVC</code></td><td>Access Vector Cache — o segurança à porta do kernel e o seu registo de recusas.</td></tr></table>
+      <div class="quiz" data-quiz="0">
+        <h4>■ VALIDAÇÃO N0 — 3/3 PARA DESBLOQUEAR O N1</h4>
+        <div class="q" data-answer="1"><p>1. Porque é pior comprometer o root sem SELinux?</p><label><input type="radio" name="q0a-pt" value="0"> O root fica mais lento sem SELinux</label><label><input type="radio" name="q0a-pt" value="1"> O DAC confia no uid 0 sem condições; o MAC continua a confinar até o root por domínio/tipo</label><label><input type="radio" name="q0a-pt" value="0"> O SELinux torna o root mais rápido</label></div>
+        <div class="q" data-answer="2"><p>2. O que significa MAC e quem decide?</p><label><input type="radio" name="q0b-pt" value="0"> Manual Access Control, o utilizador decide</label><label><input type="radio" name="q0b-pt" value="1"> Media Access Control, o switch decide</label><label><input type="radio" name="q0b-pt" value="2"> Mandatory Access Control, decide a política do sistema, não o dono</label></div>
+        <div class="q" data-answer="0"><p>3. O SELinux nasceu como…?</p><label><input type="radio" name="q0c-pt" value="0"> Investigação FLASK da NSA, transformada em produto via LSM no kernel</label><label><input type="radio" name="q0c-pt" value="1"> Um protector de ecrã do Debian</label><label><input type="radio" name="q0c-pt" value="2"> Uma alternativa à firewall</label></div>
+        <button onclick="gradeQuiz(0,'pt')">SUBMETER PARA CREDENCIAL</button><div class="result" id="res-0-pt"></div>
+      </div>
+    </section>
+
+    <!-- ================= N1 ================= -->
+    <section class="level" id="level-1-pt" data-level="1">
+      <div class="lock-overlay"><div><div class="big">🔒</div><h3 style="color:#ffe600">SELADO — PASSE O N0</h3><p>Conclua a Validação N0 acima. O manual impõe a ordem, como o kernel impõe a política.</p><a href="#level-0-pt" style="color:#ffe600">← voltar ao N0</a></div></div>
+      <span class="level-num">NÍVEL 1 — OPERADOR</span>
+      <h2>Arquitectura e modos <span class="clearance">CREDENCIAL 1</span></h2>
+      <h3>1.1 Onde vive o SELinux</h3>
+      <p>Os ganchos LSM ficam <b>dentro de cada caminho de syscall</b>: <code class="inline">open()</code>, <code class="inline">execve()</code>, <code class="inline">bind()</code>, <code class="inline">mmap()</code>. O DAC é verificado primeiro; se o DAC negar, acabou. Se o DAC permitir, <b>consulta-se o AVC</b>. Só um <code class="inline">allow</code> explícito na política autoriza a acção. O padrão é <b>negar</b>. As recusas vão para <code class="inline">audit.log</code> (ou dmesg).</p>
+      <div class="anim-stage"><h5>FIG 1-A — CADA SYSCALL PASSA PELO SEGURANÇA (FLUXO ANIMADO)</h5>
+        <div class="flow"><div class="pulse"><b>1. PROCESSO</b>httpd_t<br>open(/var/www)</div><div class="pulse" style="animation-delay:.3s"><b>2. DAC</b>rwx? ✓</div><div class="pulse" style="animation-delay:.6s"><b>3. AVC</b>allow httpd_t<br>httpd_sys_content_t:file read?</div><div class="pulse" style="animation-delay:.9s"><b>4. DECISÃO</b>PERMITE → cache<br>NEGA → audit.log</div></div>
+      </div>
+      <h3>1.2 Modos — o único seguro é Enforcing</h3>
+      <table class="spec"><tr><th>Modo</th><th>Impõe?</th><th>Regista?</th><th>Veredicto paranóico</th></tr>
+      <tr><td><code>Enforcing</code></td><td>Sim</td><td>Sim</td><td><span class="badge allow">É ESTE</span></td></tr>
+      <tr><td><code>Permissive</code></td><td>Não (só avisa)</td><td>Sim</td><td><span class="badge info">SÓ PARA DEPURAR, COM TEMPO LIMITADO</span></td></tr>
+      <tr><td><code>Disabled</code></td><td>Não</td><td>Não (+ inferno de reetiquetagem ao reactivar)</td><td><span class="badge deny">NUNCA — destrói as etiquetas</span></td></tr></table>
+      <div class="term"><div class="bar"><span>root@paranoid:~ — modos</span><span>● ● ●</span></div><pre><span class="cm"># verificar e definir — à maneira paranóica</span>
+<span class="c">$ getenforce; sestatus; cat /etc/selinux/config</span>
+<span class="out">Enforcing
+SELinux status: enabled ... Current mode: enforcing ... Policy from config file: targeted</span>
+<span class="cm"># permissive temporário por 5 min SÓ para depurar (e audite-o!)</span>
+<span class="c">$ sudo setenforce 0  <span class="cm"># + arranque um temporizador. setenforce 1 no fim.</span></span>
+<span class="c">$ sudo setenforce 1; getenforce</span>
+<span class="out">Enforcing</span>
+<span class="cm"># persistente: /etc/selinux/config → SELINUX=enforcing  (nunca disabled!)</span></pre><button onclick="this.previousElementSibling.scrollIntoView()">COPIAR DE CABEÇA — NÃO HÁ ÁREA DE TRANSFERÊNCIA NA PARANÓIA</button></div>
+      <h3>1.3 Variantes de política</h3>
+      <table class="spec"><tr><th>Política</th><th>Confina</th><th>Uso</th></tr>
+      <tr><td><code>targeted</code> (padrão)</td><td>Daemons de rede + utilizadores confinados; o resto em <code>unconfined_t</code></td><td>Servidores e postos de trabalho. Comece aqui.</td></tr>
+      <tr><td><code>minimum</code></td><td>O mesmo que targeted, mas reduzido</td><td>Contentores e VMs mínimos</td></tr>
+      <tr><td><code>mls</code> (strict + MLS)</td><td><b>Todos</b>, com níveis de sensibilidade s0–s15</td><td>Modo herói paranóico. Nível governamental.</td></tr></table>
+      <div class="quiz" data-quiz="1">
+        <h4>■ VALIDAÇÃO N1 — 3/3 PARA DESBLOQUEAR O N2</h4>
+        <div class="q" data-answer="1"><p>1. Ordem das verificações num open()?</p><label><input type="radio" name="q1a-pt" value="0"> SELinux primeiro, depois o DAC</label><label><input type="radio" name="q1a-pt" value="1"> DAC primeiro, depois o AVC do SELinux; ambos têm de permitir</label><label><input type="radio" name="q1a-pt" value="2"> Só o SELinux conta</label></div>
+        <div class="q" data-answer="2"><p>2. O modo Permissive…?</p><label><input type="radio" name="q1a2-pt" value="0"> Impõe e registe</label><label><input type="radio" name="q1a2-pt" value="1"> Desliga todos os registos</label><label><input type="radio" name="q1a2-pt" value="2"> Registe as recusas mas NÃO bloqueia — só para depurar</label></div>
+        <div class="q" data-answer="0"><p>3. Porque é que Disabled é pior que Permissive?</p><label><input type="radio" name="q1b-pt" value="0"> Sem imposição nem registos, os ficheiros criados ficam sem etiqueta → reetiquetagem maciça obrigatória</label><label><input type="radio" name="q1b-pt" value="1"> Impõe demasiado</label><label><input type="radio" name="q1b-pt" value="2"> Não há diferença</label></div>
+        <button onclick="gradeQuiz(1,'pt')">SUBMETER PARA CREDENCIAL</button><div class="result" id="res-1-pt"></div>
+      </div>
+    </section>
+
+    <!-- ================= N2 ================= -->
+    <section class="level" id="level-2-pt" data-level="2">
+      <div class="lock-overlay"><div><div class="big">🔒</div><h3 style="color:#ffe600">SELADO — PASSE O N1</h3><p>Os contextos são o alfabeto. Sem eles não se lê política nenhuma.</p><a href="#level-1-pt" style="color:#ffe600">← voltar ao N1</a></div></div>
+      <span class="level-num">NÍVEL 2 — ETIQUETADOR</span>
+      <h2>Contextos: user:role:type:level <span class="clearance">CREDENCIAL 2</span></h2>
+      <p>Tudo — processo, ficheiro, socket, porta — carrega um <b>contexto</b>. <code class="inline">ls -Z</code>, <code class="inline">ps -Z</code> e <code class="inline">id -Z</code> revelam-no.</p>
+      <div class="ctx-demo">unconfined_u:object_r:httpd_sys_content_t:s0
+        <div class="ctx-parts"><span class="u">UTILIZADOR<br>unconfined_u</span><span class="r">PAPEL<br>object_r</span><span class="t">TIPO ★<br>httpd_sys_content_t</span><span class="l">NÍVEL<br>s0</span></div>
+        <div style="font-size:.78rem;color:#ccc">★ É o TIPO que a Imposição de Tipos realmente decide. Utilizador, papel e nível acrescentam as camadas RBAC e MLS.</div>
+      </div>
+      <h3>2.1 Exemplo real: a armadilha do contexto de ficheiro do httpd (todos caem nela)</h3>
+      <div class="parable"><b>História de guerra.</b> Muda o site para <code class="inline">/srv/www</code> ou um colega copia de <code class="inline">~/home</code>. As permissões são <code class="inline">755</code>, o dono é <code class="inline">apache</code>, mas o navegador devolve <b>403</b> e o <code class="inline">audit.log</code> grita <code class="inline">denied { getattr }</code>. O DAC é inocente. O culpado é o <b>tipo</b>: os seus ficheiros são <code class="inline">user_home_t</code> ou <code class="inline">var_t</code>, mas o <code class="inline">httpd_t</code> só pode ler <code class="inline">httpd_sys_content_t</code>.</div>
+      <div class="term"><div class="bar"><span>root@web:~ — o 403 clássico</span><span>● ● ●</span></div><pre><span class="c">$ ls -Z /var/www/html/index.html /home/alice/site/index.html</span>
+<span class="out">system_u:object_r:httpd_sys_content_t:s0 /var/www/html/index.html   <span class="cm">← serve bem</span>
+unconfined_u:object_r:user_home_t:s0  /home/alice/site/index.html <span class="cm">← 403 mesmo com 777!</span></span>
+<span class="c">$ ps -Z | grep httpd</span>
+<span class="out">system_u:system_r:httpd_t:s0  1234 ? httpd</span>
+<span class="cm"># a política diz: allow httpd_t httpd_sys_content_t:file { read getattr open };</span>
+<span class="cm"># não existe regra: allow httpd_t user_home_t:file read;  → recusa AVC</span>
+<span class="c">$ sudo ausearch -m avc -ts recent | audit2why</span>
+<span class="err">type=AVC ... httpd ... denied { read } ... scontext=httpd_t tcontext=user_home_t
+        Was caused by: Missing type enforcement (TE) allow rule.</span></pre></div>
+      <h3>2.2 Corrigir da forma CERTA (chcon vs semanage vs restorecon)</h3>
+      <table class="spec"><tr><th>Ferramenta</th><th>Âmbito</th><th>Sobrevive a reetiquetagem/arranque?</th></tr>
+      <tr><td><code>chcon -t httpd_sys_content_t file</code></td><td>Mudança imediata e manual</td><td><span class="badge deny">NÃO — perde-se no restorecon / relabel</span></td></tr>
+      <tr><td><code>semanage fcontext -a -t httpd_sys_content_t "/srv/www(/.*)?" + restorecon</code></td><td>Escreve na base da política (<code>/etc/selinux/.../file_contexts.local</code>)</td><td><span class="badge allow">SIM — A VIA PARANÓICA</span></td></tr>
+      <tr><td><code>restorecon -Rv /srv/www</code></td><td>Reaplica a verdade segundo a política</td><td>Corrige desvios; use para verificar</td></tr></table>
+      <div class="term"><div class="bar"><span>root@web:~ — correcção permanente</span><span>● ● ●</span></div><pre><span class="cm"># PROCEDIMENTO PARANÓICO para uma nova raiz de documentos</span>
+<span class="c">$ sudo semanage fcontext -a -t httpd_sys_content_t "/srv/www(/.*)?"</span>
+<span class="c">$ sudo restorecon -Rv /srv/www && ls -Z /srv/www</span>
+<span class="out">system_u:object_r:httpd_sys_content_t:s0 /srv/www/index.html  ✓</span>
+<span class="cm"># directorias graváveis (uploads) recebem OUTRO tipo — menor privilégio!</span>
+<span class="c">$ sudo semanage fcontext -a -t httpd_sys_rw_content_t "/srv/www/uploads(/.*)?"</span>
+<span class="c">$ sudo restorecon -Rv /srv/www/uploads</span>
+<span class="cm"># verificar a fonte da verdade:</span>
+<span class="c">$ sudo semanage fcontext -l | grep /srv/www</span></pre></div>
+      <h3>2.3 Mais tipos reais que tem de reconhecer</h3>
+      <table class="spec"><tr><th>Caminho</th><th>Tipo correcto</th><th>Usado por (domínio)</th><th>Se estiver errado →</th></tr>
+      <tr><td><code>/var/www/html/*</code></td><td><code>httpd_sys_content_t</code> (leitura) / <code>httpd_sys_rw_content_t</code> (escrita)</td><td><code>httpd_t</code></td><td>403, AVC denied { read/write }</td></tr>
+      <tr><td><code>/var/lib/mysql/*</code></td><td><code>mysqld_db_t</code></td><td><code>mysqld_t</code></td><td>A base de dados não arranca depois de um <code>mv</code></td></tr>
+      <tr><td><code>~/.ssh/authorized_keys</code></td><td><code>ssh_home_t</code></td><td><code>sshd_t</code></td><td>Login por chave falha em silêncio</td></tr>
+      <tr><td><code>/etc/shadow</code></td><td><code>shadow_t</code></td><td>apenas domínios <code>passwd_t</code> e <code>login</code></td><td>O httpd a lê-lo = ataque</td></tr>
+      <tr><td><code>/var/log/*</code></td><td><code>var_log_t</code></td><td><code>syslogd_t</code>, registadores confinados</td><td>O registo deixa de funcionar</td></tr></table>
+      <h3>2.4 ★ LABORATÓRIO INTERACTIVO — quebre e depois corrija (simulado, seguro)</h3>
+      <p>Simulador offline. Não precisa de root. Tente servir um ficheiro mal etiquetado como <code class="inline">httpd_t</code>, leia o AVC e aplique a correcção paranóica.</p>
+      <div class="lab">
+        <div><b style="color:#ffe600">LAB 2 — SIMULADOR DE RAIZ DE DOCUMENTOS</b> — domínio: <code>httpd_t</code> só pode ler <code>httpd_sys_content_t</code> e <code>httpd_sys_rw_content_t</code>.</div>
+        <div class="btnrow">
+          <button onclick="lab('ls','pt')">ls -Z /srv/www</button>
+          <button onclick="lab('serve-home','pt')">GET / (ficheiro user_home_t)</button>
+          <button class="alt" onclick="lab('serve-good','pt')">GET / (httpd_sys_content_t)</button>
+          <button onclick="lab('chcon','pt')">chcon (temporário!)</button>
+          <button class="alt" onclick="lab('semanage','pt')">semanage + restorecon (permanente)</button>
+          <button class="danger" onclick="lab('restorecon','pt')">restorecon (desfaz o remendo)</button>
+          <button onclick="lab('audit','pt')">ausearch | audit2why</button>
+        </div>
+        <output id="labout-pt">LABORATÓRIO PRONTO. Clique em “ls -Z /srv/www” para começar.
+FS simulado:
+  /srv/www/index.html  →  unconfined_u:object_r:user_home_t:s0  (copiado de $HOME — ERRADO)</output>
+      </div>
+      <div class="quiz" data-quiz="2">
+        <h4>■ VALIDAÇÃO N2 — 3/3 PARA DESBLOQUEAR O N3</h4>
+        <div class="q" data-answer="0"><p>1. Um ficheiro copiado de $HOME para /srv/www dá 403 apesar de 755. Causa mais provável?</p><label><input type="radio" name="q2a-pt" value="0"> Tipo SELinux errado (user_home_t em vez de httpd_sys_content_t)</label><label><input type="radio" name="q2a-pt" value="1"> Nome de ficheiro errado</label><label><input type="radio" name="q2a-pt" value="2"> O Apache precisa de ser reinstalado</label></div>
+        <div class="q" data-answer="2"><p>2. Correcção permanente para uma nova raiz de documentos?</p><label><input type="radio" name="q2b-pt" value="0"> chmod 777</label><label><input type="radio" name="q2b-pt" value="1"> apenas chcon</label><label><input type="radio" name="q2b-pt" value="2"> semanage fcontext -a + restorecon</label></div>
+        <div class="q" data-answer="1"><p>3. Que campo de user:role:type:level conduz as decisões de TE?</p><label><input type="radio" name="q2c-pt" value="0"> user</label><label><input type="radio" name="q2c-pt" value="1"> type</label><label><input type="radio" name="q2c-pt" value="2"> sempre o level</label></div>
+        <button onclick="gradeQuiz(2,'pt')">SUBMETER PARA CREDENCIAL</button><div class="result" id="res-2-pt"></div>
+      </div>
+    </section>
+
+    <!-- ================= N3 ================= -->
+    <section class="level" id="level-3-pt" data-level="3">
+      <div class="lock-overlay"><div><div class="big">🔒</div><h3 style="color:#ffe600">SELADO — PASSE O N2</h3><p>A Imposição de Tipos é o motor. Conquiste-a.</p><a href="#level-2-pt" style="color:#ffe600">← voltar ao N2</a></div></div>
+      <span class="level-num">NÍVEL 3 — IMPOSITOR</span>
+      <h2>Imposição de tipos (TE) <span class="clearance">CREDENCIAL 3</span></h2>
+      <p>A TE responde a uma só pergunta: <b>pode o domínio D executar a operação op sobre o tipo T:classe?</b> As regras são assim:</p>
+      <pre class="codeblock">allow httpd_t httpd_sys_content_t : file { read getattr open map };
+allow httpd_t http_port_t : tcp_socket { name_bind };
+# neverallow httpd_t shadow_t : file { read };   # guarda-corpo em tempo de compilação</pre>
+      <h3>3.1 Domínios, transições, menor privilégio</h3>
+      <p>Um <b>domínio</b> é apenas o tipo de um processo. Quando o <code class="inline">init_t</code> executa <code class="inline">/usr/sbin/httpd</code> (etiquetado <code class="inline">httpd_exec_t</code>), o kernel <b>transita</b> para <code class="inline">httpd_t</code> — automaticamente, por política. Um httpd comprometido fica em <code class="inline">httpd_t</code>; não pode “tornar-se” <code class="inline">kernel_t</code>.</p>
+      <div class="anim-stage"><h5>FIG 3-A — TRANSIÇÃO DE DOMÍNIO (A MUDANÇA DE COR = NOVA PRISÃO)</h5>
+        <div class="flow"><div class="pulse"><b>init_t</b>fork+exec<br>/usr/sbin/httpd</div><div class="pulse" style="animation-delay:.4s"><b>PONTO DE ENTRADA</b>httpd_exec_t<br>verificado ✓</div><div class="pulse" style="animation-delay:.8s"><b>NOVO DOMÍNIO</b>httpd_t<br>só valem as regras do httpd</div><div class="pulse" style="animation-delay:1.2s"><b>ATAQUE</b>exec(/bin/sh)?<br><span style="color:#ff6b6b">NEGADO — não há regra de transição</span></div></div>
+      </div>
+      <h3>3.2 Ler política como um nativo</h3>
+      <div class="term"><div class="bar"><span>analyst@paranoid:~ — sesearch / seinfo</span><span>● ● ●</span></div><pre><span class="c">$ sesearch --allow -s httpd_t -t httpd_sys_content_t -c file</span>
+<span class="out">allow httpd_t httpd_sys_content_t:file { read getattr open map lock ioctl };</span>
+<span class="c">$ sesearch --allow -s httpd_t -t shadow_t</span>
+<span class="out"><span class="cm"># (sem saída = SEM REGRA = NEGADO — o nega-por-omissão é o objectivo todo)</span></span>
+<span class="c">$ sesearch --allow -s httpd_t -t user_home_t</span>
+<span class="out"><span class="cm"># vazio, a menos que o booleano httpd_read_user_content abra um portão estreito (ver N6)</span></span>
+<span class="c">$ seinfo -thttpd_t -x | head</span>
+<span class="out">httpd_t ... (attributes: httpd_domain, webserver_domain)</span></pre></div>
+      <div class="note"><b class="t">ⓘ ATRIBUTOS = MACROS DA POLÍTICA</b>Em vez de 500 regras iguais, a política agrupa tipos em <b>atributos</b> (p. ex. todos os domínios de servidor web). Uma regra no atributo cobre todos os membros. <code class="inline">seinfo -a</code> lista-os.</div>
+      <div class="quiz" data-quiz="3">
+        <h4>■ VALIDAÇÃO N3 — 3/3 PARA DESBLOQUEAR O N4</h4>
+        <div class="q" data-answer="1"><p>1. O que significa “sem saída no sesearch”?</p><label><input type="radio" name="q3a-pt" value="0"> Permitido</label><label><input type="radio" name="q3a-pt" value="1"> Negado pelo nega-por-omissão</label><label><input type="radio" name="q3a-pt" value="2"> A política está avariada</label></div>
+        <div class="q" data-answer="0"><p>2. Uma transição de domínio acontece quando…?</p><label><input type="radio" name="q3a2-pt" value="0"> Um processo executa um ficheiro cujo tipo de ponto de entrada autoriza um novo domínio</label><label><input type="radio" name="q3a2-pt" value="1"> Um utilizador corre sudo</label><label><input type="radio" name="q3a2-pt" value="2"> Em cada arranque</label></div>
+        <div class="q" data-answer="2"><p>3. O neverallow é…?</p><label><input type="radio" name="q3b-pt" value="0"> Uma recusa em tempo de execução</label><label><input type="radio" name="q3b-pt" value="1"> Um registo de auditoria</label><label><input type="radio" name="q3b-pt" value="2"> Uma asserção de compilação que proíbe acrescentar permissões perigosas</label></div>
+        <button onclick="gradeQuiz(3,'pt')">SUBMETER PARA CREDENCIAL</button><div class="result" id="res-3-pt"></div>
+      </div>
+    </section>
+
+    <!-- ================= N4 ================= -->
+    <section class="level" id="level-4-pt" data-level="4">
+      <div class="lock-overlay"><div><div class="big">🔒</div><h3 style="color:#ffe600">SELADO — PASSE O N3</h3><a href="#level-3-pt" style="color:#ffe600">← voltar ao N3</a></div></div>
+      <span class="level-num">NÍVEL 4 — PORTEIRO</span>
+      <h2>RBAC: utilizadores e papéis SELinux <span class="clearance">CREDENCIAL 4</span></h2>
+      <p>A TE limita <b>programas</b>. O RBAC limita <b>pessoas</b>. O seu login Linux mapeia para um <b>utilizador SELinux</b> (<code class="inline">semanage login -l</code>), cada um autorizado para um conjunto de <b>papéis</b>, e cada papel autorizado para domínios.</p>
+      <pre class="codeblock">Linux alice → SELinux staff_u → papéis { staff_r, sysadm_r } → pode entrar em staff_t, sysadm_t
+Linux atacante → SELinux guest_u → papel guest_r → só guest_t (sem sudo, sem ler /home/* alheios)
+serviços do sistema → system_u + system_r (sem login nenhum)</pre>
+      <div class="term"><div class="bar"><span>root@paranoid:~ — confinar um humano</span><span>● ● ●</span></div><pre><span class="c">$ semanage login -l; seinfo -ustaFF_u | head -20</span>
+<span class="out">Login Name  SELinux User   MLS Range
+__default__ unconfined_u   s0-s0:c0.c1023
+alice       staff_u        s0-s0:c0.c1023</span>
+<span class="cm"># paranóico: prestadores externos recebem guest_u (humanos com menor privilégio)</span>
+<span class="c">$ sudo semanage login -a -s guest_u contractor1
+$ sudo semanage user -l | grep -E "guest_u|staff_u"</span>
+<span class="out">guest_u   guest_r   guest_t   s0
+staff_u   staff_r   staff_t   s0-s0:c0.c1023</span>
+<span class="c">$ id -Z   <span class="cm"># como alice, por ssh</span></span>
+<span class="out">staff_u:staff_r:staff_t:s0-s0:c0.c1023</span></pre></div>
+      <div class="warn"><b class="t">⚠ REGRA PARANÓICA</b>Nunca mapeie toda a gente para <code class="inline">unconfined_u</code> num servidor. Use <code class="inline">staff_u</code> para administradores (precisa de <code class="inline">newrole -r sysadm_r</code> para domínios administrativos) e <code class="inline">guest_u</code>/<code class="inline">xguest_u</code> para contas não fidedignas. Administradores sem confinamento ignoram a TE — cómodo, indefensável.</div>
+      <div class="quiz" data-quiz="4">
+        <h4>■ VALIDAÇÃO N4 — 2/2 PARA DESBLOQUEAR O N5</h4>
+        <div class="q" data-answer="0"><p>1. Cadeia de autorização de um humano?</p><label><input type="radio" name="q4a-pt" value="0"> Utilizador Linux → utilizador SELinux → papel → domínio</label><label><input type="radio" name="q4a-pt" value="1"> Domínio → papel → utilizador</label><label><input type="radio" name="q4a-pt" value="2"> Palavra-passe → root</label></div>
+        <div class="q" data-answer="1"><p>2. Porquê staff_u + sysadm_r em vez de unconfined_u?</p><label><input type="radio" name="q4b-pt" value="0"> Shell mais rápido</label><label><input type="radio" name="q4b-pt" value="1"> Separação de funções: trabalho diário em staff_t, administração só depois de newrole explícito</label><label><input type="radio" name="q4b-pt" value="2"> Não há razão</label></div>
+        <button onclick="gradeQuiz(4,'pt')">SUBMETER PARA CREDENCIAL</button><div class="result" id="res-4-pt"></div>
+      </div>
+    </section>
+
+    <!-- ================= N5 ================= -->
+    <section class="level" id="level-5-pt" data-level="5">
+      <div class="lock-overlay"><div><div class="big">🔒</div><h3 style="color:#ffe600">SELADO — PASSE O N4</h3><a href="#level-4-pt" style="color:#ffe600">← voltar ao N4</a></div></div>
+      <span class="level-num">NÍVEL 5 — CLASSIFICADOR</span>
+      <h2>MLS e MCS: níveis que se sobrepõem aos tipos <span class="clearance">CREDENCIAL 5</span></h2>
+      <p>O sufixo <code class="inline">:s0</code> é um par <b>sensibilidade + categorias</b>: <code class="inline">sensibilidade:categorias</code>, p. ex. <code class="inline">s0:c0.c1023</code>. Dois modelos:</p>
+      <table class="spec"><tr><th>Modelo</th><th>Ideia</th><th>Exemplo</th></tr>
+      <tr><td><b>MLS</b> (strict)</td><td>Bell–LaPadula: <b>não ler para cima, não escrever para baixo</b>. s0 &lt; s1 &lt; … &lt; s15.</td><td>Um processo Secreto (s2) pode ler Confidencial (s1) mas nunca escrever para baixo (sem fugas).</td></tr>
+      <tr><td><b>MCS</b> (padrão do targeted)</td><td>As categorias isolam <b>pares</b> na mesma sensibilidade. Categorias aleatórias por contentor.</td><td>O contentor A <code>s0:c1,c2</code> não toca no contentor B <code>s0:c3,c4</code> apesar de ambos serem s0.</td></tr></table>
+      <div class="anim-stage"><h5>FIG 5-A — BELL–LAPADULA: TENTE FUGIR PARA BAIXO (VEJA RESSALTAR)</h5>
+        <div class="lane" style="min-height:150px"><span class="actor" style="background:#ffe600">suj s2 SECRETO</span>
+          <div class="filebox" style="top:8px">obj s1<br>CONFIDENCIAL<br>ler ✓ / escrever ✗</div>
+          <div class="filebox" style="top:80px;right:12px">obj s3 MUITO SECRETO<br>ler ✗ (não se lê para cima)</div>
+          <div class="gate" style="width:120px;margin-left:-60px">VERIFICAÇÃO<br>DE NÍVEL<br>MLS</div>
+          <span class="dot" style="animation:macmove 3s linear infinite"></span>
+        </div>
+        <p style="color:#ccc">Mesmo com um <code>allow</code> de TE, o MLS pode negar. <b>Os três — TE + RBAC + MLS — têm de permitir.</b></p>
+      </div>
+      <div class="term"><div class="bar"><span>mls@paranoid:~ — MCS no terreno</span><span>● ● ●</span></div><pre><span class="c">$ ps -eZ | grep svirt   <span class="cm"># cada contentor libvirt/K8s recebe categorias únicas</span></span>
+<span class="out">system_u:system_r:svirt_t:s0:c101,c205  qemu-kvm (inquilino A)
+system_u:system_r:svirt_t:s0:c310,c522  qemu-kvm (inquilino B)  <span class="cm">← mesmo tipo, isolados por MCS</span></span>
+<span class="c">$ chcat -- +c42 /srv/tenantA  <span class="cm"># (política MLS) aumentar o conjunto de categorias</span></span></pre></div>
+      <div class="quiz" data-quiz="5">
+        <h4>■ VALIDAÇÃO N5 — 2/2 PARA DESBLOQUEAR O N6</h4>
+        <div class="q" data-answer="2"><p>1. Em Bell–LaPadula, um sujeito Secreto (s2)…?</p><label><input type="radio" name="q5a-pt" value="0"> Pode ler Muito Secreto e escrever em Confidencial</label><label><input type="radio" name="q5a-pt" value="1"> Pode fazer tudo</label><label><input type="radio" name="q5a-pt" value="2"> Pode ler para baixo (≤ s2), não pode escrever para baixo, nem ler para cima</label></div>
+        <div class="q" data-answer="0"><p>2. As categorias MCS isolam sobretudo…?</p><label><input type="radio" name="q5b-pt" value="0"> Cargas pares na mesma sensibilidade (contentores, VMs, inquilinos)</label><label><input type="radio" name="q5b-pt" value="1"> O kernel do espaço de utilizador</label><label><input type="radio" name="q5b-pt" value="2"> Nada</label></div>
+        <button onclick="gradeQuiz(5,'pt')">SUBMETER PARA CREDENCIAL</button><div class="result" id="res-5-pt"></div>
+      </div>
+    </section>
+
+    <!-- ================= N6 ================= -->
+    <section class="level" id="level-6-pt" data-level="6">
+      <div class="lock-overlay"><div><div class="big">🔒</div><h3 style="color:#ffe600">SELADO — PASSE O N5</h3><a href="#level-5-pt" style="color:#ffe600">← voltar ao N5</a></div></div>
+      <span class="level-num">NÍVEL 6 — AFINADOR</span>
+      <h2>Booleanos, portas e interrogação da política <span class="clearance">CREDENCIAL 6</span></h2>
+      <h3>6.1 Booleanos — interruptores seguros, não reescritas de política</h3>
+      <p>Os booleanos accionam política condicional já construída. Padrão paranóico: <b>desligado</b>, a menos que o possa justificar.</p>
+      <div class="term"><div class="bar"><span>root@web:~ — booleanos</span><span>● ● ●</span></div><pre><span class="c">$ getsebool -a | grep httpd; semanage boolean -l | grep httpd_read_user</span>
+<span class="out">httpd_can_network_connect --> off
+httpd_read_user_content --> off</span>
+<span class="cm"># permitir que o httpd faça proxy? estreito, persistente, auditável:</span>
+<span class="c">$ sudo setsebool -P httpd_can_network_connect on</span>
+<span class="cm"># SEM -P a alteração evapora-se no arranque — armadilha clássica. Use sempre -P.</span></pre></div>
+      <h3>6.2 Portas, sockets, exec — tudo tem tipo</h3>
+      <div class="term"><div class="bar"><span>root@web:~ — porta não convencional 8081</span><span>● ● ●</span></div><pre><span class="c">$ sudo semanage port -l | grep -E "^http_port_t"</span>
+<span class="out">http_port_t  tcp  80, 81, 443, 488, 8008, 8009, 8443, 9000</span>
+<span class="cm"># o httpd na 8081 falha com denied { name_bind } — corrija etiquetando a porta:</span>
+<span class="c">$ sudo semanage port -a -t http_port_t -p tcp 8081</span>
+<span class="cm"># aplicação própria? crie o seu tipo de porta, nunca reuse unreserved_t.</span></pre></div>
+      <h3>6.3 O encadeamento da recusa (memorize isto)</h3>
+      <pre class="codeblock">1. ausearch -m avc -ts recent            # o que foi negado?
+2. ausearch -m avc -ts recent | audit2why # PORQUÊ? falta TE? booleano? neverallow?
+3. sealert -a /var/log/audit/audit.log    # legível para humanos + booleano sugerido
+4. CORRIJA com semanage/setsebool/restorecon — NÃO com audit2allow às cegas
+5. audit2allow -a -M myfix SÓ se ler o .te e ele codificar menor privilégio</pre>
+      <div class="warn"><b class="t">⚠ O audit2allow É UMA ARMA CARREGADA</b>Converte o comportamento observado em regras <code>allow</code> — incluindo o comportamento do atacante que você, por acaso, desencadeou. Inspeccione sempre o <code>.te</code> gerado. Prefira booleanos e etiquetas correctas. Módulos próprios passam por revisão, controlo de versões e <code>semodule -i</code> com um comentário a explicar <i>porquê</i>.</div>
+      <div class="quiz" data-quiz="6">
+        <h4>■ VALIDAÇÃO N6 — 3/3 PARA DESBLOQUEAR O N7 (HERÓI)</h4>
+        <div class="q" data-answer="1"><p>1. setsebool sem -P…?</p><label><input type="radio" name="q6a-pt" value="0"> É permanente</label><label><input type="radio" name="q6a-pt" value="1"> Perde-se no arranque — use -P para persistir</label><label><input type="radio" name="q6a-pt" value="2"> Apaga a política</label></div>
+        <div class="q" data-answer="0"><p>2. O httpd não consegue ligar-se à 8081. Correcção correcta?</p><label><input type="radio" name="q6b-pt" value="0"> semanage port -a -t http_port_t -p tcp 8081</label><label><input type="radio" name="q6b-pt" value="1"> setenforce 0 para sempre</label><label><input type="radio" name="q6b-pt" value="2"> chmod 777 no binário</label></div>
+        <div class="q" data-answer="2"><p>3. Os dois primeiros passos após uma recusa AVC?</p><label><input type="radio" name="q6c-pt" value="0"> Reiniciar duas vezes</label><label><input type="radio" name="q6c-pt" value="1"> audit2allow -a -M fix; semodule -i fix.pp</label><label><input type="radio" name="q6c-pt" value="2"> ausearch para a ver, audit2why para a compreender e depois uma correcção de menor privilégio</label></div>
+        <button onclick="gradeQuiz(6,'pt')">SUBMETER PARA CREDENCIAL</button><div class="result" id="res-6-pt"></div>
+      </div>
+    </section>
+
+    <!-- ================= N7 ================= -->
+    <section class="level" id="level-7-pt" data-level="7">
+      <div class="lock-overlay"><div><div class="big">🏆</div><h3 style="color:#ffe600">CÂMARA DO HERÓI SELADA — PASSE O N6</h3><p>A paranóia tem de ser conquistada.</p><a href="#level-6-pt" style="color:#ffe600">← voltar ao N6</a></div></div>
+      <span class="level-num">NÍVEL 7 — HERÓI</span>
+      <h2>Endurecimento paranóico: lista de zero a herói <span class="clearance rank">★ HERÓI</span></h2>
+      <div class="parable"><b>Modelo de ameaça (escreva o seu).</b> Assuma: atacante de rede, upload malicioso na web, dependência comprometida, insider curioso, cópia de segurança roubada. O SELinux contém cada um <i>depois</i> de ganharem a primeira ronda. O seu trabalho: dar a cada ronda um prémio mais pequeno.</div>
+      <h3>7.1 A ordem de construção paranóica (não baralhe)</h3>
+      <ol>
+        <li><b>Instale com SELinux em enforcing, targeted.</b> <code class="inline">SELINUX=enforcing</code>, <code class="inline">SELINUXTYPE=targeted</code>. Confirme com <code class="inline">sestatus</code>. Nunca <code class="inline">disabled</code>.</li>
+        <li><b>Etiquete primeiro.</b> Todas as raízes de documentos, directorias de bases de dados e caminhos próprios recebem <code class="inline">semanage fcontext</code> + <code class="inline">restorecon</code> <i>antes</i> de arrancar os serviços. Use <code class="inline">httpd_sys_rw_content_t</code> só em directorias de upload, nunca em árvores inteiras.</li>
+        <li><b>Confine pessoas.</b> Administradores → <code class="inline">staff_u</code>, prestadores → <code class="inline">guest_u</code>. <code class="inline">__default__ → guest_u</code> em bastiões. Exija <code class="inline">newrole -r sysadm_r</code> para administrar.</li>
+        <li><b>Booleanos: negar por omissão.</b> Active só excepções nomeadas e com bilhete, via <code class="inline">setsebool -P</code>. Documente cada uma no seu manual de operações.</li>
+        <li><b>Portas e transições.</b> Registe cada porta não convencional. Confine aplicações próprias num domínio <code class="inline">*_t</code> seu (comece por <code class="inline">sepolicy generate --init</code>), nunca as corra em <code class="inline">unconfined_t</code>.</li>
+        <li><b>Gravável + executável = proibido.</b> Nada de <code class="inline">httpd_sys_rw_content_t</code> com exec. Use <code class="inline">*_cache_t</code> e <code class="inline">*_tmp_t</code> separados. Active os booleanos <code class="inline">deny_execmem</code> / <code class="inline">deny_ptrace</code> onde forem compatíveis.</li>
+        <li><b>Centralize os AVC.</b> Envie o <code class="inline">audit.log</code> para fora do servidor (rsyslog/auditd remoto). Alerte em picos de <code class="inline">avc: denied</code> — são tentativas de exploração ou desvio.</li>
+        <li><b>Progrida para strict/mls</b> nas joias da coroa: reetiquete, teste em permissive com <code class="inline">semanage permissive -a httpd_t</code> (por domínio, não global!) e só depois imponha.</li>
+      </ol>
+      <h3>7.2 ★ AUDITORIA DE HERÓI — marque todas as caixas (guardado localmente)</h3>
+      <ul class="checklist" id="heroCheck-pt">
+        <li><input type="checkbox" data-h="0"><span><b>getenforce = Enforcing</b> e <code>/etc/selinux/config</code> diz enforcing (não permissive nem disabled).</span></li>
+        <li><input type="checkbox" data-h="1"><span><b>Nenhum setenforce 0 global nos manuais.</b> Só <code>semanage permissive -a &lt;domínio&gt;</code> por domínio, com bilhete e prazo.</span></li>
+        <li><input type="checkbox" data-h="2"><span><b>Todos os caminhos próprios em semanage fcontext -l.</b> <code>restorecon -Rvn /</code> não mostra desvios.</span></li>
+        <li><input type="checkbox" data-h="3"><span><b>Humanos confinados:</b> nenhum utilizador interactivo mapeado para unconfined_u em servidores.</span></li>
+        <li><input type="checkbox" data-h="4"><span><b>Booleanos revistos:</b> cada booleano <code>on</code> tem responsável e bilhete.</span></li>
+        <li><input type="checkbox" data-h="5"><span><b>Portas não convencionais registadas</b> via semanage port; AVC de name_bind = 0.</span></li>
+        <li><input type="checkbox" data-h="6"><span><b>Sem blocos de audit2allow:</b> cada .te próprio revisto, de menor privilégio, no git.</span></li>
+        <li><input type="checkbox" data-h="7"><span><b>Auditoria enviada para fora</b> + alerta sobre a taxa de avc denied.</span></li>
+      </ul>
+      <div class="quiz" data-quiz="7">
+        <h4>■ VALIDAÇÃO FINAL — EXAME DE HERÓI (3/3 = PARANÓICO CERTIFICADO)</h4>
+        <div class="q" data-answer="0"><p>1. Um httpd de produção precisa de uma nova raiz /data/www. Sequência paranóica?</p><label><input type="radio" name="q7a-pt" value="0"> semanage fcontext + restorecon, confirmar com ls -Z, só depois arrancar o httpd e vigiar os AVC</label><label><input type="radio" name="q7a-pt" value="1"> chmod 777 /data/www, setenforce 0</label><label><input type="radio" name="q7a-pt" value="2"> Copiar os ficheiros e esperar pelo melhor</label></div>
+        <div class="q" data-answer="1"><p>2. Um daemon próprio tem de correr confinado. Melhor caminho?</p><label><input type="radio" name="q7b-pt" value="0"> Correr como unconfined_t, é mais fácil</label><label><input type="radio" name="q7b-pt" value="1"> Gerar um domínio dedicado (sepolicy generate), etiquetar o binário *_exec_t, allows de menor privilégio, rever o .te</label><label><input type="radio" name="q7b-pt" value="2"> Correr como init_t</label></div>
+        <div class="q" data-answer="0"><p>3. Tempestade de AVC após um deploy. Primeiro passo?</p><label><input type="radio" name="q7c-pt" value="0"> ausearch + audit2why para diagnosticar; corrigir etiquetas/booleanos com menor privilégio — nunca audit2allow às cegas</label><label><input type="radio" name="q7c-pt" value="1"> Desligar o SELinux</label><label><input type="radio" name="q7c-pt" value="2"> Apagar o audit.log</label></div>
+        <button onclick="gradeQuiz(7,'pt')">RECLAMAR ESTATUTO DE HERÓI</button><div class="result" id="res-7-pt"></div>
+        <div id="heroCert-pt" style="display:none;border:4px double var(--green);padding:18px;background:#f0fff4;font-family:var(--mono);margin-top:12px"><b style="color:var(--green)">★ PARANÓICO CERTIFICADO — HERÓI DE SELINUX ★</b><br><span id="certDate-pt"></span><br>Imprima esta página. Emoldure-a. Depois volte a verificar os seus booleanos — não confie em nada, verifique tudo.<br><a href="index.html">⌂ Início (index.html)</a></div>
+      </div>
+      <h3>7.3 Escrever um módulo de política mínimo (quando precisa mesmo de um novo allow)</h3>
+      <pre class="codeblock"># myapp.te — REVISE-ME como código. Só menor privilégio.
+policy_module(myapp, 1.0)
+require { type myapp_t; type myapp_data_t; class file { read getattr open }; }
+allow myapp_t myapp_data_t:file { read getattr open };
+# compilar e carregar:
+#   checkmodule -M -m -o myapp.mod myapp.te && semodule_package -o myapp.pp -m myapp.mod
+#   sudo semodule -i myapp.pp</pre>
+    </section>
+
+    <div class="sources" id="sources-pt">
+      <h2>APÊNDICE A — FONTES EXTERNAS (verifique tudo, incluindo este manual)</h2>
+      <ol>
+        <li>NSA / SELinux oficial: <a href="https://github.com/SELinuxProject/selinux" target="_blank" rel="noopener noreferrer" class="external">SELinuxProject no GitHub</a> — espaço de utilizador, política, wiki.</li>
+        <li>Red Hat — <a href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/using_selinux/index" target="_blank" rel="noopener noreferrer" class="external">Using SELinux (RHEL 9)</a> — o guia definitivo de administração: contextos, booleanos, diagnóstico.</li>
+        <li>Red Hat — <a href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/troubleshooting_selinux/index" target="_blank" rel="noopener noreferrer" class="external">Troubleshooting SELinux</a> — AVC, sealert, disciplina com o audit2allow.</li>
+        <li>Gentoo — <a href="https://wiki.gentoo.org/wiki/SELinux" target="_blank" rel="noopener noreferrer" class="external">SELinux Handbook</a> — targeted vs strict/mls, multiload.</li>
+        <li>Arch Wiki — <a href="https://wiki.archlinux.org/title/SELinux" target="_blank" rel="noopener noreferrer" class="external">SELinux</a> — notas sobre minimum/permissive.</li>
+        <li>Páginas man do Linux: <code>selinux(8), semanage(8), restorecon(8), sesearch(8), seinfo(8), audit2why(8), audit2allow(8), sealert(8), chcon(1), getenforce(8), setenforce(8), sestatus(8)</code>.</li>
+        <li>Smalley et al., <i>Implementing SELinux as a Linux Security Module</i> (NSA/NAI) — história de Flask → LSM.</li>
+        <li>NIST SP 800-53 (AC-3, AC-6, SI-6) — porque MAC, menor privilégio e auditoria são conformidade, não moda.</li>
+      </ol>
+      <p style="font-family:var(--mono);font-size:.75rem;color:#999">Construção num só ficheiro: HTML puro + CSS3 + JavaScript simples. Zero pedidos externos. <a href="index.html">⌂ Início — index.html</a> · <a href="#level-0-pt">Recomeçar no N0</a></p>
+    </div>
+    <div class="sig">TM-SEL-2026 · SETENFORCE 1 · NÃO CONFIE EM NADA, ETIQUETE TUDO · <a href="index.html" style="color:#ffe600">INÍCIO: index.html</a></div>
+  </main>
+</div>
+</div>
+
 <script>
-/* ===== GATED PROGRESSION (localStorage) ===== */
+/* ===== GATED PROGRESSION (localStorage, per language) ===== */
 var TOTAL = 8;
-function getLevel(){ try{ return parseInt(localStorage.getItem('sel_clear')||'0',10)||0; }catch(e){ return window._cl||0; } }
-function setLevel(n){ try{ localStorage.setItem('sel_clear', String(n)); }catch(e){ window._cl=n; } applyLocks(); }
-function applyLocks(){
-  var cl = getLevel();
-  document.querySelectorAll('.level').forEach(function(s){
-    var lv = parseInt(s.dataset.level,10);
-    if(lv <= cl){ s.classList.remove('locked'); }
-    else { s.classList.add('locked'); }
-  });
-  document.querySelectorAll('[data-toc]').forEach(function(li){
-    var lv = parseInt(li.dataset.toc.split('-')[1],10);
-    li.classList.toggle('locked-toc', lv > cl);
-    li.classList.toggle('done-toc', lv < cl || (lv===cl && cl>0));
-  });
-  var pct = Math.round((Math.min(cl,TOTAL-1 + (heroDone()?1:0),TOTAL)/TOTAL)*100);
-  // progress = unlocked levels / total (hero quiz completes 100%)
-  var unlocked = Math.min(cl+1, TOTAL);
-  if(heroDone()) unlocked = TOTAL;
-  pct = Math.round(unlocked/TOTAL*100);
-  document.getElementById('bar').style.width = pct+'%';
-  document.getElementById('pct').textContent = pct+'% (clearance '+cl+'/'+(TOTAL-1)+')';
+var MEM = { en:{level:0,hero:false,checks:[]}, pt:{level:0,hero:false,checks:[]} };
+
+function sk(base, lang){ return lang === 'pt' ? base + '_pt' : base; }
+function block(lang){ return document.getElementById('lang-' + lang); }
+function gid(id, lang){ return document.getElementById(lang === 'pt' ? id + '-pt' : id); }
+
+function getLevel(lang){
+  try{ return parseInt(localStorage.getItem(sk('sel_clear', lang)) || '0', 10) || 0; }
+  catch(e){ return MEM[lang].level || 0; }
 }
-function heroDone(){ try{ return localStorage.getItem('sel_hero')==='1'; }catch(e){ return window._hero; } }
-function resetProgress(){ try{ localStorage.removeItem('sel_clear'); localStorage.removeItem('sel_hero'); }catch(e){} window._cl=0; window._hero=false; document.querySelectorAll('.quiz .result').forEach(function(r){r.textContent='';}); document.querySelectorAll('.quiz input').forEach(function(i){i.checked=false;}); document.getElementById('heroCert').style.display='none'; applyLocks(); window.scrollTo(0,0); }
+function setLevel(n, lang){
+  try{ localStorage.setItem(sk('sel_clear', lang), String(n)); }catch(e){ MEM[lang].level = n; }
+  applyLocks(lang);
+}
+function heroDone(lang){
+  try{ return localStorage.getItem(sk('sel_hero', lang)) === '1'; }catch(e){ return !!MEM[lang].hero; }
+}
+function setHero(lang){
+  try{ localStorage.setItem(sk('sel_hero', lang), '1'); }catch(e){ MEM[lang].hero = true; }
+}
+
+function applyLocks(lang){
+  var root = block(lang);
+  if(!root){ return; }
+  var cl = getLevel(lang);
+  root.querySelectorAll('.level').forEach(function(s){
+    var lv = parseInt(s.dataset.level, 10);
+    if(lv <= cl){ s.classList.remove('locked'); } else { s.classList.add('locked'); }
+  });
+  root.querySelectorAll('[data-toc]').forEach(function(li){
+    var lv = parseInt(li.dataset.toc.split('-')[1], 10);
+    li.classList.toggle('locked-toc', lv > cl);
+    li.classList.toggle('done-toc', lv < cl || (lv === cl && cl > 0));
+  });
+  var unlocked = Math.min(cl + 1, TOTAL);
+  if(heroDone(lang)){ unlocked = TOTAL; }
+  var pct = Math.round(unlocked / TOTAL * 100);
+  var bar = gid('bar', lang), txt = gid('pct', lang);
+  if(bar){ bar.style.width = pct + '%'; }
+  if(txt){
+    txt.textContent = pct + '% (' + (lang === 'pt' ? 'credencial ' : 'clearance ') + cl + '/' + (TOTAL - 1) + ')';
+  }
+}
+
+function resetProgress(lang){
+  try{ localStorage.removeItem(sk('sel_clear', lang)); localStorage.removeItem(sk('sel_hero', lang)); }catch(e){}
+  MEM[lang].level = 0; MEM[lang].hero = false;
+  var root = block(lang);
+  if(root){
+    root.querySelectorAll('.quiz .result').forEach(function(r){ r.textContent = ''; });
+    root.querySelectorAll('.quiz input').forEach(function(i){ i.checked = false; });
+    root.querySelectorAll('.quiz label').forEach(function(l){ l.classList.remove('correct', 'wrong'); });
+    var cert = gid('heroCert', lang); if(cert){ cert.style.display = 'none'; }
+  }
+  applyLocks(lang);
+  window.scrollTo(0, 0);
+}
 
 /* ===== QUIZ GRADING =====
    Each .quiz has N .q blocks. Correct option index stored in data-answer.
    Radios per question share a name. Must get ALL correct to advance. */
-var QUIZ_SIZES = {0:3,1:3,2:3,3:3,4:2,5:2,6:3,7:3};
-function gradeQuiz(n){
-  var quiz = document.querySelector('.quiz[data-quiz="'+n+'"]');
+var QUIZ_SIZES = {0:3, 1:3, 2:3, 3:3, 4:2, 5:2, 6:3, 7:3};
+
+function gradeQuiz(n, lang){
+  lang = lang || 'en';
+  var root = block(lang);
+  if(!root){ return; }
+  var quiz = root.querySelector('.quiz[data-quiz="' + n + '"]');
+  if(!quiz){ return; }
   var qs = quiz.querySelectorAll('.q');
   var need = QUIZ_SIZES[n], got = 0;
   qs.forEach(function(q){
-    var ans = parseInt(q.dataset.answer,10);
+    var ans = parseInt(q.dataset.answer, 10);
     var checked = q.querySelector('input:checked');
-    q.querySelectorAll('label').forEach(function(l){ l.classList.remove('correct','wrong'); });
+    q.querySelectorAll('label').forEach(function(l){ l.classList.remove('correct', 'wrong'); });
+    q.querySelectorAll('label').forEach(function(l){
+      var inp = l.querySelector('input');
+      if(parseInt(inp.value, 10) === ans){ l.classList.add('correct'); }
+    });
     if(checked){
-      var val = parseInt(checked.value,10);
-      var labels = q.querySelectorAll('label');
-      labels.forEach(function(l){
-        var inp = l.querySelector('input');
-        if(parseInt(inp.value,10)===ans) l.classList.add('correct');
-      });
-      if(val===ans){ got++; }
-      else { checked.closest('label').classList.add('wrong'); }
-    } else {
-      q.querySelectorAll('label').forEach(function(l){
-        var inp=l.querySelector('input');
-        if(parseInt(inp.value,10)===ans) l.classList.add('correct');
-      });
+      var val = parseInt(checked.value, 10);
+      if(val === ans){ got++; } else { checked.closest('label').classList.add('wrong'); }
     }
   });
-  var res = document.getElementById('res-'+n);
-  if(got===need){
-    res.style.color='#0d5c2e'; res.textContent='✓ PASS '+got+'/'+need+' — CLEARANCE GRANTED.';
-    if(n===7){
-      try{localStorage.setItem('sel_hero','1');}catch(e){window._hero=true;}
-      document.getElementById('heroCert').style.display='block';
-      document.getElementById('certDate').textContent='Issued '+new Date().toISOString()+' · Operator: par(an)oid · Mode: Enforcing';
+  var res = gid('res-' + n, lang);
+  if(!res){ return; }
+  if(got === need){
+    res.style.color = '#0d5c2e';
+    res.textContent = (lang === 'pt' ? '✓ APROVADO ' : '✓ PASS ') + got + '/' + need +
+      (lang === 'pt' ? ' — CREDENCIAL CONCEDIDA.' : ' — CLEARANCE GRANTED.');
+    if(n === 7){
+      setHero(lang);
+      var cert = gid('heroCert', lang); if(cert){ cert.style.display = 'block'; }
+      var stamp = gid('certDate', lang);
+      if(stamp){
+        stamp.textContent = (lang === 'pt' ? 'Emitido em ' : 'Issued ') + new Date().toISOString() +
+          (lang === 'pt' ? ' · Operador: par(an)óico · Modo: Enforcing' : ' · Operator: par(an)oid · Mode: Enforcing');
+      }
     } else {
-      var cur=getLevel(); if(n>=cur) setLevel(Math.min(n+1,TOTAL-1));
+      var cur = getLevel(lang);
+      if(n >= cur){ setLevel(Math.min(n + 1, TOTAL - 1), lang); }
     }
-    applyLocks();
-    // nudge to next level
-    var nxt = document.getElementById('level-'+(n+1));
-    if(nxt){ setTimeout(function(){ nxt.scrollIntoView({behavior:'smooth'}); },600); }
+    applyLocks(lang);
+    var nxt = document.getElementById((lang === 'pt' ? 'level-' + (n + 1) + '-pt' : 'level-' + (n + 1)));
+    if(nxt){ setTimeout(function(){ nxt.scrollIntoView({behavior:'smooth'}); }, 600); }
   } else {
-    res.style.color='#b30000'; res.textContent='✗ '+got+'/'+need+'. DENIED — re-read the section above. The kernel does not grade on a curve.';
+    res.style.color = '#b30000';
+    res.textContent = lang === 'pt'
+      ? '✗ ' + got + '/' + need + '. NEGADO — releia a secção acima. O kernel não dá notas por simpatia.'
+      : '✗ ' + got + '/' + need + '. DENIED — re-read the section above. The kernel does not grade on a curve.';
   }
 }
 
 /* ===== LAB 2 SIMULATOR ===== */
-var labState = { label:'user_home_t', permFix:false };
-function lab(action){
-  var o = document.getElementById('labout');
-  function ctx(){ return 'unconfined_u:object_r:'+labState.label+':s0'; }
-  if(action==='ls'){
-    o.textContent='$ ls -Z /srv/www\n'+ctx()+'  /srv/www/index.html\n$ ps -Z | grep httpd\nsystem_u:system_r:httpd_t:s0  httpd\nPolicy: allow httpd_t httpd_sys_content_t:file read ✓ | allow httpd_t user_home_t:file read ✗ (no rule)';
-  } else if(action==='serve-home' || action==='serve-good'){
-    if(labState.label==='httpd_sys_content_t' || labState.label==='httpd_sys_rw_content_t'){
-      o.textContent='$ curl -I http://localhost/  [as httpd_t → '+labState.label+']\nHTTP/1.1 200 OK ✓\nAVC: granted { read getattr open } — TE allow exists. Paranoia satisfied (for now).';
+var LAB_STATE = { en:{label:'user_home_t', permFix:false}, pt:{label:'user_home_t', permFix:false} };
+
+function lab(action, lang){
+  lang = lang || 'en';
+  var st = LAB_STATE[lang];
+  var o = gid('labout', lang);
+  if(!o){ return; }
+  var pt = (lang === 'pt');
+  function ctx(){ return 'unconfined_u:object_r:' + st.label + ':s0'; }
+  var txt;
+
+  if(action === 'ls'){
+    txt = '$ ls -Z /srv/www\n' + ctx() + '  /srv/www/index.html\n' +
+      '$ ps -Z | grep httpd\nsystem_u:system_r:httpd_t:s0  httpd\n' +
+      (pt
+        ? 'Política: allow httpd_t httpd_sys_content_t:file read ✓ | allow httpd_t user_home_t:file read ✗ (sem regra)'
+        : 'Policy: allow httpd_t httpd_sys_content_t:file read ✓ | allow httpd_t user_home_t:file read ✗ (no rule)');
+  } else if(action === 'serve-home' || action === 'serve-good'){
+    if(st.label === 'httpd_sys_content_t' || st.label === 'httpd_sys_rw_content_t'){
+      txt = '$ curl -I http://localhost/  [como httpd_t → ' + st.label + ']\n' +
+        'HTTP/1.1 200 OK ✓\n' +
+        (pt
+          ? 'AVC: concedido { read getattr open } — existe um allow de TE. Paranóia satisfeita (por agora).'
+          : 'AVC: granted { read getattr open } — TE allow exists. Paranoia satisfied (for now).');
     } else {
-      o.textContent='$ curl -I http://localhost/  [as httpd_t → '+labState.label+']\nHTTP/1.1 403 Forbidden ✗\nAVC DENIAL logged:\ntype=AVC msg=audit(...): avc: denied { read } for pid=httpd scontext=system_u:system_r:httpd_t:s0 tcontext='+ctx()+' tclass=file\nHint: run “ausearch | audit2why”, then fix with semanage+restorecon.';
+      txt = '$ curl -I http://localhost/  [como httpd_t → ' + st.label + ']\n' +
+        'HTTP/1.1 403 Forbidden ✗\n' +
+        (pt ? 'RECUSA AVC registada:\n' : 'AVC DENIAL logged:\n') +
+        'type=AVC msg=audit(...): avc: denied { read } for pid=httpd scontext=system_u:system_r:httpd_t:s0 tcontext=' + ctx() + ' tclass=file\n' +
+        (pt
+          ? 'Sugestão: corra “ausearch | audit2why” e corrija com semanage + restorecon.'
+          : 'Hint: run “ausearch | audit2why”, then fix with semanage+restorecon.');
     }
-  } else if(action==='chcon'){
-    labState.label='httpd_sys_content_t'; labState.permFix=false;
-    o.textContent='$ chcon -t httpd_sys_content_t /srv/www/index.html  # TEMPORARY\n'+ctx()+'  /srv/www/index.html  ✓ serves... until the next restorecon/relabel wipes it.\nWARNING: chcon is NOT in file_contexts.local. This is duct tape.';
-  } else if(action==='semanage'){
-    labState.label='httpd_sys_content_t'; labState.permFix=true;
-    o.textContent='$ semanage fcontext -a -t httpd_sys_content_t "/srv/www(/.*)?"\n$ restorecon -Rv /srv/www\nRelabeled /srv/www/index.html: user_home_t → httpd_sys_content_t ✓ PERMANENT\n$ semanage fcontext -l | grep /srv/www\n/srv/www(/.*)?  system_u:object_r:httpd_sys_content_t:s0  ← truth source updated. Survives reboot + autorelabel.';
-  } else if(action==='restorecon'){
-    if(labState.permFix){ o.textContent='$ restorecon -Rv /srv/www\nNo change — policy and disk agree (httpd_sys_content_t). This is what “steady state” feels like.'; }
-    else { labState.label='user_home_t'; o.textContent='$ restorecon -Rv /srv/www\nRelabeled /srv/www/index.html: httpd_sys_content_t → user_home_t (policy truth restored)\nYour chcon duct tape just peeled off. Use semanage next time.'; }
-  } else if(action==='audit'){
-    o.textContent='$ ausearch -m avc -ts recent | audit2why\ntype=AVC ... scontext=httpd_t tcontext=user_home_t →\nWas caused by: Missing TE allow. You can use audit2allow to generate a loadable module — BUT prefer relabeling. Correct type here is httpd_sys_content_t, not a new allow for httpd_t→user_home_t (that would bless the misconfig).';
-  }
+  } else if(action === 'chcon'){
+    st.label = 'httpd_sys_content_t'; st.permFix = false;
+    txt = '$ chcon -t httpd_sys_content_t /srv/www/index.html  # ' + (pt ? 'TEMPORÁRIO' : 'TEMPORARY') + '\n' +
+      ctx() + '  /srv/www/index.html  ✓ ' + (pt ? 'serve... até a próxima reetiquetagem o apagar.' : 'serves... until the next restorecon/relabel wipes it.') + '\n' +
+      (pt
+        ? 'AVISO: o chcon NÃO fica em file_contexts.local. Isto é fita-cola.'
+        : 'WARNING: chcon is NOT in file_contexts.local. This is duct tape.');
+  } else if(action === 'semanage'){
+    st.label = 'httpd_sys_content_t'; st.permFix = true;
+    txt = '$ semanage fcontext -a -t httpd_sys_content_t "/srv/www(/.*)?"\n' +
+      '$ restorecon -Rv /srv/www\n' +
+      (pt
+        ? 'Reetiquetado /srv/www/index.html: user_home_t → httpd_sys_content_t ✓ PERMANENTE\n'
+        : 'Relabeled /srv/www/index.html: user_home_t → httpd_sys_content_t ✓ PERMANENT\n') +
+      '$ semanage fcontext -l | grep /srv/www\n' +
+      '/srv/www(/.*)?  system_u:object_r:httpd_sys_content_t:s0  ← ' +
+      (pt ? 'fonte da verdade actualizada. Sobrevive ao arranque e ao autorelabel.' : 'truth source updated. Survives reboot + autorelabel.');
+  } else if(action === 'restorecon'){
+    if(st.permFix){
+      txt = '$ restorecon -Rv /srv/www\n' +
+        (pt
+          ? 'Sem alterações — política e disco concordam (httpd_sys_content_t). É assim que se sente o “estado estacionário”.'
+          : 'No change — policy and disk agree (httpd_sys_content_t). This is what “steady state” feels like.');
+    } else {
+      st.label = 'user_home_t';
+      txt = '$ restorecon -Rv /srv/www\n' +
+        (pt
+          ? 'Reetiquetado /srv/www/index.html: httpd_sys_content_t → user_home_t (verdade da política restaurada)\nA sua fita-cola chcon acabou de se soltar. Da próxima vez use semanage.'
+          : 'Relabeled /srv/www/index.html: httpd_sys_content_t → user_home_t (policy truth restored)\nYour chcon duct tape just peeled off. Use semanage next time.');
+    }
+  } else if(action === 'audit'){
+    txt = '$ ausearch -m avc -ts recent | audit2why\n' +
+      'type=AVC ... scontext=httpd_t tcontext=user_home_t →\n' +
+      (pt
+        ? 'Was caused by: Missing TE allow. Pode usar o audit2allow para gerar um módulo carregável — MAS prefira reetiquetar. O tipo correcto aqui é httpd_sys_content_t, não um novo allow httpd_t→user_home_t (isso abençoaria a má configuração).'
+        : 'Was caused by: Missing TE allow. You can use audit2allow to generate a loadable module — BUT prefer relabeling. Correct type here is httpd_sys_content_t, not a new allow for httpd_t→user_home_t (that would bless the misconfig).');
+  } else { return; }
+  o.textContent = txt;
 }
 
 /* ===== HERO CHECKLIST PERSIST ===== */
-(function(){
-  var boxes = document.querySelectorAll('#heroCheck input');
+function wireChecklist(lang){
+  var root = block(lang);
+  if(!root){ return; }
+  var boxes = root.querySelectorAll('#heroCheck' + (lang === 'pt' ? '-pt' : '') + ' input');
+  if(!boxes.length){ return; }
   try{
-    var saved = JSON.parse(localStorage.getItem('sel_hero_check')||'[]');
-    boxes.forEach(function(b){ if(saved[parseInt(b.dataset.h,10)]) b.checked=true; });
+    var saved = JSON.parse(localStorage.getItem(sk('sel_hero_check', lang)) || '[]');
+    boxes.forEach(function(b){ if(saved[parseInt(b.dataset.h, 10)]){ b.checked = true; } });
   }catch(e){}
-  boxes.forEach(function(b){ b.addEventListener('change', function(){
-    var arr=[]; boxes.forEach(function(x){arr[parseInt(x.dataset.h,10)]=x.checked;});
-    try{localStorage.setItem('sel_hero_check', JSON.stringify(arr));}catch(e){}
-    var done = Array.prototype.filter.call(boxes,function(x){return x.checked;}).length;
-    if(done===boxes.length){ alert('HERO AUDIT COMPLETE: all '+boxes.length+' controls verified. Now keep them verified — cron + monitoring.'); }
-  });});
+  boxes.forEach(function(b){
+    b.addEventListener('change', function(){
+      var arr = [];
+      boxes.forEach(function(x){ arr[parseInt(x.dataset.h, 10)] = x.checked; });
+      try{ localStorage.setItem(sk('sel_hero_check', lang), JSON.stringify(arr)); }catch(e){}
+      var done = Array.prototype.filter.call(boxes, function(x){ return x.checked; }).length;
+      if(done === boxes.length){
+        alert(lang === 'pt'
+          ? 'AUDITORIA DE HERÓI COMPLETA: todos os ' + boxes.length + ' controlos verificados. Agora mantenha-os verificados — cron + monitorização.'
+          : 'HERO AUDIT COMPLETE: all ' + boxes.length + ' controls verified. Now keep them verified — cron + monitoring.');
+      }
+    });
+  });
+}
+
+/* ===== LANGUAGE SWITCH ===== */
+function applyLang(lang){
+  document.querySelectorAll('[data-lang-block]').forEach(function(b){
+    b.hidden = b.getAttribute('data-lang-block') !== lang;
+  });
+  document.querySelectorAll('[data-lang-switch]').forEach(function(a){
+    if(a.getAttribute('data-lang-switch') === lang){ a.setAttribute('aria-current', 'true'); }
+    else { a.removeAttribute('aria-current'); }
+  });
+  document.documentElement.lang = lang === 'pt' ? 'pt-PT' : 'en';
+}
+
+document.querySelectorAll('[data-lang-switch]').forEach(function(a){
+  a.addEventListener('click', function(event){
+    if(event.metaKey || event.ctrlKey || event.shiftKey || event.button){ return; }
+    event.preventDefault();
+    applyLang(a.getAttribute('data-lang-switch'));
+  });
+});
+
+(function(){
+  var wanted = new URLSearchParams(location.search).get('lang');
+  if(wanted === 'en' || wanted === 'pt'){ applyLang(wanted); }
 })();
 
-applyLocks();
+applyLocks('en');
+applyLocks('pt');
+wireChecklist('en');
+wireChecklist('pt');
 </script>
 </body>
 </html>
