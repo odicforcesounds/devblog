@@ -289,7 +289,7 @@ footer.site a { color: var(--accent); }
   var T = {
     pt: {
       points: 'pt',
-      next: 'Seguinte', back: 'Anterior', again: 'Jogar outra vez',
+      next: 'Seguinte', back: 'Anterior', again: 'Jogar outra vez', cover: 'Capa',
       choiceHint: 'Escolhe a via — teclas 1, 2 ou 3',
       levelOf: function (lvl, n) { return 'Nível ' + ROMAN[lvl] + ' · ' + LVLS[state.lang][lvl] + ' — pergunta ' + n + ' de 25'; },
       lvlNext: function (lvl) {
@@ -314,7 +314,7 @@ footer.site a { color: var(--accent); }
     },
     en: {
       points: 'pts',
-      next: 'Next', back: 'Back', again: 'Play again',
+      next: 'Next', back: 'Back', again: 'Play again', cover: 'Cover',
       choiceHint: 'Pick a route — keys 1, 2 or 3',
       levelOf: function (lvl, n) { return 'Level ' + ROMAN[lvl] + ' · ' + LVLS[state.lang][lvl] + ' — question ' + n + ' of 25'; },
       lvlNext: function (lvl) {
@@ -6184,12 +6184,6 @@ footer.site a { color: var(--accent); }
   var lastScreen = screens.length - 1;
   var state = { lang: 'pt', points: 0, answers: {}, screen: 0 };
 
-  function legacyScreen(step) {
-    var index = Math.floor((step - 1) / 2);
-    if (index < 0 || index >= CASES.length) { return lastScreen; }
-    return step % 2 === 0 ? decisionScreen[index] : caseScreen[index];
-  }
-
   function load() {
     try {
       var raw = localStorage.getItem(KEY) || localStorage.getItem('oJogoDoAdvogado.v5');
@@ -6197,8 +6191,9 @@ footer.site a { color: var(--accent); }
       var saved = JSON.parse(raw);
       if (typeof saved.points === 'number') { state.points = Math.max(0, Math.min(MAX, saved.points)); }
       if (saved.answers && typeof saved.answers === 'object') { state.answers = saved.answers; }
-      if (typeof saved.screen === 'number') { state.screen = Math.max(0, Math.min(lastScreen, saved.screen)); }
-      else if (typeof saved.step === 'number' && saved.step > 0) { state.screen = legacyScreen(saved.step); }
+      // The cover is always the first page: keep the progress, not the last
+      // position. Pressing Play resumes at the first question still open.
+      state.screen = 0;
     } catch (err) { /* clean start */ }
   }
   function save() {
@@ -6260,6 +6255,7 @@ footer.site a { color: var(--accent); }
       '<p>' + esc(info.lede) + '</p>' +
       '<ul class="rec">' + themes + '</ul>' +
       '<button type="button" class="next" data-go="' + levelStart(lvl) + '">' + esc(t.beginLevel) + ' →</button>' +
+      '<button type="button" class="next ghost" data-go="0">← ' + esc(t.cover) + '</button>' +
       '<button type="button" class="next ghost" data-go="' + Math.max(0, state.screen - 1) + '">← ' + esc(t.back) + '</button>';
   }
 
