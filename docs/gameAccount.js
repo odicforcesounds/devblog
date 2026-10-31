@@ -7,6 +7,10 @@
  *      comments widget on index.html. E-mail is the only method offered here.
  *      It works through Google (Firebase) as the identity backend, but the
  *      player types an address and a password; no provider button is shown.
+ *      An address only counts once Firebase confirms it: registration sends
+ *      the verification link, and while user.emailVerified is false the note
+ *      form stays closed. So a typed address has to exist and belong to who
+ *      typed it before the form can be used.
  *   2. Score and certificate storage per player, in Firestore.
  *   3. One message per level, written and read only on the closing screen of
  *      that level.
@@ -30,6 +34,7 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail,
   setPersistence,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
@@ -68,8 +73,13 @@ const LANG = {
     mailUp: "Criar conta",
     mailReset: "Recuperar",
     mailFail: "E-mail ou palavra-passe errados.",
+    mailBad: "Esse e-mail não parece válido.",
+    mailShort: "A palavra-passe precisa de 6 caracteres.",
     mailNew: "Conta criada e sessão iniciada.",
     mailSent: "Ligação de recuperação enviada.",
+    mailVerify: "Confirma o e-mail na caixa de entrada. Sem isso o formulário fica fechado.",
+    verify: "Reenviar confirmação",
+    verifySent: "Ligação de confirmação reenviada.",
     signedAs: "Sessão",
     noteTitle: "Mensagem deste nível",
     noteHint: "Só aparece no fim de cada nível. Máximo de 280 caracteres.",
@@ -89,8 +99,13 @@ const LANG = {
     mailUp: "Create account",
     mailReset: "Reset",
     mailFail: "Wrong email or password.",
+    mailBad: "That e-mail does not look valid.",
+    mailShort: "The password needs 6 characters.",
     mailNew: "Account created and signed in.",
     mailSent: "Reset link sent.",
+    mailVerify: "Confirm the e-mail in your inbox. Until then the form stays closed.",
+    verify: "Resend confirmation",
+    verifySent: "Confirmation link sent again.",
     signedAs: "Session",
     noteTitle: "Message for this level",
     noteHint: "Only shown at the end of each level. 280 characters at most.",
@@ -179,8 +194,12 @@ function faceHTML(size) {
 function hud(lang) {
   const text = t(lang);
   if (user) {
+    const ready = verified();
     return '<div class="ga">' + faceHTML(20) +
       '<span class="ga-name">' + esc(nameOf()) + '</span>' +
+      (ready ? "" :
+        '<span class="ga-status" data-ga-mail>' + esc(text.mailVerify) + '</span>' +
+        '<button type="button" class="ga-btn" data-ga="verify">' + esc(text.verify) + '</button>') +
       '<button type="button" class="ga-btn" data-ga="out">' + esc(text.signout) + '</button>' +
     '</div>';
   }
@@ -199,9 +218,17 @@ function hud(lang) {
 
 /* ------------------------------------------------------------ level notes */
 
+/* The form is only usable for an address Firebase has confirmed. The player
+ * registers, gets the link, confirms it, and only then does emailVerified
+ * turn the textarea and the Post button on. */
+function verified() {
+  return Boolean(user && user.emailVerified);
+}
+
 function level(opts) {
   const lang = opts && opts.lang === "en" ? "en" : "pt";
   const text = t(lang);
+  const open = verified();
   const game = clean(opts && opts.game, 40);
   const lvl = Number(opts && opts.level) || 0;
   const points = Number(opts && opts.points) || 0;
@@ -215,11 +242,12 @@ function level(opts) {
     '<div class="ga-slot">' + hud(lang) + '</div>' +
     '<textarea class="ga-input" maxlength="' + MAX_NOTE + '" rows="4" aria-label="' +
       esc(text.noteTitle) + '" placeholder="' + esc(text.placeholder) + '"' +
-      (user ? "" : " disabled") + '></textarea>' +
+      (open ? "" : " disabled") + '></textarea>' +
     '<div class="ga-row">' +
-      '<button type="button" class="ga-btn primary" data-ga="post"' + (user ? "" : " disabled") + '>' +
+      '<button type="button" class="ga-btn primary" data-ga="post"' + (open ? "" : " disabled") + '>' +
         esc(text.post) + '</button>' +
-      '<span class="ga-status" data-ga-status></span>' +
+      '<span class="ga-status" data-ga-status>' +
+        esc(user && !open ? text.mailVerify : "") + '</span>' +
     '</div>' +
     '<ul class="ga-notes" data-ga-notes><li class="ga-empty">' + esc(text.empty) + '</li></ul>' +
   '</div>';
@@ -246,9 +274,13 @@ function syncLevel() {
   if (slot) { slot.innerHTML = hud(lang); }
   const area = panel.querySelector(".ga-input");
   const button = panel.querySelector("[data-ga='post']");
-  if (area) { area.disabled = !user; }
-  if (button) { button.disabled = !user; }
-  return Boolean(user);
+  const open = verified();
+  if (area) { area.disabled = !open; }
+  if (button) { button.disabled = !open; }
+  const status = panel.querySelector("[data-ga-status]");
+  if (status && !open) { status.textContent = t(lang).mailVerify; }
+  if (status && open && status.textContent === t(lang).mailVerify) { status.textContent = ""; }
+  return open;
 }
 
 function loadNotes(host, ctx) {
@@ -301,6 +333,7 @@ function post(button) {
   const value = clean(area && area.value, MAX_NOTE);
 
   if (!user) { statusIn(panel, text.needSign); return; }
+  if (!verified()) { statusIn(panel, text.mailVerify); return; }
   if (!value) { area && area.focus(); return; }
   if (area && area.value.trim().length > MAX_NOTE) { statusIn(panel, text.tooLong); return; }
 
@@ -372,7 +405,13 @@ function mailStatus(form, message) {
   if (line) { line.textContent = message || ""; }
 }
 
-function mail(kind, button) {
+const MAIL_SHAPE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
+
+/* Firebase is the only place that can say an address exists: the account has
+ * to be created there and the player has to open the link sent to that
+ * mailbox. Registration therefore sends the confirmation and reports it; the
+ * form opens only once emailVerified is true. */
+async function mail(kind, button) {
   const form = button.closest("[data-ga-game], .ga");
   const starter = button.closest("[data-ga-form]");
   const lang = context ? context.lang : "pt";
@@ -384,30 +423,75 @@ function mail(kind, button) {
   const address = clean(addressField && addressField.value, 254);
   const password = (passwordField && passwordField.value) || "";
 
-  if (!address || (kind !== "mailreset" && password.length < 6)) {
-    mailStatus(form, text.mailFail);
+  if (!MAIL_SHAPE.test(address)) {
+    mailStatus(form, text.mailBad);
+    if (addressField) { addressField.focus(); }
+    return;
+  }
+  if (kind !== "mailreset" && password.length < 6) {
+    mailStatus(form, text.mailShort);
+    if (passwordField) { passwordField.focus(); }
     return;
   }
 
   button.disabled = true;
   mailStatus(form, text.saving);
 
-  const call = kind === "mailreset"
-    ? sendPasswordResetEmail(auth, address)
-    : (kind === "mailup"
-      ? createUserWithEmailAndPassword(auth, address, password)
-      : signInWithEmailAndPassword(auth, address, password));
-
-  call.then(function () {
-    if (kind === "mailreset") { mailStatus(form, text.mailSent); }
-    else if (kind === "mailup") { mailStatus(form, text.mailNew); }
-    else { mailStatus(form, ""); }
-  }).catch(function () {
+  try {
+    if (kind === "mailreset") {
+      await sendPasswordResetEmail(auth, address);
+      mailStatus(form, text.mailSent);
+      return;
+    }
+    if (kind === "mailup") {
+      const created = await createUserWithEmailAndPassword(auth, address, password);
+      await sendEmailVerification(created.user);
+      mailStatus(form, text.mailVerify);
+      return;
+    }
+    const signed = await signInWithEmailAndPassword(auth, address, password);
+    if (signed.user && !signed.user.emailVerified) {
+      await sendEmailVerification(signed.user).catch(function () {});
+      mailStatus(form, text.mailVerify);
+    } else {
+      mailStatus(form, "");
+    }
+  } catch (error) {
     mailStatus(form, text.mailFail);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function resend(button) {
+  if (!auth || !auth.currentUser) { return; }
+  const host = button.closest(".ga, [data-ga-game]");
+  const text = t(context ? context.lang : "pt");
+  const line = host && host.querySelector("[data-ga-mail], [data-ga-status]");
+  button.disabled = true;
+  sendEmailVerification(auth.currentUser).then(function () {
+    if (line) { line.textContent = text.verifySent; }
+  }).catch(function () {
+    if (line) { line.textContent = text.failed; }
   }).finally(function () {
     button.disabled = false;
   });
 }
+
+/* Coming back from the inbox in another tab: reload the account and open the
+ * form on the spot when the link has been used. */
+function refreshVerification() {
+  if (!user || user.emailVerified) { return; }
+  user.reload().then(function () {
+    if (user && user.emailVerified) {
+      syncLevel();
+      afterRender();
+      document.dispatchEvent(new CustomEvent("ga:change"));
+    }
+  }).catch(function () {});
+}
+
+window.addEventListener("focus", refreshVerification);
 
 function click(event) {
   const button = event.target.closest("[data-ga]");
@@ -428,6 +512,7 @@ function click(event) {
     mail(action, button);
     return true;
   }
+  if (action === "verify") { resend(button); return true; }
   if (action === "out") {
     button.disabled = true;
     signOut(auth).catch(function () {}).finally(function () { button.disabled = false; });
