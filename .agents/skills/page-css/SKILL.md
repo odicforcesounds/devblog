@@ -46,8 +46,9 @@ page keeps the design it was built with unless the request names it.
 <link rel="stylesheet" href="link-colors.css">   <!-- last: colours by destination -->
 ```
 
-`link-colors.css` must remain the last stylesheet: it paints local, art and external
-links and wins the cascade by order. The `link-colors` skill's `--check` proves it is
+`link-colors.css` must remain the last stylesheet: it paints blog links, sibling
+subdomains (`art.`, `book.`, `music.`, `www.`) and external links, and wins the cascade by
+order. The `link-colors` skill's `--check` proves it is
 still linked, and this skill's `--check` proves nothing still points at `article.css`.
 
 ## After a run
