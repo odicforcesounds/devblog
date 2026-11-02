@@ -29,9 +29,11 @@ problem you fix in the source.
 | `backups/firebase-rules.txt` | Firestore rules for the comment form + Firebase console checklist. |
 | `backups/comments-login-failure.md` | Why every sign-in button failed, the evidence, and what the widget does now. |
 | `backups/setup-facebook-github.md` | How to enable another provider (console steps + the `AUTH_PROVIDERS` entry). |
+| `.agents/skills/blog-ops/restore_awesome_data.py` | Restores any `docs/awesome/data/*.json` shelf that is empty or not JSON from the newest revision in git history; `--apply` writes, without it the run only reports. |
+| `.agents/skills/blog-ops/fix_story.py` | Repairs `docs/awesome_story.html`: the unclosed `h1`/`header` that squeezed the whole page into the reading column, the narrow box and the ragged text. Idempotent. |
 | `.agents/skills/blog-ops/commitit.sh` | Interactive commit: one commit per approved file, each with its own message. No push, no tool attribution. |
 | `pushit.sh` | Deploy: pull, `git add .`, commit, push. Only run it when asked to publish. |
-| `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD), `page_hygiene.py` (duplicate links/text, authoring comments), `commitit.sh` (per-file commit). |
+| `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD), `page_hygiene.py` (duplicate links/text, authoring comments), `restore_awesome_data.py` (shelf restore), `fix_story.py` (story page repair), `commitit.sh` (per-file commit). |
 | `.agents/skills/` | The other skills: `new-page` (write a page), `repo-layout` (what belongs where), `git-dates` (dates from git history), `tmp-tools` (scripts in `tmp/` and `tools/`), `tools-index` (the path index for every script and binary), `assets-backups` (templates, runbooks, images), `art-link` (the map-backed link every page carries to the art site). |
 | `backups/GOOGLE.md` | Search Console runbook: what the structured data says, order of operations, known gaps. |
 | `backups/CLOUDFLARE.md` | Hosting runbook: DNS/proxy state, WebMCP, bot rules, redirects, cache, headers, HSTS. Read it before changing anything at the edge. |

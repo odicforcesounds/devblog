@@ -33,6 +33,11 @@ DOCS = ROOT / "docs"
 | `.agents/skills/blog-ops/build_api.py` | Regenerates `docs/api/index.json`, `dates.json`, `text/NNN.json`. | `python3 .agents/skills/blog-ops/build_api.py` |
 | `.agents/skills/blog-ops/build_sitemap.py` | Rebuilds `docs/sitemap.xml`; `--robots` rewrites `docs/robots.txt` only. | `python3 .agents/skills/blog-ops/build_sitemap.py [--robots]` |
 | `.agents/skills/blog-ops/enrich_schema.py` | Rebuilds every page's JSON-LD `@graph`; idempotent. | `python3 .agents/skills/blog-ops/enrich_schema.py` |
+| `.agents/skills/blog-ops/restore_awesome_data.py` | Restores a shelf under `docs/awesome/data/` from git history when it stops being JSON; `--apply` writes. | `python3 .agents/skills/blog-ops/restore_awesome_data.py [--apply]` |
+| `.agents/skills/blog-ops/fix_story.py` | Repairs the unclosed `h1`/`header` and the cramped column of `docs/awesome_story.html`; idempotent. | `python3 .agents/skills/blog-ops/fix_story.py` |
+| `.agents/skills/living-panel/living_panel.py` | Writes the fixed living card, its style and its script tag into every page; `--remove` takes them out. | `python3 .agents/skills/living-panel/living_panel.py [--dry-run] [--page P]` |
+| `.agents/skills/living-panel/build_living.py` | Rebuilds `docs/living-panel.js`, the pool the card rotates through on each load. | `python3 .agents/skills/living-panel/build_living.py` |
+| `.agents/skills/living-panel/check_panel_links.py` | Reports pages where the card repeats a link the page already carries. | `python3 .agents/skills/living-panel/check_panel_links.py` |
 | `docs/tools/build.mjs` | Inlines the feed data into `index.html`. | `node docs/tools/build.mjs` |
 | `docs/tools/build_feeds.mjs` | Rebuilds `docs/tools/feeds.json` from the source list. | `node docs/tools/build_feeds.mjs` |
 | `docs/tools/check_feeds.mjs` | Validates the feed data / generated blob. | `node docs/tools/check_feeds.mjs` |
