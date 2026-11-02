@@ -36,6 +36,11 @@ Why a separate sheet rather than `article.css`:
   `404.html`, older articles), and they need the same colours.
 - A same-origin stylesheet is allowed by `default-src 'self'` — no page needs
   `style-src 'unsafe-inline'` for this.
+- A page that writes `style-src 'unsafe-inline'` **without** `'self'` blocks the sheet
+  completely: inline `<style>` blocks pass, a stylesheet file does not. Then every link
+  keeps the page's own colour and nothing looks broken. The runner adds `'self'` to that
+  one directive, the way `living-panel` widens `img-src`, and `--check` counts any page
+  still in that state as `policy blocks it`, which fails the check.
 - It is the **last** stylesheet in the head, so it wins the cascade against
   `article.css` (`.textbox a`, `.textbox a.external`) and against a page's own
   `<style>` block. The three colour rules carry `!important` on purpose: the pages
@@ -66,7 +71,7 @@ rule, and the external rule follows both, taking the foreign `.html` links back.
 ```sh
 python3 .agents/skills/link-colors/link_colors.py            # sheet + one link per page
 python3 .agents/skills/link-colors/link_colors.py --dry-run   # report only
-python3 .agents/skills/link-colors/link_colors.py --check     # exit 1 if a page lacks it
+python3 .agents/skills/link-colors/link_colors.py --check     # exit 1 if a page lacks it or its policy blocks it
 python3 .agents/skills/link-colors/link_colors.py --remove     # take the links out
 ```
 
