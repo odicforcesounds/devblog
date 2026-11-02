@@ -17,7 +17,7 @@ in the wrong directory is either published by accident, lost by accident, or bot
 | `docs/*` (non-HTML) | A fixed infrastructure set, listed below. No new file type without a reason. | Yes |
 | `docs/images/` | Every image the pages reference: icons (`.svg`), pictures (`.webp`, `.jpg`, `.jpeg`, `.png`). | Yes |
 | `docs/api/` | **Generated** by `.agents/skills/blog-ops/build_api.py`: `index.json`, `dates.json` + `text/NNN.json`. | Yes |
-| `docs/electronics/data/` | JSON the electronics catalogue fetches, one file per shelf plus `index.json`; the second precedent for data beside a page. | Yes |
+| `docs/<catalogue>/data/` | JSON a catalogue fetches, one shelf per file plus `index.json`: `animals/`, `birds/`, `fishes/`, `insects/`, `plants/`, `electronics/`, `awesome/`. The precedent for data beside a page; validated by the `catalogue-data` skill. | Yes |
 | `docs/tools/` | The feed pipeline for `index.html` (`feeds.json`, `build.mjs`, `template.html`). | Yes |
 | `docs/archive/`, `docs/obsdRouter/` | Third-party snapshots. Read-only, excluded in `robots.txt`, absent from sitemap and API. | Yes |
 | `docs/pdfs/` | Downloadable PDFs linked from articles. | Yes |
@@ -27,8 +27,7 @@ in the wrong directory is either published by accident, lost by accident, or bot
 | `tools/` | Local scan scripts (`bg_scan.py`). | **No — gitignored** |
 | `tmp/` | One-off scripts, `.orig.html` snapshots, harnesses, experiments. | **No — gitignored** |
 | `free/` | Exported chat logs. | **No — gitignored** |
-| `.agents/skills/` | The skills themselves, each `<name>/SKILL.md` plus its scripts. | Yes |
-| `.github/` | Repository automation. | Yes |
+| `.agents/skills/` | The skills themselves, each `<name>/SKILL.md` plus its scripts. | Yes || `.github/` | Repository automation. | Yes |
 | root | `README.md`, `START-HERE.md`, `AGENTS.md`, `.gitignore`, `pushit.sh`, `update.sh`. Nothing else. | Yes |
 
 The whole non-HTML set at `docs/` root is: `api.js`, `article-lang.js`, `gameAccount.js`,
