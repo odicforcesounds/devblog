@@ -12,9 +12,8 @@ the window at mid height — the place the social dock takes on the front page:
 
 The being and its photograph come from the five catalogues under
 docs/<kingdom>/data/, the tool from the shelves under docs/awesome/data/.
-The pair written into the page is derived from the page name, so two runs give
-the same site; the pool in docs/living-panel.js then replaces that pair with a
-fresh one on every load (built by build_living.py, beside this file).
+The pair is derived from the page name and written into the page: it is the same
+pair on every load and on every run, and the card carries no script.
 
     python3 .agents/skills/living-panel/living_panel.py              # every page
     python3 .agents/skills/living-panel/living_panel.py --dry-run     # report only
@@ -276,9 +275,7 @@ def main(argv=None):
         styled = allow_images(body)
         if "</head>" in styled:
             style = "  %s\n%s  </style>\n" % (STYLE_OPEN, CSS)
-            src = "/living-panel.js" if name == "404.html" else "living-panel.js"
-            script = '  <script src="%s" defer></script>\n' % src
-            styled = styled.replace("</head>", style + script + "</head>", 1)
+            styled = styled.replace("</head>", style + "</head>", 1)
         match = re.search(r"<body[^>]*>", styled, re.I)
         if match is None:
             print("  ! no body tag:", name)
