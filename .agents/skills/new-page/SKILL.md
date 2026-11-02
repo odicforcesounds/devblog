@@ -27,7 +27,8 @@ runbooks live in the `blog-ops` skill; load it too when a page touches an existi
 3. **Dark theme, always.** Dark background, light ink, one accent plus one warm accent,
    declared as custom properties in `:root`. Never a light page, never a `prefers-color-scheme`
    branch that turns the page white.
-4. **A Home link to `./index.html`**, in the top bar of the page (the footer may repeat it).
+4. **A Home link to `./index.html`**, in the top bar of the page — exactly once. The
+   footer does not repeat it, because a second Home link is a duplicated link.
 5. **Portuguese and English on the same page**, switched from a coloured language link at
    the top. Both languages complete — no "translation later", no placeholder text, no
    machine stub. A half-translated page is a defect.
@@ -47,6 +48,26 @@ runbooks live in the `blog-ops` skill; load it too when a page touches an existi
     sections with real substance, tables where a comparison is clearer than prose, a closing
     and a sources section. A stub is only acceptable when the subject truly is short — and
     then say so instead of padding it.
+11. **No duplicated links.** Every target appears once in the page. The Home link lives in
+    the top bar only; a source is cited once, in the one section it supports (the sources
+    list may point at it again, but then the body does not also link it); a table of
+    contents links each section once. In a bilingual page, each language block gets its own
+    copy — the two blocks are separate reading surfaces, never later joined — so the same
+    link may exist once in the English block and once in the Portuguese block, and nowhere
+    else. Two anchors with the same `href` inside one block is a defect.
+12. **No duplicated information.** Say each thing once. A paragraph, list item or table row
+    is not restated later in the same language, the lede is not repeated in the closing, and
+    two sections do not describe the same fact twice. The only permitted repetition is the
+    translation: the Portuguese block carries the same information in Portuguese, and the
+    head's four description copies (meta, `og:`, `twitter:`, JSON-LD) are identical by
+    contract. Repetition with new wording is still repetition.
+13. **No authoring comments, and no meta prose.** The file contains no HTML comment about
+    the request, the prompt, the session, a TODO, or what is still to be done — and no
+    visible sentence that addresses the author or quotes the instruction ("as requested",
+    "per your instructions", "this page was created to…"). Comments and text exist for the
+    reader; how the page came to be is not part of the page. A comment describing the
+    markup for a human maintainer (`<!-- top bar -->`) is allowed, but the moment it
+    mentions the task, the prompt or a person, delete it.
 
 ## Where things live
 
@@ -276,6 +297,10 @@ Nothing else in this skill changes.
   a short list for steps. No filler paragraphs that repeat the heading.
 - **Links:** one word of text. Internal → `./File.html`; external → the full `https://` URL in
   `href` and the word as text. Option links get the accent/warm styling and a focus outline.
+  Each target appears once per language block (rule 11); when a second mention would need
+  the link, write the plain word instead of a second anchor.
+- **No repetition:** before adding a section, check that its facts and its links are not
+  already in an earlier section (rule 12). Revise the earlier one instead of restating it.
 - **Icons:** `./images/name.svg|png|webp`, with `alt=""` when decorative, `loading="lazy"`
   below the fold, `width`/`height` set to avoid layout shift.
 - **Both languages say the same thing.** Translate the section headings and the table headers
@@ -328,6 +353,9 @@ for i, js in enumerate(m.group(2) for m in re.finditer(r'(?is)<script([^>]*)>(.*
     print(i, 'ok' if subprocess.run(['node', '--check', '/tmp/s%d.js' % i]).returncode == 0 else 'SYNTAX ERROR')
 PY
 
+# the page's own hygiene: unique links, unique text, no authoring comments
+python3 .agents/skills/blog-ops/page_hygiene.py docs/Name.html   # must print "failures 0"
+
 # only intended files moved
 git diff --numstat
 
@@ -351,6 +379,10 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/Name.html   # exp
       lookups match; no duplicate `id` in the document.
 - [ ] Both languages complete and consistent; option links coloured; internal links verified
       by reading the target's headings; external sources linked on the word.
+- [ ] Every `href` appears once per language block (Home in the top bar only, a source cited
+      once); no fact, paragraph or table row is stated twice in the same language; no
+      comment or visible sentence about the request, the prompt or the authoring session.
+      `page_hygiene.py docs/Name.html` reports `failures 0`.
 - [ ] Archive row added once, counts updated, breadcrumb matches, and the API
       `published_at` is the instant git reports for the file.
 - [ ] `build_sitemap.py`, `build_api.py` and `check_site.py` run; no new failure.
@@ -366,6 +398,11 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/Name.html   # exp
 - A Google Fonts link, a CDN script or a remote image silently violates the no-external-
   resources rule; the page must work offline from `docs/`.
 - Copying an existing page's `<meta name="description">` fails the uniqueness check.
+- Two Home links (top bar and footer), a source linked in the body and again in the sources
+  list, or a summary that repeats the lede all fail `page_hygiene.py` — delete the second
+  occurrence rather than rephrasing it.
+- A comment like `<!-- add the sources section here -->` or `<!-- as requested -->` is the
+  instruction leaking into the page; it is graded as a defect, not as a helpful note.
 - `tools/` and `tmp/` are gitignored, so a script left there is not part of the project.
 - `pushit.sh` runs `git add .` and deploys — never run it unasked, and never leave scratch
   files outside `tmp/`.

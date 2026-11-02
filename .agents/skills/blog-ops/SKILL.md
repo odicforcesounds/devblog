@@ -30,7 +30,7 @@ problem you fix in the source.
 | `backups/comments-login-failure.md` | Why every sign-in button failed, the evidence, and what the widget does now. |
 | `backups/setup-facebook-github.md` | How to enable another provider (console steps + the `AUTH_PROVIDERS` entry). |
 | `pushit.sh` | Deploy: pull, `git add .`, commit, push. Only run it when asked to publish. |
-| `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD). |
+| `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD), `page_hygiene.py` (duplicate links/text, authoring comments). |
 | `.agents/skills/` | The other skills: `new-page` (write a page), `repo-layout` (what belongs where), `git-dates` (dates from git history), `tmp-tools` (scripts in `tmp/` and `tools/`), `tools-index` (the path index for every script and binary), `assets-backups` (templates, runbooks, images). |
 | `backups/GOOGLE.md` | Search Console runbook: what the structured data says, order of operations, known gaps. |
 | `backups/CLOUDFLARE.md` | Hosting runbook: DNS/proxy state, WebMCP, bot rules, redirects, cache, headers, HSTS. Read it before changing anything at the edge. |
@@ -78,6 +78,33 @@ Non-negotiable, checked by `check_site.py`:
    `check_site.py` reports it and the fix is to split the extra document into its own
    file — never to delete it silently.
 
+## Rules for a page's body
+
+Non-negotiable for every page you create or edit, checked by `page_hygiene.py`:
+
+1. **No duplicated links.** One anchor per target. Home belongs in the top bar only — a
+   footer copy is a duplicate. A cited source is linked in the body *or* in the sources
+   list, not both; a section is linked once from the contents list. On a bilingual page each
+   language block is its own scope, so the English block and the Portuguese block may each
+   hold one copy of the same target — a second copy inside one block is the defect. (The
+   checker compares `href` values, so `./index.html` and `index.html` count as the same
+   target.)
+2. **No duplicated information.** Each fact appears once per language. The lede is not
+   restated in the closing, two sections do not both explain the same thing, and a table row
+   is not repeated as prose. Rewording a duplicated paragraph is not a fix — delete one.
+   Deliberate exceptions: the Portuguese block translates the English block (different
+   scope), the four description copies in `<head>` are identical by contract, and a
+   `BreadcrumbList`/`@graph` may repeat a title because it is metadata, not prose.
+3. **No authoring comments.** No HTML comment about the request, the prompt, a TODO, or the
+   session that produced the page; no visible meta sentence ("as requested", "per your
+   instructions"). Comments must describe the markup for a maintainer, never the task. When
+   a page arrives with such a comment, delete it as part of the edit.
+
+Legacy pages predate these rules: `page_hygiene.py --all` currently reports a large backlog
+(repeated Home links are most of it). Do not mass-rewrite the archive to make that number
+zero. The rule is scoped to the pages you touch: when you edit or create a page, run the
+checker on that page and leave it clean, or report exactly what you could not clean.
+
 ## Workflows
 
 **New article**
@@ -87,8 +114,11 @@ cp templates/default.html docs/NewTitle.html     # then edit content
 python3 .agents/skills/blog-ops/build_sitemap.py  # adds the URL, lastmod from git/mtime
 python3 .agents/skills/blog-ops/build_api.py    # refresh docs/api/
 python3 .agents/skills/blog-ops/check_site.py    # must end with "0 failures"
+python3 .agents/skills/blog-ops/page_hygiene.py docs/NewTitle.html   # "failures 0"
 ```**Edit an article** — change the body, then re-run `.agents/skills/blog-ops/build_api.py` (the API indexes
   text) and `check_site.py`. If the title or description changed, update all four copies.
+  Always finish with `python3 .agents/skills/blog-ops/page_hygiene.py docs/Page.html`: the
+  page you touched has unique links, unique information and no authoring comment.
 
 **Bilingual pages** (`hydroponics.html` is the one so far) — English lives in the markup
   and Portuguese in a `PT` dictionary inside the page script, applied to every
@@ -168,6 +198,9 @@ lists what to check and how to confirm each setting with `curl`.
 
 - `python3 .agents/skills/blog-ops/check_site.py` — head tags, h1, doctype, JSON-LD,
   description lengths, sitemap and API coverage. Exit code 1 on any failure.
+- `python3 .agents/skills/blog-ops/page_hygiene.py docs/Page.html` — duplicated links,
+  repeated text blocks and authoring comments in the page(s) you touched. Exit 1 on any
+  finding; `--quiet` prints findings only.
 - `python3 -m http.server` inside `docs/` plus `curl -s -o /dev/null -w '%{http_code}'`
   on the changed pages, `robots.txt`, `sitemap.xml`, `api/index.json` and `api/dates.json` (expect 200,
   and `application/json` for the JSON).

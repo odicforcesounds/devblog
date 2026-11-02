@@ -49,6 +49,7 @@ chunks — plus the scripts that regenerate them.
 devblog/
 ├── README.md
 ├── pushit.sh, update.sh       deploy helpers (ksh)
+├── commitit.sh                interactive commit: pick changed files, write the message (bash)
 ├── .agents/skills/blog-ops/   build_api.py, check_site.py, build_sitemap.py, enrich_schema.py
 ├── .agents/skills/*/          SKILL.md per skill (new-page, repo-layout, git-dates, tmp-tools, assets-backups)
 ├── backups/                   runbooks, originals, maps, firebase-rules.txt
