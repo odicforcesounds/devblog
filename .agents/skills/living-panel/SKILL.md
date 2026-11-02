@@ -34,7 +34,7 @@ print.
 ## The pair changes on every load
 
 The markup holds one being and one tool so the card still reads with scripts off.
-`docs/living-panel.js` (338 KB, one same-origin request, holds 1,351 beings and 3,119
+`docs/living-panel.js` (290 KB, one same-origin request, holds 1,089 beings and 3,808
 tools) replaces that pair with a fresh random one each time the page is loaded, skipping
 any link the page already carries. The script tag is `defer` and sits in `<head>`; the
 card markup stays as the no-script fallback.
@@ -81,7 +81,7 @@ After either generator, rebuild the API and audit the site:
 
 Beings come from the bird, animal, fish and insect catalogues under
 `docs/<kingdom>/data/` (every species with a name of 28 characters or less and a
-photograph). The plant catalogue is left out: no card names a plant.; tools come from the shelves under
+photograph). The plant catalogue is left out: no card names a plant. Tools come from the shelves under
 `docs/awesome/data/`, one per list: the list's own name when it is something you code
 with (`Bash`, `Go`, `Docker`), otherwise one short real entry from inside it, chosen by a
 hash of the list so the site reads varied. One category is drawn first, then a tool inside
