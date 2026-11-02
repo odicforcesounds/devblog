@@ -39,7 +39,8 @@ chunks — plus the scripts that regenerate them.
   `check_site.py`, `build_sitemap.py`, `enrich_schema.py`), `new-page` (how a page is
   written and compiled), `repo-layout` (what belongs in which directory), `git-dates`
   (publication and update dates from git history), `tmp-tools` (scripts and scratch in
-  `tmp/` and `tools/`) and `assets-backups` (templates, runbooks, images).
+  `tmp/` and `tools/`), `assets-backups` (templates, runbooks, images) and `art-link`
+  (the map-backed link every page carries to `art.odicforcesounds.com`).
 - **Archive collections** — third-party snapshots under `docs/archive/` and
   `docs/obsdRouter/`, kept for readers and excluded in `robots.txt`.
 
@@ -48,10 +49,11 @@ chunks — plus the scripts that regenerate them.
 ```text
 devblog/
 ├── README.md
+├── AGENTS.md                  no-tool-attribution rule + which skill owns which task
 ├── pushit.sh, update.sh       deploy helpers (ksh)
 ├── .agents/skills/blog-ops/   build_api.py, check_site.py, build_sitemap.py, enrich_schema.py,
 │                              page_hygiene.py, commitit.sh
-├── .agents/skills/*/          SKILL.md per skill (new-page, repo-layout, git-dates, tmp-tools, assets-backups)
+├── .agents/skills/*/          SKILL.md per skill (new-page, repo-layout, git-dates, tmp-tools, assets-backups, art-link)
 ├── backups/                   runbooks, originals, maps, firebase-rules.txt
 ├── docs/                      ← published site root
 │   ├── index.html             landing page, categories, search, comment form

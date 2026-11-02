@@ -42,7 +42,7 @@ Tracked, outside `docs/`, therefore never served. It holds:
 | `comments-login-failure.md` | Diagnosis of the sign-in failures, with the evidence. |
 | `setup-facebook-github.md` | How to enable another auth provider. |
 | `original/` | Pre-rewrite versions: `index.html`, `change.html`, `index.css`, `templates/`. |
-| `art_map.json`, `blog_map.json`, `project_map.json` | Structural maps of the archive. |
+| `art_map.json`, `blog_map.json`, `project_map.json` | Structural maps of the archive. `art_map.json` is also the condition for the art link every page carries — see the `art-link` skill. |
 | `blog_sitemap.xml`, `urls/` | Previous sitemap and URL inventories. |
 
 Rules:

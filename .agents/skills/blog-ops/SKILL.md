@@ -32,7 +32,7 @@ problem you fix in the source.
 | `.agents/skills/blog-ops/commitit.sh` | Interactive commit: one commit per approved file, each with its own message. No push, no tool attribution. |
 | `pushit.sh` | Deploy: pull, `git add .`, commit, push. Only run it when asked to publish. |
 | `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD), `page_hygiene.py` (duplicate links/text, authoring comments), `commitit.sh` (per-file commit). |
-| `.agents/skills/` | The other skills: `new-page` (write a page), `repo-layout` (what belongs where), `git-dates` (dates from git history), `tmp-tools` (scripts in `tmp/` and `tools/`), `tools-index` (the path index for every script and binary), `assets-backups` (templates, runbooks, images). |
+| `.agents/skills/` | The other skills: `new-page` (write a page), `repo-layout` (what belongs where), `git-dates` (dates from git history), `tmp-tools` (scripts in `tmp/` and `tools/`), `tools-index` (the path index for every script and binary), `assets-backups` (templates, runbooks, images), `art-link` (the map-backed link every page carries to the art site). |
 | `backups/GOOGLE.md` | Search Console runbook: what the structured data says, order of operations, known gaps. |
 | `backups/CLOUDFLARE.md` | Hosting runbook: DNS/proxy state, WebMCP, bot rules, redirects, cache, headers, HSTS. Read it before changing anything at the edge. |
 

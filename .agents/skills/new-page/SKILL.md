@@ -68,6 +68,11 @@ runbooks live in the `blog-ops` skill; load it too when a page touches an existi
     reader; how the page came to be is not part of the page. A comment describing the
     markup for a human maintainer (`<!-- top bar -->`) is allowed, but the moment it
     mentions the task, the prompt or a person, delete it.
+14. **One map-backed link to the art site per language block.** Every page carries at
+    least one anchor to `https://art.odicforcesounds.com`, the target chosen from
+    `backups/art_map.json` (never a URL from memory, never a video page — the map excludes
+    those), linked on the word it explains and appearing once per block. See the `art-link`
+    skill; the page is not finished without it.
 
 ## Where things live
 
@@ -356,6 +361,9 @@ PY
 # the page's own hygiene: unique links, unique text, no authoring comments
 python3 .agents/skills/blog-ops/page_hygiene.py docs/Name.html   # must print "failures 0"
 
+# the art link: one map-backed anchor per language block
+python3 .agents/skills/art-link/check_art_link.py docs/Name.html
+
 # only intended files moved
 git diff --numstat
 
@@ -378,7 +386,9 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/Name.html   # exp
       opens Portuguese; every `id` in the Portuguese block is `pt-` prefixed and the script
       lookups match; no duplicate `id` in the document.
 - [ ] Both languages complete and consistent; option links coloured; internal links verified
-      by reading the target's headings; external sources linked on the word.
+      by reading the target's headings; external sources linked on the word; one
+      `art.odicforcesounds.com` anchor per language block, from `backups/art_map.json`
+      (`check_art_link.py docs/Name.html`).
 - [ ] Every `href` appears once per language block (Home in the top bar only, a source cited
       once); no fact, paragraph or table row is stated twice in the same language; no
       comment or visible sentence about the request, the prompt or the authoring session.
