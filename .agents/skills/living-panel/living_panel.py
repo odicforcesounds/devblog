@@ -12,8 +12,9 @@ the window at mid height — the place the social dock takes on the front page:
 
 The being and its photograph come from the five catalogues under
 docs/<kingdom>/data/, the tool from the shelves under docs/awesome/data/.
-The pair is derived from the page name and written into the page: it is the same
-pair on every load and on every run, and the card carries no script.
+The pair written into the page is the no-script fallback; docs/living-panel.js
+replaces it with a fresh one on every load, so refreshing a page shows a
+different being and a different tool.
 
     python3 .agents/skills/living-panel/living_panel.py              # every page
     python3 .agents/skills/living-panel/living_panel.py --dry-run     # report only
@@ -78,6 +79,8 @@ OLD = (STYLE, PANEL, OLD_FOOTER, OLD_TOP, OLD_STYLE, OLD_BOX_STYLE, OLD_BOX, SCR
 IMAGE_HOST = "https://upload.wikimedia.org"
 CSP = re.compile(r'(<meta http-equiv="Content-Security-Policy" content=")([^"]*)(")', re.I)
 IMG_SRC = re.compile(r"img-src[^;]*", re.I)
+SCRIPT_SRC = re.compile(r"script-src[^;]*", re.I)
+DEFAULT_SRC = re.compile(r"default-src[^;]*", re.I)
 
 
 def esc(text):
@@ -218,6 +221,37 @@ def allow_images(source):
     return CSP.sub(fix, source)
 
 
+def allow_script(source):
+    """Let the card's pool load under the page's own policy.
+
+    The pool is one same-origin file, so `script-src 'self'` is enough. A page
+    with `script-src 'unsafe-inline'` and no `'self'` refuses it, and a policy
+    that lists only a `default-src` without `'self'` refuses it too; in both
+    cases that one directive gains exactly that source and nothing else.
+    """
+
+    def fix(match):
+        policy = match.group(2)
+        stripped = policy.strip()
+        if not stripped or stripped == "...":
+            return match.group(0)
+        if SCRIPT_SRC.search(policy):
+            if re.search(r"script-src[^;]*'self'", policy):
+                return match.group(0)
+            policy = SCRIPT_SRC.sub(lambda m: m.group(0) + " 'self'", policy, count=1)
+        else:
+            fallback = DEFAULT_SRC.search(policy)
+            if fallback and "'self'" in fallback.group(0):
+                return match.group(0)
+            if policy.rstrip().endswith(";"):
+                policy = policy.rstrip() + " script-src 'self';"
+            else:
+                policy = policy.rstrip() + "; script-src 'self'"
+        return match.group(1) + policy + match.group(3)
+
+    return CSP.sub(fix, source)
+
+
 def panel(being, tool, link_being):
     who = ('<a href="%s">%s</a>' % (esc(being["href"]), esc(being["name"]))
            if link_being else esc(being["name"]))
@@ -272,10 +306,12 @@ def main(argv=None):
         tool = pick_tool(rng, tool_pool, taken)
         block = panel(being, tool, link_being)
 
-        styled = allow_images(body)
+        styled = allow_script(allow_images(body))
         if "</head>" in styled:
             style = "  %s\n%s  </style>\n" % (STYLE_OPEN, CSS)
-            styled = styled.replace("</head>", style + "</head>", 1)
+            src = "/living-panel.js" if name == "404.html" else "living-panel.js"
+            script = '  <script src="%s" defer></script>\n' % src
+            styled = styled.replace("</head>", style + script + "</head>", 1)
         match = re.search(r"<body[^>]*>", styled, re.I)
         if match is None:
             print("  ! no body tag:", name)
