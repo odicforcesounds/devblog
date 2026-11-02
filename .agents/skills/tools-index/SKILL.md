@@ -38,6 +38,8 @@ DOCS = ROOT / "docs"
 | `.agents/skills/living-panel/living_panel.py` | Writes the fixed living card, its style and its script tag into every page; `--remove` takes them out. | `python3 .agents/skills/living-panel/living_panel.py [--dry-run] [--page P]` |
 | `.agents/skills/living-panel/build_living.py` | Rebuilds `docs/living-panel.js`, the pool the card rotates through on each load. | `python3 .agents/skills/living-panel/build_living.py` |
 | `.agents/skills/living-panel/check_panel_links.py` | Reports pages where the card repeats a link the page already carries. | `python3 .agents/skills/living-panel/check_panel_links.py` |
+| `.agents/skills/link-colors/link_colors.py` | Generates `docs/link-colors.css` and links it from every page except `index.html`; `--check` verifies, `--remove` takes the links out. | `python3 .agents/skills/link-colors/link_colors.py [--dry-run\|--check\|--remove]` |
+| `.agents/skills/page-css/page_css.py` | Generates `docs/page.css` and swaps any `article.css` link for it; `--check` proves nothing still points at the old file. | `python3 .agents/skills/page-css/page_css.py [--dry-run\|--check]` |
 | `docs/tools/build.mjs` | Inlines the feed data into `index.html`. | `node docs/tools/build.mjs` |
 | `docs/tools/build_feeds.mjs` | Rebuilds `docs/tools/feeds.json` from the source list. | `node docs/tools/build_feeds.mjs` |
 | `docs/tools/check_feeds.mjs` | Validates the feed data / generated blob. | `node docs/tools/check_feeds.mjs` |
