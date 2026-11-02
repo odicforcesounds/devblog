@@ -1,19 +1,20 @@
 ---
 name: link-colors
-description: Colour every link on the blog by where it points — a page of this blog in one colour, the art site at art.odicforcesounds.com in another, and any other external site in a third — through one generated stylesheet that every page links last. Use when link colours must be added, changed, audited or taken out across docs/*.html.
+description: Colour every link on the blog by where it points — a page of this blog in one colour, another subdomain of the same domain (art, book, music, www) in a second, and any other external site in a third — through one generated stylesheet that every page links last. Use when link colours must be added, changed, audited or taken out across docs/*.html.
 ---
 
 # Link colours — where a link goes, at a glance
 
 Three destinations, three colours. A reader can tell without hovering whether a link
-stays in the blog, crosses to the art site, or leaves for the wider web.
+stays in the blog, crosses to another corner of the same domain, or leaves for the wider
+web.
 
 | Kind | What matches | Colour |
 | --- | --- | --- |
-| Local | `docs/*.html`, `./x`, `images/x`, `https://blog.odicforcesounds.com/x.html` | `--link-local` `#6fb3ff` |
-| Art | `https://art.odicforcesounds.com/...` | `--link-art` `#ffd23f` |
-| External | any other `http`/`https` link | `--link-external` `#ff9ecb` |
-| Kept as written | `#anchor`, `mailto:`, `javascript:` — they go nowhere new | the page's own colour |
+| Blog | `docs/*.html`, `./x`, `images/x`, `/x`, `https://blog.odicforcesounds.com/x.html`, `https://odicforcesounds.com/x.html` | `--link-blog` `#6fb3ff` |
+| Sibling | any other subdomain of the same domain: `art.`, `book.`, `music.`, `www.` `odicforcesounds.com` | `--link-sibling` `#ffd23f` |
+| External | any other host, with a scheme of its own | `--link-external` `#ff9ecb` |
+| Kept as written | `#anchor`, `?lang=…`, `mailto:`, `tel:`, `javascript:` — they go nowhere new | the page's own colour |
 
 Hover and keyboard focus turn every link white, so the colour underneath says *where*
 and the hover says *this one, now*.
@@ -42,12 +43,23 @@ Why a separate sheet rather than `article.css`:
   lose to them. The four colours are custom properties on `:root`, so one edit at the
   top of the file changes the whole site.
 
-## The art host comes from the map
+## The domain is the rule, not a list of hosts
 
-`backups/art_map.json` records the art site (`"site": "https://art.odicforcesounds.com"`).
-The runner reads it and writes the host into the selector, so the art rule follows the
-map instead of a string typed in two places. No map, no `site` key: it falls back to
-`art.odicforcesounds.com`.
+Nothing names `art` any more. The sibling rule matches the domain minus the blog host,
+so a link to `book.odicforcesounds.com`, `music.odicforcesounds.com` or a subdomain that
+does not exist yet is coloured the same way the day it appears; `backups/art_map.json`
+is not read by this skill.
+
+The blog colour covers the blog host **and the apex** (`https://odicforcesounds.com/…`),
+because the apex is the same site without its label. `www.` is a subdomain, so it takes
+the sibling colour — say so here if that ever needs to flip.
+
+Order inside the sheet is load-bearing, because every rule has the same specificity and
+the last match wins: **blog, then sibling, then external**. The blog rule has to match
+`a[href$=".html"]`, which is how a page of this blog is written as a relative link — and
+that also catches `https://www.rand.org/report.html` and
+`https://art.odicforcesounds.com/pages/…/x.html`. So the sibling rule follows the blog
+rule, and the external rule follows both, taking the foreign `.html` links back.
 
 ## Commands
 
@@ -66,7 +78,8 @@ Both the sheet and the links are idempotent: a second run changes nothing, and
 Every run prints the population it is colouring, read from the pages themselves:
 
 ```
-links: local 5278 | art 128 | external 51285 | kept as written 3222
+links: blog 5297 | sibling 156 | external 51271 | kept as written 2916
+sibling subdomains: art 131, wiki 18, book 5, play 2
 ```
 
 That line is the check that the selectors and the pages agree. Numbers that move
