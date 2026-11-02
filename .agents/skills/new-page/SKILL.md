@@ -71,8 +71,9 @@ runbooks live in the `blog-ops` skill; load it too when a page touches an existi
 14. **One map-backed link to the art site per language block.** Every page carries at
     least one anchor to `https://art.odicforcesounds.com`, the target chosen from
     `backups/art_map.json` (never a URL from memory, never a video page — the map excludes
-    those), linked on the word it explains and appearing once per block. See the `art-link`
-    skill; the page is not finished without it.
+    those), linked on the word it explains and appearing once per block; a block without one
+    is not finished. There is no art-link script in this tree — verify with the grep in
+    [Verify](#verify) below, which compares the anchor against `backups/art_map.json`.
 
 ## Where things live
 
@@ -80,7 +81,7 @@ runbooks live in the `blog-ops` skill; load it too when a page touches an existi
 | --- | --- |
 | `docs/*.html` | The pages. `index.html` is the archive, `404.html` the error page. |
 | `docs/images/` | Icons and pictures (`svg`, `png`, `webp`). Reference them as `./images/name.svg`. |
-| `docs/article.css`, `index.css`, `style.css` | Shared styles. A new page carries its own `<style>`. |
+| `docs/page.css`, `link-colors.css`, `index.css`, `style.css` | Shared styles; `article.css` is the previous generation. A new page carries its own `<style>`, and the link-colours runner adds `link-colors.css` last in the head. |
 | `docs/sitemap.xml`, `docs/robots.txt` | Generated — never hand-edit. |
 | `docs/api/index.json`, `docs/api/dates.json`, `docs/api/text/*.json` | Generated index, date map + text chunks. |
 | `docs/tools/` | Feed pipeline for `index.html` (`feeds.json`, `build.mjs`, `template.html`). |
@@ -340,9 +341,9 @@ python3 .agents/skills/blog-ops/build_api.py        # docs/api/index.json + date
 python3 .agents/skills/blog-ops/check_site.py       # head contract, sitemap and API coverage
 ```
 
-`check_site.py` must not report anything about the new page. The repository currently has
-**two known-broken pages** — `ArtOfCreation.html` and `JS4Children.html`, each holding a
-second pasted document — so a clean run still prints those two. Leave them alone here; any
+`check_site.py` must not report anything about the new page, and a clean run ends with
+`0 failures`. The one standing warning is `brutalBSD.html`'s 68-character description;
+`ArtOfCreation.html` and `JS4Children.html` were split long ago and no longer fail. Any
 other line is yours to fix before reporting the page as done.
 
 Then prove the page itself:
@@ -362,7 +363,14 @@ PY
 python3 .agents/skills/blog-ops/page_hygiene.py docs/Name.html   # must print "failures 0"
 
 # the art link: one map-backed anchor per language block
-python3 .agents/skills/art-link/check_art_link.py docs/Name.html
+# the art anchor: one per language block, target listed in the map
+python3 - <<'PY'
+import json, re
+src = open('docs/Name.html', encoding='utf-8').read()
+site = json.load(open('backups/art_map.json', encoding='utf-8'))['site']
+hits = re.findall(r'href="(' + re.escape(site) + r'[^"]*)"', src)
+print('art anchors:', hits, '| blocks:', src.count('data-lang-block='))
+PY
 
 # only intended files moved
 git diff --numstat
