@@ -29,8 +29,9 @@ problem you fix in the source.
 | `backups/firebase-rules.txt` | Firestore rules for the comment form + Firebase console checklist. |
 | `backups/comments-login-failure.md` | Why every sign-in button failed, the evidence, and what the widget does now. |
 | `backups/setup-facebook-github.md` | How to enable another provider (console steps + the `AUTH_PROVIDERS` entry). |
+| `.agents/skills/blog-ops/commitit.sh` | Interactive commit: one commit per approved file, each with its own message. No push, no tool attribution. |
 | `pushit.sh` | Deploy: pull, `git add .`, commit, push. Only run it when asked to publish. |
-| `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD), `page_hygiene.py` (duplicate links/text, authoring comments). |
+| `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD), `page_hygiene.py` (duplicate links/text, authoring comments), `commitit.sh` (per-file commit). |
 | `.agents/skills/` | The other skills: `new-page` (write a page), `repo-layout` (what belongs where), `git-dates` (dates from git history), `tmp-tools` (scripts in `tmp/` and `tools/`), `tools-index` (the path index for every script and binary), `assets-backups` (templates, runbooks, images). |
 | `backups/GOOGLE.md` | Search Console runbook: what the structured data says, order of operations, known gaps. |
 | `backups/CLOUDFLARE.md` | Hosting runbook: DNS/proxy state, WebMCP, bot rules, redirects, cache, headers, HSTS. Read it before changing anything at the edge. |
@@ -191,6 +192,13 @@ was stopped at the edge, not here.
 **Hosting** — the site is GitHub Pages behind a Cloudflare proxy. The edge can break
 crawling or inject scripts without a single byte changing in the repo; `CLOUDFLARE.md`
 lists what to check and how to confirm each setting with `curl`.
+
+**Commit** — `./.agents/skills/blog-ops/commitit.sh` walks every changed file from
+  `git status`, asks whether to include it, then asks for *that file's own* message and
+  makes one commit per file (an empty message skips the file). It resolves the repository
+  root itself, so run it from any directory inside the repo. It never pushes and never
+  adds a co-author trailer: the commits belong to the person running it. Use it whenever
+  the user wants commits split by file; it is not a replacement for `pushit.sh`.
 
 **Deploy** — `./pushit.sh` (asks for the ssh key). Never run it unasked.
 

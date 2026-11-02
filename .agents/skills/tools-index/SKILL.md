@@ -37,7 +37,7 @@ DOCS = ROOT / "docs"
 | `docs/tools/check_feeds.mjs` | Validates the feed data / generated blob. | `node docs/tools/check_feeds.mjs` |
 | `docs/tools/parse_urls.mjs` | Parses the URL list into feed records. | `node docs/tools/parse_urls.mjs` |
 | `docs/tools/shard_runner.sh` | Runs the feed pipeline in shards. | `sh docs/tools/shard_runner.sh` |
-| `commitit.sh` | Interactive commit: asks about each changed file from `git status` (`git add` one at a time), then for the message, then commits — no push, no tool attribution. | `./commitit.sh` |
+| `.agents/skills/blog-ops/commitit.sh` | Interactive commit: asks about each changed file from `git status` and for that file's own message, then commits them one per commit — no push, no tool attribution. | `./.agents/skills/blog-ops/commitit.sh` (any cwd in the repo) |
 | `pushit.sh` | Deploy: pull, `git add .`, commit, push. **Only when asked to publish.** | `./pushit.sh` |
 | `update.sh` | Pull only, through a fresh ssh-agent. | `./update.sh` |
 
