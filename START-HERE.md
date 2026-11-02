@@ -94,15 +94,23 @@ basename — comparing `a['path']` against `docs/*.html` reports every page as m
 ## Read-only checks worth running
 
 ```sh
-python3 .agents/skills/blog-ops/check_site.py           # expect "0 failures"
+python3 .agents/skills/blog-ops/check_site.py               # expect "0 failures"
 python3 .agents/skills/blog-ops/page_hygiene.py docs/Page.html   # the page you changed
-git status --porcelain                                  # only the named files, nothing else
+python3 .agents/skills/link-integrity/check_links.py        # offline; no dead href or src
+python3 .agents/skills/page-weight/check_weight.py          # nothing over its payload budget
+python3 .agents/skills/security-headers/check_headers.py    # no page blocks its own sheet or script
+python3 .agents/skills/a11y/check_a11y.py                   # alt, lang, labels
+python3 .agents/skills/seo-indexation/check_seo.py          # titles, canonicals, sitemap
+python3 .agents/skills/catalogue-data/check_catalogue.py    # only after touching docs/*/data/
+python3 .agents/skills/comments/check_firebase.py           # only after touching a Firebase page
+git status --porcelain                                      # only the named files, nothing else
 ```
 
-`check_site.py` is a read-only audit. `page_hygiene.py` is a read-only audit. Anything
-that writes — `build_api.py`, `build_sitemap.py`, `enrich_schema.py`,
-`.agents/skills/living-panel/*.py`, `restore_awesome_data.py`, `fix_story.py` — is out of
-bounds unless the request names its output.
+`check_site.py` is a read-only audit. `page_hygiene.py` is a read-only audit. So are the
+six above it: none of them writes a page, a sitemap or a JSON file. Anything that writes —
+`build_api.py`, `build_sitemap.py`, `enrich_schema.py`, `.agents/skills/living-panel/*.py`,
+`restore_awesome_data.py`, `fix_story.py` — is out of bounds unless the request names its
+output.
 
 ## Stop and ask when
 
