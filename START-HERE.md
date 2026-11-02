@@ -77,7 +77,7 @@ PY
 Expected output, at the time of writing:
 
 ```
-pages 540 | indexed 538
+pages 542 | indexed 540
 on disk, not indexed : ['404.html', 'home.html']
 indexed, not on disk : []
 ```
