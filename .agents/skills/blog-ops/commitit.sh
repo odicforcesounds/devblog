@@ -6,8 +6,10 @@
 # shows you.
 #
 # Unlike pushit.sh this never stages everything and never pushes. It lists every
-# changed file and asks about them one by one; for each accepted file it asks for
-# that file's commit message, then commits the files one commit at a time. The
+# changed file and asks about them one by one; for each accepted file it prints
+# what changed in it — the diffstat and the first changed lines, or the size of a
+# new file — and then asks for that file's message, so the message can say what
+# actually changed there and why. It commits the files one commit at a time. The
 # commits are authored by you (your git identity). No tool is credited as an
 # author or co-author: the messages you type are the messages that are recorded.
 
@@ -82,7 +84,15 @@ for path in "${changed[@]}"; do
             continue
             ;;
     esac
-    printf '  message for "%s" (empty to skip this file): ' "$path"
+    echo "  what changed in \"$path\":"
+    if git ls-files --error-unmatch -- "$path" >/dev/null 2>&1; then
+        git --no-pager diff --stat -- "$path" | sed 's/^/    /'
+        git --no-pager diff --unified=0 -- "$path" \
+            | grep -E '^[-+][^-+]' | head -n 6 | sed 's/^/    /'
+    else
+        echo "    new file, $(wc -l < "$path") lines"
+    fi
+    printf '  message for "%s", saying what changed here and why (empty to skip): ' "$path"
     IFS= read -r message || message=""
     if [ -z "$message" ]; then
         echo "  no message, skipped"
