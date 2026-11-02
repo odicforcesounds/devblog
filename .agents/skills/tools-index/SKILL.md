@@ -29,6 +29,7 @@ DOCS = ROOT / "docs"
 | --- | --- | --- |
 | `.agents/skills/blog-ops/check_site.py` | Site audit: doctype, head tags, one `h1`, JSON-LD, description lengths, sitemap + API coverage. Exit 1 on failure. | `python3 .agents/skills/blog-ops/check_site.py` |
 | `.agents/skills/blog-ops/page_hygiene.py` | Page content audit: duplicate `href` targets and repeated text blocks per language scope, HTML comments about the request/prompt. Exit 1 on findings. | `python3 .agents/skills/blog-ops/page_hygiene.py docs/Name.html` (`--all`, `--quiet`) |
+| `.agents/skills/art-link/check_art_link.py` | Art-link condition: one anchor to `art.odicforcesounds.com` per language block, target present in `backups/art_map.json`, no repeated target. `--pick` finds a target, `--census` counts the archive. Exit 1 on findings. | `python3 .agents/skills/art-link/check_art_link.py docs/Name.html` (`--pick "dao"`, `--census`) |
 | `.agents/skills/blog-ops/build_api.py` | Regenerates `docs/api/index.json`, `dates.json`, `text/NNN.json`. | `python3 .agents/skills/blog-ops/build_api.py` |
 | `.agents/skills/blog-ops/build_sitemap.py` | Rebuilds `docs/sitemap.xml`; `--robots` rewrites `docs/robots.txt` only. | `python3 .agents/skills/blog-ops/build_sitemap.py [--robots]` |
 | `.agents/skills/blog-ops/enrich_schema.py` | Rebuilds every page's JSON-LD `@graph`; idempotent. | `python3 .agents/skills/blog-ops/enrich_schema.py` |
@@ -37,6 +38,7 @@ DOCS = ROOT / "docs"
 | `docs/tools/check_feeds.mjs` | Validates the feed data / generated blob. | `node docs/tools/check_feeds.mjs` |
 | `docs/tools/parse_urls.mjs` | Parses the URL list into feed records. | `node docs/tools/parse_urls.mjs` |
 | `docs/tools/shard_runner.sh` | Runs the feed pipeline in shards. | `sh docs/tools/shard_runner.sh` |
+| `.agents/skills/living-link/living.py` | The random living-being line in every footer: one species from the five catalogues plus one tool from the Awesome Index, and the guide on this site when one matches. Idempotent; `--remove` takes it out. | `python3 .agents/skills/living-link/living.py` (`--dry-run`, `--seed 7`, `--page Name.html`, `--remove`) |
 | `.agents/skills/blog-ops/commitit.sh` | Interactive commit: asks about each changed file from `git status` and for that file's own message, then commits them one per commit — no push, no tool attribution. | `./.agents/skills/blog-ops/commitit.sh` (any cwd in the repo) |
 | `pushit.sh` | Deploy: pull, `git add .`, commit, push. **Only when asked to publish.** | `./pushit.sh` |
 | `update.sh` | Pull only, through a fresh ssh-agent. | `./update.sh` |
