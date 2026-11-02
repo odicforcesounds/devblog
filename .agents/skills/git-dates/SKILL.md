@@ -55,6 +55,7 @@ PUBLISHED_OVERRIDES = {"OneHumanSong.html": "2026-10-16T22:49:01+01:00"}
 | Place | Field | Written by |
 | --- | --- | --- |
 | Page `<head>` JSON-LD | `datePublished`, `dateModified` | the page itself (`enrich_schema.py` can rewrite the graph) |
+| Page `<head>` meta | `article:published_time` | the page itself, written from the same first commit — a year of 2024, 2025 or 2026, never the `1970-01-01` placeholder and never a date git cannot confirm |
 | `docs/api/index.json` | `published`, `modified`, `published_at`, `modified_at` | `.agents/skills/blog-ops/build_api.py` from git (`--diff-filter=A` / `-1`) |
 | `docs/api/dates.json` | `published` map: name → instant | same script, same dates, compact form |
 | `docs/sitemap.xml` | `lastmod` | `.agents/skills/blog-ops/build_sitemap.py` |
