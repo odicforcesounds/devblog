@@ -52,6 +52,11 @@ chunks — plus the scripts that regenerate them.
   (the path index for every script and binary), `living-panel` (the fixed card on every
   page), `link-colors` (the colour-by-destination sheet), `page-css` (the shared article
   stylesheet) and `seo-indexation` (the read-only audit of what a crawler can index).
+  Six more audit what those do not: `link-integrity` (does every link resolve, locally and
+  over the network), `page-weight` (what a page downloads against a budget),
+  `security-headers` (does each page's CSP permit what the page loads), `a11y` (alt text,
+  document language, labels), `catalogue-data` (the JSON behind the eight index pages) and
+  `comments` (the Firebase comment form and the session-only chat).
 - **Archive collections** — third-party snapshots under `docs/archive/` and
   `docs/obsdRouter/`, kept for readers and excluded in `robots.txt`.
 
@@ -67,7 +72,8 @@ devblog/
 │                              page_hygiene.py, commitit.sh
 ├── .agents/skills/*/          SKILL.md per skill (new-page, repo-layout, git-dates, tmp-tools,
 │                              assets-backups, tools-index, blog-ops, living-panel, link-colors, page-css,
-│                              seo-indexation)
+│                              seo-indexation, link-integrity, page-weight, security-headers, a11y,
+│                              catalogue-data, comments)
 ├── backups/                   runbooks, originals, maps, firebase-rules.txt
 ├── docs/                      ← published site root
 │   ├── index.html             landing page, categories, search, comment form
