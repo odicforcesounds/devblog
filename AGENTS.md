@@ -31,6 +31,7 @@ matches the task before editing:
 | The fixed living card on every page | `living-panel` |
 | Link colours by destination | `link-colors` |
 | The article pages' shared stylesheet | `page-css` |
+| Titles, canonicals, sitemap, what a crawler indexes | `seo-indexation` |
 
 ## Scope
 
@@ -75,8 +76,9 @@ saying that it likes to use one tool from the Awesome Index.
 - `index.html` carries no card: the social dock already takes that corner of the
   window. The generator leaves the front page alone.
 - The pair written into the page is the no-script fallback. `docs/living-panel.js`
-  (`tmp/build_living.py`) holds every being and tool and replaces the pair with a
-  fresh one on each load, skipping any link the page already carries.
+  (`.agents/skills/living-panel/build_living.py`) holds every being and tool and
+  replaces the pair with a fresh one on each load, skipping any link the page already
+  carries.
 - Generators live with the skill: `.agents/skills/living-panel/living_panel.py`
   (`--dry-run`, `--page`, `--remove`), `build_living.py` and `check_panel_links.py`.
 
