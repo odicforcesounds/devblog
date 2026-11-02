@@ -1,6 +1,6 @@
 ---
 name: living-panel
-description: Keep the fixed living card on every page of Monkey Blog — one photograph of a being from the five catalogues and the sentence "this (being) likes to use (tool)", pinned to the left edge of the window at mid height with a fresh pair on every load. Use when the card must be added, removed, restyled, reshuffled, or checked against links a page already carries.
+description: Keep the fixed living card on every page of Monkey Blog — one photograph of a being from the bird, animal, fish or insect catalogues and the sentence "this (being) likes to use (tool)", pinned to the left edge of the window at mid height with a fresh pair on every load. Use when the card must be added, removed, restyled, reshuffled, or checked against links a page already carries.
 ---
 
 # The living card — one being, one tool, every page
@@ -79,8 +79,9 @@ After either generator, rebuild the API and audit the site:
 
 ## Reading the pools
 
-Beings come from the five catalogues under `docs/<kingdom>/data/` (every species with a
-name of 28 characters or less and a photograph); tools come from the shelves under
+Beings come from the bird, animal, fish and insect catalogues under
+`docs/<kingdom>/data/` (every species with a name of 28 characters or less and a
+photograph). The plant catalogue is left out: no card names a plant.; tools come from the shelves under
 `docs/awesome/data/`, one per list: the list's own name when it is something you code
 with (`Bash`, `Go`, `Docker`), otherwise one short real entry from inside it, chosen by a
 hash of the list so the site reads varied. One category is drawn first, then a tool inside
