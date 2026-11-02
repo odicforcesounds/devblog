@@ -13,10 +13,11 @@ in the wrong directory is either published by accident, lost by accident, or bot
 
 | Path | Owner of | Tracked? |
 | --- | --- | --- |
-| `docs/*.html` | The site: 524 pages (`index.html`, `404.html`, the `home.html` stub, the articles). | Yes |
+| `docs/*.html` | The site: 542 pages (`index.html`, `404.html`, the `home.html` stub, the articles, the two catalogues and the temporary chat). | Yes |
 | `docs/*` (non-HTML) | A fixed infrastructure set, listed below. No new file type without a reason. | Yes |
 | `docs/images/` | Every image the pages reference: icons (`.svg`), pictures (`.webp`, `.jpg`, `.jpeg`, `.png`). | Yes |
 | `docs/api/` | **Generated** by `.agents/skills/blog-ops/build_api.py`: `index.json`, `dates.json` + `text/NNN.json`. | Yes |
+| `docs/electronics/data/` | JSON the electronics catalogue fetches, one file per shelf plus `index.json`; the second precedent for data beside a page. | Yes |
 | `docs/tools/` | The feed pipeline for `index.html` (`feeds.json`, `build.mjs`, `template.html`). | Yes |
 | `docs/archive/`, `docs/obsdRouter/` | Third-party snapshots. Read-only, excluded in `robots.txt`, absent from sitemap and API. | Yes |
 | `docs/pdfs/` | Downloadable PDFs linked from articles. | Yes |
@@ -28,13 +29,15 @@ in the wrong directory is either published by accident, lost by accident, or bot
 | `free/` | Exported chat logs. | **No — gitignored** |
 | `.agents/skills/` | The skills themselves, each `<name>/SKILL.md` plus its scripts. | Yes |
 | `.github/` | Repository automation. | Yes |
-| root | `README.md`, `.gitignore`, `pushit.sh`, `update.sh`. Nothing else. | Yes |
+| root | `README.md`, `START-HERE.md`, `AGENTS.md`, `.gitignore`, `pushit.sh`, `update.sh`. Nothing else. | Yes |
 
-The whole non-HTML set at `docs/` root is: `api.js`, `article-lang.js`, `article.css`,
-`index.css`, `style.css`, `musicDatabase.json`, `CNAME`, `favicon.ico`, `robots.txt`,
-`sitemap.xml`, `.nojekyll`. Two of those are generated (regenerate, never hand-edit),
-the rest are hand-written infrastructure. That list is the budget: a new `.md`, `.py`,
-`.sh` or scratch `.json` at `docs/` root is a mistake.
+The whole non-HTML set at `docs/` root is: `api.js`, `article-lang.js`, `gameAccount.js`,
+`living-panel.js`, `article.css`, `page.css`, `link-colors.css`, `index.css`, `style.css`,
+`musicDatabase.json`, `CNAME`, `favicon.ico`, `robots.txt`, `sitemap.xml`, `.nojekyll`.
+Five of those are generated (`sitemap.xml`, `robots.txt`, `page.css`, `link-colors.css`,
+`living-panel.js`) and one is the previous generation kept on disk (`article.css`); the
+rest are hand-written infrastructure. That list is the budget: a new `.md`, `.py`, `.sh`
+or scratch `.json` at `docs/` root is a mistake.
 
 ## Where a new file goes
 
