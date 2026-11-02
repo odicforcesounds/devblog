@@ -50,8 +50,8 @@ chunks — plus the scripts that regenerate them.
   (publication and update dates from git history), `tmp-tools` (scripts and scratch in
   `tmp/` and `tools/`), `assets-backups` (templates, runbooks, images), `tools-index`
   (the path index for every script and binary), `living-panel` (the fixed card on every
-  page), `link-colors` (the colour-by-destination sheet) and `page-css` (the shared article
-  stylesheet).
+  page), `link-colors` (the colour-by-destination sheet), `page-css` (the shared article
+  stylesheet) and `seo-indexation` (the read-only audit of what a crawler can index).
 - **Archive collections** — third-party snapshots under `docs/archive/` and
   `docs/obsdRouter/`, kept for readers and excluded in `robots.txt`.
 
@@ -66,7 +66,8 @@ devblog/
 ├── .agents/skills/blog-ops/   build_api.py, check_site.py, build_sitemap.py, enrich_schema.py,
 │                              page_hygiene.py, commitit.sh
 ├── .agents/skills/*/          SKILL.md per skill (new-page, repo-layout, git-dates, tmp-tools,
-│                              assets-backups, tools-index, blog-ops, living-panel, link-colors, page-css)
+│                              assets-backups, tools-index, blog-ops, living-panel, link-colors, page-css,
+│                              seo-indexation)
 ├── backups/                   runbooks, originals, maps, firebase-rules.txt
 ├── docs/                      ← published site root
 │   ├── index.html             landing page, categories, search, comment form
