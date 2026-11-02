@@ -45,6 +45,27 @@ EXTERNAL = "#ff9ecb"
 HOVER = "#ffffff"
 
 LINK_TAG = re.compile(r'\n?[ \t]*<link rel="stylesheet" href="/?link-colors\.css"[^>]*>', re.I)
+STYLE_SRC = re.compile(r'(<meta http-equiv="Content-Security-Policy" content="[^"]*?style-src)([^";]*)', re.I)
+
+
+def allow_self_styles(source):
+    """Add 'self' to style-src so the page's own policy lets a same-origin sheet load.
+
+    A page with `style-src 'unsafe-inline'` and no 'self' allows inline blocks and
+    blocks every stylesheet file, this one included: the links would then keep the
+    page's own colour and nothing would report it. Only that directive is touched.
+    """
+    def fix(match):
+        if "'self'" in match.group(2):
+            return match.group(0)
+        return match.group(1) + " 'self'" + match.group(2)
+    return STYLE_SRC.sub(fix, source, count=1)
+
+
+def blocks_sheet(source):
+    """True when the page links the sheet but its style-src would refuse it."""
+    match = STYLE_SRC.search(source)
+    return bool(match) and "'self'" not in match.group(2)
 
 # Order matters, and the last matching rule wins: blog first, then sibling, then
 # external. The blog rule matches every href ending in `.html`, which is how a page
@@ -155,6 +176,7 @@ def main(argv=None):
     subdomains = collections.Counter()
     missing = []
     unlinked = []
+    blocked = []
     written = removed = 0
 
     for path in pages:
@@ -179,8 +201,11 @@ def main(argv=None):
         if args.check:
             if "link-colors.css" not in source:
                 missing.append(name)
+            elif blocks_sheet(source):
+                blocked.append(name)
             continue
 
+        body = allow_self_styles(body)
         rel = "/link-colors.css" if name == "404.html" else "link-colors.css"
         tag = '  <link rel="stylesheet" href="%s">\n' % rel
         updated = body.replace("</head>", tag + "</head>", 1)
@@ -208,13 +233,15 @@ def main(argv=None):
                     stale.append(SHEET)
         else:
             stale.append(SHEET)
-        print("pages: %d | without the link: %d | sheet out of date: %d"
-              % (len(pages), len(missing), len(stale)))
+        print("pages: %d | without the link: %d | sheet out of date: %d | policy blocks it: %d"
+              % (len(pages), len(missing), len(stale), len(blocked)))
         for name in missing[:10]:
             print("  missing link:", name)
+        for name in blocked[:10]:
+            print("  style-src without 'self':", name)
         for name in stale:
             print("  stale sheet:", name)
-        return 1 if (missing or stale) else 0
+        return 1 if (missing or stale or blocked) else 0
 
     if args.remove:
         print("links removed: %d | pages: %d" % (removed, len(pages)))
