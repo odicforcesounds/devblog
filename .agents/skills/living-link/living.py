@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
 """Put one random living being and one random tool on every page of the blog.
 
-The line reads:
+On the front page it is a small fixed card that stays in view while you scroll:
 
-    this <a href="birdsIndex.html">European robin</a> likes to code with
-    <a href="awesomeIndex.html#cat-shell" title="Bash · Shell, terminal and
-    one-liners">shellcheck</a>.
+    <aside class="living-box" id="living-box">
+      <img src="…/500px-…jpg" alt="Common carp">
+      <p>this <a href="animalsIndex.html#order-cypriniformes">Common carp</a> likes to code
+      with <a href="awesomeIndex.html#cat-shell">Bash</a>, and this site has a
+      <a href="bashScripting.html">Bash guide</a>.</p>
+    </aside>
+
+On every other page it is one quiet line at the end of the footer:
+
+    <p class="small living-link">this <a href="…">European robin</a> likes to code with …</p>
 
 Beings come from the five catalogue indexes under docs/<kingdom>/data/; tools come
-from docs/awesome/data/, and the link points at the category the tool sits in, so
-a click lands on the drawer of the Awesome Index that holds it.
+from docs/awesome/data/, and the link points at the category the tool sits in.
 
 Runs without JavaScript and without a network request: the sentence is written into
 the page, so it survives a strict Content-Security-Policy. Each page gets its own
@@ -43,15 +49,38 @@ CATALOGUES = (
 # The one page that is deliberately left alone: its story boxes are read in parts
 # and a stray paragraph would break the reader.
 SKIP = {"awesome_story.html"}
+FRONT = "index.html"          # the page that gets the fixed card instead of a footer line
 SNIPPET = re.compile(r'\n?[ \t]*<p class="small living-link">.*?</p>', re.S)
-CLASS = 'class="small living-link"'
+BOX = re.compile(r'\n?[ \t]*<aside class="living-box" id="living-box".*?</aside>', re.S)
+BOX_STYLE = re.compile(r'[ \t]*<style id="living-box-style">.*?</style>\n', re.S)
+BOX_OPEN = '<style id="living-box-style">'
+
+BOX_CSS = """    /* The living link on the front page: a strip at the foot of the window that
+       stays there while the archive scrolls — the slot an advert would take,
+       given to one animal and one tool instead. */
+    body{padding-bottom:5rem}
+    .living-box{position:fixed;left:0;right:0;bottom:0;z-index:40;
+      display:flex;align-items:center;justify-content:center;gap:.85rem;
+      margin:0;padding:.6rem clamp(.8rem,2vw,1.6rem);border-top:1px solid var(--line);
+      background:rgba(8,12,17,.96);-webkit-backdrop-filter:blur(10px);
+      backdrop-filter:blur(10px);box-shadow:0 -18px 44px -30px rgba(0,0,0,.95);text-align:left}
+    .living-box img{width:58px;height:58px;flex:0 0 auto;object-fit:cover;border-radius:.5rem;
+      border:1px solid var(--line);background:var(--panel)}
+    .living-box p{margin:0;max-width:54rem;font-size:.82rem;line-height:1.5;color:var(--muted)}
+    .living-box a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--line-strong)}
+    .living-box a:hover,.living-box a:focus-visible{color:var(--accent-warm);border-color:currentColor}
+    .to-top{bottom:calc(clamp(.9rem,3vw,1.8rem) + 4.6rem)}
+    @media (max-width:640px){.living-box{gap:.6rem;padding:.5rem .7rem}
+      .living-box img{width:46px;height:46px}.living-box p{font-size:.78rem}}
+    @media print{.living-box{display:none}body{padding-bottom:0}.to-top{bottom:1.5rem}}
+"""
 
 
 def esc(text):
     return html.escape(text, quote=True)
 
 
-def beings():
+def beings(with_image=False):
     """Every species and plant in the five catalogues, with the index that lists it."""
     found = []
     for folder, page in CATALOGUES:
@@ -63,11 +92,14 @@ def beings():
             for family in data.get("families", []):
                 for being in family.get("s", []):
                     name = (being.get("n") or "").strip()
+                    image = being.get("i") or ""
                     if not name or len(name) > 28:
                         continue
-                    # Straight to the order the being sits in, inside its catalogue.
+                    if with_image and not image:
+                        continue
                     found.append({"name": name, "page": page,
-                                  "href": "%s#order-%s" % (page, data.get("key", ""))})
+                                  "href": "%s#order-%s" % (page, data.get("key", "")),
+                                  "image": image})
     return found
 
 
@@ -75,8 +107,8 @@ def tools():
     """Tool names from the Awesome Index, with the category that holds them.
 
     A list is often named after the tool itself (Bash, Go, Docker), which reads best
-    in the sentence, so the list name is used when it looks like one. Otherwise the
-    first short, real tool name in that list stands in.
+    in the sentence, so that name is used when it is the thing you code with.
+    Otherwise one short, real tool from that list stands in.
     """
     boring = re.compile(r"cheat|sheet|book|knowledge|awesome|lists?\b|resources?|\bapps\b|\btools\b|"
                         r"community|tutorial|guide|course|news|blog|misc|article|collection|top\b|"
@@ -86,7 +118,7 @@ def tools():
                         r"videos?|audio|papers?|books?|games?|editors?|extensions?|music|"
                         r"investing|blockchain|crypto|forensic|scalab|microservice|serverless|"
                         r"sysadmin|pentest|\bctf\b|\bwaf\b|privacy|learning|education|career|"
-                        r"health|financ|marketing|awesome", re.I)
+                        r"health|financ|marketing", re.I)
     tool_name = re.compile(r"^[A-Za-z][\w.+#-]{1,15}$")
     # Lists whose own name is the thing you code with. Everything else is a topic
     # (`Music`, `Investing`, `Scalability`) and lends the line a real tool instead.
@@ -169,19 +201,19 @@ def guides():
 
 
 def sentence(being, tool, link_being=True, guide=None):
-    """The one line the page carries."""
+    """The one line, as the paragraph it always is."""
     if link_being:
         who = '<a href="%s">%s</a>' % (esc(being["href"]), esc(being["name"]))
     else:
         who = esc(being["name"])
-    line = ('  <p class="small living-link">this %s likes to code with '
+    line = ('this %s likes to code with '
             '<a href="awesomeIndex.html#cat-%s" title="%s · %s">%s</a>'
             % (who, esc(tool["key"]), esc(tool["list"]), esc(tool["title"]),
                esc(tool["name"])))
     if guide:
         line += (', and this site has a <a href="%s">%s guide</a>'
                  % (esc(guide[0]), esc(guide[1])))
-    return line + ".</p>"
+    return line + "."
 
 
 def links_in(source):
@@ -189,7 +221,7 @@ def links_in(source):
 
 
 def place(source, block):
-    """Put the line at the end of the page footer, or before </body> if there is none."""
+    """Put a line at the end of the page footer, or before </body> if there is none."""
     index = source.rfind("</footer>")
     if index != -1:
         return source[:index] + block + "\n" + source[index:]
@@ -197,6 +229,31 @@ def place(source, block):
     if index != -1:
         return source[:index] + block + "\n" + source[index:]
     return None
+
+
+def card(being, tool, link_being=True, guide=None):
+    """The front page version: same sentence, the creature's photograph, fixed in view."""
+    inner = sentence(being, tool, link_being, guide)
+    # The catalogue keeps a 500px photograph. Wikimedia serves thumbnails only at
+    # the widths it lists, and 250 is on that list: 26 KB instead of 96 KB.
+    thumb = re.sub(r"/500px-", "/250px-", being.get("image") or "", count=1)
+    image = ('<img src="%s" alt="%s" width="58" height="58" loading="lazy" decoding="async">\n      '
+             % (esc(thumb), esc(being["name"]))) if thumb else ""
+    return ('  <aside class="living-box" id="living-box" aria-label="A living being and a tool">\n'
+            '      %s<p>%s</p>\n  </aside>' % (image, inner))
+
+
+def with_card(source, block):
+    """Drop the card at the end of <body> so nothing transformed can trap it."""
+    source = BOX.sub("", source)
+    source = SNIPPET.sub("", source)          # the footer line, if this page ever had one
+    source = BOX_STYLE.sub("", source)
+    style = "  %s\n%s  </style>\n" % (BOX_OPEN, BOX_CSS)
+    source = re.sub(r"</head>", style + "</head>", source, count=1, flags=re.I)
+    index = source.rfind("</body>")
+    if index == -1:
+        return None
+    return source[:index] + block + "\n" + source[index:]
 
 
 def pick(rng, items, taken):
@@ -207,9 +264,7 @@ def pick(rng, items, taken):
     return rng.choice(free), True
 
 
-def rewrite(source, rng, being_pool, tool_pool, guide_pool, page):
-    clean = SNIPPET.sub("", source)
-    taken = links_in(clean)
+def choose(rng, taken, being_pool, tool_pool):
     being, link_being = pick(rng, being_pool, taken)
     # One category first, then one tool inside it: the drawers hold very different
     # numbers of lists, and picking flat would drown the page in the biggest one.
@@ -219,42 +274,56 @@ def rewrite(source, rng, being_pool, tool_pool, guide_pool, page):
             continue
         by_category.setdefault(tool["key"], []).append(tool)
     if by_category:
-        category = rng.choice(sorted(by_category))
-        tool = rng.choice(by_category[category])
+        tool = rng.choice(by_category[rng.choice(sorted(by_category))])
     else:
         tool = rng.choice(tool_pool)
-    # A page of this blog that expands on the tool, if one exists and is not
-    # already linked here (and is not this page itself).
-    guide = None
+    return being, link_being, tool
+
+
+def find_guide(tool, guide_pool, taken, page):
+    """A page of this blog that expands on the tool, if one exists and is not linked here."""
     for word in (tool["name"], tool["list"]):
         for candidate in guide_pool.get(word.lower(), []):
             if candidate != page and candidate not in taken:
-                guide = (candidate, word)
-                break
-        if guide:
-            break
-    block = sentence(being, tool, link_being, guide)
+                return (candidate, word)
+    return None
+
+
+def rewrite(source, rng, being_pool, tool_pool, guide_pool, page):
+    clean = SNIPPET.sub("", source)
+    taken = links_in(clean)
+    being, link_being, tool = choose(rng, taken, being_pool, tool_pool)
+    guide = find_guide(tool, guide_pool, taken, page)
+    block = "  <p class=\"small living-link\">%s</p>" % sentence(being, tool, link_being, guide)
     updated = place(clean, block)
-    if updated is None:
-        return None, being, tool
-    return updated, being, tool
+    return (updated, being, tool) if updated is not None else (None, being, tool)
+
+
+def rewrite_front(source, rng, being_pool, tool_pool, guide_pool, page):
+    taken = links_in(BOX.sub("", SNIPPET.sub("", source)))
+    being, link_being, tool = choose(rng, taken, being_pool, tool_pool)
+    guide = find_guide(tool, guide_pool, taken, page)
+    updated = with_card(source, card(being, tool, link_being, guide))
+    return (updated, being, tool) if updated is not None else (None, being, tool)
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="A random living being and tool on every page.")
     parser.add_argument("--seed", default="", help="change it to reshuffle every page")
     parser.add_argument("--page", action="append", default=[], help="only this page (repeatable)")
-    parser.add_argument("--remove", action="store_true", help="take the line out again")
+    parser.add_argument("--remove", action="store_true", help="take it out again")
     parser.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = parser.parse_args(argv)
 
-    being_pool = beings()
+    plain_pool = beings()
+    image_pool = beings(with_image=True)
     tool_pool = tools()
     guide_pool = guides()
-    if not being_pool or not tool_pool:
+    if not plain_pool or not tool_pool:
         print("no beings or no tools found — nothing to do", file=sys.stderr)
         return 1
-    print("beings: %d | tools: %d" % (len(being_pool), len(tool_pool)))
+    print("beings: %d (%d with a photo) | tools: %d | guides: %d"
+          % (len(plain_pool), len(image_pool), len(tool_pool), len(guide_pool)))
 
     pages = args.page or sorted(os.path.basename(p) for p in glob.glob(os.path.join(DOCS, "*.html")))
     written = removed = skipped = 0
@@ -274,7 +343,7 @@ def main(argv=None):
             skipped += 1                       # a redirect, nobody reads it
             continue
         if args.remove:
-            cleaned = SNIPPET.sub("", source)
+            cleaned = BOX_STYLE.sub("", BOX.sub("", SNIPPET.sub("", source)))
             if cleaned != source:
                 if not args.dry_run:
                     with open(path, "w", encoding="utf-8") as fh:
@@ -282,7 +351,11 @@ def main(argv=None):
                 removed += 1
             continue
         rng = random.Random(hashlib.sha256((name + "|" + args.seed).encode()).hexdigest())
-        updated, being, tool = rewrite(source, rng, being_pool, tool_pool, guide_pool, name)
+        if name == FRONT:
+            updated, being, tool = rewrite_front(source, rng, image_pool, tool_pool,
+                                                 guide_pool, name)
+        else:
+            updated, being, tool = rewrite(source, rng, plain_pool, tool_pool, guide_pool, name)
         if updated is None:
             print("  ! no footer and no body end:", name)
             skipped += 1
