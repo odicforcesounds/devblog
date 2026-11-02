@@ -42,7 +42,7 @@ Tracked, outside `docs/`, therefore never served. It holds:
 | `comments-login-failure.md` | Diagnosis of the sign-in failures, with the evidence. |
 | `setup-facebook-github.md` | How to enable another auth provider. |
 | `original/` | Pre-rewrite versions: `index.html`, `change.html`, `index.css`, `templates/`. |
-| `art_map.json`, `blog_map.json`, `project_map.json` | Structural maps of the archive. `art_map.json` is also the condition for the art link every page carries — see the `art-link` skill. |
+| `art_map.json`, `blog_map.json`, `project_map.json` | Structural maps of the archive. `art_map.json` lists the pages of `art.odicforcesounds.com`; the art anchor every page carries is chosen from it. |
 | `blog_sitemap.xml`, `urls/` | Previous sitemap and URL inventories. |
 
 Rules:
@@ -61,7 +61,7 @@ Rules:
 
 ## docs/images/
 
-28 files, about 8.9 MB. Formats in use: `.svg` (icons and emblems), `.webp`, `.jpg`,
+30 files, about 8.8 MB. Formats in use: `.svg` (icons and emblems), `.webp`, `.jpg`,
 `.jpeg`, `.png` (photos and screenshots). Served at
 `https://blog.odicforcesounds.com/images/name.ext`.
 
