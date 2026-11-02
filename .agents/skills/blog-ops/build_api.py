@@ -31,7 +31,18 @@ DATE_CACHE = "tmp/seo/dates-v2.json"
 
 # A page copied or renamed after it was published appears in git as newly added
 # on the copy day. These keep the instant the article itself first went up.
-PUBLISHED_OVERRIDES = {"OneHumanSong.html": "2026-10-16T22:49:01+01:00"}
+PUBLISHED_OVERRIDES = {
+    "OneHumanSong.html": "2026-10-16T22:49:01+01:00",
+    # The five catalogues and their shared index were written and committed inside the
+    # same minute, so git gives all six the same instant and the last five would be
+    # chosen alphabetically. These are the moments each page was actually written.
+    "birdsIndex.html": "2026-11-02T15:32:48+00:00",
+    "plantsIndex.html": "2026-11-02T15:50:41+00:00",
+    "animalsIndex.html": "2026-11-02T16:00:43+00:00",
+    "fishesIndex.html": "2026-11-02T16:11:37+00:00",
+    "insectsIndex.html": "2026-11-02T16:33:28+00:00",
+    "lifeIndex.html": "2026-11-02T16:39:37+00:00",
+}
 
 NOISE = re.compile(
     r"<(script|style|nav|footer|aside|iframe|figure|form|template)\b.*?</\1\s*>",
