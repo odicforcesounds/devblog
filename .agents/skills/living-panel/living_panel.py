@@ -10,7 +10,8 @@ the window at mid height — the place the social dock takes on the front page:
       <a href="awesomeIndex.html#cat-shell">Bash</a>.</p>
     </aside>
 
-The being and its photograph come from the five catalogues under
+The being and its photograph come from the bird, animal, fish and insect catalogues
+under
 docs/<kingdom>/data/, the tool from the shelves under docs/awesome/data/.
 The pair written into the page is the no-script fallback; docs/living-panel.js
 replaces it with a fresh one on every load, so refreshing a page shows a
@@ -36,7 +37,6 @@ DOCS = "docs"
 FRONT = "index.html"
 CATALOGUES = (
     ("birds", "birdsIndex.html"),
-    ("plants", "plantsIndex.html"),
     ("animals", "animalsIndex.html"),
     ("fishes", "fishesIndex.html"),
     ("insects", "insectsIndex.html"),
@@ -45,24 +45,24 @@ SEED = "2026-11-02"
 
 STYLE_OPEN = '<style id="living-panel-style">'
 CSS = """    .living-panel{position:fixed;top:50%;left:clamp(.7rem,1.6vw,1.2rem);z-index:95;
-      transform:translateY(-50%);width:9.5rem;display:flex;flex-direction:column;
-      align-items:center;gap:.45rem;margin:0;padding:.55rem .5rem;text-align:center;
+      transform:translateY(-50%);width:12.5rem;display:flex;flex-direction:column;
+      align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:center;
       background:rgba(8,12,17,.9);border:1px solid var(--line, rgba(255,255,255,.14));
-      border-radius:14px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+      border-radius:16px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
       font-family:var(--sans, system-ui, sans-serif)}
-    .living-panel img{width:100%;height:5.6rem;object-fit:cover;border-radius:.5rem;
+    .living-panel img{width:100%;height:8rem;object-fit:cover;border-radius:.6rem;
       border:1px solid var(--line, rgba(255,255,255,.14));background:var(--panel, #101018)}
-    .living-panel p{margin:0;font-size:.7rem;line-height:1.45;color:var(--muted, #a9a9ba)}
+    .living-panel p{margin:0;font-size:.78rem;line-height:1.5;color:var(--muted, #a9a9ba)}
     .living-panel a{color:var(--cyan, #5ce1ff);text-decoration:none;
       border-bottom:1px solid rgba(92,225,255,.4)}
     .living-panel a:hover,.living-panel a:focus-visible{color:var(--gold, #ffd23f);
       border-color:currentColor}
-    @media (max-width:1200px){.living-panel{width:8.4rem;padding:.45rem}
-      .living-panel img{height:4.8rem}.living-panel p{font-size:.66rem}}
-    @media (max-width:900px){.living-panel{width:7rem;gap:.35rem}
-      .living-panel img{height:4rem}.living-panel p{font-size:.62rem;line-height:1.4}}
-    @media (max-width:640px){.living-panel{width:5.8rem;padding:.35rem .3rem}
-      .living-panel img{height:3.2rem}.living-panel p{font-size:.56rem}}
+    @media (max-width:1200px){.living-panel{width:11rem;padding:.6rem .55rem}
+      .living-panel img{height:6.8rem}.living-panel p{font-size:.74rem}}
+    @media (max-width:900px){.living-panel{width:9rem;gap:.45rem}
+      .living-panel img{height:5.6rem}.living-panel p{font-size:.68rem;line-height:1.45}}
+    @media (max-width:640px){.living-panel{width:7.4rem;padding:.45rem .4rem}
+      .living-panel img{height:4.4rem}.living-panel p{font-size:.62rem}}
     @media print{.living-panel{display:none}}
 """
 
