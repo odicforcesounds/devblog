@@ -341,6 +341,17 @@ python3 .agents/skills/blog-ops/build_api.py        # docs/api/index.json + date
 python3 .agents/skills/blog-ops/check_site.py       # head contract, sitemap and API coverage
 ```
 
+Then the five read-only audits, which answer what `check_site.py` does not — none of them
+writes a file, so all five run on every new page:
+
+```sh
+python3 .agents/skills/link-integrity/check_links.py      # every href and src resolves
+python3 .agents/skills/page-weight/check_weight.py        # inside the article budget
+python3 .agents/skills/security-headers/check_headers.py  # the page's CSP permits what it loads
+python3 .agents/skills/a11y/check_a11y.py                 # alt, lang, labels
+python3 .agents/skills/seo-indexation/check_seo.py        # title, description, canonical, reachability
+```
+
 `check_site.py` must not report anything about the new page, and a clean run ends with
 `0 failures`. The one standing warning is `brutalBSD.html`'s 68-character description;
 `ArtOfCreation.html` and `JS4Children.html` were split long ago and no longer fail. Any
@@ -404,6 +415,10 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/Name.html   # exp
 - [ ] Archive row added once, counts updated, breadcrumb matches, and the API
       `published_at` is the instant git reports for the file.
 - [ ] `build_sitemap.py`, `build_api.py` and `check_site.py` run; no new failure.
+- [ ] `check_links.py`, `check_weight.py`, `check_headers.py`, `check_a11y.py` and
+      `check_seo.py` report nothing about the new page: no dead reference, inside the
+      budget, its own policy allows its sheet and script, alt and `lang` present, title
+      within 60 and description within 90–155 characters.
 - [ ] `git diff --numstat` shows only the new page, `index.html`, and the regenerated
       `sitemap.xml` / `api/*`.
 
