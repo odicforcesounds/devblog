@@ -29,6 +29,8 @@ matches the task before editing:
 | Where a script goes | `tools-index`, `tmp-tools` |
 | Images, templates, `backups/` | `assets-backups` |
 | The fixed living card on every page | `living-panel` |
+| Link colours by destination | `link-colors` |
+| The article pages' shared stylesheet | `page-css` |
 
 ## Scope
 
