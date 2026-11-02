@@ -1,6 +1,6 @@
 ---
 name: living-link
-description: Put one random living being and one random tool on every page of this blog — a single quiet line near the footer, "this European robin likes to code with Bash", where the being links to the order it sits in inside one of the five catalogues and the tool links to the drawer of the Awesome Index that holds it, plus the guide on this site that expands on it when there is one. Use when the pages should carry that trail, when it needs reshuffling, or when it has to be taken out again.
+description: Put one random living being and one random tool on every page of this blog — a single quiet line near the footer, "this European robin likes to code with Bash", and on the front page the same sentence with the creature's photograph in a strip fixed to the foot of the window. The being links to the order it sits in inside one of the five catalogues, the tool to the drawer of the Awesome Index that holds it, plus the guide on this site that expands on it when there is one. Use when the pages should carry that trail, when it needs reshuffling, or when it has to be taken out again.
 ---
 
 # The living link — one being, one tool, every page
@@ -24,6 +24,32 @@ one-liners">Bash</a>, and this site has a <a href="bashScripting.html">Bash guid
 The point is the trail: a reader who lands on any article meets one creature and one tool, and
 can follow either — into the catalogue that lists the creature, into the Awesome Index drawer
 that holds the tool, and into the manual on this site that teaches the tool.
+
+## The front page takes the advert's slot
+
+`index.html` does not get the footer line. It gets a strip fixed to the foot of the window —
+the place an advert would sit — that stays in view while the archive scrolls underneath:
+
+```html
+<aside class="living-box" id="living-box" aria-label="A living being and a tool">
+  <img src="…/250px-…jpg" alt="Northern bald ibis" width="58" height="58" loading="lazy">
+  <p>this <a href="birdsIndex.html#order-pelecaniformes">Northern bald ibis</a> likes to code
+  with <a href="awesomeIndex.html#cat-systems">Colossus</a>.</p>
+</aside>
+```
+
+- **It shows the creature.** The photograph comes from the same catalogue record (`i`), cut to
+  Wikimedia's 250px thumbnail — that width is on their allowed list, and it is 26 KB instead of
+  the 96 KB of the 500px the catalogues use. Arbitrary widths (`240px`, `320px`, `480px`) are
+  refused with HTTP 400, so do not invent one.
+- **The page makes room for it.** The style block (`id="living-box-style"`, written once into
+  `<head>`) adds `body{padding-bottom:5rem}` and lifts the existing back-to-top button above
+  the strip, so nothing ends up underneath it. It hides itself in print.
+- **It is placed before `</body>`**, on the body itself: any transformed ancestor would trap a
+  `position:fixed` child, so the card is never nested inside the page layout.
+- **Still no JavaScript and no advert.** One sentence, one photograph, three ordinary links;
+  nothing rotates, nothing tracks, nothing is sold.
+- **Removal is symmetric:** `--remove` takes out the card, the style block and the footer line.
 
 ## The rules
 
