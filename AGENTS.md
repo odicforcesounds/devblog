@@ -32,6 +32,12 @@ matches the task before editing:
 | Link colours by destination | `link-colors` |
 | The article pages' shared stylesheet | `page-css` |
 | Titles, canonicals, sitemap, what a crawler indexes | `seo-indexation` |
+| A dead link, local or external | `link-integrity` |
+| What a page downloads, payload budgets | `page-weight` |
+| CSP and the other meta headers | `security-headers` |
+| Alt text, language, labels, focus | `a11y` |
+| The JSON behind the catalogue pages | `catalogue-data` |
+| The comment form and the secret chat | `comments` |
 
 ## Scope
 
