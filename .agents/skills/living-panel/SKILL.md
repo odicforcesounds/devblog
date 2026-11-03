@@ -23,10 +23,11 @@ The sentence is the picture and that line — nothing more, and the order is fix
 
 > this **(being)** likes to use **(tool)** and loves **(component)** while doing some diet with **(plant)** at **(city)**.
 
-Each name links to the shelf that holds it: the being to its order inside one of the four
+Each name links to the shelf that holds it — the being to its order inside one of the four
 kingdom catalogues, the tool to the Awesome Index drawer, the component to its category
 drawer in the electronics catalogue, the plant to its order in the plant catalogue, and
-the city to its country shelf in the world catalogue. The `title` on a component, a plant
+the city to its country shelf in the world catalogue — and, in the card the script builds,
+to the entry itself (see *A click lands on the entry*). The `title` on a component, a plant
 or a city says what family, order or country it belongs to, so a bare `Desoldering`, a
 Latin binomial or `Ashgabat` still reads as something placed. A city is always the most
 populous place of its country whose name fits and needs no disambiguating suffix, so the
@@ -57,15 +58,44 @@ script rebuilds the rest:
 
 | Column | Stored | Rebuilt by the script |
 | --- | --- | --- |
-| being | name, catalogue code (`b`/`a`/`f`/`i`), order key, thumb path | `<catalogue>Index.html#order-<key>`, and `…/thumb/<path>/250px-<file>` from the path's own last segment |
-| tool | name, drawer key | `awesomeIndex.html#cat-<key>` |
-| component | name, category key | `electronicsIndex.html#cat-<key>` |
-| plant | name, order key | `plantsIndex.html#order-<key>` |
-| city | name, country key | `worldIndex.html#cat-<key>` |
+| being | name, catalogue code (`b`/`a`/`f`/`i`), order key, thumb path | `<catalogue>Index.html?q=<name>#order-<key>`, and `…/thumb/<path>/250px-<file>` from the path's own last segment |
+| tool | name, drawer key | `awesomeIndex.html?q=<name>#cat-<key>` |
+| component | name, category key | `electronicsIndex.html?q=<name>#cat-<key>` |
+| plant | name, order key | `plantsIndex.html?q=<name>#order-<key>` |
+| city | name, country key | `worldIndex.html?q=<name>#cat-<key>` |
 
 That is what keeps five thousand entries at 182 KB instead of 403 KB. The no-script card
 in the markup still carries the full `title` captions; the script does not, because it
 would be the largest thing in the file and reads as tooltip noise.
+
+## A click lands on the entry
+
+Every link the script builds carries the name it shows:
+
+```html
+<a href="animalsIndex.html?q=Golden%20hamster#order-rodentia">Golden hamster</a>
+```
+
+The query is what the target page searches for, and the anchor is the shelf it opens, so a
+click lands on the being, tool, component, plant or city named in the card rather than at
+the top of a drawer. On load every catalogue page reads `q` and runs its own search:
+
+| Page | What `?q=` does |
+| --- | --- |
+| `birdsIndex`, `animalsIndex`, `fishesIndex`, `insectsIndex`, `plantsIndex`, `electronicsIndex`, `awesomeIndex` | fills the page's search box and runs it, so the entry is the result |
+| `worldIndex` | fills the place finder and runs it |
+
+The name arrives URL-encoded (`encodeURIComponent` in the script, `quote(name, safe="")`
+in the generator) because a binomial, a `.NET` library or a place name carries dots, spaces
+and parentheses.
+
+The card written into the markup keeps the plain anchor (`animalsIndex.html#order-rodentia`).
+With scripts off nothing reads a query string, and the anchor is what still opens the
+shelf, so `plain()` strips the query before it is written — a generator run stays
+idempotent and the 545 pages are not rewritten for a link the fallback cannot use.
+
+`fishesIndex`, `insectsIndex`, `plantsIndex` and `electronicsIndex` gained their search
+line for this card: before it, a click could only open a drawer.
 
 ## The rules
 
@@ -74,7 +104,8 @@ would be the largest thing in the file and reads as tooltip noise.
   strip, and any previous card and script of its own — so a second run changes nothing.
 - **No repeated links.** `page_hygiene.py` fails a page that repeats a target, so each of
   the five links goes to a shelf anchor rather than a page: `#order-<key>` for being and
-  plant, `#cat-<key>` for tool, component and city. The five must also differ from each
+  plant, `#cat-<key>` for tool, component and city. In the script the shell string carries
+  the query as well, which keeps the five apart even where two entries share a shelf. The five must also differ from each
   other — a being and a plant from the same order would otherwise collide, and two cities
   of one country share their `#cat-<key>`. `check_panel_links.py` verifies both, across the
   whole site; it must report zero.
