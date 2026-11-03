@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Put one living being and one tool from the indexes on every page of the blog.
+"""Put one living being, one tool, one component and one plant on every page.
 
 Every docs/*.html except index.html carries one card fixed to the left edge of
 the window at mid height — the place the social dock takes on the front page:
@@ -7,15 +7,17 @@ the window at mid height — the place the social dock takes on the front page:
     <aside class="living-panel" id="living-panel" ...>
       <img src="…/250px-…jpg" alt="European robin" width="56" height="56" loading="lazy">
       <p>this <a href="birdsIndex.html#order-passeriformes">European robin</a> likes to use
-      <a href="awesomeIndex.html#cat-shell">Bash</a>.</p>
+      <a href="awesomeIndex.html#cat-shell">Bash</a> and loves
+      <a href="electronicsIndex.html#cat-instruments">Multimeter</a> while doing some diet
+      with <a href="plantsIndex.html#order-santalales">Viscum album</a>.</p>
     </aside>
 
 The being and its photograph come from the bird, animal, fish and insect catalogues
-under
-docs/<kingdom>/data/, the tool from the shelves under docs/awesome/data/.
-The pair written into the page is the no-script fallback; docs/living-panel.js
-replaces it with a fresh one on every load, so refreshing a page shows a
-different being and a different tool.
+under docs/<kingdom>/data/; the tool from the shelves under docs/awesome/data/;
+the component from docs/electronics/data/; the plant from docs/plants/data/.
+The four written into the page are the no-script fallback; docs/living-panel.js
+replaces them with a fresh set on every load, so refreshing a page shows a
+different being, tool, component and plant.
 
     python3 .agents/skills/living-panel/living_panel.py              # every page
     python3 .agents/skills/living-panel/living_panel.py --dry-run     # report only
@@ -41,7 +43,10 @@ CATALOGUES = (
     ("fishes", "fishesIndex.html"),
     ("insects", "insectsIndex.html"),
 )
-SEED = "2026-11-02"
+PLANTS = ("plants", "plantsIndex.html")
+ELECTRONICS = ("electronics", "electronicsIndex.html")
+LABEL = "A living being, a tool, a component and a plant"
+SEED = "2026-11-03"
 
 STYLE_OPEN = '<style id="living-panel-style">'
 CSS = """    .living-panel{position:fixed;top:50%;left:clamp(.7rem,1.6vw,1.2rem);z-index:95;
@@ -107,7 +112,58 @@ def beings():
                         continue
                     found.append({"name": name, "page": page,
                                   "href": "%s#order-%s" % (page, key),
-                                  "image": image})
+                                  "image": image,
+                                  "where": (being.get("fam") or "", being.get("ord") or "")})
+    return found
+
+
+def plants():
+    """Every plant in docs/plants/data/ with a name short enough for the card."""
+    folder, page = PLANTS
+    found = []
+    for path in sorted(glob.glob(os.path.join(DOCS, folder, "data", "*.json"))):
+        if path.endswith("index.json"):
+            continue
+        try:
+            with open(path, encoding="utf-8") as handle:
+                data = json.load(handle)
+        except Exception:
+            continue
+        key = data.get("key") or os.path.splitext(os.path.basename(path))[0]
+        for family in data.get("families", []):
+            for plant in family.get("s", []):
+                name = (plant.get("n") or "").strip()
+                if not name or len(name) > 28:
+                    continue
+                found.append({"name": name,
+                              "href": "%s#order-%s" % (page, key),
+                              "where": (plant.get("fam") or family.get("n") or "",
+                                        plant.get("ord") or data.get("title") or "")})
+    return found
+
+
+def components():
+    """Every part in docs/electronics/data/, linked to its category drawer."""
+    folder, page = ELECTRONICS
+    found = []
+    for path in sorted(glob.glob(os.path.join(DOCS, folder, "data", "*.json"))):
+        if path.endswith("index.json"):
+            continue
+        try:
+            with open(path, encoding="utf-8") as handle:
+                data = json.load(handle)
+        except Exception:
+            continue
+        key = data.get("key") or os.path.splitext(os.path.basename(path))[0]
+        title = data.get("title") or key
+        for group in data.get("groups", []):
+            for item in group.get("items", []):
+                name = (item.get("n") or "").strip()
+                if not name or not 3 <= len(name) <= 24:
+                    continue
+                found.append({"name": name,
+                              "href": "%s#cat-%s" % (page, key),
+                              "where": (group.get("name") or "", title)})
     return found
 
 
@@ -162,12 +218,21 @@ def tools():
                 elif tool_name.match(list_name) and not boring.search(list_name):
                     chosen = list_name
             if chosen:
-                found.append({"name": chosen, "list": list_name, "key": key, "title": title})
+                found.append({"name": chosen, "list": list_name, "key": key, "title": title,
+                              "href": "awesomeIndex.html#cat-" + key})
     return found
 
 
 def links_in(source):
     return set(re.findall(r'href="([^"]+)"', source))
+
+
+def pick(rng, pool, taken):
+    """Draw one item whose target the page (and the card) does not already link."""
+    free = [item for item in pool if item["href"] not in taken]
+    if not free:
+        return rng.choice(pool)
+    return rng.choice(free)
 
 
 def pick_being(rng, pool, taken):
@@ -180,7 +245,7 @@ def pick_being(rng, pool, taken):
 def pick_tool(rng, pool, taken):
     by_category = {}
     for item in pool:
-        if "awesomeIndex.html#cat-" + item["key"] not in taken:
+        if item["href"] not in taken:
             by_category.setdefault(item["key"], []).append(item)
     if not by_category:
         return rng.choice(pool)
@@ -252,20 +317,33 @@ def allow_script(source):
     return CSP.sub(fix, source)
 
 
-def panel(being, tool, link_being):
-    who = ('<a href="%s">%s</a>' % (esc(being["href"]), esc(being["name"]))
-           if link_being else esc(being["name"]))
-    line = ('this %s likes to use <a href="awesomeIndex.html#cat-%s" title="%s · %s">%s</a>.'
-            % (who, esc(tool["key"]), esc(tool["list"]), esc(tool["title"]),
-               esc(tool["name"])))
-    return ('<aside class="living-panel" id="living-panel" aria-label="A living being and a tool">\n'
+def anchor(item):
+    label = esc(item["name"])
+    where = item.get("where") or ("", "")
+    caption = " · ".join(part for part in where if part)
+    if not caption:
+        return '<a href="%s">%s</a>' % (esc(item["href"]), label)
+    return '<a href="%s" title="%s">%s</a>' % (esc(item["href"]), esc(caption), label)
+
+
+def panel(being, tool, part, plant, link_being):
+    if link_being:
+        who = anchor(being)
+    else:
+        who = esc(being["name"])
+    tool_link = ('<a href="%s" title="%s · %s">%s</a>'
+                 % (esc(tool["href"]), esc(tool["list"]), esc(tool["title"]),
+                    esc(tool["name"])))
+    line = ('this %s likes to use %s and loves %s while doing some diet with %s.'
+            % (who, tool_link, anchor(part), anchor(plant)))
+    return ('<aside class="living-panel" id="living-panel" aria-label="%s">\n'
             '    <img src="%s" alt="%s" width="152" height="90" loading="lazy" decoding="async">\n'
             '    <p>%s</p>\n  </aside>'
-            % (esc(thumb(being["image"])), esc(being["name"]), line))
+            % (LABEL, esc(thumb(being["image"])), esc(being["name"]), line))
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="A living being and a tool on every page.")
+    parser = argparse.ArgumentParser(description="A being, a tool, a component and a plant on every page.")
     parser.add_argument("--page", action="append", default=[], help="only this page (repeatable)")
     parser.add_argument("--remove", action="store_true", help="take the block out again")
     parser.add_argument("--dry-run", action="store_true", help="report only, write nothing")
@@ -274,10 +352,13 @@ def main(argv=None):
     pages = args.page or sorted(glob.glob(os.path.join(DOCS, "*.html")))
     being_pool = beings()
     tool_pool = tools()
-    if not being_pool or not tool_pool:
-        print("no beings or no tools found — nothing to do", file=sys.stderr)
+    part_pool = components()
+    plant_pool = plants()
+    if not being_pool or not tool_pool or not part_pool or not plant_pool:
+        print("no beings, tools, components or plants found — nothing to do", file=sys.stderr)
         return 1
-    print("beings: %d | tools: %d" % (len(being_pool), len(tool_pool)))
+    print("beings: %d | tools: %d | components: %d | plants: %d"
+          % (len(being_pool), len(tool_pool), len(part_pool), len(plant_pool)))
 
     written = removed = skipped = 0
     samples = []
@@ -303,8 +384,13 @@ def main(argv=None):
         taken = links_in(body)
         rng = random.Random(hashlib.sha256((name + "|" + SEED).encode()).hexdigest())
         being, link_being = pick_being(rng, being_pool, taken)
+        taken.add(being["href"])
         tool = pick_tool(rng, tool_pool, taken)
-        block = panel(being, tool, link_being)
+        taken.add(tool["href"])
+        part = pick(rng, part_pool, taken)
+        taken.add(part["href"])
+        plant = pick(rng, plant_pool, taken)
+        block = panel(being, tool, part, plant, link_being)
 
         styled = allow_script(allow_images(body))
         if "</head>" in styled:
@@ -320,7 +406,8 @@ def main(argv=None):
         index = match.end()
         updated = styled[:index] + "\n" + block + styled[index:]
         if len(samples) < 5:
-            samples.append("%-26s %s + %s" % (name, being["name"], tool["name"]))
+            samples.append("%-26s %s + %s + %s + %s"
+                           % (name, being["name"], tool["name"], part["name"], plant["name"]))
         if updated != source:
             if not args.dry_run:
                 with open(path, "w", encoding="utf-8") as handle:
