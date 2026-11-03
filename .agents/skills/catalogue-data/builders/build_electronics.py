@@ -5,6 +5,9 @@ Defines the taxonomy (category -> group -> component) and asks the Wikipedia API
 for each page's canonical title, first sentence and thumbnail, so nothing in the
 data is invented. Writes docs/electronics/data/index.json and one file per
 category. Re-runnable: the same input produces the same output.
+
+add_electronics_parts.py reads the same taxonomy to add the groups the published
+data is missing without rebuilding what is already there.
 """
 
 import os as _os
@@ -85,6 +88,16 @@ TAXONOMY = [
         ("Generating", ["Signal generator", "Function generator", "Power supply", "Electronic load"]),
         ("Workbench", ["Soldering iron", "Reflow soldering", "Soldering station", "Solder sucker", "Microscope", "Magnifying glass", "Antistatic device"]),
         ("Reference and design", ["Circuit diagram", "Electronic symbol", "Schematic", "Datasheet", "Electronic color code", "Preferred number", "Application note"]),
+    ]),
+    ("microelectronics", "10", "Micro-electronics", "The other end of the scale: how a chip is made and the device families a fab produces — wafers, lithography, doping, a die in its package, and the transistors built a few atoms thick.", [
+        ("Fabrication", ["Wafer (electronics)", "Photolithography", "Extreme ultraviolet lithography", "Photoresist", "Doping (semiconductor)", "Epitaxy", "Cleanroom", "Thermal oxidation", "Ion implantation"]),
+        ("Die and packaging", ["Die (integrated circuit)", "Wire bonding", "Flip chip", "Chemical-mechanical polishing", "Wafer dicing"]),
+        ("Device families", ["CMOS", "FinFET", "Silicon on insulator", "Memristor", "Microelectromechanical systems", "Silicon photonics"]),
+    ]),
+    ("industrial", "11", "Industrial electronics", "The parts that run a plant: the controllers and drives that move a motor, the protection that keeps a line alive, and the sensors and loops that report back to the cabinet.", [
+        ("Control and drives", ["Programmable logic controller", "Variable-frequency drive", "Servo drive", "Motor soft starter", "Human–machine interface", "Motor control center"]),
+        ("Protection and switching", ["Switchgear", "Surge protector", "Overload relay", "Disconnector"]),
+        ("Process sensing", ["Photoelectric sensor", "Inductive sensor", "Tachometer", "Resolver (electrical)", "Instrumentation amplifier", "Current loop", "Galvanic isolation"]),
     ]),
 ]
 
