@@ -16,7 +16,7 @@ before writing the first line.
 | --- | --- | --- |
 | `tools/bg_scan.py` | Local scan of the archive (descriptions, titles, tags). | 1 |
 | `tmp/*.orig.html` | Pre-edit snapshots (`2FA.orig.html`, `4yfn.orig.html`, …). | 4 |
-| `tmp/*.py` | Bulk passes: `batch2.py`…`batch11.py`, `merge*.py`, `patch_*.py`, `repair_hab.py`, `cleanup_index.py`, `convert.py`, `gen_mapquest.py`. | 19 |
+| `tmp/*.py` | None today: the catalogue and page builders were promoted to `.agents/skills/catalogue-data/builders/` and `.agents/skills/blog-ops/builders/` — the paths are in `tools-index`. Scratch caches they read (`tools.json`, `plant_texts.json`, `pythonCert.*.json`) still land here. | 0 |
 | `tmp/*.js` | Page harnesses and language data (`cli-pt.js`, `rx-logic.js`, `test_mapquest.js`). | 10 |
 | `tmp/*.html` | Language variants and merged drafts (`cli-a.html`, `merged.html`, `tenda-*.html`). | 22 |
 | `tmp/{auth,authtest,domtest,game,home,i18n,seo,spec}/` | Harness and data sets used by earlier tasks. | 9 dirs |
