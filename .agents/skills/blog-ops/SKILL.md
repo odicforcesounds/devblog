@@ -33,7 +33,7 @@ problem you fix in the source.
 | `.agents/skills/blog-ops/fix_story.py` | Repairs `docs/awesome_story.html`: the unclosed `h1`/`header` that squeezed the whole page into the reading column, the narrow box and the ragged text. Idempotent. |
 | `.agents/skills/blog-ops/commitit.sh` | Interactive commit: one commit per approved file, each with its own message. No push, no tool attribution. |
 | `pushit.sh` | Deploy: pull, `git add .`, commit, push. Only run it when asked to publish. |
-| `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD), `page_hygiene.py` (duplicate links/text, authoring comments), `restore_awesome_data.py` (shelf restore), `fix_story.py` (story page repair), `commitit.sh` (per-file commit). |
+| `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD), `page_hygiene.py` (duplicate links/text, authoring comments), `restore_awesome_data.py` (shelf restore), `fix_story.py` (story page repair), `commitit.sh` (per-file commit), and `builders/` (the page builders listed below). |
 | `.agents/skills/` | The other skills: `new-page` (write a page), `repo-layout` (what belongs where), `git-dates` (dates from git history), `tmp-tools` (scripts in `tmp/` and `tools/`), `tools-index` (the path index for every script and binary), `assets-backups` (templates, runbooks, images), `living-panel` (the fixed card on every page), `link-colors` (colour by destination), `page-css` (the shared article sheet), `seo-indexation` (titles, canonicals, sitemap and reachability), `link-integrity` (dead local and external links), `page-weight` (payload budgets), `security-headers` (CSP against what each page loads), `a11y` (alt, language, labels), `catalogue-data` (the JSON behind the index pages) and `comments` (the comment form and the chat). |
 | `backups/GOOGLE.md` | Search Console runbook: what the structured data says, order of operations, known gaps. |
 | `backups/CLOUDFLARE.md` | Hosting runbook: DNS/proxy state, WebMCP, bot rules, redirects, cache, headers, HSTS. Read it before changing anything at the edge. |
@@ -203,6 +203,30 @@ lists what to check and how to confirm each setting with `curl`.
   the user wants commits split by file; it is not a replacement for `pushit.sh`.
 
 **Deploy** — `./pushit.sh` (asks for the ssh key). Never run it unasked.
+
+## Builders — the scripts that wrote the pages
+
+Generation is not the workflow here — a page is edited where it lives — but the pages that
+were produced in bulk were produced by these, moved out of the gitignored `tmp/` so a clone
+still has the record of how. **Run them from the repository root**: they open `docs/…` and
+`tmp/…` by relative path, and the ones that fetch do so one request at a time.
+
+| Path under `builders/` | Writes | Notes |
+| --- | --- | --- |
+| `build_awesome_json.py` | `docs/awesome/data/` | Category → list → drawer → card, as JSON instead of HTML. Imports the three below as modules, by path beside it. Input: `tmp/tools.json`. |
+| `build_deep.py` | the `awesome-0N-*.html` category pages, since replaced by `docs/awesome/data/` | Card bodies for categories 02–09, deduplicated inside a page. |
+| `build_shell_deep.py` | `docs/awesome-01-shell.html`, since replaced by `docs/awesome/data/shell.json` | Category 01, every unique link from the shell lists. |
+| `mkawesome.py` | `docs/awesomeIndex.html` | `GROUPS` in this file is the subject order the other two read. |
+| `build_tools.py` | `docs/awesome-tools-*.html` | One page per subject, split past ~2,500 tools. |
+| `build_awesome_story.py` | `docs/awesome_story.html` | The one-line story; superseded by the part files under `docs/story/`. |
+| `story_split.py` | the numbered parts and menu of the story | The first split, before the parts became fetched JSON. |
+| `commit_drive.py` | `tmp/commit_answers.txt` | Answers for `commitit.sh`, one per changed file. Commits nothing; resolves the repository root from its own path. |
+| `extract-units.py`, `extract-sections.py`, `verify-pt.py` | `tmp/pythonCert.*.json` | Unit and section extraction for `docs/pythonCert.html`, and the Portuguese-run check. |
+| `bilingual/extract.py`, `bilingual/verify.py` | `tmp/<slug>.units.json`, `tmp/<slug>.pt.json` | Same job for any bilingual article by slug: `python3 …/bilingual/extract.py <slug>`. |
+
+The catalogue builders — animals, birds, fishes, insects, plants, electronics and
+`extract_tools.py`, whose `tmp/tools.json` is the input above — live in
+`../catalogue-data/builders/`, next to the data they write.
 
 ## Verify before saying it is done
 
