@@ -1,32 +1,36 @@
 ---
 name: living-panel
-description: Keep the fixed living card on every page of Monkey Blog — one photograph of a being from the bird, animal, fish or insect catalogues and the sentence "this (being) likes to use (tool) and loves (component) while doing some diet with (plant)", pinned to the left edge of the window at mid height with a fresh set on every load. Use when the card must be added, removed, restyled, reshuffled, or checked against links a page already carries.
+description: Keep the fixed living card on every page of Monkey Blog — one photograph of a being from the bird, animal, fish or insect catalogues and the sentence "this (being) likes to use (tool) and loves (component) while doing some diet with (plant) at (city)", pinned to the left edge of the window at mid height with a fresh set on every load. Use when the card must be added, removed, restyled, reshuffled, or checked against links a page already carries.
 ---
 
-# The living card — one being, one tool, one part, one plant, every page
+# The living card — one being, one tool, one part, one plant, one city, every page
 
 Every page under `docs/` except `index.html` carries one card:
 
 ```html
-<aside class="living-panel" id="living-panel" aria-label="A living being, a tool, a component and a plant">
+<aside class="living-panel" id="living-panel" aria-label="A living being, a tool, a component, a plant and a city">
   <img src="https://upload.wikimedia.org/…/250px-….jpg" alt="Golden hamster"
        width="152" height="90" loading="lazy" decoding="async">
   <p>this <a href="animalsIndex.html#order-rodentia" title="Cricetidae · Rodentia">Golden hamster</a>
   likes to use <a href="awesomeIndex.html#cat-dotnet" title="Stripe.Net · .NET libraries, tools and frameworks">Stripe.Net</a>
   and loves <a href="electronicsIndex.html#cat-assembly" title="Soldering and wiring · Boards, packaging and wiring">Desoldering</a>
-  while doing some diet with <a href="plantsIndex.html#order-arecales" title="Arecaceae · Arecales">Coconut</a>.</p>
+  while doing some diet with <a href="plantsIndex.html#order-arecales" title="Arecaceae · Arecales">Coconut</a>
+  at <a href="worldIndex.html#cat-tm" title="Turkmenistan · Asia">Ashgabat</a>.</p>
 </aside>
 ```
 
 The sentence is the picture and that line — nothing more, and the order is fixed:
 
-> this **(being)** likes to use **(tool)** and loves **(component)** while doing some diet with **(plant)**.
+> this **(being)** likes to use **(tool)** and loves **(component)** while doing some diet with **(plant)** at **(city)**.
 
 Each name links to the shelf that holds it: the being to its order inside one of the four
 kingdom catalogues, the tool to the Awesome Index drawer, the component to its category
-drawer in the electronics catalogue, the plant to its order in the plant catalogue. The
-`title` on a component or a plant says what family and order it belongs to, so a bare
-`Desoldering` or a Latin binomial still reads as something placed.
+drawer in the electronics catalogue, the plant to its order in the plant catalogue, and
+the city to its country shelf in the world catalogue. The `title` on a component, a plant
+or a city says what family, order or country it belongs to, so a bare `Desoldering`, a
+Latin binomial or `Ashgabat` still reads as something placed. A city is always the most
+populous place of its country whose name fits and needs no disambiguating suffix, so the
+sentence never ends in `Lisbon · Maine`.
 
 ## Where it sits
 
@@ -41,11 +45,11 @@ print.
 
 ## The set changes on every load
 
-The markup holds one being, one tool, one component and one plant so the card still reads
-with scripts off. `docs/living-panel.js` (**177 KB**, one same-origin request, holding
-1,089 beings, 3,119 tools, 304 components and 265 plants) replaces that set with a fresh
-random one each time the page is loaded, skipping any link the page already carries and
-any target already used inside the card. The script tag is `defer` and sits in `<head>`;
+The markup holds one being, one tool, one component, one plant and one city so the card
+still reads with scripts off. `docs/living-panel.js` (**182 KB**, one same-origin request,
+holding 1,089 beings, 3,119 tools, 304 components, 265 plants and 246 cities) replaces
+that set with a fresh random one each time the page is loaded, skipping any link the page
+already carries and any target already used inside the card. The script tag is `defer` and sits in `<head>`;
 the card markup stays as the no-script fallback.
 
 The pool is the only real cost of the card: every browser downloads all of it to use four
@@ -58,8 +62,9 @@ script rebuilds the rest:
 | tool | name, drawer key | `awesomeIndex.html#cat-<key>` |
 | component | name, category key | `electronicsIndex.html#cat-<key>` |
 | plant | name, order key | `plantsIndex.html#order-<key>` |
+| city | name, country key | `worldIndex.html#cat-<key>` |
 
-That is what keeps four thousand entries at 177 KB instead of 403 KB. The no-script card
+That is what keeps five thousand entries at 182 KB instead of 403 KB. The no-script card
 in the markup still carries the full `title` captions; the script does not, because it
 would be the largest thing in the file and reads as tooltip noise.
 
@@ -69,10 +74,11 @@ would be the largest thing in the file and reads as tooltip noise.
   `living-link` footer paragraph, the `living-top` aside and its style, the `living-box`
   strip, and any previous card and script of its own — so a second run changes nothing.
 - **No repeated links.** `page_hygiene.py` fails a page that repeats a target, so each of
-  the four links goes to a shelf anchor rather than a page: `#order-<key>` for being and
-  plant, `#cat-<key>` for tool and component. The four must also differ from each other —
-  a being and a plant from the same order would otherwise collide. `check_panel_links.py`
-  verifies both, across the whole site; it must report zero.
+  the five links goes to a shelf anchor rather than a page: `#order-<key>` for being and
+  plant, `#cat-<key>` for tool, component and city. The five must also differ from each
+  other — a being and a plant from the same order would otherwise collide, and two cities
+  of one country share their `#cat-<key>`. `check_panel_links.py` verifies both, across the
+  whole site; it must report zero.
 - **The photograph is 250px.** The catalogue keeps a 500px file; Wikimedia serves only
   its listed widths and answers 400 for any other, so 250 is used (26 KB instead of
   96 KB). The host is `upload.wikimedia.org`, and the generator adds it to `img-src` on
@@ -102,7 +108,7 @@ After either generator, rebuild the API and audit the site:
 `python3 .agents/skills/blog-ops/build_api.py` then
 `python3 .agents/skills/blog-ops/check_site.py` (expect `0 failures`).
 
-## Reading the four pools
+## Reading the five pools
 
 | Column | Source | Rule |
 | --- | --- | --- |
@@ -110,9 +116,10 @@ After either generator, rebuild the API and audit the site:
 | tool | `docs/awesome/data/`, one per list | The list's own name when it is something you code with (`Bash`, `Go`, `Docker`), otherwise one short real entry from inside it, chosen by a hash of the list. One category is drawn first, then a tool inside it. |
 | component | `docs/electronics/data/`, every item | Name between 3 and 24 characters, linked to its category drawer. |
 | plant | `docs/plants/data/`, every species | Name of 28 characters or less, linked to its order. The name is the catalogue's `n`, so it is a binomial for most species and a common name for those the data has one for. |
+| city | `docs/world/data/`, one per country | The most populous place of the country whose name is 22 characters or less and carries no `·` suffix, linked to that country's shelf. 246 countries, so 246 cities. |
 
-The being keeps the photograph; the other three are words, which is what keeps the pool
-under half a megabyte for four thousand entries.
+The being keeps the photograph; the other four are words, which is what keeps the pool
+under a quarter of a megabyte for five thousand entries.
 
 If a shelf file stops being JSON, `awesomeIndex.html` cannot paint and this card loses its
 tools: restore it with `.agents/skills/blog-ops/restore_awesome_data.py --apply` rather
