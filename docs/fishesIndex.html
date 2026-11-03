@@ -198,13 +198,6 @@ summary::before{content:""}}
   <p class="note"><b>Every kingdom is here.</b> Not only fishes: aquatic plants, seaweeds, plankton, protists, cyanobacteria, water fungi, sponges, worms and water insects share the catalogue, because a habitat is not a taxonomic rank.</p>
   <p class="statline" id="statline">Opening the catalogue…</p>
 
-  <div class="ways" id="ways">
-    <p class="way"><span class="k">Group</span><span id="facet-group"></span></p>
-    <p class="way"><span class="k">Water</span><span id="facet-salinity"></span></p>
-    <p class="way"><span class="k">Zone</span><span id="facet-zone"></span></p>
-    <p class="way"><span class="k">Where in the world</span><span id="facet-region"></span></p>
-  </div>
-  <p class="out" id="out">Pick a word above to see only the organisms it describes.</p>
 
   <noscript><p class="fail">The catalogue is drawn from JSON, so it needs JavaScript. Every organism is also one click away at Wikipedia.</p></noscript>
   <form class="search" id="search-form" role="search" autocomplete="off">
@@ -214,7 +207,6 @@ summary::before{content:""}}
   </form>
   <div id="search-hits"></div>
   <div id="catalogue"></div>
-  <div id="matches"></div>
 </main>
 <footer>
   <p>Photographs, introductions, measurements and recordings come from <a href="https://en.wikipedia.org/">Wikipedia</a>, its media library and Wikidata, fetched through the public APIs when this catalogue was compiled; each card links back to the article and the file it uses. Group and zone are the catalogue's own sorting, not a claim about phylogeny.</p>
@@ -226,12 +218,9 @@ summary::before{content:""}}
 
   var DIR = "fishes/data/";
   var root = document.getElementById("catalogue");
-  var matches = document.getElementById("matches");
   var statline = document.getElementById("statline");
-  var out = document.getElementById("out");
   var cache = new Map();
   var groups = [];
-  var facets = {};
   var all = null;
   var searchForm = document.getElementById("search-form");
   var searchBox = document.getElementById("search-box");
@@ -260,7 +249,6 @@ summary::before{content:""}}
           .filter(Boolean).join(" ")).indexOf(query) !== -1;
       });
       searchHits.textContent = "";
-      matches.textContent = "";
       root.hidden = true;
       if (!found.length) {
         searchNote.textContent = "no entry matches “" + typed + "”";
@@ -282,7 +270,6 @@ summary::before{content:""}}
   });
 
   searchForm.addEventListener("submit", function (event) { event.preventDefault(); });
-  var active = null;
 
   var GROUP = {fish: "fish", shark: "shark", ray: "ray", mammal: "water mammal",
     cephalopod: "cephalopod", crustacean: "crustacean", jellyfish: "jellyfish",
@@ -480,90 +467,6 @@ summary::before{content:""}}
     });
   }
 
-  function matchesOf(kind, value) {
-    return all.filter(function (being) {
-      if (kind === "group") return being.grp === value;
-      if (kind === "salinity") return being.w === value;
-      var field = kind === "zone" ? being.z : being.r;
-      return (field || []).indexOf(value) !== -1;
-    });
-  }
-
-  function chips(kind, container) {
-    var bucket = facets[kind] || {};
-    var keys = Object.keys(bucket);
-    if (kind === "group") {
-      keys.sort(function (a, b) {
-        return Object.keys(GROUP).indexOf(a) - Object.keys(GROUP).indexOf(b);
-      });
-    } else if (kind === "salinity") {
-      keys.sort(function (a, b) { return Object.keys(SALINITY).indexOf(a) - Object.keys(SALINITY).indexOf(b); });
-    } else {
-      keys.sort(function (a, b) {
-        if (bucket[b] !== bucket[a]) return bucket[b] - bucket[a];
-        return word(kind, a).localeCompare(word(kind, b));
-      });
-    }
-    keys.forEach(function (value) {
-      var button = el("button", "chip");
-      button.type = "button";
-      button.setAttribute("aria-pressed", "false");
-      button.appendChild(document.createTextNode(word(kind, value)));
-      button.appendChild(el("b", null, num(bucket[value])));
-      button.addEventListener("click", function () { choose(kind, value, button); });
-      container.appendChild(button);
-      container.appendChild(document.createTextNode(" "));
-    });
-  }
-
-  function choose(kind, value, button) {
-    if (active && active.kind === kind && active.value === value) {
-      reset();
-      return;
-    }
-    active = { kind: kind, value: value };
-    Array.prototype.forEach.call(document.querySelectorAll("button.chip"), function (chip) {
-      chip.setAttribute("aria-pressed", "false");
-    });
-    button.setAttribute("aria-pressed", "true");
-    out.textContent = "collecting the organisms that match …";
-    matches.innerHTML = "";
-    loadEvery().then(function () {
-      var found = matchesOf(kind, value);
-      root.hidden = true;
-      matches.innerHTML = "";
-      var head = el("p", "statline");
-      head.appendChild(el("b", null, count(found.length, "organism", "organisms")));
-      head.appendChild(document.createTextNode(" matching “" + word(kind, value) + "”."));
-      matches.appendChild(head);
-      if (!found.length) {
-        matches.appendChild(el("p", "fail", "Nothing in the catalogue matches that word."));
-        return;
-      }
-      found.sort(function (a, b) { return a.n.localeCompare(b.n); });
-      found.forEach(function (being) { matches.appendChild(card(being)); });
-    }).catch(function (err) {
-      matches.appendChild(el("p", "fail", "Could not load the catalogue (" + err.message + ")."));
-    });
-  }
-
-  function reset() {
-    active = null;
-    Array.prototype.forEach.call(document.querySelectorAll("button.chip"), function (chip) {
-      chip.setAttribute("aria-pressed", "false");
-    });
-    matches.innerHTML = "";
-    root.hidden = false;
-    out.textContent = "Pick a word above to see only the organisms it describes.";
-  }
-
-  function clearButton() {
-    var button = el("button", "chip clear", "show all");
-    button.type = "button";
-    button.addEventListener("click", reset);
-    return button;
-  }
-
   fetch(DIR + "index.json", { credentials: "same-origin" })
     .then(function (res) {
       if (!res.ok) throw new Error(res.status + " " + res.statusText);
@@ -571,7 +474,6 @@ summary::before{content:""}}
     })
     .then(function (data) {
       groups = data.sections;
-      facets = data.facets || {};
       statline.innerHTML = "";
       statline.appendChild(el("b", null, num(data.beings)));
       statline.appendChild(document.createTextNode(" organisms · "));
@@ -585,11 +487,6 @@ summary::before{content:""}}
       statline.appendChild(document.createTextNode(" photographs · "));
       statline.appendChild(el("b", null, num(data.songs)));
       statline.appendChild(document.createTextNode(" recordings"));
-
-      ["group", "salinity", "zone", "region"].forEach(function (kind) {
-        chips(kind, document.getElementById("facet-" + kind));
-      });
-      document.getElementById("facet-group").appendChild(clearButton());
 
       var frag = document.createDocumentFragment();
       groups.forEach(function (group) { frag.appendChild(orderBlock(group)); });
