@@ -187,7 +187,7 @@ summary::before{content:""}.place .pop{color:#555}}
   <p class="kicker">World · countries, their regions, their places</p>
   <h1>World Index</h1>
   <p class="lede">Every country on Earth in one list, each opening into its regions and each region into its towns. A place is here because people live in it, not because a guide book liked it: five hundred inhabitants is the only door. The order inside a country is population, so the largest city is always the first line.</p>
-  <p class="note"><b>What a place means here.</b> The name, the region, the population and the page behind it come from the GeoNames dump, which records every populated place its contributors have found. A city of ten million and a village of five hundred sit in the same shelf, told apart only by the word beside them and the number on the right. A missing village means the dump has not reached it, not that nobody lives there.</p>
+  <p class="note"><b>What a place means here.</b> The name, the region and the population come from the GeoNames dump, which records every populated place its contributors have found; the page behind each name comes from Wikipedia. A city of ten million and a village of five hundred sit in the same shelf, told apart only by the word beside them and the number on the right. A missing village means the dump has not reached it, not that nobody lives there.</p>
   <p class="statline" id="statline">Opening the catalogue…</p>
   <noscript><p class="fail">The catalogue is drawn from JSON, so it needs JavaScript. Every country file is still a plain URL under world/data/.</p></noscript>
   <section class="finder" aria-labelledby="finder-title">
@@ -202,7 +202,7 @@ summary::before{content:""}.place .pop{color:#555}}
   <div id="catalogue"></div>
 </main>
 <footer>
-  <p>Names, regions and populations come from the <a href="https://www.geonames.org/">GeoNames</a> dump, published under CC BY 4.0; the shelves and their order are this catalogue's own. Each country's photograph and introduction, and the article each place links to, come from <a href="https://en.wikipedia.org/">Wikipedia</a> and <a href="https://commons.wikimedia.org/">Wikimedia Commons</a>; a place with no article of its own still links to its GeoNames record. Places below five hundred people are not in the dump this page reads.</p>
+  <p>Names, regions and populations come from the <a href="https://www.geonames.org/">GeoNames</a> dump, published under CC BY 4.0; the shelves and their order are this catalogue's own. Each country's photograph and introduction, and the article each place links to, come from <a href="https://en.wikipedia.org/">Wikipedia</a> and <a href="https://commons.wikimedia.org/">Wikimedia Commons</a>; a place with no article of its own opens a Wikipedia search for it, so every name on this page leads there. Places below five hundred people are not in the dump this page reads.</p>
   <p>The same habit of shelving in <a href="danceIndex.html">movement</a>, in <a href="animalsIndex.html">life</a> and in <a href="electronicsIndex.html">matter</a>.</p>
 </footer>
 <script>
@@ -272,7 +272,7 @@ summary::before{content:""}.place .pop{color:#555}}
   function draw(row) {
     var line = el("p", "hit");
     var name = el("a", null, row[0]);
-    name.href = "https://www.geonames.org/" + row[4];
+    name.href = wikipedia(row[0], row[2], countryOf.get(row[1]));
     name.target = "_blank";
     name.rel = "noopener noreferrer";
     line.appendChild(name);
@@ -319,20 +319,22 @@ summary::before{content:""}.place .pop{color:#555}}
     finderTimer = setTimeout(runFinder, 140);
   });
 
-  function place(item) {
+  function wikipedia(name, region, country) {
+    var terms = [name];
+    if (region && region !== name) terms.push(region);
+    if (country) terms.push(country);
+    return "https://en.wikipedia.org/w/index.php?search=" + encodeURIComponent(terms.join(" "));
+  }
+
+  function place(item, part, country) {
     var row = el("p", "place");
-    var href = item.w || item.u;
-    if (href) {
-      row.appendChild(link(href, item.n));
-    } else {
-      row.appendChild(el("span", null, item.n));
-    }
+    row.appendChild(link(item.w || wikipedia(item.n, part.name, country), item.n));
     if (item.t) row.appendChild(el("span", "kind", item.t));
     if (item.p) row.appendChild(el("span", "pop", num(item.p) + " people"));
     return row;
   }
 
-  function group(part, openNow) {
+  function group(part, openNow, country) {
     var box = el("details", "group");
     var head = el("summary");
     head.appendChild(document.createTextNode(part.name));
@@ -346,7 +348,7 @@ summary::before{content:""}.place .pop{color:#555}}
       if (painted) return;
       painted = true;
       var frag = document.createDocumentFragment();
-      part.items.forEach(function (item) { frag.appendChild(place(item)); });
+      part.items.forEach(function (item) { frag.appendChild(place(item, part, country)); });
       body.appendChild(frag);
     }
 
@@ -396,7 +398,7 @@ summary::before{content:""}.place .pop{color:#555}}
     if (card) body.appendChild(card);
     var frag = document.createDocumentFragment();
     data.groups.forEach(function (part, index) {
-      frag.appendChild(group(part, index === 0));
+      frag.appendChild(group(part, index === 0, data.title));
     });
     body.appendChild(frag);
     body.dataset.painted = "1";
