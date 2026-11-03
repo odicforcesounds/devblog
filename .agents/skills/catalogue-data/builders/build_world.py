@@ -11,6 +11,7 @@ Writes docs/world/data/index.json and one file per country. Re-runnable.
 import json
 import os
 import sys
+import unicodedata
 import urllib.request
 import zipfile
 
@@ -144,10 +145,17 @@ def dedupe(entries):
     return entries
 
 
+def fold(text):
+    """The letters a search box can type: no accents, no case."""
+    decomposed = unicodedata.normalize("NFKD", text)
+    return "".join(ch for ch in decomposed if not unicodedata.combining(ch)).lower()
+
+
 def main():
     countries = load_countries()
     regions = load_regions()
     places = load_places(countries, regions)
+    search = {}
 
     os.makedirs(OUT, exist_ok=True)
     for stale in os.listdir(OUT):
@@ -173,6 +181,13 @@ def main():
             continue
         country_name, continent = countries[iso]
         entries = dedupe(sorted(entries, key=lambda e: -e["p"]))
+
+        for entry in entries:
+            initial = fold(entry["n"])[:1]
+            bucket = initial if "a" <= initial <= "z" else "other"
+            search.setdefault(bucket, []).append(
+                [entry["n"], iso.lower(), entry["r"], entry["p"], int(entry["id"])]
+            )
 
         groups = {}
         for entry in entries:
@@ -230,6 +245,14 @@ def main():
 
         total_places += len(entries)
         total_regions += len(ordered_groups)
+
+    search_dir = os.path.join(OUT, "search")
+    os.makedirs(search_dir, exist_ok=True)
+    buckets = [chr(code) for code in range(ord("a"), ord("z") + 1)] + ["other"]
+    for bucket in buckets:
+        rows = sorted(search.get(bucket, []), key=lambda row: -row[3])
+        with open(os.path.join(search_dir, bucket + ".json"), "w", encoding="utf-8") as handle:
+            json.dump(rows, handle, ensure_ascii=False, separators=(",", ":"))
 
     index = {
         "source": "geonames.org",
