@@ -48,6 +48,35 @@ python3 .agents/skills/catalogue-data/check_catalogue.py --json
 
 Exit code 0 when the data holds, 1 when a file is broken. Read-only.
 
+## Builders — the scripts that write this data
+
+Every shelf under `docs/<catalogue>/data/` was written by a script, not by hand. They live
+in `builders/` beside this file, moved out of the gitignored `tmp/` so a clone still has
+them. **Run them from the repository root** — they open `docs/…` and `tmp/…` by relative
+path, and a builder that fetches (birds, plants) talks to the Wikipedia/Wikimedia API one
+request at a time on purpose.
+
+| Path under `builders/` | Writes | Notes |
+| --- | --- | --- |
+| `build_animals.py` | `docs/animals/data/` | Taxonomy hand-written, photograph/introduction/status fetched. |
+| `animals_repair.py` | the two animals whose common name was a disambiguation page | Patch on top of a finished build. |
+| `build_birds.py` | `docs/birds/data/` | REST summary + media-list for songs and calls; `python3 build_birds.py NAME` rebuilds one order. |
+| `repair_birds.py` | the tail the first build lost to HTTP 429 | Walks the `SPEC` in `build_birds.py`, skips what exists. |
+| `birds_index.py` | `docs/birds/data/index.json` | Recomputes counts and facets from the per-order files. |
+| `build_fishes.py` | `docs/fishes/data/` | Fishes first, then every other water being. |
+| `fishes_repair.py` | four names that resolved to disambiguation pages | |
+| `build_insects.py` | `docs/insects/data/` | Insects, then arachnids, myriapods and kin. |
+| `insects_repair.py` | twelve disambiguation names | |
+| `insects_groups.py` | five group articles swapped for real species | |
+| `build_plants.py` | `docs/plants/data/` | Fetched: photo, intro, binomial, status. Written: order, family, habitat, form. |
+| `plants_edibility.py` | the `edible`/`poisonous` verdict on each plant | Reads the article's own section headings; caches its fetches in `tmp/`. |
+| `plants_fix.py` | a second pass over the verdicts | |
+| `build_electronics.py` | `docs/electronics/data/` | Taxonomy inside the script, text and thumbnails from the Wikipedia API. |
+| `extract_tools.py` | `tmp/tools.json` | Reads the 113 awesome-list READMEs from `tmp/readmes/`; the input the awesome builders in `blog-ops/builders/` consume. |
+
+The awesome shelves are written by `blog-ops/builders/build_awesome_json.py`, because that
+family of scripts also builds the pages; see that skill for the row.
+
 ## Rules
 
 - **Split by category, never by "everything".** `awesome/data/index.json` is 14 MB because
@@ -55,8 +84,9 @@ Exit code 0 when the data holds, 1 when a file is broken. Read-only.
   the model for anything new (see the `page-weight` skill).
 - **The key is an identifier, not a label.** Renaming `key` renames the file and the
   category in `index.json` in the same change, or the reader loses the category.
-- **Never hand-edit a generated file.** `tmp/build_electronics.py` and the animal/plant
-  builders produce these; a manual edit is the next build's input, not its output.
+- **Never hand-edit a generated file.** `builders/build_electronics.py` and the
+  animal/plant builders produce these; a manual edit is the next build's input, not its
+  output.
 - **A duplicate name inside one file is usually a merge accident**, and the second copy is
   the one to drop — it has the shorter description.
 - **URLs are Wikipedia and Wikimedia.** They are read-only references; when one 404s the
