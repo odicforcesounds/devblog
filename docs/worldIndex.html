@@ -89,15 +89,28 @@ padding:11px 2px}
 summary::-webkit-details-marker{display:none}
 summary::before{content:"▸";color:var(--accent);font-size:11px;transition:transform .15s}
 details[open]>summary::before{content:"▾"}
-.cont{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
-color:var(--accent);margin:26px 0 0;padding-bottom:6px}
-.cont:first-child{margin-top:0}
+.cont-block{margin:26px 0 0}
+.cont-block:first-child{margin-top:0}
+.cont-block>.cont{font-family:var(--mono);font-size:11px;letter-spacing:.2em;
+text-transform:uppercase;color:var(--accent);font-weight:600}
+.cont .count{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--muted);
+letter-spacing:0;text-transform:none}
 .cat>.cat-head{font-size:1.18rem;font-weight:650}
 .cat>.cat-head .num{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:400}
 .cat>.cat-head .count{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--muted);
 text-transform:uppercase;letter-spacing:.06em}
 .cat-body{padding:0 0 18px 4px}
 .blurb{margin:0 0 14px;max-width:78ch;color:var(--dim);font-size:14.5px}
+.cat-card{display:grid;grid-template-columns:minmax(0,240px) minmax(0,1fr);gap:16px;
+margin:0 0 14px;padding:2px 0 4px}
+@media (max-width:640px){.cat-card{grid-template-columns:1fr}}
+.shot{margin:0}
+.shot img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid var(--line);
+border-radius:6px;background:var(--panel)}
+.shot figcaption{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px}
+.shot figcaption a{color:var(--muted);border-bottom:1px solid var(--line-2)}
+.prose .d{margin:0 0 8px;color:var(--dim);font-size:14px;max-width:72ch}
+.prose .links{font-family:var(--mono);font-size:11px;margin:0}
 .group{margin-left:6px;border-top:1px dashed var(--line)}
 .group>summary{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
 color:var(--dim)}
@@ -138,8 +151,8 @@ summary::before{content:""}.place .pop{color:#555}}
 </style>
 <link rel="stylesheet" href="link-colors.css">
   <style id="living-panel-style">
-    .living-panel{position:fixed;top:50%;left:clamp(.7rem,1.6vw,1.2rem);z-index:95;
-      transform:translateY(-50%);width:12.5rem;display:flex;flex-direction:column;
+    .living-panel{position:fixed;top:20px;right:clamp(.7rem,1.6vw,1.2rem);z-index:95;
+      width:12.5rem;display:flex;flex-direction:column;
       align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:center;
       background:rgba(8,12,17,.9);border:1px solid var(--line, rgba(255,255,255,.14));
       border-radius:16px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
@@ -189,7 +202,7 @@ summary::before{content:""}.place .pop{color:#555}}
   <div id="catalogue"></div>
 </main>
 <footer>
-  <p>Names, regions, populations and links come from the <a href="https://www.geonames.org/">GeoNames</a> dump, published under CC BY 4.0; the shelves and their order are this catalogue's own. Places below five hundred people are not in the dump this page reads.</p>
+  <p>Names, regions and populations come from the <a href="https://www.geonames.org/">GeoNames</a> dump, published under CC BY 4.0; the shelves and their order are this catalogue's own. Each country's photograph and introduction, and the article each place links to, come from <a href="https://en.wikipedia.org/">Wikipedia</a> and <a href="https://commons.wikimedia.org/">Wikimedia Commons</a>; a place with no article of its own still links to its GeoNames record. Places below five hundred people are not in the dump this page reads.</p>
   <p>The same habit of shelving in <a href="danceIndex.html">movement</a>, in <a href="animalsIndex.html">life</a> and in <a href="electronicsIndex.html">matter</a>.</p>
 </footer>
 <script>
@@ -308,8 +321,9 @@ summary::before{content:""}.place .pop{color:#555}}
 
   function place(item) {
     var row = el("p", "place");
-    if (item.u && once(item.u)) {
-      row.appendChild(link(item.u, item.n));
+    var href = item.w || item.u;
+    if (href) {
+      row.appendChild(link(href, item.n));
     } else {
       row.appendChild(el("span", null, item.n));
     }
@@ -318,7 +332,7 @@ summary::before{content:""}.place .pop{color:#555}}
     return row;
   }
 
-  function group(part) {
+  function group(part, openNow) {
     var box = el("details", "group");
     var head = el("summary");
     head.appendChild(document.createTextNode(part.name));
@@ -327,20 +341,63 @@ summary::before{content:""}.place .pop{color:#555}}
 
     var body = el("div", "group-body");
     var painted = false;
-    box.addEventListener("toggle", function () {
-      if (!box.open || painted) return;
+
+    function fill() {
+      if (painted) return;
       painted = true;
       var frag = document.createDocumentFragment();
       part.items.forEach(function (item) { frag.appendChild(place(item)); });
       body.appendChild(frag);
+    }
+
+    box.addEventListener("toggle", function () {
+      if (box.open) fill();
     });
     box.appendChild(body);
+    if (openNow) {
+      box.open = true;
+      fill();
+    }
+    return box;
+  }
+
+  function countryCard(data) {
+    if (!data.i && !data.d && !data.u) return null;
+    var box = el("div", "cat-card");
+    if (data.i) {
+      var fig = el("figure", "shot");
+      var img = el("img");
+      img.src = data.i;
+      img.alt = data.title;
+      img.loading = "lazy";
+      img.decoding = "async";
+      fig.appendChild(img);
+      if (data.ic) {
+        var cap = el("figcaption");
+        cap.appendChild(document.createTextNode("photo · "));
+        cap.appendChild(link(data.ic, "file"));
+        fig.appendChild(cap);
+      }
+      box.appendChild(fig);
+    }
+    var prose = el("div", "prose");
+    if (data.d) prose.appendChild(el("p", "d", data.d));
+    if (data.u) {
+      var links = el("p", "links");
+      links.appendChild(link(data.u, "Wikipedia →"));
+      prose.appendChild(links);
+    }
+    box.appendChild(prose);
     return box;
   }
 
   function paint(body, data) {
+    var card = countryCard(data);
+    if (card) body.appendChild(card);
     var frag = document.createDocumentFragment();
-    data.groups.forEach(function (part) { frag.appendChild(group(part)); });
+    data.groups.forEach(function (part, index) {
+      frag.appendChild(group(part, index === 0));
+    });
     body.appendChild(frag);
     body.dataset.painted = "1";
   }
@@ -414,14 +471,26 @@ summary::before{content:""}.place .pop{color:#555}}
 
       data.categories.forEach(function (cat) { countryOf.set(cat.key, cat.title); });
 
+      var totals = {};
+      data.categories.forEach(function (cat) {
+        totals[cat.continent] = (totals[cat.continent] || 0) + 1;
+      });
+
       var frag = document.createDocumentFragment();
       var continent = null;
+      var block = null;
       data.categories.forEach(function (cat) {
         if (cat.continent !== continent) {
           continent = cat.continent;
-          frag.appendChild(el("h2", "cont", continent));
+          block = el("details", "cont-block");
+          var head = el("summary", "cont");
+          head.appendChild(el("span", null, continent));
+          head.appendChild(el("span", "count",
+            count(totals[continent], "country", "countries")));
+          block.appendChild(head);
+          frag.appendChild(block);
         }
-        frag.appendChild(category(cat));
+        block.appendChild(category(cat));
       });
       root.appendChild(frag);
 
@@ -429,6 +498,9 @@ summary::before{content:""}.place .pop{color:#555}}
       if (wanted) {
         var target = document.getElementById("cat-" + wanted);
         if (target) {
+          if (target.parentNode && target.parentNode.className === "cont-block") {
+            target.parentNode.open = true;
+          }
           target.open = true;
           target.scrollIntoView();
         }
