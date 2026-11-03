@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Report pages where the living card repeats a link the page already carries."""
+"""Report pages where the living card repeats a link, on the page or inside itself."""
 
 import glob
 import re
@@ -19,9 +19,12 @@ def main():
         panel = match.group(0)
         rest = source[:match.start()] + source[match.end():]
         rest_links = set(re.findall(r'href="([^"]+)"', rest))
-        for href in re.findall(r'href="([^"]+)"', panel):
+        panel_links = re.findall(r'href="([^"]+)"', panel)
+        for href in panel_links:
             if href in rest_links:
                 offenders.append((path, href))
+        for href in sorted({h for h in panel_links if panel_links.count(h) > 1}):
+            offenders.append((path, href + " (twice inside the card)"))
     print("pages checked: %d | repeated panel links: %d" % (len(pages), len(offenders)))
     for path, href in offenders:
         print("  %-40s %s" % (path, href))
