@@ -64,6 +64,28 @@ def body_text(source):
     return clean_text(body)
 
 
+def split_text(name):
+    """Text a page keeps in the data files it fetches instead of in its own body."""
+    parts = []
+    if name == "awesome_story.html":
+        for path in sorted(glob.glob(os.path.join(DOCS, "story", "part-*.json"))):
+            with open(path, encoding="utf-8") as fh:
+                parts.append(json.load(fh).get("html", ""))
+    elif name == "gameReference.html":
+        index_path = os.path.join(DOCS, "gameReference", "index.json")
+        if os.path.exists(index_path):
+            with open(index_path, encoding="utf-8") as fh:
+                index = json.load(fh)
+            for rel in index.get("files", []):
+                shelf = os.path.join(DOCS, "gameReference", rel)
+                if os.path.exists(shelf):
+                    with open(shelf, encoding="utf-8") as fh:
+                        parts.extend(json.load(fh).get("levels", []))
+    if not parts:
+        return ""
+    return clean_text(" ".join(parts))
+
+
 def title_of(source):
     m = re.search(r"<title[^>]*>(.*?)</title>", source, re.S | re.I)
     return clean_text(m.group(1)) if m else ""
@@ -194,6 +216,9 @@ def main():
             text = meta(source, "description")
         else:
             text = body_text(source)
+            fetched = split_text(name)
+            if fetched:
+                text = (text + " " + fetched).strip()
 
         truncated = len(text) > TEXT_CAP
         if truncated:
