@@ -27,7 +27,8 @@ in the wrong directory is either published by accident, lost by accident, or bot
 | `tools/` | Local scan scripts (`bg_scan.py`). | **No — gitignored** |
 | `tmp/` | One-off scripts, `.orig.html` snapshots, harnesses, experiments. | **No — gitignored** |
 | `free/` | Exported chat logs. | **No — gitignored** |
-| `.agents/skills/` | The skills themselves, each `<name>/SKILL.md` plus its scripts. | Yes || `.github/` | Repository automation. | Yes |
+| `.agents/skills/` | The skills themselves, each `<name>/SKILL.md` plus its scripts. | Yes |
+| `.agents/skills/*/builders/` | The scripts that produced catalogue data and pages in bulk (`catalogue-data/builders/`, `blog-ops/builders/`), moved out of `tmp/` so a clone keeps them. | Yes || `.github/` | Repository automation. | Yes |
 | root | `README.md`, `START-HERE.md`, `AGENTS.md`, `.gitignore`, `pushit.sh`, `update.sh`. Nothing else. | Yes |
 
 The whole non-HTML set at `docs/` root is: `api.js`, `article-lang.js`, `gameAccount.js`,
