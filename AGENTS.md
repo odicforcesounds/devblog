@@ -58,14 +58,17 @@ matches the task before editing:
 
 Every page under `docs/` except `index.html` carries one card fixed to the left
 edge of the window at mid height — the place the social dock takes on the front
-page — holding the photograph of one living being from the five catalogues and
-saying that it likes to use one tool from the Awesome Index.
+page — holding the photograph of one living being from the four living catalogues
+and saying which tool it likes, which electronic part it loves and which plant it
+is on a diet with.
 
 ```html
-<aside class="living-panel" id="living-panel" aria-label="A living being and a tool">
-  <img src="…/250px-…jpg" alt="European robin" width="152" height="90" loading="lazy" decoding="async">
-  <p>this <a href="birdsIndex.html#order-passeriformes">European robin</a> likes to use
-  <a href="awesomeIndex.html#cat-shell" title="Bash · Shell, terminal and one-liners">Bash</a>.</p>
+<aside class="living-panel" id="living-panel" aria-label="A living being, a tool, a component and a plant">
+  <img src="…/250px-…jpg" alt="Golden hamster" width="152" height="90" loading="lazy" decoding="async">
+  <p>this <a href="animalsIndex.html#order-rodentia" title="Cricetidae · Rodentia">Golden hamster</a>
+  likes to use <a href="awesomeIndex.html#cat-dotnet" title="Stripe.Net · .NET libraries, tools and frameworks">Stripe.Net</a>
+  and loves <a href="electronicsIndex.html#cat-assembly" title="Soldering and wiring · Boards, packaging and wiring">Desoldering</a>
+  while doing some diet with <a href="plantsIndex.html#order-arecales" title="Arecaceae · Arecales">Coconut</a>.</p>
 </aside>
 ```
 
@@ -74,17 +77,20 @@ saying that it likes to use one tool from the Awesome Index.
   of the body, because a transformed ancestor would trap it.
 - Nothing is pushed around to make room. The card lives in the left margin, outside
   the reading column, and shrinks in steps as the window narrows.
-- The sentence is the picture and `this <being> likes to use <tool>.` — nothing else.
-  The being links to its order in its catalogue, the tool to its category drawer in
-  `awesomeIndex.html`. Both targets must be ones the page does not already carry.
+- The sentence is the picture and
+  `this <being> likes to use <tool> and loves <component> while doing some diet with <plant>.`
+  — nothing else, in that order. The being links to its order in its catalogue, the tool
+  to its drawer in `awesomeIndex.html`, the component to its category drawer in
+  `electronicsIndex.html`, the plant to its order in `plantsIndex.html`. All four targets
+  must be ones the page does not already carry, and must differ from each other.
 - The photograph is the catalogue's 500px file rewritten to 250px; Wikimedia serves
   only its listed widths and answers 400 for any other.
 - `index.html` carries no card: the social dock already takes that corner of the
   window. The generator leaves the front page alone.
-- The pair written into the page is the no-script fallback. `docs/living-panel.js`
-  (`.agents/skills/living-panel/build_living.py`) holds every being and tool and
-  replaces the pair with a fresh one on each load, skipping any link the page already
-  carries.
+- The set written into the page is the no-script fallback. `docs/living-panel.js`
+  (`.agents/skills/living-panel/build_living.py`) holds every being, tool, component and
+  plant and replaces the set with a fresh one on each load, skipping any link the page
+  already carries.
 - Generators live with the skill: `.agents/skills/living-panel/living_panel.py`
   (`--dry-run`, `--page`, `--remove`), `build_living.py` and `check_panel_links.py`.
 
