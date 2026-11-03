@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Write docs/living-panel.js — the pool the fixed card draws from on each load.
 
-The markup in every page carries one being, one tool, one component and one plant
-so the card still reads with scripts off. This file gives the browser the whole
+The markup in every page carries one being, one tool, one component, one plant and
+one city so the card still reads with scripts off. This file gives the browser the whole
 pool, and the page script replaces that set with a fresh one every time the page
 is loaded.
 
@@ -42,6 +42,7 @@ JS = """(function () {
   function toolHref(item) { return "awesomeIndex.html#cat-" + item[1]; }
   function partHref(item) { return "electronicsIndex.html#cat-" + item[1]; }
   function plantHref(item) { return "plantsIndex.html#order-" + item[1]; }
+  function cityHref(item) { return "worldIndex.html#cat-" + item[1]; }
 
   function photo(item) {
     var rel = item[3];
@@ -72,6 +73,8 @@ JS = """(function () {
   var part = pick(POOL.e, partHref, 12);
   used[partHref(part)] = true;
   var plant = pick(POOL.p, plantHref, 12);
+  used[plantHref(plant)] = true;
+  var city = pick(POOL.c, cityHref, 12);
 
   line.textContent = "";
   line.appendChild(document.createTextNode("this "));
@@ -82,6 +85,8 @@ JS = """(function () {
   line.appendChild(anchor(part, partHref));
   line.appendChild(document.createTextNode(" while doing some diet with "));
   line.appendChild(anchor(plant, plantHref));
+  line.appendChild(document.createTextNode(" at "));
+  line.appendChild(anchor(city, cityHref));
   line.appendChild(document.createTextNode("."));
 
   if (image) {
@@ -136,15 +141,16 @@ def main():
     tools = column(lp.tools(), lambda t: [t["name"], key_of(t["href"], "#cat-")])
     parts = column(lp.components(), lambda c: [c["name"], key_of(c["href"], "#cat-")])
     plants = column(lp.plants(), lambda p: [p["name"], key_of(p["href"], "#order-")])
-    if not beings or not tools or not parts or not plants:
+    cities = column(lp.cities(), lambda c: [c["name"], key_of(c["href"], "#cat-")])
+    if not beings or not tools or not parts or not plants or not cities:
         print("a pool came back empty", file=sys.stderr)
         return 1
-    payload = json.dumps({"b": beings, "t": tools, "e": parts, "p": plants},
+    payload = json.dumps({"b": beings, "t": tools, "e": parts, "p": plants, "c": cities},
                          separators=(",", ":"), ensure_ascii=False)
     with open(OUT, "w", encoding="utf-8") as handle:
         handle.write(JS % payload)
-    print("%s: %d beings, %d tools, %d components, %d plants, %d KB"
-          % (OUT, len(beings), len(tools), len(parts), len(plants),
+    print("%s: %d beings, %d tools, %d components, %d plants, %d cities, %d KB"
+          % (OUT, len(beings), len(tools), len(parts), len(plants), len(cities),
              os.path.getsize(OUT) // 1024))
     return 0
 
