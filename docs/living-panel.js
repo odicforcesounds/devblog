@@ -18,11 +18,12 @@
     used[links[i].getAttribute("href")] = true;
   }
 
-  function beingHref(item) { return PAGES[item[1]] + "#order-" + item[2]; }
-  function toolHref(item) { return "awesomeIndex.html#cat-" + item[1]; }
-  function partHref(item) { return "electronicsIndex.html#cat-" + item[1]; }
-  function plantHref(item) { return "plantsIndex.html#order-" + item[1]; }
-  function cityHref(item) { return "worldIndex.html#cat-" + item[1]; }
+  function asked(name) { return "?q=" + encodeURIComponent(name); }
+  function beingHref(item) { return PAGES[item[1]] + asked(item[0]) + "#order-" + item[2]; }
+  function toolHref(item) { return "awesomeIndex.html" + asked(item[0]) + "#cat-" + item[1]; }
+  function partHref(item) { return "electronicsIndex.html" + asked(item[0]) + "#cat-" + item[1]; }
+  function plantHref(item) { return "plantsIndex.html" + asked(item[0]) + "#order-" + item[1]; }
+  function cityHref(item) { return "worldIndex.html" + asked(item[0]) + "#cat-" + item[1]; }
 
   function photo(item) {
     var rel = item[3];
