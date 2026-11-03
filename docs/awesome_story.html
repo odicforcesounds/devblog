@@ -296,6 +296,7 @@
     function show(index) {
       index = Math.max(0, Math.min(total - 1, index));
       current = index;
+      try { window.localStorage.setItem("story.part", String(index)); } catch (error) {}
       buttons.forEach(function (button, place) {
         button.setAttribute("aria-current", place === index ? "true" : "false");
       });
@@ -328,7 +329,9 @@
     });
     fit();
     var jump = /#part-(\d+)/.exec(location.hash);
-    show(jump ? parseInt(jump[1], 10) - 1 : 0);
+    var saved = 0;
+    try { saved = parseInt(window.localStorage.getItem("story.part"), 10) || 0; } catch (error) { saved = 0; }
+    show(jump ? parseInt(jump[1], 10) - 1 : saved);
     fit();
   })();
   </script>
