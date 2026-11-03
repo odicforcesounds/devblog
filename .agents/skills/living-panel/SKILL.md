@@ -1,6 +1,6 @@
 ---
 name: living-panel
-description: Keep the fixed living card on every page of Monkey Blog — one photograph of a being from the bird, animal, fish or insect catalogues and the sentence "this (being) likes to use (tool) and loves (component) while doing some diet with (plant) at (city)", pinned to the left edge of the window at mid height with a fresh set on every load. Use when the card must be added, removed, restyled, reshuffled, or checked against links a page already carries.
+description: Keep the fixed living card on every page of Monkey Blog — one photograph of a being from the bird, animal, fish or insect catalogues and the sentence "this (being) likes to use (tool) and loves (component) while doing some diet with (plant) at (city)", pinned to the top right corner of the window with a fresh set on every load. Use when the card must be added, removed, restyled, reshuffled, or checked against links a page already carries.
 ---
 
 # The living card — one being, one tool, one part, one plant, one city, every page
@@ -34,14 +34,13 @@ sentence never ends in `Lisbon · Maine`.
 
 ## Where it sits
 
-`position: fixed; top: 50%; left: clamp(.7rem, 1.6vw, 1.2rem); transform: translateY(-50%)`
-— the left edge at mid height, the corner the social dock takes on the front page. The
-card is the first child of `<body>`; a fixed element needs a direct child of the body,
-because a transformed ancestor would trap it. Nothing on the page is moved to make room:
-the card lives in the left margin and shrinks at 1200px, 900px and 640px. It is hidden in
-print.
+`position: fixed; top: 20px; right: clamp(.7rem, 1.6vw, 1.2rem)` — the top right of the
+window, 20px down, floating above the top bar. The card is the first child of `<body>`; a
+fixed element needs a direct child of the body, because a transformed ancestor would trap
+it. Nothing on the page is moved to make room: the card lives in the right margin and
+shrinks at 1200px, 900px and 640px. It is hidden in print.
 
-`index.html` carries no card: the social dock already holds that corner.
+`index.html` carries no card: the social dock already holds a corner of the window.
 
 ## The set changes on every load
 
