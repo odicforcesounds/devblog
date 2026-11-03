@@ -58,6 +58,41 @@ DOCS = ROOT / "docs"
 Data and templates that travel with those scripts: `docs/tools/feeds.json`,
 `docs/tools/template.html`, `docs/tools/shell.html`.
 
+## Builders — the one-shot scripts, now tracked
+
+These came out of the gitignored `tmp/` so that a clone carries them. They are not audits:
+each one produced data or pages once, and re-running it rebuilds that output. **Run from the
+repository root**, because they open `docs/…` and `tmp/…` by relative path.
+
+| Path | Wrote |
+| --- | --- |
+| `.agents/skills/catalogue-data/builders/build_animals.py` | `docs/animals/data/` |
+| `.agents/skills/catalogue-data/builders/animals_repair.py` | two disambiguation names in the animal data |
+| `.agents/skills/catalogue-data/builders/build_birds.py` | `docs/birds/data/` |
+| `.agents/skills/catalogue-data/builders/repair_birds.py` | the bird species the first build lost to HTTP 429 |
+| `.agents/skills/catalogue-data/builders/birds_index.py` | `docs/birds/data/index.json` counts and facets |
+| `.agents/skills/catalogue-data/builders/build_fishes.py` | `docs/fishes/data/` |
+| `.agents/skills/catalogue-data/builders/fishes_repair.py` | four disambiguation names in the fish data |
+| `.agents/skills/catalogue-data/builders/build_insects.py` | `docs/insects/data/` |
+| `.agents/skills/catalogue-data/builders/insects_repair.py` | twelve disambiguation names in the insect data |
+| `.agents/skills/catalogue-data/builders/insects_groups.py` | five group articles swapped for species |
+| `.agents/skills/catalogue-data/builders/build_plants.py` | `docs/plants/data/` |
+| `.agents/skills/catalogue-data/builders/plants_edibility.py` | the edibility verdict on each plant |
+| `.agents/skills/catalogue-data/builders/plants_fix.py` | second pass over those verdicts |
+| `.agents/skills/catalogue-data/builders/build_electronics.py` | `docs/electronics/data/` |
+| `.agents/skills/catalogue-data/builders/extract_tools.py` | `tmp/tools.json`, the input the awesome builders read |
+| `.agents/skills/blog-ops/builders/build_awesome_json.py` | `docs/awesome/data/` |
+| `.agents/skills/blog-ops/builders/build_deep.py` | the `docs/awesome-0N-*.html` category pages, since replaced by `docs/awesome/data/` |
+| `.agents/skills/blog-ops/builders/build_shell_deep.py` | `docs/awesome-01-shell.html`, since replaced by `docs/awesome/data/shell.json` |
+| `.agents/skills/blog-ops/builders/mkawesome.py` | `docs/awesomeIndex.html` (its `GROUPS` is the subject order) |
+| `.agents/skills/blog-ops/builders/build_tools.py` | `docs/awesome-tools-*.html` |
+| `.agents/skills/blog-ops/builders/build_awesome_story.py` | `docs/awesome_story.html` |
+| `.agents/skills/blog-ops/builders/story_split.py` | the numbered story parts and their menu |
+| `.agents/skills/blog-ops/builders/commit_drive.py` | `tmp/commit_answers.txt`, the answers `commitit.sh` reads |
+| `.agents/skills/blog-ops/builders/extract-units.py`, `extract-sections.py`, `verify-pt.py` | `tmp/pythonCert.*.json` |
+| `.agents/skills/blog-ops/builders/bilingual/extract.py` | `tmp/<slug>.units.json` for any bilingual article |
+| `.agents/skills/blog-ops/builders/bilingual/verify.py` | checks the Portuguese block of that article against `tmp/<slug>.units.json` and `.pt.json` |
+
 ## Served, not run by you
 
 Modules the pages `import`; edit them in place, they ship as-is:
@@ -76,61 +111,38 @@ the pages around them.
 
 ## Local only — gitignored, may not exist on your machine
 
-| Path | Tool |
-| --- | --- |
-| `tools/bg_scan.py` | Scans the archive for descriptions/titles/tags. Pins `os.chdir("/home/om/devblog/docs")`; fix it to resolve the root before reusing. |
+`tools/` is in `.gitignore` and **is not present**: it held a single script,
+`bg_scan.py` — an archive scan for descriptions, titles and tags, pinned to
+`os.chdir("/home/om/devblog/docs")` — and it was pruned. What it fed is now the read-only
+audits in `.agents/skills/` (`seo-indexation`, `a11y`, `page-weight`). A local scanner that
+is not a skill belongs here, never in `docs/`.
 
-## `tmp/` — scratch tools, gitignored
+## `tmp/` — scratch, gitignored
 
-This is where most one-off work lives. `git check-ignore tmp/x.py` confirms it: nothing
-here exists in a clone, nothing here is deployed, and nothing tracked may point at it.
-Listed so a returning task can find its predecessor instead of rebuilding it.
+`git check-ignore tmp/x.py` confirms it: nothing here exists in a clone, nothing here is
+deployed, and nothing tracked may point at it. Since the builders moved to
+`.agents/skills/*/builders/`, the directory holds what those scripts **read and write** —
+inputs, caches, logs — plus the remains of earlier sessions.
 
-**Bilingual editions (one file, `?lang=pt` block)** — each group is an extractor/builder
-plus the Portuguese part files:
+| Path | What it is | Size |
+| --- | --- | --- |
+| `tmp/readmes/` | 114 awesome-list READMEs, the input `extract_tools.py` parses | 9.4 MB |
+| `tmp/tools.json` | every tool those READMEs link, extracted; input of the awesome builders | 5.2 MB |
+| `tmp/index_rescue/` | 26 `docs/awesome/data/` shelves copied out while that tree was rebuilt | 14 MB |
+| `tmp/sections.json` | each list's own table of contents; read by `mkawesome.py` and `build_awesome_json.py` | |
+| `tmp/plant_sections.json`, `tmp/plant_texts.json` | cached article sections and text, so `plants_edibility.py` re-runs offline | 4.2 MB |
+| `tmp/pythonCert.{units,units2,pt,pt2…pt5}.json` | unit, section and Portuguese extracts for `docs/pythonCert.html` | |
+| `tmp/git.{units,pt,pt2…pt11}.json` | the same for `docs/git.html` | |
+| `tmp/{animals,birds,fishes,insects,plants}_build.log` | output of the catalogue builders | |
+| `tmp/{animal,fish,plant,story}_script.js`, `tmp/story_test.js`, `tmp/check_awesome_render.js` | page logic extracted for inspection, and the story render check | |
+| `tmp/inject-pt.mjs`, `tmp/reorder-levels.mjs`, `tmp/scaffold-bilingual.mjs`, `tmp/validate-game.mjs`, `tmp/bl/{extract,scaffold}.mjs` | language splice, level reorder, bilingual page scaffolder, game validator | |
+| `tmp/awesome_story.before.html`, `tmp/oJogoDoOperador.{before,pristine}.html`, `tmp/pythonCert.orig.html` | pre-edit snapshots; each dies once its page is committed | |
+| `tmp/commit_plan.txt`, `tmp/commit_answers.txt`, `tmp/commit_*.log` | the 550-file commit session: plan, script answers, run logs | |
+| `tmp/seo/dates-v2.json` | a `name → date` map from an earlier audit | |
 
-| Page | Paths |
-| --- | --- |
-| `OpenBSDTribute.html` | `tmp/build-openbsd-pt.py`, `tmp/openbsd-pt-block.html`, `tmp/openbsd-check.js` |
-| `FreeBSDReference.html` | `tmp/splice-fbsd.py`, `tmp/fbsd-pt-1.js`, `tmp/fbsd-pt-2.js`, `tmp/fbsd-pt-3.js`, `tmp/fbsd-check.js`, `tmp/fbsd-render.js`, `tmp/FreeBSDReference.before.html` |
-| `DebianSecurity.html` | `tmp/splice-debian.py`, `tmp/debian-pt.html`, `tmp/debian-script.js`, `tmp/debian-check.js`, `tmp/DebianSecurity.before.html` |
-| `SELinuxTutorial.html` | `tmp/splice-selinux.py`, `tmp/selinux-pt.html`, `tmp/selinux-script.js`, `tmp/selinux-check.js` |
-| `KaliLinux.html` | `tmp/kali/{extract.py,build.py,app.js,inline.js,pt-1.json,KaliLinux.en.html}` |
-| `redhatCert.html` | `tmp/rhel/{extract-js.py,build.py,cp-en.json,cp-pt.json,pt-1.json,pt-2.json,pt-3.json,pt-fill.json,domtest/}` |
-| `bashScripting.html` | `tmp/bash/{build.py,engine.js,pt-01.html…pt-10.html}` |
-| Security manual | `tmp/splice-security.py`, `tmp/security-pt-1.html`, `tmp/security-pt-2.html`, `tmp/security-pt-3.html`, `tmp/Security.before.html` |
-| Multiple languages | `tmp/i18n/{assemble.py,assemble2.py,clean.py,clean2.py,aut-*.html,hab-*.html}` |
-| Single-language passes | `tmp/cli-pt.js`, `tmp/go-pt.js`, `tmp/rx-pt.js`, `tmp/tenda-pt.js`, `tmp/tenda-d.js`, `tmp/merge_lang.py`, `tmp/patch_langs.py` |
-
-**Bulk page passes** — each rewrote many pages once, then was superseded by the commit:
-`tmp/batch2.py` … `tmp/batch11.py`, `tmp/convert.py`, `tmp/cleanup_index.py`,
-`tmp/gen_mapquest.py`, `tmp/repair_hab.py`, `tmp/repair_kali.py`,
-`tmp/reorder-levels.py`, `tmp/fix-operador-commas.py`, `tmp/merge.py`,
-`tmp/merge_game.py`, `tmp/add-linux-level.py`, `tmp/add-rust-level.py`,
-`tmp/add-gns3-ccna.py`, `tmp/add_walkthrough.py`.
-
-**Catalogue builders** — `tmp/build_electronics.py` writes `docs/electronics/data/*.json`
-from the Wikipedia API (the taxonomy lives inside it; one run, and the same input produces
-the same files); `tmp/commit_drive.py` builds the per-file answers that drove
-`commitit.sh` through a 550-file session.
-
-**Harnesses and page logic** — jsdom, fake Firebase, inlined module bodies:
-
-| Path | Harness |
-| --- | --- |
-| `tmp/domtest/*.js` | Per-page DOM checks (`check-cli.js`, `check-go.js`, `check-rust.js`, `check-tents.js`, `cases-audit.js`, `lang*.js`). |
-| `tmp/authtest/{test_comments_auth.mjs,test_hydroponics.mjs,node_modules/}` | Comment sign-in and hydroponics switcher, with jsdom installed. |
-| `tmp/home/{test_home.mjs,test_404.mjs,test_debug.mjs,dbg404.mjs,module_check.mjs,page.html}` | `index.html` and `404.html` behaviour. |
-| `tmp/game/{assemble.py,extract.js,engine.js,body.js,rules-*.json,civ,est,pen,tra}` | Builds the lawyer game from the rules data. |
-| `tmp/ga.mjs`, `tmp/ga-check.mjs` | `gameAccount.js` module checks. |
-| `tmp/game.js`, `tmp/game0.js`, `tmp/game1.js`, `tmp/game.inline.js`, `tmp/oJogo.js`, `tmp/operador-tail.html`, `tmp/rebuild-levels.js` | Operator game body/engine splicing. |
-| `tmp/inline.js`, `tmp/index.inline.js`, `tmp/index-mod.mjs`, `tmp/check_lonely.js`, `tmp/rx-logic.js`, `tmp/rx-data.js`, `tmp/test_mapquest.js` | Inlining and per-feature checks. |
-| `tmp/auth/{build_test.py,test.js,page.html}`, `tmp/seo/{apply_desc.py,check_all.js,check_dom.js,describe.py,h1_fix.py,node_modules/}` | Auth page prototype; description/`h1` audit passes. |
-| `tmp/spec/*.json` | Per-article specifications used by the bulk passes. |
-
-**Snapshots and data** — `.before*.html` / `.broken.html` copies for diffing a rewrite
-(`index.before.html`, `oJogoDoOperador.broken.html`, …), plus `tmp/data.json`,
-`tmp/out.txt`, `tmp/__pycache__/`. A snapshot dies once its page is committed.
+`tmp/__pycache__/` appears whenever a builder runs. Nothing is imported from here by
+anything tracked; a missing file means a cache was pruned, and the builder that reads it
+will fetch again.
 
 ## External binaries
 
@@ -162,8 +174,8 @@ matching group above only if it is worth reusing.
 # every tracked path this file names must exist
 git ls-files | grep -E '(^|/)(pushit|update)\.sh$|\.agents/skills/blog-ops/|docs/tools/|docs/(api|article-lang|gameAccount)\.js$'
 
-# the scratch groups above — missing entries just mean tmp/ was pruned
-ls tmp tmp/bash tmp/rhel tmp/kali tmp/domtest tmp/authtest 2>/dev/null
+# the tmp inventory above — a missing entry means the cache was pruned
+ls tmp tmp/bl tmp/readmes tmp/index_rescue tmp/seo 2>/dev/null
 
 # a path named in this skill that no longer resolves (commands and bare names skipped)
 grep -o '`[^`]*\.\(py\|sh\|js\|mjs\)`' .agents/skills/tools-index/SKILL.md | tr -d '`' |
