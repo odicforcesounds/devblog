@@ -415,6 +415,7 @@
         if (correctCount < qcards.length) { return; }
         completed++;
         position++;
+        try { window.localStorage.setItem("exam.position", String(position)); } catch (error) {}
         hud();
         if (position >= total) {
           level.classList.remove("active");
@@ -471,7 +472,19 @@
       perFile = index.perFile;
       files = index.files;
       for (var n = 0; n < total; n++) { order.push(n); }
+      var remembered = null;
+      var saved = 0;
+      try {
+        remembered = JSON.parse(window.localStorage.getItem("exam.order") || "null");
+        saved = parseInt(window.localStorage.getItem("exam.position"), 10) || 0;
+      } catch (error) { remembered = null; saved = 0; }
       shuffle(order);
+      if (remembered && remembered.length === total) {
+        order = remembered;
+      } else {
+        try { window.localStorage.setItem("exam.order", JSON.stringify(order)); } catch (error) {}
+      }
+      position = Math.min(Math.max(saved, 0), total - 1);
       show();
     }).catch(function () {
       var level = container.querySelector(".level");
