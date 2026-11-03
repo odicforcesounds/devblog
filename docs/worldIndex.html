@@ -42,7 +42,7 @@
       "isPartOf": { "@type": "Blog", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/" },
       "articleSection": "Science & Engineering",
       "keywords": "countries, cities, towns, villages, regions, population, geography, geonames",
-      "wordCount": 171,
+      "wordCount": 203,
       "datePublished": "2026-11-03",
       "dateModified": "2026-11-03"
     },
@@ -110,6 +110,24 @@ border-top:1px solid rgba(126,163,196,.07);font-size:14px}
 .place .kind{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
 color:var(--muted)}
 .place .pop{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.finder{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:0 0 22px;
+background:rgba(11,19,27,.6)}
+.finder h2{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+color:var(--accent);margin:0 0 10px}
+.finder-field{display:flex;flex-wrap:wrap;align-items:center;gap:9px;font-size:12.5px;color:var(--muted)}
+.finder-field input{flex:1 1 16rem;min-width:0;background:var(--bg);color:var(--ink);
+border:1px solid var(--line-2);border-radius:999px;padding:.45rem .95rem;font:inherit;font-size:14px}
+.finder-field input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.finder-note{margin:8px 0 0;font-size:12px;color:var(--muted)}
+.hits{margin-top:10px}
+.hit{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin:0;padding:5px 0;
+border-top:1px solid rgba(126,163,196,.07);font-size:14px}
+.hit a{text-decoration:none}
+.hit a:hover,.hit a:focus-visible{text-decoration:underline}
+.hit .where{color:var(--muted);font-size:12.5px}
+.hit .pop{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.hit .shelf{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+border-bottom:1px solid var(--line-2)}
 .loading{margin:8px 0 14px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
 .fail{margin:8px 0 14px;font-size:13.5px;color:var(--warm)}
 footer{max-width:1080px;margin:34px auto 0;padding:18px 20px 64px;border-top:1px solid var(--line);
@@ -159,6 +177,15 @@ summary::before{content:""}.place .pop{color:#555}}
   <p class="note"><b>What a place means here.</b> The name, the region, the population and the page behind it come from the GeoNames dump, which records every populated place its contributors have found. A city of ten million and a village of five hundred sit in the same shelf, told apart only by the word beside them and the number on the right. A missing village means the dump has not reached it, not that nobody lives there.</p>
   <p class="statline" id="statline">Opening the catalogue…</p>
   <noscript><p class="fail">The catalogue is drawn from JSON, so it needs JavaScript. Every country file is still a plain URL under world/data/.</p></noscript>
+  <section class="finder" aria-labelledby="finder-title">
+    <h2 id="finder-title">Find a place</h2>
+    <label class="finder-field">
+      <span>Name</span>
+      <input id="finder" type="search" placeholder="Lisbon, Osaka, Recife…" autocomplete="off" spellcheck="false" aria-describedby="finder-note">
+    </label>
+    <p class="finder-note" id="finder-note">Two letters are enough. The lookup reads one letter-sized shard of the same dump the shelves come from, so a village can be found without opening its country.</p>
+    <div id="finder-results" class="hits" aria-live="polite"></div>
+  </section>
   <div id="catalogue"></div>
 </main>
 <footer>
@@ -202,6 +229,82 @@ summary::before{content:""}.place .pop{color:#555}}
     a.rel = "noopener noreferrer";
     return a;
   }
+
+  var finder = document.getElementById("finder");
+  var hits = document.getElementById("finder-results");
+  var finderNote = document.getElementById("finder-note");
+  var shards = new Map();
+  var countryOf = new Map();
+  var finderTimer = null;
+  var FINDER_DEFAULT = finderNote.textContent;
+
+  function fold(text) {
+    return text.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  }
+
+  function shard(bucket) {
+    if (shards.has(bucket)) return shards.get(bucket);
+    var request = fetch("world/data/search/" + bucket + ".json", { credentials: "same-origin" })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.status + " " + res.statusText);
+        return res.json();
+      })
+      .then(function (rows) {
+        return { rows: rows, folded: rows.map(function (row) { return fold(row[0]); }) };
+      });
+    shards.set(bucket, request);
+    return request;
+  }
+
+  function draw(row) {
+    var line = el("p", "hit");
+    var name = el("a", null, row[0]);
+    name.href = "https://www.geonames.org/" + row[4];
+    name.target = "_blank";
+    name.rel = "noopener noreferrer";
+    line.appendChild(name);
+    line.appendChild(el("span", "where",
+      row[2] + ", " + (countryOf.get(row[1]) || row[1].toUpperCase())));
+    if (row[3]) line.appendChild(el("span", "pop", num(row[3]) + " people"));
+    var shelf = el("a", "shelf", "shelf");
+    shelf.href = "#cat-" + row[1];
+    line.appendChild(shelf);
+    return line;
+  }
+
+  function runFinder() {
+    var query = fold(finder.value.trim());
+    hits.textContent = "";
+    finderNote.textContent = FINDER_DEFAULT;
+    if (query.length < 2) return;
+
+    var initial = query[0];
+    var bucket = initial >= "a" && initial <= "z" ? initial : "other";
+    shard(bucket).then(function (data) {
+      var matches = [];
+      for (var i = 0; i < data.rows.length && matches.length < 60; i += 1) {
+        if (data.folded[i].indexOf(query) !== -1) matches.push(data.rows[i]);
+      }
+      hits.textContent = "";
+      if (!matches.length) {
+        finderNote.textContent = "No place in this shard matches “" + finder.value.trim() + "” — the dump stops at five hundred people.";
+        return;
+      }
+      finderNote.textContent = matches.length === 60
+        ? "the sixty most populous matches — add a letter to narrow it"
+        : count(matches.length, "match", "matches") + " in the dump";
+      var frag = document.createDocumentFragment();
+      matches.forEach(function (row) { frag.appendChild(draw(row)); });
+      hits.appendChild(frag);
+    }).catch(function (err) {
+      finderNote.textContent = "Could not open that shard of the index (" + err.message + ").";
+    });
+  }
+
+  finder.addEventListener("input", function () {
+    clearTimeout(finderTimer);
+    finderTimer = setTimeout(runFinder, 140);
+  });
 
   function place(item) {
     var row = el("p", "place");
@@ -308,6 +411,8 @@ summary::before{content:""}.place .pop{color:#555}}
       var places = el("b", null, num(data.places));
       statline.appendChild(places);
       statline.appendChild(document.createTextNode(" places"));
+
+      data.categories.forEach(function (cat) { countryOf.set(cat.key, cat.title); });
 
       var frag = document.createDocumentFragment();
       var continent = null;
