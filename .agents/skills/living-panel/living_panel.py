@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Put one living being, one tool, one component and one plant on every page.
+"""Put one living being, one tool, one component, one plant and one city on every page.
 
 Every docs/*.html except index.html carries one card fixed to the left edge of
 the window at mid height — the place the social dock takes on the front page:
@@ -9,15 +9,17 @@ the window at mid height — the place the social dock takes on the front page:
       <p>this <a href="birdsIndex.html#order-passeriformes">European robin</a> likes to use
       <a href="awesomeIndex.html#cat-shell">Bash</a> and loves
       <a href="electronicsIndex.html#cat-instruments">Multimeter</a> while doing some diet
-      with <a href="plantsIndex.html#order-santalales">Viscum album</a>.</p>
+      with <a href="plantsIndex.html#order-santalales">Viscum album</a> at
+      <a href="worldIndex.html#cat-gb">London</a>.</p>
     </aside>
 
 The being and its photograph come from the bird, animal, fish and insect catalogues
 under docs/<kingdom>/data/; the tool from the shelves under docs/awesome/data/;
-the component from docs/electronics/data/; the plant from docs/plants/data/.
-The four written into the page are the no-script fallback; docs/living-panel.js
+the component from docs/electronics/data/; the plant from docs/plants/data/;
+the city from the country shelves under docs/world/data/.
+The five written into the page are the no-script fallback; docs/living-panel.js
 replaces them with a fresh set on every load, so refreshing a page shows a
-different being, tool, component and plant.
+different being, tool, component, plant and city.
 
     python3 .agents/skills/living-panel/living_panel.py              # every page
     python3 .agents/skills/living-panel/living_panel.py --dry-run     # report only
@@ -45,7 +47,8 @@ CATALOGUES = (
 )
 PLANTS = ("plants", "plantsIndex.html")
 ELECTRONICS = ("electronics", "electronicsIndex.html")
-LABEL = "A living being, a tool, a component and a plant"
+WORLD = ("world", "worldIndex.html")
+LABEL = "A living being, a tool, a component, a plant and a city"
 SEED = "2026-11-03"
 
 STYLE_OPEN = '<style id="living-panel-style">'
@@ -139,6 +142,45 @@ def plants():
                               "href": "%s#order-%s" % (page, key),
                               "where": (plant.get("fam") or family.get("n") or "",
                                         plant.get("ord") or data.get("title") or "")})
+    return found
+
+
+def cities():
+    """One place per country from docs/world/data/, linked to its country shelf.
+
+    The most populous place whose name fits the card and needs no disambiguating
+    suffix, so the sentence still reads as a sentence.
+    """
+    folder, page = WORLD
+    manifest_path = os.path.join(DOCS, folder, "data", "index.json")
+    try:
+        with open(manifest_path, encoding="utf-8") as handle:
+            manifest = json.load(handle)
+    except Exception:
+        return []
+    found = []
+    for category in manifest.get("categories", []):
+        path = os.path.join(DOCS, folder, "data", str(category.get("slug")) + ".json")
+        try:
+            with open(path, encoding="utf-8") as handle:
+                shelf = json.load(handle)
+        except Exception:
+            continue
+        name = ""
+        for group in shelf.get("groups", []):
+            for item in group.get("items", []):
+                candidate = (item.get("n") or "").strip()
+                if candidate and len(candidate) <= 22 and " · " not in candidate:
+                    name = candidate
+                    break
+            if name:
+                break
+        if not name:
+            continue
+        found.append({"name": name,
+                      "href": "%s#cat-%s" % (page, category.get("key")),
+                      "where": (category.get("title") or "",
+                                category.get("continent") or "")})
     return found
 
 
@@ -326,7 +368,7 @@ def anchor(item):
     return '<a href="%s" title="%s">%s</a>' % (esc(item["href"]), esc(caption), label)
 
 
-def panel(being, tool, part, plant, link_being):
+def panel(being, tool, part, plant, city, link_being):
     if link_being:
         who = anchor(being)
     else:
@@ -334,8 +376,8 @@ def panel(being, tool, part, plant, link_being):
     tool_link = ('<a href="%s" title="%s · %s">%s</a>'
                  % (esc(tool["href"]), esc(tool["list"]), esc(tool["title"]),
                     esc(tool["name"])))
-    line = ('this %s likes to use %s and loves %s while doing some diet with %s.'
-            % (who, tool_link, anchor(part), anchor(plant)))
+    line = ('this %s likes to use %s and loves %s while doing some diet with %s at %s.'
+            % (who, tool_link, anchor(part), anchor(plant), anchor(city)))
     return ('<aside class="living-panel" id="living-panel" aria-label="%s">\n'
             '    <img src="%s" alt="%s" width="152" height="90" loading="lazy" decoding="async">\n'
             '    <p>%s</p>\n  </aside>'
@@ -354,11 +396,13 @@ def main(argv=None):
     tool_pool = tools()
     part_pool = components()
     plant_pool = plants()
-    if not being_pool or not tool_pool or not part_pool or not plant_pool:
-        print("no beings, tools, components or plants found — nothing to do", file=sys.stderr)
+    city_pool = cities()
+    if not being_pool or not tool_pool or not part_pool or not plant_pool or not city_pool:
+        print("no beings, tools, components, plants or cities found — nothing to do", file=sys.stderr)
         return 1
-    print("beings: %d | tools: %d | components: %d | plants: %d"
-          % (len(being_pool), len(tool_pool), len(part_pool), len(plant_pool)))
+    print("beings: %d | tools: %d | components: %d | plants: %d | cities: %d"
+          % (len(being_pool), len(tool_pool), len(part_pool), len(plant_pool),
+             len(city_pool)))
 
     written = removed = skipped = 0
     samples = []
@@ -390,7 +434,9 @@ def main(argv=None):
         part = pick(rng, part_pool, taken)
         taken.add(part["href"])
         plant = pick(rng, plant_pool, taken)
-        block = panel(being, tool, part, plant, link_being)
+        taken.add(plant["href"])
+        city = pick(rng, city_pool, taken)
+        block = panel(being, tool, part, plant, city, link_being)
 
         styled = allow_script(allow_images(body))
         if "</head>" in styled:
@@ -406,8 +452,9 @@ def main(argv=None):
         index = match.end()
         updated = styled[:index] + "\n" + block + styled[index:]
         if len(samples) < 5:
-            samples.append("%-26s %s + %s + %s + %s"
-                           % (name, being["name"], tool["name"], part["name"], plant["name"]))
+            samples.append("%-26s %s + %s + %s + %s + %s"
+                           % (name, being["name"], tool["name"], part["name"],
+                              plant["name"], city["name"]))
         if updated != source:
             if not args.dry_run:
                 with open(path, "w", encoding="utf-8") as handle:
