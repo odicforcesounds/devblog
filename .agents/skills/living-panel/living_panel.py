@@ -6,11 +6,11 @@ the window, 20px down:
 
     <aside class="living-panel" id="living-panel" ...>
       <img src="…/250px-…jpg" alt="European robin" width="56" height="56" loading="lazy">
-      <p>this <a href="birdsIndex.html#order-passeriformes">European robin</a> likes to use
-      <a href="awesomeIndex.html#cat-shell">Bash</a> and loves
-      <a href="electronicsIndex.html#cat-instruments">Multimeter</a> while doing some diet
-      with <a href="plantsIndex.html#order-santalales">Viscum album</a> at
-      <a href="worldIndex.html#cat-gb">London</a>.</p>
+      <p>this <a href="birdsIndex.html?q=European%20robin#order-passeriformes">European robin</a> likes to use
+      <a href="awesomeIndex.html?q=Bash#cat-shell">Bash</a> and loves
+      <a href="electronicsIndex.html?q=Multimeter#cat-instruments">Multimeter</a> while doing some diet
+      with <a href="plantsIndex.html?q=Viscum%20album#order-santalales">Viscum album</a> at
+      <a href="worldIndex.html?q=London#cat-gb">London</a>.</p>
     </aside>
 
 The being and its photograph come from the bird, animal, fish and insect catalogues
@@ -36,6 +36,7 @@ import os
 import random
 import re
 import sys
+from urllib.parse import quote
 
 DOCS = "docs"
 FRONT = "index.html"
@@ -114,7 +115,7 @@ def beings():
                     if not name or not image or len(name) > 28:
                         continue
                     found.append({"name": name, "page": page,
-                                  "href": "%s#order-%s" % (page, key),
+                                  "href": "%s?q=%s#order-%s" % (page, quote(name, safe=""), key),
                                   "image": image,
                                   "where": (being.get("fam") or "", being.get("ord") or "")})
     return found
@@ -139,7 +140,7 @@ def plants():
                 if not name or len(name) > 28:
                     continue
                 found.append({"name": name,
-                              "href": "%s#order-%s" % (page, key),
+                              "href": "%s?q=%s#order-%s" % (page, quote(name, safe=""), key),
                               "where": (plant.get("fam") or family.get("n") or "",
                                         plant.get("ord") or data.get("title") or "")})
     return found
@@ -178,7 +179,8 @@ def cities():
         if not name:
             continue
         found.append({"name": name,
-                      "href": "%s#cat-%s" % (page, category.get("key")),
+                      "href": "%s?q=%s#cat-%s" % (page, quote(name, safe=""),
+                                                   category.get("key")),
                       "where": (category.get("title") or "",
                                 category.get("continent") or "")})
     return found
@@ -204,7 +206,7 @@ def components():
                 if not name or not 3 <= len(name) <= 24:
                     continue
                 found.append({"name": name,
-                              "href": "%s#cat-%s" % (page, key),
+                              "href": "%s?q=%s#cat-%s" % (page, quote(name, safe=""), key),
                               "where": (group.get("name") or "", title)})
     return found
 
@@ -261,7 +263,8 @@ def tools():
                     chosen = list_name
             if chosen:
                 found.append({"name": chosen, "list": list_name, "key": key, "title": title,
-                              "href": "awesomeIndex.html#cat-" + key})
+                              "href": "awesomeIndex.html?q=" + quote(chosen, safe="") +
+                                      "#cat-" + key})
     return found
 
 
@@ -359,13 +362,26 @@ def allow_script(source):
     return CSP.sub(fix, source)
 
 
+def plain(href):
+    """The shelf anchor alone, dropping the query.
+
+    The card written into the page is what reads with scripts off, and there the
+    query string is never read; the anchor that opens the shelf is what matters.
+    """
+    head, _, tail = href.partition("?")
+    if not tail:
+        return href
+    _, _, fragment = tail.partition("#")
+    return head + ("#" + fragment if fragment else "")
+
+
 def anchor(item):
     label = esc(item["name"])
     where = item.get("where") or ("", "")
     caption = " · ".join(part for part in where if part)
     if not caption:
-        return '<a href="%s">%s</a>' % (esc(item["href"]), label)
-    return '<a href="%s" title="%s">%s</a>' % (esc(item["href"]), esc(caption), label)
+        return '<a href="%s">%s</a>' % (esc(plain(item["href"])), label)
+    return '<a href="%s" title="%s">%s</a>' % (esc(plain(item["href"])), esc(caption), label)
 
 
 def panel(being, tool, part, plant, city, link_being):
@@ -374,7 +390,7 @@ def panel(being, tool, part, plant, city, link_being):
     else:
         who = esc(being["name"])
     tool_link = ('<a href="%s" title="%s · %s">%s</a>'
-                 % (esc(tool["href"]), esc(tool["list"]), esc(tool["title"]),
+                 % (esc(plain(tool["href"])), esc(tool["list"]), esc(tool["title"]),
                     esc(tool["name"])))
     line = ('this %s likes to use %s and loves %s while doing some diet with %s at %s.'
             % (who, tool_link, anchor(part), anchor(plant), anchor(city)))
