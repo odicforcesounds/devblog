@@ -1,6 +1,6 @@
 ---
 name: new-page
-description: Create a new page for Monkey Blog (blog.odicforcesounds.com) from scratch — one self-contained HTML file in docs/, dark theme, pure CSS3 and vanilla JavaScript, no external requests, Portuguese and English in the same page behind a coloured language switch at the top, a Home link back to index.html, one-word link text, sourced external references and subject-matched internal links — then compile (sitemap, API, audit). Use whenever a new article, manual or tool page is requested for this blog.
+description: Create a new page for Monkey Blog (blog.odicforcesounds.com) from scratch — one self-contained HTML file in docs/, dark theme, pure CSS3 and vanilla JavaScript, no external requests, Portuguese and English in the same page behind a coloured language switch at the top, a Home link back to index.html, one-word link text, sourced external references and subject-matched internal links — then put it in the archive on index.html so the home page's Last 5 publications can show it, and compile (sitemap, API, audit). Use whenever a new article, manual or tool page is requested for this blog.
 ---
 
 # New Page
@@ -331,6 +331,41 @@ the switch already carries the other language. Then:
 - use the category's anchor (`#category-…`) in the JSON-LD breadcrumb;
 - `articleSection` must be the category title exactly as written on `index.html`.
 
+### …and the Last 5 publications
+
+**This step is not optional and is not only for new pages.** The home page's *Last 5
+publications* block is not written into `index.html`: the page builds it in the browser
+from two sources — `docs/api/dates.json` (fetched) and the `<li>` rows in its own category
+lists. A page with no archive row **can never appear there**, however new it is; that is how
+`reptilesIndex.html`, `electronicsIndex.html`, `gameReference.html`, `secretChat.html` and
+two Portuguese articles were invisible on the home page while sitting in the API.
+
+So every time a page is created, renamed or materially rewritten:
+
+1. add or fix its one `<li>` row in the right category and language list, bumping both
+   counts as described above;
+2. rebuild the API, because `dates.json` is what supplies the stamp — a row without a
+   `dates.json` entry is skipped by the script;
+3. print the five the page will show and read them, rather than assuming:
+
+```sh
+python3 - <<'PY'
+import json, re
+src = open('docs/index.html', encoding='utf-8').read()
+dates = json.load(open('docs/api/dates.json', encoding='utf-8'))['published']
+rows = [(dates[f], f, t) for f, t in re.findall(
+    r'<li><a href="\.?/?([A-Za-z0-9_.\-]+\.[Hh][Tt][Mm][Ll])">([^<]*)</a>', src) if f in dates]
+for stamp, f, t in sorted(rows, reverse=True)[:5]:
+    print(stamp[:10], f, '|', t[:60])
+PY
+```
+
+The newest page must be in that list. Two things to know when it is not: a page linked
+outside the category lists (the *One Human Code* / *One Nature* buttons, the manuals strip)
+carries no row and so never appears, and `oJogoDoOperador.html` is filtered out on purpose
+by the `skip` map in the page's script — do not "fix" either by adding a second link, which
+would break the one-target-per-page rule.
+
 ## Compile
 
 Run all three, in this order, from the repository root:
@@ -414,6 +449,8 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/Name.html   # exp
       `page_hygiene.py docs/Name.html` reports `failures 0`.
 - [ ] Archive row added once, counts updated, breadcrumb matches, and the API
       `published_at` is the instant git reports for the file.
+- [ ] The home page's *Last 5 publications* now lists the page — printed from
+      `dates.json` + the archive rows, not assumed. Every page touched, not only a new one.
 - [ ] `build_sitemap.py`, `build_api.py` and `check_site.py` run; no new failure.
 - [ ] `check_links.py`, `check_weight.py`, `check_headers.py`, `check_a11y.py` and
       `check_seo.py` report nothing about the new page: no dead reference, inside the
