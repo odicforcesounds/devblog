@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Put one living being, one tool, one component, one plant and one city on every page.
 
-Every docs/*.html except index.html carries one card fixed to the left edge of
-the window at mid height — the place the social dock takes on the front page:
+Every docs/*.html except index.html carries one card fixed to the top right of
+the window, 20px down:
 
     <aside class="living-panel" id="living-panel" ...>
       <img src="…/250px-…jpg" alt="European robin" width="56" height="56" loading="lazy">
@@ -52,8 +52,8 @@ LABEL = "A living being, a tool, a component, a plant and a city"
 SEED = "2026-11-03"
 
 STYLE_OPEN = '<style id="living-panel-style">'
-CSS = """    .living-panel{position:fixed;top:50%;left:clamp(.7rem,1.6vw,1.2rem);z-index:95;
-      transform:translateY(-50%);width:12.5rem;display:flex;flex-direction:column;
+CSS = """    .living-panel{position:fixed;top:20px;right:clamp(.7rem,1.6vw,1.2rem);z-index:95;
+      width:12.5rem;display:flex;flex-direction:column;
       align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:center;
       background:rgba(8,12,17,.9);border:1px solid var(--line, rgba(255,255,255,.14));
       border-radius:16px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
