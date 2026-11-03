@@ -209,13 +209,6 @@ summary::before{content:""}}
   <p class="safety"><b>Read this first.</b> The verdict is what the encyclopaedia records, not a recommendation. Edible plants have deadly lookalikes, parts differ from parts, and preparation rules exist for a reason. Never eat a plant because a page said so.</p>
   <p class="statline" id="statline">Opening the catalogue…</p>
 
-  <div class="ways" id="ways">
-    <p class="way"><span class="k">Can it be eaten</span><span id="facet-edibility"></span></p>
-    <p class="way"><span class="k">Form</span><span id="facet-form"></span></p>
-    <p class="way"><span class="k">Where it lives</span><span id="facet-habitat"></span></p>
-    <p class="way"><span class="k">Where in the world</span><span id="facet-region"></span></p>
-  </div>
-  <p class="out" id="out">Pick a word above to see only the plants it describes.</p>
 
   <noscript><p class="fail">The catalogue is drawn from JSON, so it needs JavaScript. Every plant is also one click away at Wikipedia.</p></noscript>
   <form class="search" id="search-form" role="search" autocomplete="off">
@@ -225,7 +218,6 @@ summary::before{content:""}}
   </form>
   <div id="search-hits"></div>
   <div id="catalogue"></div>
-  <div id="matches"></div>
 </main>
 <footer>
   <p>Photographs and introductions come from <a href="https://en.wikipedia.org/">Wikipedia</a> and its media library, fetched through the public API when this catalogue was compiled; each card links back to the article and the file it uses. The edibility verdict is a reading of the article's own words, shown beside it, not a second opinion. Fungi are not plants, so mushrooms are not on this page.</p>
@@ -237,12 +229,9 @@ summary::before{content:""}}
 
   var DIR = "plants/data/";
   var root = document.getElementById("catalogue");
-  var matches = document.getElementById("matches");
   var statline = document.getElementById("statline");
-  var out = document.getElementById("out");
   var cache = new Map();
   var groups = [];
-  var facets = {};
   var all = null;
   var searchForm = document.getElementById("search-form");
   var searchBox = document.getElementById("search-box");
@@ -271,7 +260,6 @@ summary::before{content:""}}
           .filter(Boolean).join(" ")).indexOf(query) !== -1;
       });
       searchHits.textContent = "";
-      matches.textContent = "";
       root.hidden = true;
       if (!found.length) {
         searchNote.textContent = "no plant matches “" + typed + "”";
@@ -293,7 +281,6 @@ summary::before{content:""}}
   });
 
   searchForm.addEventListener("submit", function (event) { event.preventDefault(); });
-  var active = null;
 
   var EAT = {
     eaten: ["can be eaten", "good"],
@@ -493,88 +480,6 @@ summary::before{content:""}}
     });
   }
 
-  function matchesOf(kind, value) {
-    return all.filter(function (plant) {
-      if (kind === "edibility") return plant.ed === value;
-      var field = kind === "form" ? plant.t : kind === "habitat" ? plant.h : plant.r;
-      return (field || []).indexOf(value) !== -1;
-    });
-  }
-
-  function chips(kind, container) {
-    var bucket = facets[kind] || {};
-    var keys = Object.keys(bucket);
-    if (kind === "edibility") {
-      keys.sort(function (a, b) {
-        return Object.keys(EAT).indexOf(a) - Object.keys(EAT).indexOf(b);
-      });
-    } else {
-      keys.sort(function (a, b) {
-        if (bucket[b] !== bucket[a]) return bucket[b] - bucket[a];
-        return word(kind, a).localeCompare(word(kind, b));
-      });
-    }
-    keys.forEach(function (value) {
-      var pair = kind === "edibility" ? (EAT[value] || ["", "warn"]) : null;
-      var button = el("button", "chip" + (pair ? " " + pair[1] : ""));
-      button.type = "button";
-      button.setAttribute("aria-pressed", "false");
-      button.appendChild(document.createTextNode(word(kind, value)));
-      button.appendChild(el("b", null, num(bucket[value])));
-      button.addEventListener("click", function () { choose(kind, value, button); });
-      container.appendChild(button);
-      container.appendChild(document.createTextNode(" "));
-    });
-  }
-
-  function choose(kind, value, button) {
-    if (active && active.kind === kind && active.value === value) {
-      reset();
-      return;
-    }
-    active = { kind: kind, value: value };
-    Array.prototype.forEach.call(document.querySelectorAll("button.chip"), function (chip) {
-      chip.setAttribute("aria-pressed", "false");
-    });
-    button.setAttribute("aria-pressed", "true");
-    out.textContent = "collecting the plants that match …";
-    matches.innerHTML = "";
-    loadEvery().then(function () {
-      var found = matchesOf(kind, value);
-      root.hidden = true;
-      matches.innerHTML = "";
-      var head = el("p", "statline");
-      head.appendChild(el("b", null, count(found.length, "plant", "plants")));
-      head.appendChild(document.createTextNode(" matching “" + word(kind, value) + "”."));
-      matches.appendChild(head);
-      if (!found.length) {
-        matches.appendChild(el("p", "fail", "Nothing in the catalogue matches that word."));
-        return;
-      }
-      found.sort(function (a, b) { return a.n.localeCompare(b.n); });
-      found.forEach(function (plant) { matches.appendChild(card(plant)); });
-    }).catch(function (err) {
-      matches.appendChild(el("p", "fail", "Could not load the catalogue (" + err.message + ")."));
-    });
-  }
-
-  function reset() {
-    active = null;
-    Array.prototype.forEach.call(document.querySelectorAll("button.chip"), function (chip) {
-      chip.setAttribute("aria-pressed", "false");
-    });
-    matches.innerHTML = "";
-    root.hidden = false;
-    out.textContent = "Pick a word above to see only the plants it describes.";
-  }
-
-  function clearButton() {
-    var button = el("button", "chip clear", "show all");
-    button.type = "button";
-    button.addEventListener("click", reset);
-    return button;
-  }
-
   fetch(DIR + "index.json", { credentials: "same-origin" })
     .then(function (res) {
       if (!res.ok) throw new Error(res.status + " " + res.statusText);
@@ -582,7 +487,6 @@ summary::before{content:""}}
     })
     .then(function (data) {
       groups = data.groups;
-      facets = data.facets || {};
       statline.innerHTML = "";
       statline.appendChild(el("b", null, num(data.plants)));
       statline.appendChild(document.createTextNode(" plants · "));
@@ -596,11 +500,6 @@ summary::before{content:""}}
       statline.appendChild(document.createTextNode(" poisonous · "));
       statline.appendChild(el("b", null, num(data.photos)));
       statline.appendChild(document.createTextNode(" photographs"));
-
-      ["edibility", "form", "habitat", "region"].forEach(function (kind) {
-        chips(kind, document.getElementById("facet-" + kind));
-      });
-      document.getElementById("facet-edibility").appendChild(clearButton());
 
       var frag = document.createDocumentFragment();
       groups.forEach(function (group) { frag.appendChild(orderBlock(group)); });
