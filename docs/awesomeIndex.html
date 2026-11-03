@@ -168,14 +168,28 @@ code{font-family:var(--mono);font-size:12.5px}
 .src a{text-decoration:none}
 .src a:hover{text-decoration:underline}
 .loading{margin:0 0 12px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.search{margin:0 0 24px;padding:14px 16px;background:var(--panel);border:1px solid var(--line);
+border-radius:8px}
+.search label{display:block;margin:0 0 7px;font-family:var(--mono);font-size:10.5px;
+letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.search input{width:100%;padding:9px 11px;font:inherit;font-size:14px;color:var(--ink);
+background:var(--bg);border:1px solid var(--line-2);border-radius:6px}
+.search input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.search-note{margin:9px 0 0;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.hits{list-style:none;margin:10px 0 0;padding:0}
+.hits:empty{display:none}
+.hit{padding:9px 0;border-top:1px solid var(--line)}
+.hit-name{font-weight:600;text-decoration:none;border-bottom:1px solid var(--line-2)}
+.hit-where{margin:3px 0 0;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.hit-d{margin:4px 0 0;font-size:13px;color:var(--dim);max-width:74ch}
 .fail{margin:0 0 12px;font-size:13.5px;color:var(--warm)}
-@media print{.topbar{display:none}body{background:#fff;color:#111}details{display:block}
+@media print{.topbar,.search{display:none}body{background:#fff;color:#111}details{display:block}
 summary::before{content:""}pre{background:#f4f4f4}}
 </style>
   <link rel="stylesheet" href="link-colors.css">
   <style id="living-panel-style">
-    .living-panel{position:fixed;top:50%;left:clamp(.7rem,1.6vw,1.2rem);z-index:95;
-      transform:translateY(-50%);width:12.5rem;display:flex;flex-direction:column;
+    .living-panel{position:fixed;top:20px;right:clamp(.7rem,1.6vw,1.2rem);z-index:95;
+      width:12.5rem;display:flex;flex-direction:column;
       align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:center;
       background:rgba(8,12,17,.9);border:1px solid var(--line, rgba(255,255,255,.14));
       border-radius:16px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
@@ -211,6 +225,12 @@ summary::before{content:""}pre{background:#f4f4f4}}
   <h1 class="sr-only">Awesome index</h1>
   <p class="statline" id="statline">Loading the catalogue…</p>
   <noscript><p class="fail">This index draws itself from JSON, so it needs JavaScript. The lists themselves are still one click away from the blog index.</p></noscript>
+  <form class="search" id="search-form" role="search" autocomplete="off">
+    <label for="search-box">Search the catalogue</label>
+    <input id="search-box" name="q" type="search" placeholder="a tool, a library or a host — kubernetes, rust, postgres" spellcheck="false">
+    <p class="search-note" id="search-note" aria-live="polite">Type two letters or more; each shelf is read only when you search it.</p>
+    <ol class="hits" id="search-hits"></ol>
+  </form>
   <div id="catalogue"></div>
 </main>
 <script>
@@ -221,6 +241,7 @@ summary::before{content:""}pre{background:#f4f4f4}}
   var statline = document.getElementById("statline");
   var catalogue = new Map();   // category key -> fetched data
   var drawn = new Set();       // every href already on the page
+  var categories = [];
 
   function el(tag, cls, text) {
     var node = document.createElement(tag);
@@ -245,6 +266,26 @@ summary::before{content:""}pre{background:#f4f4f4}}
     a.target = "_blank";
     a.rel = "noopener noreferrer";
     return a;
+  }
+
+  function absolute(item) {
+    var u = item.u || "";
+    return u.charAt(0) === "#" ? "https://github.com/" + (item.r || "") + u : u;
+  }
+
+  function parts(href) {
+    var a = document.createElement("a");
+    a.href = href;
+    return {
+      host: a.hostname.replace(/^www\./, ""),
+      path: a.pathname.replace(/\/+$/, ""),
+      hash: a.hash
+    };
+  }
+
+  function where(href) {
+    var p = parts(href);
+    return p.host + p.path + p.hash;
   }
 
   function count(n, one, many) {
@@ -322,9 +363,10 @@ summary::before{content:""}pre{background:#f4f4f4}}
     var body = el("div", "list-body");
     if (item.w) body.appendChild(el("p", "what", item.w));
 
-    if (once(item.u)) {
+    var href = absolute(item);
+    if (once(href)) {
       var src = el("p", "repo");
-      src.appendChild(link(item.u, "github.com/" + item.r + " →"));
+      src.appendChild(link(href, where(href) + " →"));
       body.appendChild(src);
     }
 
@@ -402,12 +444,124 @@ summary::before{content:""}pre{background:#f4f4f4}}
     return box;
   }
 
+  var searchForm = document.getElementById("search-form");
+  var searchBox = document.getElementById("search-box");
+  var searchNote = document.getElementById("search-note");
+  var searchHits = document.getElementById("search-hits");
+  var searchIdle = "Type two letters or more; each shelf is read only when you search it.";
+  var searchWanted = "";
+  var searchTimer = null;
+
+  function openShelf(cat) {
+    var target = document.getElementById("cat-" + cat.key);
+    if (!target) return;
+    target.open = true;
+    target.scrollIntoView();
+  }
+
+  function scan(q) {
+    var needle = q.toLowerCase();
+    var found = [];
+
+    function consider(entry, cat, listName) {
+      var name = entry.n || "";
+      var url = entry.u || "";
+      var at = name.toLowerCase().indexOf(needle);
+      if (at < 0 && url.toLowerCase().indexOf(needle) < 0) return;
+      found.push({ n: name, href: absolute(entry), d: entry.d, cat: cat,
+                   list: listName, rank: at === 0 ? 0 : at > 0 ? 1 : 2 });
+    }
+
+    categories.forEach(function (cat) {
+      var data = catalogue.get(cat.key);
+      if (!data) return;
+      (data.lists || []).forEach(function (item) {
+        consider(item, cat, null);
+        (item.d || []).forEach(function (part) {
+          (part.c || []).forEach(function (tool) { consider(tool, cat, item.n); });
+        });
+      });
+    });
+
+    found.sort(function (a, b) {
+      return a.rank - b.rank || a.n.length - b.n.length || (a.n < b.n ? -1 : a.n > b.n ? 1 : 0);
+    });
+    return found;
+  }
+
+  function paintHits(found, q) {
+    var read = categories.filter(function (cat) { return catalogue.has(cat.key); }).length;
+    searchHits.textContent = "";
+
+    var frag = document.createDocumentFragment();
+    found.slice(0, 40).forEach(function (hit) {
+      var li = el("li", "hit");
+      li.appendChild(link(hit.href, hit.n, "hit-name"));
+      var meta = el("p", "hit-where");
+      var shelf = el("a", null, hit.cat.title);
+      shelf.href = "#cat-" + hit.cat.key;
+      shelf.addEventListener("click", function () { openShelf(hit.cat); });
+      meta.appendChild(shelf);
+      if (hit.list) meta.appendChild(document.createTextNode(" · " + hit.list));
+      li.appendChild(meta);
+      if (hit.d) li.appendChild(el("p", "hit-d", hit.d));
+      frag.appendChild(li);
+    });
+    searchHits.appendChild(frag);
+
+    var line = count(found.length, "match", "matches") + " for “" + q + "”";
+    if (found.length > 40) line += " — the 40 closest are shown";
+    if (read < categories.length) line += " · read " + read + " of " + categories.length + " shelves";
+    searchNote.textContent = line;
+  }
+
+  function gather(q) {
+    var pending = categories.filter(function (cat) { return !catalogue.has(cat.key); });
+    var i = 0;
+
+    function next() {
+      if (searchWanted !== q || i >= pending.length) return;
+      var cat = pending[i++];
+      fetch("awesome/data/" + cat.slug + ".json", { credentials: "same-origin" })
+        .then(function (res) {
+          if (!res.ok) throw new Error(res.status + " " + res.statusText);
+          return res.json();
+        })
+        .then(function (data) {
+          catalogue.set(cat.key, data);
+          paintHits(scan(q), q);
+          next();
+        })
+        .catch(function () { next(); });
+    }
+    next();
+  }
+
+  searchBox.addEventListener("input", function () {
+    clearTimeout(searchTimer);
+    searchWanted = searchBox.value.trim();
+    if (searchWanted.length < 2) {
+      searchHits.textContent = "";
+      searchNote.textContent = searchIdle;
+      return;
+    }
+    searchNote.textContent = "searching …";
+    searchTimer = setTimeout(function () {
+      if (searchWanted.length < 2) return;
+      paintHits(scan(searchWanted), searchWanted);
+      gather(searchWanted);
+    }, 220);
+  });
+
+  searchForm.addEventListener("submit", function (event) { event.preventDefault(); });
+
   fetch("awesome/data/index.json", { credentials: "same-origin" })
     .then(function (res) {
       if (!res.ok) throw new Error(res.status + " " + res.statusText);
       return res.json();
     })
     .then(function (data) {
+      categories = data.categories;
       statline.innerHTML = "";
       statline.appendChild(el("b", null, num(data.lists)));
       statline.appendChild(document.createTextNode(" lists · "));
