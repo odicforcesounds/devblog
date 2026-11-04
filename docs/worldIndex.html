@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https://upload.wikimedia.org https://thumb.wikimedia.org; style-src 'self' 'unsafe-inline'; script-src 'unsafe-inline' 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://en.wikipedia.org; img-src 'self' data: https://upload.wikimedia.org https://thumb.wikimedia.org; style-src 'self' 'unsafe-inline'; script-src 'unsafe-inline' 'self'">
 <meta name="X-Content-Type-Options" content="nosniff">
 <meta name="X-Frame-Options" content="DENY">
 <meta name="Referrer-Policy" content="no-referrer">
@@ -104,6 +104,10 @@ text-transform:uppercase;letter-spacing:.06em}
 .cat-card{display:grid;grid-template-columns:minmax(0,240px) minmax(0,1fr);gap:16px;
 margin:0 0 14px;padding:2px 0 4px}
 @media (max-width:640px){.cat-card{grid-template-columns:1fr}}
+.city-card{margin:0 0 16px;padding:2px 0 12px;border-bottom:1px solid var(--line)}
+.city-card h2{font-size:1.35rem;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+.city-card .city-sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+.city-card .city-meta{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin:0 0 8px}
 .shot{margin:0}
 .shot img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid var(--line);
 border-radius:6px;background:var(--panel)}
@@ -154,9 +158,9 @@ summary::before{content:""}.place .pop{color:#555}}
 </style>
 <link rel="stylesheet" href="link-colors.css">
   <style id="living-panel-style">
-    .living-panel{position:fixed;top:20px;right:clamp(.7rem,1.6vw,1.2rem);z-index:95;
+    .living-panel{position:fixed;top:60px;right:clamp(1.2rem,7vw,8rem);z-index:95;
       width:12.5rem;display:flex;flex-direction:column;
-      align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:center;
+      align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:left;
       background:rgba(8,12,17,.9);border:1px solid var(--line, rgba(255,255,255,.14));
       border-radius:16px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
       font-family:var(--sans, system-ui, sans-serif)}
@@ -252,6 +256,8 @@ summary::before{content:""}.place .pop{color:#555}}
   var shards = new Map();
   var countryOf = new Map();
   var finderTimer = null;
+  var linkOnly = false;
+  var summaries = new Map();
   var FINDER_DEFAULT = finderNote.textContent;
 
   function fold(text) {
@@ -270,6 +276,65 @@ summary::before{content:""}.place .pop{color:#555}}
       });
     shards.set(bucket, request);
     return request;
+  }
+
+  function wikipediaTitle(row) {
+    return row[0].split(" · ")[0].trim();
+  }
+
+  function shortText(text) {
+    var clean = (text || "").replace(/\s+/g, " ").trim();
+    if (clean.length <= 360) return clean;
+    var cut = clean.slice(0, 360);
+    var stop = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("? "), cut.lastIndexOf("! "));
+    return stop > 120 ? cut.slice(0, stop + 1) : cut.replace(/\s+\S*$/, "") + " …";
+  }
+
+  function wikipediaSummary(title) {
+    if (summaries.has(title)) return summaries.get(title);
+    var page = encodeURIComponent(title.replace(/ /g, "_"));
+    var request = fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + page, { credentials: "omit" })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.status + " " + res.statusText);
+        return res.json();
+      });
+    summaries.set(title, request);
+    return request;
+  }
+
+  function cityCard(row) {
+    var title = wikipediaTitle(row);
+    return wikipediaSummary(title).then(function (summary) {
+      var card = el("article", "cat-card city-card");
+      var image = summary.thumbnail && summary.thumbnail.source;
+      if (image) {
+        var fig = el("figure", "shot");
+        var img = el("img");
+        img.src = image;
+        img.alt = summary.title || title;
+        img.loading = "lazy";
+        img.decoding = "async";
+        fig.appendChild(img);
+        card.appendChild(fig);
+      }
+      var prose = el("div", "prose");
+      prose.appendChild(el("h2", null, summary.title || title));
+      if (summary.description) prose.appendChild(el("p", "city-sub", summary.description));
+      var blurb = shortText(summary.extract || "");
+      if (blurb) prose.appendChild(el("p", "d", blurb));
+      var where = [];
+      if (row[2]) where.push(row[2]);
+      var country = countryOf.get(row[1]);
+      if (country) where.push(country);
+      if (row[3]) where.push(num(row[3]) + " people");
+      if (where.length) prose.appendChild(el("p", "city-meta", where.join(" · ")));
+      var links = el("p", "links");
+      var href = summary.content_urls && summary.content_urls.desktop && summary.content_urls.desktop.page;
+      links.appendChild(link(href || ("https://en.wikipedia.org/wiki/" + encodeURIComponent(title.replace(/ /g, "_"))), "Wikipedia"));
+      prose.appendChild(links);
+      card.appendChild(prose);
+      return card;
+    });
   }
 
   function draw(row) {
@@ -292,26 +357,62 @@ summary::before{content:""}.place .pop{color:#555}}
     var query = fold(finder.value.trim());
     hits.textContent = "";
     finderNote.textContent = FINDER_DEFAULT;
-    root.hidden = query.length >= 2;
-    if (query.length < 2) return;
+    if (query.length < 2) { root.hidden = false; return; }
 
     var initial = query[0];
     var bucket = initial >= "a" && initial <= "z" ? initial : "other";
     shard(bucket).then(function (data) {
       var matches = [];
+      var linkedCountry = "";
+      if (linkOnly) {
+        var wantedKey = location.hash.replace(/^#/, "");
+        if (wantedKey.indexOf("cat-") === 0) linkedCountry = wantedKey.slice(4);
+      }
       for (var i = 0; i < data.rows.length && matches.length < 60; i += 1) {
-        if (data.folded[i].indexOf(query) !== -1) matches.push(data.rows[i]);
+        if (linkOnly) {
+          if (data.folded[i] === query && (!linkedCountry || data.rows[i][1] === linkedCountry)) {
+            matches.push(data.rows[i]);
+            break;
+          }
+        } else if (data.folded[i].indexOf(query) !== -1) {
+          matches.push(data.rows[i]);
+        }
+      }
+      var exactMode = linkOnly;
+      if (!linkOnly) {
+        var exact = matches.filter(function (row) { return fold(row[0]) === query; });
+        if (exact.length) { matches = exact; exactMode = true; }
       }
       hits.textContent = "";
+      root.hidden = linkOnly && matches.length > 0;
       if (!matches.length) {
         finderNote.textContent = "No place in this shard matches “" + finder.value.trim() + "” — the dump stops at five hundred people.";
         return;
       }
-      finderNote.textContent = matches.length === 60
+      finderNote.textContent = (matches.length === 60
         ? "the sixty most populous matches — add a letter to narrow it"
-        : count(matches.length, "match", "matches") + " in the dump";
+        : count(matches.length, "match", "matches") + " in the dump") +
+        (linkOnly ? "" : " · the full index stays below");
+      if (linkOnly) {
+        var waiting = el("p", "loading", "reading Wikipedia …");
+        hits.appendChild(waiting);
+        cityCard(matches[0]).then(function (card) {
+          waiting.remove();
+          hits.appendChild(card);
+        }).catch(function () {
+          waiting.remove();
+          hits.appendChild(draw(matches[0]));
+        });
+        return;
+      }
       var frag = document.createDocumentFragment();
-      matches.forEach(function (row) { frag.appendChild(draw(row)); });
+      if (exactMode) {
+        matches.forEach(function (row) { frag.appendChild(draw(row)); });
+      } else {
+        var names = el("ul", "search-names");
+        matches.forEach(function (row) { names.appendChild(el("li", null, row[0])); });
+        frag.appendChild(names);
+      }
       hits.appendChild(frag);
     }).catch(function (err) {
       finderNote.textContent = "Could not open that shard of the index (" + err.message + ").";
@@ -319,6 +420,7 @@ summary::before{content:""}.place .pop{color:#555}}
   }
 
   finder.addEventListener("input", function () {
+    linkOnly = false;
     clearTimeout(finderTimer);
     finderTimer = setTimeout(runFinder, 140);
   });
@@ -507,10 +609,12 @@ summary::before{content:""}.place .pop{color:#555}}
       if (asked) {
         finder.value = asked;
         finder.dispatchEvent(new Event("input"));
+        linkOnly = true;
+        setTimeout(function () { window.scrollTo(0, 0); }, 80);
       }
 
       var wanted = location.hash.replace(/^#/, "");
-      if (wanted) {
+      if (wanted && !asked) {
         var target = document.getElementById("cat-" + wanted);
         if (target) {
           if (target.parentNode && target.parentNode.className === "cont-block") {
