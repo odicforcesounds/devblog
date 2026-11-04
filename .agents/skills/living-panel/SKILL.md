@@ -35,18 +35,19 @@ sentence never ends in `Lisbon · Maine`.
 
 ## Where it sits
 
-`position: fixed; top: 20px; right: clamp(.7rem, 1.6vw, 1.2rem)` — the top right of the
-window, 20px down, floating above the top bar. The card is the first child of `<body>`; a
-fixed element needs a direct child of the body, because a transformed ancestor would trap
-it. Nothing on the page is moved to make room: the card lives in the right margin and
-shrinks at 1200px, 900px and 640px. It is hidden in print.
+`position: fixed; top: 60px; right: clamp(1.2rem, 7vw, 8rem)` — the right side of the
+window, pulled a little way in from the edge, 60px down, floating above the top bar. The
+sentence is left-aligned; only the photograph is centred. The card is the first child of
+`<body>`; a fixed element needs a direct child of the body, because a transformed ancestor
+would trap it. Nothing on the page is moved to make room: the card lives in the right
+margin and shrinks at 1200px, 900px and 640px. It is hidden in print.
 
 `index.html` carries no card: the social dock already holds a corner of the window.
 
 ## The set changes on every load
 
 The markup holds one being, one tool, one component, one plant and one city so the card
-still reads with scripts off. `docs/living-panel.js` (**182 KB**, one same-origin request,
+still reads with scripts off. `docs/living-panel.js` (**185 KB**, one same-origin request,
 holding 1,089 beings, 3,119 tools, 304 components, 265 plants and 246 cities) replaces
 that set with a fresh random one each time the page is loaded, skipping any link the page
 already carries and any target already used inside the card. The script tag is `defer` and sits in `<head>`;
@@ -64,7 +65,7 @@ script rebuilds the rest:
 | plant | name, order key | `plantsIndex.html?q=<name>#order-<key>` |
 | city | name, country key | `worldIndex.html?q=<name>#cat-<key>` |
 
-That is what keeps five thousand entries at 182 KB instead of 403 KB. The no-script card
+That is what keeps five thousand entries at 185 KB instead of 403 KB. The no-script card
 in the markup still carries the full `title` captions; the script does not, because it
 would be the largest thing in the file and reads as tooltip noise.
 
@@ -89,6 +90,14 @@ The name arrives URL-encoded (`encodeURIComponent` in the script, `quote(name, s
 in the generator) because a binomial, a `.NET` library or a place name carries dots, spaces
 and parentheses.
 
+The target page reads that `q` as a **linked query**: it fills the search box, runs the
+match, hides the full catalogue and shows only the result, then returns the viewport to
+the top. The whole name must match, the shelf or order in the hash selects between namesakes,
+and exactly one card is painted — the Bratislava in the Slovakia shelf, not every
+Bratislava. Editing or
+clearing the search box leaves linked mode and brings the full index back below the
+matches.
+
 The card written into the markup keeps the plain anchor (`animalsIndex.html#order-rodentia`).
 With scripts off nothing reads a query string, and the anchor is what still opens the
 shelf, so `plain()` strips the query before it is written — a generator run stays
@@ -96,6 +105,14 @@ idempotent and the 545 pages are not rewritten for a link the fallback cannot us
 
 `fishesIndex`, `insectsIndex`, `plantsIndex` and `electronicsIndex` gained their search
 line for this card: before it, a click could only open a drawer.
+
+## The photograph expands, the card can go away
+
+A single click on the photograph opens the 500px copy over a dark overlay; a click
+anywhere on the overlay or `Escape` closes it. The image is keyboard-focusable and
+`Enter` or `Space` toggles the same view. A double-click hides the whole card for the
+rest of that page load; reloading brings it back. Both gestures are wired in
+`docs/living-panel.js`, so with scripts off the card remains the read-only fallback.
 
 ## The rules
 
@@ -113,8 +130,9 @@ line for this card: before it, a click could only open a drawer.
   its listed widths and answers 400 for any other, so 250 is used (26 KB instead of
   96 KB). The host is `upload.wikimedia.org`, and the generator adds it to `img-src` on
   pages whose Content-Security-Policy would block it — that directive and no other.
-- **The photograph has no anchor of its own.** The being's name carries the link; a second
-  anchor to the same order would be a duplicate.
+- **The photograph has no anchor of its own.** The being's name carries the link; the
+  photograph is a button-like image that expands on a click and hides the card on a
+  double-click.
 - **The set in the markup is derived from the page name**, so two generator runs give the
   same site; the rotation happens in the browser, not at build time.
 
