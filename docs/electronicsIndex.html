@@ -173,9 +173,9 @@ footer p { max-width: 84ch; margin: 0 0 8px; }
 </style>
   <link rel="stylesheet" href="link-colors.css">
   <style id="living-panel-style">
-    .living-panel{position:fixed;top:20px;right:clamp(.7rem,1.6vw,1.2rem);z-index:95;
+    .living-panel{position:fixed;top:60px;right:clamp(1.2rem,7vw,8rem);z-index:95;
       width:12.5rem;display:flex;flex-direction:column;
-      align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:center;
+      align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:left;
       background:rgba(8,12,17,.9);border:1px solid var(--line, rgba(255,255,255,.14));
       border-radius:16px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
       font-family:var(--sans, system-ui, sans-serif)}
@@ -354,6 +354,7 @@ footer p { max-width: 84ch; margin: 0 0 8px; }
   var searchHits = document.getElementById("search-hits");
   var searchIdle = searchNote.textContent;
   var searchTimer = null;
+  var linkOnly = false;
   var every = null;
 
   function fold(text) {
@@ -401,23 +402,36 @@ footer p { max-width: 84ch; margin: 0 0 8px; }
     searchNote.textContent = "reading the shelves …";
     loadEvery().then(function (list) {
       var found = list.filter(function (row) {
+        if (linkOnly) return fold(row.item.n) === query;
         return fold([row.item.n, row.item.s, row.family, row.shelf].filter(Boolean).join(" "))
           .indexOf(query) !== -1;
       });
+      if (linkOnly) found = found.slice(0, 1);
+      var exactMode = linkOnly;
+      if (!linkOnly) {
+        var exact = found.filter(function (row) { return fold(row.item.n) === query; });
+        if (exact.length) { found = exact; exactMode = true; }
+      }
       searchHits.textContent = "";
-      root.hidden = true;
+      root.hidden = linkOnly && found.length > 0;
       if (!found.length) {
         searchNote.textContent = "no part matches “" + typed + "”";
         return;
       }
-      searchNote.textContent = count(found.length, "part", "parts") + " matching “" + typed + "”";
+      searchNote.textContent = count(found.length, "part", "parts") + " matching “" + typed + "”" + (linkOnly ? "" : " · the full index stays below");
       var frag = document.createDocumentFragment();
-      found.forEach(function (row) {
-        var wrap = el("div");
-        wrap.appendChild(el("p", "search-note", row.family + " · " + row.shelf));
-        wrap.appendChild(part(row.item));
-        frag.appendChild(wrap);
-      });
+      if (exactMode) {
+        found.forEach(function (row) {
+          var wrap = el("div");
+          wrap.appendChild(el("p", "search-note", row.family + " · " + row.shelf));
+          wrap.appendChild(part(row.item));
+          frag.appendChild(wrap);
+        });
+      } else {
+        var names = el("ul", "search-names");
+        found.forEach(function (row) { names.appendChild(el("li", null, row.item.n)); });
+        frag.appendChild(names);
+      }
       searchHits.appendChild(frag);
     }).catch(function (err) {
       searchNote.textContent = "could not read the shelves (" + err.message + ")";
@@ -425,6 +439,7 @@ footer p { max-width: 84ch; margin: 0 0 8px; }
   }
 
   searchBox.addEventListener("input", function () {
+    linkOnly = false;
     clearTimeout(searchTimer);
     searchTimer = setTimeout(runSearch, 180);
   });
@@ -461,10 +476,12 @@ footer p { max-width: 84ch; margin: 0 0 8px; }
       if (asked) {
         searchBox.value = asked;
         searchBox.dispatchEvent(new Event("input"));
+        linkOnly = true;
+        setTimeout(function () { window.scrollTo(0, 0); }, 80);
       }
 
       var wanted = location.hash.replace(/^#/, "");
-      if (wanted) {
+      if (wanted && !asked) {
         var target = document.getElementById("cat-" + wanted);
         if (target) {
           target.open = true;
