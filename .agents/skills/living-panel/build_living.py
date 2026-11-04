@@ -4,7 +4,8 @@
 The markup in every page carries one being, one tool, one component, one plant and
 one city so the card still reads with scripts off. This file gives the browser the whole
 pool, and the page script replaces that set with a fresh one every time the page
-is loaded.
+is loaded. A click on the photograph opens a 500px copy; a double-click hides the
+card for that page load. Both gestures are wired into the script below.
 
     python3 .agents/skills/living-panel/build_living.py
 """
@@ -51,6 +52,12 @@ JS = """(function () {
     return IMG + rel + "/250px-" + rel.slice(rel.lastIndexOf("/") + 1);
   }
 
+  function fullPhoto(item) {
+    var rel = item[3];
+    if (rel.indexOf("http") === 0) return rel;
+    return IMG + rel + "/500px-" + rel.slice(rel.lastIndexOf("/") + 1);
+  }
+
   function pick(pool, href, tries) {
     for (var n = 0; n < tries; n++) {
       var item = pool[Math.floor(Math.random() * pool.length)];
@@ -91,8 +98,76 @@ JS = """(function () {
   line.appendChild(document.createTextNode("."));
 
   if (image) {
+    var fullSrc = fullPhoto(being);
+    var zoom = null;
+    var clickTimer = 0;
+
     image.src = photo(being);
     image.alt = being[0];
+    image.title = "Click to expand · double-click to hide";
+    image.style.cursor = "zoom-in";
+    image.setAttribute("role", "button");
+    image.setAttribute("tabindex", "0");
+    image.setAttribute("aria-expanded", "false");
+    image.setAttribute("aria-label", "Expand the photograph of " + being[0]);
+
+    function closeZoom() {
+      if (!zoom) return;
+      if (zoom.parentNode) zoom.parentNode.removeChild(zoom);
+      zoom = null;
+      image.setAttribute("aria-expanded", "false");
+      if (card.style.display !== "none") image.focus();
+    }
+
+    function openZoom() {
+      if (zoom) return;
+      zoom = document.createElement("div");
+      zoom.setAttribute("role", "dialog");
+      zoom.setAttribute("aria-modal", "true");
+      zoom.setAttribute("aria-label", "Expanded photograph of " + being[0]);
+      zoom.setAttribute("tabindex", "-1");
+      zoom.style.cssText = "position:fixed;top:0;right:0;bottom:0;left:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:1.25rem;background:rgba(4,7,10,.86);cursor:zoom-out";
+      var big = document.createElement("img");
+      big.src = fullSrc;
+      big.alt = image.alt;
+      big.style.cssText = "display:block;max-width:min(92vw,56rem);max-height:88vh;width:auto;height:auto;border:1px solid rgba(255,255,255,.2);border-radius:.8rem;box-shadow:0 1.5rem 4rem rgba(0,0,0,.6);background:#101018";
+      zoom.appendChild(big);
+      zoom.addEventListener("click", closeZoom);
+      document.body.appendChild(zoom);
+      image.setAttribute("aria-expanded", "true");
+      zoom.focus();
+    }
+
+    function toggleZoom() {
+      if (zoom) closeZoom();
+      else openZoom();
+    }
+
+    image.addEventListener("click", function (event) {
+      if (event.detail > 1) return;
+      window.clearTimeout(clickTimer);
+      clickTimer = window.setTimeout(toggleZoom, 220);
+    });
+
+    image.addEventListener("dblclick", function (event) {
+      event.preventDefault();
+      window.clearTimeout(clickTimer);
+      card.style.display = "none";
+      closeZoom();
+    });
+
+    image.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+        event.preventDefault();
+        toggleZoom();
+      } else if (event.key === "Escape") {
+        closeZoom();
+      }
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") closeZoom();
+    });
   }
 })();
 """
