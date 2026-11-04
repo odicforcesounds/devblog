@@ -188,9 +188,9 @@ summary::before{content:""}pre{background:#f4f4f4}}
 </style>
   <link rel="stylesheet" href="link-colors.css">
   <style id="living-panel-style">
-    .living-panel{position:fixed;top:20px;right:clamp(.7rem,1.6vw,1.2rem);z-index:95;
+    .living-panel{position:fixed;top:60px;right:clamp(1.2rem,7vw,8rem);z-index:95;
       width:12.5rem;display:flex;flex-direction:column;
-      align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:center;
+      align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:left;
       background:rgba(8,12,17,.9);border:1px solid var(--line, rgba(255,255,255,.14));
       border-radius:16px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
       font-family:var(--sans, system-ui, sans-serif)}
@@ -451,6 +451,8 @@ summary::before{content:""}pre{background:#f4f4f4}}
   var searchIdle = "Type two letters or more; each shelf is read only when you search it.";
   var searchWanted = "";
   var searchTimer = null;
+  var linkedOnly = false;
+  var linkedKey = "";
 
   function openShelf(cat) {
     var target = document.getElementById("cat-" + cat.key);
@@ -467,7 +469,11 @@ summary::before{content:""}pre{background:#f4f4f4}}
       var name = entry.n || "";
       var url = entry.u || "";
       var at = name.toLowerCase().indexOf(needle);
-      if (at < 0 && url.toLowerCase().indexOf(needle) < 0) return;
+      if (linkedOnly) {
+        if (name.toLowerCase() !== needle) return;
+        if (linkedKey && cat.key !== linkedKey) return;
+        at = 0;
+      } else if (at < 0 && url.toLowerCase().indexOf(needle) < 0) return;
       found.push({ n: name, href: absolute(entry), d: entry.d, cat: cat,
                    list: listName, rank: at === 0 ? 0 : at > 0 ? 1 : 2 });
     }
@@ -490,26 +496,38 @@ summary::before{content:""}pre{background:#f4f4f4}}
   }
 
   function paintHits(found, q) {
+    if (linkedOnly) found = found.slice(0, 1);
+    var exactMode = linkedOnly;
+    if (!linkedOnly) {
+      var exact = found.filter(function (hit) { return hit.n.toLowerCase() === q.toLowerCase(); });
+      if (exact.length) { found = exact; exactMode = true; }
+    }
     var read = categories.filter(function (cat) { return catalogue.has(cat.key); }).length;
     searchHits.textContent = "";
 
     var frag = document.createDocumentFragment();
     found.slice(0, 40).forEach(function (hit) {
       var li = el("li", "hit");
-      li.appendChild(link(hit.href, hit.n, "hit-name"));
-      var meta = el("p", "hit-where");
-      var shelf = el("a", null, hit.cat.title);
-      shelf.href = "#cat-" + hit.cat.key;
-      shelf.addEventListener("click", function () { openShelf(hit.cat); });
-      meta.appendChild(shelf);
-      if (hit.list) meta.appendChild(document.createTextNode(" · " + hit.list));
-      li.appendChild(meta);
-      if (hit.d) li.appendChild(el("p", "hit-d", hit.d));
+      if (exactMode) {
+        li.appendChild(link(hit.href, hit.n, "hit-name"));
+        var meta = el("p", "hit-where");
+        var shelf = el("a", null, hit.cat.title);
+        shelf.href = "#cat-" + hit.cat.key;
+        shelf.addEventListener("click", function () { openShelf(hit.cat); });
+        meta.appendChild(shelf);
+        if (hit.list) meta.appendChild(document.createTextNode(" · " + hit.list));
+        li.appendChild(meta);
+        if (hit.d) li.appendChild(el("p", "hit-d", hit.d));
+      } else {
+        li.appendChild(document.createTextNode(hit.n));
+      }
       frag.appendChild(li);
     });
     searchHits.appendChild(frag);
+    root.hidden = linkedOnly && found.length > 0;
 
     var line = count(found.length, "match", "matches") + " for “" + q + "”";
+    if (!linkedOnly) line += " · the full index stays below";
     if (found.length > 40) line += " — the 40 closest are shown";
     if (read < categories.length) line += " · read " + read + " of " + categories.length + " shelves";
     searchNote.textContent = line;
@@ -536,9 +554,9 @@ summary::before{content:""}pre{background:#f4f4f4}}
     }
     next();
   }    searchBox.addEventListener("input", function () {
+    linkedOnly = false;
     clearTimeout(searchTimer);
     searchWanted = searchBox.value.trim();
-    root.hidden = searchWanted.length >= 2;
     if (searchWanted.length < 2) {
       searchHits.textContent = "";
       searchNote.textContent = searchIdle;
@@ -577,10 +595,13 @@ summary::before{content:""}pre{background:#f4f4f4}}
       if (asked) {
         searchBox.value = asked;
         searchBox.dispatchEvent(new Event("input"));
+        linkedOnly = true;
+        linkedKey = location.hash.replace(/^#/, "").replace(/^cat-/, "");
+        setTimeout(function () { window.scrollTo(0, 0); }, 80);
       }
 
       var wanted = location.hash.replace(/^#/, "");
-      if (wanted) {
+      if (wanted && !asked) {
         var target = document.getElementById("cat-" + wanted);
         if (target) {
           target.open = true;
