@@ -169,43 +169,108 @@
             gap: 12px;
         }
 
-        .chapter-item {
+        .unit-head {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--accent-cyan);
+            margin-top: 14px;
+            padding: 6px 2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .unit-head:hover { color: var(--text-main); }
+
+        .unit-chevron {
+            flex: 0 0 auto;
+            font-size: 0.75rem;
+        }
+
+        .unit-levels:not([hidden]) {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .level-item {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            padding: 14px 18px;
-            border-radius: 12px;
+            border-radius: 10px;
+            padding: 8px 10px;
+            margin-top: 6px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 8px;
+            min-width: 0;
         }
 
-        .chapter-item:hover {
+        .level-item:hover {
             border-color: var(--accent-cyan);
             transform: translateX(4px);
         }
 
-        .chapter-item.active {
+        .level-item.active {
             border-color: var(--accent-cyan);
             background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(181, 55, 242, 0.1));
             box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
         }
 
-        .chapter-info h4 {
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .chapter-info p {
-            font-size: 0.75rem;
+        .level-num {
+            flex: 0 0 auto;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.65rem;
             color: var(--text-muted);
         }
 
-        .chapter-status {
-            font-size: 1.1rem;
+        .level-item.done .level-num {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
         }
+
+        .level-name {
+            flex: 1 1 auto;
+            min-width: 0;
+            font-size: 0.8rem;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .level-mark {
+            flex: 0 0 auto;
+            font-size: 0.9rem;
+        }
+
+        .coord {
+            position: absolute;
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(0.45rem, 1.2vw, 0.68rem);
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.35);
+            line-height: 1;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .coord-file { right: 3px; bottom: 2px; }
+        .coord-rank { left: 3px; top: 2px; }
 
         /* Main Game / Learning Stage */
         .stage-container {
@@ -251,6 +316,13 @@
             color: var(--accent-cyan);
         }
 
+        .exercise-hint {
+            font-size: 0.78rem;
+            color: var(--accent-gold, #d4b45a);
+            align-self: center;
+            text-align: right;
+        }
+
         /* Interactive Lesson Content */
         .lesson-content {
             font-size: 1.05rem;
@@ -260,6 +332,7 @@
             border: 1px solid var(--border-color);
             padding: 20px;
             border-radius: 12px;
+            user-select: text;
         }
 
         .lesson-content strong {
@@ -277,35 +350,26 @@
 
         .chessboard {
             display: grid;
-            grid-template-columns: repeat(8, 64px);
-            grid-template-rows: repeat(8, 64px);
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            width: 100%;
+            max-width: 520px;
+            aspect-ratio: 1;
             border: 4px solid var(--border-color);
             border-radius: 8px;
             box-shadow: 0 12px 30px rgba(0,0,0,0.6);
             overflow: hidden;
-        }
-
-        @media(max-width: 600px) {
-            .chessboard {
-                grid-template-columns: repeat(8, 42px);
-                grid-template-rows: repeat(8, 42px);
-            }
+            animation: fade-in 0.4s ease;
         }
 
         .square {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.2rem;
+            font-size: clamp(1.3rem, 4.5vw, 2.4rem);
             cursor: pointer;
             position: relative;
             transition: background-color 0.2s;
-        }
-
-        @media(max-width: 600px) {
-            .square {
-                font-size: 1.5rem;
-            }
         }
 
         .square.light {
@@ -344,6 +408,37 @@
 
         .piece:active {
             cursor: grabbing;
+        }
+
+        .square.start-piece {
+            box-shadow: inset 0 0 14px rgba(245, 158, 11, 0.75);
+        }
+
+        .piece.landed {
+            animation: settle 0.2s ease-out;
+        }
+
+        .chessboard.shake {
+            animation: shake 0.3s ease;
+        }
+
+        .lesson-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+
+        .lesson-content th,
+        .lesson-content td {
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            text-align: left;
+        }
+
+        .lesson-content th {
+            color: var(--accent-cyan);
+            font-family: 'Orbitron', sans-serif;
         }
 
         /* Controls & Feedback */
@@ -493,22 +588,42 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes settle {
+            from { transform: scale(1.5); opacity: 0.4; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+
         .badge-grid {
             display: flex;
-            gap: 15px;
-            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
             margin-top: 15px;
+            min-width: 0;
         }
 
         .badge-item {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            padding: 8px 12px;
             border-radius: 10px;
+            padding: 8px 12px;
             font-size: 0.8rem;
             display: flex;
             align-items: center;
             gap: 6px;
+            min-width: 0;
+        }
+
+        .badge-item span:last-child,
+        .badge-item b {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .badge-item.unlocked {
@@ -523,12 +638,12 @@
     
     <meta name="twitter:title" content="ChessQuest: Master the Royal Game">
   
-    <meta name="description" content="ChessQuest: Master the Royal Game — Prepare your mind for battle. Challenge 1 / 4 💡 Select a piece to begin the challenge.">
+    <meta name="description" content="ChessQuest: Master the Royal Game — 37 levels, eight units: moves, openings, castling, pins, protection, en passant, checks and mate.">
   
-    <meta name="twitter:description" content="ChessQuest: Master the Royal Game — Prepare your mind for battle. Challenge 1 / 4 💡 Select a piece to begin the challenge.">
+    <meta name="twitter:description" content="ChessQuest: Master the Royal Game — 37 levels, eight units: moves, openings, castling, pins, protection, en passant, checks and mate.">
   
     <meta property="og:title" content="ChessQuest: Master the Royal Game">
-    <meta property="og:description" content="ChessQuest: Master the Royal Game — Prepare your mind for battle. Challenge 1 / 4 💡 Select a piece to begin the challenge.">
+    <meta property="og:description" content="ChessQuest: Master the Royal Game — 37 levels, eight units: moves, openings, castling, pins, protection, en passant, checks and mate.">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://blog.odicforcesounds.com/learnChess.html">
     <meta property="og:site_name" content="Monkey Blog">
@@ -544,7 +659,7 @@
       "@id": "https://blog.odicforcesounds.com/learnChess.html#article",
       "headline": "ChessQuest: Master the Royal Game",
       "name": "ChessQuest: Master the Royal Game",
-      "description": "ChessQuest: Master the Royal Game — Prepare your mind for battle. Challenge 1 / 4 💡 Select a piece to begin the challenge.",
+      "description": "ChessQuest: Master the Royal Game — 37 levels, eight units: moves, openings, castling, pins, protection, en passant, checks and mate.",
       "url": "https://blog.odicforcesounds.com/learnChess.html",
       "mainEntityOfPage": {
         "@type": "WebPage",
@@ -659,7 +774,7 @@
     <main>
         <!-- Chapter Navigation Sidebar -->
         <aside class="chapter-sidebar">
-            <div class="sidebar-title">Quest Chapters</div>
+            <div class="sidebar-title">Quest Levels</div>
             <div class="chapter-list" id="chapter-list">
                 <!-- Dynamically populated chapters -->
             </div>
@@ -680,6 +795,7 @@
                     <p id="stage-subtitle">Prepare your mind for battle.</p>
                 </div>
                 <div class="progress-indicator" id="progress-indicator">Challenge 1 / 4</div>
+                <div class="exercise-hint" id="exercise-hint"></div>
             </div>
 
             <div class="lesson-content" id="lesson-content">
@@ -696,7 +812,7 @@
                         <span>💡</span> <span id="feedback-text">Select a piece to begin the challenge.</span>
                     </div>
                     <button class="btn btn-secondary" id="reset-btn">🔄 Reset</button>
-                    <button class="btn" id="next-btn" style="display: none;">Next Challenge ➔</button>
+                    <button class="btn" id="next-btn" style="display: none;">Next Level ➔</button>
                 </div>
             </div>
         </section>
@@ -714,7 +830,7 @@
 
     <script>
         /* ================= WEB AUDIO API SOUND SYSTEM ================= */
-        let soundEnabled = true;
+        let soundEnabled = localStorage.getItem('cq_sound') !== 'off';
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
 
@@ -777,159 +893,960 @@
 
         document.getElementById('sound-toggle').addEventListener('click', () => {
             soundEnabled = !soundEnabled;
+            localStorage.setItem('cq_sound', soundEnabled ? 'on' : 'off');
             document.getElementById('sound-toggle').textContent = soundEnabled ? '🔊' : '🔇';
             playSound('click');
         });
 
         /* ================= GAME DATA & CHAPTERS ================= */
-        const chapters = [
+                        const chapters = [
             {
                 id: 1,
-                title: "Chapter 1: The Battlefield",
-                subtitle: "Objective & Setup",
-                description: "Chess is played on an 8x8 grid between two armies: White and Black. White always moves first! Your ultimate objective is to trap the enemy King in a position of inescapable attack, known as **Checkmate**.",
+                title: "First Piece Movements",
+                subtitle: "The board, the armies, the laws of motion",
+                description: "Chess is fought on a board of 64 squares — eight ranks running across, eight files running down. Every square owns a name built from its file letter and rank number, from <strong>a1</strong> at White's bottom-left to <strong>h8</strong> at Black's top-right. White always moves first, and your ultimate objective is to trap the enemy King in a position of inescapable attack, known as <strong>checkmate</strong>.",
                 challenges: [
                     {
                         type: "info",
                         title: "The Royal Setup",
                         instruction: "Observe the board setup. Each player starts with 16 pieces: 1 King, 1 Queen, 2 Rooks, 2 Knights, 2 Bishops, and 8 Pawns. Click <strong>Next</strong> to begin your training.",
                         boardSize: 8,
-                        pieces: {
+                                                pieces: {
                             '0,0': '♜', '0,1': '♞', '0,2': '♝', '0,3': '♛', '0,4': '♚', '0,5': '♝', '0,6': '♞', '0,7': '♜',
                             '1,0': '♟', '1,1': '♟', '1,2': '♟', '1,3': '♟', '1,4': '♟', '1,5': '♟', '1,6': '♟', '1,7': '♟',
                             '6,0': '♙', '6,1': '♙', '6,2': '♙', '6,3': '♙', '6,4': '♙', '6,5': '♙', '6,6': '♙', '6,7': '♙',
                             '7,0': '♖', '7,1': '♘', '7,2': '♗', '7,3': '♕', '7,4': '♔', '7,5': '♗', '7,6': '♘', '7,7': '♖'
-                        },
-                        validate: () => true
-                    }
-                ]
-            },
-            {
-                id: 2,
-                title: "Chapter 2: The Warriors",
-                subtitle: "Piece Movements & Powers",
-                description: "Master how each distinct piece maneuvers across the sacred board.",
-                challenges: [
+                        }
+                    },
+                    {
+                        type: "info",
+                        title: "The Two Armies",
+                        instruction: "Points help you judge trades — never hand over a 5 for a 3.<table><tr><th>Piece</th><th>Value</th><th>Strength</th></tr><tr><td>♙ / ♟ Pawn</td><td>1</td><td>Numbers, blocking, promotion</td></tr><tr><td>♘ / ♞ Knight</td><td>3</td><td>The only jumper</td></tr><tr><td>♗ / ♝ Bishop</td><td>3</td><td>Long diagonals, one colour</td></tr><tr><td>♖ / ♜ Rook</td><td>5</td><td>Open files and ranks</td></tr><tr><td>♕ / ♛ Queen</td><td>9</td><td>Reaches almost anywhere</td></tr><tr><td>♔ / ♚ King</td><td>—</td><td>Has no price — keep it alive</td></tr></table>Click <strong>Next</strong> to begin your training.",
+                        boardSize: 8,
+                                                pieces: {
+                            '0,0': '♜', '0,1': '♞', '0,2': '♝', '0,3': '♛', '0,4': '♚', '0,5': '♝', '0,6': '♞', '0,7': '♜',
+                            '1,0': '♟', '1,1': '♟', '1,2': '♟', '1,3': '♟', '1,4': '♟', '1,5': '♟', '1,6': '♟', '1,7': '♟',
+                            '6,0': '♙', '6,1': '♙', '6,2': '♙', '6,3': '♙', '6,4': '♙', '6,5': '♙', '6,6': '♙', '6,7': '♙',
+                            '7,0': '♖', '7,1': '♘', '7,2': '♗', '7,3': '♕', '7,4': '♔', '7,5': '♗', '7,6': '♘', '7,7': '♖'
+                        }
+                    },
                     {
                         type: "puzzle",
                         pieceName: "Pawn (♙)",
                         title: "The Humble Pawn",
-                        instruction: "Pawns march forward one square at a time, but on their very first move, they can leap **two squares** forward. Click your White Pawn (at row 6, col 3) and move it to row 4.",
-                        boardSize: 8,
-                        pieces: { '6,3': '♙' },
-                        startPos: [6, 3],
-                        validMoves: [[5, 3], [4, 3]],
-                        targetPos: [4, 3],
-                        successMsg: "Fantastic! Your pawn surged forward two squares!"
+                        exercises: [
+                            { instruction: "First law of the pawn: forward only, one square at a time — though on its very first move it may leap <strong>two squares</strong>. Click your White Pawn (row 6, col 3) and move it to row 4.",
+                            boardSize: 8,
+                            pieces: { '6,3': '♙' },
+                            startPos: [6, 3],
+                            validMoves: [[5, 3], [4, 3]],
+                            targetPos: [4, 3], successMsg: "Fantastic! Your pawn surged forward two squares!" },
+                            {
+                                instruction: "Same first law, on a busier strip: a twin pawn and two black Knights watch from the corners, none of them moving for you. Push f2 two squares — up to f4.",
+                                successMsg: "Pawns push forward and never sideways — in silence or in traffic.",
+                                pieces: { '2,1': '♞', '2,6': '♞', '6,0': '♙', '6,6': '♙' },
+                                startPos: [6, 6],
+                                validMoves: [[5, 6], [4, 6]],
+                                targetPos: [4, 6]
+                            },
+                            {
+                                instruction: "Precision now: the two-square sprint is <strong>legal</strong> here, but this exercise wants c2 to c3 — the one polite step a pawn takes once it has already moved. The black Pawns flanking the landing square never budge.",
+                                successMsg: "One square only: after its first push, the pawn walks, never leaps.",
+                                pieces: { '4,1': '♟', '4,3': '♟', '6,2': '♙' },
+                                startPos: [6, 2],
+                                validMoves: [[5, 2], [4, 2]],
+                                targetPos: [5, 2]
+                            }
+                        ]
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Pawn Capture (♙×)",
+                        title: "The Pawn's Blade",
+                        exercises: [
+                            { instruction: "Second law of the pawn: it captures <strong>diagonally</strong>, one square, never further — and pushes only into empty squares. The black Pawn directly ahead blocks the push; take the other black Pawn off the board with a diagonal strike.",
+                            boardSize: 8,
+                            pieces: { '5,3': '♙', '4,3': '♟', '4,4': '♟' },
+                            startPos: [5, 3],
+                            validMoves: [[4, 4]],
+                            targetPos: [4, 4], successMsg: "Captured! Pawns eat diagonally and only advance into empty squares." },
+                            {
+                                instruction: "Busy blades: a second black Pawn now rests on c5 — close enough to watch, too far to bite (your strike only spans one diagonal step). Take the one on e5.",
+                                successMsg: "Captured again — and note which Pawn lay inside the one-square swing and which did not.",
+                                pieces: { '3,2': '♟', '4,4': '♟', '5,3': '♙' },
+                                startPos: [5, 3],
+                                validMoves: [[4, 4]],
+                                targetPos: [4, 4]
+                            },
+                            {
+                                instruction: "A hunter's choice: black Pawns stand on <strong>both</strong> diagonals, both inside your pawn's swing. Cooperative law says one victim per move — this exercise claims the right-hand one (f5).",
+                                successMsg: "Either side would die — good players weigh which capture keeps the best post before choosing.",
+                                pieces: { '4,3': '♟', '4,5': '♟', '5,4': '♙' },
+                                startPos: [5, 4],
+                                validMoves: [[4, 3], [4, 5]],
+                                targetPos: [4, 5]
+                            }
+                        ]
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Pawn Promotion (♙ ➔ ♕)",
+                        title: "Ultimate Transformation",
+                        exercises: [
+                            { instruction: "Third law of the pawn: escape to the far rank and it is promoted into any piece of your choice — almost always a Queen, though a sneaky Knight under-promotion wins games too. March to the final rank.",
+                            boardSize: 8,
+                            pieces: { '1,4': '♙' },
+                            startPos: [1, 4],
+                            validMoves: [[0, 4]],
+                            targetPos: [0, 4], successMsg: "Promotion achieved! Your pawn has ascended to Queenhood!" },
+                            {
+                                instruction: "Company on the back rank: two black Rooks idle in the corners. Your b7-pawn needs only the final half-square of courage — b7 to b8.",
+                                successMsg: "Promotion with witnesses — rank 8 turns any pawn into any piece, crowd or no crowd.",
+                                pieces: { '0,0': '♜', '0,7': '♜', '1,1': '♙' },
+                                startPos: [1, 1],
+                                validMoves: [[0, 1]],
+                                targetPos: [0, 1]
+                            },
+                            {
+                                instruction: "The hard way to promote: a black barricade on e8 blocks the straight push. Capture-diagonal onto d8 — off with the Rook — and the pawn dresses up the violent way.",
+                                successMsg: "Promotion by CAPTURE: blocked ahead, the pawn surrounds diagonally and takes a piece with it.",
+                                pieces: { '0,3': '♜', '0,4': '♟', '1,4': '♙' },
+                                startPos: [1, 4],
+                                validMoves: [[0, 3]],
+                                targetPos: [0, 3]
+                            }
+                        ]
                     },
                     {
                         type: "puzzle",
                         pieceName: "Rook (♖)",
-                        title: "The Mighty Rook",
-                        instruction: "Rooks move in straight lines—either horizontally or vertically—as far as they want. Click the Rook and capture the target star square!",
-                        boardSize: 8,
-                        pieces: { '4,4': '♖', '2,4': '⭐' },
-                        startPos: [4, 4],
-                        validMoves: [[3, 4], [2, 4], [5, 4], [6, 4], [7, 4], [4, 0], [4, 1], [4, 2], [4, 3], [4, 5], [4, 6], [4, 7]],
-                        targetPos: [2, 4],
-                        successMsg: "Incredible precision! The rook rules straight paths."
+                        title: "The Open File",
+                        exercises: [
+                            { instruction: "Straight shooting. Click the Rook and read its reach: the whole rank left and right, the whole file up and down — until something stands in the way. Nothing does. March to the target star!",
+                            boardSize: 8,
+                            pieces: { '4,4': '♖', '2,4': '⭐' },
+                            startPos: [4, 4],
+                            validMoves: [[3, 4], [2, 4], [5, 4], [6, 4], [7, 4], [4, 0], [4, 1], [4, 2], [4, 3], [4, 5], [4, 6], [4, 7]],
+                            targetPos: [2, 4], successMsg: "Incredible precision! The rook rules straight paths." },
+                            {
+                                instruction: "The same laser, a busier board: your own King parks at h1 and a black Knight naps at a8 — neither in the way. Ride the Rook from e2 straight up the open file to the star.",
+                                successMsg: "Long-distance delivery: open files are the Rook's kingdom.",
+                                pieces: { '0,0': '♞', '2,4': '⭐', '6,4': '♖', '7,7': '♔' },
+                                startPos: [6, 4],
+                                validMoves: [[5, 4], [4, 4], [3, 4], [2, 4], [7, 4], [6, 0], [6, 1], [6, 2], [6, 3], [6, 5], [6, 6], [6, 7]],
+                                targetPos: [2, 4]
+                            },
+                            {
+                                instruction: "Traffic with a snack on it: a black Queen decorates e7 — ignore her — while the black Pawn on f4 is dinner. Slide along the rank and eat.",
+                                successMsg: "Captured by sliding: a Rook takes whatever stands on its straight lane.",
+                                pieces: { '1,4': '♛', '4,0': '♖', '4,5': '♟' },
+                                startPos: [4, 0],
+                                validMoves: [[4, 1], [4, 2], [4, 3], [4, 4], [4, 5], [5, 0], [6, 0], [7, 0], [3, 0], [2, 0], [1, 0], [0, 0]],
+                                targetPos: [4, 5]
+                            }
+                        ]
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Rook (♖)",
+                        title: "The Blocked File",
+                        exercises: [
+                            { instruction: "Same reach — with one catch: a Rook can <strong>never jump</strong>. The black Pawns block the file below and the rank to the right; every square beyond them is out of reach. Reach the target star!",
+                            boardSize: 8,
+                            pieces: { '4,4': '♖', '2,4': '⭐', '5,4': '♟', '4,6': '♟' },
+                            startPos: [4, 4],
+                            validMoves: [[3, 4], [2, 4], [4, 0], [4, 1], [4, 2], [4, 3], [4, 5]],
+                            targetPos: [2, 4], successMsg: "Blockers respected! One Pawn stops an entire army lane." },
+                            {
+                                instruction: "Different walls, same law: one Pawn on the file <strong>below</strong>, one Pawn on the rank to the <strong>left</strong>. The star sits one polite slide away to the right — feel how the walls freeze the rest of the board.",
+                                successMsg: "Two Pawns amputated two arms of the Rook — always plan where blockers will grow.",
+                                pieces: { '4,2': '♟', '4,4': '♖', '4,5': '⭐', '6,4': '♟' },
+                                startPos: [4, 4],
+                                validMoves: [[3, 4], [2, 4], [1, 4], [0, 4], [5, 4], [4, 3], [4, 5]],
+                                targetPos: [4, 5]
+                            },
+                            {
+                                instruction: "Now the wall itself is the quest: the black Pawn sits directly <strong>above</strong> your Rook. A Rook cannot jump — but it can bite by arriving. One square up, and the wall is lunch.",
+                                successMsg: "Walls are edible: capture by contact — everything beyond the victim stays unreachable this move.",
+                                pieces: { '3,4': '♟', '4,4': '♖' },
+                                startPos: [4, 4],
+                                validMoves: [[3, 4], [5, 4], [6, 4], [7, 4], [4, 0], [4, 1], [4, 2], [4, 3], [4, 5], [4, 6], [4, 7]],
+                                targetPos: [3, 4]
+                            }
+                        ]
                     },
                     {
                         type: "puzzle",
                         pieceName: "Bishop (♗)",
-                        title: "The Swift Bishop",
-                        instruction: "Bishops prowl diagonally across the board along squares of the exact same color. Click the Bishop and move it diagonally to the target!",
-                        boardSize: 8,
-                        pieces: { '5,2': '♗', '2,5': '⭐' },
-                        startPos: [5, 2],
-                        validMoves: [[4, 3], [3, 4], [2, 5], [6, 1], [7, 0], [6, 3], [7, 4]],
-                        targetPos: [2, 5],
-                        successMsg: "Diagonal dominance! The bishop strikes from afar."
+                        title: "The Open Diagonal",
+                        exercises: [
+                            { instruction: "Bishops prowl the diagonals and change colour <strong>never</strong> — a light-squared Bishop lives and dies on light squares. From this Bishop four diagonals run: two short, two long. Take the open one to the target star!",
+                            boardSize: 8,
+                            pieces: { '5,2': '♗', '2,5': '⭐' },
+                            startPos: [5, 2],
+                            validMoves: [[4, 3], [3, 4], [2, 5], [6, 1], [7, 0], [6, 3], [7, 4]],
+                            targetPos: [2, 5], successMsg: "Diagonal dominance! The bishop strikes from afar." },
+                            {
+                                instruction: "Colour-locked flight from the other corner: Bishop on c6, star on f2, a black Knight decorating f8. One long unbroken diagonal southeast — ride it through d5, e4, f3.",
+                                successMsg: "Length is free on an open diagonal — Bishops love the long horizon.",
+                                pieces: { '0,5': '♞', '2,2': '♗', '6,6': '⭐' },
+                                startPos: [2, 2],
+                                validMoves: [[3, 3], [4, 4], [5, 5], [6, 6], [1, 3], [0, 4], [1, 1], [0, 0], [3, 1], [4, 0]],
+                                targetPos: [6, 6]
+                            },
+                            {
+                                instruction: "A hawk, not a courier: the black Pawn on f6 blocks nothing by merely sitting — your Bishop on e4 hunts along its diagonal. Up two, right two, and the pawn is dinner.",
+                                successMsg: "Bishops eat along their colour all game — and this bite widens the diagonal behind it.",
+                                pieces: { '2,6': '♟', '4,4': '♗' },
+                                startPos: [4, 4],
+                                validMoves: [[3, 5], [2, 6], [3, 3], [2, 2], [1, 1], [0, 0], [5, 5], [6, 6], [7, 7], [5, 3], [6, 2], [7, 1]],
+                                targetPos: [2, 6]
+                            }
+                        ]
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Bishop (♗)",
+                        title: "The Colour Lock",
+                        exercises: [
+                            { instruction: "Same rule, with a lesson attached: like every piece except the Knight, Bishops cannot jump. The black Pawn blocks one diagonal — its whole colour-locked life is the other side of it. Take the open one to the target star!",
+                            boardSize: 8,
+                            pieces: { '5,2': '♗', '2,5': '⭐', '6,3': '♟' },
+                            startPos: [5, 2],
+                            validMoves: [[4, 3], [3, 4], [2, 5], [6, 1], [7, 0]],
+                            targetPos: [2, 5], successMsg: "One Pawn, one diagonal locked — Bishops plan around traffic, not through it." },
+                            {
+                                instruction: "A pawn on c6 locks the northeast diagonal — forever. But a Bishop carries two arms on the same colour: sweep around the other way via b3 to the star on c2.",
+                                successMsg: "One diagonal lost is not the Bishop lost — it lives on its other arm.",
+                                pieces: { '2,2': '♟', '4,0': '♗', '6,2': '⭐' },
+                                startPos: [4, 0],
+                                validMoves: [[3, 1], [5, 1], [6, 2], [7, 3]],
+                                targetPos: [6, 2]
+                            },
+                            {
+                                instruction: "Boxed in for real: black Pawns sit on <strong>both</strong> long diagonals (f6 and f4), leaving the Bishop two small squares — h7 one way, h3 the other. Send it to h3.",
+                                successMsg: "A colour-locked piece in a cage owns almost nothing — that is why players free their Bishops early.",
+                                pieces: { '2,5': '♟', '3,6': '♗', '4,5': '♟' },
+                                startPos: [3, 6],
+                                validMoves: [[2, 7], [4, 7]],
+                                targetPos: [4, 7]
+                            }
+                        ]
                     },
                     {
                         type: "puzzle",
                         pieceName: "Knight (♘)",
                         title: "The Agile Knight",
-                        instruction: "Knights move in a unique **'L-shape'** (2 squares in one direction, then 1 square perpendicular). Best of all, Knights can **jump over** other pieces! Click the Knight to leap to the target.",
-                        boardSize: 8,
-                        pieces: { '4,3': '♘', '2,4': '⭐', '3,3': '♙' }, // Obstacle pawn just for flavor
-                        startPos: [4, 3],
-                        validMoves: [[2, 4], [2, 2], [3, 5], [3, 1], [5, 5], [5, 1], [6, 4], [6, 2]],
-                        targetPos: [2, 4],
-                        successMsg: "Magnificent leap! Knights defy all obstacles."
+                        exercises: [
+                            { instruction: "The Knight's signature: an <strong>'L-shape'</strong> — two squares one way, one square across. Even better, it <strong>jumps</strong>, the only piece that can. Click the Knight to leap over the pawn straight to the target.",
+                            boardSize: 8,
+                            pieces: { '4,3': '♘', '2,4': '⭐', '3,3': '♙' },
+                            startPos: [4, 3],
+                            validMoves: [[2, 4], [2, 2], [3, 5], [3, 1], [5, 5], [5, 1], [6, 4], [6, 2]],
+                            targetPos: [2, 4], successMsg: "Magnificent leap! Knights defy all obstacles." },
+                            {
+                                instruction: "The pawn wall below is furniture: Knights are the only piece that jumps. From c3, bank the L up to the star on d5 — the garrison never mattered.",
+                                successMsg: "Jumps ignore garrisons — that is why Knights thrive in cramped positions.",
+                                pieces: { '3,3': '⭐', '5,2': '♘', '6,1': '♙', '6,2': '♙', '6,3': '♙' },
+                                startPos: [5, 2],
+                                validMoves: [[3, 1], [3, 3], [7, 1], [7, 3], [4, 0], [4, 4], [6, 0], [6, 4]],
+                                targetPos: [3, 3]
+                            },
+                            {
+                                instruction: "Hunter geometry: two black pieces stand inside the Knight's L. This one claims the g-file victim — hop from e4 to g5 and take it.",
+                                successMsg: "One leap, one removal: Knights forage from a full L every move.",
+                                pieces: { '2,3': '♟', '3,6': '♟', '4,4': '♘' },
+                                startPos: [4, 4],
+                                validMoves: [[3, 2], [3, 6], [5, 2], [5, 6], [2, 3], [2, 5], [6, 3], [6, 5]],
+                                targetPos: [3, 6]
+                            }
+                        ]
                     },
                     {
                         type: "puzzle",
                         pieceName: "Queen (♕)",
-                        title: "The Supreme Queen",
-                        instruction: "The Queen is the most powerful piece on the board, combining the powers of both the Rook and the Bishop (moving straight or diagonally in any direction). Reach the target!",
-                        boardSize: 8,
-                        pieces: { '4,4': '♕', '1,7': '⭐' },
-                        startPos: [4, 4],
-                        validMoves: [
-                            [1,7], [2,6], [3,5], [5,3], [6,2], [7,1], // diagonal up-right
-                            [4,5], [4,6], [4,7], [4,3], [4,2], [4,1], [4,0], // horizontal
-                            [3,4], [2,4], [1,4], [0,4], [5,4], [6,4], [7,4] // vertical
-                        ],
-                        targetPos: [1, 7],
-                        successMsg: "Unstoppable power! The queen commands the battlefield."
+                        title: "The Rook's Power",
+                        exercises: [
+                            { instruction: "Two pieces melted into one: first, the <strong>straight lines</strong> — everything a Rook can do, the Queen does too. Slide along the file to the target star.",
+                            boardSize: 8,
+                            pieces: { '4,4': '♕', '4,7': '⭐' },
+                            startPos: [4, 4],
+                            validMoves: [
+                                [4,5], [4,6], [4,7], [4,3], [4,2], [4,1], [4,0],
+                                [3,4], [2,4], [1,4], [0,4], [5,4], [6,4], [7,4]
+                            ],
+                            targetPos: [4, 7], successMsg: "Half her might shown: on open lines the Queen is a super-Rook." },
+                            {
+                                instruction: "Super-Rook confirmed in traffic: your own King waits at e1 and the Queen still rules the rank. Slide from e6 to the star on h6.",
+                                successMsg: "Front to back and side to side — the Queen is every straight lane at once.",
+                                pieces: { '2,4': '♕', '2,7': '⭐', '7,4': '♔' },
+                                startPos: [2, 4],
+                                validMoves: [[2, 5], [2, 6], [2, 7], [2, 3], [2, 2], [2, 1], [2, 0], [3, 4], [4, 4], [5, 4], [6, 4], [1, 4], [0, 4]],
+                                targetPos: [2, 7]
+                            },
+                            {
+                                instruction: "Two black Pawns pinch the rank around the Queen. She cannot jump them — but she can bite them: slide right and take the pawn on g4.",
+                                successMsg: "Victim by contact: along a rank the Queen captures exactly like a Rook.",
+                                pieces: { '4,2': '♟', '4,4': '♕', '4,6': '♟' },
+                                startPos: [4, 4],
+                                validMoves: [[4, 3], [4, 5], [4, 6], [3, 4], [2, 4], [1, 4], [0, 4], [5, 4], [6, 4], [7, 4]],
+                                targetPos: [4, 6]
+                            }
+                        ]
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Queen (♕)",
+                        title: "The Bishop's Power",
+                        exercises: [
+                            { instruction: "Second half of the Queen: the <strong>diagonals</strong> — everything a Bishop can do, in both colours at once. Cut across the board to the target star.",
+                            boardSize: 8,
+                            pieces: { '4,4': '♕', '1,1': '⭐' },
+                            startPos: [4, 4],
+                            validMoves: [
+                                [1,1], [2,2], [3,3], [5,5], [6,6], [7,7],
+                                [3,5], [2,6], [1,7], [5,3], [6,2], [7,1]
+                            ],
+                            targetPos: [1, 1], successMsg: "Diagonals and files, all eight directions — the Queen combines rook and bishop into one." },
+                            {
+                                instruction: "The Bishop's half, from another corner: Queen on c6, star on f2, a black Rook decorating g8. Cut along the southeast diagonal.",
+                                successMsg: "Every diagonal from c6 is the Queen's — four directions from any corner.",
+                                pieces: { '0,6': '♜', '2,2': '♕', '6,6': '⭐' },
+                                startPos: [2, 2],
+                                validMoves: [[1, 2], [0, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [2, 1], [2, 0], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [3, 3], [4, 4], [5, 5], [6, 6], [3, 1], [4, 0], [1, 1], [0, 0], [1, 3], [0, 4]],
+                                targetPos: [6, 6]
+                            },
+                            {
+                                instruction: "The long hunt: a black Pawn rests politely on g4, three diagonal squares from your Queen on d7. One cut — d7 to g4 — and it is gone.",
+                                successMsg: "Diagonal captures at any distance: the Queen inherits both Bishop colours.",
+                                pieces: { '1,3': '♕', '4,6': '♟' },
+                                startPos: [1, 3],
+                                validMoves: [[1, 2], [1, 1], [1, 0], [1, 4], [1, 5], [1, 6], [1, 7], [0, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [0, 2], [2, 2], [3, 1], [4, 0], [0, 4], [2, 4], [3, 5], [4, 6]],
+                                targetPos: [4, 6]
+                            }
+                        ]
                     },
                     {
                         type: "puzzle",
                         pieceName: "King (♔)",
                         title: "The Royal King",
-                        instruction: "The King is your most vital piece, but moves only **one square** in any direction. Step safely to the target square.",
+                        exercises: [
+                            { instruction: "Your most vital piece, yet the humblest step: the King moves <strong>one square</strong> in any direction — into safety, never into danger. Step to the target square.",
+                            boardSize: 8,
+                            pieces: { '4,4': '♔', '3,5': '⭐' },
+                            startPos: [4, 4],
+                            validMoves: [[3, 3], [3, 4], [3, 5], [4, 3], [4, 5], [5, 3], [5, 4], [5, 5]],
+                            targetPos: [3, 5], successMsg: "Careful and steady! The king steps forward." },
+                            {
+                                instruction: "An army wanders in the distance — pawn g3, Rook a8, pawn c1 — and not one piece is anywhere near your King. Step e4 to the star on f5.",
+                                successMsg: "One polite step at a time, no matter how far the armies wander.",
+                                pieces: { '0,0': '♜', '3,5': '⭐', '4,4': '♔', '6,6': '♟', '7,2': '♙' },
+                                startPos: [4, 4],
+                                validMoves: [[3, 3], [3, 4], [3, 5], [4, 3], [4, 5], [5, 3], [5, 4], [5, 5]],
+                                targetPos: [3, 5]
+                            },
+                            {
+                                instruction: "Squeeze through the gap: your OWN pawns occupy d5 and f3 — a King may not step on them (and should not: they are his shoe-shine boys). Take the lawful road: e4 to the star on f5.",
+                                successMsg: "Own pieces block their own King — six open squares are still plenty of room.",
+                                pieces: { '3,3': '♙', '3,5': '⭐', '4,4': '♔', '5,5': '♙' },
+                                startPos: [4, 4],
+                                validMoves: [[3, 4], [3, 5], [4, 3], [4, 5], [5, 3], [5, 4]],
+                                targetPos: [3, 5]
+                            }
+                        ]
+                    },
+                    {
+                        type: "info",
+                        title: "The King's Post",
+                        instruction: "Movement learned; now character. Every other piece exists for one job above all: keeping your King alive. He loves corners, pawn walls and quiet files — and the rest of this course teaches you to give him exactly that. Click <strong>Next</strong> to leave the barracks for the opening plan.",
                         boardSize: 8,
-                        pieces: { '4,4': '♔', '3,5': '⭐' },
-                        startPos: [4, 4],
-                        validMoves: [[3, 3], [3, 4], [3, 5], [4, 3], [4, 5], [5, 3], [5, 4], [5, 5]],
-                        targetPos: [3, 5],
-                        successMsg: "Careful and steady! The king steps forward."
+                                                pieces: {
+                            '0,0': '♜', '0,1': '♞', '0,2': '♝', '0,3': '♛', '0,4': '♚', '0,5': '♝', '0,6': '♞', '0,7': '♜',
+                            '1,0': '♟', '1,1': '♟', '1,2': '♟', '1,3': '♟', '1,4': '♟', '1,5': '♟', '1,6': '♟', '1,7': '♟',
+                            '6,0': '♙', '6,1': '♙', '6,2': '♙', '6,3': '♙', '6,4': '♙', '6,5': '♙', '6,6': '♙', '6,7': '♙',
+                            '7,0': '♖', '7,1': '♘', '7,2': '♗', '7,3': '♕', '7,4': '♔', '7,5': '♗', '7,6': '♘', '7,7': '♖'
+                        }
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "Openings",
+                subtitle: "Claiming the centre with a plan",
+                description: "A strong opening does three humble things at once: it claims the centre with pawn levers such as e4 or d4, it develops every piece exactly once, and it hides the King behind a wall of pawns at the first quiet moment. Chasing pawns, marching the Queen out early, or copying your opponent move for move hands the whole advantage back.",
+                challenges: [
+                    {
+                        type: "info",
+                        title: "The Opening Plan",
+                        instruction: "Five goals, in this order: <strong>1.</strong> claim the centre with a pawn, <strong>2.</strong> develop — every piece moves once, Knights before Bishops, <strong>3.</strong> castle early, <strong>4.</strong> connect the Rooks, <strong>5.</strong> only then hunt. The fresh position below is legal castling country: run the checklist in your head. Click <strong>Next</strong> and follow the plan on the board.",
+                        boardSize: 8,
+                                                pieces: {
+                            '0,0': '♜', '0,1': '♞', '0,2': '♝', '0,3': '♛', '0,4': '♚', '0,5': '♝', '0,6': '♞', '0,7': '♜',
+                            '1,0': '♟', '1,1': '♟', '1,2': '♟', '1,3': '♟', '1,4': '♟', '1,5': '♟', '1,6': '♟', '1,7': '♟',
+                            '6,0': '♙', '6,1': '♙', '6,2': '♙', '6,3': '♙', '6,4': '♙', '6,5': '♙', '6,6': '♙', '6,7': '♙',
+                            '7,0': '♖', '7,1': '♘', '7,2': '♗', '7,3': '♕', '7,4': '♔', '7,5': '♗', '7,6': '♘', '7,7': '♖'
+                        }
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Develop the Knight",
+                        title: "Out of the Stable",
+                        exercises: [
+                            { instruction: "Development means bringing a piece from home into the game with a purpose. Leap your Kingside Knight from g1 to f3 — over the pawn wall, landing aimed at the centre: e5 and d4.",
+                            boardSize: 8,
+                                                    pieces: {
+                                '0,0': '♜', '0,1': '♞', '0,2': '♝', '0,3': '♛', '0,4': '♚', '0,5': '♝', '0,6': '♞', '0,7': '♜',
+                                '1,0': '♟', '1,1': '♟', '1,2': '♟', '1,3': '♟', '1,4': '♟', '1,5': '♟', '1,6': '♟', '1,7': '♟',
+                                '6,0': '♙', '6,1': '♙', '6,2': '♙', '6,3': '♙', '6,4': '♙', '6,5': '♙', '6,6': '♙', '6,7': '♙',
+                                '7,0': '♖', '7,1': '♘', '7,2': '♗', '7,3': '♕', '7,4': '♔', '7,5': '♗', '7,6': '♘', '7,7': '♖'
+                            },
+                            startPos: [7, 6],
+                            validMoves: [[5, 5], [5, 7]],
+                            targetPos: [5, 5], successMsg: "Developed! From f3 the Knight bites the centre — the first move of the Ruy López, the Italian Game and half of all chess ever played." },
+                            {
+                                instruction: "Development under resistance: Black has already pushed a pawn to e5 in front of your face. Develop to f3 anyway — the Knight now sits nose-to-nose with that pawn, biting it from the safety of home. Same jump, fuller board.",
+                                successMsg: "Developed with the centre crowded — from f3 the Knight attacks e5 all the same. Real openings are always a little loud.",
+                                pieces: { '0,0': '♜', '0,1': '♞', '0,2': '♝', '0,3': '♛', '0,4': '♚', '0,5': '♝', '0,6': '♞', '0,7': '♜', '1,0': '♟', '1,1': '♟', '1,2': '♟', '1,3': '♟', '1,5': '♟', '1,6': '♟', '1,7': '♟', '3,4': '♟', '6,0': '♙', '6,1': '♙', '6,2': '♙', '6,3': '♙', '6,4': '♙', '6,5': '♙', '6,6': '♙', '6,7': '♙', '7,0': '♖', '7,1': '♘', '7,2': '♗', '7,3': '♕', '7,4': '♔', '7,5': '♗', '7,6': '♘', '7,7': '♖' },
+                                startPos: [7, 6],
+                                validMoves: [[5, 5], [5, 7]],
+                                targetPos: [5, 5]
+                            },
+                            {
+                                instruction: "The other door: g1 to h3 is legal but shy — from h3 the Knight attacks g5 and f4, nothing central. Click it to see what sideways development looks and feels like.",
+                                successMsg: "h3 development: honest but off-key. Note how much better f3 pointed — books almost always prefer it.",
+                                pieces: { '0,0': '♜', '0,1': '♞', '0,2': '♝', '0,3': '♛', '0,4': '♚', '0,5': '♝', '0,6': '♞', '0,7': '♜', '1,0': '♟', '1,1': '♟', '1,2': '♟', '1,3': '♟', '1,4': '♟', '1,5': '♟', '1,6': '♟', '1,7': '♟', '6,0': '♙', '6,1': '♙', '6,2': '♙', '6,3': '♙', '6,4': '♙', '6,5': '♙', '6,6': '♙', '6,7': '♙', '7,0': '♖', '7,1': '♘', '7,2': '♗', '7,3': '♕', '7,4': '♔', '7,5': '♗', '7,6': '♘', '7,7': '♖' },
+                                startPos: [7, 6],
+                                validMoves: [[5, 5], [5, 7]],
+                                targetPos: [5, 7]
+                            }
+                        ]
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Develop the Bishop",
+                        title: "The Italian Bishop",
+                        exercises: [
+                            { instruction: "Your e-pawn already stepped to e4, so the f1-Bishop has an open diagonal. Ride it from f1 through e2 to c4, where it stares across at the softest square on the board: f7, defended by the King alone.",
+                            boardSize: 8,
+                            pieces: { '7,4': '♔', '7,3': '♕', '7,5': '♗', '6,3': '♙', '6,5': '♙', '0,4': '♚', '1,3': '♟', '1,4': '♟', '1,5': '♟' },
+                            startPos: [7, 5],
+                            validMoves: [[6, 4], [5, 3], [4, 2]],
+                            targetPos: [4, 2], successMsg: "The Italian Game in miniature: Knight on f3, Bishop on c4, centre pawns — the oldest opening plan in chess." },
+                            {
+                                instruction: "The Spanish sharpening: a black Knight now waits on c6 (guarding e5, the pawn behind your path). Ride f1-Bishop one diagonal step FARTHER than the Italian — to b5, where it frowns across at that very Knight.",
+                                successMsg: "The Ruy López: Knight out, pawn out, Bishop on b5 staring at c6 — the most played opening in history got its skeleton from this shape.",
+                                pieces: { '0,4': '♚', '1,3': '♟', '1,4': '♟', '1,5': '♟', '2,2': '♞', '6,3': '♙', '6,5': '♙', '7,3': '♕', '7,4': '♔', '7,5': '♗' },
+                                startPos: [7, 5],
+                                validMoves: [[6, 4], [5, 3], [4, 2], [3, 1]],
+                                targetPos: [3, 1]
+                            },
+                            {
+                                instruction: "The polite line: when Black develops fast, the f1-Bishop often stops at e2 instead of the showy c4, keeping all options open. One diagonal step, no more.",
+                                successMsg: "Quiet development: e2 stays home-flavoured while the Italian's c4 aims at f7. Both are real openings — calm is also a plan.",
+                                pieces: { '0,4': '♚', '1,3': '♟', '1,4': '♟', '1,5': '♟', '6,3': '♙', '6,5': '♙', '7,3': '♕', '7,4': '♔', '7,5': '♗' },
+                                startPos: [7, 5],
+                                validMoves: [[6, 4], [5, 3], [4, 2], [6, 6], [5, 7]],
+                                targetPos: [6, 4]
+                            }
+                        ]
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Develop the Knight",
+                        title: "The Other Stable",
+                        exercises: [
+                            { instruction: "Both Knights out before either Bishop moves twice — that is what development discipline looks like. Leap your Queenside Knight from b1 to c3, where it backs your future centre push.",
+                            boardSize: 8,
+                                                    pieces: {
+                                '0,0': '♜', '0,1': '♞', '0,2': '♝', '0,3': '♛', '0,4': '♚', '0,5': '♝', '0,6': '♞', '0,7': '♜',
+                                '1,0': '♟', '1,1': '♟', '1,2': '♟', '1,3': '♟', '1,4': '♟', '1,5': '♟', '1,6': '♟', '1,7': '♟',
+                                '6,0': '♙', '6,1': '♙', '6,2': '♙', '6,3': '♙', '6,4': '♙', '6,5': '♙', '6,6': '♙', '6,7': '♙',
+                                '7,0': '♖', '7,1': '♘', '7,2': '♗', '7,3': '♕', '7,4': '♔', '7,5': '♗', '7,6': '♘', '7,7': '♖'
+                            },
+                            startPos: [7, 1],
+                            validMoves: [[5, 0], [5, 2]],
+                            targetPos: [5, 2], successMsg: "Symmetry with purpose: two Knights out, centre ahead — the textbook development order." },
+                            {
+                                instruction: "The quiet twin: from the same full board, send b1-Knight to a3 instead. Legal, sometimes useful — and visibly weaker than c3. Learn it by contrast.",
+                                successMsg: "a3 development — real, but off-beat: same jump, worse dreams. c3 remains the book move.",
+                                pieces: { '0,0': '♜', '0,1': '♞', '0,2': '♝', '0,3': '♛', '0,4': '♚', '0,5': '♝', '0,6': '♞', '0,7': '♜', '1,0': '♟', '1,1': '♟', '1,2': '♟', '1,3': '♟', '1,4': '♟', '1,5': '♟', '1,6': '♟', '1,7': '♟', '3,3': '♟', '6,0': '♙', '6,1': '♙', '6,2': '♙', '6,3': '♙', '6,4': '♙', '6,5': '♙', '6,6': '♙', '6,7': '♙', '7,0': '♖', '7,1': '♘', '7,2': '♗', '7,3': '♕', '7,4': '♔', '7,5': '♗', '7,6': '♘', '7,7': '♖' },
+                                startPos: [7, 1],
+                                validMoves: [[5, 0], [5, 2]],
+                                targetPos: [5, 0]
+                            },
+                            {
+                                instruction: "A fuller picture: your f3-Knight is ALREADY out, the e-pawns have met — and the other Knight still naps at b1. Bring it to c3 so both horses stand at the centre gates.",
+                                successMsg: "Both Knights out, centre settled — this is what a real opening looks like four moves in.",
+                                pieces: { '0,0': '♜', '0,1': '♞', '0,2': '♝', '0,3': '♛', '0,4': '♚', '0,5': '♝', '0,6': '♞', '0,7': '♜', '1,0': '♟', '1,1': '♟', '1,2': '♟', '1,3': '♟', '1,4': '♟', '1,5': '♟', '1,6': '♟', '1,7': '♟', '3,4': '♟', '4,4': '♙', '5,5': '♘', '6,0': '♙', '6,1': '♙', '6,2': '♙', '6,3': '♙', '6,5': '♙', '6,6': '♙', '6,7': '♙', '7,0': '♖', '7,1': '♘', '7,2': '♗', '7,3': '♕', '7,4': '♔', '7,5': '♗', '7,7': '♖' },
+                                startPos: [7, 1],
+                                validMoves: [[5, 0], [5, 2]],
+                                targetPos: [5, 2]
+                            }
+                        ]
+                    },
+                    {
+                        type: "info",
+                        title: "Keep the Queen Home",
+                        instruction: "One warning before the roof goes on. A Queen released too early is chased by cheap tempo: every check against her lets your opponent develop for free while you run. Openings are not attacks; they are an invitation to the middle game. Knights out, Bishop aiming — only one duty remains: the King's refuge. Click <strong>Next</strong> for castling.",
+                        boardSize: 8,
+                        pieces: { '7,4': '♔', '7,3': '♕', '4,2': '♗', '5,5': '♘', '5,2': '♘', '6,3': '♙', '6,5': '♙', '0,4': '♚', '1,3': '♟', '1,4': '♟', '1,5': '♟' }
                     }
                 ]
             },
             {
                 id: 3,
-                title: "Chapter 3: Special Tactics",
-                subtitle: "Castling & Promotion",
-                description: "Advanced rules that turn the tide of battle in crucial moments.",
+                title: "Castling",
+                subtitle: "The King's refuge",
+                description: "The only move in chess where two pieces travel at once — and the only one the King gets to choose for his own safety. Four conditions must hold at the moment you castle; break even the quietest one and the ride is denied.",
                 challenges: [
                     {
-                        type: "puzzle",
-                        pieceName: "Pawn Promotion (♙ ➔ ♕)",
-                        title: "Ultimate Transformation",
-                        instruction: "When a tiny Pawn successfully marches all the way to the opposite end of the board, it is immediately promoted into any piece of your choice—usually a mighty Queen! Move the pawn to the final rank.",
+                        type: "info",
+                        title: "The Four Conditions",
+                        instruction: "Castling is legal only while all four hold: the King and that Rook have <strong>never moved</strong> this game; <strong>no piece</strong> stands between them; the King is <strong>not in check</strong>; and the King <strong>never crosses or lands on</strong> an attacked square. Most failed castle attempts die on the last, silent condition. Study the fresh position, run the checklist on the h-side, then click <strong>Next</strong> to ride.",
                         boardSize: 8,
-                        pieces: { '1,4': '♙' },
-                        startPos: [1, 4],
-                        validMoves: [[0, 4]],
-                        targetPos: [0, 4],
-                        successMsg: "Promotion achieved! Your pawn has ascended to Queenhood!"
+                                                pieces: {
+                            '0,0': '♜', '0,1': '♞', '0,2': '♝', '0,3': '♛', '0,4': '♚', '0,5': '♝', '0,6': '♞', '0,7': '♜',
+                            '1,0': '♟', '1,1': '♟', '1,2': '♟', '1,3': '♟', '1,4': '♟', '1,5': '♟', '1,6': '♟', '1,7': '♟',
+                            '6,0': '♙', '6,1': '♙', '6,2': '♙', '6,3': '♙', '6,4': '♙', '6,5': '♙', '6,6': '♙', '6,7': '♙',
+                            '7,0': '♖', '7,1': '♘', '7,2': '♗', '7,3': '♕', '7,4': '♔', '7,5': '♗', '7,6': '♘', '7,7': '♖'
+                        }
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Castling Short (0-0)",
+                        title: "The King's Refuge",
+                        exercises: [
+                            { instruction: "Everything checks out on the Kingside. Castle short: the King glides two squares toward the Rook (e1 → g1), and the Rook vaults over to f1, the square the King crossed. Click the King and ride!",
+                            boardSize: 8,
+                            pieces: { '7,4': '♔', '7,7': '♖' },
+                            startPos: [7, 4],
+                            validMoves: [[7, 5], [7, 6]],
+                            targetPos: [7, 6],
+                            rookFollow: [[7, 7], [7, 5]], successMsg: "Castled short! King on g1 behind its wall of pawns, Rook on f1 aiming down the open file." },
+                            {
+                                instruction: "Same corridor, better scenery: a black Knight idles at b4, a Queen watches from d8, stray pawns decorate the field — and none of them touch e1, f1 or g1. The ride happens anyway, at full speed.",
+                                successMsg: "Castled short under observation — the conditions care nothing for the crowd.",
+                                pieces: { '0,3': '♛', '2,1': '♟', '4,1': '♞', '5,6': '♟', '7,4': '♔', '7,7': '♖' },
+                                startPos: [7, 4],
+                                validMoves: [[7, 5], [7, 6]],
+                                targetPos: [7, 6],
+                                rookFollow: [[7, 7], [7, 5]]
+                            },
+                            {
+                                instruction: "Castling in a REAL position: e-pawn at e4, Knight at f3, Bishop tucked at e2, everything else home. The Kingside is textbook-clean — this is the exact moment your guide has been building toward. Ride short.",
+                                successMsg: "Castled short in a live position: King on g1 behind its wall, Rook on f1 eyeing the open file. Half of all king safety is this one move.",
+                                pieces: { '0,0': '♜', '0,1': '♞', '0,2': '♝', '0,3': '♛', '0,4': '♚', '0,5': '♝', '0,6': '♞', '0,7': '♜', '1,0': '♟', '1,1': '♟', '1,2': '♟', '1,3': '♟', '1,4': '♟', '1,5': '♟', '1,6': '♟', '1,7': '♟', '4,4': '♙', '5,5': '♘', '6,0': '♙', '6,1': '♙', '6,2': '♙', '6,3': '♙', '6,4': '♗', '6,5': '♙', '6,6': '♙', '6,7': '♙', '7,0': '♖', '7,1': '♘', '7,2': '♗', '7,3': '♕', '7,4': '♔', '7,7': '♖' },
+                                startPos: [7, 4],
+                                validMoves: [[7, 5], [7, 6]],
+                                targetPos: [7, 6],
+                                rookFollow: [[7, 7], [7, 5]]
+                            }
+                        ]
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Castling Long (0-0-0)",
+                        title: "The Queenside Ride",
+                        exercises: [
+                            { instruction: "The mirrored ride. King two squares toward the a1-Rook (e1 → c1), Rook vaults to d1. Nothing may stand on b1, c1 or d1. Castle long!",
+                            boardSize: 8,
+                            pieces: { '7,4': '♔', '7,0': '♖' },
+                            startPos: [7, 4],
+                            validMoves: [[7, 3], [7, 2]],
+                            targetPos: [7, 2],
+                            rookFollow: [[7, 0], [7, 3]], successMsg: "Castled long! King on c1, Rook on d1 — the Queenside opens for battle." },
+                            {
+                                instruction: "Fancier company: your Knight already sits at b3, a black Knight looms at g5, a pawn decorates c6 — and the Queenside corridors b1, c1, d1 are still bare. Ride long.",
+                                successMsg: "Castled long in crowded company — the corridors were the only thing that counted.",
+                                pieces: { '2,2': '♟', '3,6': '♞', '5,1': '♘', '7,0': '♖', '7,4': '♔' },
+                                startPos: [7, 4],
+                                validMoves: [[7, 3], [7, 2]],
+                                targetPos: [7, 2],
+                                rookFollow: [[7, 0], [7, 3]]
+                            },
+                            {
+                                instruction: "The developed Queenside: Knight to c3, Bishop to e3 (fed by the d-pawn at d4), Queen out to g3. Every square between a1 and e1 is neutral — the textbook long-castle moment. Ride.",
+                                successMsg: "King on c1, Rook on d1, all pieces earning their keep — long castling in a real position.",
+                                pieces: { '0,0': '♜', '0,1': '♞', '0,2': '♝', '0,3': '♛', '0,4': '♚', '0,5': '♝', '0,6': '♞', '0,7': '♜', '1,0': '♟', '1,1': '♟', '1,2': '♟', '1,3': '♟', '1,4': '♟', '1,5': '♟', '1,6': '♟', '1,7': '♟', '4,3': '♙', '5,2': '♘', '5,4': '♗', '5,6': '♕', '6,0': '♙', '6,1': '♙', '6,2': '♙', '6,4': '♙', '6,5': '♙', '6,6': '♙', '6,7': '♙', '7,0': '♖', '7,4': '♔', '7,5': '♗', '7,6': '♘', '7,7': '♖' },
+                                startPos: [7, 4],
+                                validMoves: [[7, 3], [7, 2]],
+                                targetPos: [7, 2],
+                                rookFollow: [[7, 0], [7, 3]]
+                            }
+                        ]
                     }
                 ]
             },
             {
                 id: 4,
-                title: "Chapter 4: Check & Checkmate",
-                subtitle: "Securing Victory",
-                description: "Learn how to threaten the enemy king and deliver the final, glorious Checkmate.",
+                title: "Blocked Movements",
+                subtitle: "Freezing pieces to their post",
+                description: "A pin is an attack that passes through a lesser piece to something more precious behind it. Against the King itself the pin becomes <strong>absolute</strong>: the pinned piece is not forbidden to move — it simply has no move, because any hop would step into check. Pins capture nothing and still win entire games.",
                 challenges: [
+                    {
+                        type: "info",                        title: "What a Pin Is",
+                        instruction: "Picture a needle: attacker, victim, treasure — one straight line through three squares. The victim dares not step off the line, because the treasure behind it would fall. Pin something to the <strong>King</strong> and even rescue is against the law. The board shows a finished pin: the Bishop on b5 aims down b5-c6-d7-e8, straight through the Knight into the King. Count the three squares on the needle, then click <strong>Next</strong> to tie one yourself.",
+                        boardSize: 8,
+                        pieces: { '0,4': '♚', '1,3': '♞', '3,1': '♗' }
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Absolute Pin (♗)",
+                        title: "Nailed to the Diagonal",
+                        exercises: [
+                            { instruction: "One diagonal step seats the needle. Your Bishop on c4 aims elsewhere today; ride it to b5, where a single line runs b5-c6-d7-e8 — straight through the Knight into the King. Nothing stands between them, so the Knight becomes welded to its post: one hop off the diagonal and the King walks into your Bishop.",
+                            boardSize: 8,
+                            pieces: { '0,4': '♚', '1,3': '♞', '4,2': '♗' },
+                            startPos: [4, 2],
+                            validMoves: [[3, 1], [2, 0], [5, 1], [6, 0], [5, 3], [6, 4], [7, 5]],
+                            targetPos: [3, 1], successMsg: "Pinned! Bishop on b5, Knight on d7, King on e8 — one straight needle through all three. The Knight will never leave its square without costing the game. A Queen pins the same way, along a file, a rank or a diagonal — three directions to one." },
+                            {
+                                instruction: "The SAME needle, Queen-sized: your Queen on b3 already stares up the b-file — b5, b6-Knight, b8-King, all in one line. Fold it one step tighter: b3 to b4, and the Knight has no legs at all.",
+                                successMsg: "A Queen pin along the FILE: what the Bishop did with a diagonal, she does with a column — straighter, meaner, longer.",
+                                pieces: { '0,1': '♚', '2,1': '♞', '5,1': '♕' },
+                                startPos: [5, 1],
+                                validMoves: [[4, 1], [3, 1]],
+                                targetPos: [4, 1]
+                            },
+                            {
+                                instruction: "A ROOK can weld too — along a rank: h5-Rook, e5-Knight, d5-King, one straight row. Fold the needle in from h5 to g5 and watch the Knight's legs vanish.",
+                                successMsg: "Rook pin on a rank — the same three-square needle, horizontal. Every long piece owns its own direction of pinning.",
+                                pieces: { '3,3': '♚', '3,4': '♞', '3,7': '♖' },
+                                startPos: [3, 7],
+                                validMoves: [[3, 6], [3, 5]],
+                                targetPos: [3, 6]
+                            }
+                        ]
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Relative Pin (♗)",
+                        title: "The Material Pin",
+                        exercises: [
+                            { instruction: "Not every pin points at the King. Here the Knight shields a <strong>Rook</strong>: the Knight may legally hop away — but the moment it does, the Rook behind it is yours. Pin the Knight to its Rook: b3 to c4, needle resting on d5 and f7.",
+                            boardSize: 8,
+                            pieces: { '1,5': '♜', '3,3': '♞', '5,1': '♗' },
+                            startPos: [5, 1],
+                            validMoves: [[4, 2]],
+                            targetPos: [4, 2], successMsg: "A relative pin! Absolute pins take the move; relative pins take the material. The Knight may hop — the Rook may not." },
+                            {
+                                instruction: "An executive pin: the Queen on b6 stares down the b-file — through the Knight on b4, straight into the Rook on b2. Nudge her to b5 and the Rook becomes pure profit.",
+                                successMsg: "Relative pin by Queen: the Knight may hop, but every hop is worth exactly one Rook — and loses it.",
+                                pieces: { '2,1': '♕', '4,1': '♞', '6,1': '♜' },
+                                startPos: [2, 1],
+                                validMoves: [[1, 1], [1, 0], [3, 1], [2, 2], [2, 0]],
+                                targetPos: [3, 1]
+                            },
+                            {
+                                instruction: "The absolute pin ALREADY sits on the board: Bishop on b5, Knight on d7, King on e8. Pinned pieces cannot run — so they make cheap prey. Push your c-pawn from c5 to c6 and threaten the frozen Knight with a 1-point soldier.",
+                                successMsg: "Pin plus punch: the frozen Knight cannot touch your pawn. Wins like this start with pinning — then simply knocking.",
+                                pieces: { '0,4': '♚', '1,3': '♞', '3,1': '♗', '3,2': '♙' },
+                                startPos: [3, 2],
+                                validMoves: [[2, 2]],
+                                targetPos: [2, 2]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 5,
+                title: "Protection",
+                subtitle: "A piece that backs another up",
+                description: "Protection is a second pair of eyes standing behind your piece. If an attacker dares to take the guarded piece, the guard counter-attacks from its own square and wins the exchange back. Several pieces can shield the same point from different directions at once, and the arithmetic decides every trade: the attacker brings one price, the defender takes it back for less.",
+                challenges: [
+                    {
+                        type: "info",
+                        title: "The Lone Guard",
+                        instruction: "Count the danger: the black Rook on d8 stares down the file at your unprotected pawn on d5 — a free 1-point sacrifice for Black unless somebody backs it. Two of your pieces can reach that pawn's lines, and each arrives with a counter-attack priced above what the pawn costs. Study the threat, then click <strong>Next</strong> to bring the first guard forward.",
+                        boardSize: 8,
+                        pieces: { '0,3': '♜', '3,3': '♙', '7,1': '♘' }
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Guard (♘)",
+                        title: "Bring the Guard",
+                        exercises: [
+                            { instruction: "The Rook dares nothing yet because a guard is coming. Leap your Knight from b1 to c3 — one jump from the pawn's file, landing a counter-attack aimed straight at the d5 pawn.",
+                            boardSize: 8,
+                            pieces: { '0,3': '♜', '3,3': '♙', '7,1': '♘' },
+                            startPos: [7, 1],
+                            validMoves: [[5, 0], [5, 2]],
+                            targetPos: [5, 2], successMsg: "Defended! If the Rook drops on d5, your Knight recaptures the 5-point Rook for a 1-point pawn — a trade Black cannot afford. That is protection at work." },
+                            {
+                                instruction: "A guard can also arrive from the far side: this Knight naps at g2. Send it to f4 — where its L points d5 the moment it lands. A watcher gained, from a door the Rook never expected.",
+                                successMsg: "Knight on f4 guards d5 from the g-side — a second price on the Rook's greed. Protection counts no matter which door the guard came through.",
+                                pieces: { '0,3': '♜', '3,3': '♙', '6,6': '♘' },
+                                startPos: [6, 6],
+                                validMoves: [[4, 5], [4, 7], [5, 4], [7, 4]],
+                                targetPos: [4, 5]
+                            },
+                            {
+                                instruction: "Guards also go BEHIND: the black Knight on g6 pokes directly at your Queen on e5. March the Rook from e1 up two squares to e3 — and let it stand watch straight down the file.",
+                                successMsg: "Rook on e3 backs the Queen: if the Knight lands it wins a 9 and pays a 3 — the trade every attacker fears.",
+                                pieces: { '0,0': '♜', '2,6': '♞', '3,4': '♕', '7,4': '♖' },
+                                startPos: [7, 4],
+                                validMoves: [[6, 4], [5, 4]],
+                                targetPos: [5, 4]
+                            }
+                        ]
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Guard (♗)",
+                        title: "The Second Shield",
+                        exercises: [
+                            { instruction: "One guard holds; a full fortress backs the point. The Knight on f6 already covers the pawn from its own angle. Add the second shield from a different direction: ride the Bishop from b3 to c4, where it also targets d5.",
+                            boardSize: 8,
+                            pieces: { '3,3': '♙', '2,5': '♘', '5,2': '♗' },
+                            startPos: [5, 2],
+                            validMoves: [[6, 0], [4, 2]],
+                            targetPos: [4, 2], successMsg: "Two guards, two directions — Knight on f6 and Bishop on c4. Whoever takes that pawn now loses material twice over. Multiple shields make a square unbreachable." },
+                            {
+                                instruction: "The most expensive shield there is: your Queen. From f4, one quiet slide to f5 puts her line straight through e5 onto the d5 pawn — any Rook raid now costs five and wins one.",
+                                successMsg: "Queen on f5 covers d5 along the rank: ranged guard beats the point-blank grab.",
+                                pieces: { '0,3': '♜', '3,3': '♙', '4,5': '♕' },
+                                startPos: [4, 5],
+                                validMoves: [[4, 4], [4, 3], [4, 2], [4, 1], [4, 0], [3, 5], [2, 5], [1, 5], [0, 5], [5, 5], [6, 5], [7, 5], [3, 4], [2, 3], [1, 2], [0, 1], [3, 6], [2, 7], [5, 4], [6, 3], [7, 2], [5, 6], [6, 7]],
+                                targetPos: [3, 5]
+                            },
+                            {
+                                instruction: "And the Rook guards from BEHIND: with the Knight on f6 already watching, march the d-file Rook up from d1 to d3 — a third shield facing the pawn straight down its file.",
+                                successMsg: "Rook on d3 backs the pawn from behind the lines: three guards, three prices on one square — nobody grabs d5 for free.",
+                                pieces: { '0,3': '♜', '2,5': '♘', '3,3': '♙', '7,3': '♖' },
+                                startPos: [7, 3],
+                                validMoves: [[6, 3], [5, 3]],
+                                targetPos: [5, 3]
+                            }
+                        ]
+                    }
+                ]
+            },
+
+            {
+                id: 6,
+                title: "En Passant",
+                subtitle: "The pawn's once-only strike",
+                description: "The rarest pawn rule of all. A pawn that spends its two-square sprint may, for that one move only, be captured exactly as if it had stepped a single square — the capturer lands diagonally on the square the sprinter skipped. Hesitate one move and the right is gone forever.",
+                challenges: [
+                    {
+                        type: "info",
+                        title: "The Right of Way",
+                        instruction: "The exact contract, four parts: only <strong>pawns</strong> capture en passant; the victim must have just spent its <strong>two-square leap</strong>; your Pawn answers with its ordinary diagonal strike; and the right lasts <strong>one move only</strong> — let it pass and it never returns. The board holds tomorrow's capture in position. Trace it in your head, then click <strong>Next</strong> to strike.",instruction: "Watch live: the black Pawn spends its two-square sprint — e7 to e5 — and lands beside your Pawn on d5. The instant it rests opens your one-move-only window. Trace the capture in your head, then click <strong>Next</strong> to strike.",
+                        pieces: { '0,4': '♚', '1,4': '♟', '3,3': '♙', '7,4': '♔' },
+                        opponentMove: { from: [1, 4], to: [3, 4] },
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "En Passant (♙×♟)",
+                        title: "The Sudden Strike",
+                        exercises: [
+                            {
+                                instruction: "Black's sprint is already spent: the pawn leapt e7 to e5 and waits beside your d5-Pawn. Strike diagonally onto e6 — the one square it skipped over. Your single move of grace.",
+                                successMsg: "En passant! Your Pawn lands on the square Black skipped and the sprinter comes off the board. Hesitate one move and this right dies forever.",
+                                pieces: { '0,4': '♚', '1,4': '♟', '3,3': '♙', '7,4': '♔' },
+                                startPos: [3, 3],
+                                validMoves: [[2, 4]],
+                                targetPos: [2, 4],
+                                clearSquares: [[3, 4]],
+                                opponentMove: { from: [1, 4], to: [3, 4] }
+                            },
+                            {
+                                instruction: "With company: your pawns watch from d5 AND f5 — both of them could legally answer the sprinter. This exercise wants the f-file twin: click the pawn on f5 and strike e6 all the same.",
+                                successMsg: "En passant from the f-side: two pawns had the right, one used it — the other politely un-needed.",
+                                pieces: { '0,4': '♚', '1,4': '♟', '3,3': '♙', '3,5': '♙', '7,4': '♔' },
+                                startPos: [3, 5],
+                                validMoves: [[2, 4]],
+                                targetPos: [2, 4],
+                                clearSquares: [[3, 4]],
+                                opponentMove: { from: [1, 4], to: [3, 4] }
+                            },
+                            {
+                                instruction: "Role reversal — think for BLACK now: White has just spent its two-square sprint (e2 to e4) beside your pawn on d4. Strike diagonal onto e3, the skipped square, before the right expires. White pieces do not pity hesitation.",
+                                successMsg: "En passant for Black: the sprinter on e4 vanishes — the rule cuts both ways, one move at a time.",
+                                pieces: { '0,4': '♚', '4,3': '♟', '6,4': '♙', '7,4': '♔' },
+                                startPos: [4, 3],
+                                validMoves: [[5, 4]],
+                                targetPos: [5, 4],
+                                clearSquares: [[4, 4]],
+                                opponentMove: { from: [6, 4], to: [4, 4] }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 7,
+                title: "Checks",
+                subtitle: "Attack, answer, or draw",
+                description: "A <strong>check</strong> is an attack the King must answer at once — move out of it, block it, or capture the attacker. A King that cannot answer is not merely losing; it is finished. But a King with no moves and no attack at all is a <strong>stalemate</strong>: a draw, not a win.",
+                challenges: [
+                    {
+                        type: "info",
+                        title: "Three Answers",
+                        instruction: "Exactly three replies exist to any check: <strong>move</strong> the King to safety, <strong>block</strong> with another piece, or <strong>capture</strong> the attacker. On this board the Rook attacks King and file alike — and the quiet black Pawn on h8 answers only when it slips to e7, blocking the whole route. Count the answers on the board: two work, one does not. Click <strong>Next</strong> to deliver a check yourself.",
+                        boardSize: 8,
+                        pieces: { '2,4': '♖', '0,4': '♚', '1,4': '♟' }
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Check (♖+)",
+                        title: "The First Warning",
+                        exercises: [
+                            { instruction: "The Black King hides in the corner but the squares beside it are free. Attack it — yet do not dream of mate yet: a King with an escape square simply runs. Give <strong>check</strong> with your Rook.",
+                            boardSize: 8,
+                            pieces: { '3,1': '♖', '0,7': '♚' },
+                            startPos: [3, 1],
+                            validMoves: [[2, 1], [1, 1], [0, 1], [4, 1], [5, 1], [6, 1], [7, 1], [3, 0], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7]],
+                            targetPos: [0, 1], successMsg: "Check! The King is under attack — and see how the free squares beside it let it slip away. Not mate." },
+                            {
+                                instruction: "A different lane to the same warning: Rook at g2, King at h8, a stray pawn at e6. Climb the open g-file — from g8 the Rook rakes the top rank straight into the King.",
+                                successMsg: "Check from g8: the King's comfort is only that the squares beside it are free — it runs and the game goes on.",
+                                pieces: { '0,7': '♚', '2,4': '♟', '6,6': '♖' },
+                                startPos: [6, 6],
+                                validMoves: [[5, 6], [4, 6], [3, 6], [2, 6], [1, 6], [0, 6], [6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 7]],
+                                targetPos: [0, 6]
+                            },
+                            {
+                                instruction: "A surgical check: the black Pawn sits on e7, parked exactly in your Rook's file. Ride up, remove the blocker — and the check on e8 arrives in the very same move.",
+                                successMsg: "Check — with the blockade removed: capture-first-check-second is often one single move.",
+                                pieces: { '0,0': '♜', '0,4': '♚', '1,4': '♟', '4,4': '♖' },
+                                startPos: [4, 4],
+                                validMoves: [[3, 4], [2, 4], [1, 4], [5, 4], [6, 4], [7, 4], [4, 0], [4, 1], [4, 2], [4, 3], [4, 5], [4, 6], [4, 7]],
+                                targetPos: [1, 4]
+                            }
+                        ]
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Check (♘+)",
+                        title: "The Fire Check",
+                        exercises: [
+                            { instruction: "Knight checks are different beasts: there is no file to block and no attacker to grab from afar — only the King itself may answer, and only by stepping away. Leap your Knight from c4 to d6, where it fires on the King.",
+                            boardSize: 8,
+                            pieces: { '4,2': '♘', '0,4': '♚' },
+                            startPos: [4, 2],
+                            validMoves: [[2, 3], [2, 1], [3, 0], [3, 4], [5, 4], [5, 0]],
+                            targetPos: [2, 3], successMsg: "Check by Knight! No block possible, no capture possible — the King must walk. Knight checks end careers." },
+                            {
+                                instruction: "Another door, same fire: Knight at f5, King at e8, bystander Rook at a8. Leap f5 to g7, landing just off the King's roof — the L-shaped check with no block and no capture in the world.",
+                                successMsg: "Check by Knight from g7: nothing between, nothing to take — walk, King, walk.",
+                                pieces: { '0,0': '♜', '0,4': '♚', '3,5': '♘' },
+                                startPos: [3, 5],
+                                validMoves: [[2, 3], [2, 7], [4, 3], [4, 7], [1, 4], [1, 6], [5, 4], [5, 6]],
+                                targetPos: [1, 6]
+                            },
+                            {
+                                instruction: "The famous FORK: your Knight on e4 sees two treasures at once — the King on e8 and the Queen on f7. One jump to d6: check <strong>and</strong> a 9-point promissory note. Fire it.",
+                                successMsg: "A ROYAL FORK: the King steps, the Queen pays. Knight geometry makes double threats — and double threats make wins.",
+                                pieces: { '0,4': '♚', '1,5': '♛', '4,4': '♘' },
+                                startPos: [4, 4],
+                                validMoves: [[2, 3], [2, 5], [3, 2], [3, 6], [5, 2], [5, 6], [6, 3], [6, 5]],
+                                targetPos: [2, 3]
+                            }
+                        ]
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Stalemate (♕)",
+                        title: "The Draw Trap",
+                        exercises: [
+                            { instruction: "Now the darker lesson: win too loudly and the game dies. March the Queen onto the g-file — to the square from which she covers g8, g7 <strong>and</strong> h7 without ever touching the King. His Majesty then has no legal move and is not in check: that is <strong>stalemate</strong>, a draw, not a win.",
+                            boardSize: 8,
+                            pieces: { '2,2': '♕', '0,7': '♚' },
+                            startPos: [2, 2],
+                            validMoves: [[2, 3], [2, 4], [2, 5], [2, 6]],
+                            targetPos: [2, 6], successMsg: "Stalemate! No check, no escape — the game is drawn. Guard the point: against a lone King, slow power wins and greedy power only ties." },
+                            {
+                                instruction: "Same trap, hand-made at distance: Queen on d5, King on h8. Slide up the long diagonal to f7 — the one move that covers g8, g7 and h7 in a single breath, without delivering check.",
+                                successMsg: "Stalemate from f7: full control, zero check. Remember this shape — it is how lazy attackers accidentally draw games they had won.",
+                                pieces: { '0,7': '♚', '3,3': '♕' },
+                                startPos: [3, 3],
+                                validMoves: [[3, 2], [3, 1], [3, 0], [3, 4], [3, 5], [3, 6], [3, 7], [2, 3], [1, 3], [0, 3], [4, 3], [5, 3], [6, 3], [7, 3], [2, 4], [1, 5], [2, 2], [1, 1], [0, 0], [4, 4], [5, 5], [6, 6], [7, 7], [4, 2], [5, 1], [6, 0]],
+                                targetPos: [1, 5]
+                            },
+                            {
+                                instruction: "The corner edition: King in the far edge at a8, your Queen starting at e3. Ride the long diagonal to b6 — no check, every exit ticketed. You will have drawn a game you were winning, all by yourself.",
+                                successMsg: "Stalemate at a8: against a King with nothing, piece mass means nothing — mate needs art, not mass.",
+                                pieces: { '0,0': '♚', '5,4': '♕' },
+                                startPos: [5, 4],
+                                validMoves: [[5, 0], [5, 1], [5, 2], [5, 3], [5, 5], [5, 6], [5, 7], [4, 4], [3, 4], [2, 4], [1, 4], [0, 4], [6, 4], [7, 4], [4, 3], [3, 2], [2, 1], [1, 0], [4, 5], [3, 6], [2, 7], [6, 5], [7, 6], [6, 3], [7, 2]],
+                                targetPos: [2, 1]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 8,
+                title: "Checkmate",
+                subtitle: "The art of finishing",
+                description: "Checkmate is arithmetic, not luck: the King is attacked, every escape square is covered or crowded, and no friendly piece can block or capture the attacker. Take the exits away first — then strike.",
+                challenges: [
+                    {
+                        type: "info",
+                        title: "Anatomy of Mate",
+                        instruction: "Read the trap before you spring it. The King sits on its own back rank; the three black pawns on f7, g7 and h7 crowd every square His Majesty might flee to. The Rook on b7 commands the file that leads to rank 8 — the King's only corridor. Count the escapes aloud before you move: <strong>there are none</strong>. Click <strong>Next</strong> to deliver it.",
+                        boardSize: 8,
+                        pieces: { '1,1': '♖', '0,7': '♚', '1,5': '♟', '1,6': '♟', '1,7': '♟' }
+                    },
                     {
                         type: "puzzle",
                         pieceName: "Checkmate in 1 (♖)",
                         title: "The Final Blow",
-                        instruction: "The Black King is trapped on the edge of the board. Deliver **Checkmate** in one single move with your Rook! Move the Rook to the winning square.",
-                        boardSize: 8,
-                        pieces: { '7,0': '♖', '0,7': '♚', '1,6': '♟' },
-                        startPos: [7, 0],
-                        validMoves: [[0, 0], [7, 1], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7]],
-                        targetPos: [0, 0], // Rook to a0/a8 checkmate against rank 0 king at h8? Wait, let's make it intuitive: Rook on a7, king on a8, rook moves to a8 or b7. Let's set Rook at `1,0` and King at `0,0` with protection.
-                        // Let's adjust setup for clean puzzle: Rook at (1,1), King at (0,7) -> Rook moves to (0,1) for checkmate on row 0.
-                        customSetup: { '1,1': '♖', '0,7': '♚' },
-                        startPosOverride: [1, 1],
-                        validMovesOverride: [[0, 1], [1, 0], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1]],
-                        targetPosOverride: [0, 1],
-                        successMsg: "CHECKMATE! You have mastered ChessQuest and earned the Grandmaster Title!"
+                        exercises: [
+                            { instruction: "Bring the Rook onto rank 8 and close the corridor. One move, and the King with nowhere to run is checkmated.",
+                            boardSize: 8,
+                            pieces: { '1,1': '♖', '0,7': '♚', '1,5': '♟', '1,6': '♟', '1,7': '♟' },
+                            startPos: [1, 1],
+                            validMoves: [[0, 1], [1, 0], [1, 2], [1, 3], [1, 4], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1]],
+                            targetPos: [0, 1], successMsg: "CHECKMATE! The corridor closed, the King finished — and the rook's file did it all." },
+                            {
+                                instruction: "The corridor in mirror: King at a8, his OWN pawns jamming a7 and b7. March the Rook one step up the h-file — h7 to h8, one move, one rank, one mate.",
+                                successMsg: "Checkmate mirrored: own pawns shut the door, the Rook's rank-8 check finds no key.",
+                                pieces: { '0,0': '♚', '1,0': '♟', '1,1': '♟', '1,7': '♖' },
+                                startPos: [1, 7],
+                                validMoves: [[0, 7], [1, 6], [1, 5], [1, 4], [1, 3], [1, 2], [1, 1], [2, 7], [3, 7], [4, 7], [5, 7], [6, 7], [7, 7]],
+                                targetPos: [0, 7]
+                            },
+                            {
+                                instruction: "The teamwork mate, the oldest alliance in chess: your King already stands at g6, sealing g7 and h7 by his presence. Send the Rook from a7 up the file to a8 — rank-8 check with every door already held.",
+                                successMsg: "Checkmate by committee: the Rook checks along rank 8 while YOUR King guards g7 and h7 — the pattern that decides most rook endgames.",
+                                pieces: { '0,7': '♚', '1,0': '♖', '2,6': '♔' },
+                                startPos: [1, 0],
+                                validMoves: [[0, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0]],
+                                targetPos: [0, 0]
+                            }
+                        ]
+                    },
+                    {
+                        type: "puzzle",
+                        pieceName: "Checkmate in 1 (♕+♔)",
+                        title: "The Guarded Blade",
+                        exercises: [
+                            { instruction: "The classic finishing lesson: a Queen delivers mate <strong>only</strong> while her own King guards her. Step the Queen along rank 8 to g8 — protected King on f7 beside her — and the corner King is finished with no escape.",
+                            boardSize: 8,
+                            pieces: { '1,3': '♕', '1,5': '♔', '0,7': '♚', '1,7': '♟' },
+                            startPos: [1, 3],
+                            validMoves: [[0, 3], [0, 4], [0, 5], [0, 6], [1, 4], [1, 2], [2, 3], [2, 4], [2, 5]],
+                            targetPos: [0, 6], successMsg: "CHECKMATE! Queen on g8, King on f7 guarding her hand — the mate every endgame textbook opens with. You have mastered ChessQuest and earned the Grandmaster Title!" },
+                            {
+                                instruction: "The cage made of pawns: Black's King sits between his OWN army. Send the Queen straight up the d-file to d8 — the corridor mate known as back-rank mate, the most common ending in amateur chess.",
+                                successMsg: "Back-rank checkmate: f7-g7-h7 lock the seventh, d8 fires along the eighth — and the King may not run along the very line that hits him.",
+                                pieces: { '0,6': '♚', '1,5': '♟', '1,6': '♟', '1,7': '♟', '2,3': '♕' },
+                                startPos: [2, 3],
+                                validMoves: [[1, 3], [0, 3], [2, 0], [2, 1], [2, 2], [2, 4], [2, 5], [2, 6], [2, 7], [1, 2], [0, 1], [1, 4], [0, 5], [3, 2], [4, 1], [5, 0], [3, 4], [4, 5], [5, 6], [6, 7]],
+                                targetPos: [0, 3]
+                            },
+                            {
+                                instruction: "The grand finale — pure teamwork: your King stands at b6, covering a7 and b7 all by himself. Send the Queen from e6 up the diagonal to c8: check on a8, every door held by someone you brought. This is the last exercise of ChessQuest — finish it.",
+                                successMsg: "CHECKMATE! King covers the exits, Queen delivers the strike — you have mastered all eight units and earned the Grandmaster Title!",
+                                pieces: { '0,0': '♚', '2,1': '♔', '2,4': '♕' },
+                                startPos: [2, 4],
+                                validMoves: [[1, 3], [0, 2], [1, 5], [0, 6], [3, 3], [4, 2], [5, 1], [6, 0], [3, 5], [4, 6], [5, 7], [1, 4], [0, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [2, 3], [2, 2], [2, 5], [2, 6], [2, 7]],
+                                targetPos: [0, 2]
+                            }
+                        ]
                     }
                 ]
             }
@@ -940,11 +1857,19 @@
             xp: parseInt(localStorage.getItem('cq_xp')) || 0,
             level: parseInt(localStorage.getItem('cq_level')) || 1,
             completedChallenges: JSON.parse(localStorage.getItem('cq_completed')) || {},
+            exerciseDone: JSON.parse(localStorage.getItem('cq_exercises')) || {},
             currentChapterIndex: 0,
             currentChallengeIndex: 0,
+            exerciseIndex: 0,
             selectedSquare: null,
-            currentPiecePos: null
+            currentPiecePos: null,
+            activeChallenge: null,
+            challengeSolved: false,
+            opponentLock: false
         };
+
+        const expandedUnits = new Set();
+        let autoOpenedUnit = null;
 
         const badges = [
             { id: 'novice', name: 'Rookie Initiate', icon: '🛡️', requirement: 100 },
@@ -957,6 +1882,7 @@
             localStorage.setItem('cq_xp', gameState.xp);
             localStorage.setItem('cq_level', gameState.level);
             localStorage.setItem('cq_completed', JSON.stringify(gameState.completedChallenges));
+            localStorage.setItem('cq_exercises', JSON.stringify(gameState.exerciseDone));
         }
 
         function addXP(amount) {
@@ -992,6 +1918,7 @@
 
         /* ================= RENDER SYSTEM ================= */
         function initApp() {
+            document.getElementById('sound-toggle').textContent = soundEnabled ? '🔊' : '🔇';
             renderSidebar();
             loadChallenge(gameState.currentChapterIndex, gameState.currentChallengeIndex);
             updateStatsUI();
@@ -999,55 +1926,100 @@
 
         function renderSidebar() {
             const list = document.getElementById('chapter-list');
-            list.innerHTML = '';
+            let html = '';
+            let levelNo = 0;
             chapters.forEach((ch, cIndex) => {
-                const isActive = cIndex === gameState.currentChapterIndex;
-                const completedCount = ch.challenges.filter((_, chIndex) => gameState.completedChallenges[`${cIndex}-${chIndex}`]).length;
-                const isCompleted = completedCount === ch.challenges.length;
-
-                list.innerHTML += `
-                    <div class="chapter-item ${isActive ? 'active' : ''}" onclick="selectChapter(${cIndex})">
-                        <div class="chapter-info">
-                            <h4>${ch.title}</h4>
-                            <p>${completedCount} / ${ch.challenges.length} completed</p>
-                        </div>
-                        <div class="chapter-status">${isCompleted ? '✅' : (isActive ? '⚔️' : '🔒')}</div>
+                const isOpen = expandedUnits.has(cIndex);
+                html += `<div class="unit-head" onclick="toggleUnit(${cIndex}, event)" title="Toggle unit levels">${cIndex + 1} · ${ch.title}<span class="unit-chevron">${isOpen ? '▾' : '▸'}</span></div>`;
+                html += `<div class="unit-levels" ${isOpen ? '' : 'hidden'}>`;
+                ch.challenges.forEach((lvl, chIndex) => {
+                    levelNo++;
+                    const done = gameState.completedChallenges[`${cIndex}-${chIndex}`];
+                    const isActive = cIndex === gameState.currentChapterIndex && chIndex === gameState.currentChallengeIndex;
+                    const mark = done ? '✔' : (isActive ? '⚔️' : '');
+                    html += `
+                    <div class="level-item ${isActive ? 'active' : ''} ${done ? 'done' : ''}" onclick="selectChapter(${cIndex}, ${chIndex})">
+                        <div class="level-num">${levelNo}</div>
+                        <div class="level-name">${lvl.title}</div>
+                        <div class="level-mark">${mark}</div>
                     </div>
-                `;
+                    `;
+                });
+                html += `</div>`;
             });
+            list.innerHTML = html;
         }
 
-        function selectChapter(cIndex) {
+        function toggleUnit(cIndex, e) {
             playSound('click');
-            gameState.currentChapterIndex = cIndex;
-            gameState.currentChallengeIndex = 0;
+            if (e) e.stopPropagation();
+            if (expandedUnits.has(cIndex)) { expandedUnits.delete(cIndex); } else { expandedUnits.add(cIndex); }
             renderSidebar();
-            loadChallenge(cIndex, 0);
+        }
+
+        function selectChapter(cIndex, chIndex) {
+            playSound('click');
+            expandedUnits.add(cIndex);
+            gameState.currentChapterIndex = cIndex;
+            gameState.currentChallengeIndex = chIndex;
+            renderSidebar();
+            loadChallenge(cIndex, chIndex);
         }
 
         function loadChallenge(cIndex, chIndex) {
             const chapter = chapters[cIndex];
             const challenge = chapter.challenges[chIndex];
 
+            if (autoOpenedUnit !== cIndex) {
+                autoOpenedUnit = cIndex;
+                expandedUnits.add(cIndex);
+                renderSidebar();
+            }
+            const exs = challenge.exercises || null;
+            if (exs) {
+                let idx = 0;
+                while (idx < exs.length && gameState.exerciseDone[`${cIndex}-${chIndex}-${idx}`]) idx++;
+                if (idx >= exs.length) idx = 0;
+                gameState.exerciseIndex = idx;
+            } else {
+                gameState.exerciseIndex = 0;
+            }
+            gameState.exercises = exs;
+            const exercise = exs ? Object.assign({}, challenge, exs[gameState.exerciseIndex]) : challenge;
+            if (exercise.boardSize === undefined) exercise.boardSize = 8;
+
             document.getElementById('stage-title').textContent = challenge.title;
             document.getElementById('stage-subtitle').textContent = chapter.subtitle;
-            document.getElementById('progress-indicator').textContent = `Challenge ${chIndex + 1} / ${chapter.challenges.length}`;
-            
+            const totalEx = exs ? exs.length : (challenge.type === 'puzzle' ? 1 : 0);
+            document.getElementById('progress-indicator').textContent = challenge.type === 'puzzle' && exs
+                ? `Level ${chIndex + 1} / ${chapter.challenges.length} · Exercise ${gameState.exerciseIndex + 1} / ${exs.length}`
+                : `Level ${chIndex + 1} / ${chapter.challenges.length}`;
+
             let lessonHTML = chapter.description;
             if (challenge.type === 'puzzle') {
-                lessonHTML += `<br><br><strong>Mission:</strong> ${challenge.instruction}`;
+                lessonHTML += `<br><br><strong>Mission:</strong> ${exercise.instruction}`;
             } else {
                 lessonHTML += `<br><br>${challenge.instruction}`;
+            }
+            if (totalEx > 1) {
+                lessonHTML += `<br><br><em>This level holds ${totalEx} exercises, easy to hard — every solution opens the next one.</em>`;
             }
             document.getElementById('lesson-content').innerHTML = lessonHTML;
 
             const feedback = document.getElementById('feedback-banner');
             feedback.className = 'feedback-banner info';
-            document.getElementById('feedback-text').textContent = challenge.type === 'puzzle' ? 'Click your piece to reveal valid moves!' : 'Review the board and proceed.';
-            
-            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('feedback-text').textContent = challenge.type === 'puzzle'
+                ? (exs && exs[gameState.exerciseIndex].opponentMove
+                    ? 'Hold still — it is the other player\u2019s move first!'
+                    : 'Click your piece to reveal valid moves!')
+                : 'Review the board and proceed.';
 
-            renderBoard(challenge);
+            const exerciseHint = document.getElementById('exercise-hint');
+            if (exerciseHint) exerciseHint.textContent = '';
+
+            document.getElementById('next-btn').style.display = challenge.type === 'puzzle' ? 'none' : 'flex';
+
+            renderBoard(exercise);
         }
 
         function renderBoard(challenge) {
@@ -1065,6 +2037,38 @@
             gameState.selectedSquare = null;
             gameState.currentPiecePos = startPos;
             gameState.activeChallenge = challenge;
+            gameState.challengeSolved = false;
+            gameState.opponentLock = false;
+
+            if (challenge.opponentMove) {
+                gameState.opponentLock = true;
+                const sprint = challenge.opponentMove;
+                setTimeout(() => {
+                    if (gameState.activeChallenge !== challenge || gameState.challengeSolved) return;
+                    const boardNow = document.getElementById('chessboard');
+                    const sq = boardNow.children;
+                    const fromIdx = sprint.from[0] * size + sprint.from[1];
+                    const toIdx = sprint.to[0] * size + sprint.to[1];
+                    const pieceElem = sq[fromIdx] && sq[fromIdx].querySelector('.piece');
+                    if (pieceElem && sq[toIdx]) {
+                        const oldPiece = sq[toIdx].querySelector('.piece');
+                        if (oldPiece) oldPiece.remove();
+                        const fromRect = sq[fromIdx].getBoundingClientRect();
+                        sq[toIdx].appendChild(pieceElem);
+                        const toRect = sq[toIdx].getBoundingClientRect();
+                        pieceElem.style.transition = 'none';
+                        pieceElem.style.transform = `translate(${fromRect.left - toRect.left}px, ${fromRect.top - toRect.top}px)`;
+                        requestAnimationFrame(() => {
+                            pieceElem.style.transition = 'transform 0.65s ease-in-out';
+                            pieceElem.style.transform = '';
+                            pieceElem.classList.add('landed');
+                        });
+                        playSound('click');
+                        document.getElementById('feedback-text').textContent = 'The other player has moved — now it is your turn!';
+                    }
+                    gameState.opponentLock = false;
+                }, 900);
+            }
 
             for (let r = 0; r < size; r++) {
                 for (let c = 0; c < size; c++) {
@@ -1079,8 +2083,21 @@
                         pieceSpan.className = 'piece';
                         pieceSpan.textContent = pieces[posKey];
                         square.appendChild(pieceSpan);
-                    } else if (targetPos && targetPos[0] === r && targetPos[1] === c && challenge.type === 'puzzle') {
-                        // Optional target indicator if needed
+                    }
+                    if (startPos && startPos[0] === r && startPos[1] === c && challenge.type === 'puzzle') {
+                        square.classList.add('start-piece');
+                    }
+                    if (r === size - 1) {
+                        const file = document.createElement('span');
+                        file.className = 'coord coord-file';
+                        file.textContent = 'abcdefgh'[c];
+                        square.appendChild(file);
+                    }
+                    if (c === 0) {
+                        const rank = document.createElement('span');
+                        rank.className = 'coord coord-rank';
+                        rank.textContent = String(8 - r);
+                        square.appendChild(rank);
                     }
 
                     square.addEventListener('click', () => handleSquareClick(r, c, challenge));
@@ -1090,6 +2107,7 @@
         }
 
         function handleSquareClick(r, c, challenge) {
+            if (gameState.challengeSolved || gameState.opponentLock) return;
             playSound('click');
             const board = document.getElementById('chessboard');
             const squares = board.children;
@@ -1128,14 +2146,22 @@
             if (gameState.selectedSquare && isValid) {
                 // Move piece visually
                 const oldIndex = gameState.selectedSquare[0] * challenge.boardSize + gameState.selectedSquare[1];
-                const newIndex = r * challenge.boardSize + c;
-
-                const pieceElem = squares[oldIndex].children[0];
-                if (pieceElem) {
-                    squares[oldIndex].innerHTML = '';
-                    squares[newIndex].innerHTML = '';
-                    squares[newIndex].appendChild(pieceElem);
-                }
+                const newIndex = r * challenge.boardSize + c;                    const pieceElem = squares[oldIndex].children[0];
+                    if (pieceElem) {
+                        const fromRect = squares[oldIndex].getBoundingClientRect();
+                        squares[oldIndex].innerHTML = '';
+                        squares[oldIndex].classList.remove('start-piece');
+                        squares[newIndex].innerHTML = '';
+                        squares[newIndex].appendChild(pieceElem);
+                        const toRect = squares[newIndex].getBoundingClientRect();
+                        pieceElem.style.transition = 'none';
+                        pieceElem.style.transform = `translate(${fromRect.left - toRect.left}px, ${fromRect.top - toRect.top}px)`;
+                        requestAnimationFrame(() => {
+                            pieceElem.style.transition = 'transform 0.18s ease-out';
+                            pieceElem.style.transform = '';
+                            pieceElem.classList.add('landed');
+                        });
+                    }
 
                 gameState.currentPiecePos = [r, c];
                 gameState.selectedSquare = null;
@@ -1143,20 +2169,53 @@
                 // Check if target reached
                 if (targetPos && targetPos[0] === r && targetPos[1] === c) {
                     playSound('success');
+                    gameState.challengeSolved = true;
                     document.getElementById('feedback-text').textContent = challenge.successMsg;
                     document.getElementById('feedback-banner').className = 'feedback-banner success';
                     
-                    // Save progress
-                    const key = `${gameState.currentChapterIndex}-${gameState.currentChallengeIndex}`;
-                    if (!gameState.completedChallenges[key]) {
-                        gameState.completedChallenges[key] = true;
+                    if (challenge.rookFollow) {
+                        const [rf, rt] = challenge.rookFollow;
+                        const ro = rf[0] * challenge.boardSize + rf[1];
+                        const rn = rt[0] * challenge.boardSize + rt[1];
+                        const rookElem = squares[ro].children[0];
+                        if (rookElem) {
+                            squares[ro].innerHTML = '';
+                            squares[rn].innerHTML = '';
+                            squares[rn].appendChild(rookElem);
+                        }
+                    }
+
+                    if (challenge.clearSquares) {
+                        challenge.clearSquares.forEach(s => {
+                            squares[s[0] * challenge.boardSize + s[1]].innerHTML = '';
+                        });
+                    }
+                    
+                    // Save progress: XP once per exercise, level completes on its last one
+                    const exKey = `${gameState.currentChapterIndex}-${gameState.currentChallengeIndex}-${gameState.exerciseIndex}`;
+                    if (!gameState.exerciseDone[exKey]) {
+                        gameState.exerciseDone[exKey] = true;
                         addXP(75);
+                    }
+                    const exNow = gameState.exercises;
+                    if (exNow && gameState.exerciseIndex === exNow.length - 1) {
+                        const key = `${gameState.currentChapterIndex}-${gameState.currentChallengeIndex}`;
+                        if (!gameState.completedChallenges[key]) {
+                            gameState.completedChallenges[key] = true;
+                        }
+                    }
+                    if (exNow && gameState.exerciseIndex < exNow.length - 1) {
+                        const hint = document.getElementById('exercise-hint');
+                        if (hint) hint.textContent = `Exercise ${gameState.exerciseIndex + 1} of ${exNow.length} solved — Next Exercise awaits.`;
                     }
 
                     document.getElementById('next-btn').style.display = 'flex';
                     renderSidebar();
                 } else {
                     playSound('error');
+                    const boardEl = document.getElementById('chessboard');
+                    boardEl.classList.add('shake');
+                    setTimeout(() => boardEl.classList.remove('shake'), 320);
                     document.getElementById('feedback-text').textContent = "That square is valid, but not the quest target! Try again.";
                     document.getElementById('feedback-banner').className = 'feedback-banner error';
                 }
@@ -1166,6 +2225,9 @@
                     handleSquareClick(r, c, challenge);
                 } else {
                     playSound('error');
+                    const boardEl2 = document.getElementById('chessboard');
+                    boardEl2.classList.add('shake');
+                    setTimeout(() => boardEl2.classList.remove('shake'), 320);
                     document.getElementById('feedback-text').textContent = "Click your glowing piece first!";
                     document.getElementById('feedback-banner').className = 'feedback-banner error';
                 }
@@ -1181,13 +2243,25 @@
         document.getElementById('next-btn').addEventListener('click', () => {
             playSound('click');
             const chapter = chapters[gameState.currentChapterIndex];
+            const level = chapter.challenges[gameState.currentChallengeIndex];
+            if (level.exercises && gameState.exerciseIndex < level.exercises.length - 1) {
+                gameState.exerciseIndex++;
+                loadChallenge(gameState.currentChapterIndex, gameState.currentChallengeIndex);
+                return;
+            }
             if (gameState.currentChallengeIndex + 1 < chapter.challenges.length) {
+                const doneKey = `${gameState.currentChapterIndex}-${gameState.currentChallengeIndex}`;
+                if (!gameState.completedChallenges[doneKey]) {
+                    gameState.completedChallenges[doneKey] = true;
+                }
+                saveState();
                 gameState.currentChallengeIndex++;
                 loadChallenge(gameState.currentChapterIndex, gameState.currentChallengeIndex);
             } else {
                 // Chapter completed
                 showModal('Chapter Cleared! 🏆', `You completed ${chapter.title} and earned +150 XP!`, '🎉');
                 addXP(150);
+                gameState.chapterJustCleared = true;
                 if (gameState.currentChapterIndex + 1 < chapters.length) {
                     gameState.currentChapterIndex++;
                     gameState.currentChallengeIndex = 0;
@@ -1206,7 +2280,12 @@
         document.getElementById('modal-action-btn').addEventListener('click', () => {
             playSound('click');
             document.getElementById('completion-modal').classList.remove('show');
-            loadChallenge(gameState.currentChapterIndex, gameState.currentChallengeIndex);
+            if (gameState.chapterJustCleared) {
+                gameState.chapterJustCleared = false;
+                if (gameState.currentChapterIndex < chapters.length) {
+                    loadChallenge(gameState.currentChapterIndex, gameState.currentChallengeIndex);
+                }
+            }
         });
 
         function checkBadges() {
