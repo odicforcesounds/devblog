@@ -144,9 +144,9 @@ summary::before{content:""}}
 </style>
   <link rel="stylesheet" href="link-colors.css">
   <style id="living-panel-style">
-    .living-panel{position:fixed;top:20px;right:clamp(.7rem,1.6vw,1.2rem);z-index:95;
+    .living-panel{position:fixed;top:60px;right:clamp(1.2rem,7vw,8rem);z-index:95;
       width:12.5rem;display:flex;flex-direction:column;
-      align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:center;
+      align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:left;
       background:rgba(8,12,17,.9);border:1px solid var(--line, rgba(255,255,255,.14));
       border-radius:16px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
       font-family:var(--sans, system-ui, sans-serif)}
@@ -190,8 +190,8 @@ summary::before{content:""}}
   </form>
 
   <noscript><p class="fail">The catalogue is drawn from JSON, so it needs JavaScript. Every animal is also one click away at Wikipedia.</p></noscript>
-  <div id="catalogue"></div>
   <div id="matches"></div>
+  <div id="catalogue"></div>
 </main>
 <footer>
   <p>Photographs, introductions, measurements and recordings come from <a href="https://en.wikipedia.org/">Wikipedia</a>, its media library and Wikidata, fetched through the public APIs when this catalogue was compiled; each card links back to the article and the file it uses. A missing figure is missing at the source, not guessed here.</p>
@@ -408,6 +408,7 @@ summary::before{content:""}}
   var searchNote = document.getElementById("search-note");
   var searchIdle = searchNote.textContent;
   var searchTimer = null;
+  var linkOnly = false;
 
   function fold(text) {
     return (text || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -425,28 +426,45 @@ summary::before{content:""}}
     searchNote.textContent = "reading the catalogue …";
     loadEvery().then(function (list) {
       var found = list.filter(function (animal) {
+        if (linkOnly) return fold(animal.n) === query;
         var haystack = fold([animal.n, animal.s, animal.fam, animal.ord, animal.d]
           .filter(Boolean).join(" "));
         return haystack.indexOf(query) !== -1;
       });
+      if (linkOnly) found = found.slice(0, 1);
+      var exactMode = linkOnly;
+      if (!linkOnly) {
+        var exact = found.filter(function (animal) { return fold(animal.n) === query; });
+        if (exact.length) { found = exact; exactMode = true; }
+      }
       matches.textContent = "";
-      root.hidden = true;
+      root.hidden = linkOnly && found.length > 0;
       if (!found.length) {
         searchNote.textContent = "no species matches “" + typed + "”";
         return;
       }
       found.sort(function (a, b) { return a.n.localeCompare(b.n); });
       searchNote.textContent = count(found.length, "species", "species") +
-        " matching “" + typed + "”";
+        " matching “" + typed + "”" + (linkOnly ? "" : " · the full index stays below");
       var frag = document.createDocumentFragment();
-      found.forEach(function (animal) { frag.appendChild(card(animal)); });
+      if (exactMode) {
+        found.forEach(function (animal) { frag.appendChild(card(animal)); });
+      } else {
+        var names = el("ul", "search-names");
+        found.forEach(function (animal) { names.appendChild(el("li", null, animal.n)); });
+        frag.appendChild(names);
+      }
       matches.appendChild(frag);
+      if (exactMode) {
+        Array.prototype.forEach.call(matches.querySelectorAll("details"), function (box) { box.open = true; });
+      }
     }).catch(function (err) {
       searchNote.textContent = "could not read the catalogue (" + err.message + ")";
     });
   }
 
   searchBox.addEventListener("input", function () {
+    linkOnly = false;
     clearTimeout(searchTimer);
     searchTimer = setTimeout(runSearch, 160);
   });
@@ -482,10 +500,12 @@ summary::before{content:""}}
       if (asked) {
         searchBox.value = asked;
         searchBox.dispatchEvent(new Event("input"));
+        linkOnly = true;
+        setTimeout(function () { window.scrollTo(0, 0); }, 80);
       }
 
       var wanted = location.hash.replace(/^#/, "");
-      if (wanted) {
+      if (wanted && !asked) {
         var target = document.getElementById(wanted.indexOf("order-") === 0 ? wanted : "order-" + wanted);
         if (target) {
           target.open = true;
