@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://upload.wikimedia.org; font-src 'self' data:; script-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'self'; object-src 'none'; base-uri 'self'">
+<meta name="X-Content-Type-Options" content="nosniff">
+<meta name="Referrer-Policy" content="no-referrer">
+<title>CHAT TITLE</title>
+<meta name="description" content="CHAT DESCRIPTION">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<style>
+:root {
+  --bg: #05070b;
+  --panel: rgba(14, 19, 27, 0.9);
+  --panel-2: rgba(20, 27, 37, 0.92);
+  --line: rgba(143, 190, 255, 0.16);
+  --line-2: rgba(143, 190, 255, 0.32);
+  --ink: #e8eef6;
+  --muted: #9aa9bb;
+  --accent: #6fb3ff;
+  --warm: #ffd166;
+  --alert: #ff8d8d;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(60rem 30rem at 12% -10%, rgba(111, 179, 255, 0.12), transparent 62%),
+    radial-gradient(50rem 28rem at 90% 4%, rgba(255, 209, 102, 0.08), transparent 60%),
+    var(--bg);
+  color: var(--ink);
+  font: 16px/1.65 var(--sans);
+  min-height: 100vh;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover, a:focus-visible { color: var(--warm); }
+a:focus-visible {
+  outline: 2px solid var(--warm);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.wrap { width: min(74rem, calc(100% - 2rem)); margin: 0 auto; padding: 1rem 0 4rem; }
+.lang-switch {
+  display: flex; justify-content: center; gap: 0.4rem;
+  padding: 0.8rem 1rem 0.2rem;
+  font-family: var(--mono); font-size: 0.72rem;
+  letter-spacing: 0.18em; text-transform: uppercase;
+}
+.lang-switch a {
+  padding: 0.32rem 0.95rem;
+  color: var(--accent); font-weight: 600;
+  background: transparent;
+  border: 1px solid var(--accent); border-radius: 999px;
+  opacity: 0.8;
+  transition: opacity 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+.lang-switch a[aria-current="true"] { color: var(--bg); background: var(--accent); opacity: 1; }
+.lang-switch a:hover, .lang-switch a:focus-visible {
+  color: var(--bg); background: var(--warm); border-color: var(--warm); opacity: 1;
+}
+[data-lang-block][hidden] { display: none !important; }
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin: 0.6rem 0 1.2rem; }
+.home {
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.1em;
+  padding: 0.35rem 0.9rem; border: 1px solid var(--line-2); border-radius: 999px;
+}
+.kicker {
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.24em;
+  text-transform: uppercase; color: var(--warm); margin: 0 0 0.5rem;
+}
+h1 { margin: 0 0 0.6rem; font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.04; letter-spacing: -0.03em; }
+.seo-h2 { margin: 0 0 0.6rem; font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.04; letter-spacing: -0.03em; font-weight: 700; }
+.lede { max-width: 62ch; color: var(--muted); font-size: 1.06rem; margin: 0 0 1.2rem; }
+h2 { font-size: 1.24rem; margin: 2.2rem 0 0.6rem; letter-spacing: -0.01em; }
+h2::before { content: "§ "; color: var(--warm); font-family: var(--mono); font-size: 0.85em; }
+p { margin: 0 0 0.9rem; max-width: 72ch; }
+ul, ol { max-width: 72ch; padding-left: 1.2rem; margin: 0 0 1rem; }
+li { margin: 0 0 0.4rem; }
+.warn {
+  border: 1px solid rgba(255, 141, 141, 0.5);
+  background: rgba(255, 141, 141, 0.08);
+  border-radius: 14px;
+  padding: 0.9rem 1.1rem;
+  margin: 1.2rem 0;
+  max-width: 72ch;
+}
+.warn strong { color: var(--alert); }
+.app {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 18px;
+  padding: 1rem;
+  margin: 1.4rem 0 1rem;
+}
+.app-head {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem;
+  padding-bottom: 0.8rem; border-bottom: 1px solid var(--line);
+}
+.app-title { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-right: auto; }
+.btn {
+  font: inherit; font-family: var(--mono); font-size: 0.76rem; letter-spacing: 0.06em;
+  padding: 0.5rem 1rem; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--accent); background: transparent; color: var(--accent);
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+.btn:hover, .btn:focus-visible { background: var(--warm); border-color: var(--warm); color: var(--bg); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn.solid { background: var(--accent); color: var(--bg); }
+.btn.solid:hover, .btn.solid:focus-visible { background: var(--warm); border-color: var(--warm); }
+.who { display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; color: var(--muted); }
+.who img { width: 26px; height: 26px; border-radius: 50%; display: block; }
+.log {
+  list-style: none; margin: 0; padding: 0.8rem 0 0;
+  max-height: 22rem; overflow-y: auto;
+}
+.log li {
+  display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 0.7rem;
+  padding: 0.45rem 0; margin: 0;
+  border-bottom: 1px dashed rgba(143, 190, 255, 0.1);
+}
+.log img { width: 24px; height: 24px; border-radius: 50%; display: block; margin-top: 0.2rem; }
+.log .meta { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; color: var(--muted); }
+.log .meta b { color: var(--ink); font-weight: 600; }
+.log .body { grid-column: 2; margin: 0; font-size: 0.94rem; overflow-wrap: anywhere; }
+.log .mine .meta b { color: var(--warm); }
+.empty { color: var(--muted); font-size: 0.9rem; margin: 0.9rem 0 0.2rem; }
+.composer { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid var(--line); }
+.composer textarea {
+  flex: 1 1 16rem; min-height: 3.2rem; max-height: 8rem; resize: vertical;
+  font: inherit; color: var(--ink);
+  background: var(--panel-2); border: 1px solid var(--line-2); border-radius: 12px;
+  padding: 0.6rem 0.8rem;
+}
+.composer textarea:focus-visible { outline: 2px solid var(--warm); outline-offset: 2px; }
+.status { font-size: 0.85rem; color: var(--muted); min-height: 1.4rem; margin: 0.6rem 0 0; }
+.status[data-state="error"] { color: var(--alert); }
+.status[data-state="ok"] { color: var(--accent); }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.2rem; font-size: 0.92rem; }
+th, td { text-align: left; padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); }
+code { font-family: var(--mono); font-size: 0.86em; color: var(--warm); background: rgba(255, 209, 102, 0.09); padding: 0.08em 0.32em; border-radius: 4px; }
+footer { margin-top: 2.6rem; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.82rem; }
+footer p { max-width: 78ch; }
+@media (max-width: 640px) {
+  .wrap { width: min(74rem, calc(100% - 1.2rem)); }
+  .log { max-height: 18rem; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media print { .app, .lang-switch, .home { display: none !important; } body { background: #fff; color: #111; } }
+</style>
+<link rel="stylesheet" href="link-colors.css">
+</head>
+<body>
+<nav class="lang-switch" aria-label="Language">
+<a href="?lang=pt" data-lang-switch="pt" lang="pt-PT">Português</a>
+<a href="?lang=en" data-lang-switch="en" aria-current="true" lang="en">English</a>
+</nav>
+
+<div class="wrap">
+<div id="lang-en" data-lang-block="en">
+<header class="top">
+<a class="home" href="./index.html">Home</a>
+</header>
+<main>
+<p class="kicker">CHAT KICKER</p>
+<h1>CHAT TITLE</h1>
+<p class="lede">CHAT DESCRIPTION</p>
+
+<div class="warn">
+<p><strong>WARNING TITLE.</strong> WARNING TEXT</p>
+</div>
+
+<section>
+<h2>SECTION TITLE</h2>
+<ol>
+<li>FIRST RULE</li>
+<li>SECOND RULE</li>
+<li>THIRD RULE</li>
+</ol>
+</section>
+
+<section>
+<h2>TABLE TITLE</h2>
+<table>
+<thead>
+<tr><th>THING</th><th>LIFETIME</th><th>WHO CAN READ IT</th><th>WHAT REMOVES IT</th></tr>
+</thead>
+<tbody>
+<tr><td>ONE</td><td>TIME</td><td>READER</td><td>ACTION</td></tr>
+<tr><td>TWO</td><td>TIME</td><td>READER</td><td>ACTION</td></tr>
+<tr><td>THREE</td><td>TIME</td><td>READER</td><td>ACTION</td></tr>
+</tbody>
+</table>
+<p>TABLE NOTE</p>
+</section>
+
+<section>
+<h2>SECTION TITLE</h2>
+<p>SECTION BODY</p>
+<p>SECTION BODY</p>
+</section>
+
+<section>
+<h2>SOURCES</h2>
+<p>SOURCE NOTE</p>
+</section>
+</main>
+</div>
+
+<div id="lang-pt" data-lang-block="pt" hidden>
+<header class="top">
+<a class="home" href="./index.html">Início</a>
+</header>
+<main>
+<p class="kicker">KICKER</p>
+<h2 class="seo-h2">TÍTULO</h2>
+<p class="lede">DESCRIÇÃO</p>
+
+<div class="warn">
+<p><strong>TÍTULO DO AVISO.</strong> TEXTO DO AVISO</p>
+</div>
+
+<section>
+<h2>TÍTULO DA SECÇÃO</h2>
+<ol>
+<li>PRIMEIRA REGRA</li>
+<li>SEGUNDA REGRA</li>
+<li>TERCEIRA REGRA</li>
+</ol>
+</section>
+
+<section>
+<h2>TÍTULO DA TABELA</h2>
+<table>
+<thead>
+<tr><th>COISA</th><th>DURAÇÃO</th><th>QUEM PODE LER</th><th>O QUE A REMOVE</th></tr>
+</thead>
+<tbody>
+<tr><td>UM</td><td>TEMPO</td><td>LEITOR</td><td>ACÇÃO</td></tr>
+<tr><td>DOIS</td><td>TEMPO</td><td>LEITOR</td><td>ACÇÃO</td></tr>
+<tr><td>TRÊS</td><td>TEMPO</td><td>LEITOR</td><td>ACÇÃO</td></tr>
+</tbody>
+</table>
+<p>NOTA DA TABELA</p>
+</section>
+
+<section>
+<h2>TÍTULO DA SECÇÃO</h2>
+<p>TEXTO DA SECÇÃO</p>
+<p>TEXTO DA SECÇÃO</p>
+</section>
+
+<section>
+<h2>FONTES</h2>
+<p>NOTA DA FONTE</p>
+</section>
+</main>
+</div>
+
+<section class="app" id="chat" aria-labelledby="chat-title">
+<div class="app-head">
+<span class="app-title" id="chat-title">THE ROOM</span>
+<button class="btn solid" type="button" id="sign-in">Sign in</button>
+<span class="who" id="who" hidden>
+<img id="who-photo" alt="" width="26" height="26" referrerpolicy="no-referrer">
+<span id="who-name"></span>
+<button class="btn" type="button" id="sign-out">Leave</button>
+</span>
+</div>
+<p class="empty" id="empty">SIGN IN TO SEE THE ROOM.</p>
+<ul class="log" id="log" aria-live="polite" aria-relevant="additions"></ul>
+<form class="composer" id="composer" hidden>
+<textarea id="message" maxlength="500" rows="2" placeholder="SAY SOMETHING"></textarea>
+<button class="btn solid" type="submit" id="send">Send</button>
+</form>
+<p class="status" id="status" role="status"></p>
+</section>
+</div>
+
+</body>
+</html>
