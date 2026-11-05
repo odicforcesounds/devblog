@@ -112,7 +112,7 @@ line for this card: before it, a click could only open a drawer.
 
 ## The photograph expands, the card can go away
 
-The card says it on itself: a small line under the sentence, `1 image click to expand ·
+The card says it on itself: a small line above the photograph, `1 image click to expand ·
 2 clicks to disappear`, added by the script so it reads on screen instead of living in a
 tooltip. A single click on the photograph opens
 the 500px copy over a dark overlay; a click anywhere on the overlay or `Escape` closes
