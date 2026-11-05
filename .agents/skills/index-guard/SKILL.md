@@ -1,6 +1,6 @@
 ---
 name: index-guard
-description: Protect every catalogue page docs/*Index.html — the fifteen local indexes on search, data, CSP, living panel, head contract, canonical, noindex, remote scripts and external-API fallback. Use before and after editing an index page, adding an index, changing an index search box, or wiring a public API into a catalogue, so a catalogue cannot lose its local search or data while gaining a remote one.
+description: Protect every catalogue page docs/*Index.html — the sixteen local indexes on search, data, CSP, living panel, head contract, canonical, noindex, remote scripts and external-API fallback. Use before and after editing an index page, adding an index, changing an index search box, or wiring a public API into a catalogue, so a catalogue cannot lose its local search or data while gaining a remote one.
 ---
 
 # Index guard
@@ -9,13 +9,14 @@ The `docs/*Index.html` pages are the site's catalogues. A decorative edit there
 can erase the local search, the data source or the only route to an entry. This
 skill states what must survive, then points to the read-only checker.
 
-## The fifteen pages
+## The sixteen pages
 
 | Page | Local data manifest | Local search |
 | --- | --- | --- |
 | `animalsIndex.html` | `docs/animals/data/index.json` | `type="search"` |
 | `awesomeIndex.html` | `docs/awesome/data/index.json` | `type="search"` |
 | `birdsIndex.html` | `docs/birds/data/index.json` | `type="search"` |
+| `carsIndex.html` | `docs/cars/data/index.json` | `type="search"` |
 | `danceIndex.html` | `docs/dance/data/index.json` | none |
 | `electronicsIndex.html` | `docs/electronics/data/index.json` | `type="search"` |
 | `fishesIndex.html` | `docs/fishes/data/index.json` | `type="search"` |
@@ -94,7 +95,7 @@ missing `default-src 'self'`, missing or duplicate panel/style/script, a panel
 not at 60px, a `noindex`, an external script, an HTTP fetch, a CORS proxy, a
 secret-like query key or a remote fetch whose host is absent from
 `connect-src`. It warns on a page without a local search input, a page without a
-local data manifest, and an index page outside the expected fourteen.
+local data manifest, and an index page outside the expected sixteen.
 
 Five current warnings are accepted: `danceIndex`, `lifeIndex` and
 `reptilesIndex` have no `type="search"` input, and `lifeIndex` and
