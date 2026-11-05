@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Guard the fourteen docs/*Index.html catalogue pages.
+"""Guard the fifteen docs/*Index.html catalogue pages.
 
 Read-only. Checks local search and data, head contract, living panel, CSP,
 remote scripts, proxy use, secret-like queries and API fallback.
@@ -29,6 +29,7 @@ EXPECTED = {
     "plantsIndex.html",
     "religionsIndex.html",
     "reptilesIndex.html",
+    "rocksIndex.html",
     "worldIndex.html",
 }
 NO_DATA = {"lifeIndex.html", "reptilesIndex.html"}
@@ -44,6 +45,7 @@ DATA_DIR = {
     "marketsIndex.html": "markets",
     "plantsIndex.html": "plants",
     "religionsIndex.html": "religions",
+    "rocksIndex.html": "rocks",
     "worldIndex.html": "world",
 }
 TITLE = re.compile(r"(?is)<title\b[^>]*>(.*?)</title>")
@@ -213,12 +215,12 @@ def main() -> int:
     seen = {path.name for path in paths}
     if args.page:
         for extra in sorted(seen - EXPECTED):
-            warnings.append(f"{extra}: index page outside the guarded fourteen")
+            warnings.append(f"{extra}: index page outside the guarded fifteen")
     else:
         for missing in sorted(EXPECTED - seen):
             failures.append(f"{missing}: expected index page is missing")
         for extra in sorted(seen - EXPECTED):
-            warnings.append(f"{extra}: index page outside the guarded fourteen")
+            warnings.append(f"{extra}: index page outside the guarded fifteen")
 
     for path in paths:
         page_failures, page_warnings = audit(path)
