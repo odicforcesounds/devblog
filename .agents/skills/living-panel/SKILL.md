@@ -1,6 +1,6 @@
 ---
 name: living-panel
-description: Keep the fixed living card on every page of Monkey Blog — one photograph of a being from the bird, animal, fish or insect catalogues and the sentence "this (being) likes to use (tool) and loves (component) while doing some diet with (plant) at (city)", pinned to the top right corner of the window with a fresh set on every load. Use when the card must be added, removed, restyled, reshuffled, or checked against links a page already carries.
+description: Keep the fixed living card on every page of Monkey Blog — one photograph of a being from the bird, animal, fish or insect catalogues and the sentence "this (being) likes to use (tool) and loves (component) while doing some diet with (plant) at (city)", held against the right edge of the window at mid height — 1 image click to expand, 2 clicks to disappear — with a fresh set on every load. Use when the card must be added, removed, restyled, reshuffled, or checked against links a page already carries.
 ---
 
 # The living card — one being, one tool, one part, one plant, one city, every page
@@ -35,8 +35,12 @@ sentence never ends in `Lisbon · Maine`.
 
 ## Where it sits
 
-`position: fixed; top: 60px; right: clamp(1.2rem, 7vw, 8rem)` — the right side of the
-window, pulled a little way in from the edge, 60px down, floating above the top bar. The
+The style block the generator writes is the no-script shape: `position: fixed; top: 60px;
+right: clamp(1.2rem, 7vw, 8rem)` — the right side of the window, pulled a little way in
+from the edge, just under the top bar. `docs/living-panel.js` then lifts the same card to
+the vertical middle of the window (`top: 50%; transform: translateY(-50%)`) with a
+`max-height` so it never runs off a short viewport; that keeps the 549 blocks already
+written valid, so the script is the one place the current position is decided. The
 sentence is left-aligned; only the photograph is centred. The card is the first child of
 `<body>`; a fixed element needs a direct child of the body, because a transformed ancestor
 would trap it. Nothing on the page is moved to make room: the card lives in the right
@@ -108,11 +112,12 @@ line for this card: before it, a click could only open a drawer.
 
 ## The photograph expands, the card can go away
 
-A single click on the photograph opens the 500px copy over a dark overlay; a click
-anywhere on the overlay or `Escape` closes it. The image is keyboard-focusable and
-`Enter` or `Space` toggles the same view. A double-click hides the whole card for the
-rest of that page load; reloading brings it back. Both gestures are wired in
-`docs/living-panel.js`, so with scripts off the card remains the read-only fallback.
+1 image click to expand, 2 clicks to disappear. A single click on the photograph opens
+the 500px copy over a dark overlay; a click anywhere on the overlay or `Escape` closes
+it. The image is keyboard-focusable and `Enter` or `Space` toggles the same view. A
+double-click — two clicks — hides the whole card for the rest of that page load;
+reloading brings it back. Both gestures are wired in `docs/living-panel.js`, so with
+scripts off the card remains the read-only fallback.
 
 ## The rules
 
