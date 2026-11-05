@@ -1,6 +1,6 @@
 ---
 name: index-guard
-description: Protect every catalogue page docs/*Index.html — the fourteen local indexes on search, data, CSP, living panel, head contract, canonical, noindex, remote scripts and external-API fallback. Use before and after editing an index page, adding an index, changing an index search box, or wiring a public API into a catalogue, so a catalogue cannot lose its local search or data while gaining a remote one.
+description: Protect every catalogue page docs/*Index.html — the fifteen local indexes on search, data, CSP, living panel, head contract, canonical, noindex, remote scripts and external-API fallback. Use before and after editing an index page, adding an index, changing an index search box, or wiring a public API into a catalogue, so a catalogue cannot lose its local search or data while gaining a remote one.
 ---
 
 # Index guard
@@ -9,7 +9,7 @@ The `docs/*Index.html` pages are the site's catalogues. A decorative edit there
 can erase the local search, the data source or the only route to an entry. This
 skill states what must survive, then points to the read-only checker.
 
-## The fourteen pages
+## The fifteen pages
 
 | Page | Local data manifest | Local search |
 | --- | --- | --- |
@@ -26,6 +26,7 @@ skill states what must survive, then points to the read-only checker.
 | `plantsIndex.html` | `docs/plants/data/index.json` | `type="search"` |
 | `religionsIndex.html` | `docs/religions/data/index.json` | `type="search"` |
 | `reptilesIndex.html` | none | none |
+| `rocksIndex.html` | `docs/rocks/data/index.json` | `type="search"` |
 | `worldIndex.html` | `docs/world/data/index.json` | `type="search"` |
 
 `lifeIndex` and `reptilesIndex` carry their material in the page; they are still
