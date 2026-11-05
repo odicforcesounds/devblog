@@ -11,10 +11,16 @@ Two passes, deliberately separate because they cost different things:
                           links and caches the answer in tmp/link-cache.json, so a
                           second run inside the cache window costs nothing.
 
-    python3 .agents/skills/link-integrity/check_links.py
+    python3 .agents/skills/link-integrity/check_links.py                    # pages changed in git
+    python3 .agents/skills/link-integrity/check_links.py docs/Page.html     # that page only
+    python3 .agents/skills/link-integrity/check_links.py --all              # every root page
     python3 .agents/skills/link-integrity/check_links.py --external --sample 150
     python3 .agents/skills/link-integrity/check_links.py --json
     python3 .agents/skills/link-integrity/check_links.py --drop-cache
+
+The pages are independent files, so a run covers the pages this change touched and
+takes the rest as already sound; --all is the whole-site pass. Code samples inside
+<pre> and <code> are teaching material, not links, and are removed before reading.
 
 Read-only with respect to the site: it never edits a page. The only file it writes is
 the external cache, which lives in the gitignored tmp/.
@@ -29,6 +35,7 @@ import html
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 import urllib.error
@@ -57,6 +64,55 @@ def read(path):
 
 
 PLACEHOLDER = ("${", "{{", "}}", "' +", '" +', " + '", "`", "<", "\n")
+CODE_BLOCK = re.compile(r"(?is)<(pre|code)\b.*?</\1\s*>")
+
+
+def link_source(source):
+    """The page without its code samples.
+
+    A lesson shows <script src="app.js"> inside <pre><code> as the thing to type. That
+    tag is escaped for display, but its attributes are still literal text, and reading
+    them as links reports a page as broken for teaching.
+    """
+    return CODE_BLOCK.sub(" ", source)
+
+
+def page_name(arg):
+    name = arg.strip().replace("\\", "/")
+    if "/" in name:
+        name = name.rsplit("/", 1)[-1]
+    if not name.endswith(".html"):
+        name += ".html"
+    return name
+
+
+def changed_pages():
+    """The root pages of docs/ that git reports as added, modified or untracked."""
+    try:
+        run = subprocess.run(
+            ["git", "-c", "core.quotepath=false", "status", "--porcelain",
+             "--untracked-files=all", "--", DOCS],
+            capture_output=True, text=True,
+        )
+    except OSError:
+        return []
+    if run.returncode != 0:
+        return []
+    names = []
+    for line in run.stdout.splitlines():
+        if len(line) < 4:
+            continue
+        status, path = line[:2], line[3:].strip().strip('"')
+        if status.strip() == "D":
+            continue
+        if " -> " in path:
+            path = path.split(" -> ", 1)[1].strip('"')
+        if not path.endswith(".html") or path.count("/") != 1:
+            continue
+        name = path.split("/", 1)[1]
+        if name not in names and os.path.exists(os.path.join(DOCS, name)):
+            names.append(name)
+    return sorted(names)
 
 
 def refs(source):
@@ -114,7 +170,7 @@ def check_local(pages):
     failures, warnings = [], []
     seen, warned = set(), set()
     for page in pages:
-        source = read(os.path.join(DOCS, page))
+        source = link_source(read(os.path.join(DOCS, page)))
         for ref in refs(source):
             parsed = local_path(page, ref)
             if not parsed:
@@ -142,7 +198,7 @@ def check_local(pages):
 def collect_external(pages):
     urls = {}
     for page in pages:
-        for ref in refs(read(os.path.join(DOCS, page))):
+        for ref in refs(link_source(read(os.path.join(DOCS, page)))):
             if not is_external(ref):
                 continue
             url = "https:" + ref if ref.startswith("//") else ref
@@ -241,6 +297,9 @@ def main(argv=None):
     parser.add_argument("--refresh", action="store_true", help="ignore cached answers")
     parser.add_argument("--drop-cache", action="store_true", help="delete the cache and exit")
     parser.add_argument("--json", action="store_true", help="machine-readable output")
+    parser.add_argument("pages", nargs="*", help="a page under docs/ — docs/Name.html or just Name.html")
+    parser.add_argument("--page", action="append", default=[], help="the same, for one page")
+    parser.add_argument("--all", action="store_true", help="every root page instead of the changed ones")
     args = parser.parse_args(argv)
 
     if args.drop_cache:
@@ -251,10 +310,24 @@ def main(argv=None):
             print("no cache at %s" % CACHE)
         return 0
 
-    pages = sorted(os.path.basename(p) for p in glob.glob(os.path.join(DOCS, "*.html")))
-    if not pages:
+    every = sorted(os.path.basename(p) for p in glob.glob(os.path.join(DOCS, "*.html")))
+    if not every:
         print("no pages found", file=sys.stderr)
         return 1
+    wanted = [page_name(p) for p in args.pages + args.page]
+    if wanted:
+        pages = sorted(set(wanted))
+        absent = [p for p in pages if p not in every]
+        if absent:
+            print("no such page in %s/: %s" % (DOCS, ", ".join(absent)), file=sys.stderr)
+            return 2
+    elif args.all:
+        pages = every
+    else:
+        pages = changed_pages()
+        if not pages:
+            print("no page changed under %s/ — name a page, or pass --all" % DOCS)
+            return 0
 
     failures, warnings, extra = check_local(pages)
     local = {"pages": len(pages), "dead": len(failures)}
