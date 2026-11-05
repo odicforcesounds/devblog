@@ -22,12 +22,19 @@ it samples by default, caches every answer for 30 days, and rotates with `--offs
 ## Commands
 
 ```sh
-python3 .agents/skills/link-integrity/check_links.py                     # offline, the pass to trust
+python3 .agents/skills/link-integrity/check_links.py                     # the pages changed in git
+python3 .agents/skills/link-integrity/check_links.py docs/Page.html      # that page only
+python3 .agents/skills/link-integrity/check_links.py --all               # every root page
 python3 .agents/skills/link-integrity/check_links.py --external          # add 120 sampled URLs
 python3 .agents/skills/link-integrity/check_links.py --external --sample 0 --offset 12000
 python3 .agents/skills/link-integrity/check_links.py --json              # machine-readable
 python3 .agents/skills/link-integrity/check_links.py --drop-cache        # start the external pass fresh
 ```
+
+The pages are independent files, so a run covers the pages this change touched and takes
+the rest as already sound; `--all` is the whole-site pass. `<pre>` and `<code>` samples
+are teaching material, not links: a lesson that shows `<script src="app.js">` is not
+reported as a dead reference.
 
 Exit code 0 when nothing is broken, 1 when a link is dead. Warnings (unverifiable,
 server-side errors, a missing `#id`) never set the code.
