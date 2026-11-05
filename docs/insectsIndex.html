@@ -194,13 +194,6 @@ summary::before{content:""}}
   <p class="note"><b>Not only insects.</b> "Similar" here means the other arthropods and near-arthropods most people put in the same mental box: spiders, scorpions, ticks and mites, harvestmen, camel spiders, centipedes, millipedes, woodlice, springtails and velvet worms.</p>
   <p class="statline" id="statline">Opening the catalogue…</p>
 
-  <div class="ways" id="ways">
-    <p class="way"><span class="k">Group</span><span id="facet-group"></span></p>
-    <p class="way"><span class="k">Grows up by</span><span id="facet-metamorphosis"></span></p>
-    <p class="way"><span class="k">Where it lives</span><span id="facet-habitat"></span></p>
-    <p class="way"><span class="k">Where in the world</span><span id="facet-region"></span></p>
-  </div>
-  <p class="out" id="out">Pick a word above to see only the ones it describes.</p>
 
   <noscript><p class="fail">The catalogue is drawn from JSON, so it needs JavaScript. Every species is also one click away at Wikipedia.</p></noscript>
   <form class="search" id="search-form" role="search" autocomplete="off">
@@ -214,7 +207,6 @@ summary::before{content:""}}
 </main>
 <footer>
   <p>Photographs and introductions come from <a href="https://en.wikipedia.org/">Wikipedia</a> and its media library, fetched through the public API when this catalogue was compiled; each card links back to the article and the file it uses. Group is the catalogue's own sorting, not a claim about phylogeny — springtails and velvet worms are here because they live where insects do, not because they are insects.</p>
-  <p><a href="index.html#category-science-and-engineering">Archives</a></p>
 </footer>
 <script>
 (function () {
@@ -224,7 +216,6 @@ summary::before{content:""}}
   var root = document.getElementById("catalogue");
   var matches = document.getElementById("matches");
   var statline = document.getElementById("statline");
-  var out = document.getElementById("out");
   var cache = new Map();
   var groups = [];
   var facets = {};
@@ -490,92 +481,6 @@ summary::before{content:""}}
     });
   }
 
-  function matchesOf(kind, value) {
-    return all.filter(function (being) {
-      if (kind === "group") return being.grp === value;
-      if (kind === "metamorphosis") return being.m === value;
-      var field = kind === "habitat" ? being.h : being.r;
-      return (field || []).indexOf(value) !== -1;
-    });
-  }
-
-  function chips(kind, container) {
-    var bucket = facets[kind] || {};
-    var keys = Object.keys(bucket);
-    if (kind === "group") {
-      keys.sort(function (a, b) {
-        return Object.keys(GROUP).indexOf(a) - Object.keys(GROUP).indexOf(b);
-      });
-    } else if (kind === "metamorphosis") {
-      keys.sort(function (a, b) {
-        return Object.keys(META).indexOf(a) - Object.keys(META).indexOf(b);
-      });
-    } else {
-      keys.sort(function (a, b) {
-        if (bucket[b] !== bucket[a]) return bucket[b] - bucket[a];
-        return word(kind, a).localeCompare(word(kind, b));
-      });
-    }
-    keys.forEach(function (value) {
-      var button = el("button", "chip");
-      button.type = "button";
-      button.setAttribute("aria-pressed", "false");
-      button.appendChild(document.createTextNode(word(kind, value)));
-      button.appendChild(el("b", null, num(bucket[value])));
-      button.addEventListener("click", function () { choose(kind, value, button); });
-      container.appendChild(button);
-      container.appendChild(document.createTextNode(" "));
-    });
-  }
-
-  function choose(kind, value, button) {
-    if (active && active.kind === kind && active.value === value) {
-      reset();
-      return;
-    }
-    active = { kind: kind, value: value };
-    Array.prototype.forEach.call(document.querySelectorAll("button.chip"), function (chip) {
-      chip.setAttribute("aria-pressed", "false");
-    });
-    button.setAttribute("aria-pressed", "true");
-    out.textContent = "collecting the ones that match …";
-    matches.innerHTML = "";
-    loadEvery().then(function () {
-      var found = matchesOf(kind, value);
-      root.hidden = true;
-      matches.innerHTML = "";
-      var head = el("p", "statline");
-      head.appendChild(el("b", null, count(found.length, "species", "species")));
-      head.appendChild(document.createTextNode(" matching “" + word(kind, value) + "”."));
-      matches.appendChild(head);
-      if (!found.length) {
-        matches.appendChild(el("p", "fail", "Nothing in the catalogue matches that word."));
-        return;
-      }
-      found.sort(function (a, b) { return a.n.localeCompare(b.n); });
-      found.forEach(function (being) { matches.appendChild(card(being)); });
-    }).catch(function (err) {
-      matches.appendChild(el("p", "fail", "Could not load the catalogue (" + err.message + ")."));
-    });
-  }
-
-  function reset() {
-    active = null;
-    Array.prototype.forEach.call(document.querySelectorAll("button.chip"), function (chip) {
-      chip.setAttribute("aria-pressed", "false");
-    });
-    matches.innerHTML = "";
-    root.hidden = false;
-    out.textContent = "Pick a word above to see only the ones it describes.";
-  }
-
-  function clearButton() {
-    var button = el("button", "chip clear", "show all");
-    button.type = "button";
-    button.addEventListener("click", reset);
-    return button;
-  }
-
   fetch(DIR + "index.json", { credentials: "same-origin" })
     .then(function (res) {
       if (!res.ok) throw new Error(res.status + " " + res.statusText);
@@ -595,11 +500,6 @@ summary::before{content:""}}
       statline.appendChild(document.createTextNode(" groups · "));
       statline.appendChild(el("b", null, num(data.photos)));
       statline.appendChild(document.createTextNode(" photographs"));
-
-      ["group", "metamorphosis", "habitat", "region"].forEach(function (kind) {
-        chips(kind, document.getElementById("facet-" + kind));
-      });
-      document.getElementById("facet-group").appendChild(clearButton());
 
       var frag = document.createDocumentFragment();
       groups.forEach(function (group) { frag.appendChild(orderBlock(group)); });
