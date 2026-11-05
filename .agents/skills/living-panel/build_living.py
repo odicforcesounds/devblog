@@ -4,8 +4,9 @@
 The markup in every page carries one being, one tool, one component, one plant and
 one city so the card still reads with scripts off. This file gives the browser the whole
 pool, and the page script replaces that set with a fresh one every time the page
-is loaded. A click on the photograph opens a 500px copy; a double-click hides the
-card for that page load. Both gestures are wired into the script below.
+is loaded. It also lifts the card to the vertical middle of the window, on the right
+side the style block already uses. A click on the photograph opens a 500px copy; two
+clicks hide the card for that page load. Both gestures are wired into the script below.
 
     python3 .agents/skills/living-panel/build_living.py
 """
@@ -32,6 +33,11 @@ JS = """(function () {
   var image = card.querySelector("img");
   var line = card.querySelector("p");
   if (!line) return;
+
+  card.style.top = "50%%";
+  card.style.transform = "translateY(-50%%)";
+  card.style.maxHeight = "calc(100vh - 2rem)";
+  card.style.overflowY = "auto";
 
   var used = Object.create(null);
   var links = document.querySelectorAll("a[href]");
@@ -104,7 +110,7 @@ JS = """(function () {
 
     image.src = photo(being);
     image.alt = being[0];
-    image.title = "Click to expand · double-click to hide";
+    image.title = "1 image click to expand · 2 clicks to disappear";
     image.style.cursor = "zoom-in";
     image.setAttribute("role", "button");
     image.setAttribute("tabindex", "0");
