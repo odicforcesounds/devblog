@@ -1,21 +1,29 @@
 #!/usr/bin/env python3
 """Audit the published site in docs/ without touching it.
 
-Checks every root page for the head contract this blog relies on — doctype first,
-one canonical, complete Open Graph and Twitter tags, one JSON-LD block, one <h1>,
-a usable description — then checks that sitemap.xml, robots.txt and the JSON API
-describe the same set of pages.
+Checks a page for the head contract this blog relies on — doctype first, one
+canonical, complete Open Graph and Twitter tags, one JSON-LD block, one <h1>, a
+usable description — and that the page the run covers is listed in sitemap.xml and
+in the JSON API.
 
-    python3 .agents/skills/blog-ops/check_site.py
-    python3 .agents/skills/blog-ops/check_site.py --quiet   # failures only
+    python3 .agents/skills/blog-ops/check_site.py docs/Page.html   # that page only
+    python3 .agents/skills/blog-ops/check_site.py --page Page.html # same, by name
+    python3 .agents/skills/blog-ops/check_site.py                 # pages changed in git
+    python3 .agents/skills/blog-ops/check_site.py --all           # every root page
+    python3 .agents/skills/blog-ops/check_site.py --quiet         # failures only
 
-Exit code 0 when the site is consistent, 1 when anything failed. Standard library
-only, so it runs anywhere python3 does.
+The pages are independent files, so a run covers the pages this change touched and
+takes the rest as already sound. --all is the whole-site audit: every root page plus
+the sitemap/API/robots set comparison, for when the derived files were regenerated.
+
+Exit code 0 when what was checked is consistent, 1 when anything failed. Standard
+library only, so it runs anywhere python3 does.
 """
 
 import json
 import os
 import re
+import subprocess
 import sys
 from html.parser import HTMLParser
 
@@ -439,6 +447,84 @@ def check_api(names):
     return problems
 
 
+def check_listed(name):
+    """A page the run covers must already be in the sitemap, the API and dates.json.
+
+    Only that page is looked for: the rest of the set is assumed to be in place, so
+    this never lists every page that is missing from a derived file.
+    """
+    if name in INFRA_PAGES:
+        return []
+    problems = []
+    sitemap = os.path.join(DOCS, "sitemap.xml")
+    if not os.path.exists(sitemap):
+        problems.append("sitemap.xml is missing — run build_sitemap.py")
+    else:
+        with open(sitemap, encoding="utf-8") as fh:
+            xml = fh.read()
+        if xml.count("<loc>%s</loc>" % expected_url(name)) != 1:
+            problems.append("sitemap does not list %s — run build_sitemap.py" % expected_url(name))
+
+    api_path = os.path.join(DOCS, "api", "index.json")
+    try:
+        with open(api_path, encoding="utf-8") as fh:
+            api = json.load(fh)
+    except (OSError, ValueError) as exc:
+        problems.append("docs/api/index.json is unreadable — run build_api.py (%s)" % exc)
+    else:
+        if name not in {a.get("path") for a in api.get("articles") or []}:
+            problems.append("API does not list %s — run build_api.py" % name)
+
+    dates_path = os.path.join(DOCS, "api", "dates.json")
+    try:
+        with open(dates_path, encoding="utf-8") as fh:
+            dated = json.load(fh).get("published") or {}
+    except (OSError, ValueError) as exc:
+        problems.append("docs/api/dates.json is unreadable — run build_api.py (%s)" % exc)
+    else:
+        if name not in dated:
+            problems.append("dates.json has no instant for %s — run build_api.py" % name)
+    return problems
+
+
+def page_name(arg):
+    name = arg.strip().replace("\\", "/")
+    if "/" in name:
+        name = name.rsplit("/", 1)[-1]
+    if not name.endswith(".html"):
+        name += ".html"
+    return name
+
+
+def changed_pages():
+    """The root pages of docs/ that git reports as added, modified or untracked."""
+    try:
+        run = subprocess.run(
+            ["git", "-c", "core.quotepath=false", "status", "--porcelain",
+             "--untracked-files=all", "--", DOCS],
+            capture_output=True, text=True,
+        )
+    except OSError:
+        return []
+    if run.returncode != 0:
+        return []
+    names = []
+    for line in run.stdout.splitlines():
+        if len(line) < 4:
+            continue
+        status, path = line[:2], line[3:].strip().strip('"')
+        if status.strip() == "D":
+            continue
+        if " -> " in path:
+            path = path.split(" -> ", 1)[1].strip('"')
+        if not path.endswith(".html") or path.count("/") != 1:
+            continue
+        name = path.split("/", 1)[1]
+        if name not in names and os.path.exists(os.path.join(DOCS, name)):
+            names.append(name)
+    return sorted(names)
+
+
 def check_robots():
     path = os.path.join(DOCS, "robots.txt")
     if not os.path.exists(path):
@@ -453,12 +539,70 @@ def check_robots():
     return problems
 
 
+USAGE = """usage: check_site.py [PAGE ...] [--page PAGE] [--all] [--quiet]
+
+  PAGE        a page under docs/ — docs/Name.html or just Name.html
+  --page      the same, for one page
+  --all       every root page, plus the whole sitemap/API/robots set
+  --quiet     failures only
+
+Without PAGE and without --all, the pages git reports as changed under docs/.
+The pages are independent files: a scoped run checks the pages this change touched
+and assumes the rest still pass."""
+
+
 def main(argv):
     quiet = "--quiet" in argv
     if not os.path.isdir(DOCS):
         print("run this from the repository root (no %s/ here)" % DOCS)
         return 2
-    names = sorted(n for n in os.listdir(DOCS) if n.endswith(".html"))
+
+    pages = []
+    whole = False
+    index = 0
+    while index < len(argv):
+        arg = argv[index]
+        if arg == "--quiet":
+            index += 1
+        elif arg == "--all":
+            whole = True
+            index += 1
+        elif arg in ("-h", "--help"):
+            print(USAGE)
+            return 0
+        elif arg == "--page":
+            if index + 1 >= len(argv):
+                print("--page needs a file name\n\n%s" % USAGE)
+                return 2
+            pages.append(page_name(argv[index + 1]))
+            index += 2
+        elif arg.startswith("--page="):
+            pages.append(page_name(arg.split("=", 1)[1]))
+            index += 1
+        elif arg.startswith("-"):
+            print("unknown option %s\n\n%s" % (arg, USAGE))
+            return 2
+        else:
+            pages.append(page_name(arg))
+            index += 1
+
+    every = sorted(n for n in os.listdir(DOCS) if n.endswith(".html"))
+    if pages:
+        names = sorted(set(pages))
+        absent = [n for n in names if n not in every]
+        if absent:
+            print("no such page in %s/: %s" % (DOCS, ", ".join(absent)))
+            return 2
+        scoped = True
+    elif whole:
+        names = every
+        scoped = False
+    else:
+        names = changed_pages()
+        if not names:
+            print("no page changed under %s/ — name a page, or pass --all for the whole site" % DOCS)
+            return 0
+        scoped = True
 
     failures = 0
     warnings = []
@@ -473,25 +617,31 @@ def main(argv):
         if description:
             descriptions.setdefault(description, []).append(name)
 
-    for text, pages in sorted(descriptions.items()):
-        if len(pages) > 1:
-            failures += 1
-            print("duplicate description in %s: %r" % (" and ".join(pages), text[:60] + "…"))
+    if not scoped:
+        for text, pages in sorted(descriptions.items()):
+            if len(pages) > 1:
+                failures += 1
+                print("duplicate description in %s: %r" % (" and ".join(pages), text[:60] + "…"))
 
-    for label, problems in (
-        ("sitemap", check_sitemap(names)),
-        ("api", check_api(names)),
-        ("robots", check_robots()),
-    ):
-        for problem in problems:
-            failures += 1
-            print("%s: %s" % (label, problem))
+        for label, problems in (
+            ("sitemap", check_sitemap(names)),
+            ("api", check_api(names)),
+            ("robots", check_robots()),
+        ):
+            for problem in problems:
+                failures += 1
+                print("%s: %s" % (label, problem))
+    else:
+        for name in names:
+            for problem in check_listed(name):
+                failures += 1
+                print("%s: %s" % (name, problem))
 
     if not quiet:
         for warn in warnings:
             print("warning — %s" % warn)
         lengths = sorted(len(t) for t in descriptions)
-        if lengths:
+        if lengths and not scoped:
             print("descriptions: %d pages, min %d, median %d, max %d, %d under %d"
                   % (len(lengths), lengths[0], lengths[len(lengths) // 2], lengths[-1],
                      sum(1 for n in lengths if n < DESC_MIN), DESC_MIN))
