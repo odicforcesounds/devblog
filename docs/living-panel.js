@@ -12,6 +12,11 @@
   var line = card.querySelector("p");
   if (!line) return;
 
+  card.style.top = "50%";
+  card.style.transform = "translateY(-50%)";
+  card.style.maxHeight = "calc(100vh - 2rem)";
+  card.style.overflowY = "auto";
+
   var used = Object.create(null);
   var links = document.querySelectorAll("a[href]");
   for (var i = 0; i < links.length; i++) {
@@ -83,7 +88,7 @@
 
     image.src = photo(being);
     image.alt = being[0];
-    image.title = "Click to expand · double-click to hide";
+    image.title = "1 image click to expand · 2 clicks to disappear";
     image.style.cursor = "zoom-in";
     image.setAttribute("role", "button");
     image.setAttribute("tabindex", "0");
