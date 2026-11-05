@@ -103,6 +103,11 @@ JS = """(function () {
   line.appendChild(anchor(city, cityHref));
   line.appendChild(document.createTextNode("."));
 
+  var hint = document.createElement("small");
+  hint.textContent = "1 image click to expand \u00b7 2 clicks to disappear";
+  hint.style.cssText = "display:block;font-size:.62rem;line-height:1.35;letter-spacing:.02em;color:rgba(255,255,255,.72);text-align:center";
+  card.appendChild(hint);
+
   if (image) {
     var fullSrc = fullPhoto(being);
     var zoom = null;
