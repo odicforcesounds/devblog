@@ -82,8 +82,15 @@
   line.appendChild(document.createTextNode("."));
 
   var hint = document.createElement("small");
-  hint.textContent = "1 image click to expand · 2 clicks to disappear";
-  hint.style.cssText = "display:block;font-size:.62rem;line-height:1.35;letter-spacing:.02em;color:rgba(255,255,255,.72);text-align:center";
+  hint.style.cssText = "display:block;font-size:.64rem;line-height:1.55;letter-spacing:.02em;text-align:center";
+  var expandLine = document.createElement("span");
+  expandLine.textContent = "1 image click to expand";
+  expandLine.style.cssText = "display:block;color:#5ce1ff";
+  var hideLine = document.createElement("span");
+  hideLine.textContent = "2 clicks to disappear";
+  hideLine.style.cssText = "display:block;color:#ffd23f";
+  hint.appendChild(expandLine);
+  hint.appendChild(hideLine);
   card.insertBefore(hint, image);
 
   if (image) {
