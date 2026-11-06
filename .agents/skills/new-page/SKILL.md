@@ -9,6 +9,12 @@ description: Create a new page for Monkey Blog (blog.odicforcesounds.com) from s
 and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
 which check would prove it, and run it when it is requested.
 
+**One page is one project.** Each `docs/*.html` file is a project of its own: its markup,
+script and styles are written there, and the only relation between two pages is the `<a>`
+link from one to the other. Where a page fetches data, that data is its own API, in its
+own files and folder (`docs/api/`, or the page's own `data/`). One page is one API. Test
+only the page and the API you touched; every other page and API is out of scope.
+
 Monkey Blog is a static site. `docs/` **is** the site: GitHub Pages serves it at
 `https://blog.odicforcesounds.com`. There is no framework, no bundler and no request-time
 rendering, so every rule below is a file rule — if it is wrong in the source, it is wrong
@@ -388,8 +394,8 @@ python3 .agents/skills/blog-ops/check_site.py       # head contract, sitemap and
 of a task. An API-coverage line about the new page is reported as a finding, not cleared by
 running the builder.
 
-Then the five read-only audits, which answer what `check_site.py` does not — none of them
-writes a file, so all five run on every new page:
+Then the five read-only audits, which answer what `check_site.py` does not. Point them at
+the new page and leave the rest of the site untested:
 
 ```sh
 python3 .agents/skills/link-integrity/check_links.py      # every href and src resolves
