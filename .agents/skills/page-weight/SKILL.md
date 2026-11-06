@@ -9,6 +9,12 @@ description: Measure what a reader actually downloads per page — the HTML plus
 and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
 which check would prove it, and run it when it is requested.
 
+**One page is one project.** Each `docs/*.html` file is a project of its own: its markup,
+script and styles are written there, and the only relation between two pages is the `<a>`
+link from one to the other. Where a page fetches data, that data is its own API, in its
+own files and folder (`docs/api/`, or the page's own `data/`). One page is one API. Test
+only the page and the API you touched; every other page and API is out of scope.
+
 The size of `docs/` on disk is not the interesting number; a 58 MB folder of PDFs costs a
 reader nothing until they open one. What costs is the **closure** of a page: its HTML plus
 every local file it names, plus every JSON it fetches when it opens.
