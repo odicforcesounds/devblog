@@ -5,6 +5,10 @@ description: Keep the JSON behind the eight catalogue pages intact — every fil
 
 # Catalogue data — the JSON eight pages read
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 `docs/animals/`, `birds/`, `fishes/`, `insects/`, `plants/`, `electronics/`, `awesome/`
 and `living/` are not pages, they are data sources: each `*Index.html` fetches
 `data/index.json`, then the per-category file the reader asked for. A broken file does not
