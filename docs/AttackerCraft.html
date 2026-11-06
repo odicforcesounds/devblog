@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://upload.wikimedia.org; font-src 'self' data:; connect-src 'self'; form-action 'self'; object-src 'none'; base-uri 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>How an Attacker Works: Debug, Find, Exploit, Vanish</title>
+<meta name="description" content="Follow the attacker's loop end to end: the workbench, the bug hunt, crash-to-control, payload chains, and the stealth moves that keep roots invisible.">
+<link rel="canonical" href="https://blog.odicforcesounds.com/AttackerCraft.html">
+<meta property="og:title" content="How an Attacker Works: Debug, Find, Exploit, Vanish">
+<meta property="og:description" content="Follow the attacker's loop end to end: the workbench, the bug hunt, crash-to-control, payload chains, and the stealth moves that keep roots invisible.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://blog.odicforcesounds.com/AttackerCraft.html">
+<meta property="og:site_name" content="Monkey Blog">
+<meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How an Attacker Works: Debug, Find, Exploit, Vanish">
+<meta name="twitter:description" content="Follow the attacker's loop end to end: the workbench, the bug hunt, crash-to-control, payload chains, and the stealth moves that keep roots invisible.">
+<meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/AttackerCraft.html#article",
+      "headline": "How an Attacker Works: Debug, Find, Exploit, Vanish",
+      "description": "Follow the attacker's loop end to end: the workbench, the bug hunt, crash-to-control, payload chains, and the stealth moves that keep roots invisible.",
+      "url": "https://blog.odicforcesounds.com/AttackerCraft.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://blog.odicforcesounds.com/AttackerCraft.html"
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://blog.odicforcesounds.com/images/peace.jpg",
+        "width": 1496,
+        "height": 960
+      },
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "name": "Oscar",
+        "url": "https://blog.odicforcesounds.com/",
+        "sameAs": [
+          "https://mastodon.social/@TaoExpression"
+        ]
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://blog.odicforcesounds.com/images/three.jpg",
+          "width": 1024,
+          "height": 1024
+        }
+      },
+      "isPartOf": {
+        "@type": "Blog",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/"
+      },
+      "articleSection": "Security & Hacking",
+      "keywords": "Contents, The loop on paper, The workbench, Finding the crack, Proving the primitive, From primitive to chain, The front doors, Making the attack invisible, Case files, Reading the traces back, Sources",
+      "wordCount": 3156,
+      "datePublished": "2026-11-06",
+      "dateModified": "2026-11-06"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://blog.odicforcesounds.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Security & Hacking",
+          "item": "https://blog.odicforcesounds.com/#category-security-and-hacking"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "How an Attacker Works: Debug, Find, Exploit, Vanish",
+          "item": "https://blog.odicforcesounds.com/AttackerCraft.html"
+        }
+      ]
+    }
+  ]
+}
+  </script>
+<style>
+:root{
+  --bg:#07090d;--panel:#0f141b;--panel2:#141b24;--line:#243040;
+  --ink:#e7eef6;--muted:#96a5b8;--accent:#7ce38b;--warm:#e9b26a;--danger:#ef7b7b;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --serif:Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 var(--serif)}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--warm)}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(7,9,13,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+.topbar .wrap{display:flex;align-items:center;gap:.9rem;padding:.55rem 1rem;max-width:72rem;margin:0 auto}
+.topbar .home{font-family:var(--sans);font-size:.85rem;border:1px solid var(--accent);border-radius:999px;padding:.18rem .7rem}
+.brand{font-family:var(--mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.brand b{color:var(--warm)}
+.wrap{max-width:52rem;margin:0 auto;padding:0 1.15rem 4rem}
+.kicker{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--warm);margin:2rem 0 .5rem}
+h1,.seo-h2{font-size:clamp(1.9rem,4vw,2.9rem);line-height:1.15;margin:.2rem 0 .8rem;letter-spacing:-.02em}
+.dek{font-size:1.08rem;color:var(--muted);margin:0 0 1.6rem;max-width:46rem}
+.meta{font-family:var(--mono);font-size:.72rem;color:var(--muted);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:.5rem 0;display:flex;gap:1rem;flex-wrap:wrap}
+nav.toc{background:var(--panel);border:1px solid var(--line);border-radius:.7rem;padding:1rem 1.2rem;margin:1.6rem 0}
+nav.toc h2{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 .6rem}
+nav.toc ol{margin:0;padding-left:1.3rem;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.25rem 1.4rem}
+nav.toc a{color:var(--ink);border-bottom:1px dotted transparent}
+nav.toc a:hover{color:var(--accent);border-color:var(--accent)}
+section{margin:2.6rem 0;scroll-margin-top:4rem}
+h2{font-size:1.5rem;line-height:1.25;margin:0 0 .7rem;color:var(--accent)}
+h3{font-size:1.12rem;margin:1.4rem 0 .4rem;color:var(--warm)}
+h4{font-family:var(--sans);font-size:.95rem;margin:1.1rem 0 .3rem}
+p{margin:.55rem 0}
+ul,ol{padding-left:1.3rem}
+li{margin:.25rem 0}
+code{font-family:var(--mono);font-size:.86em;background:#0b1118;border:1px solid #223042;border-radius:.3rem;padding:.05rem .28rem;color:#c9f7d3}
+pre{font-family:var(--mono);font-size:.8rem;line-height:1.55;background:#0a0f15;border:1px solid #223042;border-radius:.55rem;padding:.85rem 1rem;overflow-x:auto;color:#cfe8d6;margin:.8rem 0}
+pre code{background:none;border:0;padding:0;font-size:1em;color:inherit}
+table{width:100%;border-collapse:collapse;margin:.9rem 0;font-family:var(--sans);font-size:.85rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--panel2);color:var(--warm);font-weight:600}
+tr:nth-child(even) td{background:rgba(20,27,36,.45)}
+blockquote{border-left:3px solid var(--warm);margin:1rem 0;padding:.45rem 1rem;background:var(--panel);color:var(--muted)}
+.callout{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:.5rem;padding:.8rem 1rem;margin:1rem 0;font-family:var(--sans);font-size:.9rem}
+.callout strong{color:var(--accent)}
+.danger{border-left-color:var(--danger)}
+.danger strong{color:var(--danger)}
+.steps{counter-reset:step;list-style:none;padding:0}
+.steps>li{counter-increment:step;position:relative;padding-left:2.5rem;margin:1rem 0}
+.steps>li::before{content:counter(step);position:absolute;left:0;top:0;width:1.7rem;height:1.7rem;border:1px solid var(--accent);border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:.78rem;color:var(--accent)}
+footer.site{margin-top:3rem;border-top:1px solid var(--line);padding-top:1rem;font-family:var(--sans);font-size:.85rem;color:var(--muted)}
+footer.site .tags{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.6rem}
+footer.site .tags span{border:1px solid var(--line);border-radius:999px;padding:.1rem .55rem;font-family:var(--mono);font-size:.68rem}
+:focus-visible{outline:2px solid var(--warm);outline-offset:2px}
+@media (max-width:640px){
+  nav.toc ol{grid-template-columns:1fr}
+  h2{font-size:1.3rem}
+  body{font-size:15px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media print{body{background:#fff;color:#111}.topbar,footer.site{display:none}h2,.seo-h2,h1{color:#111}pre,table,.callout{background:#fff!important;border-color:#999!important}}
+</style>
+<link rel="stylesheet" href="link-colors.css">
+  <style id="living-panel-style">
+    .living-panel{position:fixed;top:60px;right:clamp(1.2rem,7vw,8rem);z-index:95;
+      width:12.5rem;display:flex;flex-direction:column;
+      align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:left;
+      background:rgba(8,12,17,.9);border:1px solid var(--line, rgba(255,255,255,.14));
+      border-radius:16px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+      font-family:var(--sans, system-ui, sans-serif)}
+    .living-panel img{width:100%;height:8rem;object-fit:cover;border-radius:.6rem;
+      border:1px solid var(--line, rgba(255,255,255,.14));background:var(--panel, #101018)}
+    .living-panel p{margin:0;font-size:.78rem;line-height:1.5;color:var(--muted, #a9a9ba)}
+    .living-panel a{color:var(--cyan, #5ce1ff);text-decoration:none;
+      border-bottom:1px solid rgba(92,225,255,.4)}
+    .living-panel a:hover,.living-panel a:focus-visible{color:var(--gold, #ffd23f);
+      border-color:currentColor}
+    @media (max-width:1200px){.living-panel{width:11rem;padding:.6rem .55rem}
+      .living-panel img{height:6.8rem}.living-panel p{font-size:.74rem}}
+    @media (max-width:900px){.living-panel{width:9rem;gap:.45rem}
+      .living-panel img{height:5.6rem}.living-panel p{font-size:.68rem;line-height:1.45}}
+    @media (max-width:640px){.living-panel{width:7.4rem;padding:.45rem .4rem}
+      .living-panel img{height:4.4rem}.living-panel p{font-size:.62rem}}
+    @media print{.living-panel{display:none}}
+  </style>
+  <script src="living-panel.js" defer></script>
+</head>
+<body>
+<aside class="living-panel" id="living-panel" aria-label="A living being, a tool, a component, a plant and a city">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Sarus_crane_%28Grus_antigone%29.jpg/250px-Sarus_crane_%28Grus_antigone%29.jpg" alt="Sarus crane" width="152" height="90" loading="lazy" decoding="async">
+    <p>this <a href="birdsIndex.html#order-gruiformes" title="Gruidae · Gruiformes">Sarus crane</a> likes to use <a href="awesomeIndex.html#cat-data" title="Coins · Data, networks and archives">nheqminer</a> and loves <a href="electronicsIndex.html#cat-sensors" title="Motion and position · Sensors and transducers">Magnetometer</a> while doing some diet with <a href="plantsIndex.html#order-asparagales" title="Amaryllidaceae · Asparagales">Leek</a> at <a href="worldIndex.html#cat-sr" title="Suriname · South America">Paramaribo</a>.</p>
+  </aside>
+<div id="lang-en">
+<header class="topbar">
+  <div class="wrap">
+    <a class="home" href="./index.html">Home</a>
+    <span class="brand">Attacker <b>/</b> Craft</span>
+  </div>
+</header>
+
+<main class="wrap">
+<p class="kicker">Security · Attacker loop</p>
+<h1>How an Attacker Works: Debug, Find, Exploit, Vanish</h1>
+<p class="dek">Real intrusions start long before the payload fires and end long after: a lab gets built, code gets read forever, bugs get triaged, primitives get proven, payloads get chained to a goal — and then the hard part begins, making every step of it disappear. This page walks the attacker's loop the way an engineer would run it, with the cases that made the loop dangerous in public view.</p>
+<p class="meta"><span>Method note</span><span>Public write-up level</span><span>No weaponized code</span></p>
+
+<nav class="toc" aria-labelledby="toc-en">
+<h2 id="toc-en">Contents</h2>
+<ol>
+<li><a href="#loop">The loop on paper</a></li>
+<li><a href="#bench">The workbench</a></li>
+<li><a href="#bug">Finding the crack</a></li>
+<li><a href="#primitive">Proving the primitive</a></li>
+<li><a href="#chain">From primitive to chain</a></li>
+<li><a href="#delivery">The front doors</a></li>
+<li><a href="#ghost">Making the attack invisible</a></li>
+<li><a href="#cases">Case files</a></li>
+<li><a href="#trace">Reading the traces back</a></li>
+<li><a href="#sources">Sources</a></li>
+</ol>
+</nav>
+
+<section id="loop">
+<h2>The loop on paper</h2>
+<p>Strip away the mystique and an intrusion is a project with deliverables: access that survives reboots, data that moves, and no evidence it happened. The ATT&CK knowledge base exists precisely because this structure repeats across teams and years — the same tactics done with different tools. A single loop covers nearly every case in the public record:</p>
+<table>
+<thead><tr><th>Stage</th><th>What the attacker actually does</th><th>ATT&CK tactic</th></tr></thead>
+<tbody>
+<tr><td>Frame the target</td><td>Read the org from outside: who ships its software, which vendor VPN faces the internet, how stale its edge appliances are</td><td>Reconnaissance</td></tr>
+<tr><td>Build the bug</td><td>Buy one, reuse a leaked one, or mine one from a patch diff</td><td>Resource Development</td></tr>
+<tr><td>Get in</td><td>Through an update pipe, an exposed appliance, a credential, or a wormed service bug</td><td>Initial Access</td></tr>
+<tr><td>Turn code into control</td><td>Prove the primitive, chain it to execution, plant persistence</td><td>Execution, Persistence</td></tr>
+<tr><td>Vanish</td><td>Hollow processes, clear the trail, encrypt the channel, go dormant</td><td>Defense Evasion</td></tr>
+</tbody>
+</table>
+<p>The loop, not the line, is the honest picture: defenders push a team back a stage, and the team iterates. NotPetya delivered itself inside a legitimate updater and then spread on its own — delivery and propagation in one stage. SolarWinds sat dormant for months between delivery and execution. The stage table is a map, not a schedule.</p>
+<p>One thing the loop leaves out, and the law does not: none of this is legal outside written authorization. Systematic intrusion of systems you do not own is a crime almost everywhere — prosecution cases are a search away. The same craft taught by a consent form is <a href="./EthicalLawsOnIT.html">ethics</a> in the day job and a charge sheet without one.</p>
+<div class="callout danger"><strong>This page is educational.</strong> Techniques appear at the level of public advisories, vendor reports and conference talks. Everything here is knowledge that exists in the open record; nothing here is a tool, a script or a step you can copy to attack a real machine.</div>
+</section>
+
+<section id="bench">
+<h2>The workbench</h2>
+<p>Attack engineering starts with an environment where crashing is a result, not an incident. The modern bench is virtual, disposable and instrumented:</p>
+<ul>
+<li><strong>Disposables.</strong> Clone-on-snapshot virtual machines per architecture: Windows 7 through 11, Ubuntu and CentOS LTS tiers, a cast of ARM routers. A clean disk is one revert away, so no crash investigation ever stops at "the target was already dirty".</li>
+<li><strong>Debuggers on both layers.</strong> On Linux: GDB with a enhancement layer for segmentation checks and leak markers. On Windows: WinDbg for kernel work and userland watchers. Reversing-ahead tools like Ghidra see the decompiled forest first; binary diffing against patched builds shows exactly which branches moved.</li>
+<li><strong>Tracers and process listeners.</strong> Procmon on Windows and <code>strace</code>/<code>eBPF</code> tooling on Linux show every file, registry and socket touch — the evidence trail for later "what did the payload actually change" questions.</li>
+<li><strong>Fuzzers.</strong> Coverage-guided engines like AFL++ hammer binaries around the clock; network services get hand-built harnesses that fake the protocol before the socket exists.</li>
+<li><strong>The lab itself.</strong> An isolated network with fake DNS zones, self-signed CAs and a starved supply chain — because a payload that phones home ruins the experiment and the bench.</li>
+</ul>
+<p>Two habits make this bench work. First, reproducibility: every crash gets a saved VM snapshot, the exact input and a bug title, or the finding evaporates. Second, discipline about the boundary between studying the bug and arming an attack — a workbench that keeps only inputs and artifacts, never weaponized outputs, stays a research tool even if a laptop leaves it.</p>
+</section>
+
+<section id="bug">
+<h2>Finding the crack</h2>
+<p>Vulnerabilities surface in three ways: somebody reads the software's own code or cites the patch, fuzzing crashes it, or a third party reports it for sale. All three paths converge on the same artifact: a memory state or a data flow the programmer did not intend.</p>
+
+<h3>The patterns that repeat</h3>
+<table>
+<thead><tr><th>Pattern</th><th>The mistake in one line</th><th>Where it bites</th></tr></thead>
+<tbody>
+<tr><td>Unbounded copy</td><td>Buffer taken without checking the length first</td><td>Network parsers, protocol daemons — EternalBlue lived in an SMBv1 length check</td></tr>
+<tr><td>Use-after-free</td><td>Pointer reused after the heap chunk it pointed into was reclaimed</td><td>Browsers, scripting engines running untrusted content</td></tr>
+<tr><td>Format string</td><td>User text passed as a format, so <code>%n</code> writes and <code>%x</code> leaks</td><td>Gray-haired but still alive in embedded stacks</td></tr>
+<tr><td>Integer truncation</td><td>Length sum cast down, so "big" becomes "small"</td><td>Archive parsers, image codecs</td></tr>
+<tr><td>TOCTOU race</td><td>File or socket state checked, then changed before it is used</td><td>Local privilege edges, kernel cross-namespace work</td></tr>
+<tr><td>Injection sink</td><td>Structured input concatenated into SQL, template, path or command language</td><td>Web applications, admin panels — the MOVEit Transfer SQL injection</td></tr>
+<tr><td>Deserialization</td><td>Untrusted bytes revived into an executable object graph</td><td>Java ecosystems, .NET, Python object stores</td></tr>
+<tr><td>Logic flaw</td><td>State machine skips an authorization decision on some path</td><td>SAML parsers, session-token handling — Citrix Bleed's overread</td></tr>
+</tbody>
+</table>
+
+<h3>Bug hunting like the professionals</h3>
+<p>Static reading is underrated. A release that ships a security patch hands the whole internet the diff, and the fix commit <em>is</em> an announcement: the changed function, its edge case, and the argument parser that lets it happen. A serious attacker runs that diff the day the advisory drops, reproduces the overflow, and rides the patch cycle behind unpatched servers for weeks.</p>
+<p>Fuzzing fills in the search the diffs cannot cover. Coverage-guided tools like AFL++ and libFuzzer mutate a corpus, and the crashes that come back are triaged by hand: which crash reaches a fault is easy; which crash reaches a <em>controlled</em> write is the real question. Reading kernel crash callsites, classifying under sanitizer stacks and a boot that survives the fault takes days, and a bug's value is judged at precisely this point — not by whether a stack trace is dramatic.</p>
+<p>Third is the market. Governments run acquisition programs, brokers sell exclusivity, and some bugs then go silent for years inside a queued exploit. The MSRC advisory for the SMBv1 bug was available for public reading a full month before EternalBlue was burned onto the internet as a worm — the two disclosures, if you line them up on a calendar, are not secret intelligence; they are a patch window that happened to outlast an outlier's patience.</p>
+<p>Whether you like the ethics or not, the practical lesson survives: your windows are somebody else's bug hunt. Unpatched internet-facing services are the recurring headline-maker in every case file below.</p>
+</section>
+
+<section id="primitive">
+<h2>Proving the primitive</h2>
+<p>A crash log is not a capability. Before an exploit is worth an hour, the finding is graded: what exactly can the attacker control, and what does that control mean inside the target's memory model?</p>
+<table>
+<thead><tr><th>Primitive</th><th>Meaning</th><th>Sounds like</th></tr></thead>
+<tbody>
+<tr><td>Info leak</td><td>Memory the referee never gave you is readable</td><td>"Session tokens leak from a decompression buffer" — the Citrix Bleed heart</td></tr>
+<tr><td>Controlled write</td><td> attacker-chosen bytes can be put at attacker-chosen addresses</td><td>"Heap overflow with a predictable grooming window"</td></tr>
+<tr><td>Code execution</td><td>Arbitrary instructions run in some context</td><td>"ROP chain lands in user space"</td></tr>
+<tr><td>Auth bypass</td><td>The login check is not the memory problem — the logic is</td><td>"Signed session token replay without MFA"</td></tr>
+<tr><td>Sandbox escape</td><td>Code out of the referee's pit, holding real user privileges</td><td>"v8 to kernel escape in one pivot"</td></tr>
+</tbody>
+</table>
+<p>The gap between "it crashed" and "I control it" is where most technical effort in this art is spent. A sanitizer-rich build (AddressSanitizer, UBSan, MSan) narrows it: the tooling reports which allocation boundary was crossed, and a heap-grooming sequence turns a wild overflow into a predictable write. Exploitability under a modern OS also has to be argued, not assumed: mitigations like ASLR, DEP, CFI, shadow stacks and MTE all change what a given primitive can become, and the assessment for Windows differs from the one for a router's firmware.</p>
+<p>Sub-classing matters almost as much. A write primitive anywhere in process memory is far weaker than the same primitive inside a function pointer table. An info leak of one 8-byte slot is weaker than a decompression overread that bleeds kilobytes of token state — the exact delta that made the NetScaler bug into a mass-exploitation event.</p>
+</section>
+
+<section id="chain">
+<h2>From primitive to chain</h2>
+<p>The exploit is the primitive plus the payload plus the transport — and the payload is only as good as the chain of mitigations underneath it. This is where theart of "how the application attacks" — building the technique on top of the bug — is at its most technical:</p>
+
+<h3>Memory corruption chains</h3>
+<p>The canonical chain dates to Phrack's Aleph&nbsp;One: overwritten return address, shellcode in the buffer, done — but that ran on a world without NX. Under <strong>DEP + ASLR</strong>, the modern combines two ideas. First, a leak defeats ASLR by disclosing module bases. Second, return-oriented programming replaces shellcode with snippets already in the binary — "gadgets" — rethreaded end to end by the controlled stack. The corruption chain ends up as: groom heap → trigger overflow → controlled stack pivot → ROP the call to <code>VirtualProtect</code> (or <code>mprotect</code>) → payload runs in legitimate memory. None of the bytes you shipped is "code"; all of it is data that happens to steer execution.</p>
+
+<h3>Web and protocol chains</h3>
+<table>
+<thead><tr><th>Bug</th><th>Payload suite</th><th>Public case</th></tr></thead>
+<tbody>
+<tr><td>SQL injection</td><td>UNION to dump the schema, then heap the user table, then write a webshell into the app's data — LEMURLOOT on MOVEit</td><td>MOVEit Transfer / Cl0p (AA23-158A)</td></tr>
+<tr><td>Buffer overread</td><td>oracle read of session-token bytes, replay into the admin plane</td><td>Citrix Bleed / LockBit</td></tr>
+<tr><td>SSRF</td><td>Server-side request pointed at the cloud metadata endpoint, harvesting instance credentials</td><td>a pattern across most cloud-account takeovers</td></tr>
+<tr><td>Deserialization</td><td>Gadget chains: no exploit "written" but a chain of ordinary classes waking up each other until the runtime executes</td><td>Java要对, .NET, Python payload pairs</td></tr>
+<tr><td>Patch-bypass chain</td><td>Two minor bugs that each trip an check cancel each other out — bypass some validation</td><td>a recurring browser sandbox-escape blueprint</td></tr>
+</tbody>
+</table>
+<p>The chain idea generalizes: the exploit is not the bug; the exploit is the bug <em>embedded in the target's whole context</em> — frameworks around it, cloud behind it, users upstream of it. What makes a bug "high value" is how much context it flings open.</p>
+</section>
+
+<section id="delivery">
+<h2>The front doors</h2>
+<p>The payload is ready at the bench; delivery is how it meets a real network. Delivery decides most campaigns, and delivery, in every famous case, landed through a legitimate channel — the more trustworthy the channel, the deeper the inevitable detection crisis.</p>
+<table>
+<thead><tr><th>Door</th><th>How it opens</th><th>Case that burned it</th></tr></thead>
+<tbody>
+<tr><td>Update pipe</td><td>inside the vendor's build system, so clients install the malware as a routine patch</td><td>SolarWinds attack: ORION updater shipped SUNBURST</td></tr>
+<tr><td>USB / air-gap</td><td>Stuxnet took four Windows zero-days to cross an unreachable network boundary</td><td>Stuxnet</td></tr>
+<tr><td>Worm through a service bug</td><td>MS17-010 EternalBlue on every unpatched SMB server — no interaction needed</td><td>WannaCry, then NotPetya</td></tr>
+<tr><td>Managed file transfer SaaS</td><td>SQL-inject into the channel your vendors already trust</td><td>MOVEit Transfer / Cl0p</td></tr>
+<tr><td>Edge appliance</td><td>session-token leakage on a VPN concentrator</td><td>Citrix Bleed to LockBit crypto</td></tr>
+<tr><td>Library everywhere</td><td>Log4Shell inside the logging library that thousands of apps called for style</td><td>Log4j / Log4Shell</td></tr>
+</tbody>
+</table>
+<p>Two lessons sit in the data. First, <strong>the front doors are supply-chain-flavored</strong>: your least-attacked artifact is usually the third-party dependency your organization forgot it owned. Second, every case gets worse for the defenders because the compromise lifecycle starts <em>before</em> the victim's perimeter — the bug is mined by the attacker weeks earlier, then rides infrastructure you cannot distinguish from the vendor's own. Perimeter defense by itself is structurally behind, as the <a href="./Security.html">intrusions</a> cases and the open-range methodology pages both show.</p>
+</section>
+
+<section id="ghost">
+<h2>Making the attack invisible</h2>
+<p>Once inside, the clock starts. Every write the attack makes is a forensic artifact someone may collect; every network hop is a chance a gateway logs. So the attacker's craft after access is almost entirely <em>defense evasion</em> — and the same loop we walked at the top of the page is the thing being defended against.</p>
+
+<h3>The exploit is custom-built and discarded</h3>
+<p>An exploit used once and thrown away is silent in every retrospective. When it must be reused, it is armored: randomized packer stubs, per-victim encryption keys, anti-emulation patterns, metamorphic loaders. This is why one attack sample is nearly useless next to a full analysis — 95% of the artifact is a shell around a payload the shell hides. Defense therefore does not match a file hash, but must detect the <em>behaviour</em> the payload implies.</p>
+
+<h3>The process is wattless</h3>
+<ul>
+<li><strong>Process hollowing</strong> (MITRE's T1055): create a legitimate process suspended, unmap its image, overwrite with your payload, resume — the event tree shows <code>explorer.exe</code>, the memory shows the attacker's code.</li>
+<li><strong>Living off the land</strong>: do the work with <code>certutil</code>, <code>msiexec</code>, <code>wmic</code>, PowerShell — tools the operating system itself ships, so the attack "creates" no suspicious binary to match a YARA rule.</li>
+<li><strong>Fileless behaves</strong>: run in <code>LSASS</code>, <code>svchost</code>, or WMI, install persistence as a registry blob rather than a dropped file, so a filesystem scan finds nothing.</li>
+<li><strong>PPID spoofing / token games</strong>: make the malicious child claim a trusted parent, and the process tree looks like the office manager's remote shell.</li>
+</ul>
+
+<h3>The channels go quiet</h3>
+<p>Command-and-control does not run a hardwired domain. The bibliography shows domain-generation algorithms (a procedure that daily invents new C2 names that only the network design can verify — every server that checks), fast flux, CDN fronting, encrypted DNS. Beacon timing is equally deliberate: long dormancy with randomized jitter beats a naive "call home at the top of every hour" signature. C2 that only phones home when the operator nudges it, as SolarWinds did over 14 silent days, is not a bug in the attacker's infra — it is the design.</p>
+
+<h3>The trail gets wiped</h3>
+<p>Log clearing (T1070.006), file timestomping, and disabling the service-local security agent are the classic clean-up. The state-level editions go further: encrypting the whole disk, wiping the master boot record, or — in the NotPetya case — overwriting in a way that was not even reversible, so the ransomware-looking artefact doubles as a denial-of-service operation.</p>
+
+<h3>The invisibility report card</h3>
+<table>
+<thead><tr><th>Case</th><th>The stealthy tell</th></tr></thead>
+<tbody>
+<tr><td>SolarWinds / SUNBURST</td><td>Signed by the vendor, dormant 14 days, tor-like meandering, C2 traffic buried inside legitimate ORION API calls</td></tr>
+<tr><td>Stuxnet</td><td>Signed by "Realtek" and "JMicron" certificates, parent-process doubles, PLC-induced damage indistinguishable from pump wear</td></tr>
+<tr><td>EternalBlue / NotPetya</td><td>Exploit spread filelessly in memory on a timer — no rootkit, just kinetic network speed and a wiper</td></tr>
+<tr><td>Citrix Bleed</td><td>Replay the stolen session token: no exploit log entry, as legitimate as the secretary</td></tr>
+<tr><td>Log4Shell</td><td>The string exploit lands in <em>any</em> log format field — no dropped artifact at all</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="cases">
+<h2>Case files</h2>
+<p>The loop is abstract until it has names. Here are the seven <a href="https://art.odicforcesounds.com/pages/Data/Audio/Machine_World/tracks/01_Storming_Plan_Enigmatic_War/" target="_blank" rel="noopener">storms</a> this page keeps returning to, read as deliverable timelines:</p>
+<table>
+<thead><tr><th>Case</th><th>Year</th><th>Bug class</th><th>What happened, at public-record level</th></tr></thead>
+<tbody>
+<tr><td>Stuxnet</td><td>2010</td><td>Multiple Windows 0-days + PLC logic rewriting</td><td>Topped the first-ever "cyber-nuclear sabotage" headline. Signed drivers, wormed via USB into an air-gapped centrifuge plant. See the dossier from Kaspersky.</td></tr>
+<tr><td>EternalBlue / WannaCry</td><td>2017</td><td>SMBv1 pooled buffer overflow (MS17-010)</td><td>Wormed 200k+ machines in 150 countries in a weekend; the patch existed for 59 days. Reference: the MSRC sheet.</td></tr>
+<tr><td>NotPetya</td><td>2017</td><td>EternalBlue + M.E.Doc update mechanism</td><td>A pseudo-ransomware handed to one Ukrainian vendor's auto-update, then-
+ self-propagating — $10bn estimated. The US-CERT alert is the canonical write-up.</td></tr>
+<tr><td>SolarWinds / SUNBURST</td><td>2020</td><td>Software supply chain injection</td><td>Malicious code stealthily inserted in an update pipeline, signed legitimately, then called home after custom dormancy. See the SolarWinds Compromise campaign page.</td></tr>
+<tr><td>Log4Shell</td><td>2021</td><td>JNDI lookup in a logging library</td><td>A single string in a log call can be a code execution. Patching got complicated because it affected "everyone else's application". The Apache Log4j security page is the entry point.</td></tr>
+<tr><td>MOVEit / Cl0p</td><td>2023</td><td>SQL injection, zero-day exploitation (CVE-2023-34362)</td><td>Webshell (LEMURLOOT) dropped through an SQL injection, DB contents exfiltrated from thousands of organizations. CISA advisory AA23-158A.</td></tr>
+<tr><td>Citrix Bleed</td><td>2023</td><td>Buffer overread exposing session tokens</td><td>MFA bypass when tokens are replayed — the CISA advisory AA23-325A maps the LockBit crypto-criminal chain.</td></tr>
+</tbody>
+</table>
+<p>Read down the years and a trend appears: newer cases rely on fewer memory-corruption primitives and more on trust — the trust you already have in a vendor, a channel, a session token, a library. The exploit is migrating up the stack, from your buffer to your assumptions.</p>
+</section>
+
+<section id="trace">
+<h2>Reading the traces back</h2>
+<p>Everything the attacker does leaves a signature, because perfect invisibility is provably impossible at scale — too much state changes in a computer to hide it all from a properly instrumented host. The defender's version of the loop above is roughly:</p>
+<ol class="steps">
+<li><strong>Telemetry.</strong> Endpoint and network records that tell later readers what the process did, not what it was named — the discipline is detailed on the <a href="./BlueTeams.html">telemetry</a> page.</li>
+<li><strong>Hypothesis.</strong> A "we are compromised" claim: mapped to indicators, checked against history, priced out as a hunt.</li>
+<li><strong>Detection.</strong> Behavioural rules — the hollowing pattern, the single-byte change in a well-known executable region, the session token used from two IPs within seconds.</li>
+<li><strong>Response.</strong> Invalidate the token and the session (the Citrix advice), rotate the credentials caught in the leak, kill the process tree, never just delete the dropped file.</li>
+<li><strong>Harden.</strong> Back to the top: patch the appliance, kill the anomalous connection, keep the remaining attack surface worth the attacker's time.</li>
+</ol>
+<p>Two asymmetries become visible. The attacker needs one chain; the defender must catch them all — this is why deny-by-default matters more than any single control. But the defender has something the attacker does not: the machine diff afterwards. Every exploit is a rollback of complexity into a single deterministic moment, and forensics specializes in buying that moment back from the noise.</p>
+<p>Getting skilled enough to run the defender's loop deliberately is what a <a href="./learnHacking.html">lab</a> and a <a href="./RedTeams.html">red</a> engagement teach — consenting teams, a known scope, and the same techniques turned right side up. For what happens when attackers do the same against a kernel without consent, see the <a href="./ReadingTheSignal.html">advisories</a> page and the <a href="./DebianIsolation.html">isolation</a> handbook.</p>
+</section>
+
+<section id="sources">
+<h2>Sources</h2>
+<p>Every external claim on this page reads like a headline without these. Each source below is the one place the topic is described at public-record level:</p>
+<ol>
+<li><a href="https://attack.mitre.org/" target="_blank" rel="noopener" target="_blank" rel="noopener">ATT&CK</a> — the tactic–technique catalogue that gave this page its loop.</li>
+<li><a href="https://attack.mitre.org/techniques/T1055/" target="_blank" rel="noopener" target="_blank" rel="noopener">Process hollowing</a> — the MITRE technique page for T1055.</li>
+<li><a href="https://attack.mitre.org/techniques/T1027/" target="_blank" rel="noopener" target="_blank" rel="noopener">Obfuscated files or information</a> — T1027, the packing/topic layer.</li>
+<li><a href="https://attack.mitre.org/techniques/T1070/006/" target="_blank" rel="noopener" target="_blank" rel="noopener">Timestomping</a> — T1070.006 on clearing the trail.</li>
+<li><a href="https://attack.mitre.org/campaigns/C0024/" target="_blank" rel="noopener" target="_blank" rel="noopener">SolarWinds Compromise</a> — the MITRE campaign record.</li>
+<li><a href="https://attack.mitre.org/groups/G0117/" target="_blank" rel="noopener" target="_blank" rel="noopener">Nobelium</a> — the group page behind SUNBURST.</li>
+<li><a href="https://www.kaspersky.com/resource-center/definitions/what-is-stuxnet" target="_blank" rel="noopener" target="_blank" rel="noopener">Stuxnet</a> — Kaspersky's public dossier.</li>
+<li><a href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2017-0144" target="_blank" rel="noopener" target="_blank" rel="noopener">CVE-2017-0144</a> — the MSRC advisory for the SMBv1 bug.</li>
+<li><a href="https://www.cisa.gov/uscert/ncas/alerts/TA17-181A" target="_blank" rel="noopener" target="_blank" rel="noopener">NotPetya</a> — US-CERT alert TA17-181A.</li>
+<li><a href="https://logging.apache.org/log4j/2.x/security.html" target="_blank" rel="noopener" target="_blank" rel="noopener">Log4j</a> — Apache's Log4j security page.</li>
+<li><a href="https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a" target="_blank" rel="noopener" target="_blank" rel="noopener">MOVEit</a> — CISA advisory AA23-158A on the Cl0p campaign.</li>
+<li><a href="https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-325a" target="_blank" rel="noopener" target="_blank" rel="noopener">Citrix Bleed</a> — CISA advisory AA23-325A on LockBit's use.</li>
+<li><a href="https://phrack.org/issues/49/14.html" target="_blank" rel="noopener" target="_blank" rel="noopener">Smashing the stack</a> — Aleph One in Phrack 49, the canonical first write-up of a memory-corruption exploit.</li>
+<li><a href="https://ghidra-sre.org/" target="_blank" rel="noopener" target="_blank" rel="noopener">Ghidra</a> — the NSA's open-source reversing toolkit.</li>
+<li><a href="https://aflplus.plus/" target="_blank" rel="noopener" target="_blank" rel="noopener">AFL++</a> — the coverage-guided fuzzer the bench runs.</li>
+<li><a href="https://learn.microsoft.com/en-us/sysinternals/downloads/procmon" target="_blank" rel="noopener" target="_blank" rel="noopener">Procmon</a> — the Sysinternals process monitor for the Windows trace record.</li>
+</ol>
+</section>
+
+<footer class="site">
+<p>Walk the loop once as a defender and its every step becomes a control; walk it as an attacker and its every step becomes a bill..</p>
+<div class="tags"><span>security</span><span>attacker-loop</span><span>evasion</span><span>cases</span></div>
+</footer>
+</main>
+</div>
+
+</body>
+</html>
