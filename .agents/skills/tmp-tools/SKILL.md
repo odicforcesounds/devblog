@@ -30,7 +30,7 @@ anything, and nothing tracked may depend on them.
    `tmp/` is correct, and deleting it afterwards is also correct — git already has the
    result. Give it a name that says what it did (`patch_langs.py`, not `script2.py`).
 2. **Anything referenced by a tracked document lives in a tracked path.** `README.md` and
-   the skills tell a reader to run `python3 .agents/skills/blog-ops/build_api.py`: any script
+   the skills tell a reader to run `python3 .agents/skills/blog-ops/build_sitemap.py`: any script
    a document depends on must live outside `tools/`, which is gitignored:
    on a fresh clone that file does not exist. A durable script belongs in
    `.agents/skills/blog-ops/` (or the repository root), where it is committed.
