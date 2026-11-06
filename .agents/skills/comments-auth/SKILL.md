@@ -5,6 +5,10 @@ description: Guard the Google and email sign-in path of the comment form on inde
 
 # Comment sign-in guard
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 The comment widget on `docs/index.html` has no static Google button. The HTML leaves
 `#comment-providers` empty; a module imports Firebase from `www.gstatic.com`, initializes
 the project and calls `renderProviders()` to create the Google and Email buttons. If any
