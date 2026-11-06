@@ -88,6 +88,29 @@ text-wrap: balance;
 color: var(--ink);
 }
 
+.stk-front {
+margin: 0 0 0.8rem;
+font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+font-size: 0.74rem;
+letter-spacing: 0.14em;
+}
+
+.stk-front a {
+display: inline-block;
+padding: 0.26rem 0.9rem;
+border: 1px solid var(--accent);
+border-radius: 999px;
+color: var(--accent);
+text-decoration: none;
+}
+
+.stk-front a:hover,
+.stk-front a:focus-visible {
+color: var(--bg);
+background: var(--accent-warm);
+border-color: var(--accent-warm);
+}
+
 @supports ((background-clip: text) or (-webkit-background-clip: text)) {
 .title1 {
 background-image: linear-gradient(92deg, #dcefff 0%, var(--accent) 52%, var(--accent-warm) 100%);
@@ -1593,6 +1616,7 @@ width: min(1120px, calc(100% - 9rem));
 <body class="container" id="top">
 
   <header>
+    <p class="stk-front"><a href="./socialToolKit.html">STK Development</a></p>
     <h1 class="title1">Technology, Philosophy, Psychology, Spirituality, Logic, Creativity and Music</h1>
   </header>
 
@@ -2389,9 +2413,9 @@ width: min(1120px, calc(100% - 9rem));
     <section class="category" id="category-site-blog-and-reading" data-title="Site, Blog &amp; Reading">
       <details class="cat">
         <summary class="cat-head">
-          <h2 data-index="15">Site, Blog &amp; Reading<span class="count" aria-hidden="true">13</span></h2>
+          <h2 data-index="15">Site, Blog &amp; Reading<span class="count" aria-hidden="true">14</span></h2>
         </summary>
-        <h3 class="lang-head" data-lang="en">English<span class="count" aria-hidden="true">12</span></h3>
+        <h3 class="lang-head" data-lang="en">English<span class="count" aria-hidden="true">13</span></h3>
         <ul class="links" data-lang="en">
           <li><a href="./booksIndex.html">The Book Index</a><span>Every way to get a book, from public domain downloads and free textbooks to subscriptions, new releases and rare first editions. English and Português in one page.</span><span class="name-tag">booksIndex.html</span></li>
             <li><a href="./mapQuest.html">odicforcesounds subdomains map</a><span>Both maps in one page, English only: seven forms from Ant to Monkey, with conditions, lessons, secrets and the context ⇔ meaning of every page.</span><span class="name-tag">mapQuest.html</span></li>
@@ -2405,6 +2429,7 @@ width: min(1120px, calc(100% - 9rem));
             <li><a href="./visits.html">More comments of statistics of this domain</a><span>OdicforceSounds Comments about Statistic Visits</span><span class="name-tag">visits.html</span></li>
             <li><a href="./greatsky.html">Self-Hosted Domain</a><span>Testing my self-hosted system.</span><span class="name-tag">greatsky.html</span></li>
             <li><a href="./domain_statistics.html">Statistics of sites activity</a><span>OdicforceSounds Statistics</span><span class="name-tag">domain_statistics.html</span></li>
+            <li><a href="./socialToolKitApp.html">Social Tool Kit — The Application</a><span>A working Firebase application: groups, members, video challenges, views and seven approvals.</span><span class="name-tag">socialToolKitApp.html</span></li>
         </ul>
         <h3 class="lang-head" data-lang="pt">Português<span class="count" aria-hidden="true">1</span></h3>
         <ul class="links" data-lang="pt">
@@ -2620,7 +2645,8 @@ width: min(1120px, calc(100% - 9rem));
     "CPUHistory.html": "2026-11-06",
     "pianosIndex.html": "2026-11-06",
     "dogsIndex.html": "2026-11-06",
-    "catsIndex.html": "2026-11-06"
+    "catsIndex.html": "2026-11-06",
+    "socialToolKitApp.html": "2026-11-06"
   };
 
   // Keep the archive self-organising: categories alphabetically, then each
@@ -3307,8 +3333,20 @@ width: min(1120px, calc(100% - 9rem));
         if (code === "auth/account-exists-with-different-credential") {
           return "That address already signs in with another provider. Use the one you used before.";
         }
-        if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
-          return "";
+        if (code === "auth/popup-closed-by-user") {
+          return "The sign-in window closed before it finished. Try again, or use the email form below.";
+        }
+        if (code === "auth/cancelled-popup-request") {
+          return "Another sign-in window was already open. Close it and try once.";
+        }
+        if (code === "auth/web-storage-unsupported" || code === "auth/third-party-cookie-blocked") {
+          return "This browser blocks the storage Google sign-in needs. Allow cookies for this site, or use the email form below.";
+        }
+        if (code === "auth/operation-not-supported-in-this-environment") {
+          return "This browser cannot open the sign-in window. Use the email form below.";
+        }
+        if (code === "auth/internal-error") {
+          return "Firebase could not complete the sign-in. Try again, or use the email form below.";
         }
         if (code === "auth/network-request-failed") {
           return "Network problem. Try again in a moment.";
@@ -3446,16 +3484,16 @@ width: min(1120px, calc(100% - 9rem));
         Array.prototype.forEach.call(buttons, function (button) {
           button.disabled = true;
         });
-        setStatus("Opening " + entry.label + " sign-in...", "");
+        setStatus("Taking you to " + entry.label + "...", "");
 
-        return signInWithPopup(auth, entry.make()).then(function () {
-          setStatus("", "");
-        }).catch(function (error) {
+        return signInWithRedirect(auth, entry.make()).catch(function (error) {
           const code = error && error.code;
-          if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
-            return signInWithRedirect(auth, entry.make()).catch(function (redirectError) {
-              const message = authErrorMessage(redirectError);
-              setStatus(message || "Could not sign you in. Try another provider.", message ? "error" : "" );
+          if (code === "auth/operation-not-supported-in-this-environment") {
+            setStatus("Opening " + entry.label + " in a window...", "");
+            return signInWithPopup(auth, entry.make()).catch(function (popupError) {
+              const message = authErrorMessage(popupError);
+              setStatus(message, message ? "error" : "");
+              return null;
             });
           }
           const message = authErrorMessage(error);
@@ -3511,9 +3549,14 @@ width: min(1120px, calc(100% - 9rem));
 
       function wireAuth() {
         renderProviders();
-        setPersistence(auth, browserLocalPersistence).catch(function () {});
 
-        getRedirectResult(auth).catch(function (error) {
+        setPersistence(auth, browserLocalPersistence).catch(function () {}).then(function () {
+          return getRedirectResult(auth);
+        }).then(function (result) {
+          if (result && result.user) {
+            setStatus("Signed in as " + clean(result.user.displayName || result.user.email || "Reader", MAX_NAME) + ".", "");
+          }
+        }).catch(function (error) {
           const message = authErrorMessage(error);
           if (message) {
             setStatus(message, "error");
