@@ -36,8 +36,21 @@ the rest as already sound; `--all` is the whole-site pass. `<pre>` and `<code>` 
 are teaching material, not links: a lesson that shows `<script src="app.js">` is not
 reported as a dead reference.
 
-Exit code 0 when nothing is broken, 1 when a link is dead. Warnings (unverifiable,
-server-side errors, a missing `#id`) never set the code.
+Exit code 0 when nothing is broken, 1 when a link is dead or an external anchor is
+malformed. Warnings (unverifiable, server-side errors, a missing `#id`) never set the code.
+
+## Every external link opens a new tab
+
+An anchor that leaves the site carries both attributes, in this order:
+
+```html
+<a href="https://example.org/report" target="_blank" rel="noopener">report</a>
+```
+
+The local pass fails a page whose external `href` lacks `target="_blank"`, and fails one
+that has `target="_blank"` without `noopener` in `rel` (the a11y audit checks the second
+half too). No exceptions: an internal `./Page.html` stays in the same tab; anything with a
+scheme, or a `//host/` path, is external and gets both attributes.
 
 ## What counts as a link
 
@@ -64,6 +77,9 @@ path that names a directory becomes its `index.html`.
   and meaningless after 30 days.
 - **`--sample 0` is a decision, not a default.** It fetches every stale URL; run it
   deliberately, not on every change, and not from a shared IP you care about.
+- **A same-tab external link is a failure, not a style choice.** `target="_blank"` plus
+  `rel="noopener"` on every off-site anchor is part of the link contract, checked offline
+  by the local pass.
 
 ## What it found the first time
 
