@@ -9,6 +9,12 @@ description: Audit each page's Content-Security-Policy against what that page ac
 and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
 which check would prove it, and run it when it is requested.
 
+**One page is one project.** Each `docs/*.html` file is a project of its own: its markup,
+script and styles are written there, and the only relation between two pages is the `<a>`
+link from one to the other. Where a page fetches data, that data is its own API, in its
+own files and folder (`docs/api/`, or the page's own `data/`). One page is one API. Test
+only the page and the API you touched; every other page and API is out of scope.
+
 A CSP failure is invisible. The page still renders, the console is only seen by whoever
 opens it, and the damage looks like a styling choice: **31 pages** linked
 `link-colors.css` while their own `style-src` refused every stylesheet file, so every link
