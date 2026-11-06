@@ -5,6 +5,10 @@ description: Audit what a search engine can actually index on this blog — titl
 
 # Indexation — what a crawler sees
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 `check_site.py` proves the head contract (one title, one canonical, one JSON-LD, one
 `h1`). This skill audits the layer above it: whether those tags add up to a page a
 search engine will index, and whether the sitemap, the API and the pages tell the same
