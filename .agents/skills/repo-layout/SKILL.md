@@ -5,6 +5,10 @@ description: Know and enforce the layout of the devblog repository — which dir
 
 # Repository layout
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 `docs/` is the published site (GitHub Pages, custom domain in `docs/CNAME`). Everything
 else is either source, scratch, memory or tooling — never a place for a page. So a file
 in the wrong directory is either published by accident, lost by accident, or both.
