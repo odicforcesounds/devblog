@@ -9,6 +9,12 @@ description: Verify that every link on the site resolves — an offline pass tha
 and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
 which check would prove it, and run it when it is requested.
 
+**One page is one project.** Each `docs/*.html` file is a project of its own: its markup,
+script and styles are written there, and the only relation between two pages is the `<a>`
+link from one to the other. Where a page fetches data, that data is its own API, in its
+own files and folder (`docs/api/`, or the page's own `data/`). One page is one API. Test
+only the page and the API you touched; every other page and API is out of scope.
+
 `check_site.py` audits the head; `seo-indexation` audits reachability **between** pages.
 Neither opens a `href`. This skill does: a link is a promise, and the promise is either
 kept by a file in `docs/` or by somebody else's server.
