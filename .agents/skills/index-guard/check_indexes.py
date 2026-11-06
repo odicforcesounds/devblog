@@ -20,13 +20,16 @@ EXPECTED = {
     "awesomeIndex.html",
     "birdsIndex.html",
     "carsIndex.html",
+    "catsIndex.html",
     "danceIndex.html",
+    "dogsIndex.html",
     "electronicsIndex.html",
     "fishesIndex.html",
     "gamesIndex.html",
     "insectsIndex.html",
     "lifeIndex.html",
     "marketsIndex.html",
+    "pianosIndex.html",
     "plantsIndex.html",
     "religionsIndex.html",
     "reptilesIndex.html",
@@ -39,12 +42,15 @@ DATA_DIR = {
     "awesomeIndex.html": "awesome",
     "birdsIndex.html": "birds",
     "carsIndex.html": "cars",
+    "catsIndex.html": "cats",
     "danceIndex.html": "dance",
+    "dogsIndex.html": "dogs",
     "electronicsIndex.html": "electronics",
     "fishesIndex.html": "fishes",
     "gamesIndex.html": "games",
     "insectsIndex.html": "insects",
     "marketsIndex.html": "markets",
+    "pianosIndex.html": "pianos",
     "plantsIndex.html": "plants",
     "religionsIndex.html": "religions",
     "rocksIndex.html": "rocks",
@@ -217,12 +223,12 @@ def main() -> int:
     seen = {path.name for path in paths}
     if args.page:
         for extra in sorted(seen - EXPECTED):
-            warnings.append(f"{extra}: index page outside the guarded fifteen")
+            warnings.append(f"{extra}: index page outside the guarded seventeen")
     else:
         for missing in sorted(EXPECTED - seen):
             failures.append(f"{missing}: expected index page is missing")
         for extra in sorted(seen - EXPECTED):
-            warnings.append(f"{extra}: index page outside the guarded fifteen")
+            warnings.append(f"{extra}: index page outside the guarded seventeen")
 
     for path in paths:
         page_failures, page_warnings = audit(path)
