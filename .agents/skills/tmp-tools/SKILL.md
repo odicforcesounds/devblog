@@ -5,6 +5,10 @@ description: Manage the scripts and scratch files of this repository — what be
 
 # tmp/ and tools/ — scripts and scratch
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 Neither directory is in git. `.gitignore` lists `tmp/` and `tools/`, so a file there is
 invisible to `git status`, absent from a fresh clone, and never deployed. That is the point
 (scratch must not ship) and the trap (work can vanish). Decide which one you are doing
