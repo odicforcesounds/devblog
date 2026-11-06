@@ -24,6 +24,12 @@ What changed in docs/index.html
 
 The rules
 ---------
+This is the complete block for blog-comments-6b4f5. The comment thread keeps
+exactly the behaviour described above; the five Social Tool Kit collections are
+frozen read-only, and the collections the other pages on this project use keep
+the answer they have today. Publish all of it at once: a `match` pasted on its own, outside the
+service block, is the syntax error the console refuses to save.
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -56,6 +62,43 @@ service cloud.firestore {
       // an admin SDK that bypasses these rules.
       allow update, delete: if false;
     }
+
+    match /stk_users/{documentId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /stk_groups/{documentId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /stk_members/{documentId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /stk_challenges/{documentId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /stk_ratings/{documentId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /chat/{documentId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /gamePlayers/{documentId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /gameNotes/{documentId} {
+      allow read, write: if request.auth != null;
+    }
   }
 }
 
@@ -72,6 +115,42 @@ Why each clause is there
 - createdAt == request.time: matches serverTimestamp() exactly; a client cannot
   backdate or forward-date a comment.
 - update/delete denied: comments are append-only from the browser.
+
+The Social Tool Kit collections, frozen
+---------------------------------------
+docs/socialToolKitApp.html reads and writes five collections in this project:
+stk_users, stk_groups, stk_members, stk_challenges and stk_ratings. What they
+hold now is the published catalogue converted from the private mongo dump, so
+the block above allows a signed-in reader to read them and refuses every write —
+create, update and delete, from every account, signed in or not.
+
+What this does to the page: signing in works, the four live listeners still draw
+the catalogue, and every control that would change something — New challenge,
+Create a group, Watch, Take as, Mark available, Approve, Refuse, Represent, Add,
+Remove member, Submit proof — answers "Missing or insufficient permissions" in
+the page's toast. Nothing is half-written, because Firestore refuses before the
+document exists. The page's own profile write (stk_users/{uid} on every sign-in)
+is refused the same way: an account that already has a profile keeps reading it,
+and a brand-new account signs in without a profile document until a server
+writes one.
+
+The reward deserves naming: coins is written once, a whole number from 5 to 200,
+never changed afterwards, and no document in this project holds a balance. With
+writes refused, no coin can move.
+
+Reads are signed in only because that is what this project answers today. Change
+the `allow read` line of each of the five collections to `if true` if the
+catalogue is meant to be readable without an account.
+
+chat, gamePlayers and gameNotes are the collections the other pages of this
+project use (docs/secretChat.html, docs/gamePlayers.html, docs/gameAccount.js).
+They keep the answer they have now — a signed-in account may read and write
+them — so freezing the catalogue takes nothing away from them.
+
+To let the application write again, publish the production block of
+backups/firebase-rules-stk.txt in the project the page points at, or give a
+trusted server an admin credential. Reopening these five collections to a
+browser would let any signed-in account rewrite the catalogue.
 
 Deployment
 ----------
