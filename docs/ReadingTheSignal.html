@@ -67,7 +67,7 @@
       },
       "articleSection": "Security & Hacking",
       "keywords": "Contents, Reading a CTF task, The card is a specification, What each family is really testing, Find the primitive before the exploit, Reading a vulnerability report, The anatomy of an advisory, Versions are claims, not verdicts, Judge the evidence, not the drama, Investigating a domain, step by step",
-      "wordCount": 8961,
+      "wordCount": 4855,
       "datePublished": "2026-11-05",
       "dateModified": "2026-11-06"
     },
@@ -150,11 +150,6 @@ blockquote{border-left:3px solid var(--warm);margin:1rem 0;padding:.45rem 1rem;b
 footer.site{margin-top:3rem;border-top:1px solid var(--line);padding-top:1rem;font-family:var(--sans);font-size:.85rem;color:var(--muted)}
 footer.site .tags{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.6rem}
 footer.site .tags span{border:1px solid var(--line);border-radius:999px;padding:.1rem .55rem;font-family:var(--mono);font-size:.68rem}
-.lang-switch{display:flex;justify-content:center;gap:.4rem;padding:.8rem 1rem .2rem;font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase}
-.lang-switch a{padding:.32rem .95rem;color:var(--accent);font-weight:600;border:1px solid var(--accent);border-radius:999px;opacity:.8;transition:opacity 150ms ease,background-color 150ms ease,color 150ms ease}
-.lang-switch a[aria-current="true"]{color:var(--bg);background:var(--accent);opacity:1}
-.lang-switch a:hover,.lang-switch a:focus-visible{color:var(--bg);background:var(--warm);border-color:var(--warm);opacity:1}
-[data-lang-block][hidden]{display:none!important}
 :focus-visible{outline:2px solid var(--warm);outline-offset:2px}
 @media (max-width:640px){
   nav.toc ol{grid-template-columns:1fr}
@@ -162,7 +157,7 @@ footer.site .tags span{border:1px solid var(--line);border-radius:999px;padding:
   body{font-size:15px}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-@media print{body{background:#fff;color:#111}.lang-switch,.topbar,footer.site{display:none}h2,.seo-h2,h1{color:#111}pre,table,.callout{background:#fff!important;border-color:#999!important}}
+@media print{body{background:#fff;color:#111}.topbar,footer.site{display:none}h2,.seo-h2,h1{color:#111}pre,table,.callout{background:#fff!important;border-color:#999!important}}
 </style>
 <link rel="stylesheet" href="link-colors.css">
   <style id="living-panel-style">
@@ -195,12 +190,8 @@ footer.site .tags span{border:1px solid var(--line);border-radius:999px;padding:
     <p>this <a href="birdsIndex.html#order-eurypygiformes" title="Rhynochetidae · Eurypygiformes">Kagu</a> likes to use <a href="awesomeIndex.html#cat-web" title="Guidelines · Web, design and product">PHPCodeSniffer</a> and loves <a href="electronicsIndex.html#cat-rf" title="Passive RF parts · Radio frequency and wireless">Waveguide</a> while doing some diet with <a href="plantsIndex.html#order-brassicales" title="Brassicaceae · Brassicales">Turnip</a> at <a href="worldIndex.html#cat-ie" title="Ireland · Europe">Dublin</a>.</p>
   </aside>
 
-<nav class="lang-switch" aria-label="Language">
-  <a href="?lang=pt" data-lang-switch="pt" lang="pt-PT">Português</a>
-  <a href="?lang=en" data-lang-switch="en" aria-current="true" lang="en">English</a>
-</nav>
 
-<div id="lang-en" data-lang-block="en">
+<div id="lang-en">
 <header class="topbar">
   <div class="wrap">
     <a class="home" href="./index.html">Home</a>
@@ -428,6 +419,25 @@ apt changelog linux-image-$(uname -r) 2&gt;/dev/null | grep -i -A2 'CVE-2024-108
 rpm -q --changelog kernel | grep -i 'CVE-2024-1086'</code></pre>
 <p>If the changelog names the CVE and the package is installed, the fix is present even when the upstream version looks old. If the changelog does not mention it, that is not proof of absence either — check the tracker page for the exact source package version.</p>
 
+<h3>Proving ancestry yourself, when git is the source of truth</h3>
+
+<p>Trackers and changelogs describe the fix in package terms. If you build the kernel from source, or you run a custom line assembled from upstream commits and your own patches, the proof has to come from the tree itself, and git gives it in one screen. Each command below answers exactly one question; run them in order and the picture is complete.</p>
+
+<pre><code>git log --all --oneline --grep='netfilter: nf_tables: fix use-after-free'
+git log -1 --format='%H%n%cd%n%n%B' &lt;fix-commit&gt;
+git tag --contains &lt;fix-commit&gt; | sort -V | head
+git branch --contains &lt;fix-commit&gt;
+git merge-base --is-ancestor &lt;fix-commit&gt; HEAD &amp;&amp; echo fixed || echo missing
+git log --all --format='%H %s' --grep='&lt;fix-commit-hash&gt;'</code></pre>
+
+<p>Start from the advisory's references and the commit page on the public git server they point at. The subject line of a fix travels with it: stable backports keep the same subject, and the commit body explains the mechanism in the author's own voice. That is the fastest way to move from a number to a commit, and then to the <code>Fixes:</code> tag inside it, which names the change that introduced the bug and turns the listed version range into something you can check line by line instead of trusting.</p>
+
+<p><code>git tag --contains</code> answers "which tagged release first carried this fix", and <code>git branch --contains</code> does the same for branches you build from. <code>git merge-base --is-ancestor</code> is the strictness test: it returns true only when the fix is a commit that HEAD itself descends from, which is the definition of the fix being in your tree. If it returns false, the fix is absent — but that is the failure mode that needs a manual look, because a vendor may have merged a variant of the fix under a different subject line.</p>
+
+<p>Stable backports are a particular discipline. The stable trees in kernel.org's hierarchy keep the original subject and add a trailer naming the upstream commit, which is what the last command above searches for: looking for that hash in <code>git log --all</code> finds the backports regardless of who merged them and when. A downstream fork that made its own cherry-picks may carry none of those markers, so when the fork is the thing you run, the subject-line search plus a plain walk through the file's history is what actually finds the live merge, and <code>git log -S</code> on the vulnerable hunk closes the doubt.</p>
+
+<p>Write down three lines when this is over and keep them with the ticket: the fix commit's hash and date, the earliest tag or branch that carries it, and the answer <code>git merge-base --is-ancestor</code> gave for the exact tree you run. That is the evidence that turns "is this CVE relevant to us?" from a headline question into something you can point at later without repeating the hunt.</p>
+
 <h3>Step 3: is the vulnerable code reachable?</h3>
 <p>A CVE in a subsystem you do not compile, do not load and cannot load is not reachable, though it is still worth patching on the next reboot. Check whether the code is built in (<code>=y</code>), built as a module (<code>=m</code>) and actually loaded, and what privilege the vulnerable path requires.</p>
 <pre><code>grep -E 'CONFIG_(NF_TABLES|NETFILTER|USER_NS|BPF_SYSCALL|IO_URING)' /boot/config-$(uname -r)
@@ -523,6 +533,7 @@ grep -E 'CONFIG_(WATCH_QUEUE|SPLICE)' /boot/config-$(uname -r)</code></pre>
 <section id="sources">
 <h2>Sources</h2>
 <ul>
+<li><a href="https://git.kernel.org/">git.kernel.org</a> — the upstream kernel git that every fix commit resolves into.</li>
 <li><a href="https://nvd.nist.gov/">NVD</a> — the CVE record, CVSS and reference list most advisories mirror.</li>
 <li><a href="https://www.cve.org/">MITRE</a> — CVE Program records and CNA assignments.</li>
 <li><a href="https://www.first.org/cvss/">CVSS</a> — the specification behind every vector string.</li>
@@ -544,379 +555,6 @@ grep -E 'CONFIG_(WATCH_QUEUE|SPLICE)' /boot/config-$(uname -r)</code></pre>
 </main>
 </div>
 
-<div id="lang-pt" data-lang-block="pt" hidden>
-<header class="topbar">
-  <div class="wrap">
-    <a class="home" href="./index.html">Início</a>
-    <span class="brand">Ler <b>/</b> Sinal</span>
-  </div>
-</header>
-
-<main class="wrap">
-<p class="kicker">Segurança · Método</p>
-<h2 class="seo-h2">Ler o Sinal: CTFs, Avisos, Reconhecimento de Domínios</h2>
-<p class="dek">Uma flag, um número CVE e um nome de domínio são todos afirmações sobre a realidade. Esta é a cadeia de evidência que transforma cada uma numa decisão: o que foi provado, o que foi assumido e se a máquina à nossa frente está realmente exposta.</p>
-<p class="meta"><span>Nota de método</span><span>Apenas testes autorizados</span><span>Triagem de kernel incluída</span></p>
-
-<nav class="toc" aria-labelledby="pt-toc">
-<h2 id="pt-toc">Conteúdo</h2>
-<ol>
-<li><a href="#pt-ctf">Ler uma tarefa de CTF</a></li>
-<li><a href="#pt-reports">Ler um relatório de vulnerabilidade</a></li>
-<li><a href="#pt-domain">Investigar um domínio, passo a passo</a></li>
-<li><a href="#pt-kernel">Bug de kernel: afeta as minhas máquinas?</a></li>
-<li><a href="#pt-protection">Proteção que resiste ao contacto</a></li>
-</ol>
-</nav>
-
-<section id="pt-ctf">
-<h2>Ler uma tarefa de CTF</h2>
-<p>Uma tarefa de capture-the-flag é um argumento comprimido. Alguém construiu um sistema com uma fraqueza específica, deixou os artefactos e espera uma string que só essa fraqueza produz. Tudo no cartão da tarefa é evidência sobre o argumento pretendido: a categoria diz que camada inspecionar primeiro, os anexos dizem o que podemos assumir, a ligação diz o que é remoto e partilhado, e a pontuação diz quantas outras pessoas já encontraram o caminho.</p>
-
-<h3>O cartão é uma especificação</h3>
-<p>Ler por esta ordem e escrever as respostas antes de tocar numa ferramenta:</p>
-<ul>
-<li><strong>Categoria</strong> — web, pwn, reversing, criptografia, forense, misc. É um prior, não uma promessa; um desafio "web" cujo login é um binário é um problema de reversing com um browser agarrado.</li>
-<li><strong>Artefactos</strong> — um binário, um pcap, código-fonte, uma imagem de disco, um URL. Se não houver nenhum, o alvo é o artefacto.</li>
-<li><strong>Formato da flag</strong> — <code>flag{...}</code>, <code>CTF{...}</code>, um hash. Diz quando parar e evita submeter meia solução que apenas parece uma.</li>
-<li><strong>Pontos e resoluções</strong> — pontuação dinâmica significa que uma tarefa valiosa é nova ou difícil; uma tarefa com centenas de resoluções e poucos pontos costuma ter um caminho direto, não uma cadeia.</li>
-<li><strong>Dicas</strong> — uma dica publicada é uma afirmação sobre onde começa o caminho pretendido. Não substitui a leitura do artefacto.</li>
-</ul>
-
-<h3>O que cada família testa de verdade</h3>
-<table>
-<thead><tr><th>Família</th><th>Artefacto</th><th>Primitiva testada</th><th>O que transita para o trabalho real</th></tr></thead>
-<tbody>
-<tr><td>Web</td><td>URL, código, contentor</td><td>Fronteira de confiança entre input e sink: SQL, template, desserialização, SSRF, path traversal</td><td>Ler um caminho de pedido e provar que um sink é alcançável</td></tr>
-<tr><td>Pwn</td><td>Binário ELF/Mach-O, serviço remoto</td><td>Corrupção de memória e desvio de fluxo com as mitigações do alvo</td><td>Fiabilidade de exploit, análise de mitigações, triagem de crash</td></tr>
-<tr><td>Reversing</td><td>Binário, firmware, script ofuscado</td><td>Recuperar lógica escondida e reconstruir a verificação</td><td>Triagem de malware, diff de patches, protocolos não documentados</td></tr>
-<tr><td>Criptografia</td><td>Oráculo, texto cifrado, código</td><td>Má utilização, não matemática: nonce repetido, oráculos de padding, derivação fraca</td><td>Reconhecer uma construção que não pode ser segura</td></tr>
-<tr><td>Forense</td><td>pcap, memória, disco, logs</td><td>Reconstruir um evento a partir de vestígios parciais</td><td>Cronologias de incidente, cadeia de custódia, correlação de logs</td></tr>
-</tbody>
-</table>
-
-<h3>Encontrar a primitiva antes do exploit</h3>
-<p>A primeira pergunta nunca é "que ferramenta?", mas "o que posso controlar e o que o sistema faz com isso?". Um formulário de login que concatena o nome de utilizador numa query tem uma primitiva de injeção, quer o <code>sqlmap</code> esteja instalado quer não. Um binário que chama <code>gets()</code> tem uma primitiva de stack, quer tenhamos uma ROP chain quer não. Nomear a primitiva, nomear a pré-condição e escolher a prova mais pequena é a mesma disciplina que uma <a href="./RedTeams.html">red</a> team aplica a um engagement: o exploit é a última milha, a primitiva é o achado.</p>
-
-<p>O limite de tempo faz parte da leitura. Se uma tarefa resiste quarenta minutos, escrever o que já foi excluído e mudar. Os coelhos de CTF costumam ser sinal de que uma assunção do cartão nunca foi verificada — uma versão de serviço, um ficheiro que não abrimos, uma dica ignorada. Um writeup posterior deve indicar a primitiva, a pré-condição e o patch, não um transcript de comandos.</p>
-
-<div class="callout"><strong>CTF versus produção.</strong> Um CTF é limitado, sintético e consensual: a fraqueza é deliberada, o âmbito é um artefacto e a flag prova um caminho. Um achado em produção não tem nenhuma dessas garantias. A flag prova que existe um caminho, nunca prova impacto num sistema real.</div>
-</section>
-
-<section id="pt-reports">
-<h2>Ler um relatório de vulnerabilidade</h2>
-<p>Um aviso é uma afirmação estruturada com rasto documental. A maior parte dos mal-entendidos vem de ler apenas o título — "bug crítico no kernel" — e saltar os três campos que decidem se importa: o intervalo afetado, a pré-condição exigida e o commit de correção.</p>
-
-<h3>Anatomia de um aviso</h3>
-<table>
-<thead><tr><th>Campo</th><th>O que diz de facto</th><th>Onde engana</th></tr></thead>
-<tbody>
-<tr><td>Identificador</td><td>CVE atribuído por uma CNA, mais IDs do fabricante e hashes de commit</td><td>Um ID CVE é uma entrada de catálogo, não uma severidade nem uma prova</td></tr>
-<tr><td>Versões afetadas</td><td>Tags ou intervalos de commits que o autor considera vulneráveis</td><td>Pacotes de distribuição trazem backports, pelo que uma versão "vulnerável" pode estar corrigida na prática</td></tr>
-<tr><td>Versões corrigidas</td><td>Primeiras releases com a correção, muitas vezes por branch estável</td><td>A ausência da lista não significa que o branch esteja ileso</td></tr>
-<tr><td>Vector CVSS</td><td>Oito métricas base pontuadas pelo publicador</td><td>A pontuação base ignora a nossa configuração e os nossos dados</td></tr>
-<tr><td>CWE</td><td>A classe da fraqueza</td><td>Uma classe não é prova de alcançabilidade</td></tr>
-<tr><td>Descrição</td><td>O mecanismo, muitas vezes um parágrafo do autor</td><td>Pode omitir o privilégio ou namespace que limita a exploração</td></tr>
-<tr><td>Referências</td><td>Commit de correção, thread de mailing list, PoC, boletim do fabricante</td><td>Um link de PoC pode ser um stub, uma falsificação ou outro bug</td></tr>
-</tbody>
-</table>
-
-<h3>Descodificar o vector CVSS, não adorar o número</h3>
-<p><code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</code> vale 9,8 porque todas as métricas base estão no pior valor: alcançável pela rede, complexidade baixa, sem privilégios, sem interação, âmbito inalterado, impacto alto em confidencialidade, integridade e disponibilidade. Mudar uma métrica faz o número cair. <code>AV:L/PR:L</code> — local, autenticado — descreve um problema muito diferente de um bug de rede propagável, mesmo quando ambos dizem "alto".</p>
-<table>
-<thead><tr><th>Métrica</th><th>Valores</th><th>Pergunta a fazer</th></tr></thead>
-<tbody>
-<tr><td>AV Vector de Ataque</td><td>Rede, Adjacente, Local, Físico</td><td>O atacante alcança esta interface a partir de onde está?</td></tr>
-<tr><td>AC Complexidade</td><td>Baixa, Alta</td><td>A exploração exige uma corrida, um layout específico ou tentativas repetidas?</td></tr>
-<tr><td>PR Privilégios</td><td>Nenhum, Baixo, Alto</td><td>O atacante já precisa de conta, capability ou root?</td></tr>
-<tr><td>UI Interação</td><td>Nenhuma, Necessária</td><td>É preciso uma pessoa abrir, clicar ou importar algo?</td></tr>
-<tr><td>S Âmbito</td><td>Inalterado, Alterado</td><td>O bug atravessa uma fronteira de segurança para outro componente?</td></tr>
-<tr><td>C/I/A Impacto</td><td>Nenhum, Baixo, Alto</td><td>O que se perde se funcionar — e de quem são os dados?</td></tr>
-</tbody>
-</table>
-
-<p>O CVSS é uma linguagem de severidade, não um modelo de risco. O risco acrescenta exposição, classificação de dados e atividade de ameaças. Duas correções úteis: o sistema EPSS estima a probabilidade de exploração nos trinta dias seguintes e o catálogo KEV registra exploração já observada. Nenhum substitui a leitura do aviso; ambos evitam que um 9,8 ultrapasse um 7,5 que está a ser usado contra o nosso setor.</p>
-
-<h3>Versões são afirmações, não veredictos</h3>
-<p>"Afetado antes de 6.1.76" é uma afirmação sobre releases upstream. Uma distribuição que entrega 6.1.60 com a correção backportada não está afetada como a frase sugere, e um fork que nunca fundiu o subsistema pode não estar afetado de todo. Ler o commit de correção, encontrar a sua tag <code>Fixes:</code> e fazer três perguntas: a alteração corretiva está na nossa árvore, o código vulnerável está compilado e um utilizador sem privilégios o consegue alcançar?</p>
-
-<p>Para um CVE de kernel, isso significa encontrar o hash do commit upstream e depois verificar o tracker da distribuição ou o changelog do pacote para o mesmo CVE. Debian, Ubuntu, Red Hat, SUSE e Alpine publicam páginas por CVE com as versões exatas que trazem a correção. Essa página vale mais do que a entrada NVD, porque diz respeito ao pacote que realmente instalamos.</p>
-
-<blockquote>Um aviso diz o que alguém acredita. O changelog de um pacote diz o que o nosso fornecedor entregou. Uma reprodução diz o que é verdade na nossa máquina. Usar por esta ordem e nunca deixar o primeiro substituir o terceiro.</blockquote>
-
-<h3>Julgar a evidência, não o drama</h3>
-<p>Um relatório credível tem commit de correção ou boletim do fabricante, uma pré-condição clara e uma reprodução que corresponde à descrição. Um fraco tem uma captura de ecrã, um "investigador" sem nome, um PoC que exige desativar KASLR ou uma alegação de que um bug local é remoto. Verificar se o PoC ataca mesmo o CVE que estamos a ler; repositórios de imitação renomeiam exploits antigos com frequência. Se a única fonte é uma publicação social, tratar a alegação como pista, não como facto — o mesmo padrão que uma <a href="./BlueTeams.html">blue</a> team aplica antes de escrever uma deteção.</p>
-</section>
-
-<section id="pt-domain">
-<h2>Investigar um domínio, passo a passo</h2>
-<p>O reconhecimento de domínio não é um pipeline de ferramentas. É uma sequência de perguntas, cada uma respondida com a evidência menos intrusiva que a resolve. A ordem existe porque cada passo estreita o seguinte: não se julga um subdomínio sem conhecer o netblock, nem se testa um endpoint sem saber que está no âmbito.</p>
-
-<div class="callout danger"><strong>Âmbito primeiro.</strong> Escrever os domínios e wildcards autorizados, os hosts excluídos, as técnicas permitidas, os limites de taxa e as regras de tratamento de dados antes do primeiro pacote. Autorização para <code>example.com</code> não é autorização para o fornecedor de correio, a CDN ou uma subsidiária. Se um teste puder afetar disponibilidade ou tocar dados reais de utilizadores, parar e perguntar.</div>
-
-<ol class="steps">
-<li>
-<h3>Confirmar identidade e propriedade</h3>
-<p>Começar pelo registo e pelo encaminhamento, não pelo servidor web. O RDAP dá registrador, estado e nameservers; o <code>whois</code> dá uma versão mais grosseira. Uma consulta de ASN e uma varredura de DNS inverso dizem se o domínio está em hosting partilhado, numa conta cloud ou num netblock próprio — o que muda o que "adjacente" significa para o âmbito.</p>
-<pre><code>whois example.com
-curl -s https://rdap.verisign.com/com/v1/domain/example.com | jq '.status, .nameservers[].ldhName'
-dig +short NS example.com
-dig +short SOA example.com
-dig +short -x 203.0.113.10</code></pre>
-<p>Registrar o lock do registrador, a data de expiração e o fornecedor de nameservers. Um domínio cujos NS apontam para um fornecedor inesperado é uma questão de cadeia de fornecimento, não de subdomínios.</p>
-</li>
-
-<li>
-<h3>Mapear a superfície DNS</h3>
-<p>Perguntar à zona o que publica: correio, tokens de verificação, registos de política, autoridades de certificação permitidas. Registos TXT revelam fornecedores SaaS e provas de propriedade; DMARC e SPF revelam como o correio é enviado e se a falsificação é mitigada. CAA limita as CAs que podem emitir para o nome. DNSSEC diz se as respostas são assinadas.</p>
-<pre><code>dig +short MX example.com
-dig +short TXT example.com
-dig +short TXT _dmarc.example.com
-dig +short CAA example.com
-dig +dnssec +short DS example.com
-dig AXFR example.com @ns1.example.com</code></pre>
-<p>Uma transferência de zona bem-sucedida é um achado por si; a maioria recusa. Um registo A wildcard importa tanto, porque faz resolver qualquer subdomínio aleatório e envenena a enumeração ingénua. Testá-lo com um rótulo que não pode existir.</p>
-</li>
-
-<li>
-<h3>Enumerar nomes sem nos afogarmos neles</h3>
-<p>Primeiro fontes passivas: os logs de transparência de certificados registam todos os nomes para que foi emitido um certificado, incluindo staging e hosts com aspecto interno. Depois resolução ativa, depois permutações. O objetivo é uma lista deduplicada de nomes que resolvem e pertencem ao alvo — não a maior lista.</p>
-<pre><code>curl -s 'https://crt.sh/?q=%25.example.com&amp;output=json' \
-  | jq -r '.[].name_value' | tr ',' '\n' | sort -u
-subfinder -d example.com -all -silent | dnsx -silent -a -resp
-httpx -silent -l hosts.txt -title -tech-detect -status-code -o live.txt</code></pre>
-<p>Filtrar wildcards, páginas de estacionamento e SaaS de terceiros que apenas embebe o nome. Para cada host vivo, anotar os SANs do certificado, o header do servidor e o título; esses três campos agrupam hosts em aplicações mais depressa do que qualquer scanner.</p>
-</li>
-
-<li>
-<h3>Fingerprint da borda</h3>
-<p>Um pedido diz muito se for lido corretamente: estado, cadeia de redirecionamentos, certificado TLS e SANs, ALPN, cookies, headers de segurança e página de erro. Um vhost por omissão, um banner de debug ou uma framework antiga no <code>X-Powered-By</code> são pistas. O hash do favicon agrupa hosts que partilham uma aplicação mesmo com nomes diferentes.</p>
-<pre><code>curl -sSIL https://app.example.com
-openssl s_client -connect app.example.com:443 -servername app.example.com \
-  &lt;/dev/null 2&gt;/dev/null | openssl x509 -noout -subject -issuer -ext subjectAltName
-curl -s https://app.example.com/robots.txt
-curl -s https://app.example.com/sitemap.xml | head -40</code></pre>
-<p>Comparar o apex com cada subdomínio; um host de staging com o certificado de produção mas sem autenticação é o achado clássico que a enumeração existe para revelar.</p>
-</li>
-
-<li>
-<h3>Ler a aplicação, incluindo o JavaScript</h3>
-<p>Rastrear o que está ligado e depois olhar para o que não está: URLs históricos, prefixos de API, source maps, tabelas de rotas do cliente. O JavaScript nomeia endpoints e parâmetros que a interface nunca mostra. Tratar qualquer segredo encontrado num bundle como pista a verificar e reportar — não como credencial a usar.</p>
-<pre><code>katana -u https://app.example.com -jc -d 3 -silent
-gau example.com | tee urls.txt
-ffuf -u https://app.example.com/FUZZ -w /usr/share/wordlists/dirb/common.txt \
-  -mc 200,204,301,302,307,401,403 -rate 20</code></pre>
-<p>Preferir ler um pedido no painel de rede do browser a força bruta. Uma chamada de API bem compreendida com um identificador de objeto vale mais do que dez mil 404, e é mais gentil para o alvo.</p>
-</li>
-
-<li>
-<h3>Verificar terceiros e a borda cloud</h3>
-<p>O takeover de subdomínio vive na costura entre DNS e um fornecedor: um CNAME ainda aponta para um serviço que a organização já não possui, e quem reclamar esse nome herda o hostname. Verificar a impressão digital documentada do fornecedor antes de reportar; um CNAME sozinho não é takeover. A mesma costura aparece em redirect URIs OAuth, buckets S3, CDNs de JavaScript e páginas de marketing abandonadas.</p>
-<pre><code>dig +short CNAME shop.example.com
-curl -sI https://shop.example.com | head -20
-curl -s https://shop.example.com | grep -iE 'NoSuchBucket|There is no app|domain is not configured'</code></pre>
-<p>Só testar um bucket ou serviço de terceiros para que há autorização. Reclamar um nome abandonado para provar um ponto já é uma intrusão; documentar o registo pendurado e deixar o proprietário corrigir.</p>
-</li>
-
-<li>
-<h3>Testar controlo de acesso com duas contas</h3>
-<p>A maioria dos achados reais de bounty não é corrupção de memória; é uma verificação de autorização em falta. Criar duas contas do mesmo nível, capturar os pedidos e trocar identificadores, headers de tenant, papéis e IDs de objeto. Uma escalada vertical precisa de uma conta de menor privilégio; uma horizontal precisa de um segundo utilizador. Parar na primeira prova de dados de outro utilizador — não enumerar, não descarregar, não pivotar.</p>
-<table>
-<thead><tr><th>Observação</th><th>Significado possível</th><th>Verificação seguinte</th></tr></thead>
-<tbody>
-<tr><td>ID de objeto num URL ou corpo JSON</td><td>Candidato a IDOR/BOLA</td><td>Trocar pelo ID da segunda conta; confirmar a resposta</td></tr>
-<tr><td>Header de tenant ou organização</td><td>Fronteira de confiança no cliente</td><td>Alterar e observar a filtragem no servidor</td></tr>
-<tr><td>Campo de papel num JWT ou cookie</td><td>Autorização no lado do cliente</td><td>Verificar se o servidor volta a derivar o papel</td></tr>
-<tr><td>Introspeção GraphQL ativa</td><td>Exposição total do schema</td><td>Procurar mutações que contornem a interface</td></tr>
-<tr><td>Parâmetro de redirecionamento</td><td>Open redirect ou fuga de código OAuth</td><td>Testar o parsing da allow-list, não só o caminho feliz</td></tr>
-</tbody>
-</table>
-</li>
-
-<li>
-<h3>Escrever o achado, não a aventura</h3>
-<p>Um relatório é uma prova que um triager consegue repetir em cinco minutos: ativo, pré-condição, reprodução numerada, resultado observado, impacto na linguagem do proprietário, evidência com segredos e dados pessoais redigidos, e remediação. Dizer o que não foi testado. Anexar o par pedido/resposta mais pequeno que demonstra o problema; um vídeo é opcional, um <code>curl</code> claro não é.</p>
-<pre><code>Ativo:        app.example.com /api/v1/invoices/{id}
-Pré-condição: qualquer conta autenticada
-Passos:       1. criar a fatura A como utilizador A
-              2. pedir a fatura A como utilizador B
-Resultado:    200 com linhas e morada de A
-Impacto:      leitura de dados de faturação entre tenants
-Correção:     autorizar o acesso ao objeto no servidor, contra o tenant da sessão</code></pre>
-<p>A severidade é uma negociação fundada em evidência. Se o proprietário discordar, responder com a reprodução, não com o número CVSS. A <a href="./awesomeIndex.html#cat-security">gaveta</a> de ferramentas é útil aqui, mas o relatório é julgado pela clareza, não por quantas ferramentas o produziram.</p>
-</li>
-</ol>
-
-<p>O trabalho é repetitivo por desenho: resolver, fazer fingerprint, ler, comparar e parar quando a evidência basta. Um <a href="./Suricata.html">sensor</a> do lado do defensor vê os mesmos <a href="https://art.odicforcesounds.com/pages/Data/Audio/Machine_World/tracks/01_Storming_Plan_Enigmatic_War/">sinais</a> na direção oposta; compreender o que ele registra torna o nosso tráfego mais silencioso e os nossos achados mais limpos. É essa disciplina que separa uma investigação de uma varredura.</p>
-</section>
-
-<section id="pt-kernel">
-<h2>Este bug de kernel afeta as minhas máquinas?</h2>
-<p>Os avisos de kernel são onde os números de versão mentem de forma mais convincente. Um CVE corrigido upstream em 6.1.76 não significa automaticamente que um pacote 6.1.60 seja vulnerável: as distribuições backportam correções sem mudar a versão upstream e desativam subsistemas que podemos nunca carregar. A resposta é uma cadeia curta — inventário, presença da correção, configuração, exposição, explorabilidade — e termina num de três veredictos: exposto, não alcançável ou ainda não é possível saber.</p>
-
-<h3>Passo 1: saber exatamente o que está a correr</h3>
-<p>Registrar a release do kernel, o pacote da distribuição que a possui, a data de build, a configuração e os parâmetros de arranque. Um contentor partilha o kernel do host; a versão dentro do contentor não é a versão que importa.</p>
-<pre><code>uname -r; uname -v; cat /proc/version
-dpkg-query -W -f='${Package} ${Version}\n' 'linux-image-*' 2&gt;/dev/null
-rpm -q kernel 2&gt;/dev/null; apk info -vv 2&gt;/dev/null | grep -i linux
-cat /proc/cmdline
-zcat /proc/config.gz 2&gt;/dev/null | grep -E 'CONFIG_NF_TABLES|CONFIG_USER_NS|CONFIG_BPF'
-ls /boot/config-$(uname -r) 2&gt;/dev/null</code></pre>
-<p>A versão do pacote, não o <code>uname -r</code>, é o que o tracker do fornecedor indexa. Guardar ambas: o tracker diz se a correção está no pacote e a release diz de que branch upstream veio o código.</p>
-
-<h3>Passo 2: provar se a correção está na nossa árvore</h3>
-<p>Toda a correção decente de kernel traz uma tag <code>Fixes:</code> que nomeia o commit que introduziu o bug. Encontrar o commit corretivo e verificar se é ancestral do código que corremos. Num kernel de distribuição normalmente não se consegue usar <code>git</code> contra a árvore exata, por isso usar o changelog do pacote e a página CVE do fornecedor; se compilamos o nosso kernel, usar git diretamente.</p>
-<pre><code>git log --oneline --grep='CVE-2024-1086' --all
-git merge-base --is-ancestor &lt;fix-commit&gt; HEAD &amp;&amp; echo fixed || echo not-in-tree
-apt changelog linux-image-$(uname -r) 2&gt;/dev/null | grep -i -A2 'CVE-2024-1086'
-rpm -q --changelog kernel | grep -i 'CVE-2024-1086'</code></pre>
-<p>Se o changelog nomeia o CVE e o pacote está instalado, a correção está presente mesmo que a versão upstream pareça antiga. Se o changelog não o menciona, isso também não prova ausência — verificar a página do tracker para a versão exata do pacote fonte.</p>
-
-<h3>Passo 3: o código vulnerável é alcançável?</h3>
-<p>Um CVE num subsistema que não compilamos, não carregamos e não conseguimos carregar não é alcançável, embora continue a valer a pena corrigir no próximo reboot. Verificar se o código está embutido (<code>=y</code>), construído como módulo (<code>=m</code>) e realmente carregado, e que privilégio o caminho vulnerável exige.</p>
-<pre><code>grep -E 'CONFIG_(NF_TABLES|NETFILTER|USER_NS|BPF_SYSCALL|IO_URING)' /boot/config-$(uname -r)
-lsmod | grep -E 'nf_tables|overlay|ksmbd'
-sysctl kernel.unprivileged_userns_clone 2&gt;/dev/null
-sysctl user.max_user_namespaces kernel.unprivileged_bpf_disabled
-capsh --print | grep -i cap_net_admin</code></pre>
-<table>
-<thead><tr><th>Pré-condição no aviso</th><th>O que verificar no host</th><th>Efeito no risco</th></tr></thead>
-<tbody>
-<tr><td>User namespaces sem privilégios</td><td><code>kernel.unprivileged_userns_clone</code>, <code>user.max_user_namespaces</code></td><td>Desativado fecha o caminho local comum</td></tr>
-<tr><td>CAP_NET_ADMIN</td><td>Capacidades do processo, defaults do runtime</td><td>Exige uma posição já privilegiada</td></tr>
-<tr><td>Um módulo carregado</td><td><code>lsmod</code>, <code>modprobe --dry-run</code>, blacklist</td><td>Não carregado e não auto-carregável significa sem caminho</td></tr>
-<tr><td>Um serviço de rede</td><td>Sockets à escuta, firewall, exposição à internet</td><td>Alcançabilidade remota aumenta muito a urgência</td></tr>
-<tr><td>Acesso de leitura a um ficheiro</td><td>Permissões, mount namespace, page cache</td><td>Um utilizador local com leitura basta para alguns bugs</td></tr>
-</tbody>
-</table>
-
-<h3>Passo 4: separar local de remoto, e host de contentor</h3>
-<p>Uma escalada local de privilégios precisa primeiro de um foothold; um bug remoto num parser de rede precisa apenas de um pacote. O mesmo CVE pode ser ambos se o subsistema for alcançável pela rede e por syscall. Os contentores não isolam o kernel: uma fuga de contentor por um bug do kernel do host continua a ser um problema de patch do host. Runtimes com kernel próprio — gVisor, Kata — mudam a resposta, e uma fronteira de VM também.</p>
-
-<h3>Passo 5: pesar a explorabilidade, não só a existência</h3>
-<p>Um PoC público é evidência, não garantia. Ler o que exige: uma configuração específica, um offset de símbolo conhecido, KASLR desativado, um filesystem particular, uma janela de corrida ou minutos de CPU. As mitigações modernas — KASLR, SMEP/SMAP, KPTI, canários, usercopy endurecido, randomização de freelist, <code>init_on_alloc</code>, CFI — aumentam o custo de fiabilidade mas raramente tornam um bug impossível. Um PoC que provoca panic é também um risco de disponibilidade; correr apenas numa VM descartável que espelhe o alvo.</p>
-
-<h3>Dois exemplos trabalhados</h3>
-<h4>CVE-2024-1086 — use-after-free em nf_tables</h4>
-<p>O código nf_tables do netfilter podia libertar um objeto e voltar a usá-lo durante o processamento de regras. As correções upstream chegaram a 6.1.76, 6.6.15 e 6.7.3, com backports para linhas estáveis mais antigas. A exploração nos writeups públicos exige a capacidade de criar regras nftables, o que num desktop por omissão significa user namespaces sem privilégios; um host com essa funcionalidade desativada, ou com <code>nf_tables</code> não carregado e não auto-carregável, não está exposto por esse caminho.</p>
-<pre><code>cat /proc/sys/kernel/unprivileged_userns_clone 2&gt;/dev/null
-sysctl user.max_user_namespaces
-lsmod | grep nf_tables
-grep CONFIG_NF_TABLES /boot/config-$(uname -r)
-unshare -Urn true &amp;&amp; echo 'userns available' || echo 'userns blocked'</code></pre>
-
-<h4>CVE-2022-0847 — Dirty Pipe</h4>
-<p>Uma falha nas flags de buffer de pipe permitia a um utilizador local sobrescrever a page cache de um ficheiro só de leitura, desde que o pudesse ler e inserir num pipe. Foi introduzida em 5.8 e corrigida em 5.16.11, 5.15.25 e 5.10.102. Não é preciso user namespace, mas também não é preciso acesso de escrita a um binário setuid privilegiado — sobrescrever as suas páginas em cache basta, e é por isso que era tão fiável. Verificar a linha do kernel e o backport da distribuição, não o conjunto de funcionalidades.</p>
-<pre><code>uname -r
-apt changelog linux-image-$(uname -r) 2&gt;/dev/null | grep -i 'CVE-2022-0847'
-grep -E 'CONFIG_(WATCH_QUEUE|SPLICE)' /boot/config-$(uname -r)</code></pre>
-
-<h3>A tabela de veredicto</h3>
-<table>
-<thead><tr><th>Situação</th><th>Veredicto</th><th>Ação</th></tr></thead>
-<tbody>
-<tr><td>Versão abaixo da corrigida, código compilado, caminho sem privilégios aberto</td><td>Exposto</td><td>Corrigir já; se impossível, fechar o caminho (userns, módulo, serviço) e monitorizar</td></tr>
-<tr><td>Versão abaixo da corrigida, subsistema ausente ou não carregável</td><td>Não alcançável</td><td>Corrigir na próxima janela; registar por que não era urgente</td></tr>
-<tr><td>Versão upstream antiga, changelog do fornecedor nomeia o CVE</td><td>Corrigido na prática</td><td>Sem ação além da cadência normal; guardar a evidência</td></tr>
-<tr><td>Correção presente upstream, sem declaração do fornecedor, build próprio</td><td>Não é possível saber</td><td>Verificar a árvore com git ou reconstruir a partir de uma tag conhecida</td></tr>
-<tr><td>Bug local que exige conta existente, sem userns</td><td>Urgência menor</td><td>Corrigir normalmente; assumir que o atacante já tem foothold</td></tr>
-<tr><td>Bug remoto num parser de serviço exposto</td><td>Urgente</td><td>Corrigir ou desativar o serviço hoje; bloquear na borda entretanto</td></tr>
-</tbody>
-</table>
-
-<p>Rede e armazenamento são os dois subsistemas onde esta triagem se paga: um bug no tratamento de pacotes é remoto, um bug num filesystem pode exigir uma montagem que não permitimos. As notas de <a href="./kernelNetworking.html">rede</a> e <a href="./kernelDisks.html">discos</a> aprofundam o que esses caminhos carregam, e a <a href="./awesomeIndex.html#cat-systems">gaveta</a> de sistemas lista as ferramentas de inspeção que vale a pena guardar numa imagem de resgate.</p>
-</section>
-
-<section id="pt-protection">
-<h2>Proteção que resiste ao contacto</h2>
-<p>Proteção não é uma checklist de hardening aplicada uma vez. É a capacidade de responder, a qualquer momento, a três perguntas: o que estou a correr, o que está exposto e com que rapidez consigo mudar? Os controlos abaixo estão ordenados pelo quanto reduzem a probabilidade de um dia mau, não pelo quão impressionantes parecem num slide.</p>
-
-<h3>Corrigir com evidência e prazo</h3>
-<p>Subscrever o feed de CVEs de kernel e os anúncios de segurança da distribuição, e triar cada item com os cinco passos acima. Definir um nível de serviço por exposição: bugs remotos virados para a internet medidos em horas, bugs locais que exigem foothold em dias ou no ciclo normal, código inalcançável no próximo reboot. O live patching compra tempo para CVEs específicos mas não substitui um reboot para sempre; manter um host canário e um caminho de rollback, e verificar após a correção que o kernel em execução é o que pensamos.</p>
-
-<h3>Fechar os caminhos que os atacantes realmente usam</h3>
-<table>
-<thead><tr><th>Controlo</th><th>Porque importa</th><th>Custo</th></tr></thead>
-<tbody>
-<tr><td><code>user.max_user_namespaces=0</code> (ou o interruptor da distribuição)</td><td>Remove o caminho local sem privilégios mais comum para bugs de kernel</td><td>Quebra contentores rootless e algumas sandboxes</td></tr>
-<tr><td><code>kernel.unprivileged_bpf_disabled=1</code></td><td>Impede que eBPF sem privilégios se torne superfície de ataque</td><td>Algumas ferramentas de observabilidade precisam de privilégios</td></tr>
-<tr><td>Blacklist de módulos para protocolos e filesystems não usados</td><td>Código que não carrega não pode ser alcançado</td><td>Surpresas ocasionais em hotplug</td></tr>
-<tr><td><code>kernel.kptr_restrict=2</code>, <code>dmesg_restrict=1</code>, <code>perf_event_paranoid=3</code></td><td>Nega as fugas de endereços em que as cadeias de exploit se apoiam</td><td>Debug mais difícil</td></tr>
-<tr><td>Secure Boot, lockdown, módulos assinados</td><td>Aumenta o custo de persistir um implante de kernel</td><td>Gestão de chaves e atrito com drivers</td></tr>
-<tr><td>Seccomp e imagens mínimas</td><td>Reduz as syscalls que um serviço comprometido pode invocar</td><td>Perfilagem da aplicação</td></tr>
-<tr><td>Segmentação de rede e filtragem de saída</td><td>Limita o que um host comprometido alcança</td><td>Trabalho operacional contínuo</td></tr>
-</tbody>
-</table>
-
-<p>Endurecer também o build, não só o runtime: <code>init_on_alloc=1</code>, <code>init_on_free=1</code>, <code>slab_nomerge</code>, <code>page_alloc.shuffle=1</code>, <code>randomize_kstack_offset=on</code>, KASLR e KPTI completos onde a CPU permitir. O projeto de autoproteção do kernel documenta o conjunto de configuração; um scanner como <code>kconfig-hardened-check</code> compara a nossa configuração com ele e explica cada desvio.</p>
-
-<h3>Detetar o que o hardening não trava</h3>
-<p>Assumir que um bug vai passar e tornar a exploração ruidosa. Auditar as syscalls relevantes para segurança, vigiar o carregamento de módulos, alertar para programas eBPF inesperados e manter os logs de kernel fora do host comprometido. Sensores de runtime como Falco ou Tetragon conseguem exprimir "um processo abriu <code>/dev/mem</code>" ou "um novo módulo de kernel foi carregado" como regra; a mesma telemetria alimenta os sensores web que já corremos. Deteção não substitui patch, e patch não substitui deteção.</p>
-
-<h3>Tornar a resposta repetível</h3>
-<p>Manter um inventário que ligue hostnames a pacotes de kernel e responsáveis, um caminho de reconstrução testado e um registo escrito da decisão para cada CVE adiado. Quando chega um relatório, a equipa deve conseguir dizer numa hora se o código afetado está compilado, carregado, alcançável e exposto — e mostrar o changelog que prova a correção. É a diferença entre gestão de vulnerabilidades e leitura de manchetes.</p>
-
-<div class="callout"><strong>A versão curta.</strong> Ler a primitiva, não o rótulo. Provar que a correção está no nosso pacote, que o código é alcançável e que o exploit se aplica à nossa configuração. Corrigir por exposição, fechar os caminhos de que não precisamos e guardar a evidência das decisões que adiamos.</div>
-</section>
-
-<footer class="site">
-<p>As fontes estão reunidas abaixo; cada ligação aparece uma vez. As ferramentas nomeadas no texto vivem no catálogo do site, não numa segunda lista aqui.</p>
-<div class="tags"><span>CTF</span><span>avisos</span><span>recon</span><span>kernel</span><span>hardening</span></div>
-</footer>
-
-<section id="pt-sources">
-<h2>Fontes</h2>
-<ul>
-<li><a href="https://nvd.nist.gov/">NVD</a> — o registo CVE, CVSS e lista de referências que a maioria dos avisos espelha.</li>
-<li><a href="https://www.cve.org/">MITRE</a> — registos do CVE Program e atribuições de CNA.</li>
-<li><a href="https://www.first.org/cvss/">CVSS</a> — a especificação por trás de cada vector.</li>
-<li><a href="https://www.first.org/epss/">EPSS</a> — estimativas de probabilidade de exploração, para ordenar e não para provar.</li>
-<li><a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog">KEV</a> — vulnerabilidades observadas em exploração real.</li>
-<li><a href="https://www.kernel.org/category/security.html">kernel</a> — anúncios de segurança e processo CVE do kernel.</li>
-<li><a href="https://security-tracker.debian.org/tracker/">Debian</a> — estado por CVE para as releases Debian.</li>
-<li><a href="https://ubuntu.com/security/cves">Ubuntu</a> — tracker com as versões corrigidas dos pacotes.</li>
-<li><a href="https://access.redhat.com/security/security-updates/">Red Hat</a> — errata e páginas CVE para kernels empresariais.</li>
-<li><a href="https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project">KSPP</a> — orientação de configuração de autoproteção do kernel.</li>
-<li><a href="https://syzkaller.appspot.com/">syzbot</a> — relatórios públicos de crashes de kernel e reproduções.</li>
-<li><a href="https://google.github.io/security-research/kernelctf/">kernelCTF</a> — contexto de explorabilidade para bugs de kernel.</li>
-<li><a href="https://owasp.org/www-project-web-security-testing-guide/">OWASP</a> — metodologia de testes web para o trabalho de controlo de acesso.</li>
-<li><a href="https://www.pentest-standard.org/">PTES</a> — fases de engagement e estrutura de relatório.</li>
-<li><a href="https://crt.sh/">crt.sh</a> — pesquisa de transparência de certificados para enumerar nomes.</li>
-<li><a href="https://www.rfc-editor.org/rfc/rfc1034">RFC</a> — a especificação DNS por trás das consultas acima.</li>
-</ul>
-</section>
-</main>
-</div>
-
-<script>
-(function () {
-  "use strict";
-  var blocks = document.querySelectorAll("[data-lang-block]");
-  var links = document.querySelectorAll("[data-lang-switch]");
-
-  function apply(lang) {
-    Array.prototype.forEach.call(blocks, function (block) {
-      block.hidden = block.getAttribute("data-lang-block") !== lang;
-    });
-    Array.prototype.forEach.call(links, function (link) {
-      if (link.getAttribute("data-lang-switch") === lang) { link.setAttribute("aria-current", "true"); }
-      else { link.removeAttribute("aria-current"); }
-    });
-    document.documentElement.lang = lang === "pt" ? "pt-PT" : "en";
-  }
-
-  Array.prototype.forEach.call(links, function (link) {
-    link.addEventListener("click", function (event) {
-      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button) { return; }
-      event.preventDefault();
-      apply(link.getAttribute("data-lang-switch"));
-    });
-  });
-
-  var wanted = new URLSearchParams(location.search).get("lang");
-  if (wanted === "en" || wanted === "pt") { apply(wanted); }
-  else if (location.hash.indexOf("#pt-") === 0) { apply("pt"); }
-})();
 </script>
 </body>
 </html>
