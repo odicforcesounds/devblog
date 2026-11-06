@@ -5,6 +5,10 @@ description: The path index for every tool this repository uses — the tracked 
 
 # Tools — where every path is
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 One job: given "the script that builds the API" or "the jsdom harness", answer with a
 path you can run. `repo-layout` says which directory owns what; `tmp-tools` says how to
 treat scratch. This file is the index itself.
