@@ -67,7 +67,7 @@
       },
       "articleSection": "Security & Hacking",
       "keywords": "Contents, Reading a CTF task, The card is a specification, What each family is really testing, Find the primitive before the exploit, Reading a vulnerability report, The anatomy of an advisory, Versions are claims, not verdicts, Judge the evidence, not the drama, Investigating a domain, step by step",
-      "wordCount": 4855,
+      "wordCount": 5857,
       "datePublished": "2026-11-05",
       "dateModified": "2026-11-06"
     },
@@ -462,20 +462,48 @@ capsh --print | grep -i cap_net_admin</code></pre>
 <h3>Step 5: weigh exploitability, not just existence</h3>
 <p>A public PoC is evidence, not a guarantee. Read what it requires: a specific kernel config, a known symbol offset, KASLR disabled, a particular filesystem, a race window, or minutes of CPU. Modern mitigations — KASLR, SMEP/SMAP, KPTI, stack canaries, hardened usercopy, slab freelist randomisation, <code>init_on_alloc</code>, CFI — raise reliability costs but rarely make a bug impossible. A PoC that panics the host is also an availability risk; run it only in a disposable VM that mirrors the target.</p>
 
-<h3>Two worked examples</h3>
+<h3>Six worked examples</h3>
 <h4>CVE-2024-1086 — nf_tables use-after-free</h4>
-<p>The netfilter nf_tables code could free an object and then use it during rule processing. The upstream fixes landed in 6.1.76, 6.6.15 and 6.7.3, with backports to older stable lines. Exploitation in the public writeups requires the ability to create nftables rules, which on a default desktop means unprivileged user namespaces; a host with that feature disabled, or with <code>nf_tables</code> not loaded and not auto-loadable, is not exposed through that path.</p>
+<p>The netfilter nf_tables code could free an object and then use it during rule processing: <code>nft_verdict_init()</code> accepted a positive value as a "drop error" inside a hook verdict, so <code>nf_hook_slow()</code> walked away from an <code>NF_DROP</code> that read like <code>NF_ACCEPT</code> and freed the same rule object on both paths. The upstream fix is commit <code>f342de4e2f33</code>, "netfilter: nf_tables: reject QUEUE/DROP verdict parameters", in 6.8-rc2, backported to 6.1.76, 6.6.15 and 6.7.3, and on the older stable lines 5.10.209 and 5.15.149. Exploitation in the public writeups requires the ability to create nftables rules, which on a default desktop means unprivileged user namespaces; a host with that feature disabled, or with <code>nf_tables</code> not loaded and not auto-loadable, is not exposed through that path.</p>
 <pre><code>cat /proc/sys/kernel/unprivileged_userns_clone 2&gt;/dev/null
 sysctl user.max_user_namespaces
 lsmod | grep nf_tables
 grep CONFIG_NF_TABLES /boot/config-$(uname -r)
+git log --all --oneline --grep='netfilter: nf_tables: reject QUEUE/DROP verdict parameters'
 unshare -Urn true &amp;&amp; echo 'userns available' || echo 'userns blocked'</code></pre>
 
 <h4>CVE-2022-0847 — Dirty Pipe</h4>
-<p>A flaw in pipe buffer flags let a local user overwrite the page cache of a read-only file, provided they could read the file and splice it into a pipe. It was introduced in 5.8 and fixed in 5.16.11, 5.15.25 and 5.10.102. No user namespace is needed, but write access to a privileged setuid binary is not required either — overwriting its cached pages is enough, which is why it was so reliable. Check the kernel line and the distro backport, not the feature set.</p>
+<p>A flaw in pipe buffer flags let a local user overwrite the page cache of a read-only file, provided they could read the file and splice it into a pipe. It was introduced in 5.8, when the anonymous-pipe <code>pipe_buffer</code> gained the flags field its authors left uninitialized on the cache increment they reused, and fixed in 5.16.11, 5.15.25 and 5.10.102. No user namespace is needed, but write access to a privileged setuid binary is not required either — overwriting its cached pages is enough, which is why it was so reliable. Note the asymmetry with the other five examples: userns is closed as a gate here at zero cost, because none is required at all. That is the read that matters: no version of "is my namespace feature disabled?" helps, only the patch presence.</p>
 <pre><code>uname -r
 apt changelog linux-image-$(uname -r) 2&gt;/dev/null | grep -i 'CVE-2022-0847'
 grep -E 'CONFIG_(WATCH_QUEUE|SPLICE)' /boot/config-$(uname -r)</code></pre>
+
+<h4>CVE-2022-0185 — the filesystem-context heap overflow</h4>
+<p>When the kernel grew the structured fs-context API in 5.1, the filesystems that had not adopted it fell back to a legacy parameter parser, and its length check in <code>legacy_parse_param</code> underflowed and wrote past the end of a heap object. <code>fsopen()</code> requires capabilities in the current user namespace, so two distinct paths open the door: an unprivileged user with user namespaces opens the context inside their own namespace and gains the fake <code>CAP_SYS_ADMIN</code>, and a container user already holding the real capability reaches it without any namespace. Upstream fixed it in 5.16.2, with backports to 5.15.16, 5.10.93 and 5.4.173; the public write-up shipped a container escape, and the CVE sits on the KEV list. Note the vendor split it produces: Red Hat says its enterprise line is affected from RHEL 8.4, Debian says the older branches are not affected because the code never arrived there — the same CVE number, two true answers. Read the 8.4 vector <code>AV:L/AC:L/PR:N/UI:N</code> against that split: "no privileges required" means "no host privileges", not "no code path".</p>
+<pre><code>grep -E 'CONFIG_(USER_NS|LEGACY_FS)' /boot/config-$(uname -r)
+sysctl user.max_user_namespaces
+capsh --print | grep cap_sys_admin
+apt changelog linux-image-$(uname -r) 2&gt;/dev/null | grep -i 'CVE-2022-0185'</code></pre>
+
+<h4>CVE-2022-34918 — type confusion in an nf_tables set</h4>
+<p>A second read of the same shape teaches a different lesson. The data attached to a set element passed one validation in <code>nft_setelem_parse_data</code> and was laid out by <code>nft_set_elem_init</code> with the assumptions of another type, so a heap object was filled past its end — a type confusion whose fix hides in the parse function rather than in the allocation. Like the previous example, the gate is <code>CAP_NET_ADMIN</code> reached by user namespace, and upstream fixed it in 5.18.11 with backports in 5.15.54, 5.10.130, 4.19.284 and 4.14.316. The lesson here is subtler: the nftables rule surface is large enough to have years of CVEs nested inside it — CVE-2024-1086 and this one hit different functions opened by the same user namespace — and the read is "is this subsystem compiled <em>and configurable by an unprivileged user</em>", not once but per CVE.</p>
+
+<h4>CVE-2022-2588 — tc route-classifier double free</h4>
+<p><code>route4_change</code> in <code>cls_route</code> failed to remove an existing filter from its hash table when its handle was 0, so a second filter with that handle freed the same object twice. It is reachable only through <code>tc</code>, which needs <code>CAP_NET_ADMIN</code>; on a host that ships <code>CONFIG_NET_CLS_ROUTE4</code> as a module and lets an unprivileged user open a userns-netns pair, that is exactly the same gate the last two examples open. Upstream fixed it in 5.19.2, a couple of point releases into the then-current branch, and the stable backport chains show the fan-out a single fix can carry: 5.18.18, 5.15.61, 5.10.137, 5.4.211, 4.19.256, 4.14.291, 4.9.326. When a fix lands mid-cycle, the answer to "is 5.19.1 exposed?" is simply yes, and every vendor line needs its own check.</p>
+<pre><code>grep CONFIG_NET_CLS_ROUTE4 /boot/config-$(uname -r)
+lsmod | grep route4
+unshare -Urn true 2&gt;/dev/null &amp;&amp; echo 'userns+netns pair available'</code></pre>
+
+<h4>CVE-2023-0386 — the OverlayFS uid-mapping copy-up</h4>
+<p>OverlayFS needed to copy a file with capabilities from a lower layer into the writable upper layer, and a missing validity check on the mounter's uid/gid mapping meant the copied file could keep its setuid/setgid/caps in a namespace that had no right to them. Introduced by <code>ovl: unprivileged mounts</code> (5.11) and useful only because unprivileged ovl mounts need user namespaces. Upstream fixed it in 6.2-rc6 with backports in 6.1.9 and 5.15.91. Both gates are measurable: whether <code>unshare -Urn</code> still works, and whether a container runtime will hand the user a writable overlay. It is on the KEV list as well.</p>
+<pre><code>grep -E 'CONFIG_(USER_NS|OVERLAY_FS)' /boot/config-$(uname -r)
+apt changelog linux-image-$(uname -r) 2&gt;/dev/null | grep -i 'CVE-2023-0386'
+git log -1 --format='%H%n%s' --grep='ovl: fail on invalid uid/gid mapping at copy up' --all 2&gt;/dev/null || true</code></pre>
+
+<h4>CVE-2021-22555 — the netfilter compat-path overflow</h4>
+<p>This one earns its place for a different reason: the bug was present for fifteen years, since before 2.6.19. <code>xt_compat_target_from_user</code> wrote past a heap object on the 32-bit-compat translation path for iptables rules. Upstream fixed it in 5.12, and the backport chain reached 5.10.38, 4.19.194 and 4.9.272, so a 4.9 kernel can be fixed while a 5.10 one is exposed — the read at triage is the vendor line, not the CA number. The reachability gate is <code>CONFIG_COMPAT</code> plus a loaded xtable and a user namespace, and there is one more consequence worth naming: the 8.3 vector carries <code>S:C</code>, meaning the impact lands on a component outside the vulnerable boundary, and that metric alone lifts the score by about a point and a half.</p>
+
+<p>Read the six side by side and the pattern is exact. All of them are local bugs behind a configurability gate, mostly the same user-namespace gate. All of them were fixed upstream, then backported in vendor-specific ways that are invisible to a bare version number. None of them can be judged from the CVE identifier or the headline severity. What they all have in common is that the deciding evidence was documented — a fix commit with a <code>Fixes:</code> tag, a specific config switch, a capability or a namespace — and a triage that records those three things ends up with a defensible answer in a few minutes rather than hours.</p>
 
 <h3>The verdict table</h3>
 <table>
@@ -533,23 +561,22 @@ grep -E 'CONFIG_(WATCH_QUEUE|SPLICE)' /boot/config-$(uname -r)</code></pre>
 <section id="sources">
 <h2>Sources</h2>
 <ul>
-<li><a href="https://git.kernel.org/">git.kernel.org</a> — the upstream kernel git that every fix commit resolves into.</li>
-<li><a href="https://nvd.nist.gov/">NVD</a> — the CVE record, CVSS and reference list most advisories mirror.</li>
-<li><a href="https://www.cve.org/">MITRE</a> — CVE Program records and CNA assignments.</li>
-<li><a href="https://www.first.org/cvss/">CVSS</a> — the specification behind every vector string.</li>
-<li><a href="https://www.first.org/epss/">EPSS</a> — exploit probability estimates used to rank, not to prove.</li>
-<li><a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog">KEV</a> — vulnerabilities observed exploited in the wild.</li>
-<li><a href="https://www.kernel.org/category/security.html">kernel</a> — kernel security announcements and CVE process.</li>
-<li><a href="https://security-tracker.debian.org/tracker/">Debian</a> — per-CVE package status for Debian releases.</li>
-<li><a href="https://ubuntu.com/security/cves">Ubuntu</a> — CVE tracker with fixed package versions.</li>
-<li><a href="https://access.redhat.com/security/security-updates/">Red Hat</a> — errata and CVE pages for enterprise kernels.</li>
-<li><a href="https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project">KSPP</a> — the kernel self-protection configuration guidance.</li>
-<li><a href="https://syzkaller.appspot.com/">syzbot</a> — public kernel crash reports and reproductions.</li>
-<li><a href="https://google.github.io/security-research/kernelctf/">kernelCTF</a> — exploitability context for kernel bugs.</li>
-<li><a href="https://owasp.org/www-project-web-security-testing-guide/">OWASP</a> — web testing methodology for the access-control work.</li>
-<li><a href="https://www.pentest-standard.org/">PTES</a> — engagement phases and reporting structure.</li>
-<li><a href="https://crt.sh/">crt.sh</a> — certificate transparency search used for name enumeration.</li>
-<li><a href="https://www.rfc-editor.org/rfc/rfc1034">RFC</a> — the DNS specification behind the queries above.</li>
+<li><a href="https://git.kernel.org/" target="_blank" rel="noopener">git.kernel.org</a> — the upstream kernel git that every fix commit resolves into.</li>
+<li><a href="https://nvd.nist.gov/" target="_blank" rel="noopener">NVD</a> — the CVE record, CVSS and reference list most advisories mirror.</li>
+<li><a href="https://www.cve.org/" target="_blank" rel="noopener">MITRE</a> — CVE Program records and CNA assignments.</li>
+<li><a href="https://www.first.org/cvss/" target="_blank" rel="noopener">CVSS</a> — the specification behind every vector string.</li>
+<li><a href="https://www.first.org/epss/" target="_blank" rel="noopener">EPSS</a> — exploit probability estimates used to rank, not to prove.</li>
+<li><a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_blank" rel="noopener">KEV</a> — vulnerabilities observed exploited in the wild.</li>
+<li><a href="https://www.kernel.org/" target="_blank" rel="noopener">kernel</a> — the release and announcement site behind the stable branch fixes.</li>
+<li><a href="https://security-tracker.debian.org/tracker/" target="_blank" rel="noopener">Debian</a> — per-CVE package status for Debian releases.</li>
+<li><a href="https://ubuntu.com/security/cves" target="_blank" rel="noopener">Ubuntu</a> — CVE tracker with fixed package versions.</li>
+<li><a href="https://access.redhat.com/security/security-updates/" target="_blank" rel="noopener">Red Hat</a> — errata and CVE pages for enterprise kernels.</li>
+<li><a href="https://docs.kernel.org/security/self-protection.html" target="_blank" rel="noopener">KSPP</a> — the self-protection configuration guidance, now kept in the kernel docs.</li>
+<li><a href="https://syzkaller.appspot.com/" target="_blank" rel="noopener">syzbot</a> — public kernel crash reports and reproductions.</li>
+<li><a href="https://google.github.io/security-research/kernelctf/rules.html" target="_blank" rel="noopener">kernelCTF</a> — the rules and targets behind kernel exploitability contests.</li>
+<li><a href="https://owasp.org/www-project-web-security-testing-guide/" target="_blank" rel="noopener">OWASP</a> — web testing methodology for the access-control work.</li>
+<li><a href="https://crt.sh/" target="_blank" rel="noopener">crt.sh</a> — certificate transparency search used for name enumeration.</li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc1034" target="_blank" rel="noopener">RFC</a> — the DNS specification behind the queries above.</li>
 </ul>
 </section>
 </main>
