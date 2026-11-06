@@ -5,6 +5,10 @@ description: Keep the article pages on one generated stylesheet, docs/page.css, 
 
 # Page CSS — one sheet for the article family
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 `docs/page.css` supersedes `docs/article.css`. Both are class-compatible; the pages
 no longer load the old file, and the runner swaps any `article.css` link it finds.
 
