@@ -9,6 +9,12 @@ description: The one Firebase project behind the comment form and the session-on
 and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
 which check would prove it, and run it when it is requested.
 
+**One page is one project.** Each `docs/*.html` file is a project of its own: its markup,
+script and styles are written there, and the only relation between two pages is the `<a>`
+link from one to the other. Where a page fetches data, that data is its own API, in its
+own files and folder (`docs/api/`, or the page's own `data/`). One page is one API. Test
+only the page and the API you touched; every other page and API is out of scope.
+
 Two pages talk to one Firebase project, `blog-comments-6b4f5`:
 
 | Page | What it does | Where the state lives |
