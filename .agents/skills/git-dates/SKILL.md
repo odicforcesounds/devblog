@@ -76,8 +76,8 @@ disagree; `check_site.py` fails if `dates.json` has no instant for a page listed
    source's oldest commit and add the `PUBLISHED_OVERRIDES` entry.
 4. Update the page JSON-LD (`datePublished`, `dateModified`) — only those fields.
 5. Nothing to edit in `docs/index.html`: it reads the date from the API at load time.
-6. Rebuild: `python3 .agents/skills/blog-ops/build_api.py` and
-   `python3 .agents/skills/blog-ops/build_sitemap.py`.
+6. Rebuild `python3 .agents/skills/blog-ops/build_sitemap.py`. The API is refreshed by the
+   author only: `build_api.py` never runs at the end of an agent's task.
 7. Prove agreement:
 
 ```sh
