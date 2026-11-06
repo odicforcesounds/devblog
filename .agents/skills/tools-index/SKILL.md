@@ -9,6 +9,12 @@ description: The path index for every tool this repository uses — the tracked 
 and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
 which check would prove it, and run it when it is requested.
 
+**One page is one project.** Each `docs/*.html` file is a project of its own: its markup,
+script and styles are written there, and the only relation between two pages is the `<a>`
+link from one to the other. Where a page fetches data, that data is its own API, in its
+own files and folder (`docs/api/`, or the page's own `data/`). One page is one API. Test
+only the page and the API you touched; every other page and API is out of scope.
+
 One job: given "the script that builds the API" or "the jsdom harness", answer with a
 path you can run. `repo-layout` says which directory owns what; `tmp-tools` says how to
 treat scratch. This file is the index itself.
