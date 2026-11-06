@@ -35,8 +35,10 @@ runbooks live in the `blog-ops` skill; load it too when a page touches an existi
 6. **Short linking style:** the link text is one word — `Debian`, `OpenBSD`, `privacy`,
    `RFC 7231`. Never "click here", never a bare URL as the text.
 7. **External references link the word** they support: when a sentence relies on an outside
-   fact, that word becomes the link (`<a href="https://example.org/report">report</a>`), and
-   the sources are collected in a closing section.
+   fact, that word becomes the link (`<a href="https://example.org/report" target="_blank"
+   rel="noopener">report</a>`), and the sources are collected in a closing section. Every
+   external anchor opens in a new tab — `target="_blank" rel="noopener"` — and the
+   `link-integrity` checker fails a page where one lacks them.
 8. **Internal links must be about the same subject.** Before linking, open the candidate
    page and read its `<h1>`/`<h2>` — link what is genuinely related, not what merely shares
    a category. Three to eight such links per article.
@@ -344,8 +346,11 @@ So every time a page is created, renamed or materially rewritten:
 
 1. add or fix its one `<li>` row in the right category and language list, bumping both
    counts as described above;
-2. rebuild the API, because `dates.json` is what supplies the stamp — a row without a
-   `dates.json` entry is skipped by the script;
+2. give it a stamp. The block reads `dates.json` first, then the `DATE_SEED` map in
+   `index.html`; while the API does not list the page, add one entry to that map
+   (`"Name.html": "YYYY-MM-DD"`, the date git records for the file) so the block can show
+   it. Never run `build_api.py` for this — it is author-only. Prune the seed entry once
+   `dates.json` carries the page;
 3. print the five the page will show and read them, rather than assuming:
 
 ```sh
@@ -368,13 +373,16 @@ would break the one-target-per-page rule.
 
 ## Compile
 
-Run all three, in this order, from the repository root:
+Run these two, in this order, from the repository root:
 
 ```sh
 python3 .agents/skills/blog-ops/build_sitemap.py    # sitemap.xml + robots.txt
-python3 .agents/skills/blog-ops/build_api.py        # docs/api/index.json + dates.json + text chunks
 python3 .agents/skills/blog-ops/check_site.py       # head contract, sitemap and API coverage
 ```
+
+`build_api.py` is **author-only**: it runs when the author explicitly asks, never at the end
+of a task. An API-coverage line about the new page is reported as a finding, not cleared by
+running the builder.
 
 Then the five read-only audits, which answer what `check_site.py` does not — none of them
 writes a file, so all five run on every new page:
@@ -447,11 +455,15 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/Name.html   # exp
       once); no fact, paragraph or table row is stated twice in the same language; no
       comment or visible sentence about the request, the prompt or the authoring session.
       `page_hygiene.py docs/Name.html` reports `failures 0`.
-- [ ] Archive row added once, counts updated, breadcrumb matches, and the API
-      `published_at` is the instant git reports for the file.
+- [ ] Archive row added once, counts updated, breadcrumb matches. The API
+      `published_at` follows the author's `build_api.py` run; an API-coverage finding is
+      reported, never fixed by running that builder unasked.
 - [ ] The home page's *Last 5 publications* now lists the page — printed from
-      `dates.json` + the archive rows, not assumed. Every page touched, not only a new one.
-- [ ] `build_sitemap.py`, `build_api.py` and `check_site.py` run; no new failure.
+      `dates.json`, the `DATE_SEED` map and the archive rows, not assumed. A page missing
+      from both date sources gets one `DATE_SEED` entry in `index.html`; the block is never
+      fixed by running `build_api.py`. Every page touched, not only a new one.
+- [ ] `build_sitemap.py` and `check_site.py` run; no new failure other than an
+      API-coverage line that belongs to the author's rebuild.
 - [ ] `check_links.py`, `check_weight.py`, `check_headers.py`, `check_a11y.py` and
       `check_seo.py` report nothing about the new page: no dead reference, inside the
       budget, its own policy allows its sheet and script, alt and `lang` present, title
