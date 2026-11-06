@@ -22,7 +22,7 @@ root="$(git -C "$here" rev-parse --show-toplevel 2>/dev/null)" || {
 }
 cd "$root" || exit 1
 
-git status --short
+git status --short --untracked-files=all
 
 # Changed paths, one per line, with renames reduced to their new name.
 # Only files that exist in the working tree can be committed, so drop
@@ -35,7 +35,7 @@ while IFS= read -r -d '' entry; do
     else
         changed+=("${entry:3}")
     fi
-done < <(git status --porcelain=v1 -z)
+done < <(git status --porcelain=v1 -z --untracked-files=all)
 
 if [ "${#changed[@]}" -eq 0 ]; then
     echo "No changes to commit."
@@ -52,14 +52,8 @@ for path in "${changed[@]}"; do
 done
 changed=("${kept[@]}")
 
-# Untracked files that exist on disk are commitable too, even when git index
-# does not know them yet (e.g. a brand-new script). Their ls-files above
-# reported an error, but they are real files, so keep them.
-for path in "${changed[@]}"; do
-    if ! git ls-files --error-unmatch -- "$path" >/dev/null 2>&1 && [ -e "$path" ]; then
-        git add -- "$path" >/dev/null 2>&1
-    fi
-done
+# An untracked file is left untracked until its turn comes: staging it here
+# would fold every new file into the first commit that is accepted.
 changed=("${kept[@]}")
 if [ "${#changed[@]}" -eq 0 ]; then
     echo "Nothing can be committed."
