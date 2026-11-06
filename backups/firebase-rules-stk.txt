@@ -1,0 +1,222 @@
+Social Tool Kit — Firestore rules for the stkapp-e9625 project
+===============================================================
+
+docs/socialToolKitApp.html runs on its own Firebase project, stkapp-e9625 — the
+projectId written in the page and in backups/fire.txt. The comment thread lives
+in blog-comments-6b4f5, a different project, whose rules are in
+backups/firebase-rules.txt. The two share nothing, so nothing from the comments
+block is published here.
+
+The page writes five collections: stk_users, stk_groups, stk_members,
+stk_challenges and stk_ratings.
+
+Sign-in is Firebase Authentication and needs no Firestore rule. What the page
+writes right after a successful sign-in is the profile: onAuthStateChanged calls
+loadProfile(), which setDoc()s stk_users/{uid}. A project created without rules
+carries "allow read, write: if false", so that write answers "Missing or
+insufficient permissions" and the page shows it in its toast. The stk_users
+rule below is what lets an account write its own profile, and only its own.
+
+Login testing rules (temporary)
+-------------------------------
+To prove the sign-in path writes, publish this block in stkapp-e9625 while you
+test, then replace it with the production block underneath:
+
+    rules_version = '2';
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        match /{document=**} {
+          allow read, write: if request.auth != null;
+        }
+      }
+    }
+
+A signed-in test account may write anywhere; anonymous traffic may write
+nowhere. It checks who is writing, not what is written, so it is a test window
+and not the rules to keep: while it is live, any signed-in account can write a
+comment or a challenge of any shape and the field checks below are skipped.
+
+Production rules
+----------------
+Paste this whole block in Firebase console -> project stkapp-e9625 -> Firestore
+Database -> Rules and publish. It is a complete service block; a `match`
+published outside it is the syntax error the console refuses to save.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /stk_users/{uid} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'email', 'repGroupId', 'createdAt'])
+        && request.resource.data.keys().hasAll(['name', 'email', 'repGroupId'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 120
+        && request.resource.data.repGroupId is string
+        && (request.resource.data.repGroupId == ''
+            || (request.auth.token.email is string
+                && exists(/databases/$(database)/documents/stk_members/$(request.resource.data.repGroupId + '__' + request.auth.token.email.lower()))));
+      allow delete: if false;
+    }
+
+    match /stk_groups/{groupId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['name', 'site', 'leaderUid', 'leaderName', 'createdAt'])
+        && request.resource.data.leaderUid == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.leaderName is string
+        && request.resource.data.leaderName.size() <= 60
+        && request.resource.data.site is string
+        && request.resource.data.site.size() <= 120
+        && request.resource.data.createdAt == request.time;
+      allow update: if request.auth != null
+        && resource.data.leaderUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'site'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.site is string
+        && request.resource.data.site.size() <= 120;
+      allow delete: if request.auth != null && resource.data.leaderUid == request.auth.uid;
+    }
+
+    match /stk_members/{memberId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && memberId == request.resource.data.groupId + '__' + request.resource.data.email
+        && request.resource.data.keys().hasOnly(['groupId', 'email', 'name', 'addedBy', 'createdAt'])
+        && request.resource.data.addedBy == request.auth.uid
+        && request.resource.data.email is string
+        && request.resource.data.email.size() > 3
+        && request.resource.data.email.size() <= 120
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 60
+        && get(/databases/$(database)/documents/stk_groups/$(request.resource.data.groupId)).data.leaderUid == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+      allow delete: if request.auth != null
+        && (resource.data.addedBy == request.auth.uid
+            || get(/databases/$(database)/documents/stk_groups/$(resource.data.groupId)).data.leaderUid == request.auth.uid);
+    }
+
+    match /stk_challenges/{challengeId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['title', 'path', 'coins', 'url', 'provider', 'videoId', 'authorUid', 'authorName', 'groupId', 'status', 'available', 'views', 'createdAt'])
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.status == 'open'
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 3
+        && request.resource.data.title.size() <= 60
+        && request.resource.data.path in ['NCP', 'ACP', 'HCP']
+        && request.resource.data.coins is number
+        && request.resource.data.coins >= 5
+        && request.resource.data.coins <= 200
+        && request.resource.data.coins == request.resource.data.coins.floor()
+        && request.resource.data.url is string
+        && request.resource.data.url.size() <= 300
+        && request.resource.data.provider is string
+        && request.resource.data.videoId is string
+        && request.resource.data.views.size() == 0
+        && request.resource.data.available.size() == 0
+        && request.resource.data.createdAt == request.time;
+      allow update: if request.auth != null
+        && request.resource.data.authorUid == resource.data.authorUid
+        && request.resource.data.coins == resource.data.coins
+        && request.resource.data.title == resource.data.title
+        && request.resource.data.path == resource.data.path
+        && request.resource.data.url == resource.data.url
+        && request.resource.data.provider == resource.data.provider
+        && request.resource.data.videoId == resource.data.videoId
+        && request.resource.data.groupId == resource.data.groupId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(
+             ['status', 'solverGroupId', 'solverName', 'available', 'proof', 'proofBy', 'proofAt', 'views', 'payout', 'publishedAt'])
+        && (
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
+            && request.resource.data.views == resource.data.views.concat([request.auth.uid]))
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['available'])
+            && resource.data.solverGroupId is string
+            && exists(/databases/$(database)/documents/stk_members/$(resource.data.solverGroupId + '__' + request.auth.token.email.lower())))
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'solverGroupId', 'solverName'])
+            && resource.data.status == 'open'
+            && request.resource.data.status == 'assigned'
+            && request.resource.data.authorUid != request.auth.uid
+            && request.resource.data.solverGroupId == get(/databases/$(database)/documents/stk_users/$(request.auth.uid)).data.repGroupId)
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['proof', 'proofBy', 'proofAt'])
+            && resource.data.solverGroupId is string
+            && request.resource.data.proof is string
+            && request.resource.data.proof.size() <= 300
+            && exists(/databases/$(database)/documents/stk_members/$(resource.data.solverGroupId + '__' + request.auth.token.email.lower())))
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'publishedAt', 'payout'])
+            && resource.data.status == 'assigned'
+            && request.resource.data.status == 'published')
+        );
+      allow delete: if request.auth != null && resource.data.authorUid == request.auth.uid;
+    }
+
+    match /stk_ratings/{ratingId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && ratingId == request.resource.data.challengeId + '__' + request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['challengeId', 'uid', 'verdict', 'createdAt'])
+        && (request.resource.data.verdict == 'approve' || request.resource.data.verdict == 'refuse')
+        && get(/databases/$(database)/documents/stk_challenges/$(request.resource.data.challengeId)).data.proof is string
+        && get(/databases/$(database)/documents/stk_challenges/$(request.resource.data.challengeId)).data.authorUid != request.auth.uid
+        && get(/databases/$(database)/documents/stk_challenges/$(request.resource.data.challengeId)).data.solverGroupId != get(/databases/$(database)/documents/stk_users/$(request.auth.uid)).data.repGroupId
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+  }
+}
+
+Why each clause is there
+------------------------
+- One account, one identity: every document carries request.auth.uid, so a
+  signed-in reader cannot write as somebody else. `request.auth.uid == uid` on
+  stk_users is the clause that makes the profile of a person theirs alone.
+- The email claim is asked for only when the profile names a group. An account
+  whose provider returns no email claim still writes its first profile, because
+  `repGroupId` is empty and the second branch is not reached. The moment it
+  names a group, the lookup needs an address it can lower-case, and
+  `request.auth.token.email is string` is what stops a missing claim from
+  erroring: an error in a rule is a denial with no explanation, which reads like
+  a broken login.
+- The member document id is the group id and the email, which lets the rules
+  prove that a representing account really belongs to the group it claims.
+  `exists()` is how a rule reads that membership document.
+- Leader-only membership: a member document is created or deleted only by the
+  account named as the group's leader (or by whoever added it).
+- Coins and the video are fixed at publication. An update may move one
+  challenge through its life but cannot change its title, link, coins or author.
+- The views branch accepts exactly one value appended: the writer's own uid. A
+  second attempt produces the same array and fails the equality test.
+- A rating needs a proof, refuses the author and refuses the solving group. One
+  document per account and challenge; no edits afterwards.
+- The result branch only moves `assigned` to `published` and writes the payout
+  plan with it.
+
+What the rules cannot do
+------------------------
+- Count seven approvals. Rules cannot query a collection, so the page counts
+  them and writes `published`. A Cloud Function is the place to make the
+  seventh approval the only writer.
+- Move coins. The payout is a plan stored on the challenge; a transfer needs a
+  transaction with admin credentials, which never belong in a page.
+- Rate-limit publishing. App Check and a counter in a function are the tools.
+
+Deployment
+----------
+Firebase console -> project stkapp-e9625 -> Firestore Database -> Rules: paste
+the production block above and publish. Then check the login write: sign in and
+look for a document in stk_users named with your uid. A permission error at that
+point means the block was published in stkapp-e9625's sibling project, or the
+temporary testing rules are still live. Test with two accounts before inviting
+anyone: one creates a group and adds the other by email; the other represents it,
+takes a challenge and watches it once.
