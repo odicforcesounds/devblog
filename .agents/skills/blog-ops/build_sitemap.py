@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Write docs/sitemap.xml and docs/robots.txt from the pages that exist.
+"""Update docs/sitemap.xml and docs/robots.txt from the pages that exist.
+
+The sitemap is edited in place and only ever gains entries: the block for a page that is
+missing is inserted where alphabetical order puts it, and every existing `<url>` block is
+left byte for byte — no lastmod is rewritten, no entry is dropped. The file is generated
+from scratch only when it does not exist yet.
 
     python3 .agents/skills/blog-ops/build_sitemap.py           # write
     python3 .agents/skills/blog-ops/build_sitemap.py --check    # diff only, no write
@@ -13,6 +18,7 @@ Standard library only.
 """
 
 import os
+import re
 import subprocess
 import sys
 from xml.sax.saxutils import escape
@@ -89,28 +95,67 @@ def lastmod(path):
         out = ""
     if out:
         return out.splitlines()[0]
+    if not os.path.exists(path):
+        return ""
     import datetime
     return datetime.date.fromtimestamp(os.path.getmtime(path)).isoformat()
 
 
+def page_names():
+    # The root first, then alphabetical: the landing page is the entry point.
+    return sorted((n for n in os.listdir(DOCS) if n.endswith(".html") and n not in SKIP),
+                  key=lambda n: (n != "index.html", n))
+
+
+def loc_for(name):
+    return ORIGIN + "/" if name == "index.html" else "%s/%s" % (ORIGIN, name)
+
+
+def entries():
+    return [(loc_for(n), lastmod(os.path.join(DOCS, n))) for n in page_names()]
+
+
+def block(loc, when):
+    lines = ["  <url>", "    <loc>%s</loc>" % escape(loc)]
+    if when:
+        lines.append("    <lastmod>%s</lastmod>" % when)
+    lines.append("  </url>")
+    return "\n".join(lines) + "\n"
+
+
 def build():
-    # The root first, then alphabetical: the landing page is the entry point and
-    # keeping it on line 3 keeps the diff of a one-page change to one page.
-    names = sorted((n for n in os.listdir(DOCS) if n.endswith(".html") and n not in SKIP),
-                   key=lambda n: (n != "index.html", n))
-    lines = ['<?xml version="1.0" encoding="UTF-8"?>',
-             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    for name in names:
-        path = os.path.join(DOCS, name)
-        loc = ORIGIN + "/" if name == "index.html" else "%s/%s" % (ORIGIN, name)
-        when = lastmod(path)
-        lines.append("  <url>")
-        lines.append("    <loc>%s</loc>" % escape(loc))
-        if when:
-            lines.append("    <lastmod>%s</lastmod>" % when)
-        lines.append("  </url>")
-    lines.append("</urlset>")
-    return "\n".join(lines) + "\n", len(names)
+    data = entries()
+    head = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+    return head + "".join(block(loc, when) for loc, when in data) + "</urlset>\n", len(data)
+
+
+BLOCK = re.compile(r'  <url>\n    <loc>([^<]*)</loc>\n(?:    <lastmod>([^<]*)</lastmod>\n)?  </url>\n')
+
+
+def update(existing, names):
+    """Insert the `<url>` blocks for pages the sitemap is missing; touch nothing else."""
+    found = [(m.start(), m.end(), m.group(1)) for m in BLOCK.finditer(existing)]
+    if not found:
+        return None
+
+    order = {loc_for(n): index for index, n in enumerate(names)}
+    present = {loc for _, _, loc in found}
+    pending = [n for n in names if loc_for(n) not in present]
+    if not pending:
+        return existing
+
+    last = len(names)
+    chunks = []
+    for start, end, loc in found:
+        while pending and order[loc_for(pending[0])] < order.get(loc, last):
+            name = pending.pop(0)
+            chunks.append(block(loc_for(name), lastmod(os.path.join(DOCS, name))))
+        chunks.append(existing[start:end])
+    for name in pending:
+        chunks.append(block(loc_for(name), lastmod(os.path.join(DOCS, name))))
+
+    return existing[:found[0][0]] + "".join(chunks) + existing[found[-1][1]:]
 
 
 def current(name):
@@ -132,7 +177,13 @@ def main(argv):
         sitemap, count = None, 0
         targets = (("robots.txt", ROBOTS),)
     else:
-        sitemap, count = build()
+        names = page_names()
+        existing = current("sitemap.xml")
+        sitemap = update(existing, names) if existing.strip() else None
+        if sitemap is None:
+            sitemap, count = build()
+        else:
+            count = len(names)
         targets = (("sitemap.xml", sitemap), ("robots.txt", ROBOTS))
     changed = []
 
