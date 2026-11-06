@@ -5,6 +5,10 @@ description: Create a new page for Monkey Blog (blog.odicforcesounds.com) from s
 
 # New Page
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 Monkey Blog is a static site. `docs/` **is** the site: GitHub Pages serves it at
 `https://blog.odicforcesounds.com`. There is no framework, no bundler and no request-time
 rendering, so every rule below is a file rule — if it is wrong in the source, it is wrong
