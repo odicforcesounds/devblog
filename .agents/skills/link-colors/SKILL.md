@@ -5,6 +5,10 @@ description: Colour every link on the blog by where it points — a page of this
 
 # Link colours — where a link goes, at a glance
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 Three destinations, three colours. A reader can tell without hovering whether a link
 stays in the blog, crosses to another corner of the same domain, or leaves for the wider
 web.
