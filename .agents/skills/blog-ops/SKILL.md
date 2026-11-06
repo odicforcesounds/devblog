@@ -1,6 +1,6 @@
 ---
 name: blog-ops
-description: Operate this blog repository — add or edit articles under docs/, keep every page's head consistent (canonical, Open Graph, Twitter, JSON-LD, one h1), rebuild the derived files (sitemap.xml, robots.txt, docs/api/), and verify the whole site before committing. Use for any request about writing, fixing, publishing or auditing pages on blog.odicforcesounds.com.
+description: Operate this blog repository — add or edit articles under docs/, keep every page's head consistent (canonical, Open Graph, Twitter, JSON-LD, one h1), rebuild the derived files (sitemap.xml, robots.txt, docs/api/) when asked, and verify only the page and API you touched before committing. Use for any request about writing, fixing, publishing or auditing pages on blog.odicforcesounds.com.
 ---
 
 # Blog Ops
@@ -103,6 +103,25 @@ Non-negotiable for every page you create or edit, checked by `page_hygiene.py`:
    instructions"). Comments must describe the markup for a maintainer, never the task. When
    a page arrives with such a comment, delete it as part of the edit.
 
+## One page is one project
+
+`docs/*.html` is not one application. Each file is a project of its own: its markup, its
+script and its styles are written in that file, and the only relation between two pages is
+the `<a href>` from one to the other. The generated sheets that many pages link
+(`page.css`, `link-colors.css`) are global assets, not a channel from one page's code into
+another's. A change on one page is therefore not a reason to test another, and a defect on
+another page is not evidence about this one.
+
+Data follows the same rule. A page that fetches has its own API — its own files under
+`docs/api/` or in the page's own `data/` folder; one page is one API. A page that fetches
+nothing has no API, and no other page's API is a fixture for it.
+
+**Test only what you touched.** The page you edited and the API that page reads are the
+whole test surface: do not open, crawl, audit or sanity-check the other pages or their
+APIs. A whole-site script (`check_site.py`, `check_seo.py`, `check_links.py`) runs only
+when the author asks; when it does, report the lines about the page you changed and leave
+the rest alone.
+
 ## Builds and audits run only when asked
 
 `build_api.py`, `build_sitemap.py` and the audits (`check_site.py`, `page_hygiene.py`,
@@ -129,9 +148,10 @@ These three run when the author asks for them, not after every edit (see **Build
 
 `build_api.py` is not in that run: the API is rebuilt only when the author asks (see above).
 
-**Edit an article** — change the body, then run `check_site.py`. If the title or description changed, update all four copies.
-  Always finish with `python3 .agents/skills/blog-ops/page_hygiene.py docs/Page.html`: the
-  page you touched has unique links, unique information and no authoring comment.
+**Edit an article** — change the body, then check that page and nothing else. If the title
+  or description changed, update all four copies. When the author asks for the audit,
+  `check_site.py` covers the head contract and `page_hygiene.py docs/Page.html` covers
+  duplicated links, repeated information and authoring comments.
 
 **Bilingual pages** (`hydroponics.html` is the one so far) — English lives in the markup
   and Portuguese in a `PT` dictionary inside the page script, applied to every
@@ -247,13 +267,15 @@ The catalogue builders — animals, birds, fishes, insects, plants, electronics 
 ## Verify before saying it is done
 
 - `python3 .agents/skills/blog-ops/check_site.py` — head tags, h1, doctype, JSON-LD,
-  description lengths, sitemap and API coverage. Exit code 1 on any failure.
+  description lengths, sitemap and API coverage. It covers the whole site, so it runs only
+  when the author asks; act on the lines about the page you changed and report the rest.
 - `python3 .agents/skills/blog-ops/page_hygiene.py docs/Page.html` — duplicated links,
   repeated text blocks and authoring comments in the page(s) you touched. Exit 1 on any
   finding; `--quiet` prints findings only.
 - `python3 -m http.server` inside `docs/` plus `curl -s -o /dev/null -w '%{http_code}'`
-  on the changed pages, `robots.txt`, `sitemap.xml`, `api/index.json` and `api/dates.json` (expect 200,
-  and `application/json` for the JSON).
+  on the page you changed, on the API files that page reads, and on `sitemap.xml` only if
+  the change added a URL (expect 200, and `application/json` for the JSON). Leave the other
+  pages and APIs alone.
 - Body preservation: `git diff` must show changes only inside `<head>` unless the task
   was about the body. `git diff --numstat` to see the blast radius.
 - For UI behaviour (search, filters, language switcher, comment form), drive it: jsdom
