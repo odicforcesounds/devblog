@@ -9,6 +9,12 @@ description: Keep the fixed living card on every page of Monkey Blog — one pho
 and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
 which check would prove it, and run it when it is requested.
 
+**One page is one project.** Each `docs/*.html` file is a project of its own: its markup,
+script and styles are written there, and the only relation between two pages is the `<a>`
+link from one to the other. Where a page fetches data, that data is its own API, in its
+own files and folder (`docs/api/`, or the page's own `data/`). One page is one API. Test
+only the page and the API you touched; every other page and API is out of scope.
+
 Every page under `docs/` except `index.html` carries one card:
 
 ```html
@@ -163,10 +169,11 @@ python3 .agents/skills/living-panel/build_living.py
 python3 .agents/skills/living-panel/check_panel_links.py
 ```
 
-After either generator, rebuild the sitemap and audit the site:
-`python3 .agents/skills/blog-ops/build_sitemap.py` then
-`python3 .agents/skills/blog-ops/check_site.py` (expect `0 failures`; an API-coverage line is
-the author's `build_api.py` run, which agents never trigger).
+After either generator, check the pages it wrote and nothing else. `check_panel_links.py`
+sweeps the whole site because the card does, so it is the author's audit rather than a step
+of every task: run it when it is asked for and report what it says about pages you did not
+touch. `build_sitemap.py` and `check_site.py` are the same case, and an API-coverage line is
+the author's `build_api.py` run, which agents never trigger.
 
 ## Reading the five pools
 
