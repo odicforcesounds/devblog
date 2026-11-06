@@ -29,7 +29,7 @@ DOCS = ROOT / "docs"
 | --- | --- | --- |
 | `.agents/skills/blog-ops/check_site.py` | Site audit: doctype, head tags, one `h1`, JSON-LD, description lengths, sitemap + API coverage. Exit 1 on failure. | `python3 .agents/skills/blog-ops/check_site.py` |
 | `.agents/skills/blog-ops/page_hygiene.py` | Page content audit: duplicate `href` targets and repeated text blocks per language scope, HTML comments about the request/prompt. Exit 1 on findings. | `python3 .agents/skills/blog-ops/page_hygiene.py docs/Name.html` (`--all`, `--quiet`) |
-| `.agents/skills/blog-ops/build_api.py` | Regenerates `docs/api/index.json`, `dates.json`, `text/NNN.json`. | `python3 .agents/skills/blog-ops/build_api.py` |
+| `.agents/skills/blog-ops/build_api.py` | Regenerates `docs/api/index.json`, `dates.json`, `text/NNN.json`. **Author-only — never run at the end of a task.** | `python3 .agents/skills/blog-ops/build_api.py` (on the author's request) |
 | `.agents/skills/blog-ops/build_sitemap.py` | Rebuilds `docs/sitemap.xml`; `--robots` rewrites `docs/robots.txt` only. | `python3 .agents/skills/blog-ops/build_sitemap.py [--robots]` |
 | `.agents/skills/blog-ops/enrich_schema.py` | Rebuilds every page's JSON-LD `@graph`; idempotent. | `python3 .agents/skills/blog-ops/enrich_schema.py` |
 | `.agents/skills/blog-ops/restore_awesome_data.py` | Restores a shelf under `docs/awesome/data/` from git history when it stops being JSON; `--apply` writes. | `python3 .agents/skills/blog-ops/restore_awesome_data.py [--apply]` |
