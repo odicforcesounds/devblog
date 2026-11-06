@@ -9,6 +9,12 @@ description: Protect every catalogue page docs/*Index.html — the sixteen local
 and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
 which check would prove it, and run it when it is requested.
 
+**One page is one project.** Each `docs/*.html` file is a project of its own: its markup,
+script and styles are written there, and the only relation between two pages is the `<a>`
+link from one to the other. Where a page fetches data, that data is its own API, in its
+own files and folder (`docs/api/`, or the page's own `data/`). One page is one API. Test
+only the page and the API you touched; every other page and API is out of scope.
+
 The `docs/*Index.html` pages are the site's catalogues. A decorative edit there
 can erase the local search, the data source or the only route to an entry. This
 skill states what must survive, then points to the read-only checker.
