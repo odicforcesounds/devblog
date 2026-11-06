@@ -9,6 +9,12 @@ description: Derive and fix article dates in this blog from git history — firs
 and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
 which check would prove it, and run it when it is requested.
 
+**One page is one project.** Each `docs/*.html` file is a project of its own: its markup,
+script and styles are written there, and the only relation between two pages is the `<a>`
+link from one to the other. Where a page fetches data, that data is its own API, in its
+own files and folder (`docs/api/`, or the page's own `data/`). One page is one API. Test
+only the page and the API you touched; every other page and API is out of scope.
+
 This repository is the history. A page's publication date is the date its content first
 entered git; its update date is the last commit that touched it. Nothing else is
 authoritative: not the file mtime (a clone or checkout rewrites it), not a date typed into a page, not the machine clock.
