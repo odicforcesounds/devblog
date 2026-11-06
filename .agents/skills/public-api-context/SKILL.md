@@ -9,6 +9,12 @@ description: Use keyless public APIs from publicapis.lol in JavaScript/API artic
 and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
 which check would prove it, and run it when it is requested.
 
+**One page is one project.** Each `docs/*.html` file is a project of its own: its markup,
+script and styles are written there, and the only relation between two pages is the `<a>`
+link from one to the other. Where a page fetches data, that data is its own API, in its
+own files and folder (`docs/api/`, or the page's own `data/`). One page is one API. Test
+only the page and the API you touched; every other page and API is out of scope.
+
 The three default sources are listed on <https://publicapis.lol> and are used
 here to add material that is not already on Wikipedia or Wikimedia:
 
