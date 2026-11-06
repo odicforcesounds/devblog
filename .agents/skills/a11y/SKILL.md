@@ -5,6 +5,10 @@ description: Audit the accessibility basics on every page — alt text, the docu
 
 # Accessibility — who the page is for
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 The site is dark, dense and full of images, Chinese lines under English ones, and links
 whose text is a single word on purpose. None of that is a problem. The problem is when the
 markup does not say what the page visibly says: an image with no `alt` is a blank space, a
