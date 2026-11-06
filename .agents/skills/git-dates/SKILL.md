@@ -5,6 +5,10 @@ description: Derive and fix article dates in this blog from git history — firs
 
 # Dates come from git
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 This repository is the history. A page's publication date is the date its content first
 entered git; its update date is the last commit that touched it. Nothing else is
 authoritative: not the file mtime (a clone or checkout rewrites it), not a date typed into a page, not the machine clock.
