@@ -5,6 +5,10 @@ description: Protect every catalogue page docs/*Index.html — the sixteen local
 
 # Index guard
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 The `docs/*Index.html` pages are the site's catalogues. A decorative edit there
 can erase the local search, the data source or the only route to an entry. This
 skill states what must survive, then points to the read-only checker.
