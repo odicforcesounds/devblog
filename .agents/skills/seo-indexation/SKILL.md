@@ -59,7 +59,8 @@ Exit code 0 when there is no failure, 1 otherwise; warnings never set the code.
   shorter title, a page dropped from the sitemap, an extra link from the archive. The
   script changes none of them.
 - **Never hand-edit `sitemap.xml`, `robots.txt` or `docs/api/**`.** Rebuild with
-  `build_sitemap.py` / `build_api.py`; a manual edit is undone by the next build.
+  `build_sitemap.py`; `docs/api/` is rebuilt by the author with `build_api.py` only, and a
+  manual edit is undone by the next build.
 - **A `noindex` page is a promise.** If it must stay out of the index, keep it out of the
   sitemap and the API in the same change, and say why in the page or the runbook.
 - **Titles are written for the result, not for the archive.** `index.html` shows an
