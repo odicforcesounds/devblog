@@ -103,17 +103,16 @@ Non-negotiable for every page you create or edit, checked by `page_hygiene.py`:
    instructions"). Comments must describe the markup for a maintainer, never the task. When
    a page arrives with such a comment, delete it as part of the edit.
 
-## `build_api.py` is author-only
+## Builds and audits run only when asked
 
-`docs/api/` is rebuilt **only when the author explicitly asks for it**. No agent runs
-`build_api.py` at the end of a task, as part of a checklist, or to clear a `check_site.py`
-API-coverage line. When the audit reports a page missing from `index.json` or `dates.json`,
-that finding is reported and left for the author to trigger the rebuild.
+`build_api.py`, `build_sitemap.py` and the audits (`check_site.py`, `page_hygiene.py`,
+`check_links.py`, `check_a11y.py`, `check_headers.py`, `check_weight.py`, `check_seo.py`,
+`check_indexes.py`, `check_catalogue.py`, `check_panel_links.py`) run **only when the author
+asks for them**. No agent runs one at the end of a task, as part of a checklist, or to turn
+a finding green: finish the edit, say which check would prove it, and wait to be asked.
 
-Legacy pages predate these rules: `page_hygiene.py --all` currently reports a large backlog
-(repeated Home links are most of it). Do not mass-rewrite the archive to make that number
-zero. The rule is scoped to the pages you touch: when you edit or create a page, run the
-checker on that page and leave it clean, or report exactly what you could not clean.
+`docs/api/` is the strictest case — it is rebuilt only on the author's explicit request, and
+an API-coverage line from `check_site.py` is reported and left for the author to trigger.
 
 ## Workflows
 
@@ -125,6 +124,8 @@ python3 .agents/skills/blog-ops/build_sitemap.py  # adds the URL, lastmod from g
 python3 .agents/skills/blog-ops/check_site.py    # must end with "0 failures"
 python3 .agents/skills/blog-ops/page_hygiene.py docs/NewTitle.html   # "failures 0"
 ```
+
+These three run when the author asks for them, not after every edit (see **Builds and audits run only when asked**).
 
 `build_api.py` is not in that run: the API is rebuilt only when the author asks (see above).
 
