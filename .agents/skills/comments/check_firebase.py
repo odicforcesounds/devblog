@@ -10,9 +10,9 @@ symptom is an empty thread, not an error.
     python3 .agents/skills/comments/check_firebase.py --json
 
 Checks: the config objects are identical wherever they appear; the API key and project id
-are the same; every collection name the code writes to is documented in
-backups/firebase-rules.txt; the chat page does not keep anything on the device; the
-provider list contains only providers that answer.
+are the same; every collection name the code writes to is documented in the rules files
+(backups/firebase-rules*.txt, one file per Firebase project); the chat page does not keep
+anything on the device; the provider list contains only providers that answer.
 
 Read-only. Exit code 0 when the pages agree, 1 when they do not.
 """
@@ -25,7 +25,7 @@ import re
 import sys
 
 DOCS = "docs"
-RULES = os.path.join("backups", "firebase-rules.txt")
+RULES = sorted(glob.glob(os.path.join("backups", "firebase-rules*.txt")))
 CONFIG = re.compile(r'(?:const|let|var)\s+firebaseConfig\s*=\s*\{(.*?)\};', re.S)
 FIELD = re.compile(r'(\w+)\s*:\s*"([^"]*)"')
 COLLECTION = re.compile(r'collection\(\s*[\w.]+\s*,\s*([\w"]+)\s*\)')
@@ -68,9 +68,9 @@ def main(argv=None):
             if config.get(field) != reference.get(field):
                 failures.append((page, "%s differs from %s (%s)" % (field, reference_page, reference.get(field, "missing"))))
 
-    rules = read(RULES) if os.path.exists(RULES) else ""
+    rules = "\n".join(read(path) for path in RULES)
     if not rules:
-        warnings.append((RULES, "no rules file — what may be written is undocumented"))
+        warnings.append(("backups/firebase-rules*.txt", "no rules file — what may be written is undocumented"))
     collections = set()
     for page in sorted(glob.glob(os.path.join(DOCS, "*.html"))):
         source = read(page)
@@ -87,7 +87,7 @@ def main(argv=None):
             collections.add(name)
             if rules and name not in rules and name not in reported:
                 reported.add(name)
-                failures.append((os.path.basename(page), "writes collection \"%s\", absent from %s" % (name, RULES)))
+                failures.append((os.path.basename(page), "writes collection \"%s\", absent from backups/firebase-rules*.txt" % name))
 
     for page in sorted(glob.glob(os.path.join(DOCS, "*.html"))):
         source = read(page)
