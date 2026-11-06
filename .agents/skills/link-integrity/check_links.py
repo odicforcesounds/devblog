@@ -166,11 +166,37 @@ def ids_in(path):
         return set()
 
 
+ANCHOR = re.compile(r"(?is)<a\b([^>]*)>")
+ATTR = re.compile(r"([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:\"([^\"]*)\"|'([^']*)')")
+
+
+def external_anchors(source):
+    """Every anchor that leaves the site, with its attributes."""
+    for match in ANCHOR.finditer(source):
+        attrs = {}
+        for name, double, single in ATTR.findall(match.group(1)):
+            attrs[name.lower()] = double if double is not None else single
+        href = html.unescape(attrs.get("href", "")).strip()
+        if href.startswith("//") or href.lower().startswith(("http://", "https://")):
+            yield href, attrs
+
+
 def check_local(pages):
     failures, warnings = [], []
     seen, warned = set(), set()
     for page in pages:
         source = link_source(read(os.path.join(DOCS, page)))
+        for href, attrs in external_anchors(source):
+            if attrs.get("target") != "_blank":
+                note = "external link in the same tab (no target=_blank): %s" % href
+                if (page, note) not in seen:
+                    seen.add((page, note))
+                    failures.append((page, note))
+            elif "noopener" not in attrs.get("rel", "").lower():
+                note = "target=_blank without rel=noopener: %s" % href
+                if (page, note) not in seen:
+                    seen.add((page, note))
+                    failures.append((page, note))
         for ref in refs(source):
             parsed = local_path(page, ref)
             if not parsed:
