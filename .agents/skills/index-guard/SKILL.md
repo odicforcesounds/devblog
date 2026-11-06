@@ -9,7 +9,7 @@ The `docs/*Index.html` pages are the site's catalogues. A decorative edit there
 can erase the local search, the data source or the only route to an entry. This
 skill states what must survive, then points to the read-only checker.
 
-## The sixteen pages
+## The nineteen pages
 
 | Page | Local data manifest | Local search |
 | --- | --- | --- |
@@ -17,13 +17,16 @@ skill states what must survive, then points to the read-only checker.
 | `awesomeIndex.html` | `docs/awesome/data/index.json` | `type="search"` |
 | `birdsIndex.html` | `docs/birds/data/index.json` | `type="search"` |
 | `carsIndex.html` | `docs/cars/data/index.json` | `type="search"` |
+| `catsIndex.html` | `docs/cats/data/index.json` | `type="search"` |
 | `danceIndex.html` | `docs/dance/data/index.json` | none |
+| `dogsIndex.html` | `docs/dogs/data/index.json` | `type="search"` |
 | `electronicsIndex.html` | `docs/electronics/data/index.json` | `type="search"` |
 | `fishesIndex.html` | `docs/fishes/data/index.json` | `type="search"` |
 | `gamesIndex.html` | `docs/games/data/index.json` | `type="search"` |
 | `insectsIndex.html` | `docs/insects/data/index.json` | `type="search"` |
 | `lifeIndex.html` | none | none |
 | `marketsIndex.html` | `docs/markets/data/index.json` | two: EN and PT |
+| `pianosIndex.html` | `docs/pianos/data/index.json` | `type="search"` |
 | `plantsIndex.html` | `docs/plants/data/index.json` | `type="search"` |
 | `religionsIndex.html` | `docs/religions/data/index.json` | `type="search"` |
 | `reptilesIndex.html` | none | none |
