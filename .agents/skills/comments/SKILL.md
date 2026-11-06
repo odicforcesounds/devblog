@@ -5,6 +5,10 @@ description: The one Firebase project behind the comment form and the session-on
 
 # Comments and the secret chat
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 Two pages talk to one Firebase project, `blog-comments-6b4f5`:
 
 | Page | What it does | Where the state lives |
