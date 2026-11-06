@@ -5,6 +5,10 @@ description: Audit each page's Content-Security-Policy against what that page ac
 
 # Headers — the policy must permit the page
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 A CSP failure is invisible. The page still renders, the console is only seen by whoever
 opens it, and the damage looks like a styling choice: **31 pages** linked
 `link-colors.css` while their own `style-src` refused every stylesheet file, so every link
