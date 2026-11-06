@@ -5,6 +5,10 @@ description: Verify that every link on the site resolves — an offline pass tha
 
 # Links — does every one of them go somewhere
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 `check_site.py` audits the head; `seo-indexation` audits reachability **between** pages.
 Neither opens a `href`. This skill does: a link is a promise, and the promise is either
 kept by a file in `docs/` or by somebody else's server.
