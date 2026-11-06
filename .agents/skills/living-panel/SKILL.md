@@ -5,6 +5,10 @@ description: Keep the fixed living card on every page of Monkey Blog — one pho
 
 # The living card — one being, one tool, one part, one plant, one city, every page
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 Every page under `docs/` except `index.html` carries one card:
 
 ```html
