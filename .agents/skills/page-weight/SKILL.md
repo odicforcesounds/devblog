@@ -5,6 +5,10 @@ description: Measure what a reader actually downloads per page — the HTML plus
 
 # Weight — what the browser pays
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 The size of `docs/` on disk is not the interesting number; a 58 MB folder of PDFs costs a
 reader nothing until they open one. What costs is the **closure** of a page: its HTML plus
 every local file it names, plus every JSON it fetches when it opens.
