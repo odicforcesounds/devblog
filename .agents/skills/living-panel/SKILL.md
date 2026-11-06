@@ -159,9 +159,10 @@ python3 .agents/skills/living-panel/build_living.py
 python3 .agents/skills/living-panel/check_panel_links.py
 ```
 
-After either generator, rebuild the API and audit the site:
-`python3 .agents/skills/blog-ops/build_api.py` then
-`python3 .agents/skills/blog-ops/check_site.py` (expect `0 failures`).
+After either generator, rebuild the sitemap and audit the site:
+`python3 .agents/skills/blog-ops/build_sitemap.py` then
+`python3 .agents/skills/blog-ops/check_site.py` (expect `0 failures`; an API-coverage line is
+the author's `build_api.py` run, which agents never trigger).
 
 ## Reading the five pools
 
