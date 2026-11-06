@@ -5,6 +5,10 @@ description: Use keyless public APIs from publicapis.lol in JavaScript/API artic
 
 # Public API context
 
+**Run these checks and builds only when the author asks.** The audit scripts named here,
+and `build_sitemap.py` / `build_api.py`, are not part of every task: finish the edit, say
+which check would prove it, and run it when it is requested.
+
 The three default sources are listed on <https://publicapis.lol> and are used
 here to add material that is not already on Wikipedia or Wikimedia:
 
