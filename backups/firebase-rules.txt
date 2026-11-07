@@ -1,24 +1,32 @@
-Social Tool Kit — Firestore rules for its five collections only
-===============================================================
+Social Tool Kit and the game collections — one publishable ruleset
+=================================================================
 
-Scope
------
-One ruleset: the five collections docs/socialToolKitApp.html reads — stk_users,
-stk_groups, stk_members, stk_challenges and stk_ratings. Nothing else is named
-here. chat, gamePlayers, gameNotes and whatever gameStats becomes get their own
-blocks later. comments is not written by any page any more: the front page lost
-the thread, so the collection is only read backwards, from the console.
+What this file is
+-----------------
+One complete ruleset for the project the pages talk to: the five Social Tool Kit
+collections, writable again by the accounts that own their rows, with the coins
+and the authorship frozen; and the three collections the game pages use, which
+answer today but were never written down.
 
-Reads need a signed-in account. No document in these five collections can be
-created, changed or deleted from a browser — by anybody, signed in or not,
-including an account signed in on the same page.
+Publish the whole block. A `match` pasted on its own, outside the service block,
+is the syntax error the console refuses to save.
+
+    stk_users       profile of one account          owner writes, coins n/a
+    stk_groups      a group, led by one account     leader writes name and site
+    stk_members     membership, id = group__email   leader adds or re-adds, both remove
+    stk_challenges  the catalogue and its lifecycle author creates, everyone moves
+                                                    it forward, coins never change
+    stk_ratings     one verdict per account          written once, never edited
+    chat            15-minute messages              signed-in, own messages, expiry cleanup
+    gamePlayers     one score row per player        own row only
+    gameNotes       one message per game level      append-only
+    gameStats       not written by any page yet     readable, closed to writers
+
+`comments` is deliberately absent: the front page lost its thread, so no page
+reads or writes the collection any more and it goes back to console-only.
 
 The rules
 ---------
-This is the complete service block. Publish all of it at once: a `match` pasted
-on its own, outside the service block, is the syntax error the console refuses
-to save.
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -28,46 +36,295 @@ service cloud.firestore {
           && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
-    match /stk_users/{documentId} {
-      allow read: if signedIn();
-      allow write: if false;
+    function challengeSolver(challengeId) {
+      return get(/databases/$(database)/documents/stk_challenges/$(challengeId)).data.get('solverGroupId', '');
     }
 
-    match /stk_groups/{documentId} {
+    match /stk_users/{uid} {
       allow read: if signedIn();
-      allow write: if false;
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'email', 'repGroupId'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 120
+        && request.resource.data.repGroupId is string
+        && request.resource.data.repGroupId.size() <= 40;
+      allow update: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'email', 'repGroupId'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 120
+        && request.resource.data.repGroupId is string
+        && request.resource.data.repGroupId.size() <= 40;
+      allow delete: if false;
     }
 
-    match /stk_members/{documentId} {
+    match /stk_groups/{groupId} {
       allow read: if signedIn();
-      allow write: if false;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['name', 'site', 'leaderUid', 'leaderName', 'createdAt'])
+        && request.resource.data.leaderUid == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.site is string
+        && request.resource.data.site.size() <= 120
+        && request.resource.data.leaderName is string
+        && request.resource.data.leaderName.size() <= 60
+        && request.resource.data.createdAt == request.time;
+      allow update: if signedIn()
+        && resource.data.leaderUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'site'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.site is string
+        && request.resource.data.site.size() <= 120;
+      allow delete: if false;
     }
 
-    match /stk_challenges/{documentId} {
+    match /stk_members/{memberId} {
       allow read: if signedIn();
-      allow write: if false;
+      allow create: if signedIn()
+        && memberId == request.resource.data.groupId + '__' + request.resource.data.email
+        && request.resource.data.keys().hasOnly(['groupId', 'email', 'name', 'addedBy', 'createdAt'])
+        && request.resource.data.addedBy == request.auth.uid
+        && request.resource.data.email is string
+        && request.resource.data.email.size() > 3
+        && request.resource.data.email.size() <= 120
+        && request.resource.data.email == request.resource.data.email.lower()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.createdAt == request.time
+        && exists(/databases/$(database)/documents/stk_groups/$(request.resource.data.groupId))
+        && (get(/databases/$(database)/documents/stk_groups/$(request.resource.data.groupId)).data.leaderUid == request.auth.uid
+            || (request.auth.token.email is string
+                && request.resource.data.email == request.auth.token.email.lower()));
+      allow update: if signedIn()
+        && memberId == request.resource.data.groupId + '__' + request.resource.data.email
+        && request.resource.data.groupId == resource.data.groupId
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.keys().hasOnly(['groupId', 'email', 'name', 'addedBy', 'createdAt'])
+        && request.resource.data.addedBy == request.auth.uid
+        && request.resource.data.email is string
+        && request.resource.data.email.size() > 3
+        && request.resource.data.email.size() <= 120
+        && request.resource.data.email == request.resource.data.email.lower()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.createdAt == request.time
+        && (resource.data.addedBy == request.auth.uid
+            || get(/databases/$(database)/documents/stk_groups/$(resource.data.groupId)).data.leaderUid == request.auth.uid);
+      allow delete: if signedIn()
+        && (resource.data.addedBy == request.auth.uid
+            || get(/databases/$(database)/documents/stk_groups/$(resource.data.groupId)).data.leaderUid == request.auth.uid);
     }
 
-    match /stk_ratings/{documentId} {
+    match /stk_challenges/{id} {
       allow read: if signedIn();
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['title', 'path', 'coins', 'url', 'provider', 'videoId',
+             'authorUid', 'authorName', 'groupId', 'status', 'available', 'views', 'createdAt'])
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.status == 'open'
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 3
+        && request.resource.data.title.size() <= 60
+        && request.resource.data.path in ['NCP', 'ACP', 'HCP']
+        && request.resource.data.coins is int
+        && request.resource.data.coins >= 5
+        && request.resource.data.coins <= 200
+        && request.resource.data.url is string
+        && request.resource.data.url.size() <= 300
+        && request.resource.data.provider is string
+        && request.resource.data.provider.size() <= 40
+        && request.resource.data.videoId is string
+        && request.resource.data.videoId.size() <= 80
+        && request.resource.data.authorName is string
+        && request.resource.data.groupId is string
+        && request.resource.data.available.size() == 0
+        && request.resource.data.views.size() == 0
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if signedIn()
+        && request.resource.data.coins == resource.data.coins
+        && request.resource.data.title == resource.data.title
+        && request.resource.data.url == resource.data.url
+        && request.resource.data.authorUid == resource.data.authorUid
+        && request.resource.data.path == resource.data.path
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(
+             ['status', 'solverGroupId', 'solverName', 'available', 'proof', 'proofBy',
+              'proofAt', 'views', 'payout', 'publishedAt'])
+        && (!('status' in request.resource.data.diff(resource.data).affectedKeys())
+            || (request.resource.data.status in ['assigned', 'published']
+                && (request.resource.data.status != 'assigned'
+                    || (resource.data.status == 'open'
+                        && request.resource.data.authorUid != request.auth.uid))
+                && (request.resource.data.status != 'published'
+                    || resource.data.status == 'assigned')))
+        && (!('views' in request.resource.data.diff(resource.data).affectedKeys())
+            || request.resource.data.views == resource.data.views.concat([request.auth.uid]))
+        && (!('available' in request.resource.data.diff(resource.data).affectedKeys())
+            || (request.auth.token.email is string
+                && (request.resource.data.available == resource.data.available.concat([request.auth.token.email.lower()])
+                    || resource.data.available == request.resource.data.available.concat([request.auth.token.email.lower()]))))
+        && (!('proof' in request.resource.data.diff(resource.data).affectedKeys())
+            || (request.resource.data.proof is string
+                && request.resource.data.proof.size() <= 300
+                && request.auth.token.email is string
+                && request.resource.data.proofBy == request.auth.token.email.lower()))
+        && (!('payout' in request.resource.data.diff(resource.data).affectedKeys())
+            || (request.resource.data.payout.keys().hasOnly(['share', 'bonus', 'treasury', 'members'])
+                && request.resource.data.payout.share is number
+                && request.resource.data.payout.bonus is number
+                && request.resource.data.payout.treasury is number));
+
+      allow delete: if signedIn()
+        && resource.data.authorUid == request.auth.uid
+        && resource.data.status == 'open';
+    }
+
+    match /stk_ratings/{ratingId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && ratingId == request.resource.data.challengeId + '__' + request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['challengeId', 'uid', 'verdict', 'createdAt'])
+        && (request.resource.data.verdict == 'approve' || request.resource.data.verdict == 'refuse')
+        && request.resource.data.createdAt == request.time
+        && get(/databases/$(database)/documents/stk_challenges/$(request.resource.data.challengeId)).data.proof is string
+        && get(/databases/$(database)/documents/stk_challenges/$(request.resource.data.challengeId)).data.authorUid != request.auth.uid
+        && (!exists(/databases/$(database)/documents/stk_users/$(request.auth.uid))
+            || get(/databases/$(database)/documents/stk_users/$(request.auth.uid)).data.repGroupId
+               != get(/databases/$(database)/documents/stk_challenges/$(request.resource.data.challengeId)).data.solverGroupId)
+        && (!(request.auth.token.email is string)
+            || !exists(/databases/$(database)/documents/stk_members/$(challengeSolver(request.resource.data.challengeId) + '__' + request.auth.token.email.lower())));
+      allow update, delete: if false;
+    }
+
+    match /chat/{messageId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'photo', 'body', 'createdAt', 'expiresAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.photo is string
+        && request.resource.data.photo.size() <= 300
+        && request.resource.data.body is string
+        && request.resource.data.body.size() > 0
+        && request.resource.data.body.size() <= 500
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.expiresAt is timestamp
+        && request.resource.data.expiresAt > request.time
+        && request.resource.data.expiresAt < request.time + duration.value(30, 'm');
+      allow update: if false;
+      allow delete: if signedIn()
+        && (resource.data.uid == request.auth.uid
+            || (resource.data.expiresAt is timestamp && resource.data.expiresAt <= request.time));
+    }
+
+    match /gamePlayers/{playerId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && playerId == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'photo', 'provider', 'updatedAt', 'games'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.updatedAt == request.time;
+      allow update: if request.auth != null
+        && playerId == request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(
+             ['uid', 'name', 'photo', 'provider', 'updatedAt', 'games'])
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    match /gameNotes/{noteId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'photo', 'game', 'level',
+             'points', 'max', 'text', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.game is string
+        && request.resource.data.game.size() <= 40
+        && request.resource.data.level is number
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 280
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    match /gameStats/{documentId} {
+      allow read: if true;
       allow write: if false;
     }
   }
 }
 
-Which project it goes in
-------------------------
-The catalogue these five collections hold now lives in blog-comments-6b4f5 (the
-projectId in secretChat.html), while the page still points at stkapp-e9625. The
-collections and their shapes are the same in both, so publish wherever the page
-ends up reading from.
+Why the three groups of reads differ
+------------------------------------
+- The five stk_* collections are readable by a signed-in account only, which is
+  the decision taken when the catalogue was frozen; keep it that way or change
+  the five `allow read` lines to `if true` together.
+- gamePlayers and gameNotes must be readable without an account. The scoreboard
+  page (docs/gamePlayers.html) fetches them straight from the REST API with the
+  public key and no Authorization header: anything stricter than `if true` and
+  the two tables render their "could not read" line for everyone.
+- chat is signed in only, because the page asks for Google before it connects.
+- gameStats has no writer yet. It is readable and closed; give it a create rule
+  when a page starts writing it.
 
-Publishing replaces the whole ruleset of that project. blog-comments-6b4f5 also
-holds chat, gamePlayers and gameNotes, which secretChat.html and gamePlayers.html
-use: while this block is live there, those pages answer "Missing or insufficient
-permissions" on every read and write. So either publish this in stkapp-e9625 (it
-holds nothing else that matters), or wait and publish this together with the
-blocks for those collections.
+What the Social Tool Kit can do again
+-------------------------------------
+Signing in writes the profile. Creating a group writes the group and its first
+member in one go, because the leader may add themselves. Adding a member by
+e-mail works for the leader, and a member may add themselves if their address
+matches the token. Adding someone who is already on the roster rewrites that
+member document with the same shape instead of failing. Representing a group writes repGroupId on your own profile.
+Publishing a challenge keeps the coins it was created with, forever. Taking,
+watching once, marking available, sending a proof, approving and refusing all
+work — and a refusal cannot be edited afterwards, nor can an approval be taken
+back.
+
+What is still open, on purpose
+------------------------------
+- The seventh approval. Rules cannot query a collection, so `settleReady()` in
+  the page counts approvals on the client and any signed-in account with the
+  page open can write `status: 'published'`. The rule only nails the transition
+  (assigned -> published) and the shape of the payout. To make the seventh
+  approval the only writer, move that step into a Cloud Function.
+- The payout numbers. The rule accepts any three whole-plan numbers; it cannot
+  recompute 70% of coins or the view bonus. Coins still cannot move: a plan is
+  not a balance.
+- Group names and sites after creation: the leader may rename the group, which
+  also lets the leader fix a typo. Membership is untouched by that.
+- A member can be added to a group by its leader without their consent, exactly
+  as the page does it today. The member document is what `exists()` reads, so a
+  leader can also remove someone from the roster.
+- Deleting a challenge is limited to its author and only while it is open. A
+  taken challenge cannot be withdrawn, by anyone but the console.
+
+What is closed
+--------------
+- Nothing can be written by an account that is not signed in, or by an
+  anonymous one; the API key alone writes nothing.
+- No `coins`, `title`, `url`, `path` or `authorUid` changes after creation. The
+  first two were the point of freezing the catalogue.
+- Ratings are one document per account and challenge, written once, only
+  after a proof exists, and never from inside the author's account or the
+  solving group's roster.
+- The two game collections accept only the row of the account writing it, and a
+  note cannot be edited or removed from a browser.
+- gameStats refuses every write until a page needs it.
 
 Deployment
 ----------
@@ -76,67 +333,20 @@ publish. Or, with the CLI in the project root:
 
     firebase deploy --only firestore:rules
 
-No Firebase CLI, emulator or credentials exist on the host this block was
-written on, so it was not compiled there; the console's save is the first real
-syntax proof.
+Publishing replaces the entire ruleset of that project, which is why this file
+now carries the game collections too: without them, publishing it in
+blog-comments-6b4f5 would close the scoreboard and the chat. The block was run
+in the Firestore emulator (firebase-tools 13 on Java 21) against 70 expectations
+— every allow and every deny below — so its syntax and its refusals are proven
+offline; the console save only repeats the same block.
 
-What this does to the page
---------------------------
-Signing in with Google still works, and the listeners still draw the catalogue —
-five challenge cards, the solver group's name, the proof links, the groups view.
-Every control that would change something answers "Missing or insufficient
-permissions" in the page's toast: New challenge, Create a group, Watch, Take as,
-Mark available, Approve, Refuse, Represent, Add, Remove member, Submit proof.
-Firestore refuses before the document exists, so nothing is half-written.
-
-The page's own profile write (stk_users/{uid}, set on every sign-in) is refused
-the same way. An account that already has a profile keeps reading it; a new
-account signs in without one, and every screen that reads repGroupId falls back
-to the empty string it starts with, until a server writes the document.
-
-The reward is safe by construction: coins is written once, a whole number from 5
-to 200, never changed afterwards, and no document in this project holds a
-balance. With every write refused, no coin can move.
-
-Why each line is there
-----------------------
-- request.auth != null: the only thing that stops a stranger — someone holding
-  the public web API key and nothing else — from reading the catalogue. The
-  page's own button state is UX; this clause is the lock.
-- != 'anonymous': the page never imports signInAnonymously, and this clause
-  means a console experiment or a script that does cannot read either. An
-  anonymous account is not a social login.
-- allow write: if false: create, update and delete, all three, for everyone. The
-  console and an admin SDK bypass rules, so moderation and seeding still work
-  from there — the dump was loaded that way.
-- The five matches are written out one by one rather than a {document=**} at the
-  root: a wildcard would also have to describe collections this file does not
-  own, and a typo there is a hole everywhere.
-
-If "only social login" must also refuse e-mail and password
------------------------------------------------------------
-The page offers a second door — signInWithEmailAndPassword — and an account made
-through it carries sign_in_provider 'password'. signedIn() above lets it read.
-To refuse it as well, swap the function for this one and nothing else:
-
-    function signedIn() {
-      return request.auth != null
-          && request.auth.token.firebase.sign_in_provider != 'anonymous'
-          && request.auth.token.firebase.sign_in_provider != 'password'
-          && request.auth.token.firebase.sign_in_provider != 'custom';
-    }
-
-Google, GitHub, Microsoft, Apple, X, Facebook and Yahoo all survive that test;
-a password account then signs in and sees an empty catalogue, because the
-listeners' reads are refused and the page shows its "no challenges" state. Pick
-one of the two — the form and the rule must agree, or the e-mail path looks
-broken rather than closed.
-
-What these rules cannot do
---------------------------
-- Publish a challenge. Seven approvals never happen, because a rating cannot be
-  written either. Publishing needs a server credential or a new block.
-- Move coins. The payout is a plan stored on a challenge; a transfer needs a
-  transaction with an admin credential, which never belongs in a page.
-- Read the catalogue without an account. If it should be public, change the five
-  `allow read` lines to `if true` and keep `allow write: if false`.
+Worth knowing before a demo
+---------------------------
+- gamePlayers and gameNotes became readable by anyone holding the public web
+  key. That is what the scoreboard page already needs; the notes are the
+  messages players left at the end of a level.
+- The chat keeps its documents for fifteen minutes and any signed-in client may
+  delete one that has expired, because the page cleans up on load.
+- The seeded catalogue documents were written with admin credentials, so nothing
+  in these rules had to allow that; keep using the console or a key file for
+  bulk loads.
