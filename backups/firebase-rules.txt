@@ -1,156 +1,73 @@
-Signed-in-only comments — Firestore rules and provider setup
-============================================================
+Social Tool Kit — Firestore rules for its five collections only
+===============================================================
 
-What changed in docs/index.html
--------------------------------
-- The comment widget now signs the reader in with Firebase Authentication before
-  the form unlocks. The methods offered are Google, e-mail with password, and
-  phone with an SMS code (see comments-login-failure.md for why the OAuth list
-  shrank to the one provider the project actually has enabled).
-- Anonymous sign-in is not imported, not called and not offered anywhere. There
-  is no way to post without a provider account.
-- The name input was removed: the name comes from the provider profile
-  (displayName, or the local part of the email), capped at 60 characters.
-- Each new document is written with:
-    uid:       request.auth.uid of the signed-in user
-    name:      display name from the provider, 1..60 characters
-    photo:     profile picture URL (may be an empty string), <= 300 characters
-    provider:  e.g. "google.com", "github.com", <= 40 characters
-    message:   1..2000 characters
-    createdAt: serverTimestamp()
-- Comments are still readable by everyone; only writing requires an account.
-- Existing documents without uid/photo/provider (written before this change)
-  keep rendering normally. They are shown as plain names, without avatar.
+Scope
+-----
+One ruleset: the five collections docs/socialToolKitApp.html reads — stk_users,
+stk_groups, stk_members, stk_challenges and stk_ratings. Nothing else is named
+here. chat, gamePlayers, gameNotes and whatever gameStats becomes get their own
+blocks later. comments is not written by any page any more: the front page lost
+the thread, so the collection is only read backwards, from the console.
+
+Reads need a signed-in account. No document in these five collections can be
+created, changed or deleted from a browser — by anybody, signed in or not,
+including an account signed in on the same page.
 
 The rules
 ---------
-This is the complete block for blog-comments-6b4f5. The comment thread keeps
-exactly the behaviour described above; the five Social Tool Kit collections are
-frozen read-only, and the collections the other pages on this project use keep
-the answer they have today. Publish all of it at once: a `match` pasted on its own, outside the
-service block, is the syntax error the console refuses to save.
+This is the complete service block. Publish all of it at once: a `match` pasted
+on its own, outside the service block, is the syntax error the console refuses
+to save.
 
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    match /comments/{commentId} {
-      // Anyone can read the thread.
-      allow read: if true;
-
-      // Only a signed-in user may write, and only as themselves.
-      allow create: if request.auth != null
-                       && request.resource.data.keys().hasOnly(
-                            ['uid', 'name', 'photo', 'provider', 'message', 'createdAt'])
-                       && request.resource.data.keys().hasAll(['uid', 'name', 'message', 'createdAt'])
-                       && request.resource.data.uid == request.auth.uid
-                       && request.resource.data.name is string
-                       && request.resource.data.name.size() > 0
-                       && request.resource.data.name.size() <= 60
-                       && request.resource.data.message is string
-                       && request.resource.data.message.size() > 0
-                       && request.resource.data.message.size() <= 2000
-                       && (!('photo' in request.resource.data)
-                           || (request.resource.data.photo is string
-                               && request.resource.data.photo.size() <= 300))
-                       && (!('provider' in request.resource.data)
-                           || (request.resource.data.provider is string
-                               && request.resource.data.provider.size() <= 40))
-                       && request.resource.data.createdAt == request.time;
-
-      // No edits, no deletes from any client. Moderate from the console or with
-      // an admin SDK that bypasses these rules.
-      allow update, delete: if false;
+    function signedIn() {
+      return request.auth != null
+          && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
     match /stk_users/{documentId} {
-      allow read: if request.auth != null;
+      allow read: if signedIn();
       allow write: if false;
     }
 
     match /stk_groups/{documentId} {
-      allow read: if request.auth != null;
+      allow read: if signedIn();
       allow write: if false;
     }
 
     match /stk_members/{documentId} {
-      allow read: if request.auth != null;
+      allow read: if signedIn();
       allow write: if false;
     }
 
     match /stk_challenges/{documentId} {
-      allow read: if request.auth != null;
+      allow read: if signedIn();
       allow write: if false;
     }
 
     match /stk_ratings/{documentId} {
-      allow read: if request.auth != null;
+      allow read: if signedIn();
       allow write: if false;
-    }
-
-    match /chat/{documentId} {
-      allow read, write: if request.auth != null;
-    }
-
-    match /gamePlayers/{documentId} {
-      allow read, write: if request.auth != null;
-    }
-
-    match /gameNotes/{documentId} {
-      allow read, write: if request.auth != null;
     }
   }
 }
 
-Why each clause is there
+Which project it goes in
 ------------------------
-- request.auth != null: the only thing that stops anonymous writes. Client-side
-  disabling of the button is UX; this clause is the actual lock.
-- uid == request.auth.uid: a signed-in user cannot post as somebody else's uid,
-  so two accounts cannot be confused later.
-- keys().hasOnly([...]) plus hasAll([...]): rejects extra fields (nobody can
-  smuggle an "isAdmin", "pinned" or "html" field into the document) while still
-  accepting the optional photo/provider of older clients.
-- name/message size caps: the same limits the page applies, enforced server-side.
-- createdAt == request.time: matches serverTimestamp() exactly; a client cannot
-  backdate or forward-date a comment.
-- update/delete denied: comments are append-only from the browser.
+The catalogue these five collections hold now lives in blog-comments-6b4f5 (the
+projectId in secretChat.html), while the page still points at stkapp-e9625. The
+collections and their shapes are the same in both, so publish wherever the page
+ends up reading from.
 
-The Social Tool Kit collections, frozen
----------------------------------------
-docs/socialToolKitApp.html reads and writes five collections in this project:
-stk_users, stk_groups, stk_members, stk_challenges and stk_ratings. What they
-hold now is the published catalogue converted from the private mongo dump, so
-the block above allows a signed-in reader to read them and refuses every write —
-create, update and delete, from every account, signed in or not.
-
-What this does to the page: signing in works, the four live listeners still draw
-the catalogue, and every control that would change something — New challenge,
-Create a group, Watch, Take as, Mark available, Approve, Refuse, Represent, Add,
-Remove member, Submit proof — answers "Missing or insufficient permissions" in
-the page's toast. Nothing is half-written, because Firestore refuses before the
-document exists. The page's own profile write (stk_users/{uid} on every sign-in)
-is refused the same way: an account that already has a profile keeps reading it,
-and a brand-new account signs in without a profile document until a server
-writes one.
-
-The reward deserves naming: coins is written once, a whole number from 5 to 200,
-never changed afterwards, and no document in this project holds a balance. With
-writes refused, no coin can move.
-
-Reads are signed in only because that is what this project answers today. Change
-the `allow read` line of each of the five collections to `if true` if the
-catalogue is meant to be readable without an account.
-
-chat, gamePlayers and gameNotes are the collections the other pages of this
-project use (docs/secretChat.html, docs/gamePlayers.html, docs/gameAccount.js).
-They keep the answer they have now — a signed-in account may read and write
-them — so freezing the catalogue takes nothing away from them.
-
-To let the application write again, publish the production block of
-backups/firebase-rules-stk.txt in the project the page points at, or give a
-trusted server an admin credential. Reopening these five collections to a
-browser would let any signed-in account rewrite the catalogue.
+Publishing replaces the whole ruleset of that project. blog-comments-6b4f5 also
+holds chat, gamePlayers and gameNotes, which secretChat.html and gamePlayers.html
+use: while this block is live there, those pages answer "Missing or insufficient
+permissions" on every read and write. So either publish this in stkapp-e9625 (it
+holds nothing else that matters), or wait and publish this together with the
+blocks for those collections.
 
 Deployment
 ----------
@@ -159,97 +76,67 @@ publish. Or, with the CLI in the project root:
 
     firebase deploy --only firestore:rules
 
-Keep the index for the query the page runs (orderBy createdAt desc, limit 50);
-Firestore normally creates the single-field one automatically.
+No Firebase CLI, emulator or credentials exist on the host this block was
+written on, so it was not compiled there; the console's save is the first real
+syntax proof.
 
-Enabling the providers (this part is console work, not code)
-------------------------------------------------------------
-Authentication -> Sign-in method. Enable only what you intend to support; the
-page shows every button, and a provider that is not enabled answers with
-"auth/operation-not-allowed", which the page reports as
-"This sign-in provider is not enabled in the Firebase project yet."
+What this does to the page
+--------------------------
+Signing in with Google still works, and the listeners still draw the catalogue —
+five challenge cards, the solver group's name, the proof links, the groups view.
+Every control that would change something answers "Missing or insufficient
+permissions" in the page's toast: New challenge, Create a group, Watch, Take as,
+Mark available, Approve, Refuse, Represent, Add, Remove member, Submit proof.
+Firestore refuses before the document exists, so nothing is half-written.
 
-Google
-  1. Enable Google.
-  2. Pick a project support email.
-  Nothing else is needed.
+The page's own profile write (stk_users/{uid}, set on every sign-in) is refused
+the same way. An account that already has a profile keeps reading it; a new
+account signs in without one, and every screen that reads repGroupId falls back
+to the empty string it starts with, until a server writes the document.
 
-GitHub
-  1. GitHub -> Settings -> Developer settings -> OAuth Apps -> New OAuth App.
-  2. Homepage URL: https://blog.odicforcesounds.com
-  3. Authorization callback URL:
-     https://blog-comments-6b4f5.firebaseapp.com/__/auth/handler
-  4. Copy the Client ID and Client Secret into the GitHub provider in Firebase.
+The reward is safe by construction: coins is written once, a whole number from 5
+to 200, never changed afterwards, and no document in this project holds a
+balance. With every write refused, no coin can move.
 
-Microsoft
-  1. Azure Portal -> App registrations -> New registration.
-  2. Redirect URI (Web):
-     https://blog-comments-6b4f5.firebaseapp.com/__/auth/handler
-  3. Copy the Application (client) ID and create a client secret.
+Why each line is there
+----------------------
+- request.auth != null: the only thing that stops a stranger — someone holding
+  the public web API key and nothing else — from reading the catalogue. The
+  page's own button state is UX; this clause is the lock.
+- != 'anonymous': the page never imports signInAnonymously, and this clause
+  means a console experiment or a script that does cannot read either. An
+  anonymous account is not a social login.
+- allow write: if false: create, update and delete, all three, for everyone. The
+  console and an admin SDK bypass rules, so moderation and seeding still work
+  from there — the dump was loaded that way.
+- The five matches are written out one by one rather than a {document=**} at the
+  root: a wildcard would also have to describe collections this file does not
+  own, and a typo there is a hole everywhere.
 
-Apple
-  1. Requires a paid Apple Developer account.
-  2. Create a Services ID and a Sign in with Apple key.
-  3. Return URL: https://blog-comments-6b4f5.firebaseapp.com/__/auth/handler
-  4. Firebase asks for the Services ID, Team ID, Key ID and the .p8 key.
+If "only social login" must also refuse e-mail and password
+-----------------------------------------------------------
+The page offers a second door — signInWithEmailAndPassword — and an account made
+through it carries sign_in_provider 'password'. signedIn() above lets it read.
+To refuse it as well, swap the function for this one and nothing else:
 
-X / Twitter
-  1. developer.x.com -> Project and App with OAuth 1.0a read/write.
-  2. Callback URL: https://blog-comments-6b4f5.firebaseapp.com/__/auth/handler
-  3. Copy API Key and API Secret into Firebase.
+    function signedIn() {
+      return request.auth != null
+          && request.auth.token.firebase.sign_in_provider != 'anonymous'
+          && request.auth.token.firebase.sign_in_provider != 'password'
+          && request.auth.token.firebase.sign_in_provider != 'custom';
+    }
 
-Facebook
-  1. developers.facebook.com -> Create app -> Facebook Login.
-  2. Valid OAuth Redirect URI:
-     https://blog-comments-6b4f5.firebaseapp.com/__/auth/handler
-  3. Copy App ID and App Secret. Facebook Login needs app review before it works
-     for people who are not admins of the app.
+Google, GitHub, Microsoft, Apple, X, Facebook and Yahoo all survive that test;
+a password account then signs in and sees an empty catalogue, because the
+listeners' reads are refused and the page shows its "no challenges" state. Pick
+one of the two — the form and the rule must agree, or the e-mail path looks
+broken rather than closed.
 
-Yahoo
-  1. developer.yahoo.com -> Create app.
-  2. Redirect URI: https://blog-comments-6b4f5.firebaseapp.com/__/auth/handler
-  3. Copy Client ID and Client Secret.
-
-Authorised domains
-------------------
-Authentication -> Settings -> Authorised domains must include:
-
-    blog.odicforcesounds.com
-    localhost            (only if you test locally)
-
-Without that, sign-in fails with auth/unauthorized-domain.
-
-Recommended extra lock: App Check
----------------------------------
-The web API key is public by design, so anyone can call Firestore directly with
-it. The rules above already stop anonymous writes, but App Check (reCAPTCHA v3)
-also rejects traffic that is not coming from your pages. Enable App Check for
-Firestore, register the web app with a reCAPTCHA v3 key, and add the initialisation
-to the page when you are ready to enforce it. Enforce only after watching the
-metrics for a few days, otherwise legitimate readers get blocked.
-
-Optional: only your own accounts
---------------------------------
-Requiring a provider still lets any GitHub or Google user post. If you want the
-thread closed to everybody except a few people, keep the same rules and add the
-uid allowlist. Sign in once with each account you want, read its uid in the
-Firebase console (Authentication -> Users) and paste them here:
-
-    allow create: if request.auth != null
-                     && request.auth.uid in [
-                          'UID_FIRST_ACCOUNT',
-                          'UID_SECOND_ACCOUNT'
-                        ]
-                     && request.resource.data.uid == request.auth.uid
-                     && ... the same field checks as above ...
-
-The uid never changes, while an email or a display name can, so an allowlist on
-uid survives profile edits and provider changes.
-
-What this does NOT solve
-------------------------
-- Spam by a real, signed-in account. Rules cannot judge content; use moderation
-  in the console, or a Cloud Function that checks rate per uid.
-- Rate limiting per user. Firestore rules cannot count previous writes; a
-  Cloud Function or App Check quota is the tool for that.
-- Content moderation. Nothing here reads the message.
+What these rules cannot do
+--------------------------
+- Publish a challenge. Seven approvals never happen, because a rating cannot be
+  written either. Publishing needs a server credential or a new block.
+- Move coins. The payout is a plan stored on a challenge; a transfer needs a
+  transaction with an admin credential, which never belongs in a page.
+- Read the catalogue without an account. If it should be public, change the five
+  `allow read` lines to `if true` and keep `allow write: if false`.
