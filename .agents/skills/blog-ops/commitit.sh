@@ -44,10 +44,10 @@ fi
 
 kept=()
 for path in "${changed[@]}"; do
-    if git ls-files --error-unmatch -- "$path" >/dev/null 2>&1 || [ -e "$path" ]; then
+    if [ -e "$path" ]; then
         kept+=("$path")
     else
-        echo "skip (not in the index and no local file): $path"
+        echo "skip (deleted, nothing left to commit): $path"
     fi
 done
 changed=("${kept[@]}")
