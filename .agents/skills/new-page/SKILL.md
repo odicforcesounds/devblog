@@ -391,8 +391,10 @@ python3 .agents/skills/blog-ops/check_site.py       # head contract, sitemap and
 ```
 
 `build_api.py` is **author-only**: it runs when the author explicitly asks, never at the end
-of a task. An API-coverage line about the new page is reported as a finding, not cleared by
-running the builder.
+of a task. It exists for pages whose content is too big for one HTML file and is read from
+JSON instead; a page that carries its text and script in its own file needs no API entry, so
+an API-coverage line about it is not a finding. For any other page the line is reported and
+left for the author to trigger, never cleared by running the builder.
 
 Then the five read-only audits, which answer what `check_site.py` does not. Point them at
 the new page and leave the rest of the site untested:
@@ -465,9 +467,11 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/Name.html   # exp
       once); no fact, paragraph or table row is stated twice in the same language; no
       comment or visible sentence about the request, the prompt or the authoring session.
       `page_hygiene.py docs/Name.html` reports `failures 0`.
-- [ ] Archive row added once, counts updated, breadcrumb matches. The API
-      `published_at` follows the author's `build_api.py` run; an API-coverage finding is
-      reported, never fixed by running that builder unasked.
+- [ ] Archive row added once, counts updated, breadcrumb matches. Only a page whose data
+      lives in JSON is expected in the API; a self-contained page is not, and its
+      API-coverage line is not a finding. For a JSON-backed page the `published_at` follows
+      the author's `build_api.py` run, reported and never fixed by running that builder
+      unasked.
 - [ ] The home page's *Last 5 publications* now lists the page — printed from
       `dates.json`, the `DATE_SEED` map and the archive rows, not assumed. A page missing
       from both date sources gets one `DATE_SEED` entry in `index.html`; the block is never
