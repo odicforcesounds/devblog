@@ -11,7 +11,10 @@ Rules for one page:
 1. **No duplicated links.** The same target (`href`) may appear once per document
    scope. A page with two language blocks has two scopes — the translations may
    each carry their own copy of a link, because a reader only sees one block. A
-   repeated target inside a single scope is a duplicate and is reported.
+   repeated target inside a single scope is a duplicate and is reported. The
+   page chrome — `nav`, `header`, `footer` and `aside` — is navigation, not
+   content: a link there is neither counted nor counted against, so a menu
+   `Home` and a sentence linking `Home` are not a duplicate.
 2. **No duplicated information.** A text block (`p`, `li`, `blockquote`, `dd`,
    `h2`, `h3`, `td`) of eight words or more may not repeat inside the same scope.
    Translation between the EN and PT blocks is not repetition: different scope.
@@ -36,6 +39,7 @@ DOCS = "docs"
 ORIGIN = "https://blog.odicforcesounds.com"
 TEXT_BLOCKS = {"p", "li", "blockquote", "dd", "h2", "h3", "td"}
 SKIP_TEXT = {"script", "style", "pre", "code", "textarea", "svg"}
+CHROME = {"nav", "header", "footer", "aside"}
 MIN_WORDS = 8
 
 # A comment matching any of these is about the authoring session, not the page.
@@ -83,7 +87,12 @@ class Hygiene(HTMLParser):
     def _scope(self):
         return self.lang[-1] if self.lang else ""
 
+    def _chrome(self):
+        return any(tag in CHROME for tag, _ in self.stack)
+
     def _link(self, href):
+        if self._chrome():
+            return
         href = (href or "").strip()
         if href and href != "#" and not href.lower().startswith("javascript:"):
             self.links[self._scope()].append(normal_href(href))
