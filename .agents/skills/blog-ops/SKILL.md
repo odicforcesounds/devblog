@@ -159,6 +159,13 @@ These three run when the author asks for them, not after every edit (see **Build
   `check_site.py` covers the head contract and `page_hygiene.py docs/Page.html` covers
   duplicated links, repeated information and authoring comments.
 
+**Translations** — translate a page only when the author asks for that page, by name.
+  Which pages carry two languages is the author's decision, not something to infer from a
+  page that would read well in Portuguese: a second `<article data-lang>`, a `PT`
+  dictionary or an `article-lang` switch added without that request is out of scope, and it
+  doubles every later edit to the page. One request covers the page it names, never the
+  pages that look like it, and never a language added on the way to some other task.
+
 **Bilingual pages** (`hydroponics.html` is the one so far) — English lives in the markup
   and Portuguese in a `PT` dictionary inside the page script, applied to every
   `data-i18n` node on switch. Two rules: every `data-i18n` key needs a `PT` value (a
