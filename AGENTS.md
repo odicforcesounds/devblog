@@ -38,6 +38,7 @@ matches the task before editing:
 | Alt text, language, labels, focus | `a11y` |
 | The JSON behind the catalogue pages | `catalogue-data` |
 | The comment form and the secret chat | `comments` |
+| The API, `dates.json`, article rows and text chunks | `incremental-api` |
 
 ## Scope
 
