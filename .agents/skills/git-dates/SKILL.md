@@ -67,7 +67,7 @@ PUBLISHED_OVERRIDES = {"OneHumanSong.html": "2026-10-16T22:49:01+01:00"}
 | Page `<head>` JSON-LD | `datePublished`, `dateModified` | the page itself (`enrich_schema.py` can rewrite the graph) |
 | Page `<head>` meta | `article:published_time` | the page itself, written from the same first commit — a year of 2024, 2025 or 2026, never the `1970-01-01` placeholder and never a date git cannot confirm |
 | `docs/api/index.json` | `published`, `modified`, `published_at`, `modified_at` | `.agents/skills/blog-ops/build_api.py` from git (`--diff-filter=A` / `-1`) |
-| `docs/api/dates.json` | `published` map: name → instant | same script, same dates, compact form |
+| `docs/api/dates.json` | `published` map: name → instant | same script, same dates, compact form; may be appended in place for a new page (blog-ops, *One page in `docs/api/dates.json`*) |
 | `docs/sitemap.xml` | `lastmod` | `.agents/skills/blog-ops/build_sitemap.py` |
 | `docs/index.html` | `published_at` read from `dates.json` | the page itself, at load time (no date object is stored in it) |
 
@@ -113,6 +113,8 @@ PY
 
 - **Never** use `ls -l`, `stat`, `os.path.getmtime` or `new Date()` to date an article.
 - **Never** hand-edit `docs/api/index.json` or `docs/sitemap.xml`; rebuild them.
+- `docs/api/dates.json` is the one exception, and only to append: a missing name with its
+  first-commit instant, plus `count` and `generated` — never a rewrite of existing entries.
 - **Never** set a date that git cannot confirm; if history is missing (a shallow clone),
   say so instead of guessing.
 - `dateModified` in JSON-LD is allowed to differ from the sitemap `lastmod` only when the
