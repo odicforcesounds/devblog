@@ -40,19 +40,29 @@ nobody asked about, and it makes the history unreadable.
 
    The instant is the first commit that added the file
    (`git log --diff-filter=A --format=%aI -- docs/NewTitle.html | tail -1`), the same rule
-   as the page and the sitemap — never the clock, never the mtime. `404.html` and
-   `home.html` are in no table.
+   as the page and the sitemap — never the clock, never the mtime. `--restore` takes the
+   value from the last committed `dates.json` instead, so an instant decided by hand for a
+   copy or a rename comes back as it was. `404.html` and `home.html` are in no table.
 
 2. **Index — only if the page reads it.** A page that loads `api.js`, calls `BlogAPI`, or
    fetches under `api/` needs its article object appended to `articles`: the fields
    `build_api.py` writes, the page's text added to the **newest** text chunk, and that
-   chunk's `count` and `bytes` in `chunks` updated. Never re-chunk the set and never
-   renumber an existing chunk: those files are the rows other pages already read. A page
-   that carries its own text is left out, and `check_site.py` no longer asks for it.
+   chunk's `count` and `bytes` in `chunks` updated. The script carries that row:
 
-3. **Nothing else moves.** Existing keys, their order, the compact separators and the
-   `generated` field of untouched records stay as they are; `count` follows the number of
-   rows.
+   ```sh
+   python3 .agents/skills/blog-ops/append_dates.py --index Page.html
+   ```
+
+   Never re-chunk the set and never renumber an existing chunk: those files are the rows
+   other pages already read. A page that carries its own text is left out, and
+   `check_site.py` no longer asks for it.
+
+3. **Put the file in order first.** The rows go in the builder's order — `index.html`
+   first, the rest by name — before the new name is placed among them, so the record lands
+   where it belongs instead of at the end of the file. Ordering moves keys, never values.
+
+4. **Nothing else moves.** Existing rows, the compact separators and the `generated` field
+   of untouched records stay as they are; `count` follows the number of rows.
 
 ## Prove it
 
