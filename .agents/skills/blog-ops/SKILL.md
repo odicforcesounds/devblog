@@ -34,7 +34,7 @@ problem you fix in the source.
 | `.agents/skills/blog-ops/commitit.sh` | Interactive commit: one commit per approved file, each with its own message. No push, no tool attribution. |
 | `pushit.sh` | Deploy: pull, `git add .`, commit, push. Only run it when asked to publish. |
 | `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD), `page_hygiene.py` (duplicate links/text, authoring comments), `restore_awesome_data.py` (shelf restore), `fix_story.py` (story page repair), `commitit.sh` (per-file commit), and `builders/` (the page builders listed below). |
-| `.agents/skills/` | The other skills: `new-page` (write a page), `repo-layout` (what belongs where), `git-dates` (dates from git history), `tmp-tools` (scripts in `tmp/` and `tools/`), `tools-index` (the path index for every script and binary), `assets-backups` (templates, runbooks, images), `living-panel` (the fixed card on every page), `link-colors` (colour by destination), `page-css` (the shared article sheet), `seo-indexation` (titles, canonicals, sitemap and reachability), `link-integrity` (dead local and external links), `page-weight` (payload budgets), `security-headers` (CSP against what each page loads), `a11y` (alt, language, labels), `catalogue-data` (the JSON behind the index pages) and `comments` (the comment form and the chat). |
+| `.agents/skills/` | The other skills: `new-page` (write a page), `repo-layout` (what belongs where), `git-dates` (dates from git history), `tmp-tools` (scripts in `tmp/` and `tools/`), `tools-index` (the path index for every script and binary), `assets-backups` (templates, runbooks, images), `living-panel` (the fixed card on every page), `link-colors` (colour by destination), `page-css` (the shared article sheet), `seo-indexation` (titles, canonicals, sitemap and reachability), `link-integrity` (dead local and external links), `page-weight` (payload budgets), `security-headers` (CSP against what each page loads), `a11y` (alt, language, labels), `catalogue-data` (the JSON behind the index pages), `comments` (the comment form and the chat) and `incremental-api` (the API is a database: add a record, never rebuild it). |
 | `backups/GOOGLE.md` | Search Console runbook: what the structured data says, order of operations, known gaps. |
 | `backups/CLOUDFLARE.md` | Hosting runbook: DNS/proxy state, WebMCP, bot rules, redirects, cache, headers, HSTS. Read it before changing anything at the edge. |
 
@@ -142,21 +142,18 @@ its `DATE_SEED` entry, so the home page can date it before the index exists.
 **One page in `docs/api/dates.json`.** When the author asks for the API dates and only a
 handful of pages are new, do not rerun `build_api.py` over all 570 files: `dates.json` is a
 flat map with one key per page, and regenerating it to add one entry rewrites every other
-entry for nothing. Grow it in place — add the missing name with the instant its content
-first entered git, leave every existing key byte for byte, keep `index.html` first and the
-rest sorted by name, and keep the compact form (`separators=(",", ":")`) so the file
-matches what the builder writes. Set `count` to the number of keys and `generated` to the
-newest instant:
+entry for nothing. `append_dates.py` inserts the missing record and leaves the rest alone:
 
 ```sh
-git log --diff-filter=A --format=%aI -- docs/NewTitle.html | tail -1
+python3 .agents/skills/blog-ops/append_dates.py [Page.html ...] [--dry-run]
 ```
 
-That instant follows the same rule as the page (see the `git-dates` skill, including the
-copied/renamed case). `docs/404.html` and `docs/home.html` are in neither file. `index.json`
-is not hand-edited: a page with no entry there is listed by `build_api.py` or not at all,
-and `check_site.py`'s "API does not list …" line for it is the author's to trigger, not a
-reason to rebuild the whole API.
+It takes the instant from the first commit that added the page (the `git-dates` rule,
+including the copied/renamed case), keeps `index.html` first and the rest sorted, and moves
+only `count` and `generated`. `docs/404.html` and `docs/home.html` are in neither file.
+`index.json` is not hand-edited: a page that carries its own text needs no row there, and a
+page that reads the API gets its object appended — never a rebuild (see the
+`incremental-api` skill).
 
 ## Workflows
 
