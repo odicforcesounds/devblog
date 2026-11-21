@@ -67,9 +67,14 @@ nobody asked about, and it makes the history unreadable.
 ## Prove it
 
 ```sh
+python3 .agents/skills/blog-ops/append_dates.py --check   # writes nothing, exits 1 on a gap
 python3 -c "import json; d=json.load(open('docs/api/dates.json')); print(d['count'], len(d['published']))"
 git diff --numstat -- docs/api   # one file, one changed line for a one-page insert
 ```
+
+`--check` names every root page with no date row and says whether the map is in the
+builder's order; it is the read-only proof, and it never writes. A damaged table is
+restored from a revision, not regenerated — `backups/api-recovery.md` has the steps.
 
 The file is a single compact line, so `git diff` shows the whole line: read the added keys
 in the diff rather than trusting the count alone. `generated` is the newest instant in the
@@ -77,4 +82,5 @@ map, not the day this skill was read.
 
 `build_api.py` stays on disk as the script that first wrote the API and as the record of
 how its rows look. Running it is a rewrite of that history; if a row is ever needed back,
-restore the file from git (`git show <rev>:docs/api/dates.json`) instead of regenerating it.
+restore the file from git (`git show <rev>:docs/api/dates.json`) instead of regenerating it,
+as described in `backups/api-recovery.md`.
