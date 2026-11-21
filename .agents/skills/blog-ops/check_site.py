@@ -3,8 +3,8 @@
 
 Checks a page for the head contract this blog relies on — doctype first, one
 canonical, complete Open Graph and Twitter tags, one JSON-LD block, one <h1>, a
-usable description — and that the page the run covers is listed in sitemap.xml and
-in the JSON API.
+usable description — and that the page the run covers is listed in sitemap.xml and,
+when the page reads it, in the JSON API.
 
     python3 .agents/skills/blog-ops/check_site.py docs/Page.html   # that page only
     python3 .agents/skills/blog-ops/check_site.py --page Page.html # same, by name
@@ -396,10 +396,24 @@ def check_sitemap(names):
     return problems
 
 
+def reads_shared_api(name):
+    """A page that carries its own text needs no row in docs/api/index.json.
+
+    The API is a database of records, not a copy of the site: only a page that
+    reads it has to be in it.
+    """
+    try:
+        with open(os.path.join(DOCS, name), encoding="utf-8") as fh:
+            source = fh.read()
+    except OSError:
+        return True
+    return bool(re.search(r"api\.js|BlogAPI|\bfetch\(\s*[\"'][^\"']*api/", source))
+
+
 def check_api(names):
     path = os.path.join(DOCS, "api", "index.json")
     if not os.path.exists(path):
-        return ["docs/api/index.json is missing — run python3 .agents/skills/blog-ops/build_api.py"]
+        return ["docs/api/index.json is missing — restore it from git history"]
     try:
         with open(path, encoding="utf-8") as fh:
             data = json.load(fh)
@@ -408,14 +422,16 @@ def check_api(names):
 
     problems = []
     articles = data.get("articles") or []
-    want = {n for n in names if n not in NOT_ARTICLES and n not in INFRA_PAGES}
+    candidates = {n for n in names if n not in NOT_ARTICLES and n not in INFRA_PAGES}
+    want = {n for n in candidates if reads_shared_api(n)}
     got = {a.get("path") for a in articles}
     if data.get("count") != len(articles):
         problems.append("count says %r but there are %d articles" % (data.get("count"), len(articles)))
     missing = sorted(want - got)
-    extra = sorted(got - want)
+    extra = sorted(got - candidates)
     if missing:
-        problems.append("API missing %d pages (e.g. %s) — rerun .agents/skills/blog-ops/build_api.py"
+        problems.append("API missing %d pages that read it (e.g. %s) — add their records, "
+                        "never rebuild it (incremental-api skill)"
                         % (len(missing), ", ".join(missing[:4])))
     if extra:
         problems.append("API lists %d unknown pages (e.g. %s)" % (len(extra), ", ".join(extra[:3])))
@@ -431,7 +447,7 @@ def check_api(names):
     # dates.json is what index.html actually fetches; it must not drift.
     dates_path = os.path.join(DOCS, "api", "dates.json")
     if not os.path.exists(dates_path):
-        problems.append("docs/api/dates.json is missing — run python3 .agents/skills/blog-ops/build_api.py")
+        problems.append("docs/api/dates.json is missing — restore it from git history")
     else:
         try:
             with open(dates_path, encoding="utf-8") as fh:
@@ -442,13 +458,15 @@ def check_api(names):
             dated = set((date_map.get("published") or {}).keys())
             undated = sorted(got - dated)
             if undated:
-                problems.append("dates.json has no instant for %d pages (e.g. %s) — rerun build_api.py"
+                problems.append("dates.json has no instant for %d pages (e.g. %s) — "
+                                "python3 .agents/skills/blog-ops/append_dates.py"
                                 % (len(undated), ", ".join(undated[:4])))
     return problems
 
 
 def check_listed(name):
-    """A page the run covers must already be in the sitemap, the API and dates.json.
+    """A page the run covers must already be in the sitemap and dates.json, and,
+    when it reads the API, in the API.
 
     Only that page is looked for: the rest of the set is assumed to be in place, so
     this never lists every page that is missing from a derived file.
@@ -470,17 +488,18 @@ def check_listed(name):
         with open(api_path, encoding="utf-8") as fh:
             api = json.load(fh)
     except (OSError, ValueError) as exc:
-        problems.append("docs/api/index.json is unreadable — run build_api.py (%s)" % exc)
+        problems.append("docs/api/index.json is unreadable — restore it from git history (%s)" % exc)
     else:
-        if name not in {a.get("path") for a in api.get("articles") or []}:
-            problems.append("API does not list %s — run build_api.py" % name)
+        listed = {a.get("path") for a in api.get("articles") or []}
+        if name not in listed and reads_shared_api(name):
+            problems.append("API does not list %s, which reads it — add its record" % name)
 
     dates_path = os.path.join(DOCS, "api", "dates.json")
     try:
         with open(dates_path, encoding="utf-8") as fh:
             dated = json.load(fh).get("published") or {}
     except (OSError, ValueError) as exc:
-        problems.append("docs/api/dates.json is unreadable — run build_api.py (%s)" % exc)
+        problems.append("docs/api/dates.json is unreadable — restore it from git history (%s)" % exc)
     else:
         if name not in dated:
             problems.append("dates.json has no instant for %s — run build_api.py" % name)
