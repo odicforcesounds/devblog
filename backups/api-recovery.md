@@ -48,8 +48,8 @@ gives the commits that touched it; `git show <rev>:<path>` shows the bytes.
 `--restore` reads the map in `HEAD`, so it only undoes an edit that has not been committed.
 A wrong value that is already in `HEAD` is not repaired that way — `HEAD` is then the wrong
 source, and "good" is not a property of a commit you can see. A revision is usable when its
-row for that page equals the instant of the first commit that added the page (or a value
-someone decided by hand, for a copy or a rename). Test it before copying anything:
+row for that page equals the earliest commit in the page's followed history: `--follow` is
+what carries a renamed page back to its first date. Test it before copying anything:
 
 ```sh
 python3 - <<'PY'
@@ -57,16 +57,19 @@ import json, subprocess
 rev, name = "HEAD", "Page.html"
 row = json.loads(subprocess.run(["git", "show", rev + ":docs/api/dates.json"],
                                 capture_output=True, text=True).stdout)["published"].get(name)
-add = subprocess.run(["git", "log", "--diff-filter=A", "--format=%aI", "--", "docs/" + name],
+add = subprocess.run(["git", "log", "--follow", "--diff-filter=A", "--format=%aI",
+                      "--", "docs/" + name],
                      capture_output=True, text=True).stdout.strip().splitlines()
 print("%s %s: map %s | first add %s"
       % (rev, name, row, add[-1] if add else "(never added)"))
 PY
 ```
 
-The last line of that log is the first add, the same `tail -1` the script uses. Keep the
-path exact: a log over all of `docs/` answers a different question than a log over one file,
-and comparing the two produces mismatches that are not there. The page file must exist in
+The last line of that log is the first add, the same rule `append_dates.py` applies with
+`--follow`. Keep the path exact: a log over all of `docs/` answers a different question than
+a log over one file, and comparing the two produces mismatches that are not there. A
+timestamp no commit records — a seed written by a build — is not a date: the value moves to
+what git says, or the rule is not used for that page. The page file must exist in
 `docs/` before a row is restored: a deleted page comes back as a page
 (`git show <rev>:docs/Page.html > docs/Page.html`), then as a row.
 
