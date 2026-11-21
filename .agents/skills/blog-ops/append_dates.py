@@ -19,7 +19,8 @@ The instant is the first commit that added the file:
 `git log --diff-filter=A --format=%aI -- docs/Page.html`, the same rule as the
 page and the sitemap. `--restore` prefers the value in the last committed
 `docs/api/dates.json`, so a row whose instant was decided by hand (a copy or a
-rename) comes back as it was. `--check` writes nothing: it names every page with
+rename) comes back as it was, and a row whose value differs from that map is put
+back. `--check` writes nothing: it names every page with
 no row and says whether the map is in order, exiting 1 when either is wrong.
 A page git does not know yet is skipped and named — commit it, then run this
 again. `404.html` and `home.html` are in no table.
