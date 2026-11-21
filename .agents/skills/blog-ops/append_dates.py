@@ -15,9 +15,10 @@ chunk's `count`/`bytes` move.
     python3 .agents/skills/blog-ops/append_dates.py --check             # report only, exit 1 on a gap
     python3 .agents/skills/blog-ops/append_dates.py --dry-run           # report, write nothing
 
-The instant is the first commit that added the file:
-`git log --diff-filter=A --format=%aI -- docs/Page.html`, the same rule as the
-page and the sitemap. `--restore` prefers the value in the last committed
+The instant is the first commit that added the file, followed back through a
+rename (`git log --follow --diff-filter=A --format=%aI -- docs/Page.html`), the
+same rule as the page and the sitemap. A value no commit records — a seed from a
+build — is not a date: either it moves to what git says or it is not used. `--restore` prefers the value in the last committed
 `docs/api/dates.json`, so a row whose instant was decided by hand (a copy or a
 rename) comes back as it was, and a row whose value differs from that map is put
 back. `--check` writes nothing: it names every page with
@@ -75,7 +76,14 @@ def commit_instant(args, name):
 
 
 def first_commit(name):
-    return commit_instant(["--diff-filter=A"], name)
+    """The earliest commit in the page's followed history, so a rename keeps its date."""
+    path = os.path.join("docs", name)
+    for flags in (["--follow"], []):
+        out = git("log", *(flags + ["--diff-filter=A", "--format=%aI", "--", path]))
+        lines = [line.strip() for line in out.splitlines() if line.strip()]
+        if lines:
+            return lines[-1]
+    return ""
 
 
 def last_commit(name):
