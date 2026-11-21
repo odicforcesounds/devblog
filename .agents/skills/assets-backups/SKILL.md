@@ -51,6 +51,7 @@ Tracked, outside `docs/`, therefore never served. It holds:
 | `firebase-rules.txt` | Firestore rules for the comment form; changes must be pasted into the console. |
 | `comments-login-failure.md` | Diagnosis of the sign-in failures, with the evidence. |
 | `setup-facebook-github.md` | How to enable another auth provider. |
+| `api-recovery.md` | Restoring `docs/api/` from a git revision when a table or a text chunk is damaged, and the checks that prove it. |
 | `original/` | Pre-rewrite versions: `index.html`, `change.html`, `index.css`, `templates/`. |
 | `art_map.json`, `blog_map.json`, `project_map.json` | Structural maps of the archive. `art_map.json` lists the pages of `art.odicforcesounds.com`; the art anchor every page carries is chosen from it. |
 | `blog_sitemap.xml`, `urls/` | Previous sitemap and URL inventories. |
