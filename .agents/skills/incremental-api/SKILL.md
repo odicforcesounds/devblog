@@ -42,7 +42,8 @@ nobody asked about, and it makes the history unreadable.
    (`git log --diff-filter=A --format=%aI -- docs/NewTitle.html | tail -1`), the same rule
    as the page and the sitemap — never the clock, never the mtime. `--restore` takes the
    value from the last committed `dates.json` instead, so an instant decided by hand for a
-   copy or a rename comes back as it was. `404.html` and `home.html` are in no table.
+   copy or a rename comes back as it was, and a row whose value differs from that map is
+   put back. `404.html` and `home.html` are in no table.
 
 2. **Index — only if the page reads it.** A page that loads `api.js`, calls `BlogAPI`, or
    fetches under `api/` needs its article object appended to `articles`: the fields
