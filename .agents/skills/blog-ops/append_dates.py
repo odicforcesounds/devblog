@@ -211,10 +211,14 @@ def main(argv):
         names = [n for n in all_pages() if n not in published]
 
     history = committed_dates() if restore else {}
-    added, present, unknown = [], [], []
+    added, restored, present, unknown = [], [], [], []
     for name in names:
         if name in published:
-            present.append(name)
+            if name in history and published[name] != history[name]:
+                published[name] = history[name]
+                restored.append((name, history[name]))
+            else:
+                present.append(name)
             continue
         instant = history.get(name) or first_commit(name)
         if not instant:
@@ -233,7 +237,7 @@ def main(argv):
         print("not committed yet, nothing to date: %s" % ", ".join(sorted(unknown)))
     if reordered:
         print("date map put in the builder's order: %d entries" % len(published))
-    if not added and not reordered and not index_missing:
+    if not added and not restored and not reordered and not index_missing:
         print("nothing to add: dates.json has %d entries" % len(published))
         return 0
 
@@ -248,15 +252,17 @@ def main(argv):
 
     for name, instant in added:
         print("%s %s" % (instant, name))
+    for name, instant in restored:
+        print("restored from history: %s %s" % (instant, name))
     if staged:
         rel = os.path.relpath(staged[1], ROOT)
         print("article row%s added for %s, text into %s"
               % ("s" if len(index_missing) > 1 else "", ", ".join(sorted(index_missing)), rel))
 
     if dry:
-        if added or reordered:
-            print("would write dates.json: %d added, count %d, generated %s"
-                  % (len(added), data["count"], data["generated"]))
+        if added or restored or reordered:
+            print("would write dates.json: %d added, %d restored, count %d, generated %s"
+                  % (len(added), len(restored), data["count"], data["generated"]))
         if staged:
             print("would write index.json: count %d, text in %s"
                   % (staged[0]["count"], os.path.basename(staged[1])))
