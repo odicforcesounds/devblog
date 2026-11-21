@@ -33,10 +33,11 @@ problem you fix in the source.
 | `.agents/skills/blog-ops/fix_story.py` | Repairs `docs/awesome_story.html`: the unclosed `h1`/`header` that squeezed the whole page into the reading column, the narrow box and the ragged text. Idempotent. |
 | `.agents/skills/blog-ops/commitit.sh` | Interactive commit: one commit per approved file, each with its own message. No push, no tool attribution. |
 | `pushit.sh` | Deploy: pull, `git add .`, commit, push. Only run it when asked to publish. |
-| `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD), `page_hygiene.py` (duplicate links/text, authoring comments), `restore_awesome_data.py` (shelf restore), `fix_story.py` (story page repair), `commitit.sh` (per-file commit), and `builders/` (the page builders listed below). |
+| `.agents/skills/blog-ops/` | This skill: `check_site.py` (audit), `build_sitemap.py` (sitemap + robots), `enrich_schema.py` (JSON-LD), `page_hygiene.py` (duplicate links/text, authoring comments), `restore_awesome_data.py` (shelf restore), `fix_story.py` (story page repair), `append_dates.py` (API rows: dates, `--check`, `--restore`, `--index`), `commitit.sh` (per-file commit), and `builders/` (the page builders listed below). |
 | `.agents/skills/` | The other skills: `new-page` (write a page), `repo-layout` (what belongs where), `git-dates` (dates from git history), `tmp-tools` (scripts in `tmp/` and `tools/`), `tools-index` (the path index for every script and binary), `assets-backups` (templates, runbooks, images), `living-panel` (the fixed card on every page), `link-colors` (colour by destination), `page-css` (the shared article sheet), `seo-indexation` (titles, canonicals, sitemap and reachability), `link-integrity` (dead local and external links), `page-weight` (payload budgets), `security-headers` (CSP against what each page loads), `a11y` (alt, language, labels), `catalogue-data` (the JSON behind the index pages), `comments` (the comment form and the chat) and `incremental-api` (the API is a database: add a record, never rebuild it). |
 | `backups/GOOGLE.md` | Search Console runbook: what the structured data says, order of operations, known gaps. |
 | `backups/CLOUDFLARE.md` | Hosting runbook: DNS/proxy state, WebMCP, bot rules, redirects, cache, headers, HSTS. Read it before changing anything at the edge. |
+| `backups/api-recovery.md` | The API's runbook: which revision to restore `dates.json`, `index.json` or a text chunk from, and how to prove the restore. |
 
 Gotchas that already bit us: `tmp/` and `tools/` are **gitignored** (scripts there are
 lost — put anything durable in the repo root or in this skill), and `pushit.sh` runs
@@ -165,7 +166,14 @@ cp templates/default.html docs/NewTitle.html     # then edit content
 python3 .agents/skills/blog-ops/build_sitemap.py  # adds the URL, lastmod from git/mtime
 python3 .agents/skills/blog-ops/check_site.py    # must end with "0 failures"
 python3 .agents/skills/blog-ops/page_hygiene.py docs/NewTitle.html   # "failures 0"
+# after the commit that added the page, so the instant comes from git
+python3 .agents/skills/blog-ops/append_dates.py docs/NewTitle.html
 ```
+
+The date row is not optional: `index.html` reads it for the badge and the "Last 5
+publications" order. A page that reads the API also gets its article row from the same
+script with `--index` (see `incremental-api`); a page that carries its own text gets the
+date only.
 
 These three run when the author asks for them, not after every edit (see **Builds and audits run only when asked**).
 
