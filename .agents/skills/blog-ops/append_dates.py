@@ -12,14 +12,17 @@ chunk's `count`/`bytes` move.
     python3 .agents/skills/blog-ops/append_dates.py Page.html           # the names given
     python3 .agents/skills/blog-ops/append_dates.py --index Page.html   # + article row, text
     python3 .agents/skills/blog-ops/append_dates.py --restore Page.html # instant from history
+    python3 .agents/skills/blog-ops/append_dates.py --check             # report only, exit 1 on a gap
     python3 .agents/skills/blog-ops/append_dates.py --dry-run           # report, write nothing
 
 The instant is the first commit that added the file:
 `git log --diff-filter=A --format=%aI -- docs/Page.html`, the same rule as the
 page and the sitemap. `--restore` prefers the value in the last committed
 `docs/api/dates.json`, so a row whose instant was decided by hand (a copy or a
-rename) comes back as it was. A page git does not know yet is skipped and named
-— commit it, then run this again. `404.html` and `home.html` are in no table.
+rename) comes back as it was. `--check` writes nothing: it names every page with
+no row and says whether the map is in order, exiting 1 when either is wrong.
+A page git does not know yet is skipped and named — commit it, then run this
+again. `404.html` and `home.html` are in no table.
 
 `build_api.py` is not part of this: it rewrites the index of every page ever
 written, and that index is never rebuilt to add one row.
@@ -86,6 +89,10 @@ def committed_dates():
         return {}
 
 
+def all_pages():
+    return sorted(n for n in os.listdir(DOCS) if n.endswith(".html") and n not in SKIP)
+
+
 def article_records(names, instants):
     """The article row and the text of each page, in the builder's own shape."""
     records = []
@@ -150,6 +157,7 @@ def stage_index(records):
 
 def main(argv):
     dry = "--dry-run" in argv
+    check = "--check" in argv
     with_index = "--index" in argv
     restore = "--restore" in argv
     wanted = [a for a in argv if not a.startswith("--")]
@@ -174,6 +182,18 @@ def main(argv):
 
     published = ordered(data["published"])
     reordered = list(published) != list(data["published"])
+    if check:
+        missing = [n for n in all_pages() if n not in published]
+        if reordered:
+            print("dates.json is not in the builder's order: index.html first, then by name")
+        if missing:
+            print("%d page%s with no date row: %s"
+                  % (len(missing), "" if len(missing) == 1 else "s", ", ".join(missing)))
+        if not reordered and not missing:
+            print("dates.json: %d entries, in the builder's order, every page dated"
+                  % len(published))
+            return 0
+        return 1
     if wanted:
         names = []
         for arg in wanted:
@@ -188,8 +208,7 @@ def main(argv):
                 continue
             names.append(name)
     else:
-        names = sorted(n for n in os.listdir(DOCS)
-                       if n.endswith(".html") and n not in SKIP and n not in published)
+        names = [n for n in all_pages() if n not in published]
 
     history = committed_dates() if restore else {}
     added, present, unknown = [], [], []
