@@ -21,11 +21,14 @@ order. The chunk manifest is checked by size:
 ```sh
 python3 - <<'PY'
 import json
-i = json.load(open("docs/api/index.json"))
+base = "docs/api/"
+i = json.load(open(base + "index.json"))
 for c in i["chunks"]:
-    d = json.load(open("docs/api/" + c["file"]))
-    print(c["file"], "rows", len(d), "of", c["count"], "bytes", c["bytes"])
+    d = json.load(open(base + c["file"]))
+    size = len(json.dumps(d, ensure_ascii=False, separators=(",", ":")).encode())
     assert len(d) == c["count"], c["file"]
+    assert size == c["bytes"], "%s: %d bytes, manifest says %d" % (c["file"], size, c["bytes"])
+print(len(i["chunks"]), "chunks agree with the manifest")
 PY
 ```
 
@@ -41,6 +44,11 @@ done
 
 Run the same loop with `docs/api/dates.json` or a single chunk. `git log --oneline -- <path>`
 gives the commits that touched it; `git show <rev>:<path>` shows the bytes.
+
+`--restore` reads the map in `HEAD`, so when the commit that damaged `dates.json` is `HEAD`
+itself, restore the file from the good revision first and only then re-add the row. The page
+file must exist in `docs/` before a row is restored: a deleted page comes back as a page
+(`git show <rev>:docs/Page.html > docs/Page.html`), then as a row.
 
 ## 3. Restore the smallest thing
 
