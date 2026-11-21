@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://upload.wikimedia.org; font-src 'self' data:; connect-src 'self'; form-action 'self'; object-src 'none'; base-uri 'self'">
+<title>OWASP Cheat Sheets, Field by Field: 139 Defences</title>
+<meta name="description" content="A field guide to the 139 OWASP cheat sheets: what each defence says, the tool that demonstrates it, and the lab where it is proven.">
+<link rel="canonical" href="https://blog.odicforcesounds.com/OWASPCheatSheets.html">
+<meta property="og:title" content="OWASP Cheat Sheets, Field by Field: 139 Defences">
+<meta property="og:description" content="A field guide to the 139 OWASP cheat sheets: what each defence says, the tool that demonstrates it, and the lab where it is proven.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://blog.odicforcesounds.com/OWASPCheatSheets.html">
+<meta property="og:site_name" content="Monkey Blog">
+<meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="OWASP Cheat Sheets, Field by Field: 139 Defences">
+<meta name="twitter:description" content="A field guide to the 139 OWASP cheat sheets: what each defence says, the tool that demonstrates it, and the lab where it is proven.">
+<meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="./favicon.ico" type="image/x-icon">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/OWASPCheatSheets.html#article",
+      "headline": "OWASP Cheat Sheets, Field by Field: 139 Defences",
+      "description": "A field guide to the 139 OWASP cheat sheets: what each defence says, the tool that demonstrates it, and the lab where it is proven.",
+      "url": "https://blog.odicforcesounds.com/OWASPCheatSheets.html",
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://blog.odicforcesounds.com/OWASPCheatSheets.html" },
+      "image": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/peace.jpg", "width": 1496, "height": 960 },
+      "inLanguage": "en",
+      "author": { "@type": "Person", "name": "Oscar", "url": "https://blog.odicforcesounds.com/" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/",
+        "logo": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/three.jpg", "width": 1024, "height": 1024 }
+      },
+      "isPartOf": { "@type": "Blog", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/" },
+      "articleSection": "Security & Hacking",
+      "keywords": "OWASP, cheat sheets, application security, password storage, SQL injection, XSS, CSP, CSRF, SSRF, file upload, secrets, SBOM, TLS, JWT, GraphQL, Docker, Kubernetes, logging, threat modeling, ASVS, WSTG",
+      "wordCount": 6727,
+      "datePublished": "2026-11-21",
+      "dateModified": "2026-11-21"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://blog.odicforcesounds.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Security & Hacking", "item": "https://blog.odicforcesounds.com/#category-security-and-hacking" },
+        { "@type": "ListItem", "position": 3, "name": "OWASP Cheat Sheets, Field by Field", "item": "https://blog.odicforcesounds.com/OWASPCheatSheets.html" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root {
+  --bg: #06090f;
+  --panel: #0b1119;
+  --panel-2: #0e1621;
+  --line: rgba(124, 160, 196, 0.18);
+  --ink: #e7eef7;
+  --muted: #9aaec4;
+  --faint: #63788f;
+  --accent: #5ce1ff;
+  --warm: #ffb257;
+  --green: #61e2a3;
+  --red: #ff6b8b;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --topbar: 56px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(900px 480px at 78% -6%, rgba(92, 225, 255, 0.10), transparent 62%),
+    radial-gradient(760px 500px at 6% 14%, rgba(255, 178, 87, 0.07), transparent 60%),
+    var(--bg);
+  color: var(--ink);
+  font: 16px/1.68 var(--sans);
+  overflow-x: hidden;
+}
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--warm); }
+:focus-visible { outline: 2px solid var(--warm); outline-offset: 3px; border-radius: 3px; }
+::selection { background: rgba(92, 225, 255, 0.28); color: #fff; }
+.skip {
+  position: fixed; top: -60px; left: 12px; z-index: 200;
+  padding: 10px 16px; border-radius: 8px;
+  background: var(--ink); color: #06090f; font-weight: 700;
+  transition: top 0.15s ease;
+}
+.skip:focus { top: 10px; }
+
+.topbar {
+  position: fixed; inset: 0 0 auto 0; z-index: 120;
+  height: var(--topbar);
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(6, 9, 15, 0.88);
+  backdrop-filter: blur(16px) saturate(130%);
+}
+.brand {
+  font-family: var(--mono); font-size: 0.74rem;
+  letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap;
+}
+.brand b { color: var(--accent); }
+.top-links { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+.top-links a {
+  font-family: var(--mono); font-size: 0.68rem;
+  letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--muted); text-decoration: none;
+}
+.top-links a:hover { color: var(--ink); }
+
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: calc(var(--topbar) + 44px) 1.25rem 4rem;
+}
+@media (min-width: 1180px) {
+  main { margin-left: clamp(2rem, 9vw, 9rem); margin-right: 300px; }
+}
+.hero .kicker {
+  margin: 0 0 14px;
+  font-family: var(--mono); font-size: 0.68rem;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent);
+}
+.hero h1 {
+  margin: 0 0 18px;
+  font-size: clamp(2rem, 5.2vw, 3.05rem);
+  line-height: 1.06; letter-spacing: -0.02em;
+}
+.hero h1 em { font-style: normal; color: var(--warm); }
+.lede { margin: 0 0 26px; font-size: 1.1rem; color: #c9d7e6; }
+.stats {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px; margin: 0 0 34px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--line); overflow: hidden;
+}
+.stats div { padding: 14px 12px; background: var(--panel); }
+.stats b { display: block; font-size: 1.35rem; color: var(--accent); font-family: var(--mono); }
+.stats span { font-size: 0.72rem; color: var(--muted); line-height: 1.4; }
+
+nav.contents {
+  margin: 0 0 40px; padding: 18px 20px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--panel);
+}
+nav.contents h2 {
+  margin: 0 0 12px; font-family: var(--mono);
+  font-size: 0.68rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--faint);
+}
+nav.contents ol {
+  margin: 0; padding: 0; list-style: none;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 22px;
+}
+nav.contents a {
+  display: flex; gap: 9px; padding: 3px 0;
+  color: var(--muted); text-decoration: none; font-size: 0.88rem;
+}
+nav.contents a:hover { color: var(--accent); }
+nav.contents a span { font-family: var(--mono); font-size: 0.66rem; color: var(--faint); padding-top: 3px; }
+
+section { margin: 0 0 52px; scroll-margin-top: 78px; }
+section h2 {
+  margin: 0 0 16px; padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: clamp(1.35rem, 3vw, 1.75rem); line-height: 1.2;
+}
+section h2 .n {
+  display: inline-block; margin-right: 12px;
+  font-family: var(--mono); font-size: 0.78rem; color: var(--accent);
+  vertical-align: 0.25em;
+}
+section h3 { margin: 28px 0 10px; font-size: 1.03rem; color: var(--ink); }
+p { margin: 0 0 15px; }
+ul, ol { margin: 0 0 16px; padding-left: 1.25rem; }
+li { margin: 0 0 7px; }
+strong { color: #fff; }
+code {
+  font-family: var(--mono); font-size: 0.85em;
+  padding: 1px 5px; border-radius: 4px;
+  background: rgba(124, 160, 196, 0.12); color: #cfe9ff;
+}
+pre {
+  margin: 0 0 18px; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: #080d14; overflow-x: auto;
+  font-family: var(--mono); font-size: 0.8rem; line-height: 1.55; color: #cfe0f0;
+}
+pre code { padding: 0; background: none; font-size: inherit; color: inherit; }
+pre .c { color: var(--faint); }
+pre .s { color: var(--warm); }
+.note {
+  margin: 0 0 18px; padding: 13px 16px;
+  border-left: 3px solid var(--accent);
+  background: rgba(92, 225, 255, 0.06);
+  border-radius: 0 8px 8px 0;
+  font-size: 0.92rem; color: #c2d4e6;
+}
+.note b { color: var(--accent); }
+.lab {
+  margin: 0 0 18px; padding: 13px 16px;
+  border-left: 3px solid var(--warm);
+  background: rgba(255, 178, 87, 0.07);
+  border-radius: 0 8px 8px 0;
+  font-size: 0.92rem; color: #d8c6ae;
+}
+.lab b { color: var(--warm); }
+.table-wrap { margin: 0 0 20px; overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+caption {
+  caption-side: top; padding: 10px 14px; text-align: left;
+  font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--faint);
+  border-bottom: 1px solid var(--line);
+}
+th, td { padding: 9px 13px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: var(--panel-2); }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+.tool { color: var(--green); font-family: var(--mono); font-size: 0.9em; }
+.closing { border-top: 1px solid var(--line); padding-top: 22px; color: var(--muted); }
+footer.site { margin: 0 auto; max-width: 760px; padding: 0 1.25rem 3rem; color: var(--faint); font-size: 0.8rem; }
+@media (min-width: 1180px) { footer.site { margin-left: clamp(2rem, 9vw, 9rem); margin-right: 300px; } }
+footer.site p { margin: 0; }
+
+@media (max-width: 640px) {
+  nav.contents ol { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  main { padding-top: calc(var(--topbar) + 26px); }
+  body { padding-bottom: 5.4rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+@media print {
+  .topbar, .skip { display: none !important; }
+  body { background: #fff; color: #111; }
+  main { margin: 0; max-width: none; }
+  a { color: #111; }
+  pre, table, .note, .lab { break-inside: avoid; }
+}
+</style>
+  <style id="living-panel-style">
+    .living-panel{position:fixed;top:60px;right:clamp(1.2rem,7vw,8rem);z-index:95;
+      width:12.5rem;display:flex;flex-direction:column;
+      align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:left;
+      background:rgba(8,12,17,.9);border:1px solid var(--line, rgba(255,255,255,.14));
+      border-radius:16px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+      font-family:var(--sans, system-ui, sans-serif)}
+    .living-panel img{width:100%;height:8rem;object-fit:cover;border-radius:.6rem;
+      border:1px solid var(--line, rgba(255,255,255,.14));background:var(--panel, #101018)}
+    .living-panel p{margin:0;font-size:.78rem;line-height:1.5;color:var(--muted, #a9a9ba)}
+    .living-panel a{color:var(--cyan, #5ce1ff);text-decoration:none;
+      border-bottom:1px solid rgba(92,225,255,.4)}
+    .living-panel a:hover,.living-panel a:focus-visible{color:var(--gold, #ffd23f);
+      border-color:currentColor}
+    @media (max-width:1200px){.living-panel{width:11rem;padding:.6rem .55rem}
+      .living-panel img{height:6.8rem}.living-panel p{font-size:.74rem}}
+    @media (max-width:900px){.living-panel{width:9rem;gap:.45rem}
+      .living-panel img{height:5.6rem}.living-panel p{font-size:.68rem;line-height:1.45}}
+    @media (max-width:640px){.living-panel{top:auto !important;bottom:0;left:0;right:0;
+      width:auto;flex-direction:row;align-items:center;gap:.5rem;padding:.4rem .5rem;
+      border-radius:.7rem .7rem 0 0;transform:none !important;
+      max-height:6.2rem !important;overflow:hidden !important}
+      .living-panel img{width:3.6rem;height:3.6rem;flex:0 0 auto}
+      .living-panel > div{flex:0 0 auto;font-size:.58rem;line-height:1.25;text-align:center}
+      .living-panel p{font-size:.78rem;line-height:1.35}
+      body{padding-bottom:5.2rem}}
+    @media print{.living-panel{display:none}}
+  </style>
+  <script src="living-panel.js" defer></script>
+  <link rel="stylesheet" href="link-colors.css">
+</head>
+<body>
+<aside class="living-panel" id="living-panel" aria-label="A living being, a tool, a component, a plant and a city">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Shipworm.jpg/250px-Shipworm.jpg" alt="Shipworm" width="152" height="90" loading="lazy" decoding="async">
+    <p>this <a href="fishesIndex.html#order-myida" title="Teredinidae · Myida">Shipworm</a> likes to use <a href="awesomeIndex.html#cat-learning" title="Developer Streams · Learning, careers and collections">GitHubGist</a> and loves <a href="electronicsIndex.html#cat-passives" title="Timing and frequency · Passive components">Crystal filter</a> while doing some diet with <a href="plantsIndex.html#order-rosales" title="Ulmaceae · Rosales">Ulmus minor</a> at <a href="worldIndex.html#cat-mf" title="Saint Martin · North America">Grand-Case</a>.</p>
+  </aside>
+<a class="skip" href="#main">Skip to content</a>
+<div class="topbar">
+  <div class="brand">MONKEY BLOG <b>/ OWASP FIELDS</b></div>
+  <div class="top-links">
+    <a href="#contents">Contents</a>
+    <a href="./index.html">Home</a>
+  </div>
+</div>
+
+<main id="main">
+  <header class="hero">
+    <p class="kicker">Security · Application defences · 139 documents</p>
+    <h1>The OWASP cheat sheets, <em>field by field</em></h1>
+    <p class="lede">One hundred and thirty-nine short documents tell you how to stop the ways software is most often broken. This is a tour of what they actually say, the open tool that demonstrates each control, and the lab in which you can watch it work — never against this site.</p>
+    <div class="stats">
+      <div><b>139</b><span>cheat sheets indexed</span></div>
+      <div><b>18</b><span>fields covered here</span></div>
+      <div><b>28</b><span>tools with commands</span></div>
+      <div><b>0</b><span>targets outside your lab</span></div>
+    </div>
+  </header>
+
+  <nav class="contents" id="contents" aria-label="Contents">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#series"><span>01</span>The series, in numbers</a></li>
+      <li><a href="#reading"><span>02</span>How to read one</a></li>
+      <li><a href="#passwords"><span>03</span>Passwords: cost as a control</a></li>
+      <li><a href="#sqli"><span>04</span>SQL injection: structure against data</a></li>
+      <li><a href="#xss"><span>05</span>XSS: encode for the place</a></li>
+      <li><a href="#csp"><span>06</span>CSP: the second layer</a></li>
+      <li><a href="#csrf"><span>07</span>CSRF, CORS, framing</a></li>
+      <li><a href="#files"><span>08</span>Files, paths, parsers</a></li>
+      <li><a href="#ssrf"><span>09</span>Deserialization and SSRF</a></li>
+      <li><a href="#secrets"><span>10</span>Secrets: from git to vault</a></li>
+      <li><a href="#supply"><span>11</span>Dependencies and supply chain</a></li>
+      <li><a href="#tls"><span>12</span>TLS and transport</a></li>
+      <li><a href="#apis"><span>13</span>APIs: REST, GraphQL, JWT</a></li>
+      <li><a href="#platforms"><span>14</span>Containers, Kubernetes, CI</a></li>
+      <li><a href="#logging"><span>15</span>Logging and detection</a></li>
+      <li><a href="#process"><span>16</span>Threat modelling, ASVS, WSTG</a></li>
+      <li><a href="#scope"><span>17</span>Rules of engagement</a></li>
+      <li><a href="#limits"><span>18</span>Where the series stops</a></li>
+      <li><a href="#sources"><span>19</span>Sources</a></li>
+    </ol>
+  </nav>
+
+  <section id="series">
+    <h2><span class="n">01</span>The series, in numbers</h2>
+    <p>The <a href="https://cheatsheetseries.owasp.org/" target="_blank" rel="noopener">series</a> began as a handful of notes for developers who kept asking the same questions after a penetration test. It is now 139 sheets, maintained in the open under the OWASP flag, each one short enough to read in a sitting and specific enough to implement on the same afternoon.</p>
+    <p>Its position in the OWASP family matters, because people confuse the four projects. The <strong>Top 10</strong> names the categories of risk. <strong>ASVS</strong> turns them into verifiable requirements, with three levels of assurance. <strong>WSTG</strong> is the tester's guide: how to prove a requirement is missing. The <strong>Cheat Sheet Series</strong> is the fourth thing — the recipe. It does not tell you a control is required; it tells you how to build the control correctly, with the parameter values, the code and the mistakes that break it.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>Four OWASP projects, four jobs</caption>
+        <thead><tr><th scope="col">Project</th><th scope="col">Answers</th><th scope="col">Use it when</th></tr></thead>
+        <tbody>
+          <tr><td>Top 10</td><td>Which classes of failure matter most?</td><td>You need a shared vocabulary for a risk review.</td></tr>
+          <tr><td>ASVS</td><td>What must be true, at which assurance level?</td><td>You are writing requirements or an acceptance gate.</td></tr>
+          <tr><td>WSTG</td><td>How do I prove this control is missing?</td><td>You are testing or building a regression suite.</td></tr>
+          <tr><td>Cheat Sheets</td><td>How is this control implemented, exactly?</td><td>You are writing the code or the configuration.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Two properties make the collection unusual. First, every sheet is versioned in Git and reviewed like code, so a recommendation can be traced to the change that introduced it. Second, the sheets are deliberately conservative: when practice is unsettled, they say so and give the safer default rather than the clever one. That is why the same document can be boring on the first read and decisive on the second.</p>
+    <div class="note"><b>Read the index first.</b> The alphabetical index is the map: authentication, injection, browser, files, cryptography, supply chain, platforms, process. Pick the sheet that names your failure, not the one that names your technology — a Node application still needs the SQL, file-upload and secrets sheets.</div>
+  </section>
+
+  <section id="reading">
+    <h2><span class="n">02</span>How to read one</h2>
+    <p>Almost every sheet follows the same skeleton, and recognising it saves you from skimming the wrong part. There is a threat sentence that says what goes wrong; a rule, usually in the imperative; code that shows the rule in a language; a section of caveats where the rule stops working; and references. The code is the least important part. The caveats are the most.</p>
+    <p>The Password Storage sheet is a clean example. The rule is one line — never store a password in plain text, use a slow, salted hash — but the sheet spends most of its length on parameters: how much memory, how many iterations, what to do when the algorithm is mandated by compliance, what happens when you raise the cost later. A reader who copies the first code block and stops has the shape of the control without the part that decides whether it holds.</p>
+    <p>Read a sheet with three questions in hand: what input is untrusted here, what does the control do with it, and what is the failure mode when someone implements it halfway? If the sheet does not answer the third, it is probably describing a library rather than a control.</p>
+    <aside class="lab"><b>Lab.</b> Clone the source and search it like documentation. The repository is a folder of Markdown files, which means <code>rg</code> is faster than any site search and works offline.</aside>
+<pre><code>git clone --depth 1 https://github.com/OWASP/CheatSheetSeries.git
+rg -l "Argon2id" CheatSheetSeries/cheatsheets
+rg -n "parameterized" CheatSheetSeries/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.md</code></pre>
+    <p>The tool here is not a scanner; it is the habit of reading the primary text instead of a summary of it. Every recommendation in this article can be checked the same way, in the repository, at the commit that wrote it.</p>
+  </section>
+
+  <section id="passwords">
+    <h2><span class="n">03</span>Passwords: cost as a control</h2>
+    <p>The Password Storage sheet makes one argument and then defends it for several pages: a password hash must be slow, salted and memory-hard. Slow because guessing is the attack; salted because precomputation is the shortcut; memory-hard because a GPU has thousands of cores but not thousands of gigabytes.</p>
+    <p>The current minimums are concrete. For Argon2id, the sheet gives five equivalent configurations and asks you to choose one: 46 MiB with one pass, 19 MiB with two, 12 MiB with three, 9 MiB with four, or 7 MiB with five, always with parallelism one. For scrypt, N=2<sup>17</sup>, r=8, p=1. For legacy bcrypt, a work factor of 10 or more and a hard limit of 72 bytes of password. For FIPS environments, PBKDF2-HMAC-SHA256 at 600,000 iterations or more.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>What the sheet asks for, and why</caption>
+        <thead><tr><th scope="col">Algorithm</th><th scope="col">Minimum</th><th scope="col">The reason</th></tr></thead>
+        <tbody>
+          <tr><td>Argon2id</td><td>19 MiB, t=2, p=1</td><td>Memory-hard; resists GPU and side-channel attacks.</td></tr>
+          <tr><td>scrypt</td><td>N=2<sup>17</sup>, r=8, p=1</td><td>Fallback when Argon2id is unavailable.</td></tr>
+          <tr><td>bcrypt</td><td>cost 10, 72-byte password limit</td><td>Legacy only; truncates silently beyond 72 bytes.</td></tr>
+          <tr><td>PBKDF2-HMAC-SHA256</td><td>600,000 iterations</td><td>Compliance path, not a preference.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Salt is per password and generated by the library, not by you. A pepper is different: one secret shared across the table, stored away from the database, and changed only by forcing resets. The sheet is careful about this distinction because teams routinely call a pepper a salt and then store it in the same row.</p>
+    <h3>Demonstrating the cost</h3>
+    <p>Two tools make the abstract number visible. <a href="https://github.com/P-H-C/phc-winner-argon2" target="_blank" rel="noopener">argon2</a> produces a hash with the parameters you name, and prints the encoded string including salt and cost, which is exactly what a database row should contain.</p>
+<pre><code>echo -n 'correct horse battery staple' | argon2 somesalt -id -t 2 -m 16 -p 1 -l 32</code></pre>
+    <p><a href="https://hashcat.net/hashcat/" target="_blank" rel="noopener">hashcat</a> measures the other side. Run its benchmark for a fast hash and for a slow one on the same machine: the ratio is the control, expressed in hashes per second. A six-character password that survives a million guesses per second does not survive a hundred.</p>
+<pre><code>hashcat -b -m 0      <span class="c"># MD5: fast, unsuitable for passwords</span>
+hashcat -b -m 1700   <span class="c"># SHA-512 crypt: the shape of a real cost</span></code></pre>
+    <div class="lab"><b>Lab.</b> Benchmark on the hardware you will actually deploy. The sheet's parameters are minimums for a reason: a hash that takes 900 ms on a laptop may take 40 ms on the server you bought, and the same settings become a denial-of-service lever on the login endpoint.</div>
+    <p>The session side belongs to the same family. The sheet is blunt that a stolen session is a stolen login: rotate identifiers at authentication, set <code>HttpOnly</code>, <code>Secure</code> and <code>SameSite</code>, expire idle sessions, and store the server-side state where an attacker with a database dump cannot mint a session. MFA does not repair a broken session layer; it raises the price of the first step only.</p>
+  </section>
+
+  <section id="sqli">
+    <h2><span class="n">04</span>SQL injection: structure against data</h2>
+    <p>The SQL Injection Prevention sheet opens with the sentence that makes the rest obvious: injection happens when untrusted data becomes part of the query's syntax. The fix is not to clean the data harder; it is to keep the structure and the values in separate channels for the whole life of the query.</p>
+    <p>That means parameterised queries, everywhere, including procedure calls and ORM query languages. It also means accepting that some parts of a query cannot be parameters — table names, column names, sort direction — and handling those with a fixed map from user choice to application-owned value, not with quoting.</p>
+<pre><code><span class="c">// unsafe: the value changes the query</span>
+String q = "SELECT balance FROM accounts WHERE owner = '" + name + "'";
+
+<span class="c">// safe: the value is data, forever</span>
+String q = "SELECT balance FROM accounts WHERE owner = ?";
+PreparedStatement ps = conn.prepareStatement(q);
+ps.setString(1, name);</code></pre>
+    <p>Manual escaping is the trap the sheet spends the most words on, because it looks like it works. Escaping rules differ between dialects, depend on configuration such as <code>NO_BACKSLASH_ESCAPES</code>, and fail quietly at the edges. The sheet's wording is unusually direct: do not build your own, replace escaping with binding.</p>
+    <p>Around the primary defence sit the hardening measures that decide how bad a mistake becomes: least privilege for the database account, separate accounts per application, views that expose only the columns a screen needs, and no administrative rights for the account that serves login. None of them prevents injection; all of them shrink what injection can reach.</p>
+    <h3>Demonstrating it</h3>
+    <p><a href="https://sqlmap.org/" target="_blank" rel="noopener">sqlmap</a> is the canonical demonstration: point it at a deliberately vulnerable app in a container and it will find the parameter, infer the database and show you the data the query was never meant to return. Point it at an app that binds its parameters and the same run finds nothing, which is the result you want to see once.</p>
+<pre><code>docker run --rm -p 8080:80 vulnerables/cve-2021-44228  <span class="c"># any disposable lab app</span>
+sqlmap -u "http://127.0.0.1:8080/item?id=1" --batch --level=1 --risk=1</code></pre>
+    <p>For the code side, <a href="https://semgrep.dev/" target="_blank" rel="noopener">semgrep</a> turns the sheet's rule into a check that runs on every commit. Its registry rules for SQL injection look for string concatenation reaching a query call, which is the pattern the sheet forbids, rather than for a particular library.</p>
+<pre><code>semgrep --config p/sql-injection --error src/</code></pre>
+    <div class="lab"><b>Lab.</b> Run sqlmap only against a container you started for the exercise, listening on <code>127.0.0.1</code>. The tool is loud, it writes payloads to logs, and it is indistinguishable from an attack when the target is not yours.</div>
+  </section>
+
+  <section id="xss">
+    <h2><span class="n">05</span>XSS: encode for the place</h2>
+    <p>Cross-site scripting is not one bug but a family, and the Cross Site Scripting Prevention sheet refuses to give a single fix. Its claim is simpler and harder: every place where untrusted data enters a page needs the encoding that belongs to that place, and one missed place is enough. A page that protects ninety-nine sinks and forgets the <code>title</code> attribute is a vulnerable page.</p>
+    <p>The contexts are the map. In HTML body text, entity-encode. In an attribute, encode for the quoted attribute and keep quotes around it. In a script block, use an encoder written for the JavaScript string and the enclosing HTML script — never a generic backslash rule. In CSS, do not interpolate at all: set values through the CSSOM with a fixed property name. In a URL, percent-encode, then HTML-encode when the URL itself sits in an attribute.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>One value, five contexts, five encoders</caption>
+        <thead><tr><th scope="col">Where the value lands</th><th scope="col">Correct treatment</th><th scope="col">What fails</th></tr></thead>
+        <tbody>
+          <tr><td>Between tags</td><td>HTML entity encoding</td><td>Inserting raw text; using innerHTML.</td></tr>
+          <tr><td>Quoted attribute</td><td>Attribute encoding, quotes kept</td><td>Unquoted values; encoding spaces only.</td></tr>
+          <tr><td>Inline script</td><td>JavaScript-string encoder for that HTML context</td><td>Hand-escaped quotes; passing to eval.</td></tr>
+          <tr><td>Style block</td><td>No interpolation; CSSOM with allow-list</td><td>Any dynamic selector or property name.</td></tr>
+          <tr><td>URL parameter</td><td>Percent encoding, then attribute encoding</td><td>Encoding the whole URL once and hoping.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Frameworks move the default in the right direction and then hand you a door. React escapes what it renders until someone reaches for <code>dangerouslySetInnerHTML</code>; Angular escapes until <code>bypassSecurityTrustAs*</code>; Lit has <code>unsafeHTML</code>. The sheet lists these escape hatches explicitly because the vulnerability almost never lives in the framework — it lives in the one component that needed a rich text box.</p>
+    <p>When users genuinely author HTML, encoding is the wrong answer because it destroys the feature. Sanitisation is the answer, and the sheet names one library: DOMPurify. Sanitise on the server, do not modify the string afterwards, and keep the library patched, since a sanitiser is a parser and parsers have bugs.</p>
+<pre><code>npm install dompurify jsdom
+node -e "const {JSDOM}=require('jsdom');const DOMPurify=require('dompurify')(new JSDOM('').window);console.log(DOMPurify.sanitize('&lt;img src=x onerror=alert(1)&gt;'))"</code></pre>
+    <p>The demonstration tool for the whole class is <a href="https://www.zaproxy.org/" target="_blank" rel="noopener">ZAP</a>. Its baseline scan drives a browser against your lab app, records every reflection it sees, and reports the ones that survive into an executable context. A clean baseline is not proof of safety; a finding with a request and a response is proof of a bug.</p>
+<pre><code>docker run --rm -t ghcr.io/zaproxy/zaproxy:stable \
+  zap-baseline.py -t http://127.0.0.1:8080 -r zap.html</code></pre>
+    <div class="lab"><b>Lab.</b> Build the page twice in your own project: one route that renders a comment with <code>textContent</code> and one that renders it with <code>innerHTML</code>. Send the same payload to both and read the difference in the browser console. That single exercise teaches the context rule better than a slide.</div>
+  </section>
+
+  <section id="csp">
+    <h2><span class="n">06</span>CSP: the second layer</h2>
+    <p>Content Security Policy is the most misunderstood sheet in the collection, because it reads like a list of headers and is actually an argument about failure. The argument is that XSS will happen, and a policy decides how much a single injection can do: no inline script, no script from an unknown origin, no form posting to an attacker, no framing of your page.</p>
+    <p>The sheet has moved away from long allow-lists towards strict policies built on a nonce or a hash, optionally with <code>strict-dynamic</code>. A nonce is generated per response and placed on the script tags the server rendered; a hash names the exact inline script allowed to run. Both are stronger than naming a CDN, because a CDN that hosts one library also hosts whatever an attacker can upload to it.</p>
+<pre><code>Content-Security-Policy:
+  default-src 'self';
+  script-src 'nonce-r4nd0m' 'strict-dynamic' https:;
+  object-src 'none';
+  base-uri 'self';
+  frame-ancestors 'none';
+  form-action 'self'</code></pre>
+    <p>Three details are easy to miss. <code>frame-ancestors</code> replaces <code>X-Frame-Options</code> and is ignored when the policy arrives in a <code>meta</code> tag, which also cannot deliver reporting. A policy in <code>Report-Only</code> mode enforces nothing; it is a rehearsal, and it is the right way to roll out a strict policy without breaking the checkout page. And the policy is not a substitute for encoding: the sheet says it plainly, use CSP on top of the XSS controls, not instead of them.</p>
+    <p>To read a policy rather than guess at it, paste it into the <a href="https://csp-evaluator.withgoogle.com/" target="_blank" rel="noopener">CSP Evaluator</a>. It flags <code>unsafe-inline</code>, wildcards, missing <code>object-src</code> and bypassable hosts, and it explains each finding in terms of the directive, which is the fastest way to learn the grammar. For a local page, <code>curl -sI</code> shows what the server actually sends, including headers a framework added without your knowledge.</p>
+<pre><code>curl -sI http://127.0.0.1:8080/ | grep -i content-security-policy</code></pre>
+    <div class="note"><b>A static site still benefits.</b> This blog ships a meta policy with <code>default-src 'self'</code> and no remote scripts. It does not take user input, but the policy means an injected tag would fail to load, and that is the whole point of a second layer.</div>
+  </section>
+
+  <section id="csrf">
+    <h2><span class="n">07</span>CSRF, CORS, framing</h2>
+    <p>Cross-site request forgery exploits a rule that makes the web usable: the browser attaches your cookies to requests for a site, whoever caused the request. The defence is to make the request prove something the attacker cannot know. The sheet's first instruction is to check whether the framework already does this, because most do, and a hand-rolled token is usually a weaker copy.</p>
+    <p>For stateful applications, the synchroniser token pattern is the reference: a secret, unpredictable value tied to the session, sent in the response and required back on every state-changing request, compared on the server. For stateless applications, double-submit cookies do the same job with a signed value in a cookie and in the request. Modern browsers add a third signal, Fetch Metadata, which the server can read to reject cross-site state changes before looking at the token.</p>
+    <ul>
+      <li>Never use GET for an operation that changes state; if you must, protect it like a POST.</li>
+      <li><code>SameSite</code> helps, but do not set a cookie for a parent domain: every subdomain, including one with a dangling CNAME, inherits it.</li>
+      <li>Verify <code>Origin</code> where you can, and treat a missing origin as suspicious rather than as permission.</li>
+      <li>Remember the sheet's warning: XSS defeats every CSRF control, because the attacker's script runs inside the trusted origin.</li>
+    </ul>
+    <p>Framing has its own sheet, and its conclusion is now short: send <code>frame-ancestors</code> from CSP, because <code>X-Frame-Options</code> is obsolete and cannot express a list. If the application must be framed by one partner, name that partner; <code>'none'</code> is the correct default for everything else.</p>
+    <p>CORS is the mirror image: a permissive policy is not a CSRF defence and can be a data leak. The CORS sheet asks for an explicit allow-list of origins, no credentials with a wildcard, a short preflight cache, and a rejection path that logs the origin. A browser is not the only client, so authorisation still belongs on the server.</p>
+<pre><code>curl -s -D - -o /dev/null -X OPTIONS http://127.0.0.1:8080/api/notes \
+  -H "Origin: http://127.0.0.1:3000" \
+  -H "Access-Control-Request-Method: POST"</code></pre>
+    <div class="lab"><b>Lab.</b> Two containers, one app and one hostile page on a different port. The hostile page posts to the app with and without the token; the difference in response codes is the control, and it is visible in the network panel without any special tool.</div>
+  </section>
+
+  <section id="files">
+    <h2><span class="n">08</span>Files, paths, parsers</h2>
+    <p>File upload is the sheet that most often gets implemented as a file-type check and then forgotten. Its list is longer because the attack surface is: the filename, the extension, the declared MIME type, the real signature, the parser that will later read the file, the directory it lands in, and the URL that serves it back.</p>
+    <p>The order matters. Decode the filename before validating it, allow only the extensions the business needs, reject double extensions, null bytes, case tricks and colons, generate a new name instead of trusting the user's, cap the length and the size, store outside the web root, and serve through a handler rather than a static path. Where the content is a document, run it through antivirus or content disarm and reconstruction; the sheet is explicit that no single check is sufficient.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>What each check actually stops</caption>
+        <thead><tr><th scope="col">Control</th><th scope="col">Stops</th><th scope="col">Does not stop</th></tr></thead>
+        <tbody>
+          <tr><td>Extension allow-list</td><td>Interpreted uploads such as <code>.php</code></td><td>A malicious PDF that is a valid PDF.</td></tr>
+          <tr><td>Magic-byte check</td><td>A script renamed to <code>.jpg</code></td><td>A polyglot image with a payload.</td></tr>
+          <tr><td>Generated filename</td><td>Overwrites and traversal</td><td>Content-based attacks.</td></tr>
+          <tr><td>Storage outside the root</td><td>Direct execution and download</td><td>Abuse through the serving handler.</td></tr>
+          <tr><td>Antivirus or CDR</td><td>Known malicious documents</td><td>Novel payloads and parser bugs.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Path traversal is the same idea applied to reads. The sheet's rule is to resolve the requested path against a fixed base and then verify that the result is still inside it, rather than to strip <code>../</code> sequences. Stripping is a blocklist, and blocklists lose to encodings, alternate separators and platform quirks.</p>
+    <p>XML External Entity is the parser case. An XML parser that resolves external entities will read local files or make network requests on behalf of whoever sent the document. The fix is configuration, not validation: disable DTDs and external entities in the parser, and prefer a data format that has no such feature.</p>
+<pre><code>file upload.png
+exiftool upload.png | head
+clamscan --infected --remove=no upload.png</code></pre>
+    <p><a href="https://github.com/Cisco-Talos/clamav" target="_blank" rel="noopener">ClamAV</a> is the free scanner the sheet's advice maps onto; <code>file</code> and <code>exiftool</code> are the cheap inspectors that show you what the browser claimed versus what the bytes say. For a wider tour of the tools that belong in this kind of lab, the site's <a href="./KaliLinux.html">Kali</a> manual groups them by the job they do.</p>
+  </section>
+
+  <section id="ssrf">
+    <h2><span class="n">09</span>Deserialization and SSRF</h2>
+    <p>Both sheets describe the same architectural mistake in different clothes: trusting a value to name a class or a destination. Deserialization trusts data to reconstruct an object; SSRF trusts a URL to decide where the server connects. In both cases the fix is to stop accepting the choice from the user.</p>
+    <p>For deserialization, the sheet's preference is to avoid native serialisation of untrusted data altogether. Use JSON with an explicit schema, and if a binary format is unavoidable, allow-list the classes that may be reconstructed and sign the payload. The demonstration tool, <a href="https://github.com/frohoff/ysoserial" target="_blank" rel="noopener">ysoserial</a>, exists to show why: a crafted stream can turn a library on the classpath into command execution, without any injection in your own code.</p>
+<pre><code>java -jar ysoserial.jar CommonsCollections6 'id' &gt; payload.bin
+<span class="c"># send payload.bin only to a disposable, isolated service</span></code></pre>
+    <p>SSRF is the cloud-era version. An application fetches a URL a user supplied — an avatar, a webhook, a preview — and the request leaves from inside the network, where the metadata service and the admin panel live. The sheet splits the problem in two. When the destinations are known, allow-list them at the application and network layers, resolve the name yourself, compare the resolved IP, and disable redirects. When arbitrary destinations are the feature, you cannot allow-list; you restrict egress at the network, block link-local and loopback ranges, and treat every response as hostile.</p>
+    <p>The bypass catalogue is the reason a regex is not enough: decimal, octal, hexadecimal and mixed encodings of an IP address, DNS names that resolve differently on the second lookup, redirects that move the target after validation. Compare parsed addresses, not strings, and re-check after every redirect — or refuse redirects entirely.</p>
+<pre><code>python3 -m http.server 9001 --bind 127.0.0.1
+curl -s "http://127.0.0.1:8080/fetch?url=http://127.0.0.1:9001/"   <span class="c"># should be refused by the app</span></code></pre>
+    <div class="lab"><b>Lab.</b> Write the negative test first: the fetcher must reject <code>127.0.0.1</code>, <code>169.254.169.254</code>, <code>::1</code> and any name that resolves to them. Then break your own check with a decimal IP and a redirect, and fix it. That test suite is worth more than the feature.</div>
+  </section>
+
+  <section id="secrets">
+    <h2><span class="n">10</span>Secrets: from git to vault</h2>
+    <p>The Secrets Management sheet starts from an uncomfortable observation: most organisations already have secrets in source code, configuration files and CI variables, and they do not know how many. The first useful act is not to buy a vault; it is to make the leak visible and stop the next commit.</p>
+    <p><a href="https://github.com/gitleaks/gitleaks" target="_blank" rel="noopener">gitleaks</a> scans the working tree and the history for token-shaped strings and fails a pre-commit hook or a pipeline. <a href="https://github.com/trufflesecurity/trufflehog" target="_blank" rel="noopener">trufflehog</a> adds verification: it calls the provider to check whether the key is live, which turns a noisy list into a short one. Both are worth running before the first push, not after the incident.</p>
+<pre><code>gitleaks detect --source . --no-banner --redact
+trufflehog filesystem . --only-verified</code></pre>
+    <p>Then the architecture. Secrets belong in one place with an audit trail, accessed by identity rather than by copy, with least privilege per secret and automated rotation. Dynamic secrets are better than static ones: the application asks for a database credential at start, receives one with a short lease, and the credential dies with the lease. A stolen static password survives a restart; a stolen lease does not survive its expiry.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>Where secrets leak, and the control that closes it</caption>
+        <thead><tr><th scope="col">Leak path</th><th scope="col">Control</th><th scope="col">Proof</th></tr></thead>
+        <tbody>
+          <tr><td>Committed to git</td><td>Pre-commit scan, history scan</td><td><code>gitleaks detect</code> returns zero.</td></tr>
+          <tr><td>Baked into an image</td><td>Build-time scan, no secrets in layers</td><td><code>trivy image --scanners secret</code>.</td></tr>
+          <tr><td>Long-lived static key</td><td>Dynamic credentials, short lease</td><td>The credential expires without use.</td></tr>
+          <tr><td>Shared across services</td><td>One identity per workload</td><td>Revoking one leaves the others working.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The sheet is equally clear about what not to do: do not encrypt a secret and commit the key beside it, do not put secrets in environment variables that any process on the host can read, and do not treat a password manager as a production secret store. Environment variables are convenient for a laptop; a workload identity is the production answer.</p>
+    <p>For a static site the honest version is smaller: there is nothing to rotate, so the rule is that no key ever reaches the repository, and every integration that would need one runs outside the page. The site's <a href="./dontBeLazy.html">web application</a> notes make the same point from the other direction: a static page cannot leak a secret it never holds.</p>
+  </section>
+
+  <section id="supply">
+    <h2><span class="n">11</span>Dependencies and supply chain</h2>
+    <p>The Vulnerable Dependency Management sheet is not a tool list, and it says so. Its subject is the decision procedure after a scanner reports a CVE: is the vulnerable function reachable, is a patch available, can the update ship without breaking the product, and who accepts the risk if it cannot. The tool finds; a person decides.</p>
+    <p>The surrounding sheets fill in the mechanics. Generate a software bill of materials so you know what you ship; pin direct dependencies and commit the lockfile; monitor the transitive tree, because that is where most surprises live; and patch on a clock that matches exposure rather than on a quarterly meeting.</p>
+<pre><code>osv-scanner -r .
+pip-audit -r requirements.txt
+npm audit --omit=dev
+cargo audit</code></pre>
+    <p>Four ecosystems, four commands, one question: which of these versions has a known advisory? <a href="https://google.github.io/osv-scanner/" target="_blank" rel="noopener">osv-scanner</a> answers across lockfiles, and the OWASP <a href="https://owasp.org/www-project-dependency-check/" target="_blank" rel="noopener">Dependency-Check</a> does the same with a longer history and heavier reports. Neither replaces the other; running one in CI and the other before a release is a reasonable division.</p>
+    <p>The SBOM is the artifact that makes the rest auditable. <a href="https://github.com/anchore/syft" target="_blank" rel="noopener">Syft</a> produces one in SPDX or CycloneDX from a directory or an image, and <a href="https://github.com/anchore/grype" target="_blank" rel="noopener">Grype</a> reads it back to list vulnerabilities without rescanning the filesystem. That separation matters: the SBOM is a fact about the build, the vulnerability list is a fact about today.</p>
+<pre><code>syft dir:. -o spdx-json &gt; sbom.spdx.json
+grype sbom:./sbom.spdx.json --fail-on high</code></pre>
+    <p>Provenance is the last link. <a href="https://github.com/sigstore/cosign" target="_blank" rel="noopener">cosign</a> signs an artifact and lets a consumer verify who built it and from what, which is the difference between downloading a binary and trusting a binary. The supply-chain sheet's rule is blunt: if you cannot verify the signature, you are trusting the network path, not the publisher.</p>
+  </section>
+
+  <section id="tls">
+    <h2><span class="n">12</span>TLS and transport</h2>
+    <p>Transport Layer Security is the control everyone believes they have and few can prove. The sheet reduces it to a short list: TLS 1.2 as the floor, 1.3 where available, a modern cipher suite, certificates validated against the hostname, HSTS with a deliberate max-age, and no mixed content. The interesting part is the word deliberate: HSTS is hard to undo, so a one-year max-age belongs after the redirects are correct, not before.</p>
+    <p><a href="https://testssl.sh/" target="_blank" rel="noopener">testssl.sh</a> is a single shell script that reports protocols, ciphers, certificate chain, HSTS and known weaknesses for a host you name. <a href="https://github.com/nabla-c0d3/sslyze" target="_blank" rel="noopener">sslyze</a> does the same from Python and returns JSON, which is what you want in a regression test. Both are safe to run against your own staging endpoint and both produce output that reads like the sheet.</p>
+<pre><code>testssl.sh --severity HIGH https://127.0.0.1:8443
+sslyze --regular 127.0.0.1:8443 --json_out tls.json</code></pre>
+    <p><a href="https://www.openssl.org/" target="_blank" rel="noopener">OpenSSL</a> is the manual version, useful when a scanner's summary hides the detail you need: which certificate was served, which chain was sent, whether the client and server agreed on a version you did not expect.</p>
+<pre><code>openssl s_client -connect 127.0.0.1:8443 -servername lab.local -tls1_2 &lt;/dev/null</code></pre>
+    <p>Certificate pinning has its own sheet because it is the control most likely to cause an outage: pin a spare key as well as the current one, and treat a pin as a release artifact that must be rotated with the certificate. For a public website, HSTS plus a correct chain is usually the proportionate answer; pinning belongs to clients you ship.</p>
+  </section>
+
+  <section id="apis">
+    <h2><span class="n">13</span>APIs: REST, GraphQL, JWT</h2>
+    <p>API security is where the cheat sheets become a family rather than a single document: REST, GraphQL, JWT, OAuth, WebSocket, mass assignment, IDOR. The shared failure is authorisation decided by the client or by the shape of the request, and the shared fix is to check the object and the action on the server, every time.</p>
+    <p>The JWT sheet is the one teams read last and should read first. It warns about accepting <code>alg: none</code>, about confusing a public key with an HMAC secret, about tokens without <code>exp</code>, <code>aud</code> or <code>iss</code>, and about using a MAC secret shared with an audience that should not be able to mint tokens. Its recommendation for sessions is refreshingly conservative: if you need immediate revocation, a server-side session is simpler than a deny-list bolted onto a stateless token.</p>
+<pre><code>python3 jwt_tool.py eyJhbGciOi... -M at   <span class="c"># algorithm and claim tampering, lab only</span></code></pre>
+    <p><a href="https://github.com/ticarpi/jwt_tool" target="_blank" rel="noopener">jwt_tool</a> automates the checks: it decodes, tries the <code>none</code> algorithm, tests key confusion and reports claim weaknesses. Run against a token you minted in your own environment; a real token is someone's credential.</p>
+    <p>GraphQL has a different shape of mistake: introspection left on in production, no depth or complexity limit, and resolvers that trust the query to enforce authorisation. The GraphQL sheet asks for query allow-lists or persisted queries, per-field authorisation, and a cost limit that makes a nested query fail before it exhausts the database.</p>
+<pre><code>python3 graphql-cop.py -t http://127.0.0.1:4000/graphql</code></pre>
+    <p><a href="https://github.com/dolevf/graphql-cop" target="_blank" rel="noopener">graphql-cop</a> checks introspection, field suggestions, batching and depth in one pass. For REST, <a href="https://schemathesis.readthedocs.io/" target="_blank" rel="noopener">Schemathesis</a> generates requests from an OpenAPI document and finds the inputs the specification allows but the implementation mishandles, which is a compact way to prove the REST sheet's rule that the server must validate what it advertises.</p>
+    <p>For the Node-specific version of the same discipline, the site's <a href="./nodeSecurity.html">Node</a> manual walks the server from process flags to the reverse proxy, and every step there is a cheat sheet implemented in one place.</p>
+  </section>
+
+  <section id="platforms">
+    <h2><span class="n">14</span>Containers, Kubernetes, CI</h2>
+    <p>The container and Kubernetes sheets are short because the controls are configuration, not code: run as a non-root user, read the root filesystem only, drop capabilities, apply a seccomp profile, mount no host paths, and give each workload its own service account. The Kubernetes sheet adds network policies and resource limits, because a cluster with a flat network and no quotas turns one compromised pod into a capacity incident.</p>
+    <p>The tools mirror that split. <a href="https://github.com/docker/docker-bench-security" target="_blank" rel="noopener">docker-bench-security</a> checks the daemon and the host configuration, <a href="https://github.com/aquasecurity/kube-bench" target="_blank" rel="noopener">kube-bench</a> checks a cluster against the CIS benchmark, and <a href="https://kubescape.io/" target="_blank" rel="noopener">Kubescape</a> reads manifests and running workloads against NSA and MITRE frameworks. None of them knows your application; they check the floor.</p>
+<pre><code>docker run --rm --pid=host --userns=host --privileged \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /etc:/etc:ro -v /usr/bin/containerd:/usr/bin/containerd:ro \
+  docker/docker-bench-security
+
+kubescape scan framework nsa --submit=false</code></pre>
+    <p>The CI/CD sheet is the newest and the most consequential, because a pipeline has the credentials to deploy. Its rules are ordinary least privilege applied to a place people forget: pin third-party actions by commit SHA rather than tag, give the job token read-only permissions by default, never echo secrets, and do not run untrusted pull-request code with production credentials. <a href="https://trivy.dev/" target="_blank" rel="noopener">Trivy</a> covers the rest of the pipeline with one command that scans dependencies, secrets and misconfiguration in the same pass.</p>
+<pre><code>trivy fs --scanners vuln,secret,misconfig --exit-code 1 .</code></pre>
+    <p>For the host underneath all of it, the site's <a href="./DebianIsolation.html">isolation</a> manual is the long-form version of the same idea: give each service its own identity, its own filesystem view and its own network exception, and test the way back before you need it.</p>
+  </section>
+
+  <section id="logging">
+    <h2><span class="n">15</span>Logging and detection</h2>
+    <p>The Logging sheet answers a question that sounds trivial and is not: what should an application write down? Its list is event-shaped, not message-shaped — authentication successes and failures, access-control decisions, input validation failures, session lifecycle, administrative actions and security-relevant configuration changes. Each entry needs who, what, when, where and the outcome, and each needs a timestamp you can trust.</p>
+    <p>Equally important is what must never be written: passwords, tokens, session identifiers, full card numbers, and the personal data that turns a log into a second database with weaker access control. The sheet's phrase for the failure mode is log injection: untrusted text with newlines can forge entries, so encode it, and never let a log line be parsed as a format string.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>The logging checklist, compressed</caption>
+        <thead><tr><th scope="col">Question</th><th scope="col">Answer the sheet gives</th></tr></thead>
+        <tbody>
+          <tr><td>What to log</td><td>Security events with actor, action, target, outcome.</td></tr>
+          <tr><td>What never to log</td><td>Secrets, tokens, credentials, unnecessary personal data.</td></tr>
+          <tr><td>Where</td><td>A store the application cannot rewrite, outside the web root.</td></tr>
+          <tr><td>In what form</td><td>Structured records, one event per line, UTF-8.</td></tr>
+          <tr><td>For how long</td><td>Long enough to investigate, short enough to be lawful.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The operational tools are ordinary system tools used with discipline. <code>journalctl -o json</code> produces structured records from a unit, and <a href="https://github.com/fail2ban/fail2ban" target="_blank" rel="noopener">fail2ban</a> turns repeated authentication failures into a temporary network block, which is the smallest useful detection loop. At the application edge, the <a href="https://coreruleset.org/" target="_blank" rel="noopener">Core Rule Set</a> for ModSecurity gives a maintained signature set for common injection attempts, and its logs are the input to the same loop.</p>
+<pre><code>journalctl -u myapp -o json --since "1 hour ago" | jq -r 'select(.PRIORITY&lt;="4") | .MESSAGE'
+fail2ban-client status sshd</code></pre>
+    <div class="note"><b>Detection is not prevention.</b> A blocked request and a logged request are different outcomes. The sheet treats logging as evidence: the control already failed or held, and the log is how you find out which.</div>
+  </section>
+
+  <section id="process">
+    <h2><span class="n">16</span>Threat modelling, ASVS, WSTG</h2>
+    <p>The process sheets are the ones people skip because they do not contain a payload. They are also the cheapest controls in the collection. Threat modelling asks four questions before code exists: what are we building, what can go wrong, what are we going to do about it, and did we do a good job. The Threat Modeling sheet adds the mechanics — a data-flow diagram, trust boundaries, and a library of prompts such as STRIDE — and insists that the output is a list of decisions with owners, not a document.</p>
+    <p><a href="https://owasp.org/www-project-threat-dragon/" target="_blank" rel="noopener">Threat Dragon</a> is the free tool that makes the diagram and the threats one artifact, which matters because a diagram nobody updates is worse than none. For a small project, a whiteboard and four columns are enough; the sheet is more interested in the habit than in the software.</p>
+    <p>ASVS is where the model becomes testable. It is a requirements catalogue in three levels: level one for low-risk applications, level two for anything handling personal or business data, level three for critical systems. The useful move is to pick a level, copy the requirements that apply, and put them in the backlog with the same weight as a feature. The WSTG is the other half: for each requirement, the test that demonstrates it, written so a person who did not build the system can run it.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>Which level, and what it costs</caption>
+        <thead><tr><th scope="col">ASVS level</th><th scope="col">Fits</th><th scope="col">Practical cost</th></tr></thead>
+        <tbody>
+          <tr><td>L1</td><td>Public, low-risk, no accounts</td><td>A checklist review before release.</td></tr>
+          <tr><td>L2</td><td>Accounts, personal data, payments</td><td>Requirements in the backlog; tests in CI.</td></tr>
+          <tr><td>L3</td><td>Critical infrastructure, high-value data</td><td>Independent verification and design review.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The site's <a href="./learnHacking.html">red and blue lab</a> is the practical bridge between the two guides: it takes an attack path and asks which requirement would have stopped it and which test would have caught it. That is the loop the process sheets describe, run on a system you own. For the anatomy of the attacks themselves, the <a href="./Security.html">field guide</a> walks the same path from the intruder's side.</p>
+  </section>
+
+  <section id="scope">
+    <h2><span class="n">17</span>Rules of engagement</h2>
+    <p>Every command in this article points at <code>127.0.0.1</code>, a container started for the exercise, or a hostname under <code>.test</code> that resolves only on the lab machine. None of them points at this website, and none should. The article is a description of controls, not an authorisation to test anyone's service.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>The only targets a command here may name</caption>
+        <thead><tr><th scope="col">Target</th><th scope="col">Why it is allowed</th></tr></thead>
+        <tbody>
+          <tr><td><code>127.0.0.1</code></td><td>The loopback interface of the machine running the command.</td></tr>
+          <tr><td>A container you started</td><td>Disposable, isolated, and destroyed after the exercise.</td></tr>
+          <tr><td><code>*.test</code> on your resolver</td><td>Reserved for testing; it cannot resolve to someone else's site.</td></tr>
+          <tr><td>A host you own, in writing</td><td>Only with a scope document and a stop condition.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The discipline is not only legal. Scanners are noisy and destructive: sqlmap writes payloads into logs and can exhaust a connection pool, ZAP's active scan submits forms, jwt_tool forges tokens, and a benchmark can pin every core on a shared host. Running them against a production domain is how a security article becomes an incident.</p>
+    <p>The verification is mechanical. Search the page for the domain and you will find only the canonical URL, the Open Graph metadata and the sources — no command, no <code>-u</code>, no <code>-t</code>, no <code>-h</code> pointing at it. The same search should be run on any lab notes before they are published.</p>
+<pre><code>grep -nE '(sqlmap|zap-baseline|testssl|jwt_tool).*https?://' docs/OWASPCheatSheets.html
+<span class="c"># every match ends in 127.0.0.1, a container name, or *.test</span></code></pre>
+    <p>These <a href="https://art.odicforcesounds.com/pages/Data/Audio/Path_Of_Shields/tracks/19_We_are_Tools/" target="_blank" rel="noopener">tools</a> are amplifiers. They do not decide whether a target is yours, and they do not know the difference between a lab and a stranger's server. That decision is the first control in every sheet, and it is the one a reader has to supply.</p>
+  </section>
+
+  <section id="limits">
+    <h2><span class="n">18</span>Where the series stops</h2>
+    <p>No cheat sheet can tell you whether your feature should exist. The collection covers implementation extremely well and design only lightly: it can tell you how to store a password, not whether to build a login at all; how to authorise a request, not whether the business rule behind it is fair. Business-logic flaws, the ones that abuse a legitimate workflow, are mostly outside its scope, and they are the ones a scanner will never find.</p>
+    <p>It also ages unevenly. Password parameters move, browser headers change, and a sheet that was strict two years ago may now be a floor. The version in the repository is the only one worth citing, and the commit history is part of the guidance. A recommendation copied from a blog post that cites a 2019 sheet is a recommendation from 2019.</p>
+    <p>Finally, the sheets are guidance, not proof. A green scan means the checks ran, not that the system is safe; a passing ASVS review means the requirements were verified, not that no requirement was missed. The honest use is to treat each control as a claim, each tool as a way to test the claim, and the gap between them as the work.</p>
+    <p class="closing">The series is at its best when it is read as a set of arguments rather than a set of snippets: here is the failure, here is why the obvious fix fails, here is the one that holds, and here is what it costs. That structure survives every version bump, and it is why 139 short documents remain more useful than a shelf of standards.</p>
+  </section>
+
+  <section id="sources">
+    <h2><span class="n">19</span>Sources</h2>
+    <ul>
+      <li><a href="https://cheatsheetseries.owasp.org/Glossary.html" target="_blank" rel="noopener">Index</a> — the alphabetical list of all 139 sheets.</li>
+      <li><a href="https://github.com/OWASP/CheatSheetSeries" target="_blank" rel="noopener">Repository</a> — the Markdown source and its history.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html" target="_blank" rel="noopener">Passwords</a> — algorithms, parameters, salt and pepper.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html" target="_blank" rel="noopener">Authentication</a> — credential handling and recovery.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html" target="_blank" rel="noopener">Sessions</a> — identifiers, expiry and storage.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">SQL</a> — parameterisation, identifiers and least privilege.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Query_Parameterization_Cheat_Sheet.html" target="_blank" rel="noopener">Queries</a> — parameterised examples per language.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Injection_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">Injection</a> — the shared rule across interpreters.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">XSS</a> — output encoding by context and sanitisation.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">DOM</a> — sinks and sources in client-side code.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html" target="_blank" rel="noopener">CSP</a> — strict policies, nonces, hashes and reporting.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">CSRF</a> — tokens, double submit and Fetch Metadata.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html" target="_blank" rel="noopener">Framing</a> — frame-ancestors and legacy headers.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html" target="_blank" rel="noopener">Uploads</a> — extensions, signatures, storage and serving.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Path_Traversal_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">Traversal</a> — resolving inside a fixed base.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">XXE</a> — disabling entities in every parser.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html" target="_blank" rel="noopener">Deserialization</a> — allow-lists and signed payloads.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">SSRF</a> — allow-lists, parsing and redirects.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html" target="_blank" rel="noopener">Secrets</a> — centralisation, rotation and dynamic credentials.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Vulnerable_Dependency_Management_Cheat_Sheet.html" target="_blank" rel="noopener">Dependencies</a> — what to do after the scanner speaks.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Dependency_Graph_SBOM_Cheat_Sheet.html" target="_blank" rel="noopener">SBOM</a> — the inventory of what ships.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Software_Supply_Chain_Security_Cheat_Sheet.html" target="_blank" rel="noopener">Supply</a> — provenance and verification.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html" target="_blank" rel="noopener">TLS</a> — versions, suites and certificate validation.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Strict_Transport_Security_Cheat_Sheet.html" target="_blank" rel="noopener">HSTS</a> — max-age, subdomains and preload.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_Cheat_Sheet.html" target="_blank" rel="noopener">JWT</a> — algorithms, claims and revocation.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html" target="_blank" rel="noopener">OAuth</a> — redirect URIs, PKCE and token handling.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/GraphQL_Cheat_Sheet.html" target="_blank" rel="noopener">GraphQL</a> — introspection, depth and field authorisation.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html" target="_blank" rel="noopener">REST</a> — verbs, keys, validation and errors.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html" target="_blank" rel="noopener">Docker</a> — users, capabilities and read-only layers.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Kubernetes_Security_Cheat_Sheet.html" target="_blank" rel="noopener">Kubernetes</a> — service accounts, policies and quotas.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/CI_CD_Security_Cheat_Sheet.html" target="_blank" rel="noopener">CI/CD</a> — pinned actions, tokens and untrusted code.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html" target="_blank" rel="noopener">Logging</a> — events, format, storage and retention.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Error_Handling_Cheat_Sheet.html" target="_blank" rel="noopener">Errors</a> — what to show, what to record.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html" target="_blank" rel="noopener">Modelling</a> — questions, diagrams and STRIDE.</li>
+      <li><a href="https://owasp.org/www-project-application-security-verification-standard/" target="_blank" rel="noopener">ASVS</a> — the requirement catalogue and its levels.</li>
+      <li><a href="https://owasp.org/www-project-web-security-testing-guide/" target="_blank" rel="noopener">WSTG</a> — the tests that prove a requirement.</li>
+    </ul>
+    <p>Tools are linked where they are described: argon2, hashcat, semgrep, sqlmap, ZAP, DOMPurify, CSP Evaluator, ClamAV, ysoserial, gitleaks, trufflehog, osv-scanner, Dependency-Check, Syft, Grype, cosign, testssl.sh, sslyze, OpenSSL, jwt_tool, graphql-cop, Schemathesis, docker-bench-security, kube-bench, Kubescape, Trivy, fail2ban and the Core Rule Set.</p>
+  </section>
+</main>
+
+<footer class="site">
+  <p>OWASP Cheat Sheets, Field by Field — written for a lab you own. Every command in this page targets loopback, a disposable container, or a name that resolves only on your machine.</p>
+</footer>
+</body>
+</html>
