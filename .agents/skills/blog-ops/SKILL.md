@@ -148,9 +148,10 @@ entry for nothing. `append_dates.py` inserts the missing record and leaves the r
 python3 .agents/skills/blog-ops/append_dates.py [Page.html ...] [--dry-run]
 ```
 
-It takes the instant from the first commit that added the page (the `git-dates` rule,
-including the copied/renamed case), keeps `index.html` first and the rest sorted, and moves
-only `count` and `generated`. `docs/404.html` and `docs/home.html` are in neither file.
+It puts the map in the builder's order first — `index.html`, then the rest by name — places
+the new name among them, and takes the instant from the first commit that added the page
+(the `git-dates` rule, including the copied/renamed case). Only `count` and `generated`
+move. `docs/404.html` and `docs/home.html` are in neither file.
 `index.json` is not hand-edited: a page that carries its own text needs no row there, and a
 page that reads the API gets its object appended — never a rebuild (see the
 `incremental-api` skill).
