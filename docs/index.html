@@ -1212,9 +1212,15 @@ color: var(--accent-warm);
       <button class="toggle-all" type="button">Collapse all</button>
     </div>
 
-    <section class="recent" hidden aria-labelledby="recent-title">
+    <section class="recent" aria-labelledby="recent-title">
       <h2 class="recent-head" id="recent-title">Last 5 publications<span class="recent-note">newest creations</span></h2>
-      <ol class="recent-list"></ol>
+      <ol class="recent-list">
+        <li><a href="./limitesDoExercito.html">Os Limites do Exército</a><span class="recent-cat">Politics, Law &amp; Justice</span></li>
+        <li><a href="./policiaQueSegue.html">A Polícia Que Segue</a><span class="recent-cat">Politics, Law &amp; Justice</span></li>
+        <li><a href="./prostituicaoSalvaVidas.html">A Prostituição Salva Vidas</a><span class="recent-cat">Philosophy &amp; Spirituality</span></li>
+        <li><a href="./masturbacaoSalvaVidas.html">Masturbação Salva Vidas</a><span class="recent-cat">Philosophy &amp; Spirituality</span></li>
+        <li><a href="./OWASPCheatSheets.html">OWASP Cheat Sheets, Field by Field</a><span class="recent-cat">Security &amp; Hacking</span></li>
+      </ol>
     </section>
 
     <div class="archive">
@@ -2132,32 +2138,6 @@ color: var(--accent-warm);
 (function () {
   "use strict";
 
-  // The Last 5 block is ordered by this list, not by a date: the newest page
-  // is the first name below, so adding a page means putting its file at the top
-  // and letting the sixth name fall off. No clock, no git history, no fetch.
-  var LATEST = [
-    "limitesDoExercito.html",
-    "policiaQueSegue.html",
-    "prostituicaoSalvaVidas.html",
-    "masturbacaoSalvaVidas.html",
-    "OWASPCheatSheets.html",
-    "testosteronaAgressao.html",
-    "dorNegada.html",
-    "descargaEletrica.html",
-    "erroNatural.html",
-    "arteDaMaldade.html",
-    "estatisticaDoEu.html",
-    "arteDaBondade.html",
-    "experienciaDoEu.html",
-    "japanDossier.html",
-    "chinaDossier.html",
-    "oneProductEconomy.html",
-    "rightToRepair.html",
-    "randomZen.html",
-    "theRebel.html",
-    "appGrowthGuide.html"
-  ];
-
   // Keep the archive self-organising: categories alphabetically, then each
   // publication inside its category. This runs on every load, so a link added
   // to the markup is placed in the right spot without editing the order.
@@ -2224,8 +2204,6 @@ color: var(--accent-warm);
   var status = document.querySelector(".status");
   var toggleAll = document.querySelector(".toggle-all");
   var featured = document.querySelector(".featured");
-  var recentBlock = document.querySelector(".recent");
-  var recentList = document.querySelector(".recent-list");
   var sutraHead = document.querySelector(".sutra-head .count");
   var sections = Array.prototype.slice.call(document.querySelectorAll(".category"));
   var catDetails = sections.map(function (section) { return section.querySelector(".cat"); });
@@ -2329,10 +2307,6 @@ color: var(--accent-warm);
   function filter() {
     if (!search) {
       return;
-    }
-
-    if (recentBlock) {
-      recentBlock.hidden = Boolean(search.value.trim());
     }
 
     var query = search.value.trim();
@@ -2475,61 +2449,6 @@ color: var(--accent-warm);
   }
 
 
-  function buildRecent() {
-    if (!recentBlock || !recentList) {
-      return;
-    }
-
-    // linked from the toolbar above: the game must not take a "Last 5 publications" slot
-    var skip = { "oJogoDoOperador.html": true };
-    var byFile = {};
-
-    sections.forEach(function (section) {
-      var category = catTitle(section);
-      items(section).forEach(function (item) {
-        var file = fileOf(item);
-        if (file && !byFile[file]) {
-          byFile[file] = { item: item, category: category };
-        }
-      });
-    });
-
-    var entries = [];
-
-    LATEST.forEach(function (file) {
-      var found = byFile[file];
-      if (!found || skip[file] || !/\.html$/i.test(file)) {
-        return;
-      }
-
-      var link = found.item.querySelector("a");
-      entries.push({
-        title: link ? link.textContent.trim() : file,
-        href: link ? link.getAttribute("href") : "./" + file,
-        category: found.category
-      });
-    });
-
-    recentList.textContent = "";
-
-    entries.slice(0, 5).forEach(function (entry) {
-      var li = document.createElement("li");
-      var link = document.createElement("a");
-      var cat = document.createElement("span");
-
-      link.href = entry.href;
-      link.textContent = entry.title;
-      cat.className = "recent-cat";
-      cat.textContent = entry.category;
-
-      li.appendChild(link);
-      li.appendChild(cat);
-      recentList.appendChild(li);
-    });
-
-    recentBlock.hidden = entries.length === 0 || Boolean(search && search.value.trim());
-  }
-
   function clearTarget() {
     Array.prototype.forEach.call(document.querySelectorAll(".is-target"), function (item) {
       item.classList.remove("is-target");
@@ -2630,7 +2549,6 @@ color: var(--accent-warm);
 
   window.addEventListener("hashchange", revealHash);
 
-  buildRecent();
   filter();
   revealHash();
   setToggleLabel();
