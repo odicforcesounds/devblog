@@ -1,6 +1,6 @@
 ---
 name: git-dates
-description: Derive and fix article dates in this blog from git history — first commit as datePublished, last commit as dateModified, including the rename/copy case — and keep the JSON-LD, docs/api/index.json, sitemap lastmod and index.html consistent with that. Use whenever a page date, publication order, "Last 5 publications" entry or dateModified looks wrong.
+description: Derive and fix article dates in this blog from git history — first commit as datePublished, last commit as dateModified, including the rename/copy case — and keep the JSON-LD, docs/api/index.json, sitemap lastmod consistent with that. Use whenever a page date, an API row or dateModified looks wrong.
 ---
 
 # Dates come from git
@@ -69,14 +69,14 @@ PUBLISHED_OVERRIDES = {"OneHumanSong.html": "2026-10-16T22:49:01+01:00"}
 | `docs/api/index.json` | `published`, `modified`, `published_at`, `modified_at` | `.agents/skills/blog-ops/build_api.py` from git (`--diff-filter=A` / `-1`) |
 | `docs/api/dates.json` | `published` map: name → instant | same script, same dates, compact form; may be appended in place for a new page (blog-ops, *One page in `docs/api/dates.json`*) |
 | `docs/sitemap.xml` | `lastmod` | `.agents/skills/blog-ops/build_sitemap.py` |
-| `docs/index.html` | `published_at` read from `dates.json` | the page itself, at load time (no date object is stored in it) |
+| `docs/index.html` | nothing | the *Last 5* block is five `<li>` rows edited by hand in the markup; no date is read and none is stored |
 
-`index.html` keeps no dates of its own: it fetches `./api/dates.json` and uses the
-`published` map for the "Last 5 publications" block and the date badges. A page missing
-from that map simply has no badge — the honest fix is deriving the date from history, not
-typing today's clock. Both JSON files come from the same `git_dates()` run, so they cannot
-disagree; `check_site.py` fails if `dates.json` has no instant for a page listed in
-`index.json`.
+`index.html` reads no date and fetches nothing: the "Last 5 publications" block is five
+`<li>` rows written in its markup. Publishing a page is a first row added and the fifth
+deleted by hand, so a page moved back in time in git does not move in that block — it is a
+list of the five newest pages, not a query. A page missing from `dates.json` has no instant
+to serve by name — the honest fix is deriving the date from history, not typing today's clock. Both JSON files come from the same `git_dates()` run, so they cannot
+disagree.
 
 ## Procedure for a wrong date
 
@@ -85,7 +85,8 @@ disagree; `check_site.py` fails if `dates.json` has no instant for a page listed
 3. Check whether the path was copied/renamed (the `C`/`R` status above). If so, use the
    source's oldest commit and add the `PUBLISHED_OVERRIDES` entry.
 4. Update the page JSON-LD (`datePublished`, `dateModified`) — only those fields.
-5. Nothing to edit in `docs/index.html`: it reads the date from the API at load time.
+5. Nothing to edit in `docs/index.html`: it reads no date. Its *Last 5* block is five rows in
+   the markup and only changes when a page is added, not when a date is corrected.
 6. Rebuild `python3 .agents/skills/blog-ops/build_sitemap.py`. The API is refreshed by the
    author only: `build_api.py` never runs at the end of an agent's task.
 7. Prove agreement:
@@ -105,9 +106,9 @@ print("dates:", dates.get(page.split("/")[-1]))
 PY
 ```
 
-8. Confirm the ordering effect before reporting: the "Last 5" list sorts every linked
-   page by `published_at` descending, so a page moved back in time also moves down the
-   list (or leaves it).
+8. Confirm the date reaches the page itself: the JSON-LD `datePublished`/`dateModified`
+   and, where the page carries one, `article:published_time`. The "Last 5" block does not
+   move with a corrected date; it is a hand-kept list of the five newest pages.
 
 ## Rules
 
