@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://upload.wikimedia.org; font-src 'self' data:; connect-src 'self'; form-action 'self'; object-src 'none'; base-uri 'self'">
+<title>Stealth Investigation — entering a case quietly</title>
+<meta name="description" content="The quiet half of the follower's method: how a state authorises, runs and ends a covert entry into a network, and why the schema outlives the tool.">
+<link rel="canonical" href="https://blog.odicforcesounds.com/stealthInvestigation.html">
+<meta property="og:title" content="Stealth Investigation — entering a case quietly">
+<meta property="og:description" content="The quiet half of the follower's method: how a state authorises, runs and ends a covert entry into a network, and why the schema outlives the tool.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://blog.odicforcesounds.com/stealthInvestigation.html">
+<meta property="og:site_name" content="Monkey Blog">
+<meta property="og:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Stealth Investigation — entering a case quietly">
+<meta name="twitter:description" content="The quiet half of the follower's method: how a state authorises, runs and ends a covert entry into a network, and why the schema outlives the tool.">
+<meta name="twitter:image" content="https://blog.odicforcesounds.com/images/peace.jpg">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://blog.odicforcesounds.com/stealthInvestigation.html#article",
+      "headline": "Stealth Investigation — entering a case quietly",
+      "description": "The quiet half of the follower's method: how a state authorises, runs and ends a covert entry into a network, and why the schema outlives the tool.",
+      "url": "https://blog.odicforcesounds.com/stealthInvestigation.html",
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://blog.odicforcesounds.com/stealthInvestigation.html" },
+      "image": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/peace.jpg", "width": 1496, "height": 960 },
+      "inLanguage": "en",
+      "author": { "@type": "Person", "name": "Oscar", "url": "https://blog.odicforcesounds.com/" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Monkey Blog",
+        "url": "https://blog.odicforcesounds.com/",
+        "logo": { "@type": "ImageObject", "url": "https://blog.odicforcesounds.com/images/three.jpg", "width": 1024, "height": 1024 }
+      },
+      "isPartOf": { "@type": "Blog", "name": "Monkey Blog", "url": "https://blog.odicforcesounds.com/" },
+      "articleSection": "Politics, Law & Justice",
+      "keywords": "stealth investigation, criminal knowledge, threat model, ATT&CK, lawful hacking, covert entry, authorisation, EncroChat, GPS tracking, forensics, evidence, minimisation, accountability, police, military",
+      "wordCount": 7845,
+      "datePublished": "2026-11-22",
+      "dateModified": "2026-11-22"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://blog.odicforcesounds.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Politics, Law & Justice", "item": "https://blog.odicforcesounds.com/#category-politics-law-and-justice" },
+        { "@type": "ListItem", "position": 3, "name": "Stealth Investigation — entering a case quietly", "item": "https://blog.odicforcesounds.com/stealthInvestigation.html" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#070a10;
+  --panel:#0e141d;
+  --line:rgba(120,170,220,.22);
+  --line-soft:rgba(226,232,240,.07);
+  --ink:#e9eef5;
+  --dim:#b1bcc9;
+  --faint:#7d8a99;
+  --accent:#7cc0f0;
+  --warm:#e6b06a;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(50rem 30rem at 50% -12%,rgba(124,192,240,.11),transparent 68%),
+    var(--bg);
+  color:var(--ink);
+  font:17px/1.7 var(--sans);
+}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(124,192,240,.3)}
+a:hover,a:focus-visible{color:#fff;border-color:var(--accent)}
+:focus-visible{outline:2px solid var(--warm);outline-offset:3px}
+::selection{background:rgba(124,192,240,.3);color:#fff}
+
+.lang-switch{
+  display:flex;justify-content:center;gap:.4rem;
+  padding:.85rem 1rem .1rem;
+  font-family:var(--mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;
+}
+.lang-switch a{
+  padding:.28rem .95rem;font-weight:600;
+  border:1px solid var(--accent);border-radius:999px;
+  background:rgba(124,192,240,.12);opacity:.78;
+  transition:opacity 150ms ease,background-color 150ms ease,color 150ms ease;
+}
+.lang-switch a[aria-current="true"]{color:#06101a;background:var(--accent);opacity:1}
+.lang-switch a:hover,.lang-switch a:focus-visible{color:#150e05;background:var(--warm);border-color:var(--warm);opacity:1}
+[data-lang-block][hidden]{display:none !important}
+
+.top{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:.7rem clamp(1rem,4vw,2.4rem);
+  border-bottom:1px solid var(--line-soft);
+  font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--faint);
+}
+.top .home{border:0;color:var(--accent);white-space:nowrap}
+.top .brand b{font-weight:500;color:var(--dim)}
+@media (max-width:560px){.top .brand{display:none}}
+
+main{max-width:50rem;margin:0 auto;padding:clamp(1.6rem,4.6vh,3rem) clamp(1rem,4vw,2rem) 3rem}
+.kicker{margin:0 0 .9rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--accent)}
+h1,.seo-h2{
+  margin:0;font-family:var(--serif);font-weight:400;
+  font-size:clamp(1.85rem,5.2vw,3rem);line-height:1.06;letter-spacing:-.02em;
+}
+.lede{margin:1.1rem 0 0;max-width:60ch;color:var(--dim);font-family:var(--serif);font-size:clamp(1.02rem,1.8vw,1.16rem);line-height:1.68}
+
+.toc{
+  margin:2rem 0 0;padding:1rem 1.15rem;
+  border:1px solid var(--line);border-radius:12px;background:rgba(14,20,29,.72);
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+}
+.toc ol{margin:.6rem 0 0;padding-left:1.3rem;display:grid;gap:.35rem}
+.toc a{border:0;color:var(--dim)}
+.toc a:hover,.toc a:focus-visible{color:var(--warm)}
+
+h2{margin:2.6rem 0 .7rem;font-family:var(--serif);font-weight:400;font-size:clamp(1.3rem,3vw,1.7rem);line-height:1.2}
+h2 .n{display:inline-block;min-width:1.9rem;font-family:var(--mono);font-size:.7rem;color:var(--accent);vertical-align:.35em}
+h3{margin:1.6rem 0 .4rem;font-size:1.02rem;font-weight:600;color:var(--ink)}
+p{margin:.85rem 0}
+ul,ol{padding-left:1.35rem}
+li{margin:.4rem 0}
+strong{font-weight:600;color:#fff}
+blockquote{
+  margin:1.4rem 0;padding:.9rem 1.1rem;
+  border-left:2px solid var(--warm);background:rgba(230,176,106,.06);
+  color:var(--dim);font-family:var(--serif);font-size:1.02rem;
+}
+blockquote p{margin:0}
+
+.table-wrap{overflow-x:auto;margin:1.4rem 0;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:.86rem;min-width:34rem}
+caption{caption-side:top;text-align:left;padding:.8rem 1rem;color:var(--faint);font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase}
+th,td{padding:.6rem .8rem;border-top:1px solid var(--line-soft);text-align:left;vertical-align:top}
+thead th{color:var(--accent);font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;border-top:0}
+tbody th{color:var(--ink);font-weight:600;white-space:nowrap}
+
+.layers{list-style:none;margin:1.4rem 0;padding:0;display:grid;gap:.55rem;counter-reset:layer}
+.layers li{
+  counter-increment:layer;position:relative;
+  padding:.75rem .9rem .75rem 2.7rem;
+  border:1px solid var(--line);border-radius:10px;background:rgba(14,20,29,.7);
+  font-size:.92rem;
+}
+.layers li::before{
+  content:counter(layer);position:absolute;left:.8rem;top:.72rem;
+  width:1.35rem;height:1.35rem;border-radius:50%;
+  display:grid;place-items:center;
+  background:rgba(124,192,240,.16);color:var(--accent);
+  font-family:var(--mono);font-size:.66rem;
+}
+.layers b{display:block;color:#fff;font-weight:600}
+
+.check{list-style:none;padding-left:0;counter-reset:check}
+.check li{counter-increment:check;position:relative;padding-left:2.1rem;margin:.55rem 0}
+.check li::before{
+  content:counter(check);position:absolute;left:0;top:.1rem;
+  font-family:var(--mono);font-size:.68rem;color:var(--warm);
+}
+
+.sources{margin-top:2.6rem;padding-top:1.2rem;border-top:1px solid var(--line);font-size:.84rem;color:var(--faint)}
+.sources h2{font-size:1rem;margin:.2rem 0 .6rem;color:var(--dim)}
+.sources ol{padding-left:1.2rem}
+.sources li{margin:.45rem 0}
+
+footer{margin-top:2.4rem;padding-top:1rem;border-top:1px solid var(--line-soft);color:var(--faint);font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase}
+@media print{.lang-switch,.top{display:none}}
+</style>
+<style id="living-panel-style">
+  .living-panel{position:fixed;top:60px;right:clamp(1.2rem,7vw,8rem);z-index:95;
+    width:12.5rem;display:flex;flex-direction:column;
+    align-items:center;gap:.6rem;margin:0;padding:.75rem .65rem;text-align:left;
+    background:rgba(8,12,17,.9);border:1px solid var(--line, rgba(255,255,255,.14));
+    border-radius:16px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    font-family:var(--sans, system-ui, sans-serif)}
+  .living-panel img{width:100%;height:8rem;object-fit:cover;border-radius:.6rem;
+    border:1px solid var(--line, rgba(255,255,255,.14));background:var(--panel, #101018)}
+  .living-panel p{margin:0;font-size:.78rem;line-height:1.5;color:var(--dim, #a9a9ba)}
+  .living-panel a{color:var(--accent, #5ce1ff);text-decoration:none;
+    border-bottom:1px solid rgba(124,192,240,.4)}
+  .living-panel a:hover,.living-panel a:focus-visible{color:var(--warm, #ffd23f);
+    border-color:currentColor}
+  @media (max-width:1200px){.living-panel{width:11rem;padding:.6rem .55rem}
+    .living-panel img{height:6.8rem}.living-panel p{font-size:.74rem}}
+  @media (max-width:900px){.living-panel{width:9rem;gap:.45rem}
+    .living-panel img{height:5.6rem}.living-panel p{font-size:.68rem;line-height:1.45}}
+  @media (max-width:640px){.living-panel{top:auto !important;bottom:0;left:0;right:0;
+    width:auto;flex-direction:row;align-items:center;gap:.5rem;padding:.4rem .5rem;
+    border-radius:.7rem .7rem 0 0;transform:none !important;
+    max-height:6.2rem !important;overflow:hidden !important}
+    .living-panel img{width:3.6rem;height:3.6rem;flex:0 0 auto}
+    .living-panel > div{flex:0 0 auto;font-size:.58rem;line-height:1.25;text-align:center}
+    .living-panel p{font-size:.78rem;line-height:1.35}
+    body{padding-bottom:5.2rem}}
+  @media print{.living-panel{display:none}}
+</style>
+<script src="living-panel.js" defer></script>
+</head>
+<body>
+<aside class="living-panel" id="living-panel" aria-label="A living being, a tool, a component, a plant and a city">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Laysan_Albatross_RWD2.jpg/250px-Laysan_Albatross_RWD2.jpg" alt="Laysan albatross" width="152" height="90" loading="lazy" decoding="async">
+    <p>this <a href="birdsIndex.html#order-procellariiformes" title="Diomedeidae · Procellariiformes">Laysan albatross</a> likes to use <a href="awesomeIndex.html#cat-lang" title="Node.js · Languages and frameworks">Node.js</a> and loves <a href="electronicsIndex.html#cat-power" title="Supplies and conversion · Power sources and conversion">Power inverter</a> while doing some diet with <a href="plantsIndex.html#order-dioscoreales" title="Dioscoreaceae · Dioscoreales">Yam (vegetable)</a> at <a href="worldIndex.html#cat-tl" title="Timor Leste · Oceania">Dili</a>.</p>
+  </aside>
+
+<nav class="lang-switch" aria-label="Language">
+  <a href="?lang=en" data-lang-switch="en" aria-current="true" lang="en">English</a>
+  <a href="?lang=pt" data-lang-switch="pt" lang="pt-PT">Português</a>
+</nav>
+
+<div id="lang-en" data-lang-block="en" lang="en">
+  <header class="top">
+    <a class="home" href="./index.html">← Home</a>
+    <span class="brand"><b>Covert entry</b> · the quiet half</span>
+  </header>
+
+  <main>
+    <p class="kicker">Policing · the method behind the method</p>
+    <h1>Stealth Investigation</h1>
+    <p class="lede">The follower waits on a dock for a boat. When the shipment is a decision instead of a crate, the wait happens inside a network — and entering it quietly is a procedure before it is a technique.</p>
+
+    <nav class="toc" id="en-toc" aria-label="Contents">
+      Contents
+      <ol>
+        <li><a href="#s1">Stealth is time, not invisibility</a></li>
+        <li><a href="#s2">One signature decides whether it was a crime</a></li>
+        <li><a href="#s3">EncroChat: the state becomes the platform</a></li>
+        <li><a href="#s4">The schema, layer by layer</a></li>
+        <li><a href="#s5">Three ways in, three ways to lose</a></li>
+        <li><a href="#s6">Collect little, keep the log</a></li>
+        <li><a href="#s7">What criminals know that police should</a></li>
+        <li><a href="#s8">Know your enemy, without becoming him</a></li>
+        <li><a href="#s9">The toolbox, by function</a></li>
+        <li><a href="#s10">A tag on a jacket</a></li>
+        <li><a href="#s11">From the case to the doctrine</a></li>
+        <li><a href="#s12">Where it breaks</a></li>
+        <li><a href="#s13">A checklist before you insert anything</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="s1"><span class="n">1</span>Stealth is time, not invisibility</h2>
+    <p>Nothing in a stealth investigation is invisible. A radar sees the aeroplane; a camera sees the face; a server logs the login. What is hidden is not the presence of the state — it is the <strong>knowledge of that presence</strong>, held from the target for exactly as long as the case needs it. That is a different commodity, and it is bought with three things: persistence, proximity and non-disclosure.</p>
+    <p><strong>Persistence</strong> is the same three weeks the follower spends on a shipment, now spent inside a channel that never goes to bed. <strong>Proximity</strong> is being in the room where the plan is made, instead of reconstructing it afterwards from a seized phone. <strong>Non-disclosure</strong> is what keeps the target behaving normally: the moment he suspects, the evidence stops describing his habits and starts describing his reaction to you.</p>
+    <p>That is also the cost. Everything that makes the entry quiet makes it fragile. The asset is now an object inside someone else's system, subject to updates, reboots and suspicion; if it is found, it stops being an eye and becomes proof that the state was there — with a date, a target and a technique attached. The <a href="./policiaQueSegue.html">follower</a> accepts that a boat can disappear behind an island; the operator of a covert entry accepts that the island can be the antivirus vendor. What survives is what an artist would call <a href="https://art.odicforcesounds.com/pages/YinYang/Expression/" target="_blank" rel="noopener">expression</a>: knowing what to leave out of the frame.</p>
+
+    <h2 id="s2"><span class="n">2</span>One signature decides whether it was a crime</h2>
+    <p>The acts are the same. Illegitimate access and illegitimate interception are offences in the Portuguese <a href="https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2009-128879174-128899371008" target="_blank" rel="noopener">code</a> that mirrors the Budapest Convention; a police officer who opens a system without a dispatch commits them like anyone else. What changes everything is the document that comes before: an authorisation from the judicial authority.</p>
+    <p>The Portuguese law of cybercrime arranges that authorisation by interference, and the arrangement is worth reading as a schema rather than as a list of articles. Article 15 allows a search of a determined system, authorised or ordered by the competent judicial authority, and sends the use of technical devices to the rules of interception. Article 16 governs the seizure of the data found. Article 18 admits interception of communications in the listed cases. Article 19 admits undercover actions under the 2001 law on covert agents, and only for the offences it names. The technique is unchanged; the signature is the difference between a case and a crime.</p>
+    <p>The layer that ages worst is the technical one, and other states have already legislated for it. In the Netherlands the power to enter a device remotely and by stealth has existed since 1 March 2019, limited to serious offences, granted in writing by an investigating judge, and — the part worth copying — the tool itself must be examined by an independent service before use, with an inspectorate watching how the power is applied. That is not distrust of the technique; it is the recognition that the evidence has to survive a defence that will ask how the tool was built and who could have altered it.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>Who signs, what is limited, what is inspected</caption>
+        <thead>
+          <tr><th scope="col">System</th><th scope="col">Authorisation</th><th scope="col">Limits</th><th scope="col">Oversight</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Portugal</th><td>Judicial authority, by dispatch (search, seizure, interception, undercover action)</td><td>Listed offences; professional secrecy and State secrecy regimes apply</td><td>Judge and public prosecutor in the file; evidence tested in court</td></tr>
+          <tr><th scope="row">Netherlands</th><td>Investigating judge, in writing</td><td>Serious offences only; named investigative objectives</td><td>Independent examination of the tool; inspectorate report</td></tr>
+          <tr><th scope="row">France and the United Kingdom</th><td>National judicial framework, then mutual trust between states</td><td>Characterised as recovery from storage, not as live interception</td><td>Appeal courts, investigatory powers tribunal</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Portugal added a second kind of line in 2026. An act that would otherwise be illegitimate access is not punishable when its only purpose is to find and report a vulnerability in a system the actor does not own — the exemption for security research. The law now says out loud what the schema implies: the difference between intrusion and inspection is not the packet, it is the intent and the destination of what you find.</p>
+
+    <h2 id="s3"><span class="n">3</span>EncroChat: the state becomes the platform</h2>
+    <p>The cleanest real example is not an exploit. In 2020 investigators did not break the cryptography of an encrypted phone network used by organised crime; they reached the servers, took the stored messages, and read them. More than 66,000 handsets had been distributed covertly in 122 countries between 2016 and 2020, which is how large the audience was when the compromise began on 1 April 2020 and the material started moving through Europol to national teams.</p>
+    <p>The legal fight that followed is the lesson. The English <a href="https://www.judiciary.uk/wp-content/uploads/2022/07/A-v-R.pdf" target="_blank" rel="noopener">judgment</a> did not ask whether the intrusion was clever; it asked <em>where the data was</em> when it was taken. Reading from storage, the court held, is not interception in transmission — the comparison used was a letter written, put in an envelope and posted, where only the last act is transmission. In 2024 the Dutch Supreme Court declined to re-examine the French authorisation, accepting it under mutual trust. The technique was never the argument; the characterisation was.</p>
+    <blockquote>
+      A defence does not attack your exploit. It attacks the sentence that describes what the exploit was doing, and the paper that allowed it.
+    </blockquote>
+    <p>And the ending matters as much as the beginning. In June 2020 the administrators of the network understood what had happened, warned every user to power off and physically destroy the handsets, and the collection stopped. Every insertion has a half-life measured in the target's attention. If the exit is not designed together with the entrance — what is removed, what is left behind, what is disclosed, who is told — the operation ends when someone else decides it ends.</p>
+
+    <h2 id="s4"><span class="n">4</span>The schema, layer by layer</h2>
+    <p>Strip away the technology and a stealth investigation is seven decisions in a fixed order. The order is the method. A team that starts at layer five — the tool — has already lost the argument it will have in court two years later.</p>
+    <ol class="layers">
+      <li><b>Question</b>What fact is missing, and which offence does it prove? If the answer is “everything about this person”, there is no question and no case.</li>
+      <li><b>Authority</b>Which article allows it, who signs, for how long, with which objectives written down before anything is switched on.</li>
+      <li><b>Selection</b>Why this target and not the network around him; what a less intrusive route would cost; what happens if the intrusion fails.</li>
+      <li><b>Class</b>Platform, human agent or remote instrument — and which of them the authorisation actually names, because they are not interchangeable.</li>
+      <li><b>Collection</b>Metadata or content; which channels; which third parties are excluded by design rather than by hope.</li>
+      <li><b>Custody</b>Hash at capture, a log of every access, a parallel unclassified record that can go into the file, and disclosure to the defence.</li>
+      <li><b>Exit</b>Removal, revocation, audit, notification where the law requires it, and a written account of what the tool could see but did not.</li>
+    </ol>
+    <p>Police and military can share this schema precisely because it is not about the tool. An intelligence service and a criminal investigation answer the same seven questions with different signatures and different courts, and the same failure appears in both when one layer is skipped: an operation that worked and cannot be used.</p>
+
+    <h2 id="s5"><span class="n">5</span>Three ways in, three ways to lose</h2>
+    <p><strong>The platform.</strong> You build or buy the service the target chooses, and you are the pipe. It is the most powerful option and the most fragile: it needs real demand, because a network used only by suspects is a trap, and a defence will argue the state manufactured the crime rather than observed it. Its exit is brutal — the day the platform is exposed, every case built on it is re-litigated at once.</p>
+    <p><strong>The human agent.</strong> A person inside the group, authorised under the covert-agent law, with a handler, a code name and a limit on what he may do to keep the cover. The weakest link is not courage but arithmetic: agents are few, cases are many, and the same person cannot be risked twice in the same city.</p>
+    <p><strong>The remote instrument.</strong> A tool placed on the device, which reports what it is told to report. It buys the closest proximity and pays with the longest tail: updates, reboots, a phone shared with a partner, a tool that one day stops reporting and cannot be distinguished from a tool that was found. If it is found, it becomes a beacon pointing back at the state that placed it.</p>
+    <p>None of the three is the “right” one. Each buys a different kind of proximity and pays with a different kind of exposure — and a case that mixes them without naming them in the authorisation has already blurred the line the previous article drew: the eye that sees, and the hand that acts.</p>
+
+    <h2 id="s6"><span class="n">6</span>Collect little, keep the log</h2>
+    <p>The most common technical failure is not detection; it is appetite. A tool that can read everything will read everything by default, and a file with everything in it is a file with a defence attached. The rule that survives contact with a courtroom is the one from the <a href="./OWASPCheatSheets.html">security</a> world turned into procedure: collect the minimum that answers the question at layer one, and log why each item was collected.</p>
+    <p>Third parties are where appetite becomes damage. The phone is shared with a partner; the group chat includes a journalist; the contact list holds a lawyer. Professional secrecy and the special regimes for lawyers, doctors, banks and journalists exist for exactly this, and a tool that cannot exclude a category is not a tool, it is a net.</p>
+    <p>Custody is boring and decisive. Hash the material when it is captured, log every access afterwards, keep the classified stream where it belongs and a plain record of time, position and observation that can be read into the file. That parallel record is the same fusion cell from the follower's method, moved into a server: geometry and time travel to the prosecutor, sources and capabilities stay home.</p>
+
+    <h2 id="s7"><span class="n">7</span>What criminals know that police should</h2>
+    <p>There is a version of this article that ends with a warning, and a version that ends with a hiring plan. The truth is in between, and it starts with admitting that the technique is not the crime. Criminal groups are, in effect, the best-funded test lab for the tools the state will one day have to detect — and a police force that refuses to study their tradecraft is not pure, only late.</p>
+    <p>Three channels are legitimate and already legal. <strong>Study</strong>: the tradecraft is documented in judgments, in forensic reports, in the offence definitions themselves, and in the <a href="./KaliLinux.html">tooling</a> that is sold openly. <strong>Hiring</strong>: the people who build and break these tools are in a market, and a state that will not hire them buys worse tools from a vendor it cannot inspect. <strong>Adversarial testing</strong>: red teams against the state's own systems, which is what the security-research exemption protects.</p>
+    <p>What must not travel with the knowledge is impunity. The difference between a criminal and an investigator using the same technique is not skill and not motive; it is two signatures — the authorisation before, and the audit after. A state that learns from criminals and keeps both signatures gets better police. A state that learns from criminals and keeps neither has simply changed uniform.</p>
+    <p>There is also a cost to refusing. A police force that does not understand the technique will always be one case behind, and will outsource the understanding to a contractor whose incentive is a renewal, not a trial. The knowledge belongs inside the institution, where a judge can ask about it; only the impunity belongs outside.</p>
+
+    <h2 id="s8"><span class="n">8</span>Know your enemy, without becoming him</h2>
+    <p>“Know your enemy” is usually quoted as a licence and is really a discipline. It runs in two directions, and a police force needs both. Read forwards, it is a method: the techniques criminals use become the techniques the investigator recognises, reproduces in a laboratory and turns into a detection. Read backwards, it is a threat model: every one of those techniques is also a hole in the state's own systems, and the same file that teaches an officer what to look for tells an attacker where to push.</p>
+    <p>The vocabulary that makes this shareable already exists. <a href="https://attack.mitre.org/" target="_blank" rel="noopener">ATT&amp;CK</a> is a public catalogue of tactics and techniques built from observed intrusions, and its value is not the list but the names: one analyst writes “obfuscated payload, persistence through a scheduled task”, another unit searches its own closed cases for the same two phrases and finds a pattern nobody had connected. A knowledge base is not a weapon; it is the difference between an institution that remembers and one that starts from zero with every file.</p>
+    <p>Three uses follow, and each has a lawful form. <strong>Identify</strong>: a sample seized in one case is compared with a sample from another, and the same tool, the same mistake in its code or the same infrastructure reveals a group. <strong>Extract</strong>: a behaviour becomes a rule, and the rule becomes an alert that fires before the next shipment moves. <strong>Teach</strong>: the case is written up as a scenario, and the scenario is what a new officer practises on — cheaper than learning it from the defence in a courtroom.</p>
+    <p>Reading it backwards is the part institutions skip. The counter-surveillance, the burner phones, the encrypted app the market trusts precisely because the police cannot read it, the attempt to buy an officer — each is a technique on the same list, aimed at the state. A unit that studies the list and does not test its own systems against it has produced intelligence about everyone except itself.</p>
+    <p>The line is easy to state and hard to keep: studying needs no warrant, using needs one. When the same room holds the analyst who reads the technique and the operator who wants to use it, someone has to say which of the two is speaking. That sentence, said at the right moment, is most of the doctrine.</p>
+
+    <h2 id="s9"><span class="n">9</span>The toolbox, by function</h2>
+    <p>None of the families below is exotic. Most of the tools are free, several are open source, and every one of them is also used by the people being investigated. What separates the two uses is the paper and the destination — never the download.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>What each family of tools answers, and what it costs to use it</caption>
+        <thead>
+          <tr><th scope="col">Family</th><th scope="col">Examples</th><th scope="col">Question it answers</th><th scope="col">Paper it needs</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Open-source reconnaissance</th><td>Maltego, Shodan</td><td>What does the target expose without being touched?</td><td>Nothing for public data; a data-protection note once collection becomes systematic</td></tr>
+          <tr><th scope="row">Traffic and log analysis</th><td>Wireshark, Zeek</td><td>Who spoke to whom, when, and how much</td><td>A lawful tap or a seized device, with the order behind it</td></tr>
+          <tr><th scope="row">Disk and memory forensics</th><td>Autopsy, The Sleuth Kit, Volatility</td><td>What was stored, and what was running when it was taken</td><td>Seizure, hash at capture, chain of custody</td></tr>
+          <tr><th scope="row">Malware analysis</th><td>Sandboxes, YARA rules</td><td>What a sample does, so the next one is recognised</td><td>The sample itself, from a lawful seizure</td></tr>
+          <tr><th scope="row">Device extraction</th><td>Forensic phone toolkits</td><td>The content of a seized phone, with a defensible log</td><td>Seizure plus the authorisation for content</td></tr>
+          <tr><th scope="row">Knowledge bases</th><td>ATT&amp;CK, OWASP</td><td>What the technique is called, and who else has seen it</td><td>None; this is the vocabulary, not the act</td></tr>
+          <tr><th scope="row">Tracking</th><td>GPS beacons, Bluetooth tags, plate readers</td><td>Where a vehicle or an object went</td><td>Judicial authorisation, with a start and an end date</td></tr>
+          <tr><th scope="row">Covert audio and video</th><td>Fixed or body-worn devices</td><td>What was said in a place</td><td>The shortest authorisation of all, for the most intrusive family</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>A tool is a witness that cannot be cross-examined. The court will ask which version was used, what it logged, who could have altered it between capture and trial, and whether the officer operating it can explain the defaults. That is why the Dutch examine the instrument before use and keep the report: not because a tool is presumed dishonest, but because a defence is entitled to ask.</p>
+    <p>The corollary is an inventory — version, operation, authorisation, custodian — and a rule that no unit runs a build nobody can identify. A capability that exists only in a contractor's changelog is a capability the state cannot defend in public.</p>
+
+    <h2 id="s10"><span class="n">10</span>A tag on a jacket</h2>
+    <p>The same seven layers apply without a packet. A magnetic beacon under a wheel arch, a logger sewn into the lining of a jacket, a camera in a street lamp: the state is inside the target's ordinary life, and the target does not know. It is infiltration in the plain sense — and, done with a warrant, it is also the least brutal method on the shelf. Nobody is stopped, nobody is searched, nobody is hurt.</p>
+    <p>Which is exactly the argument that must not be allowed to end the conversation. Brutality and intrusion are different scales. A tag hurts nobody and records everything for months; a search hurts dignity for ten minutes and looks at one drawer. The law measures the right that is touched, not the pain that is caused, so a silent method is not a lighter method — it is a longer one. The European Court said as much about GPS observation in <a href="https://hudoc.echr.coe.int/eng?i=001-100235" target="_blank" rel="noopener">Uzun</a> v. Germany in 2010: months of tracking engaged private life, and the intrusion was justified only by a legal basis, a serious offence and a proportionality the court could review.</p>
+    <p>The tag therefore carries the same discipline as the instrument. The period is written down before it is placed; the data is hashed when it comes back; the device is removed at the end and the removal is logged; and the file says what the tag saw when the target was doing nothing wrong. A beacon that stops reporting is the same silent alarm as a dead implant: it may be a flat battery, or it may have been found.</p>
+
+    <h2 id="s11"><span class="n">11</span>From the case to the doctrine</h2>
+    <p>An operation that ends with a conviction and no written lesson has taught the institution nothing. The technique file is the unit of knowledge: what the method saw, what it missed, what the court refused, which version of the tool was in the field, how it was detected, and what would have made it quieter. None of that belongs in a press release; all of it belongs in the next briefing.</p>
+    <p>A library of those files, searchable by technique rather than by case, turns one officer's experience into another officer's check — the same reason a public catalogue works, and the reason it is worth copying instead of inventing a private vocabulary that dies with the unit.</p>
+    <p>Then the hard part: publishing the schema and withholding the capability. The previous article can be read by a criminal without teaching him anything operational, because it describes a sequence of decisions; this one can too, as long as the examples stay at the level of a function and a legal basis. What must not happen is the reverse — a doctrine written by the vendor, taught by the vendor, and defended in court by an engineer the state cannot call because the contract never required him to testify.</p>
+
+    <h2 id="s12"><span class="n">12</span>Where it breaks</h2>
+    <p><strong>Legally</strong>, the characterisation decides admissibility, and characterisation is a decision taken long before the first packet: search or seizure, storage or transmission, access or interception. Change one word in the dispatch and the same evidence becomes unusable.</p>
+    <p><strong>Technically</strong>, a silent tool and a discovered tool look identical from the outside until the target moves. The only reliable signal is behavioural: a target who changes device, changes route, or stops using a channel has probably learned something.</p>
+    <p><strong>Institutionally</strong>, the tool outlives the case and the vendor outlives the minister. Without an inventory — which version, in which operation, with which authorisation — nobody can answer the only question a future inquiry will ask.</p>
+    <p><strong>Politically</strong>, a capability built for the worst case becomes free at the margin, and free capabilities get used for the ordinary case. That is the same imbalance the follower's method described: the system rewards the visible operation and pays for the invisible one out of the same budget, so the invisible one is used where it is cheapest, not where it is justified. And notice how this article has argued about <a href="./privacy.html">privacy</a> without once needing to describe how any of it is done in code: the schema is the reusable part, and the schema is teachable. The exploit is neither.</p>
+
+    <h2 id="s13"><span class="n">13</span>A checklist before you insert anything</h2>
+    <ol class="check">
+      <li>Write the question in one sentence, and the offence it proves in another.</li>
+      <li>Name the article that authorises it, and the person who signs.</li>
+      <li>Write the objectives and the end date before the tool is installed.</li>
+      <li>Say which class of entry it is, and why the other two were rejected.</li>
+      <li>List the third parties who can be caught by it, and how each is excluded.</li>
+      <li>Decide what metadata is enough, before seeing what content is available.</li>
+      <li>Fix the custody chain and the unclassified record on day one.</li>
+      <li>Decide what is removed, and what is disclosed, when the case ends.</li>
+      <li>Ask who can inspect the tool, and whether they will testify about it.</li>
+      <li>Ask what happens to the case if the target reads this page.</li>
+    </ol>
+    <p>The three verbs stay the same, one medium further in: the tool collects, the analyst describes, the prosecutor authorises. The target learns when the case says so — not when the tool, the vendor or the press conference decides. When one of those verbs is done by the wrong hand, the operation may still succeed. The file will not.</p>
+
+    <section class="sources">
+      <h2>Sources</h2>
+      <ol>
+        <li>Diário da República, <em>Lei n.º 109/2009 — Lei do Cibercrime</em>, consolidated text (articles 15, 16, 18, 19 and 8.º-A).</li>
+        <li>Wetenschappelijk Onderzoek- en Datacentrum, <em>De hackbevoegdheid in het buitenland</em>, 2023 — the Dutch power in force since 1 March 2019.</li>
+        <li>Court of Appeal of England and Wales, <em>A, B, D &amp; C v Regina</em>, 5 February 2021.</li>
+        <li>European Court of Human Rights, <em>A.L. and E.J. v. France</em>, decision of 17 October 2024.</li>
+        <li>High Court of England and Wales, <em>O'Brien and others v Crown Prosecution Service</em>, 2025 — chronology of the EncroChat compromise.</li>
+        <li>European Court of Human Rights, <em>Uzun v. Germany</em>, judgment of 2 September 2010 — GPS observation of a suspect.</li>
+        <li>MITRE, <em>ATT&amp;CK</em> — public catalogue of adversary tactics and techniques.</li>
+      </ol>
+    </section>
+
+    <footer>Monkey Blog · Policing, Law &amp; Justice</footer>
+  </main>
+</div>
+
+<div id="lang-pt" data-lang-block="pt" lang="pt-PT" hidden>
+  <header class="top">
+    <a class="home" href="./index.html">← Início</a>
+    <span class="brand"><b>Entrada</b> · a metade silenciosa</span>
+  </header>
+
+  <main>
+    <p class="kicker">Policiamento · o método por trás do método</p>
+    <h2 class="seo-h2">Investigação Furtiva</h2>
+    <p class="lede">O seguidor espera no cais por um barco. Quando a carga é uma decisão em vez de um caixote, a espera acontece dentro de uma rede — e entrar nela em silêncio é um procedimento antes de ser uma técnica.</p>
+
+    <nav class="toc" id="pt-toc" aria-label="Conteúdo">
+      Índice
+      <ol>
+        <li><a href="#pt-s1">Furtivo é tempo, não invisibilidade</a></li>
+        <li><a href="#pt-s2">Uma assinatura decide se foi crime</a></li>
+        <li><a href="#pt-s3">EncroChat: o Estado torna-se a plataforma</a></li>
+        <li><a href="#pt-s4">O esquema, camada a camada</a></li>
+        <li><a href="#pt-s5">Três entradas, três formas de perder</a></li>
+        <li><a href="#pt-s6">Recolher pouco, guardar o registo</a></li>
+        <li><a href="#pt-s7">O que os criminosos sabem e a polícia devia</a></li>
+        <li><a href="#pt-s8">Conhecer o inimigo sem lhe ficar igual</a></li>
+        <li><a href="#pt-s9">A caixa de ferramentas, por função</a></li>
+        <li><a href="#pt-s10">Uma etiqueta no casaco</a></li>
+        <li><a href="#pt-s11">Do caso à doutrina</a></li>
+        <li><a href="#pt-s12">Onde se parte</a></li>
+        <li><a href="#pt-s13">Uma lista antes de inserir seja o que for</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="pt-s1"><span class="n">1</span>Furtivo é tempo, não invisibilidade</h2>
+    <p>Nada numa investigação furtiva é invisível. O radar vê o avião; a câmara vê o rosto; o servidor registra o acesso. O que se esconde não é a presença do Estado — é o <strong>conhecimento dessa presença</strong>, retido ao alvo exactamente enquanto o caso precisar. É outra mercadoria, e compra-se com três coisas: persistência, proximidade e não-divulgação.</p>
+    <p><strong>Persistência</strong> são as mesmas três semanas que o seguidor passa atrás de uma carga, agora passadas dentro de um canal que não fecha. <strong>Proximidade</strong> é estar na sala onde o plano é feito, em vez de o reconstruir depois num telemóvel apreendido. <strong>Não-divulgação</strong> é o que mantém o alvo a comportar-se normalmente: no minuto em que suspeita, a prova deixa de descrever os hábitos dele e passa a descrever a reacção a ti.</p>
+    <p>É também o custo. Tudo o que torna a entrada silenciosa torna-a frágil. O meio passou a ser um objecto dentro do sistema de outra pessoa, sujeito a actualizações, reinícios e desconfiança; se for encontrado, deixa de ser um olho e passa a ser prova de que o Estado esteve ali — com data, alvo e técnica anexados. A <a href="./policiaQueSegue.html">seguir</a> aceita-se que um barco desapareça atrás de uma ilha; na entrada encoberta aceita-se que a ilha seja o fabricante do antivírus. O que fica é aquilo a que um artista chamaria <a href="https://art.odicforcesounds.com/pages/YinYang/Expression/" target="_blank" rel="noopener">expressão</a>: saber o que deixar fora do enquadramento.</p>
+
+    <h2 id="pt-s2"><span class="n">2</span>Uma assinatura decide se foi crime</h2>
+    <p>Os actos são os mesmos. O acesso ilegítimo e a intercepção ilegítima são crimes no <a href="https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2009-128879174-128899371008" target="_blank" rel="noopener">código</a> português que transpõe a Convenção de Budapeste; um polícia que abre um sistema sem despacho comete-os como qualquer outra pessoa. O que muda tudo é o documento que vem antes: a autorização da autoridade judiciária.</p>
+    <p>A lei portuguesa organiza essa autorização por interferência, e vale a pena lê-la como esquema e não como lista de artigos. O artigo 15 permite a pesquisa de um sistema determinado, autorizada ou ordenada pela autoridade judiciária competente, e remete o recurso a meios técnicos para as regras da intercepção. O artigo 16 regula a apreensão dos dados encontrados. O artigo 18 admite a intercepção de comunicações nos casos previstos. O artigo 19 admite acções encobertas ao abrigo da lei de 2001 sobre agentes encobertos, e só para os crimes que nomeia. A técnica não muda; a assinatura é a diferença entre um caso e um crime.</p>
+    <p>A camada que envelhece pior é a técnica, e outros Estados já legislaram para ela. Nos Países Baixos o poder de entrar remotamente e em segredo num dispositivo existe desde 1 de Março de 2019, limitado a crimes graves, concedido por escrito por um juiz de instrução e — a parte que vale a pena copiar — o instrumento tem de ser examinado por um serviço independente antes de ser usado, com uma inspecção a vigiar a forma como o poder é aplicado. Não é desconfiança da técnica; é o reconhecimento de que a prova tem de sobreviver a uma defesa que vai perguntar como foi construído o instrumento e quem o podia ter alterado.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>Quem assina, o que é limitado, o que é inspeccionado</caption>
+        <thead>
+          <tr><th scope="col">Sistema</th><th scope="col">Autorização</th><th scope="col">Limites</th><th scope="col">Controlo</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Portugal</th><td>Autoridade judiciária, por despacho (pesquisa, apreensão, intercepção, acção encoberta)</td><td>Crimes previstos; aplicam-se o segredo profissional e o segredo de Estado</td><td>Juiz e Ministério Público no processo; prova testada em tribunal</td></tr>
+          <tr><th scope="row">Países Baixos</th><td>Juiz de instrução, por escrito</td><td>Só crimes graves; objectivos de investigação nomeados</td><td>Exame independente do instrumento; relatório da inspecção</td></tr>
+          <tr><th scope="row">França e Reino Unido</th><td>Quadro judicial nacional e, depois, confiança mútua entre Estados</td><td>Qualificado como recuperação de dados armazenados, não como intercepção em tempo real</td><td>Tribunais de recurso e tribunal de poderes de investigação</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Portugal acrescentou em 2026 uma segunda linha. Um acto que de outro modo seria acesso ilegítimo não é punível quando a sua única finalidade é encontrar e comunicar uma vulnerabilidade num sistema que o agente não possui — a isenção para investigação de segurança. A lei passa a dizer em voz alta o que o esquema implica: a diferença entre intrusão e inspecção não está no pacote, está na intenção e no destino do que se encontra.</p>
+
+    <h2 id="pt-s3"><span class="n">3</span>EncroChat: o Estado torna-se a plataforma</h2>
+    <p>O exemplo real mais limpo não é um exploit. Em 2020 os investigadores não quebraram a criptografia de uma rede de telemóveis cifrados usada pelo crime organizado; chegaram aos servidores, levaram as mensagens armazenadas e leram-nas. Mais de 66 mil aparelhos tinham sido distribuídos clandestinamente em 122 países entre 2016 e 2020, e é essa a dimensão da audiência quando o comprometimento começou, a 1 de Abril de 2020, e o material passou a circular pela Europol até às equipas nacionais.</p>
+    <p>A batalha jurídica que se seguiu é a lição. O <a href="https://www.judiciary.uk/wp-content/uploads/2022/07/A-v-R.pdf" target="_blank" rel="noopener">acórdão</a> inglês não perguntou se a intrusão era engenhosa; perguntou <em>onde estavam os dados</em> quando foram obtidos. Ler a partir do armazenamento, decidiu o tribunal, não é intercepção em transmissão — a comparação usada foi a da carta escrita, metida num envelope e posta no correio, em que só o último acto é transmissão. Em 2024 o Supremo Tribunal neerlandês recusou reexaminar a autorização francesa, aceitando-a por confiança mútua. A técnica nunca foi o argumento; a qualificação foi.</p>
+    <blockquote>
+      Uma defesa não ataca o teu exploit. Ataca a frase que descreve o que o exploit estava a fazer, e o papel que o permitiu.
+    </blockquote>
+    <p>E o fim importa tanto como o princípio. Em Junho de 2020 os administradores da rede perceberam o que tinha acontecido, avisaram todos os utilizadores para desligar e destruir fisicamente os aparelhos, e a recolha parou. Toda a inserção tem uma meia-vida medida pela atenção do alvo. Se a saída não for desenhada com a entrada — o que se remove, o que se deixa, o que se divulga, quem é avisado — a operação acaba quando outra pessoa decide que acaba.</p>
+
+    <h2 id="pt-s4"><span class="n">4</span>O esquema, camada a camada</h2>
+    <p>Tira a tecnologia e uma investigação furtiva são sete decisões numa ordem fixa. A ordem é o método. Uma equipa que começa na camada cinco — o instrumento — já perdeu o argumento que vai ter em tribunal dois anos depois.</p>
+    <ol class="layers">
+      <li><b>Pergunta</b>Que facto falta, e que crime prova? Se a resposta é «tudo sobre esta pessoa», não há pergunta nem caso.</li>
+      <li><b>Autoridade</b>Que artigo o permite, quem assina, por quanto tempo, com que objectivos escritos antes de se ligar o que quer que seja.</li>
+      <li><b>Selecção</b>Porque este alvo e não a rede à volta dele; quanto custaria uma via menos intrusiva; o que acontece se a intrusão falhar.</li>
+      <li><b>Classe</b>Plataforma, agente humano ou instrumento remoto — e qual deles a autorização nomeia, porque não são intermutáveis.</li>
+      <li><b>Recolha</b>Metadados ou conteúdo; que canais; que terceiros são excluídos por desenho e não por esperança.</li>
+      <li><b>Custódia</b>Hash no momento da captura, registo de cada acesso, um registo paralelo não classificado que possa entrar no processo e divulgação à defesa.</li>
+      <li><b>Saída</b>Remoção, revogação, auditoria, notificação quando a lei a exige, e um relato escrito do que o instrumento podia ver e não viu.</li>
+    </ol>
+    <p>Polícia e militares podem partilhar este esquema precisamente porque ele não é sobre o instrumento. Um serviço de informações e uma investigação criminal respondem às mesmas sete perguntas com assinaturas diferentes e tribunais diferentes, e a mesma falha aparece nos dois quando uma camada é saltada: uma operação que funcionou e não pode ser usada.</p>
+
+    <h2 id="pt-s5"><span class="n">5</span>Três entradas, três formas de perder</h2>
+    <p><strong>A plataforma.</strong> Construir ou comprar o serviço que o alvo escolhe, e ser o tubo. É a opção mais poderosa e a mais frágil: precisa de procura real, porque uma rede usada só por suspeitos é uma armadilha, e a defesa vai argumentar que o Estado fabricou o crime em vez de o observar. A saída é brutal — no dia em que a plataforma é exposta, todos os casos construídos sobre ela são reabertos de uma vez.</p>
+    <p><strong>O agente humano.</strong> Uma pessoa dentro do grupo, autorizada ao abrigo da lei do agente encoberto, com um controlador, um nome de código e um limite ao que pode fazer para manter a cobertura. O elo fraco não é a coragem, é a aritmética: os agentes são poucos, os casos muitos, e a mesma pessoa não pode ser arriscada duas vezes na mesma cidade.</p>
+    <p><strong>O instrumento remoto.</strong> Um meio colocado no dispositivo, que reporta aquilo que lhe mandam reportar. Compra a maior proximidade e paga a cauda mais longa: actualizações, reinícios, um telefone partilhado com um companheiro, um instrumento que um dia deixa de reportar e não se distingue de um instrumento encontrado. Se for encontrado, torna-se um farol que aponta para o Estado que o colocou.</p>
+    <p>Nenhuma das três é a «certa». Cada uma compra um tipo diferente de proximidade e paga com um tipo diferente de exposição — e um caso que as mistura sem as nomear na autorização já esborratou a linha que o artigo anterior desenhou: o olho que vê e a mão que age.</p>
+
+    <h2 id="pt-s6"><span class="n">6</span>Recolher pouco, guardar o registo</h2>
+    <p>A falha técnica mais comum não é a detecção, é o apetite. Um instrumento que pode ler tudo vai ler tudo por omissão, e um processo com tudo lá dentro é um processo com uma defesa anexada. A regra que sobrevive ao contacto com uma sala de audiências é a do mundo da <a href="./OWASPCheatSheets.html">segurança</a> convertida em procedimento: recolher o mínimo que responde à pergunta da camada um, e registar porque foi recolhido cada item.</p>
+    <p>Os terceiros são o ponto onde o apetite se transforma em dano. O telefone é partilhado com um companheiro; o grupo inclui um jornalista; a lista de contactos tem um advogado. O segredo profissional e os regimes especiais para advogados, médicos, bancos e jornalistas existem exactamente para isto, e um instrumento que não sabe excluir uma categoria não é um instrumento, é uma rede.</p>
+    <p>A custódia é aborrecida e decisiva. Faz hash do material quando o capturas, registra cada acesso depois, mantém o fluxo classificado onde pertence e um registo simples de hora, posição e observação que possa ser lido para o processo. Esse registo paralelo é a mesma célula de fusão do método do seguidor, mudada para um servidor: a geometria e o tempo viajam para o procurador, as fontes e as capacidades ficam em casa.</p>
+
+    <h2 id="pt-s7"><span class="n">7</span>O que os criminosos sabem e a polícia devia</h2>
+    <p>Há uma versão deste artigo que acaba com um aviso, e outra que acaba com um plano de contratação. A verdade está no meio, e começa por admitir que a técnica não é o crime. Os grupos criminosos são, na prática, o laboratório de testes mais bem financiado para os instrumentos que o Estado um dia terá de detectar — e uma polícia que se recusa a estudar o ofício deles não é pura, é apenas tardia.</p>
+    <p>Três canais são legítimos e já são legais. <strong>Estudo</strong>: o ofício está documentado em acórdãos, em relatórios forenses, nas próprias definições dos crimes e nas <a href="./KaliLinux.html">ferramentas</a> que se vendem à luz do dia. <strong>Contratação</strong>: quem constrói e quebra estes instrumentos está num mercado, e um Estado que não os contrata compra instrumentos piores a um fornecedor que não pode inspeccionar. <strong>Teste adversarial</strong>: equipas vermelhas contra os sistemas do próprio Estado, que é o que a isenção para investigação de segurança protege.</p>
+    <p>O que não pode viajar com o conhecimento é a impunidade. A diferença entre um criminoso e um investigador a usar a mesma técnica não é a perícia nem o motivo; são duas assinaturas — a autorização antes e a auditoria depois. Um Estado que aprende com criminosos e mantém as duas assinaturas fica com melhor polícia. Um Estado que aprende com criminosos e não mantém nenhuma limitou-se a mudar de farda.</p>
+    <p>Há também um custo em recusar. Uma polícia que não entende a técnica estará sempre um caso atrás, e vai terceirizar o entendimento a um empreiteiro cujo incentivo é a renovação do contrato, não o julgamento. O conhecimento pertence à instituição, onde um juiz o pode questionar; só a impunidade pertence ao exterior.</p>
+
+    <h2 id="pt-s8"><span class="n">8</span>Conhecer o inimigo sem lhe ficar igual</h2>
+    <p>«Conhece o teu inimigo» é citado como licença e é, na verdade, uma disciplina. Corre em dois sentidos, e uma polícia precisa dos dois. Lido para a frente, é um método: as técnicas que os criminosos usam passam a ser as técnicas que o investigador reconhece, reproduz em laboratório e transforma em detecção. Lido ao contrário, é um modelo de ameaça: cada uma dessas técnicas é também um buraco nos sistemas do próprio Estado, e o mesmo ficheiro que ensina um agente o que procurar diz a um atacante onde empurrar.</p>
+    <p>O vocabulário que torna isto partilhável já existe. O <a href="https://attack.mitre.org/" target="_blank" rel="noopener">ATT&amp;CK</a> é um catálogo público de tácticas e técnicas construído a partir de intrusões observadas, e o seu valor não é a lista, são os nomes: um analista escreve «carga ofuscada, persistência por tarefa agendada», outra unidade procura as mesmas duas frases nos seus casos fechados e encontra um padrão que ninguém tinha ligado. Uma base de conhecimento não é uma arma; é a diferença entre uma instituição que se lembra e uma que recomeça do zero em cada processo.</p>
+    <p>Daí saem três usos, e cada um tem forma legal. <strong>Identificar</strong>: uma amostra apreendida num caso é comparada com outra de outro caso, e o mesmo instrumento, o mesmo erro no código ou a mesma infraestrutura revelam um grupo. <strong>Extrair</strong>: um comportamento torna-se regra, e a regra torna-se um alerta que dispara antes de a próxima carga se mover. <strong>Ensinar</strong>: o caso é escrito como cenário, e é no cenário que um agente novo treina — mais barato do que aprendê-lo com a defesa numa sala de audiências.</p>
+    <p>Ler ao contrário é a parte que as instituições saltam. A contra-vigilância, os telefones descartáveis, a aplicação cifrada em que o mercado confia precisamente porque a polícia não a lê, a tentativa de comprar um agente — cada uma é uma técnica da mesma lista, apontada ao Estado. Uma unidade que estuda a lista e não testa os seus próprios sistemas contra ela produziu informações sobre todos, menos sobre si.</p>
+    <p>A linha é fácil de enunciar e difícil de manter: estudar não precisa de mandado, usar precisa. Quando a mesma sala tem o analista que lê a técnica e o operacional que a quer usar, alguém tem de dizer qual dos dois está a falar. Essa frase, dita no momento certo, é a maior parte da doutrina.</p>
+
+    <h2 id="pt-s9"><span class="n">9</span>A caixa de ferramentas, por função</h2>
+    <p>Nenhuma das famílias abaixo é exótica. A maioria das ferramentas é gratuita, várias são de código aberto, e todas são também usadas por quem está a ser investigado. O que separa os dois usos é o papel e o destino — nunca o download.</p>
+    <div class="table-wrap">
+      <table>
+        <caption>O que cada família responde, e o que custa usá-la</caption>
+        <thead>
+          <tr><th scope="col">Família</th><th scope="col">Exemplos</th><th scope="col">Que pergunta responde</th><th scope="col">Que papel exige</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Reconhecimento de fontes abertas</th><td>Maltego, Shodan</td><td>O que expõe o alvo sem ser tocado?</td><td>Nenhum para dados públicos; nota de protecção de dados quando a recolha passa a sistemática</td></tr>
+          <tr><th scope="row">Análise de tráfego e registos</th><td>Wireshark, Zeek</td><td>Quem falou com quem, quando, e quanto</td><td>Uma intercepção legal ou um dispositivo apreendido, com o despacho por trás</td></tr>
+          <tr><th scope="row">Forense de disco e memória</th><td>Autopsy, The Sleuth Kit, Volatility</td><td>O que estava guardado, e o que corria quando foi apreendido</td><td>Apreensão, hash na captura, cadeia de custódia</td></tr>
+          <tr><th scope="row">Análise de «malware»</th><td>«Sandboxes», regras YARA</td><td>O que faz uma amostra, para a próxima ser reconhecida</td><td>A amostra, obtida por apreensão legal</td></tr>
+          <tr><th scope="row">Extracção de dispositivos</th><td>Conjuntos forenses para telemóveis</td><td>O conteúdo de um telefone apreendido, com registo defensável</td><td>Apreensão e a autorização específica para conteúdo</td></tr>
+          <tr><th scope="row">Bases de conhecimento</th><td>ATT&amp;CK, OWASP</td><td>Como se chama a técnica, e quem mais a viu</td><td>Nenhum; isto é o vocabulário, não o acto</td></tr>
+          <tr><th scope="row">Localização</th><td>Balizas GPS, etiquetas Bluetooth, leitura de matrículas</td><td>Para onde foi um veículo ou um objecto</td><td>Autorização judicial, com data de início e de fim</td></tr>
+          <tr><th scope="row">Áudio e vídeo encobertos</th><td>Dispositivos fixos ou corporais</td><td>O que se disse num lugar</td><td>A autorização mais curta de todas, para a família mais intrusiva</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Uma ferramenta é uma testemunha que não pode ser interrogada. O tribunal vai perguntar que versão foi usada, o que registou, quem a podia ter alterado entre a captura e o julgamento, e se o agente que a operou sabe explicar os valores por omissão. É por isso que os neerlandeses examinam o instrumento antes de o usar e guardam o relatório: não porque se presuma que a ferramenta mente, mas porque a defesa tem direito a perguntar.</p>
+    <p>O corolário é um inventário — versão, operação, autorização, custodio — e uma regra: nenhuma unidade corre uma versão que ninguém sabe identificar. Uma capacidade que só existe no registo de alterações de um empreiteiro é uma capacidade que o Estado não consegue defender em público.</p>
+
+    <h2 id="pt-s10"><span class="n">10</span>Uma etiqueta no casaco</h2>
+    <p>As mesmas sete camadas aplicam-se sem um único pacote. Uma baliza magnética atrás de um guarda-lamas, um registador cosido no forro de um casaco, uma câmara num candeeiro: o Estado está dentro da vida comum do alvo e o alvo não sabe. É infiltração no sentido literal — e, feita com mandado, é também o método menos brutal da prateleira. Ninguém é parado, ninguém é revistado, ninguém é magoado.</p>
+    <p>Que é exactamente o argumento que não pode ser autorizado a fechar a conversa. Brutalidade e intrusão são escalas diferentes. Uma etiqueta não magoa ninguém e registra tudo durante meses; uma busca fere a dignidade dez minutos e olha para uma gaveta. A lei mede o direito tocado, não a dor causada, e por isso um método silencioso não é um método mais leve — é um método mais longo. O Tribunal Europeu disse-o a propósito da localização por GPS em <a href="https://hudoc.echr.coe.int/eng?i=001-100235" target="_blank" rel="noopener">Uzun</a> c. Alemanha, em 2010: meses de seguimento atingiram a vida privada, e a intrusão só se justificou por base legal, crime grave e uma proporcionalidade que o tribunal pudesse rever.</p>
+    <p>Assim, a etiqueta carrega a mesma disciplina do instrumento. O período é escrito antes de a colocar; os dados levam hash quando voltam; o dispositivo é removido no fim e a remoção fica registada; e o processo diz o que a etiqueta viu quando o alvo não estava a fazer nada de errado. Uma baliza que deixa de reportar é o mesmo alarme silencioso de um implante morto: pode ser bateria gasta, ou pode ter sido encontrada.</p>
+
+    <h2 id="pt-s11"><span class="n">11</span>Do caso à doutrina</h2>
+    <p>Uma operação que acaba em condenação e sem lição escrita não ensinou nada à instituição. O ficheiro de técnica é a unidade de conhecimento: o que o método viu, o que lhe escapou, o que o tribunal recusou, que versão do instrumento esteve no terreno, como foi detectado e o que o teria tornado mais silencioso. Nada disso pertence a um comunicado de imprensa; tudo isso pertence ao briefing seguinte.</p>
+    <p>Uma biblioteca desses ficheiros, pesquisável por técnica e não por caso, transforma a experiência de um agente na verificação de outro — a mesma razão pela qual um catálogo público funciona, e pela qual vale a pena copiá-lo em vez de inventar um vocabulário privado que morre com a unidade.</p>
+    <p>Depois vem a parte difícil: publicar o esquema e retirar a capacidade. O artigo anterior pode ser lido por um criminoso sem lhe ensinar nada operacional, porque descreve uma sequência de decisões; este também, desde que os exemplos fiquem ao nível da função e da base legal. O que não pode acontecer é o inverso — uma doutrina escrita pelo fornecedor, ensinada pelo fornecedor e defendida em tribunal por um engenheiro que o Estado não pode chamar porque o contrato nunca exigiu que ele testemunhasse.</p>
+
+    <h2 id="pt-s12"><span class="n">12</span>Onde se parte</h2>
+    <p><strong>Juridicamente</strong>, a qualificação decide a admissibilidade, e a qualificação é uma decisão tomada muito antes do primeiro pacote: pesquisa ou apreensão, armazenamento ou transmissão, acesso ou intercepção. Muda uma palavra no despacho e a mesma prova fica inutilizável.</p>
+    <p><strong>Tecnicamente</strong>, um instrumento silencioso e um instrumento descoberto são idênticos vistos de fora até o alvo se mexer. O único sinal fiável é comportamental: um alvo que muda de aparelho, muda de rota ou deixa de usar um canal provavelmente aprendeu alguma coisa.</p>
+    <p><strong>Institucionalmente</strong>, o instrumento sobrevive ao caso e o fornecedor sobrevive ao ministro. Sem inventário — que versão, em que operação, com que autorização — ninguém consegue responder à única pergunta que um inquérito futuro vai fazer.</p>
+    <p><strong>Politicamente</strong>, uma capacidade construída para o pior caso fica gratuita à margem, e capacidades gratuitas acabam usadas no caso comum. É o mesmo desequilíbrio que o método do seguidor descreveu: o sistema premeia a operação visível e paga a invisível do mesmo orçamento, por isso a invisível é usada onde é mais barata e não onde é justificada. E repara que este artigo discutiu <a href="./privacy.html">privacidade</a> sem precisar de descrever uma única linha de código: o esquema é a parte reutilizável, e o esquema é ensinável. O exploit não é uma coisa nem outra.</p>
+
+    <h2 id="pt-s13"><span class="n">13</span>Uma lista antes de inserir seja o que for</h2>
+    <ol class="check">
+      <li>Escreve a pergunta numa frase, e o crime que ela prova noutra.</li>
+      <li>Nomeia o artigo que autoriza, e a pessoa que assina.</li>
+      <li>Escreve os objectivos e a data de fim antes de instalar o instrumento.</li>
+      <li>Diz que classe de entrada é, e porque as outras duas foram rejeitadas.</li>
+      <li>Lista os terceiros que podem ser apanhados, e como cada um é excluído.</li>
+      <li>Decide que metadados bastam, antes de veres que conteúdo está disponível.</li>
+      <li>Fixa a cadeia de custódia e o registo não classificado no primeiro dia.</li>
+      <li>Decide o que é removido, e o que é divulgado, quando o caso terminar.</li>
+      <li>Pergunta quem pode inspeccionar o instrumento, e se vai depor sobre ele.</li>
+      <li>Pergunta o que acontece ao caso se o alvo ler esta página.</li>
+    </ol>
+    <p>Os três verbos mantêm-se, um meio mais fundo: o instrumento recolhe, o analista descreve, o procurador autoriza. O alvo aprende quando o caso o disser — não quando o instrumento, o fornecedor ou a conferência de imprensa decidirem. Quando um destes verbos é feito pela mão errada, a operação até pode terminar bem. O processo não.</p>
+
+    <section class="sources">
+      <h2>Fontes</h2>
+      <ol>
+        <li>Diário da República, <em>Lei n.º 109/2009 — Lei do Cibercrime</em>, texto consolidado (artigos 15.º, 16.º, 18.º, 19.º e 8.º-A).</li>
+        <li>Wetenschappelijk Onderzoek- en Datacentrum, <em>De hackbevoegdheid in het buitenland</em>, 2023 — o poder neerlandês em vigor desde 1 de Março de 2019.</li>
+        <li>Court of Appeal of England and Wales, <em>A, B, D &amp; C v Regina</em>, 5 de Fevereiro de 2021.</li>
+        <li>Tribunal Europeu dos Direitos Humanos, <em>A.L. and E.J. v. France</em>, decisão de 17 de Outubro de 2024.</li>
+        <li>High Court of England and Wales, <em>O'Brien and others v Crown Prosecution Service</em>, 2025 — cronologia do comprometimento da EncroChat.</li>
+        <li>Tribunal Europeu dos Direitos Humanos, <em>Uzun c. Alemanha</em>, acórdão de 2 de Setembro de 2010 — localização por GPS de um suspeito.</li>
+        <li>MITRE, <em>ATT&amp;CK</em> — catálogo público de tácticas e técnicas adversariais.</li>
+      </ol>
+    </section>
+
+    <footer>Monkey Blog · Política, Lei e Justiça</footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var blocks = document.querySelectorAll("[data-lang-block]");
+  var links = document.querySelectorAll("[data-lang-switch]");
+
+  function apply(lang) {
+    Array.prototype.forEach.call(blocks, function (block) {
+      block.hidden = block.getAttribute("data-lang-block") !== lang;
+    });
+    Array.prototype.forEach.call(links, function (link) {
+      if (link.getAttribute("data-lang-switch") === lang) { link.setAttribute("aria-current", "true"); }
+      else { link.removeAttribute("aria-current"); }
+    });
+    document.documentElement.lang = lang === "pt" ? "pt-PT" : "en";
+  }
+
+  Array.prototype.forEach.call(links, function (link) {
+    link.addEventListener("click", function (event) {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button) { return; }
+      event.preventDefault();
+      apply(link.getAttribute("data-lang-switch"));
+    });
+  });
+
+  var wanted = new URLSearchParams(location.search).get("lang");
+  if (wanted === "en" || wanted === "pt") { apply(wanted); }
+  else if (location.hash.indexOf("#pt-") === 0) { apply("pt"); }
+})();
+</script>
+</body>
+</html>
