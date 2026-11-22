@@ -1,6 +1,6 @@
 ---
 name: incremental-api
-description: Keep docs/api/ append-only — insert the record for one page and leave every other row of the JSON untouched, because each page is a project of its own and these files are the database this static site emulates. Use whenever docs/api/index.json, dates.json or text/NNN.json is about to change, when a new page needs a date badge or a search entry, or when an audit asks for an "API build".
+description: Keep docs/api/ append-only — insert the record for one page and leave every other row of the JSON untouched, because each page is a project of its own and these files are the database this static site emulates. Use whenever docs/api/index.json, dates.json or text/NNN.json is about to change, when a new page needs a date row or a search entry, or when an audit asks for an "API build".
 ---
 
 # The API is a database, not a build
@@ -31,8 +31,8 @@ nobody asked about, and it makes the history unreadable.
 
 ## Adding one page
 
-1. **Date — always.** Every root page gets one row in `dates.json`, because `index.html`
-   reads it for the badges and the "Last 5 publications" order:
+1. **Date — always.** Every root page gets one row in `dates.json`, because that map is
+   what serves a page's instant by name:
 
    ```sh
    python3 .agents/skills/blog-ops/append_dates.py docs/NewTitle.html   # --dry-run first
