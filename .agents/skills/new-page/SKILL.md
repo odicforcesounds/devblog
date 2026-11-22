@@ -346,32 +346,31 @@ the switch already carries the other language. Then:
 ### …and the Last 5 publications
 
 **This step is not optional and is not only for new pages.** The home page's *Last 5
-publications* block is not written into `index.html`: the page builds it in the browser
-from two sources — `docs/api/dates.json` (fetched) and the `<li>` rows in its own category
-lists. A page with no archive row **can never appear there**, however new it is; that is how
-`reptilesIndex.html`, `electronicsIndex.html`, `gameReference.html`, `secretChat.html` and
-two Portuguese articles were invisible on the home page while sitting in the API.
+publications* block is five `<li>` rows written into `index.html`, each with the page's
+title and its category. No script and no date stand behind it: the newest page is the
+first row, and the fifth is deleted when a sixth arrives. A page with no archive row
+**can never appear there**, however new it is; that is how `reptilesIndex.html`,
+`electronicsIndex.html`, `gameReference.html`, `secretChat.html` and two Portuguese
+articles were invisible on the home page while sitting in the API.
 
 So every time a page is created, renamed or materially rewritten:
 
 1. add or fix its one `<li>` row in the right category and language list, bumping both
    counts as described above;
-2. give it a stamp. The block reads `dates.json` first, then the `DATE_SEED` map in
-   `index.html`; while the API does not list the page, add one entry to that map
-   (`"Name.html": "YYYY-MM-DD"`, the date git records for the file) so the block can show
-   it. Never run `build_api.py` for this — it is author-only. Prune the seed entry once
-   `dates.json` carries the page;
-3. print the five the page will show and read them, rather than assuming:
+2. make it the first row of that block — `<li><a href="./Name.html">Title</a><span
+   class="recent-cat">Category</span></li>` at the top of `.recent-list` — and delete the
+   fifth. No date, no `DATE_SEED` entry and no API run is involved: the block is markup,
+   and the newest page is simply its first line;
+3. read the five rows back rather than assuming:
 
 ```sh
 python3 - <<'PY'
-import json, re
-src = open('docs/index.html', encoding='utf-8').read()
-dates = json.load(open('docs/api/dates.json', encoding='utf-8'))['published']
-rows = [(dates[f], f, t) for f, t in re.findall(
-    r'<li><a href="\.?/?([A-Za-z0-9_.\-]+\.[Hh][Tt][Mm][Ll])">([^<]*)</a>', src) if f in dates]
-for stamp, f, t in sorted(rows, reverse=True)[:5]:
-    print(stamp[:10], f, '|', t[:60])
+import re
+src = open("docs/index.html", encoding="utf-8").read()
+block = re.search(r'<ol class="recent-list">(.*?)</ol>', src, re.S).group(1)
+rows = re.findall(r'<li><a href="\./([^"]+)">([^<]*)</a>', block)
+for i, (name, title) in enumerate(rows, 1):
+    print(i, name, "|", title[:60])
 PY
 ```
 
@@ -472,10 +471,9 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/Name.html   # exp
       API-coverage line is not a finding. For a JSON-backed page the `published_at` follows
       the author's `build_api.py` run, reported and never fixed by running that builder
       unasked.
-- [ ] The home page's *Last 5 publications* now lists the page — printed from
-      `dates.json`, the `DATE_SEED` map and the archive rows, not assumed. A page missing
-      from both date sources gets one `DATE_SEED` entry in `index.html`; the block is never
-      fixed by running `build_api.py`. Every page touched, not only a new one.
+- [ ] The home page's *Last 5 publications* now opens with the page — the block is five
+      rows in `index.html`, read back, not assumed: the page is the first and the fifth was
+      deleted. Every page touched, not only a new one.
 - [ ] `build_sitemap.py` and `check_site.py` run; no new failure other than an
       API-coverage line that belongs to the author's rebuild.
 - [ ] `check_links.py`, `check_weight.py`, `check_headers.py`, `check_a11y.py` and
