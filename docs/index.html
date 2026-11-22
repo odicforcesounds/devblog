@@ -2132,43 +2132,31 @@ color: var(--accent-warm);
 (function () {
   "use strict";
 
-  // Publication dates are not stored in this page: they come from git, via the
-  // generated API (docs/api/dates.json, built by
-  // .agents/skills/blog-ops/build_api.py). One fetch, one source of truth.
-  // dates.json carries only name -> instant; the full index is fifteen times
-  // bigger and this page would use one field of it.
-  var API_URL = "./api/dates.json";
-
-  var DATE_SEED = {
-    "OWASPCheatSheets.html": "2026-11-21",
-    "policiaQueSegue.html": "2026-11-22",
-    "limitesDoExercito.html": "2026-11-22",
-    "japanDossier.html": "2026-11-19",
-    "chinaDossier.html": "2026-11-19",
-    "randomZen.html": "2026-11-11",
-    "theRebel.html": "2026-11-09",
-    "AttackerCraft.html": "2026-11-06",
-    "whatYourIPReveals.html": "2026-11-06",
-    "CPUHistory.html": "2026-11-06",
-    "pianosIndex.html": "2026-11-06",
-    "dogsIndex.html": "2026-11-06",
-    "catsIndex.html": "2026-11-06",
-    "casaDoCrucificado.html": "2026-11-06T21:13:22Z",
-    "chinaPortugalLaws.html": "2026-11-08",
-    "appGrowthGuide.html": "2026-11-09",
-    "oneProductEconomy.html": "2026-11-18",
-    "rightToRepair.html": "2026-11-18",
-    "testosteronaAgressao.html": "2026-11-21",
-    "dorNegada.html": "2026-11-21",
-    "descargaEletrica.html": "2026-11-21",
-    "erroNatural.html": "2026-11-21",
-    "arteDaMaldade.html": "2026-11-21",
-    "estatisticaDoEu.html": "2026-11-21",
-    "arteDaBondade.html": "2026-11-21",
-    "experienciaDoEu.html": "2026-11-21",
-    "masturbacaoSalvaVidas.html": "2026-11-22",
-    "prostituicaoSalvaVidas.html": "2026-11-22"
-  };
+  // The Last 5 block is ordered by this list, not by a date: the newest page
+  // is the first name below, so adding a page means putting its file at the top
+  // and letting the sixth name fall off. No clock, no git history, no fetch.
+  var LATEST = [
+    "limitesDoExercito.html",
+    "policiaQueSegue.html",
+    "prostituicaoSalvaVidas.html",
+    "masturbacaoSalvaVidas.html",
+    "OWASPCheatSheets.html",
+    "testosteronaAgressao.html",
+    "dorNegada.html",
+    "descargaEletrica.html",
+    "erroNatural.html",
+    "arteDaMaldade.html",
+    "estatisticaDoEu.html",
+    "arteDaBondade.html",
+    "experienciaDoEu.html",
+    "japanDossier.html",
+    "chinaDossier.html",
+    "oneProductEconomy.html",
+    "rightToRepair.html",
+    "randomZen.html",
+    "theRebel.html",
+    "appGrowthGuide.html"
+  ];
 
   // Keep the archive self-organising: categories alphabetically, then each
   // publication inside its category. This runs on every load, so a link added
@@ -2461,7 +2449,6 @@ color: var(--accent-warm);
     }
   });
 
-  var dates = {};
 
   function files() {
     var seen = {};
@@ -2487,27 +2474,6 @@ color: var(--accent-warm);
     return list;
   }
 
-  function paintAll() {
-    var targets = [];
-    if (featured) {
-      targets.push(featured);
-    }
-    sections.forEach(function (section) {
-      targets = targets.concat(items(section));
-    });
-
-    var seen = {};
-
-    targets.forEach(function (item) {
-      var file = fileOf(item);
-      if (!file || !/\.html$/i.test(file) || seen[file]) {
-        return;
-      }
-      seen[file] = true;
-    });
-
-    buildRecent();
-  }
 
   function buildRecent() {
     if (!recentBlock || !recentList) {
@@ -2516,37 +2482,32 @@ color: var(--accent-warm);
 
     // linked from the toolbar above: the game must not take a "Last 5 publications" slot
     var skip = { "oJogoDoOperador.html": true };
-
-    var entries = [];
-    var seen = {};
+    var byFile = {};
 
     sections.forEach(function (section) {
       var category = catTitle(section);
       items(section).forEach(function (item) {
         var file = fileOf(item);
-        var stamp = dates[file] || DATE_SEED[file];
-        if (!file || skip[file] || !/\.html$/i.test(file) || seen[file] || !stamp) {
-          return;
+        if (file && !byFile[file]) {
+          byFile[file] = { item: item, category: category };
         }
-
-        var link = item.querySelector("a");
-        seen[file] = true;
-        entries.push({
-          title: link ? link.textContent.trim() : file,
-          href: link ? link.getAttribute("href") : "./" + file,
-          category: category,
-          stamp: String(stamp)
-        });
       });
     });
 
-    entries.sort(function (a, b) {
-      var left = Date.parse(a.stamp);
-      var right = Date.parse(b.stamp);
-      if (isNaN(left) || isNaN(right)) {
-        return right - left || b.category.localeCompare(a.category) || b.title.localeCompare(a.title);
+    var entries = [];
+
+    LATEST.forEach(function (file) {
+      var found = byFile[file];
+      if (!found || skip[file] || !/\.html$/i.test(file)) {
+        return;
       }
-      return right - left;
+
+      var link = found.item.querySelector("a");
+      entries.push({
+        title: link ? link.textContent.trim() : file,
+        href: link ? link.getAttribute("href") : "./" + file,
+        category: found.category
+      });
     });
 
     recentList.textContent = "";
@@ -2567,44 +2528,6 @@ color: var(--accent-warm);
     });
 
     recentBlock.hidden = entries.length === 0 || Boolean(search && search.value.trim());
-  }
-
-  function loadDates() {
-    paintAll();
-
-    if (typeof window.fetch !== "function") {
-      return;
-    }
-
-    fetch(API_URL, { cache: "no-cache" })
-      .then(function (response) {
-        if (!response.ok) {
-          throw new Error("http " + response.status);
-        }
-        return response.json();
-      })
-      .then(function (api) {
-        var changed = false;
-        var published = (api && api.published) || {};
-        Object.keys(published).forEach(function (file) {
-          var stamp = published[file];
-          if (!file || !stamp || dates[file] === stamp) {
-            return;
-          }
-          dates[file] = stamp;
-          changed = true;
-        });
-        if (changed) {
-          paintAll();
-          if (search && search.value.trim()) {
-            filter();
-          }
-        }
-      })
-      .catch(function () {
-        // No API available (opened from disk, or a build that has not run):
-        // the archive still lists and filters, only the dates are missing.
-      });
   }
 
   function clearTarget() {
@@ -2707,7 +2630,7 @@ color: var(--accent-warm);
 
   window.addEventListener("hashchange", revealHash);
 
-  loadDates();
+  buildRecent();
   filter();
   revealHash();
   setToggleLabel();
