@@ -24,7 +24,7 @@ chunks — plus the scripts that regenerate them.
   `backups/comments-login-failure.md`; how to add back Facebook or GitHub in
   `backups/setup-facebook-github.md`.
 - **A static JSON API** — `docs/api/index.json` (metadata and a chunk manifest),
-  `docs/api/dates.json` (name → publication instant, 25 KB, what `index.html` loads)
+  `docs/api/dates.json` (name → publication instant, 25 KB, served by page name)
   and `docs/api/text/*.json` (article text, 15 chunks). Built by
   `.agents/skills/blog-ops/build_api.py`, read by
   `docs/api.js`.
@@ -183,7 +183,7 @@ Three resources, all under `docs/api/`:
 | Resource | Size | What it is for |
 | --- | --- | --- |
 | `index.json` | ~382 KB | The full metadata for 544 documents plus the manifest of the text chunks: `generated`, `origin`, `count`, `languages`, `years`, `chunks`, `articles`. |
-| `dates.json` | ~25 KB | `name → published_at` only, the compact map `index.html` fetches for its date badges and the "Last 5 publications" order. |
+| `dates.json` | ~25 KB | `name → published_at` only: the compact map of publication instants, served by page name. Nothing on the home page reads it — its "Last 5 publications" block is five rows of markup. |
 | `text/NNN.json` | 15 files, ~3.4 MB together | The article bodies, chunked, each with a `file`, `count` and `bytes` entry in the manifest so a client can load one at a time. |
 
 Every entry in `articles` carries `slug`, `url`, `path`, `title`, `description`, `lang`,
@@ -225,8 +225,8 @@ BlogAPI.recent(5);                 // newest changes
 `searchFull` calls `onResults` after each chunk, so a page can paint while the rest is
 still travelling. `404.html` is built on it.
 
-Two consumers today: `index.html` reads `dates.json` for its date badges and the "Last 5
-publications" block, and `404.html` searches the chunks through `api.js`. Anything else
+One consumer today: `404.html` searches the chunks through `api.js`. The home page reads
+none of it: its "Last 5 publications" block is five `<li>` rows written into its markup. Anything else
 that wants the archive — a feed, a static-site generator, a notebook, `jq` — reads the
 same files directly, because they are ordinary static assets with no CORS dance and no
 origin allowlist to satisfy.
@@ -327,14 +327,12 @@ page's JSON-LD come from git — the first commit that touched the file and the 
 git log -1 --format=%ad --date=short -- docs/Page.html
 ```
 
-There is no date object inside `index.html`: the home page fetches `docs/api/dates.json`
-(26 KB, `name → published_at`) and uses it for the date badges and the ordering of
-"Last 5 publications". The full `docs/api/index.json` (381 KB) is for `docs/api.js` and
-the JSON consumers, not for the home page. Either way the generated API is the only copy
-of the dates the browser sees.
-
-Because that is a `fetch`, the home page needs to be served over HTTP: opened from disk
-(`file://`) the request fails and the archive shows no dates.
+There is no date object inside `index.html` and nothing in it is fetched for a date: the
+"Last 5 publications" block is five `<li>` rows written into its markup, each with a title
+and a category, and publishing a page means adding the first row and deleting the fifth.
+The full `docs/api/index.json` (381 KB) is for `docs/api.js` and the JSON consumers.
+`dates.json` stays the compact map a client can read by page name — the `curl ... jq`
+line above works on it — but no file on the home page asks for it.
 
 ## CSS and layout
 
