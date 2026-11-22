@@ -444,29 +444,12 @@ def check_api(names):
             problems.append("%s has no description in the API" % article.get("path"))
             break
 
-    # dates.json is what index.html actually fetches; it must not drift.
-    dates_path = os.path.join(DOCS, "api", "dates.json")
-    if not os.path.exists(dates_path):
-        problems.append("docs/api/dates.json is missing — restore it from git history")
-    else:
-        try:
-            with open(dates_path, encoding="utf-8") as fh:
-                date_map = json.load(fh)
-        except ValueError as exc:
-            problems.append("docs/api/dates.json does not parse: %s" % exc)
-        else:
-            dated = set((date_map.get("published") or {}).keys())
-            undated = sorted(got - dated)
-            if undated:
-                problems.append("dates.json has no instant for %d pages (e.g. %s) — "
-                                "python3 .agents/skills/blog-ops/append_dates.py"
-                                % (len(undated), ", ".join(undated[:4])))
     return problems
 
 
 def check_listed(name):
-    """A page the run covers must already be in the sitemap and dates.json, and,
-    when it reads the API, in the API.
+    """A page the run covers must already be in the sitemap and, when it reads
+    the API, in the API.
 
     Only that page is looked for: the rest of the set is assumed to be in place, so
     this never lists every page that is missing from a derived file.
@@ -494,16 +477,58 @@ def check_listed(name):
         if name not in listed and reads_shared_api(name):
             problems.append("API does not list %s, which reads it — add its record" % name)
 
-    dates_path = os.path.join(DOCS, "api", "dates.json")
-    try:
-        with open(dates_path, encoding="utf-8") as fh:
-            dated = json.load(fh).get("published") or {}
-    except (OSError, ValueError) as exc:
-        problems.append("docs/api/dates.json is unreadable — restore it from git history (%s)" % exc)
-    else:
-        if name not in dated:
-            problems.append("dates.json has no instant for %s — run build_api.py" % name)
     return problems
+
+
+def recent_rows():
+    """The five pinned rows of the home page's *Last 5 publications* block."""
+    try:
+        with open(os.path.join(DOCS, "index.html"), encoding="utf-8") as fh:
+            source = fh.read()
+    except OSError:
+        return None, []
+    block = re.search(r'<ol class="recent-list">(.*?)</ol>', source, re.S)
+    if not block:
+        return source, []
+    return source, re.findall(r'<li><a href="\./([^"]+)">([^<]*)</a>', block.group(1))
+
+
+def new_to_git(name):
+    """True when HEAD does not carry the page yet."""
+    try:
+        run = subprocess.run(["git", "ls-tree", "--name-only", "HEAD", "--", "docs/" + name],
+                             capture_output=True, text=True)
+    except OSError:
+        return False
+    return run.returncode == 0 and not run.stdout.strip()
+
+
+def check_recent():
+    """The block is five rows of markup: five real pages, each with an archive row."""
+    source, rows = recent_rows()
+    if source is None:
+        return ["index.html is missing — restore it from git history"]
+    if not rows:
+        return ["index.html has no .recent-list block with rows"]
+    problems = []
+    if len(rows) != 5:
+        problems.append("Last 5 lists %d rows, not 5" % len(rows))
+    for name, _title in rows:
+        if not os.path.exists(os.path.join(DOCS, name)):
+            problems.append("Last 5 points at %s, which is not in docs/" % name)
+        elif '<span class="name-tag">%s</span>' % name not in source:
+            problems.append("Last 5 lists %s, which has no archive row" % name)
+    return problems
+
+
+def check_recent_first(name):
+    """A page new to git has to open the block: the newest page is its first row."""
+    if name in INFRA_PAGES or not new_to_git(name):
+        return []
+    _source, rows = recent_rows()
+    if rows and rows[0][0] != name:
+        return ["Last 5 does not open with this new page — put it first in .recent-list"]
+    return []
 
 
 def page_name(arg):
@@ -645,6 +670,7 @@ def main(argv):
         for label, problems in (
             ("sitemap", check_sitemap(names)),
             ("api", check_api(names)),
+            ("recent", check_recent()),
             ("robots", check_robots()),
         ):
             for problem in problems:
@@ -655,6 +681,9 @@ def main(argv):
             for problem in check_listed(name):
                 failures += 1
                 print("%s: %s" % (name, problem))
+            for problem in check_recent_first(name):
+                failures += 1
+                print("recent: %s" % problem)
 
     if not quiet:
         for warn in warnings:
